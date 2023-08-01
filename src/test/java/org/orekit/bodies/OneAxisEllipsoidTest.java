@@ -46,6 +46,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -53,6 +54,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -272,15 +274,16 @@ public class OneAxisEllipsoidTest {
             groundPVList.add(new TimeStampedPVCoordinates(shiftedPV.getDate(),
                                                           p, Vector3D.ZERO, Vector3D.ZERO));
         }
-        TimeStampedPVCoordinates computed =
-                model.projectToGround(TimeStampedPVCoordinates.interpolate(date,
-                                                                           CartesianDerivativesFilter.USE_P,
-                                                                           pvList),
-                                                                           frame);
-        TimeStampedPVCoordinates reference =
-                TimeStampedPVCoordinates.interpolate(date,
-                                                     CartesianDerivativesFilter.USE_P,
-                                                     groundPVList);
+
+        // create interpolators
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                new TimeStampedPVCoordinatesHermiteInterpolator(pvList.size(), CartesianDerivativesFilter.USE_P);
+
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolatorGround =
+                new TimeStampedPVCoordinatesHermiteInterpolator(groundPVList.size(), CartesianDerivativesFilter.USE_P);
+
+        TimeStampedPVCoordinates computed = model.projectToGround(interpolator.interpolate(date, pvList), frame);
+        TimeStampedPVCoordinates reference = interpolatorGround.interpolate(date, groundPVList);
 
         TimeStampedPVCoordinates pv0 = provider.getPVCoordinates(date, frame);
         Vector3D p0 = pv0.getPosition();

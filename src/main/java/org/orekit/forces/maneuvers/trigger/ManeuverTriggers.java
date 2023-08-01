@@ -101,4 +101,16 @@ public interface ManeuverTriggers {
     default String getName() {
         return "";
     }
+
+    /** Add a resetter.
+     * @param resetter resetter to add
+     */
+    void addResetter(ManeuverTriggersResetter resetter);
+
+    /** Add a resetter.
+     * @param field field to which the state belongs
+     * @param resetter resetter to add
+     * @param <T> type of the field elements
+     */
+    <T extends CalculusFieldElement<T>> void addResetter(Field<T> field, FieldManeuverTriggersResetter<T> resetter);
 }

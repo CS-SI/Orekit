@@ -86,12 +86,12 @@ public class KeplerianElements extends CommentsContainer implements Data {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(epoch,  StateVectorKey.EPOCH);
-        checkNotNaN(e,       KeplerianElementsKey.ECCENTRICITY);
-        checkNotNaN(i,       KeplerianElementsKey.INCLINATION);
-        checkNotNaN(raan,    KeplerianElementsKey.RA_OF_ASC_NODE);
-        checkNotNaN(pa,      KeplerianElementsKey.ARG_OF_PERICENTER);
-        checkNotNaN(anomaly, KeplerianElementsKey.MEAN_ANOMALY);
+        checkNotNull(epoch,  StateVectorKey.EPOCH.name());
+        checkNotNaN(e,       KeplerianElementsKey.ECCENTRICITY.name());
+        checkNotNaN(i,       KeplerianElementsKey.INCLINATION.name());
+        checkNotNaN(raan,    KeplerianElementsKey.RA_OF_ASC_NODE.name());
+        checkNotNaN(pa,      KeplerianElementsKey.ARG_OF_PERICENTER.name());
+        checkNotNaN(anomaly, KeplerianElementsKey.MEAN_ANOMALY.name());
     }
 
     /** Get epoch of state vector, Keplerian elements and covariance matrix data.

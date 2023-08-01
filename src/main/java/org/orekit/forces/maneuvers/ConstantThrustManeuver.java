@@ -198,7 +198,7 @@ public class ConstantThrustManeuver extends Maneuver {
      * @return thrust vector (N) in S/C frame.
      */
     public Vector3D getThrustVector(final AbsoluteDate date) {
-        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getThrustVector(date);
+        return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getThrustVector(date);
     }
 
     /** Get the thrust vector (N) in S/C frame.
@@ -234,7 +234,7 @@ public class ConstantThrustManeuver extends Maneuver {
      * @return specific impulse (s).
      */
     public double getISP(final AbsoluteDate date) {
-        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getIsp(date);
+        return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getIsp(date);
     }
 
     /** Get the specific impulse.
@@ -249,7 +249,7 @@ public class ConstantThrustManeuver extends Maneuver {
      * @return flow rate (negative, kg/s).
      */
     public double getFlowRate(final AbsoluteDate date) {
-        return ((AbstractConstantThrustPropulsionModel) (getPropulsionModel())).getFlowRate(date);
+        return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getFlowRate(date);
     }
 
     /** Get the flow rate.

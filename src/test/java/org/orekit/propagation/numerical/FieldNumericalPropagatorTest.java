@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.lang.reflect.Array;
+import java.util.stream.IntStream;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -64,6 +67,7 @@ import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldApsideDetector;
 import org.orekit.propagation.events.FieldDateDetector;
@@ -87,13 +91,20 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-import java.lang.reflect.Array;
-import java.util.stream.IntStream;
-
 
 public class FieldNumericalPropagatorTest {
 
     private double               mu;
+
+    @Test
+    public void testIssue1032() {
+        doTestIssue1032(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestIssue1032(Field<T> field) {
+        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, field.getZero().add(10.0)));
+        Assertions.assertEquals(PropagationType.OSCULATING, propagator.getPropagationType());
+    }
 
     @Test
     public void testNotInitialised1() {

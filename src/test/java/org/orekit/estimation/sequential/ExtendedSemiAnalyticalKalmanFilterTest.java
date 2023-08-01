@@ -16,6 +16,7 @@ import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
@@ -243,7 +244,7 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         final Frame orbitFrame = FramesFactory.getEME2000();
 
         // Bounded propagator from the CPF file
-        final BoundedPropagator bounded = ephemeris.getPropagator();
+        final BoundedPropagator bounded = ephemeris.getPropagator(new FrameAlignedProvider(ephemeris.getInertialFrame()));
 
         // Initial date
         final AbsoluteDate initialDate = bounded.getMinDate();

@@ -77,12 +77,12 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
      *        the primaryObject as seen from the spacecraft
      * @param proximityAngle proximity angle as seen from secondaryObject, at which events are triggered (rad)
      */
-    private AngularSeparationFromSatelliteDetector(final double maxCheck, final double threshold,
-                                                   final int maxIter,
-                                                   final EventHandler handler,
-                                                   final PVCoordinatesProvider primaryObject,
-                                                   final PVCoordinatesProvider secondaryObject,
-                                                   final double proximityAngle) {
+    protected AngularSeparationFromSatelliteDetector(final double maxCheck, final double threshold,
+                                                     final int maxIter,
+                                                     final EventHandler handler,
+                                                     final PVCoordinatesProvider primaryObject,
+                                                     final PVCoordinatesProvider secondaryObject,
+                                                     final double proximityAngle) {
         super(maxCheck, threshold, maxIter, handler);
         this.primaryObject         = primaryObject;
         this.secondaryObject       = secondaryObject;

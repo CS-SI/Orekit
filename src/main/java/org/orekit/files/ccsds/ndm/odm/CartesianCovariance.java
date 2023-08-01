@@ -69,7 +69,7 @@ public class CartesianCovariance extends CommentsContainer implements Data {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(epoch, CartesianCovarianceKey.EPOCH);
+        checkNotNull(epoch, CartesianCovarianceKey.EPOCH.name());
         for (int i = 0; i < covarianceMatrix.getRowDimension(); ++i) {
             for (int j = 0; j <= i; ++j) {
                 if (Double.isNaN(covarianceMatrix.getEntry(i, j))) {

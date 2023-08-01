@@ -31,7 +31,8 @@ import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.RinexObservationHeader;
-import org.orekit.gnss.RinexObservationLoader;
+import org.orekit.gnss.RinexObservationParser;
+import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.utils.Constants;
 
@@ -60,17 +61,22 @@ public class MeasurementCombinationFactoryTest {
     @BeforeEach
     public void setUp() throws NoSuchAlgorithmException, IOException {
         Utils.setDataRoot("gnss");
+        RinexObservationParser parser = new RinexObservationParser();
 
         // Observation data
         obs1 = new ObservationData(ObservationType.L1, 2.25E7, 0, 0);
 
         // RINEX 2 Observation data set
-        RinexObservationLoader loader2 = load("rinex/truncate-sbch0440.16o");
-        dataSetRinex2 = loader2.getObservationDataSets().get(0);
+        final String name2 = "rinex/truncate-sbch0440.16o";
+        List<ObservationDataSet> parsed2 = parser.parse(new DataSource(name2,
+                                                                       () -> Utils.class.getClassLoader().getResourceAsStream(name2)));
+        dataSetRinex2 = parsed2.get(0);
 
         // RINEX 3 Observation data set
-        RinexObservationLoader loader3 = load("rinex/aaaa0000.00o");
-        dataSetRinex3 = loader3.getObservationDataSets().get(1);
+        final String name3 = "rinex/aaaa0000.00o";
+        List<ObservationDataSet> parsed3 = parser.parse(new DataSource(name3,
+                                                                       () -> Utils.class.getClassLoader().getResourceAsStream(name3)));
+        dataSetRinex3 = parsed3.get(1);
 
         // Satellite system
         system = dataSetRinex2.getSatelliteSystem();
@@ -116,8 +122,10 @@ public class MeasurementCombinationFactoryTest {
      */
     private void doTestEmptyDataSet(final MeasurementCombination combination) {
         // Build empty observation data set
-        final ObservationDataSet emptyDataSet = new ObservationDataSet(dataSetRinex2.getHeader(), dataSetRinex2.getSatelliteSystem(),
-                                                                       dataSetRinex2.getPrnNumber(), dataSetRinex2.getDate(), dataSetRinex2.getRcvrClkOffset(),
+        final ObservationDataSet emptyDataSet = new ObservationDataSet(dataSetRinex2.getHeader(),
+                                                                       new SatInSystem(dataSetRinex2.getSatelliteSystem(),
+                                                                                       dataSetRinex2.getPrnNumber()),
+                                                                       dataSetRinex2.getDate(), dataSetRinex2.getRcvrClkOffset(),
                                                                        new ArrayList<ObservationData>());
         // Test first method signature
         final CombinedObservationDataSet combinedData = combination.combine(emptyDataSet);
@@ -375,7 +383,7 @@ public class MeasurementCombinationFactoryTest {
         Assertions.assertEquals(expectedSize, combinedDataSet.getObservationData().size());
         // Verify RINEX Header
         final RinexObservationHeader header = combinedDataSet.getHeader();
-        Assertions.assertEquals(2.11, header.getRinexVersion(), eps);
+        Assertions.assertEquals(2.11, header.getFormatVersion(), eps);
         // Verify satellite data
         Assertions.assertEquals(30, combinedDataSet.getPrnNumber());
         Assertions.assertEquals(SatelliteSystem.GPS, combinedDataSet.getSatelliteSystem());
@@ -383,10 +391,6 @@ public class MeasurementCombinationFactoryTest {
         Assertions.assertEquals(0.0, combinedDataSet.getRcvrClkOffset(), eps);
         // Verify date
         Assertions.assertEquals("2016-02-13T00:49:43.000Z", combinedDataSet.getDate().toString());
-    }
-
-    private RinexObservationLoader load(final String name) {
-        return new RinexObservationLoader(new DataSource(name, () -> Utils.class.getClassLoader().getResourceAsStream(name)));
     }
 
     @Test

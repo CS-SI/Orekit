@@ -1,7 +1,7 @@
      3.02           N: GNSS NAV DATA    E: GALILEO          RINEX VERSION / TYPE
 sbf2rin-10.2.0                          20160428 003637 LCL PGM / RUN BY / DATE 
 GAL    3.5500E+01 -2.3438E-02  1.6632E-02  0.0000E+00       IONOSPHERIC CORR    
-GPGA -2.9103830457E-11-4.440892099E-16 918000 1919          TIME SYSTEM CORR    
+GPGA -2.9103830457E-11-4.440892099E-16 313200 1920          TIME SYSTEM CORR    
 GAUT -1.8626451492E-09 2.664535259E-15 259200 1894          TIME SYSTEM CORR    
     17                                                      LEAP SECONDS        
                                                             END OF HEADER       

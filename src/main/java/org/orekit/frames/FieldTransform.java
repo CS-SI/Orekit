@@ -29,6 +29,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolator;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -37,7 +38,9 @@ import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
@@ -490,14 +493,26 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
                                                                                 final CartesianDerivativesFilter cFilter,
                                                                                 final AngularDerivativesFilter aFilter,
                                                                                 final Stream<FieldTransform<T>> sample) {
+
+        // Create samples
         final List<TimeStampedFieldPVCoordinates<T>>      datedPV = new ArrayList<>();
         final List<TimeStampedFieldAngularCoordinates<T>> datedAC = new ArrayList<>();
         sample.forEach(t -> {
             datedPV.add(new TimeStampedFieldPVCoordinates<>(t.getDate(), t.getTranslation(), t.getVelocity(), t.getAcceleration()));
             datedAC.add(new TimeStampedFieldAngularCoordinates<>(t.getDate(), t.getRotation(), t.getRotationRate(), t.getRotationAcceleration()));
         });
-        final TimeStampedFieldPVCoordinates<T>      interpolatedPV = TimeStampedFieldPVCoordinates.interpolate(date, cFilter, datedPV);
-        final TimeStampedFieldAngularCoordinates<T> interpolatedAC = TimeStampedFieldAngularCoordinates.interpolate(date, aFilter, datedAC);
+
+        // Create interpolators
+        final FieldTimeInterpolator<TimeStampedFieldPVCoordinates<T>, T> pvInterpolator =
+                new TimeStampedFieldPVCoordinatesHermiteInterpolator<>(datedPV.size(), cFilter);
+
+        final FieldTimeInterpolator<TimeStampedFieldAngularCoordinates<T>, T> angularInterpolator =
+                new TimeStampedFieldAngularCoordinatesHermiteInterpolator<>(datedPV.size(), aFilter);
+
+        // Interpolate
+        final TimeStampedFieldPVCoordinates<T>      interpolatedPV = pvInterpolator.interpolate(date, datedPV);
+        final TimeStampedFieldAngularCoordinates<T> interpolatedAC = angularInterpolator.interpolate(date, datedAC);
+
         return new FieldTransform<>(date, date.toAbsoluteDate(), interpolatedPV, interpolatedAC);
     }
 

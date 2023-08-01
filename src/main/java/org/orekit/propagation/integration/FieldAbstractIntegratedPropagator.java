@@ -186,6 +186,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         return propagationType;
     }
 
+    /** Get the propagation type.
+     * @return propagation type.
+     * @since 11.3.2
+     */
+    public PropagationType getPropagationType() {
+        return propagationType;
+    }
+
     /** Set position angle type.
      * <p>
      * The position parameter type is meaningful only if {@link
@@ -434,7 +442,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                 setMu(getInitialState().getMu());
             }
             if (getInitialState().getMass().getReal() <= 0.0) {
-                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
+                throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS,
                                                getInitialState().getMass());
             }
 
@@ -784,7 +792,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             int yieldCount = 0;
             while (!pending.isEmpty()) {
                 final FieldAdditionalDerivativesProvider<T> equations = pending.remove();
-                if (equations.yield(updated)) {
+                if (equations.yields(updated)) {
                     // these equations have to wait for another set,
                     // we put them again in the pending queue
                     pending.add(equations);

@@ -23,7 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1240;
 import org.orekit.gnss.metric.messages.rtcm.correction.RtcmOrbitCorrectionData;
-import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
+import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 
@@ -56,7 +56,7 @@ public class Rtcm1240Test {
                          "0100101011111101111" +                // Dot Delta Along-Track
                          "010010101111110111100000";            // Dot Delta Cross-Track
 
-        message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
         message.start();
 
         messages = new ArrayList<>();

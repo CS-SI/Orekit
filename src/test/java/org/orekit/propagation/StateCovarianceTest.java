@@ -20,6 +20,8 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.BlockRealMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.ode.ODEIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -35,6 +37,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -82,7 +85,7 @@ public class StateCovarianceTest {
     	Assertions.assertEquals(OrbitType.CARTESIAN, stateCovariance.getOrbitType());
     	Assertions.assertEquals(PositionAngle.MEAN, stateCovariance.getPositionAngle());
     	Assertions.assertEquals(initialInertialFrame, stateCovariance.getFrame());
-    	Assertions.assertNull(stateCovariance.getLOFType());
+    	Assertions.assertNull(stateCovariance.getLOF());
     	Assertions.assertEquals(initialDate, stateCovariance.getDate());
     }
 
@@ -97,18 +100,12 @@ public class StateCovarianceTest {
                 Constants.WGS84_EARTH_MU);
         initialState = new SpacecraftState(initialOrbit);
         initCov = new double[][] {
-                { 8.651816029e+01, 5.689987127e+01, -2.763870764e+01, -2.435617201e-02, 2.058274137e-02,
-                        -5.872883051e-03 },
-                { 5.689987127e+01, 7.070624321e+01, 1.367120909e+01, -6.112622013e-03, 7.623626008e-03,
-                        -1.239413190e-02 },
-                { -2.763870764e+01, 1.367120909e+01, 1.811858898e+02, 3.143798992e-02, -4.963106559e-02,
-                        -7.420114385e-04 },
-                { -2.435617201e-02, -6.112622013e-03, 3.143798992e-02, 4.657077389e-05, 1.469943634e-05,
-                        3.328475593e-05 },
-                { 2.058274137e-02, 7.623626008e-03, -4.963106559e-02, 1.469943634e-05, 3.950715934e-05,
-                        2.516044258e-05 },
-                { -5.872883051e-03, -1.239413190e-02, -7.420114385e-04, 3.328475593e-05, 2.516044258e-05,
-                        3.547466120e-05 }
+                { 8.651816029e+01, 5.689987127e+01, -2.763870764e+01, -2.435617201e-02, 2.058274137e-02, -5.872883051e-03 },
+                { 5.689987127e+01, 7.070624321e+01, 1.367120909e+01, -6.112622013e-03, 7.623626008e-03, -1.239413190e-02 },
+                { -2.763870764e+01, 1.367120909e+01, 1.811858898e+02, 3.143798992e-02, -4.963106559e-02, -7.420114385e-04 },
+                { -2.435617201e-02, -6.112622013e-03, 3.143798992e-02, 4.657077389e-05, 1.469943634e-05, 3.328475593e-05 },
+                { 2.058274137e-02, 7.623626008e-03, -4.963106559e-02, 1.469943634e-05, 3.950715934e-05, 2.516044258e-05 },
+                { -5.872883051e-03, -1.239413190e-02, -7.420114385e-04, 3.328475593e-05, 2.516044258e-05, 3.547466120e-05 }
         };
     }
 
@@ -119,7 +116,7 @@ public class StateCovarianceTest {
      * @param computed  computed covariance
      * @param threshold threshold for comparison
      */
-    private void compareCovariance(final RealMatrix reference, final RealMatrix computed, final double threshold) {
+    public static void compareCovariance(final RealMatrix reference, final RealMatrix computed, final double threshold) {
         for (int row = 0; row < reference.getRowDimension(); row++) {
             for (int column = 0; column < reference.getColumnDimension(); column++) {
                 if (reference.getEntry(row, column) == 0) {
@@ -163,19 +160,10 @@ public class StateCovarianceTest {
                         OrbitType.CARTESIAN, PositionAngle.MEAN);
         // When
         final RealMatrix covarianceMatrixInRTN =
-                stateCovariance.changeCovarianceFrame(initialOrbit, LOFType.QSW).getMatrix();
+                stateCovariance.changeCovarianceFrame(initialOrbit, LOFType.QSW_INERTIAL).getMatrix();
 
         // Then
-        final RealMatrix expectedMatrixInRTN = new BlockRealMatrix(new double[][] {
-        	{ 1.000000e+00, 0.000000e+00, 0.000000e+00, 0.000000e+00, -1.121400e-03,  1.000000e-04 },
-        	{ 0.000000e+00, 1.000000e+00, 0.000000e+00, 1.131400e-03,  0.000000e+00,  1.000000e-05 },
-        	{ 0.000000e+00, 0.000000e+00, 1.000000e+00, 0.000000e+00,  0.000000e+00,  0.000000e+00 },
-        	{ 0.000000e+00, 1.131400e-03, 0.000000e+00, 1.001280e-03,  0.000000e+00,  1.131400e-08 },
-        	{-1.121400e-03, 0.000000e+00, 0.000000e+00, 0.000000e+00,  1.001257e-03, -1.131400e-07 },
-        	{ 1.000000e-04, 1.000000e-05, 0.000000e+00, 1.131400e-08, -1.131400e-07,  1.000000e-03 },
-        });
-
-        compareCovariance(covarianceMatrixInRTN, expectedMatrixInRTN, DEFAULT_VALLADO_THRESHOLD);
+        compareCovariance(initialCovarianceInInertialFrame, covarianceMatrixInRTN, DEFAULT_VALLADO_THRESHOLD);
 
     }
 
@@ -238,17 +226,17 @@ public class StateCovarianceTest {
 
         // When
         final RealMatrix convertedCovarianceMatrixInRTN =
-                stateCovariance.changeCovarianceFrame(initialOrbit, LOFType.QSW).getMatrix();
+                stateCovariance.changeCovarianceFrame(initialOrbit, LOFType.QSW_INERTIAL).getMatrix();
 
         // Then
         // Expected covariance matrix obtained by rotation initial covariance matrix by 90 degrees
         final RealMatrix expectedMatrixInRTN = new BlockRealMatrix(new double[][] {
-        	{ 1.000000e+00,  0.000000e+00, 0.000000e+00,  0.000000e+00, -1.131400e-03,  0.000000e+00 },
-        	{ 0.000000e+00,  1.000000e+00, 0.000000e+00,  1.131400e-03,  0.000000e+00, -1.000000e-05 },
+        	{ 1.000000e+00,  0.000000e+00, 0.000000e+00,  0.000000e+00,  0.000000e+00,  0.000000e+00 },
+        	{ 0.000000e+00,  1.000000e+00, 0.000000e+00,  0.000000e+00,  0.000000e+00, -1.000000e-05 },
         	{ 0.000000e+00,  0.000000e+00, 1.000000e+00,  0.000000e+00,  0.000000e+00,  0.000000e+00 },
-        	{ 0.000000e+00,  1.131400e-03, 0.000000e+00,  1.001280e-03,  0.000000e+00, -1.131400e-08 },
-        	{-1.131400e-03,  0.000000e+00, 0.000000e+00,  0.000000e+00,  1.001280e-03,  0.000000e+00 },
-        	{ 0.000000e+00, -1.000000e-05, 0.000000e+00, -1.131400e-08,  0.000000e+00,  1.000000e-03 },
+        	{ 0.000000e+00,  0.000000e+00, 0.000000e+00,  1.000000e-03,  0.000000e+00,  0.000000e+00 },
+        	{ 0.000000e+00,  0.000000e+00, 0.000000e+00,  0.000000e+00,  1.000000e-03,  0.000000e+00 },
+        	{ 0.000000e+00, -1.000000e-05, 0.000000e+00,  0.000000e+00,  0.000000e+00,  1.000000e-03 },
         });
 
         compareCovariance(expectedMatrixInRTN, convertedCovarianceMatrixInRTN, DEFAULT_VALLADO_THRESHOLD);
@@ -278,7 +266,7 @@ public class StateCovarianceTest {
                 { 0, -1e-5, 0, 0, 0, 1e-3 }
         });
 
-        final StateCovariance stateCovariance = new StateCovariance(initialCovarianceInRTN, initialDate, LOFType.QSW);
+        final StateCovariance stateCovariance = new StateCovariance(initialCovarianceInRTN, initialDate, LOFType.QSW_INERTIAL);
 
         // When
         final RealMatrix convertedCovarianceMatrixInInertialFrame = stateCovariance.changeCovarianceFrame(initialOrbit, initialInertialFrame).getMatrix();
@@ -287,12 +275,12 @@ public class StateCovarianceTest {
 
         // Expected covariance matrix obtained by rotation initial covariance matrix by -90 degrees
         final RealMatrix expectedMatrixInInertialFrame = new BlockRealMatrix(new double[][] {
-        	{1.000000e+00,  0.000000e+00, 0.000000e+00,  0.000000e+00, 1.131400e-03, 1.000000e-05 },
-        	{0.000000e+00,  1.000000e+00, 0.000000e+00, -1.131400e-03, 0.000000e+00, 0.000000e+00 },
+        	{1.000000e+00,  0.000000e+00, 0.000000e+00,  0.000000e+00, 0.000000e+00, 1.000000e-05 },
+        	{0.000000e+00,  1.000000e+00, 0.000000e+00,  0.000000e+00, 0.000000e+00, 0.000000e+00 },
         	{0.000000e+00,  0.000000e+00, 1.000000e+00,  0.000000e+00, 0.000000e+00, 0.000000e+00 },
-        	{0.000000e+00, -1.131400e-03, 0.000000e+00,  1.001280e-03, 0.000000e+00, 0.000000e+00 },
-        	{1.131400e-03,  0.000000e+00, 0.000000e+00,  0.000000e+00, 1.001280e-03, 1.131400e-08 },
-        	{1.000000e-05,  0.000000e+00, 0.000000e+00,  0.000000e+00, 1.131400e-08, 1.000000e-03 },
+        	{0.000000e+00,  0.000000e+00, 0.000000e+00,  1.000000e-03, 0.000000e+00, 0.000000e+00 },
+        	{0.000000e+00,  0.000000e+00, 0.000000e+00,  0.000000e+00, 1.000000e-03, 0.000000e+00 },
+        	{1.000000e-05,  0.000000e+00, 0.000000e+00,  0.000000e+00, 0.000000e+00, 1.000000e-03 },
         });
 
         compareCovariance(expectedMatrixInInertialFrame, convertedCovarianceMatrixInInertialFrame, DEFAULT_VALLADO_THRESHOLD);
@@ -634,18 +622,12 @@ public class StateCovarianceTest {
 
         // Then
         final RealMatrix expectedCovarianceMatrixInITRF = new BlockRealMatrix(new double[][] {
-                { 9.9340005761276870e-01, 7.5124999798868530e-03, 5.8312675007359050e-03, 3.4548396261054936e-05,
-                        2.6851237046859200e-06, 5.8312677693153940e-05 },
-                { 7.5124999798868025e-03, 1.0065990293034541e+00, 1.2884310200351924e-02, 1.4852736004690684e-04,
-                        1.6544247282904867e-04, 1.2884310644320954e-04 },
-                { 5.8312675007359040e-03, 1.2884310200351924e-02, 1.0000009130837746e+00, 5.9252211072590390e-05,
-                        1.2841787487219444e-04, 1.0000913090989617e-04 },
-                { 3.4548396261054936e-05, 1.4852736004690686e-04, 5.9252211072590403e-05, 3.5631474857130520e-07,
-                        7.6083489184819870e-07, 5.9252213790760030e-07 },
-                { 2.6851237046859150e-06, 1.6544247282904864e-04, 1.2841787487219447e-04, 7.6083489184819880e-07,
-                        1.6542289254142709e-06, 1.2841787929229964e-06 },
-                { 5.8312677693153934e-05, 1.2884310644320950e-04, 1.0000913090989616e-04, 5.9252213790760020e-07,
-                        1.2841787929229960e-06, 1.0000913098203875e-06 }
+                { 9.9340005761276870e-01, 7.5124999798868530e-03, 5.8312675007359050e-03, 3.4548396261054936e-05, 2.6851237046859200e-06, 5.8312677693153940e-05 },
+                { 7.5124999798868025e-03, 1.0065990293034541e+00, 1.2884310200351924e-02, 1.4852736004690684e-04, 1.6544247282904867e-04, 1.2884310644320954e-04 },
+                { 5.8312675007359040e-03, 1.2884310200351924e-02, 1.0000009130837746e+00, 5.9252211072590390e-05, 1.2841787487219444e-04, 1.0000913090989617e-04 },
+                { 3.4548396261054936e-05, 1.4852736004690686e-04, 5.9252211072590403e-05, 3.5631474857130520e-07, 7.6083489184819870e-07, 5.9252213790760030e-07 },
+                { 2.6851237046859150e-06, 1.6544247282904864e-04, 1.2841787487219447e-04, 7.6083489184819880e-07, 1.6542289254142709e-06, 1.2841787929229964e-06 },
+                { 5.8312677693153934e-05, 1.2884310644320950e-04, 1.0000913090989616e-04, 5.9252213790760020e-07, 1.2841787929229960e-06, 1.0000913098203875e-06 }
         });
 
         compareCovariance(expectedCovarianceMatrixInITRF, convertedCovarianceMatrixInITRF, 1e-20);
@@ -674,18 +656,12 @@ public class StateCovarianceTest {
                 new CartesianOrbit(initialPV, initialInertialFrame, initialDate, getValladoMu());
 
         final RealMatrix initialCovarianceMatrixInPEF = new BlockRealMatrix(new double[][] {
-                { 9.9340005761276870e-01, 7.5124999798868530e-03, 5.8312675007359050e-03, 3.4548396261054936e-05,
-                        2.6851237046859200e-06, 5.8312677693153940e-05 },
-                { 7.5124999798868025e-03, 1.0065990293034541e+00, 1.2884310200351924e-02, 1.4852736004690684e-04,
-                        1.6544247282904867e-04, 1.2884310644320954e-04 },
-                { 5.8312675007359040e-03, 1.2884310200351924e-02, 1.0000009130837746e+00, 5.9252211072590390e-05,
-                        1.2841787487219444e-04, 1.0000913090989617e-04 },
-                { 3.4548396261054936e-05, 1.4852736004690686e-04, 5.9252211072590403e-05, 3.5631474857130520e-07,
-                        7.6083489184819870e-07, 5.9252213790760030e-07 },
-                { 2.6851237046859150e-06, 1.6544247282904864e-04, 1.2841787487219447e-04, 7.6083489184819880e-07,
-                        1.6542289254142709e-06, 1.2841787929229964e-06 },
-                { 5.8312677693153934e-05, 1.2884310644320950e-04, 1.0000913090989616e-04, 5.9252213790760020e-07,
-                        1.2841787929229960e-06, 1.0000913098203875e-06 }
+                { 9.9340005761276870e-01, 7.5124999798868530e-03, 5.8312675007359050e-03, 3.4548396261054936e-05, 2.6851237046859200e-06, 5.8312677693153940e-05 },
+                { 7.5124999798868025e-03, 1.0065990293034541e+00, 1.2884310200351924e-02, 1.4852736004690684e-04, 1.6544247282904867e-04, 1.2884310644320954e-04 },
+                { 5.8312675007359040e-03, 1.2884310200351924e-02, 1.0000009130837746e+00, 5.9252211072590390e-05, 1.2841787487219444e-04, 1.0000913090989617e-04 },
+                { 3.4548396261054936e-05, 1.4852736004690686e-04, 5.9252211072590403e-05, 3.5631474857130520e-07, 7.6083489184819870e-07, 5.9252213790760030e-07 },
+                { 2.6851237046859150e-06, 1.6544247282904864e-04, 1.2841787487219447e-04, 7.6083489184819880e-07, 1.6542289254142709e-06, 1.2841787929229964e-06 },
+                { 5.8312677693153934e-05, 1.2884310644320950e-04, 1.0000913090989616e-04, 5.9252213790760020e-07, 1.2841787929229960e-06, 1.0000913098203875e-06 }
         });
 
         final Frame inputFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
@@ -946,5 +922,73 @@ public class StateCovarianceTest {
 
     }
 
+    @Test
+    @DisplayName("test issue 1052 : Error when propagating covariance defined in non-inertial frame")
+    void testIssue1052() {
+
+        // Initialize orekit
+        Utils.setDataRoot("regular-data");
+
+        // Initialize state and covariance
+        setUp();
+
+        // Given
+        final AbsoluteDate  initialDate      = initialState.getDate();
+        final OrbitType     stmOrbitType     = OrbitType.CARTESIAN;
+        final PositionAngle stmPositionAngle = PositionAngle.MEAN;
+
+        final NumericalPropagator propagator = buildDefaultPropagator(initialState, stmOrbitType, stmPositionAngle);
+
+        // Initialize harvester
+        final String            stmAdditionalName = "stm";
+        final MatricesHarvester harvester         = propagator.setupMatricesComputation(stmAdditionalName, null, null);
+
+        // Initialize covariance
+        final StateCovariance initialCovariance = new StateCovariance(new BlockRealMatrix(initCov),
+                                                                      initialDate, LOFType.QSW);
+
+        // Initialize covariance provider
+        final StateCovarianceMatrixProvider provider =
+                new StateCovarianceMatrixProvider("covariance", stmAdditionalName, harvester,
+                                                  stmOrbitType, stmPositionAngle, initialCovariance);
+
+        propagator.addAdditionalStateProvider(provider);
+
+        // When
+        final SpacecraftState propagatedState      = propagator.propagate(initialDate.shiftedBy(1));
+        final StateCovariance propagatedCovariance = provider.getStateCovariance(propagatedState);
+
+        // Assert that the error message is not thrown anymore (cannot change covariance type if defined in LOF)
+        Assertions.assertDoesNotThrow(() -> propagator.propagate(initialDate.shiftedBy(1)));
+
+        // Assert that propagated covariance is in the same LOF as the initial covariance
+        Assertions.assertEquals(LOFType.QSW, propagatedCovariance.getLOF());
+
+    }
+
+    private NumericalPropagator buildDefaultPropagator(final SpacecraftState state,
+                                                       final OrbitType orbitType,
+                                                       final PositionAngle positionAngle) {
+
+        // Build default ODEIntegrator
+        final ODEIntegrator integrator = buildDefaultODEIntegrator(state.getOrbit(), orbitType);
+
+        // Build and initialize numerical propagator
+        final NumericalPropagator propagator = new NumericalPropagator(integrator);
+        propagator.setInitialState(state);
+        propagator.setOrbitType(orbitType);
+        propagator.setPositionAngleType(positionAngle);
+
+        return propagator;
+    }
+
+    private ODEIntegrator buildDefaultODEIntegrator(final Orbit orbit, final OrbitType orbitType) {
+        final double     dP         = 1;
+        final double     minStep    = 0.001;
+        final double     maxStep    = 60;
+        final double[][] tolerances = NumericalPropagator.tolerances(dP, orbit, orbitType);
+
+        return new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
+    }
 
 }

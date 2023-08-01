@@ -83,7 +83,7 @@ public class GroundStationTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // change one station clock
@@ -154,7 +154,7 @@ public class GroundStationTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // move one station
@@ -295,7 +295,7 @@ public class GroundStationTest {
                                                                            linearPropagatorBuilder);
         final List<ObservedMeasurement<?>> linearMeasurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(linearEOPContext),
+                                                               new TwoWayRangeMeasurementCreator(linearEOPContext),
                                                                1.0, 5.0, 60.0);
 
         Utils.clearFactories();
@@ -1278,7 +1278,7 @@ public class GroundStationTest {
                                                                              new GeodeticPoint(0.1, 0.2, 100),
                                                                              "dummy"));
         try {
-            station.getOffsetToInertial(eme2000, date);
+            station.getOffsetToInertial(eme2000, date, false);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
@@ -1406,8 +1406,8 @@ public class GroundStationTest {
             maxPositionDerivativeRelativeError > relativeTolerancePositionDerivative ||
             maxVelocityValueRelativeError      > relativeToleranceVelocityValue      ||
             maxVelocityDerivativeRelativeError > relativeToleranceVelocityDerivative) {
-            print("relativeTolerancePositionValue",          maxPositionValueRelativeError);
-            print("relativeTolerancePositionDerivative",     maxPositionDerivativeRelativeError);
+            print("relativeTolerancePositionValue",      maxPositionValueRelativeError);
+            print("relativeTolerancePositionDerivative", maxPositionDerivativeRelativeError);
             print("relativeToleranceVelocityValue",      maxVelocityValueRelativeError);
             print("relativeToleranceVelocityDerivative", maxVelocityDerivativeRelativeError);
         }
@@ -1551,7 +1551,7 @@ public class GroundStationTest {
                 try {
                     final double previouspI = driver.getValue(date);
                     driver.setValue(x, new AbsoluteDate());
-                    Transform t = station.getOffsetToInertial(eme2000, date);
+                    Transform t = station.getOffsetToInertial(eme2000, date, false);
                     driver.setValue(previouspI, date);
                     PVCoordinates stationPV = t.transformPVCoordinates(PVCoordinates.ZERO);
                     result[ 0] = stationPV.getPosition().getX();
@@ -1588,7 +1588,7 @@ public class GroundStationTest {
                 try {
                     final double previouspI = driver.getValue(date);
                     driver.setValue(x, date);
-                    Transform t = station.getOffsetToInertial(eme2000, date);
+                    Transform t = station.getOffsetToInertial(eme2000, date, false);
                     driver.setValue(previouspI, date);
                     final double sign;
                     if (Double.isNaN(previous0)) {

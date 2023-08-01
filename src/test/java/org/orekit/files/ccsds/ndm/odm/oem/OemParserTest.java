@@ -16,6 +16,16 @@
  */
 package org.orekit.files.ccsds.ndm.odm.oem;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.SequenceInputStream;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -50,16 +60,6 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.SequenceInputStream;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class OemParserTest {
@@ -258,14 +258,6 @@ public class OemParserTest {
         Assertions.assertEquals(2, segment.getMetadata().getInterpolationDegree());
         Assertions.assertEquals(3, segment.getInterpolationSamples());
         Assertions.assertEquals(segment.getAvailableDerivatives(), CartesianDerivativesFilter.USE_PV);
-        // propagator can't be created since frame can't be created
-        try {
-            satellite.getPropagator();
-            Assertions.fail("Expected Exception");
-        } catch (OrekitException e){
-            Assertions.assertEquals(e.getSpecifier(),
-                    OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY);
-        }
 
         List<OemSegment> segments = file.getSegments();
         Assertions.assertEquals(3, segments.size());
@@ -845,8 +837,17 @@ public class OemParserTest {
 
             // verify
             OemSegment segment = actual.getSegments().get(0);
-            Assertions.assertEquals(frameName,
-                                segment.getMetadata().getReferenceFrame().getName());
+            switch (frameName) {
+                case "ITRF-93" :
+                    Assertions.assertEquals("ITRF1993", segment.getMetadata().getReferenceFrame().getName());
+                    break;
+                case "ITRF-97" :
+                    Assertions.assertEquals("ITRF1997", segment.getMetadata().getReferenceFrame().getName());
+                    break;
+                default :
+                    Assertions.assertEquals(frameName, segment.getMetadata().getReferenceFrame().getName());
+                    break;
+            }
             // check expected frame
             Frame actualFrame = segment.getFrame();
             Frame expectedFrame = frame.getSecond();

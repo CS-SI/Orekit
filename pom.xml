@@ -205,6 +205,13 @@
         <role>developer</role>
       </roles>
     </developer>
+    <developer>
+      <name>Mark Rutten</name>
+      <id>markrutten</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
   </developers>
 
   <contributors>
@@ -260,6 +267,9 @@
       <name>Mikael Fillastre</name>
     </contributor>
     <contributor>
+      <name>Alberto Foss&#224;</name>
+    </contributor>
+    <contributor>
       <name>Lucas Girodet</name>
     </contributor>
     <contributor>
@@ -272,10 +282,16 @@
       <name>Romaric Her</name>
     </contributor>
     <contributor>
+      <name>Jonathan Hood</name>
+    </contributor>
+    <contributor>
       <name>James Housden</name>
     </contributor>
     <contributor>
       <name>Shiva Iyer</name>
+    </contributor>
+    <contributor>
+      <name>Dimuthu Jayasingha</name>
     </contributor>
     <contributor>
       <name>Fran&#231;ois-Xavier Laffont</name>
@@ -318,9 +334,6 @@
     </contributor>
     <contributor>
       <name>Chiara Rusconi</name>
-    </contributor>
-    <contributor>
-      <name>Mark Rutten</name>
     </contributor>
     <contributor>
       <name>Beatriz Salazar Garc&#237;a</name>

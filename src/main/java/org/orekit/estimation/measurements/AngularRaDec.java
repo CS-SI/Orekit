@@ -17,23 +17,27 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling an Right Ascension - Declination measurement from a ground point (station, telescope).
  * The angles are given in an inertial reference frame.
@@ -45,13 +49,10 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Maxime Journot
  * @since 9.0
  */
-public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
+public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "AngularRaDec";
-
-    /** Ground station from which measurement is performed. */
-    private final GroundStation station;
 
     /** Reference frame in which the right ascension - declination angles are given. */
     private final Frame referenceFrame;
@@ -69,26 +70,8 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
     public AngularRaDec(final GroundStation station, final Frame referenceFrame, final AbsoluteDate date,
                         final double[] angular, final double[] sigma, final double[] baseWeight,
                         final ObservableSatellite satellite) {
-        super(date, angular, sigma, baseWeight, Collections.singletonList(satellite));
-        addParameterDriver(station.getClockOffsetDriver());
-        addParameterDriver(station.getEastOffsetDriver());
-        addParameterDriver(station.getNorthOffsetDriver());
-        addParameterDriver(station.getZenithOffsetDriver());
-        addParameterDriver(station.getPrimeMeridianOffsetDriver());
-        addParameterDriver(station.getPrimeMeridianDriftDriver());
-        addParameterDriver(station.getPolarOffsetXDriver());
-        addParameterDriver(station.getPolarDriftXDriver());
-        addParameterDriver(station.getPolarOffsetYDriver());
-        addParameterDriver(station.getPolarDriftYDriver());
-        this.station        = station;
+        super(station, false, date, angular, sigma, baseWeight, satellite);
         this.referenceFrame = referenceFrame;
-    }
-
-    /** Get the ground station from which measurement is performed.
-     * @return ground station from which measurement is performed
-     */
-    public GroundStation getStation() {
-        return station;
     }
 
     /** Get the reference frame in which the right ascension - declination angles are given.
@@ -136,7 +119,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
         // Transform between station and inertial frame, expressed as a gradient
         // The components of station's position in offset frame are the 3 last derivative parameters
         final FieldTransform<Gradient> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
+                        getStation().getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
         final FieldAbsoluteDate<Gradient> downlinkDateDS =
                         offsetToInertialDownlink.getFieldDate();
 
@@ -168,7 +151,7 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
                         state.getFrame().getTransformTo(referenceFrame, downlinkDateDS);
 
         // Station-satellite vector in reference frame
-        final FieldVector3D<Gradient> staSatReference = inertialToReferenceDownlink.transformPosition(staSatInertial);
+        final FieldVector3D<Gradient> staSatReference = inertialToReferenceDownlink.transformVector(staSatInertial);
 
         // Compute right ascension and declination
         final Gradient baseRightAscension = staSatReference.getAlpha();
@@ -210,4 +193,33 @@ public class AngularRaDec extends AbstractMeasurement<AngularRaDec> {
 
         return estimated;
     }
+
+    /** Calculate the Line Of Sight of the given Radec.
+     * @return Vector3D the line of Sight of the Radec
+     */
+    public Vector3D getLineOfSight() {
+        return new Vector3D(this.getObservedValue()[0], this.getObservedValue()[1]);
+    }
+
+    /** Calculate the estimated Line Of Sight of the Radec at a given date.
+     *
+     * @param prop the propagator for the estimation
+     * @param date the AbsoluteDate to use for the propagation
+     *
+     * @return Vector3D the estimate line of Sight of the Radec at the propagate date.
+     */
+    @DefaultDataContext
+    public Vector3D getEstimatedLOS(final Propagator prop, final AbsoluteDate date) {
+        final Frame                    gcrf        = FramesFactory.getGCRF();
+        final TimeStampedPVCoordinates satPV       = prop.getPVCoordinates(date, gcrf);
+        final AbsolutePVCoordinates    satPVInGCRF = new AbsolutePVCoordinates(gcrf, satPV);
+        final SpacecraftState[]        satState    = new SpacecraftState[] { new SpacecraftState(satPVInGCRF) };
+        final double[]                 angular     = this.estimate(0, 0, satState).getEstimatedValue();
+
+        final double ra = angular[0];
+        final double dec = angular[1];
+
+        return new Vector3D(ra, dec);
+    }
+
 }

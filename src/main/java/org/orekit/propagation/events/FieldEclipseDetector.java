@@ -95,9 +95,9 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      * @param totalEclipse umbra (true) or penumbra (false) detection flag
      * @since 12.0
      */
-    private FieldEclipseDetector(final T maxCheck, final T threshold,
-                                 final int maxIter, final FieldEventHandler<T> handler,
-                                 final OccultationEngine occultationEngine, final T margin, final boolean totalEclipse) {
+    protected FieldEclipseDetector(final T maxCheck, final T threshold,
+                                   final int maxIter, final FieldEventHandler<T> handler,
+                                   final OccultationEngine occultationEngine, final T margin, final boolean totalEclipse) {
         super(maxCheck, threshold, maxIter, handler);
         this.occultationEngine = occultationEngine;
         this.margin            = margin;

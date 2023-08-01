@@ -75,7 +75,7 @@ import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
-import org.orekit.estimation.measurements.modifiers.OnBoardAntennaRangeModifier;
+import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
 import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
@@ -114,8 +114,9 @@ import org.orekit.gnss.HatanakaCompressFilter;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationData;
 import org.orekit.gnss.ObservationDataSet;
-import org.orekit.gnss.RinexObservationLoader;
+import org.orekit.gnss.RinexObservationParser;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.models.earth.atmosphere.Atmosphere;
@@ -371,11 +372,12 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
         useRangeRateMeasurements                                   = parser.getBoolean(ParameterKey.USE_RANGE_RATE_MEASUREMENTS);
 
-        final Map<String, StationData>    stations                 = createStationsData(parser, stationPositionData, stationEccData, conventions, body);
+        final Map<String, StationData>    stations                 = createStationsData(parser, initialGuess.getDate(),
+                                                                                        stationPositionData, stationEccData, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
         final ObservableSatellite         satellite                = createObservableSatellite(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
-        final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
+        final PhaseCentersRangeModifier   satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
         final ShapiroRangeModifier        shapiroRangeModifier     = createShapiroRangeModifier(parser);
         final Weights                     weights                  = createWeights(parser);
         final OutlierFilter<Range>        rangeOutliersManager     = createRangeOutliersManager(parser, false);
@@ -395,8 +397,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 nd = filter.filter(nd);
             }
 
-            if (Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, nd.getName()) ||
-                Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, nd.getName())) {
+            if (Pattern.matches(RinexObservationParser.DEFAULT_RINEX_2_NAMES, nd.getName()) ||
+                Pattern.matches(RinexObservationParser.DEFAULT_RINEX_3_NAMES, nd.getName())) {
                 // the measurements come from a Rinex file
                 independentMeasurements.addAll(readRinex(nd,
                                                          parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
@@ -654,11 +656,12 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
         useRangeRateMeasurements                                   = parser.getBoolean(ParameterKey.USE_RANGE_RATE_MEASUREMENTS);
 
-        final Map<String, StationData>    stations                 = createStationsData(parser, stationPositionData, stationEccData, conventions, body);
+        final Map<String, StationData>    stations                 = createStationsData(parser, initialGuess.getDate(),
+                                                                                        stationPositionData, stationEccData, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
         final ObservableSatellite         satellite                = createObservableSatellite(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
-        final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
+        final PhaseCentersRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
         final ShapiroRangeModifier        shapiroRangeModifier     = createShapiroRangeModifier(parser);
         final Weights                     weights                  = createWeights(parser);
         final OutlierFilter<Range>        rangeOutliersManager     = createRangeOutliersManager(parser, true);
@@ -679,8 +682,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 nd = filter.filter(nd);
             }
 
-            if (Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, nd.getName()) ||
-                Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, nd.getName())) {
+            if (Pattern.matches(RinexObservationParser.DEFAULT_RINEX_2_NAMES, nd.getName()) ||
+                Pattern.matches(RinexObservationParser.DEFAULT_RINEX_3_NAMES, nd.getName())) {
                 // the measurements come from a Rinex file
                 independentMeasurements.addAll(readRinex(nd,
                                                          parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
@@ -1341,7 +1344,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
      * @param parser input file parser
      * @return range modifier (may be null if antenna offset is zero or undefined)
      */
-    private OnBoardAntennaRangeModifier createSatAntennaRangeModifier(final KeyValueFileParser<ParameterKey> parser) {
+    private PhaseCentersRangeModifier createSatAntennaRangeModifier(final KeyValueFileParser<ParameterKey> parser) {
         final Vector3D offset;
         if (!parser.containsKey(ParameterKey.ON_BOARD_ANTENNA_PHASE_CENTER_X)) {
             offset = Vector3D.ZERO;
@@ -1350,7 +1353,10 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                       ParameterKey.ON_BOARD_ANTENNA_PHASE_CENTER_Y,
                                       ParameterKey.ON_BOARD_ANTENNA_PHASE_CENTER_Z);
         }
-        return offset.getNorm() > 0 ? new OnBoardAntennaRangeModifier(offset) : null;
+        return offset.getNorm() > 0 ?
+               new PhaseCentersRangeModifier(FrequencyPattern.ZERO_CORRECTION,
+                                             new FrequencyPattern(offset, null)) :
+               null;
     }
 
     /** Set up range modifier taking shapiro effect.
@@ -1369,6 +1375,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
     /** Set up stations.
      * @param parser input file parser
+     * @param refDate reference date (from orbit initial guess)
      * @param sinexPosition sinex file containing station position (can be null)
      * @param sinexEcc sinex file containing station eccentricities (can be null)
      * @param conventions IERS conventions to use
@@ -1377,6 +1384,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
      * @throws NoSuchElementException if input parameters are missing
      */
     private Map<String, StationData> createStationsData(final KeyValueFileParser<ParameterKey> parser,
+                                                        final AbsoluteDate refDate,
                                                         final SinexLoader sinexPosition,
                                                         final SinexLoader sinexEcc,
                                                         final IERSConventions conventions,
@@ -1506,12 +1514,13 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             // Take into consideration station eccentricities if not null
             if (sinexEcc != null) {
                 final Station stationEcc = sinexEcc.getStation(stationNames[i]);
-                station.getZenithOffsetDriver().setValue(stationEcc.getEccentricities().getX());
-                station.getZenithOffsetDriver().setReferenceValue(stationEcc.getEccentricities().getX());
-                station.getNorthOffsetDriver().setValue(stationEcc.getEccentricities().getY());
-                station.getNorthOffsetDriver().setReferenceValue(stationEcc.getEccentricities().getY());
-                station.getEastOffsetDriver().setValue(stationEcc.getEccentricities().getZ());
-                station.getEastOffsetDriver().setReferenceValue(stationEcc.getEccentricities().getZ());
+                final Vector3D eccentricities = stationEcc.getEccentricities(refDate);
+                station.getZenithOffsetDriver().setValue(eccentricities.getX());
+                station.getZenithOffsetDriver().setReferenceValue(eccentricities.getX());
+                station.getNorthOffsetDriver().setValue(eccentricities.getY());
+                station.getNorthOffsetDriver().setReferenceValue(eccentricities.getY());
+                station.getEastOffsetDriver().setValue(eccentricities.getZ());
+                station.getEastOffsetDriver().setReferenceValue(eccentricities.getZ());
             }
 
             // range
@@ -1990,7 +1999,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                           final PVData pvData,
                                                           final ObservableSatellite satellite,
                                                           final Bias<Range> satRangeBias,
-                                                          final OnBoardAntennaRangeModifier satAntennaRangeModifier,
+                                                          final PhaseCentersRangeModifier satAntennaRangeModifier,
                                                           final Weights weights,
                                                           final OutlierFilter<Range> rangeOutliersManager,
                                                           final OutlierFilter<RangeRate> rangeRateOutliersManager,
@@ -2093,7 +2102,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                    final Map<String, StationData> stations,
                                                    final ObservableSatellite satellite,
                                                    final Bias<Range> satRangeBias,
-                                                   final OnBoardAntennaRangeModifier satAntennaRangeModifier,
+                                                   final PhaseCentersRangeModifier satAntennaRangeModifier,
                                                    final Weights weights,
                                                    final OutlierFilter<Range> rangeOutliersManager,
                                                    final OutlierFilter<RangeRate> rangeRateOutliersManager,
@@ -2115,8 +2124,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             default:
                 prnNumber = -1;
         }
-        final RinexObservationLoader loader = new RinexObservationLoader(source);
-        for (final ObservationDataSet observationDataSet : loader.getObservationDataSets()) {
+        final RinexObservationParser parser = new RinexObservationParser();
+        for (final ObservationDataSet observationDataSet : parser.parse(source)) {
             if (observationDataSet.getSatelliteSystem() == system    &&
                 observationDataSet.getPrnNumber()       == prnNumber) {
                 for (final ObservationData od : observationDataSet.getObservationData()) {

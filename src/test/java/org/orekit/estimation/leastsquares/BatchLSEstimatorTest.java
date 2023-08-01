@@ -37,12 +37,13 @@ import org.orekit.estimation.measurements.MultiplexedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
-import org.orekit.estimation.measurements.modifiers.OnBoardAntennaRangeModifier;
+import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.LOFType;
+import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -229,7 +230,7 @@ public class BatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
@@ -326,13 +327,18 @@ public class BatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context, antennaPhaseCenter),
+                                                               new TwoWayRangeMeasurementCreator(context,
+                                                                                                 Vector3D.ZERO, null,
+                                                                                                 antennaPhaseCenter, null,
+                                                                                                 0),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 propagatorBuilder);
-        final OnBoardAntennaRangeModifier obaModifier = new OnBoardAntennaRangeModifier(antennaPhaseCenter);
+        final PhaseCentersRangeModifier obaModifier = new PhaseCentersRangeModifier(FrequencyPattern.ZERO_CORRECTION,
+                                                                                    new FrequencyPattern(antennaPhaseCenter,
+                                                                                                         null));
         for (final ObservedMeasurement<?> range : measurements) {
             ((Range) range).addModifier(obaModifier);
             estimator.addMeasurement(range);
@@ -447,7 +453,7 @@ public class BatchLSEstimatorTest {
                                                            propagatorBuilder1);
         final List<ObservedMeasurement<?>> r1 =
                         EstimationTestUtils.createMeasurements(propagator1,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
@@ -648,7 +654,7 @@ public class BatchLSEstimatorTest {
                                                            propagatorBuilder1);
         final List<ObservedMeasurement<?>> r1 =
                         EstimationTestUtils.createMeasurements(propagator1,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 120.0);
 
         // create perfect angular measurements for first satellite
@@ -805,7 +811,7 @@ public class BatchLSEstimatorTest {
                                                            propagatorBuilder1);
         final List<ObservedMeasurement<?>> r1 =
                         EstimationTestUtils.createMeasurements(propagator1,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
@@ -945,7 +951,7 @@ public class BatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
@@ -1053,7 +1059,7 @@ public class BatchLSEstimatorTest {
 
         final List<ObservedMeasurement<?>> measurementsRange =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {

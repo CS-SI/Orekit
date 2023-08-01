@@ -59,7 +59,7 @@ public class SigmaEigenvectorsCovariance extends CommentsContainer {
 
         // We only check values that are mandatory in a cdm file
         for (int i = 0; i < getCsig3eigvec3().length; i++) {
-            checkNotNaN(getCsig3eigvec3()[i],              SigmaEigenvectorsCovarianceKey.CSIG3EIGVEC3);
+            checkNotNaN(getCsig3eigvec3()[i], SigmaEigenvectorsCovarianceKey.CSIG3EIGVEC3.name());
         }
     }
 

@@ -30,7 +30,7 @@ import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -47,6 +47,7 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
 /** This class is a container for a single set of TLE data.
@@ -472,12 +473,17 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(ParseUtils.addPadding("launchPiece",  launchPiece, ' ', 3, false, satelliteNumber));
 
         buffer.append(' ');
-        final DateTimeComponents dtc = epoch.getComponents(utc);
+        DateTimeComponents dtc = epoch.getComponents(utc);
+        int fraction = (int) FastMath.rint(31250 * dtc.getTime().getSecondsInUTCDay() / 27.0);
+        if (fraction >= 100000000) {
+            dtc =  epoch.shiftedBy(Constants.JULIAN_DAY).getComponents(utc);
+            fraction -= 100000000;
+        }
         buffer.append(ParseUtils.addPadding("year", dtc.getDate().getYear() % 100, '0', 2, true, satelliteNumber));
         buffer.append(ParseUtils.addPadding("day",  dtc.getDate().getDayOfYear(),  '0', 3, true, satelliteNumber));
         buffer.append('.');
         // nota: 31250/27 == 100000000/86400
-        final int fraction = (int) FastMath.rint(31250 * dtc.getTime().getSecondsInUTCDay() / 27.0);
+
         buffer.append(ParseUtils.addPadding("fraction", fraction,  '0', 8, true, satelliteNumber));
 
         buffer.append(' ');
@@ -807,7 +813,9 @@ public class TLE implements TimeStamped, Serializable {
         while (k++ < maxIterations) {
 
             // recompute the state from the current TLE
-            final TLEPropagator propagator = TLEPropagator.selectExtrapolator(current, new InertialProvider(Rotation.IDENTITY, teme), state.getMass(), teme);
+            final TLEPropagator propagator = TLEPropagator.selectExtrapolator(current,
+                                                                              new FrameAlignedProvider(Rotation.IDENTITY, teme),
+                                                                              state.getMass(), teme);
             final Orbit recovOrbit = propagator.getInitialState().getOrbit();
             final EquinoctialOrbit recovEquiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(recovOrbit);
 
@@ -848,7 +856,7 @@ public class TLE implements TimeStamped, Serializable {
             lv  += deltaLv;
             final EquinoctialOrbit newEquiOrbit =
                                     new EquinoctialOrbit(sma, ex, ey, hx, hy, lv, PositionAngle.TRUE,
-                                    equiOrbit.getFrame(), equiOrbit.getDate(), equiOrbit.getMu());
+                                                         equiOrbit.getFrame(), equiOrbit.getDate(), equiOrbit.getMu());
             final KeplerianOrbit newKeplOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(newEquiOrbit);
 
             // update TLE

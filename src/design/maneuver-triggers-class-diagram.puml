@@ -60,7 +60,7 @@
 
       EventDetector <--o ManeuverTriggers
       FieldEventDetector <--o ManeuverTriggers
-      ManeuverTriggers <|.. AbstractManeuverTriggers
+      AbstractManeuverTriggers ..|> ManeuverTriggers
       AbstractManeuverTriggers <|-- IntervalEventTrigger_T
       AbstractManeuverTriggers <|-- StartStopEventsTrigger_A_O
       IntervalEventTrigger_T <|-- DateBasedManeuverTriggers

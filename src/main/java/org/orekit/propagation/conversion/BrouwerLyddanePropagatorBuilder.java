@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
@@ -66,7 +66,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder implements PropagatorBuilder {
+public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Parameters scaling factor.
      * <p>
@@ -85,8 +85,9 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
      * #createInitialOrbit() create initial orbit}. It defines the
      * inertial frame, the central attraction coefficient, the orbit type, and is also
      * used together with the {@code positionScale} to convert from the {@link
-     * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
-     * callers of this builder to the real orbital parameters.
+     * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters
+     * used by the callers of this builder to the real orbital parameters.
+     * The default attitude provider is aligned with the orbit's inertial frame.
      * </p>
      *
      * @param templateOrbit reference orbit from which real orbits will be built
@@ -106,7 +107,8 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
                                            final PositionAngle positionAngle,
                                            final double positionScale,
                                            final double M2) {
-        this(templateOrbit, provider, positionAngle, positionScale, InertialProvider.of(templateOrbit.getFrame()), M2);
+        this(templateOrbit, provider, positionAngle, positionScale,
+             FrameAlignedProvider.of(templateOrbit.getFrame()), M2);
     }
 
     /** Build a new instance.
@@ -200,9 +202,9 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
      * @param positionAngle position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
+     * @param attitudeProvider attitude law to use
      * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
-     * @param attitudeProvider attitude law to use
      */
     public BrouwerLyddanePropagatorBuilder(final Orbit templateOrbit,
                                            final UnnormalizedSphericalHarmonicsProvider provider,
@@ -235,6 +237,24 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
                                                        templateOrbit.getDate(),
                                                        provider.getMu(),
                                                        templateOrbit.getFrame());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public BrouwerLyddanePropagatorBuilder copy() {
+
+        // Find M2 value
+        double m2 = 0.0;
+        for (final ParameterDriver driver : getPropagationParametersDrivers().getDrivers()) {
+            if (BrouwerLyddanePropagator.M2_NAME.equals(driver.getName())) {
+                // it is OK as BL m2 parameterDriver has 1 value estimated from -INF to +INF, and
+                // setPeriod method should not be called on this driver (to have several values estimated)
+                m2 = driver.getValue();
+            }
+        }
+
+        return new BrouwerLyddanePropagatorBuilder(createInitialOrbit(), provider, getPositionAngle(),
+                                                   getPositionScale(), getAttitudeProvider(), m2);
     }
 
     /** {@inheritDoc} */

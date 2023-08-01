@@ -465,7 +465,8 @@ public class OpmParserTest {
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
-        final Generator generator = new KvnGenerator(caw, OpmWriter.KVN_PADDING_WIDTH, "dummy", 60);
+        final Generator generator = new KvnGenerator(caw, OpmWriter.KVN_PADDING_WIDTH, "dummy",
+                                                     Constants.JULIAN_DAY, 60);
         new WriterBuilder().buildOpmWriter().writeMessage(generator, original);
 
         // reparse the written file
@@ -895,6 +896,23 @@ public class OpmParserTest {
             Assertions.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
             Assertions.assertEquals(11, ((Integer) oe.getParts()[0]).intValue());
             Assertions.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
+        }
+    }
+
+    @Test
+    public void testSpuriousMetaDataSection() throws URISyntaxException {
+        final String name = "/ccsds/odm/opm/spurious-metadata.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().
+            withMu(CelestialBodyFactory.getMars().getGM()).
+            buildOpmParser().
+            parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assertions.assertEquals(23, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals("metadata", oe.getParts()[2]);
         }
     }
 

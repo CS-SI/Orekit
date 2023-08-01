@@ -122,10 +122,10 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
      * @param median median date driver
      * @param duration duration driver
      */
-    private FieldParameterDrivenDateIntervalDetector(final T maxCheck, final T threshold, final int maxIter,
-                                                     final FieldEventHandler<T> handler,
-                                                     final DateDriver start, final DateDriver stop,
-                                                     final DateDriver median, final ParameterDriver duration) {
+    protected FieldParameterDrivenDateIntervalDetector(final T maxCheck, final T threshold, final int maxIter,
+                                                       final FieldEventHandler<T> handler,
+                                                       final DateDriver start, final DateDriver stop,
+                                                       final DateDriver median, final ParameterDriver duration) {
         super(maxCheck, threshold, maxIter, handler);
         this.start    = start;
         this.stop     = stop;

@@ -25,54 +25,27 @@ import java.util.Map;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.models.earth.ionosphere.NeQuickModel;
-import org.orekit.propagation.analytical.gnss.data.BeidouNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.GPSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.IRNSSNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.QZSSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.QZSSCivilianNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
-import org.orekit.time.AbsoluteDate;
 
 /**
  * Represents a parsed RINEX navigation messages files.
  * @author Bryan Cazabonne
+ * @author Luc Maisonobe
  * @since 11.0
  */
 public class RinexNavigation {
 
-    /** Format version. */
-    private double formatVersion;
-
-    /** File type ('N' for navigation data). */
-    private String fileType;
-
-    /** Satellite system. */
-    private SatelliteSystem satelliteSystem;
-
-    /** Name of the program creating current file. */
-    private String programName;
-
-    /** Name of the agency creating the current file. */
-    private String agencyName;
-
-    /** Date of the file creation as a string. */
-    private String creationDateString;
-
-    /** Time of the file creation as a string. */
-    private String creationTimeString;
-
-    /** Time zone of the file creation as a string. */
-    private String creationTimeZoneString;
-
-    /** Creation date as absolute date. */
-    private AbsoluteDate creationDate;
-
-    /** Comments. */
-    private String comments;
-
-    /** Ionospheric correction type. */
-    private String ionosphericCorrectionType;
+    /** Header. */
+    private RinexNavigationHeader header;
 
     /** The 4 Klobuchar coefficients of a cubic equation representing the amplitude of the vertical delay. */
     private double[] klobucharAlpha;
@@ -83,226 +56,87 @@ public class RinexNavigation {
     /** The three ionospheric coefficients broadcast in the Galileo navigation message. */
     private double[] neQuickAlpha;
 
-    /** List of time system corrections. */
-    private List<TimeSystemCorrection> timeSystemCorrections;
-
-    /** Current number of leap seconds. */
-    private int numberOfLeapSeconds;
+    /** A map containing the GPS navigation messages. */
+    private final Map<String, List<GPSLegacyNavigationMessage>> gpsLegacyData;
 
     /** A map containing the GPS navigation messages. */
-    private Map<String, List<GPSNavigationMessage>> gpsData;
+    private final Map<String, List<GPSCivilianNavigationMessage>> gpsCivilianData;
 
     /** A map containing the Galileo navigation messages. */
-    private Map<String, List<GalileoNavigationMessage>> galileoData;
+    private final Map<String, List<GalileoNavigationMessage>> galileoData;
 
     /** A map containing the Beidou navigation messages. */
-    private Map<String, List<BeidouNavigationMessage>> beidouData;
+    private final Map<String, List<BeidouLegacyNavigationMessage>> beidouLegacyData;
+
+    /** A map containing the Beidou navigation messages. */
+    private final Map<String, List<BeidouCivilianNavigationMessage>> beidouCivilianData;
 
     /** A map containing the QZSS navigation messages. */
-    private Map<String, List<QZSSNavigationMessage>> qzssData;
+    private final Map<String, List<QZSSLegacyNavigationMessage>> qzssLegacyData;
+
+    /** A map containing the QZSS navigation messages. */
+    private final Map<String, List<QZSSCivilianNavigationMessage>> qzssCivilianData;
 
     /** A map containing the IRNSS navigation messages. */
-    private Map<String, List<IRNSSNavigationMessage>> irnssData;
+    private final Map<String, List<IRNSSNavigationMessage>> irnssData;
 
     /** A map containing the GLONASS navigation messages. */
-    private Map<String, List<GLONASSNavigationMessage>> glonassData;
+    private final Map<String, List<GLONASSNavigationMessage>> glonassData;
 
     /** A map containing the SBAS navigation messages. */
-    private Map<String, List<SBASNavigationMessage>> sbasData;
+    private final Map<String, List<SBASNavigationMessage>> sbasData;
+
+    /** System time offsets.
+     * @since 12.0
+     */
+    private final List<SystemTimeOffsetMessage> systemTimeOffsets;
+
+    /** Earth orientation parameters.
+     * @since 12.0
+     */
+    private final List<EarthOrientationParameterMessage> eops;
+
+    /** Ionosphere Klobuchar messages.
+     * @since 12.0
+     */
+    private final List<IonosphereKlobucharMessage> klobucharMessages;
+
+    /** Ionosphere Nequick G messages.
+     * @since 12.0
+     */
+    private final List<IonosphereNequickGMessage> nequickGMessages;
+
+    /** Ionosphere BDGIM messages.
+     * @since 12.0
+     */
+    private final List<IonosphereBDGIMMessage> bdgimMessages;
 
     /** Constructor. */
     public RinexNavigation() {
-        this.comments              = "";
-        this.timeSystemCorrections = new ArrayList<>();
-        this.gpsData               = new HashMap<>();
-        this.galileoData           = new HashMap<>();
-        this.beidouData            = new HashMap<>();
-        this.qzssData              = new HashMap<>();
-        this.irnssData             = new HashMap<>();
-        this.glonassData           = new HashMap<>();
-        this.sbasData              = new HashMap<>();
+        this.header             = new RinexNavigationHeader();
+        this.gpsLegacyData      = new HashMap<>();
+        this.gpsCivilianData    = new HashMap<>();
+        this.galileoData        = new HashMap<>();
+        this.beidouLegacyData   = new HashMap<>();
+        this.beidouCivilianData = new HashMap<>();
+        this.qzssLegacyData     = new HashMap<>();
+        this.qzssCivilianData   = new HashMap<>();
+        this.irnssData          = new HashMap<>();
+        this.glonassData        = new HashMap<>();
+        this.sbasData           = new HashMap<>();
+        this.systemTimeOffsets  = new ArrayList<>();
+        this.eops               = new ArrayList<>();
+        this.klobucharMessages  = new ArrayList<>();
+        this.nequickGMessages   = new ArrayList<>();
+        this.bdgimMessages      = new ArrayList<>();
     }
 
     /**
-     * Getter for the format version.
-     * @return the format version
+     * Getter for the header.
+     * @return header
      */
-    public double getFormatVersion() {
-        return formatVersion;
-    }
-
-    /**
-     * Setter for the format version.
-     * @param formatVersion the format version to set
-     */
-    public void setFormatVersion(final double formatVersion) {
-        this.formatVersion = formatVersion;
-    }
-
-    /**
-     * Get the file type.
-     * @return 'N' for navigation data.
-     */
-    public String getFileType() {
-        return fileType;
-    }
-
-    /**
-     * Setter for the file type.
-     * @param fileType must be 'N' for navigation data
-     */
-    public void setFileType(final String fileType) {
-        this.fileType = fileType;
-    }
-
-    /**
-     * Getter for the satellite system.
-     * <p>
-     * Not specified for RINEX 2.X versions (value is null).
-     * </p>
-     * @return the satellite system
-     */
-    public SatelliteSystem getSatelliteSystem() {
-        return satelliteSystem;
-    }
-
-    /**
-     * Setter for the satellite system.
-     * @param satelliteSystem the satellite system to set
-     */
-    public void setSatelliteSystem(final SatelliteSystem satelliteSystem) {
-        this.satelliteSystem = satelliteSystem;
-    }
-
-    /**
-     * Getter for the program name.
-     * @return the program name
-     */
-    public String getProgramName() {
-        return programName;
-    }
-
-    /**
-     * Setter for the program name.
-     * @param programName the program name to set
-     */
-    public void setProgramName(final String programName) {
-        this.programName = programName;
-    }
-
-    /**
-     * Getter for the agency name.
-     * @return the agencyName
-     */
-    public String getAgencyName() {
-        return agencyName;
-    }
-
-    /**
-     * Setter for the agency name.
-     * @param agencyName the agency name to set
-     */
-    public void setAgencyName(final String agencyName) {
-        this.agencyName = agencyName;
-    }
-
-    /**
-     * Getter for the creation date of the file as a string.
-     * @return the creation date as a string
-     */
-    public String getCreationDateString() {
-        return creationDateString;
-    }
-
-    /**
-     * Setter for the creation date as a string.
-     * @param creationDateString the creation date as a string to set
-     */
-    public void setCreationDateString(final String creationDateString) {
-        this.creationDateString = creationDateString;
-    }
-
-    /**
-     * Getter for the creation time of the file as a string.
-     * @return the creation time as a string
-     */
-    public String getCreationTimeString() {
-        return creationTimeString;
-    }
-
-    /**
-     * Setter for the creation time as a string.
-     * @param creationTimeString the creation time as a string to set
-     */
-    public void setCreationTimeString(final String creationTimeString) {
-        this.creationTimeString = creationTimeString;
-    }
-
-    /**
-     * Getter for the creation time zone of the file as a string.
-     * @return the creation time zone as a string
-     */
-    public String getCreationTimeZoneString() {
-        return creationTimeZoneString;
-    }
-
-    /**
-     * Setter for the creation time zone.
-     * @param creationTimeZoneString the creation time zone as a string to set
-     */
-    public void setCreationTimeZoneString(final String creationTimeZoneString) {
-        this.creationTimeZoneString = creationTimeZoneString;
-    }
-
-    /**
-     * Getter for the creation date.
-     * @return the creation date
-     */
-    public AbsoluteDate getCreationDate() {
-        return creationDate;
-    }
-
-    /**
-     * Setter for the creation date.
-     * @param creationDate the creation date to set
-     */
-    public void setCreationDate(final AbsoluteDate creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    /**
-     * Getter for the comments.
-     * @return the comments
-     */
-    public String getComments() {
-        return comments;
-    }
-
-    /**
-     * Add a comment line.
-     * @param comment the comment line to add
-     */
-    public void addComment(final String comment) {
-        this.comments = comments.concat(comment);
-    }
-
-    /**
-     * Getter for the ionospheric correction type.
-     * <p>
-     * Only the three first characters are given (e.g. GAL, GPS, QZS, BDS, or IRN)
-     * </p>
-     * @return the ionospheric correction type
-     */
-    public String getIonosphericCorrectionType() {
-        return ionosphericCorrectionType;
-    }
-
-    /**
-     * Setter for the ionospheric correction type.
-     * @param ionosphericCorrectionType the ionospheric correction type to set
-     */
-    public void setIonosphericCorrectionType(final String ionosphericCorrectionType) {
-        this.ionosphericCorrectionType = ionosphericCorrectionType;
+    public RinexNavigationHeader getHeader() {
+        return header;
     }
 
     /**
@@ -363,67 +197,67 @@ public class RinexNavigation {
     }
 
     /**
-     * Getter for the time system corrections contained in the file header.
-     * <p>
-     * Corrections to transform the system time to UTC or oter time system.
-     * </p>
-     * @return the list of time system corrections
+     * Get all the GPS legacy navigation messages contained in the file.
+     * @return an unmodifiable list of GPS legacy navigation messages
+     * @since 12.0
      */
-    public List<TimeSystemCorrection> getTimeSystemCorrections() {
-        return timeSystemCorrections;
+    public Map<String, List<GPSLegacyNavigationMessage>> getGPSLegacyNavigationMessages() {
+        return Collections.unmodifiableMap(gpsLegacyData);
     }
 
     /**
-     * Add a time system correction to the list.
-     * @param timeSystemCorrection the element to add
-     */
-    public void addTimeSystemCorrections(final TimeSystemCorrection timeSystemCorrection) {
-        this.timeSystemCorrections.add(timeSystemCorrection);
-    }
-
-    /**
-     * Getter for the current number of leap seconds.
-     * @return the current number of leap seconds
-     */
-    public int getNumberOfLeapSeconds() {
-        return numberOfLeapSeconds;
-    }
-
-    /**
-     * Setter for the current number of leap seconds.
-     * @param numberOfLeapSeconds the number of leap seconds to set
-     */
-    public void setNumberOfLeapSeconds(final int numberOfLeapSeconds) {
-        this.numberOfLeapSeconds = numberOfLeapSeconds;
-    }
-
-    /**
-     * Get all the GPS navigation messages contained in the file.
-     * @return an unmodifiable list of GPS navigation messages
-     */
-    public Map<String, List<GPSNavigationMessage>> getGPSNavigationMessages() {
-        return Collections.unmodifiableMap(gpsData);
-    }
-
-    /**
-     * Get the GPS navigation messages for the given satellite Id.
+     * Get the GPS legacy navigation messages for the given satellite Id.
      * @param satId satellite Id (i.e. Satellite System (e.g. G) + satellite number)
-     * @return an unmodifiable list of GPS navigation messages
+     * @return an unmodifiable list of GPS legacy navigation messages
+     * @since 12.0
      */
-    public List<GPSNavigationMessage> getGPSNavigationMessages(final String satId) {
-        return Collections.unmodifiableList(gpsData.get(satId));
+    public List<GPSLegacyNavigationMessage> getGPSLegacyNavigationMessages(final String satId) {
+        return Collections.unmodifiableList(gpsLegacyData.get(satId));
     }
 
     /**
-     * Add a GPS navigation message to the list.
+     * Add a GPS legacy navigation message to the list.
      * @param message message to add
+     * @since 12.0
      */
-    public void addGPSNavigationMessage(final GPSNavigationMessage message) {
+    public void addGPSLegacyNavigationMessage(final GPSLegacyNavigationMessage message) {
         final int    gpsPRN = message.getPRN();
         final String prnString = gpsPRN < 10 ? "0" + String.valueOf(gpsPRN) : String.valueOf(gpsPRN);
         final String satId = SatelliteSystem.GPS.getKey() + prnString;
-        gpsData.putIfAbsent(satId, new ArrayList<GPSNavigationMessage>());
-        gpsData.get(satId).add(message);
+        gpsLegacyData.putIfAbsent(satId, new ArrayList<>());
+        gpsLegacyData.get(satId).add(message);
+    }
+
+    /**
+     * Get all the GPS civilian navigation messages contained in the file.
+     * @return an unmodifiable list of GPS civilian navigation messages
+     * @since 12.0
+     */
+    public Map<String, List<GPSCivilianNavigationMessage>> getGPSCivilianNavigationMessages() {
+        return Collections.unmodifiableMap(gpsCivilianData);
+    }
+
+    /**
+     * Get the GPS civilian navigation messages for the given satellite Id.
+     * @param satId satellite Id (i.e. Satellite System (e.g. G) + satellite number)
+     * @return an unmodifiable list of GPS civilian navigation messages
+     * @since 12.0
+     */
+    public List<GPSCivilianNavigationMessage> getGPSCivilianNavigationMessages(final String satId) {
+        return Collections.unmodifiableList(gpsCivilianData.get(satId));
+    }
+
+    /**
+     * Add a GPS civilian navigation message to the list.
+     * @param message message to add
+     * @since 12.0
+     */
+    public void addGPSLegacyNavigationMessage(final GPSCivilianNavigationMessage message) {
+        final int    gpsPRN = message.getPRN();
+        final String prnString = gpsPRN < 10 ? "0" + String.valueOf(gpsPRN) : String.valueOf(gpsPRN);
+        final String satId = SatelliteSystem.GPS.getKey() + prnString;
+        gpsCivilianData.putIfAbsent(satId, new ArrayList<>());
+        gpsCivilianData.get(satId).add(message);
     }
 
     /**
@@ -451,66 +285,136 @@ public class RinexNavigation {
         final int    galPRN = message.getPRN();
         final String prnString = galPRN < 10 ? "0" + String.valueOf(galPRN) : String.valueOf(galPRN);
         final String satId = SatelliteSystem.GALILEO.getKey() + prnString;
-        galileoData.putIfAbsent(satId, new ArrayList<GalileoNavigationMessage>());
+        galileoData.putIfAbsent(satId, new ArrayList<>());
         galileoData.get(satId).add(message);
     }
 
     /**
      * Get all the Beidou navigation messages contained in the file.
      * @return an unmodifiable list of Beidou navigation messages
+     * @since 12.0
      */
-    public Map<String, List<BeidouNavigationMessage>> getBeidouNavigationMessages() {
-        return Collections.unmodifiableMap(beidouData);
+    public Map<String, List<BeidouLegacyNavigationMessage>> getBeidouLegacyNavigationMessages() {
+        return Collections.unmodifiableMap(beidouLegacyData);
     }
 
     /**
      * Get the Beidou navigation messages for the given satellite Id.
      * @param satId satellite Id (i.e. Satellite System (e.g. C) + satellite number)
      * @return an unmodifiable list of Beidou navigation messages
+     * @since 12.0
      */
-    public List<BeidouNavigationMessage> getBeidouNavigationMessages(final String satId) {
-        return Collections.unmodifiableList(beidouData.get(satId));
+    public List<BeidouLegacyNavigationMessage> getBeidouLegacyNavigationMessages(final String satId) {
+        return Collections.unmodifiableList(beidouLegacyData.get(satId));
     }
 
     /**
      * Add a Beidou navigation message to the list.
      * @param message message to add
+     * @since 12.0
      */
-    public void addBeidouNavigationMessage(final BeidouNavigationMessage message) {
+    public void addBeidouLegacyNavigationMessage(final BeidouLegacyNavigationMessage message) {
         final int    bdtPRN = message.getPRN();
         final String prnString = bdtPRN < 10 ? "0" + String.valueOf(bdtPRN) : String.valueOf(bdtPRN);
         final String satId = SatelliteSystem.BEIDOU.getKey() + prnString;
-        beidouData.putIfAbsent(satId, new ArrayList<BeidouNavigationMessage>());
-        beidouData.get(satId).add(message);
+        beidouLegacyData.putIfAbsent(satId, new ArrayList<>());
+        beidouLegacyData.get(satId).add(message);
+    }
+
+    /**
+     * Get all the Beidou navigation messages contained in the file.
+     * @return an unmodifiable list of Beidou navigation messages
+     * @since 12.0
+     */
+    public Map<String, List<BeidouCivilianNavigationMessage>> getBeidouCivilianNavigationMessages() {
+        return Collections.unmodifiableMap(beidouCivilianData);
+    }
+
+    /**
+     * Get the Beidou navigation messages for the given satellite Id.
+     * @param satId satellite Id (i.e. Satellite System (e.g. C) + satellite number)
+     * @return an unmodifiable list of Beidou navigation messages
+     * @since 12.0
+     */
+    public List<BeidouCivilianNavigationMessage> getBeidouCivilianNavigationMessages(final String satId) {
+        return Collections.unmodifiableList(beidouCivilianData.get(satId));
+    }
+
+    /**
+     * Add a Beidou navigation message to the list.
+     * @param message message to add
+     * @since 12.0
+     */
+    public void addBeidouCivilianNavigationMessage(final BeidouCivilianNavigationMessage message) {
+        final int    bdtPRN = message.getPRN();
+        final String prnString = bdtPRN < 10 ? "0" + String.valueOf(bdtPRN) : String.valueOf(bdtPRN);
+        final String satId = SatelliteSystem.BEIDOU.getKey() + prnString;
+        beidouCivilianData.putIfAbsent(satId, new ArrayList<>());
+        beidouCivilianData.get(satId).add(message);
     }
 
     /**
      * Get all the QZSS navigation messages contained in the file.
      * @return an unmodifiable list of QZSS navigation messages
+     * @since 12.0
      */
-    public Map<String, List<QZSSNavigationMessage>> getQZSSNavigationMessages() {
-        return Collections.unmodifiableMap(qzssData);
+    public Map<String, List<QZSSLegacyNavigationMessage>> getQZSSLegacyNavigationMessages() {
+        return Collections.unmodifiableMap(qzssLegacyData);
     }
 
     /**
      * Get the QZSS navigation messages for the given satellite Id.
      * @param satId satellite Id (i.e. Satellite System (e.g. J) + satellite number)
      * @return an unmodifiable list of QZSS navigation messages
+     * @since 12.0
      */
-    public List<QZSSNavigationMessage> getQZSSNavigationMessages(final String satId) {
-        return Collections.unmodifiableList(qzssData.get(satId));
+    public List<QZSSLegacyNavigationMessage> getQZSSLegacyNavigationMessages(final String satId) {
+        return Collections.unmodifiableList(qzssLegacyData.get(satId));
     }
 
     /**
      * Add a QZSS navigation message to the list.
      * @param message message to add
+     * @since 12.0
      */
-    public void addQZSSNavigationMessage(final QZSSNavigationMessage message) {
+    public void addQZSSLegacyNavigationMessage(final QZSSLegacyNavigationMessage message) {
         final int    qzsPRN = message.getPRN();
         final String prnString = qzsPRN < 10 ? "0" + String.valueOf(qzsPRN) : String.valueOf(qzsPRN);
         final String satId = SatelliteSystem.QZSS.getKey() + prnString;
-        qzssData.putIfAbsent(satId, new ArrayList<QZSSNavigationMessage>());
-        qzssData.get(satId).add(message);
+        qzssLegacyData.putIfAbsent(satId, new ArrayList<>());
+        qzssLegacyData.get(satId).add(message);
+    }
+
+    /**
+     * Get all the QZSS navigation messages contained in the file.
+     * @return an unmodifiable list of QZSS navigation messages
+     * @since 12.0
+     */
+    public Map<String, List<QZSSCivilianNavigationMessage>> getQZSSCivilianNavigationMessages() {
+        return Collections.unmodifiableMap(qzssCivilianData);
+    }
+
+    /**
+     * Get the QZSS navigation messages for the given satellite Id.
+     * @param satId satellite Id (i.e. Satellite System (e.g. J) + satellite number)
+     * @return an unmodifiable list of QZSS navigation messages
+     * @since 12.0
+     */
+    public List<QZSSCivilianNavigationMessage> getQZSSCivilianNavigationMessages(final String satId) {
+        return Collections.unmodifiableList(qzssCivilianData.get(satId));
+    }
+
+    /**
+     * Add a QZSS navigation message to the list.
+     * @param message message to add
+     * @since 12.0
+     */
+    public void addQZSSCivilianNavigationMessage(final QZSSCivilianNavigationMessage message) {
+        final int    qzsPRN = message.getPRN();
+        final String prnString = qzsPRN < 10 ? "0" + String.valueOf(qzsPRN) : String.valueOf(qzsPRN);
+        final String satId = SatelliteSystem.QZSS.getKey() + prnString;
+        qzssCivilianData.putIfAbsent(satId, new ArrayList<>());
+        qzssCivilianData.get(satId).add(message);
     }
 
     /**
@@ -538,7 +442,7 @@ public class RinexNavigation {
         final int    irsPRN = message.getPRN();
         final String prnString = irsPRN < 10 ? "0" + String.valueOf(irsPRN) : String.valueOf(irsPRN);
         final String satId = SatelliteSystem.IRNSS.getKey() + prnString;
-        irnssData.putIfAbsent(satId, new ArrayList<IRNSSNavigationMessage>());
+        irnssData.putIfAbsent(satId, new ArrayList<>());
         irnssData.get(satId).add(message);
     }
 
@@ -567,7 +471,7 @@ public class RinexNavigation {
         final int    gloPRN = message.getPRN();
         final String prnString = gloPRN < 10 ? "0" + String.valueOf(gloPRN) : String.valueOf(gloPRN);
         final String satId = SatelliteSystem.GLONASS.getKey() + prnString;
-        glonassData.putIfAbsent(satId, new ArrayList<GLONASSNavigationMessage>());
+        glonassData.putIfAbsent(satId, new ArrayList<>());
         glonassData.get(satId).add(message);
     }
 
@@ -596,102 +500,98 @@ public class RinexNavigation {
         final int    sbsPRN = message.getPRN();
         final String prnString = sbsPRN < 10 ? "0" + String.valueOf(sbsPRN) : String.valueOf(sbsPRN);
         final String satId = SatelliteSystem.SBAS.getKey() + prnString;
-        sbasData.putIfAbsent(satId, new ArrayList<SBASNavigationMessage>());
+        sbasData.putIfAbsent(satId, new ArrayList<>());
         sbasData.get(satId).add(message);
     }
 
-    /** Container for time system corrections. */
-    public static class TimeSystemCorrection {
+    /**
+     * Get the system time offsets.
+     * @return an unmodifiable list of system time offsets
+     * @since 12.0
+     */
+    public List<SystemTimeOffsetMessage> getSystemTimeOffsets() {
+        return Collections.unmodifiableList(systemTimeOffsets);
+    }
 
-        /** Time system correction type. */
-        private String timeSystemCorrectionType;
+    /**
+     * Add a system time offset.
+     * @param systemTimeOffset system time offset message
+     * @since 12.0
+     */
+    public void addSystemTimeOffset(final SystemTimeOffsetMessage systemTimeOffset) {
+        systemTimeOffsets.add(systemTimeOffset);
+    }
 
-        /** A0 coefficient of linear polynomial for time system correction. */
-        private double timeSystemCorrectionA0;
+    /**
+     * Get the Earth orientation parameters.
+     * @return an unmodifiable list of Earth orientation parameters
+     * @since 12.0
+     */
+    public List<EarthOrientationParameterMessage> getEarthOrientationParameters() {
+        return Collections.unmodifiableList(eops);
+    }
 
-        /** A1 coefficient of linear polynomial for time system correction. */
-        private double timeSystemCorrectionA1;
+    /**
+     * Add an Earth orientation parameter.
+     * @param eop Earth orientation oarameter message
+     * @since 12.0
+     */
+    public void addEarthOrientationParameter(final EarthOrientationParameterMessage eop) {
+        eops.add(eop);
+    }
 
-        /** Reference time for time system correction (seconds into GNSS week). */
-        private int timeSystemCorrectionSecOfWeek;
+    /**
+     * Get the ionosphere Klobuchar messages.
+     * @return an unmodifiable list of ionosphere Klobuchar messages
+     * @since 12.0
+     */
+    public List<IonosphereKlobucharMessage> getKlobucharMessages() {
+        return Collections.unmodifiableList(klobucharMessages);
+    }
 
-        /** Reference week number for time system correction. */
-        private int timeSystemCorrectionWeekNumber;
+    /**
+     * Add an ionosphere Klobuchar message.
+     * @param klobuchar ionosphere Klobuchar message
+     * @since 12.0
+     */
+    public void addKlobucharMessage(final IonosphereKlobucharMessage klobuchar) {
+        klobucharMessages.add(klobuchar);
+    }
 
-        /**
-         * Constructor.
-         * @param timeSystemCorrectionType       time system correction type
-         * @param timeSystemCorrectionA0         A0 coefficient of linear polynomial for time system correction
-         * @param timeSystemCorrectionA1         A1 coefficient of linear polynomial for time system correction
-         * @param timeSystemCorrectionSecOfWeek  reference time for time system correction
-         * @param timeSystemCorrectionWeekNumber reference week number for time system correction
-         */
-        public TimeSystemCorrection(final String timeSystemCorrectionType,
-                                    final double timeSystemCorrectionA0,
-                                    final double timeSystemCorrectionA1,
-                                    final int timeSystemCorrectionSecOfWeek,
-                                    final int timeSystemCorrectionWeekNumber) {
-            this.timeSystemCorrectionType       = timeSystemCorrectionType;
-            this.timeSystemCorrectionA0         = timeSystemCorrectionA0;
-            this.timeSystemCorrectionA1         = timeSystemCorrectionA1;
-            this.timeSystemCorrectionSecOfWeek  = timeSystemCorrectionSecOfWeek;
-            this.timeSystemCorrectionWeekNumber = timeSystemCorrectionWeekNumber;
-        }
+    /**
+     * Get the ionosphere Nequick-G messages.
+     * @return an unmodifiable list of ionosphere Nequick-G messages
+     * @since 12.0
+     */
+    public List<IonosphereNequickGMessage> getNequickGMessages() {
+        return Collections.unmodifiableList(nequickGMessages);
+    }
 
-        /**
-         * Getter for the time system correction type.
-         * @return the time system correction type
-         */
-        public String getTimeSystemCorrectionType() {
-            return timeSystemCorrectionType;
-        }
+    /**
+     * Add an ionosphere Nequick-G message.
+     * @param nequickG ionosphere Nequick-G message
+     * @since 12.0
+     */
+    public void addNequickGMessage(final IonosphereNequickGMessage nequickG) {
+        nequickGMessages.add(nequickG);
+    }
 
-        /**
-         * Getter for the A0 coefficient of the time system correction.
-         * <p>
-         * deltaT = {@link #getTimeSystemCorrectionA0() A0} +
-         *          {@link #getTimeSystemCorrectionA1() A1} * (t - tref)
-         * </p>
-         * @return the A0 coefficient of the time system correction
-         */
-        public double getTimeSystemCorrectionA0() {
-            return timeSystemCorrectionA0;
-        }
+    /**
+     * Get the ionosphere BDGIM messages.
+     * @return an unmodifiable list of ionosphere BDGIM messages
+     * @since 12.0
+     */
+    public List<IonosphereBDGIMMessage> getBDGIMMessages() {
+        return Collections.unmodifiableList(bdgimMessages);
+    }
 
-        /**
-         * Getter for the A1 coefficient of the time system correction.
-         * <p>
-         * deltaT = {@link #getTimeSystemCorrectionA0() A0} +
-         *          {@link #getTimeSystemCorrectionA1() A1} * (t - tref)
-         * </p>
-         * @return the A1 coefficient of the time system correction
-         */
-        public double getTimeSystemCorrectionA1() {
-            return timeSystemCorrectionA1;
-        }
-
-        /**
-         * Getter for the reference time of the time system correction polynomial.
-         * <p>
-         * Seconds into GNSS week
-         * </p>
-         * @return the reference time of the time system correction polynomial
-         */
-        public int getTimeSystemCorrectionSecOfWeek() {
-            return timeSystemCorrectionSecOfWeek;
-        }
-
-        /**
-         * Getter for the reference week number of the time system correction polynomial.
-         * <p>
-         * Continuous number since the reference epoch of the corresponding GNSS constellation
-         * </p>
-         * @return the reference week number of the time system correction polynomial
-         */
-        public int getTimeSystemCorrectionWeekNumber() {
-            return timeSystemCorrectionWeekNumber;
-        }
-
+    /**
+     * Add an ionosphere BDGIM message.
+     * @param bdgim ionosphere BDGIM message
+     * @since 12.0
+     */
+    public void addBDGIMMessage(final IonosphereBDGIMMessage bdgim) {
+        bdgimMessages.add(bdgim);
     }
 
 }

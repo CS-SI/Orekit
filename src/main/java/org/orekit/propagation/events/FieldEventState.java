@@ -227,7 +227,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
             final T gb = g(interpolator.getInterpolatedState(tb));
 
             // check events occurrence
-            if (gb.getReal() == 0.0 || (g0Positive ^ (gb.getReal() > 0))) {
+            if (gb.getReal() == 0.0 || (g0Positive ^ gb.getReal() > 0)) {
                 // there is a sign change: an event is expected during this step
                 if (findRoot(interpolator, ta, ga, tb, gb)) {
                     return true;
@@ -568,7 +568,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
      * @return min(a, b) if forward, else max (a, b)
      */
     private FieldAbsoluteDate<T> minTime(final FieldAbsoluteDate<T> a, final FieldAbsoluteDate<T> b) {
-        return (forward ^ (a.compareTo(b) > 0)) ? a : b;
+        return (forward ^ a.compareTo(b) > 0) ? a : b;
     }
 
     /**

@@ -295,8 +295,6 @@ public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermi
 
         //test on statistic for the range residuals
         final long nbRange = 258;
-        // Batch LS values
-        //final double[] RefStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
         Assertions.assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
         Assertions.assertEquals(RefStatRange[0], kalmanLageos2.getRangeStat().getMin(),               distanceAccuracy);
         Assertions.assertEquals(RefStatRange[1], kalmanLageos2.getRangeStat().getMax(),               distanceAccuracy);

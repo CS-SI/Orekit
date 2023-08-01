@@ -16,6 +16,12 @@
  */
 package org.orekit.orbits;
 
+import static org.orekit.OrekitMatchers.relativelyCloseTo;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.function.Function;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -37,20 +43,11 @@ import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
-import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-
-import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
 
 public class FieldCartesianOrbitTest {
@@ -153,20 +150,6 @@ public class FieldCartesianOrbitTest {
     }
 
     @Test
-    public void testInterpolationWithDerivatives() {
-        doTestInterpolation(Binary64Field.getInstance(), true,
-                            394, 2.28e-8, 3.21, 1.39e-9,
-                            2474, 6842, 6.55, 186);
-    }
-
-    @Test
-    public void testInterpolationWithoutDerivatives() {
-        doTestInterpolation(Binary64Field.getInstance(), false,
-                            394, 2.61, 3.21, 0.154,
-                            2474, 2.28e12, 6.55, 6.22e10);
-    }
-
-    @Test
     public void testErr1(){
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             doTestErr1(Binary64Field.getInstance());
@@ -206,6 +189,11 @@ public class FieldCartesianOrbitTest {
     @Test
     public void testNormalize() {
         doTestNormalize(Binary64Field.getInstance());
+    }
+
+    @Test
+    public void testIssue1139() {
+        doTestIssue1139(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestCartesianToCartesian(Field<T> field)
@@ -671,102 +659,6 @@ public class FieldCartesianOrbitTest {
 
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestInterpolation(Field<T> field, boolean useDerivatives,
-                                                                     double shiftPositionErrorWithin, double interpolationPositionErrorWithin,
-                                                                     double shiftVelocityErrorWithin, double interpolationVelocityErrorWithin,
-                                                                     double shiftPositionErrorFarPast, double interpolationPositionErrorFarPast,
-                                                                     double shiftVelocityErrorFarPast, double interpolationVelocityErrorFarPast)
-        {
-        T zero = field.getZero();
-        final T ehMu       = zero.add(3.9860047e14);
-
-        final double ae    = 6.378137e6;
-        final double c20   = -1.08263e-3;
-        final double c30   =  2.54e-6;
-        final double c40   =  1.62e-6;
-        final double c50   =  2.3e-7;
-        final double c60   =  -5.5e-7;
-
-        final FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(584.);
-        final FieldVector3D<T> position = new FieldVector3D<>(zero.add(3220103.), zero.add(69623.), zero.add(6449822.));
-        final FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(6414.7), zero.add(-2006.), zero.add(-3180.));
-        final FieldCartesianOrbit<T> initialOrbit = new FieldCartesianOrbit<>(new FieldPVCoordinates<>(position, velocity),
-                                                                              FramesFactory.getEME2000(), date, ehMu);
-
-        FieldEcksteinHechlerPropagator<T> propagator =
-                new FieldEcksteinHechlerPropagator<>(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
-
-        // set up a 5 points sample
-        List<FieldOrbit<T>> sample = new ArrayList<FieldOrbit<T>>();
-        for (T dt = zero; dt.getReal() < 251.0; dt = dt.add(60.0)) {
-            FieldOrbit<T> orbit = propagator.propagate(date.shiftedBy(dt)).getOrbit();
-            if (!useDerivatives) {
-                // remove derivatives
-                T[] stateVector = MathArrays.buildArray(field, 6);
-                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
-                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
-                                                        orbit.getDate(), orbit.getMu(), orbit.getFrame());
-            }
-            sample.add(orbit);
-        }
-
-        // well inside the sample, interpolation should be much better than Keplerian shift
-        // this is bacause we take the full non-Keplerian acceleration into account in
-        // the Cartesian parameters, which in this case is preserved by the
-        // Eckstein-Hechler propagator
-        double maxShiftPError = 0;
-        double maxInterpolationPError = 0;
-        double maxShiftVError = 0;
-        double maxInterpolationVError = 0;
-        for (T dt = zero; dt.getReal() < 240.0; dt = dt.add(1.0)) {
-            FieldAbsoluteDate<T> t                   = initialOrbit.getDate().shiftedBy(dt);
-            FieldPVCoordinates<T> propagated         = propagator.propagate(t).getPVCoordinates();
-            FieldPVCoordinates<T> shiftError         = new FieldPVCoordinates<>(propagated,
-                                                                                initialOrbit.shiftedBy(dt.getReal()).getPVCoordinates());
-            FieldPVCoordinates<T> interpolationError = new FieldPVCoordinates<>(propagated,
-                                                                                initialOrbit.interpolate(t, sample).getPVCoordinates());
-            maxShiftPError                   = FastMath.max(maxShiftPError,
-                                                            shiftError.getPosition().getNorm().getReal());
-            maxInterpolationPError           = FastMath.max(maxInterpolationPError,
-                                                            interpolationError.getPosition().getNorm().getReal());
-            maxShiftVError                   = FastMath.max(maxShiftVError,
-                                                            shiftError.getVelocity().getNorm().getReal());
-            maxInterpolationVError           = FastMath.max(maxInterpolationVError,
-                                                            interpolationError.getVelocity().getNorm().getReal());
-        }
-        Assertions.assertEquals(shiftPositionErrorWithin,         maxShiftPError,         0.01 * shiftPositionErrorWithin);
-        Assertions.assertEquals(interpolationPositionErrorWithin, maxInterpolationPError, 0.01 * interpolationPositionErrorWithin);
-        Assertions.assertEquals(shiftVelocityErrorWithin,         maxShiftVError,         0.01 * shiftVelocityErrorWithin);
-        Assertions.assertEquals(interpolationVelocityErrorWithin, maxInterpolationVError, 0.01 * interpolationVelocityErrorWithin);
-
-        // if we go far past sample end, interpolation becomes worse than Keplerian shift
-        maxShiftPError = 0;
-        maxInterpolationPError = 0;
-        maxShiftVError = 0;
-        maxInterpolationVError = 0;
-        for (T dt = zero.add(500.0); dt.getReal() < 650.0; dt = dt.add(1.0)) {
-            FieldAbsoluteDate<T> t                   = initialOrbit.getDate().shiftedBy(dt);
-            FieldPVCoordinates<T> propagated         = propagator.propagate(t).getPVCoordinates();
-            FieldPVCoordinates<T> shiftError         = new FieldPVCoordinates<>(propagated,
-                                                                                initialOrbit.shiftedBy(dt).getPVCoordinates());
-            FieldPVCoordinates<T> interpolationError = new FieldPVCoordinates<>(propagated,
-                                                                                initialOrbit.interpolate(t, sample).getPVCoordinates());
-            maxShiftPError                   = FastMath.max(maxShiftPError,
-                                                            shiftError.getPosition().getNorm().getReal());
-            maxInterpolationPError           = FastMath.max(maxInterpolationPError,
-                                                            interpolationError.getPosition().getNorm().getReal());
-            maxShiftVError                   = FastMath.max(maxShiftVError,
-                                                            shiftError.getVelocity().getNorm().getReal());
-            maxInterpolationVError           = FastMath.max(maxInterpolationVError,
-                                                            interpolationError.getVelocity().getNorm().getReal());
-        }
-        Assertions.assertEquals(shiftPositionErrorFarPast,         maxShiftPError,         0.01 * shiftPositionErrorFarPast);
-        Assertions.assertEquals(interpolationPositionErrorFarPast, maxInterpolationPError, 0.01 * interpolationPositionErrorFarPast);
-        Assertions.assertEquals(shiftVelocityErrorFarPast,         maxShiftVError,         0.01 * shiftVelocityErrorFarPast);
-        Assertions.assertEquals(interpolationVelocityErrorFarPast, maxInterpolationVError, 0.01 * interpolationVelocityErrorFarPast);
-
-    }
-
     private <T extends CalculusFieldElement<T>> void doTestNonKeplerianDerivatives(Field<T> field) {
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> date         = new FieldAbsoluteDate<>(field, "2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
@@ -911,6 +803,34 @@ public class FieldCartesianOrbitTest {
                                                               FieldAbsoluteDate.getJ2000Epoch(field),
                                                               field.getZero().newInstance(mu));
         Assertions.assertSame(orbit, orbit.getType().normalize(orbit, null));
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestIssue1139(Field<T> field) {
+
+        // Create
+        T zero = field.getZero();
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+
+        FieldVector3D<T> position = new FieldVector3D<>(zero.add(-29536113.0), zero.add(30329259.0), zero.add(-100125.0));
+        FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-2194.0), zero.add(-2141.0), zero.add(-8.0));
+        FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<>( position, velocity);
+        double mu = 3.9860047e14;
+
+        FieldCartesianOrbit<T> p = new FieldCartesianOrbit<>(FieldPVCoordinates, FramesFactory.getEME2000(), date, zero.add(mu));
+
+        double dt = 60.0;
+        FieldAbsoluteDate<T> shiftedEpoch = date.shiftedBy(dt);
+
+        FieldCartesianOrbit<T> p2 = new FieldCartesianOrbit<>(FieldPVCoordinates, FramesFactory.getEME2000(), shiftedEpoch, zero.add(mu));
+
+        // Verify
+        Assertions.assertEquals(dt, shiftedEpoch.durationFrom(date).getReal());
+        Assertions.assertEquals(dt, p2.durationFrom(p).getReal());
+        Assertions.assertEquals(dt, p2.getDate().durationFrom(p).getReal());
+        Assertions.assertEquals(dt, p2.durationFrom(p.getDate()).getReal());
+        Assertions.assertEquals(dt, p2.getDate().durationFrom(p.getDate()).getReal());
+        Assertions.assertEquals(-dt, p.durationFrom(p2).getReal());
+
     }
 
 }

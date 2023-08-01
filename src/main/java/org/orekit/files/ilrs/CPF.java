@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.BoundedPropagator;
@@ -269,6 +270,12 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
         @Override
         public BoundedPropagator getPropagator() {
             return EphemerisSegment.super.getPropagator();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public BoundedPropagator getPropagator(final AttitudeProvider attitudeProvider) {
+            return EphemerisSegment.super.getPropagator(attitudeProvider);
         }
 
         /** Get the list of Ephemerides data lines.

@@ -76,7 +76,7 @@
     * impulse maneuvers for any propagator type
     * continuous maneuvers for numerical propagator type
     * configurable low thrust maneuver model based on event detectors
-    * propulsion models intended to be used with maneuver class
+    * used-defined propulsion models intended to be used with maneuver class (constant and piecewise polynomials already provided by the library)
     * user-friendly interface for the maneuver triggers
 
   * Propagation
@@ -191,8 +191,8 @@
         * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
         * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
         * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
-    * loading and writing of CCSDS Attitude Data Messages (both AEM, and APM types are supported, in both KVN and XML formats, standalone or in combined NDM)
-    * exporting of attitude ephemeris in CCSDS AEM file format
+    * loading and writing of CCSDS Attitude Data Messages (both AEM, APM and ACM types are supported, in both KVN and XML formats, standalone or in combined NDM)
+    * exporting of attitude ephemeris in CCSDS AEM and ACM file format
 
   * Orbit determination
   
@@ -224,6 +224,7 @@
     * initial orbit determination methods (Gibbs, Gooding, Lambert and Laplace)
     * ground stations displacements due to solid tides
     * ground stations displacements due to ocean loading (based on Onsala Space Observatory files in BLQ format)
+    * ground stations displacements due to plate tectonics
     * several predefined measurements
         * range
         * range rate (one way and two way)
@@ -279,6 +280,7 @@
     * parsing of RTCM messages (both ephemeris and correction messages)
     * Hatch filters for GNSS measurements smoothing
     * implementation of Ntrip protocol
+    * decoding of GPS navigation messages
 
   * Orbit file handling
   

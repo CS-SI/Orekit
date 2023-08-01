@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<aem id="CCSDS_AEM_VERS" version="1.0">
+<aem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="http://sanaregistry.org/r/ndmxml_unqualified/ndmxml-2.0.0-master-2.0.xsd"
+  id="CCSDS_AEM_VERS" version="1.0">
   <header>
     <CREATION_DATE>2021-04-15T13:31:24.0</CREATION_DATE>
     <ORIGINATOR>CS GROUP</ORIGINATOR>

@@ -25,7 +25,6 @@ import org.orekit.bodies.CR3BPSystem;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
-import org.orekit.time.AbsoluteDate;
 
 /** Class calculating the state transition matrix coefficient for CR3BP Computation.
  * @see "Dynamical systems, the three-body problem, and space mission design, Koon, Lo, Marsden, Ross"
@@ -77,12 +76,6 @@ public class STMEquations
             phi[i] = 1.0;
         }
         return s.addAdditionalState(name, phi);
-    }
-
-    /** {@inheritDoc} */
-    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-        // FIXME: remove in 12.0 when AdditionalEquations is removed
-        AdditionalDerivativesProvider.super.init(initialState, target);
     }
 
     /** {@inheritDoc} */

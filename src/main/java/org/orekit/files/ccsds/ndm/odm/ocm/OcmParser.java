@@ -28,11 +28,11 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
+import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
@@ -69,7 +69,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
     /** File header. */
-    private Header header;
+    private OdmHeader header;
 
     /** Metadata for current observation block. */
     private OcmMetadata metadata;
@@ -87,25 +87,25 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
     private List<TrajectoryState> currentTrajectoryStateHistory;
 
     /** Physical properties logical block. */
-    private PhysicalProperties physicBlock;
+    private OrbitPhysicalProperties physicBlock;
 
     /** Covariance logical blocks. */
-    private List<CovarianceHistory> covarianceBlocks;
+    private List<OrbitCovarianceHistory> covarianceBlocks;
 
     /** Current covariance metadata. */
-    private CovarianceHistoryMetadata currentCovarianceHistoryMetadata;
+    private OrbitCovarianceHistoryMetadata currentCovarianceHistoryMetadata;
 
     /** Current covariance history being read. */
-    private List<Covariance> currentCovarianceHistory;
+    private List<OrbitCovariance> currentCovarianceHistory;
 
     /** Maneuver logical blocks. */
-    private List<ManeuverHistory> maneuverBlocks;
+    private List<OrbitManeuverHistory> maneuverBlocks;
 
     /** Current maneuver metadata. */
-    private ManeuverHistoryMetadata currentManeuverHistoryMetadata;
+    private OrbitManeuverHistoryMetadata currentManeuverHistoryMetadata;
 
     /** Current maneuver history being read. */
-    private List<Maneuver> currentManeuverHistory;
+    private List<OrbitManeuver> currentManeuverHistory;
 
     /** Perturbations logical block. */
     private Perturbations perturbationsBlock;
@@ -162,14 +162,14 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
 
     /** {@inheritDoc} */
     @Override
-    public Header getHeader() {
+    public OdmHeader getHeader() {
         return header;
     }
 
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                  = new Header(3.0);
+        header                  = new OdmHeader();
         metadata                = null;
         context                 = null;
         trajectoryBlocks        = null;
@@ -303,7 +303,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
         if (starting) {
             if (physicBlock == null) {
                 // this is the first (and unique) physical properties block, we need to allocate the container
-                physicBlock = new PhysicalProperties(metadata.getEpochT0());
+                physicBlock = new OrbitPhysicalProperties(metadata.getEpochT0());
             }
             anticipateNext(this::processPhysicalPropertyToken);
         } else {
@@ -323,12 +323,12 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
                 // this is the first covariance block, we need to allocate the container
                 covarianceBlocks = new ArrayList<>();
             }
-            currentCovarianceHistoryMetadata = new CovarianceHistoryMetadata(metadata.getEpochT0());
+            currentCovarianceHistoryMetadata = new OrbitCovarianceHistoryMetadata(metadata.getEpochT0());
             currentCovarianceHistory         = new ArrayList<>();
             anticipateNext(this::processCovarianceToken);
         } else {
             anticipateNext(structureProcessor);
-            covarianceBlocks.add(new CovarianceHistory(currentCovarianceHistoryMetadata,
+            covarianceBlocks.add(new OrbitCovarianceHistory(currentCovarianceHistoryMetadata,
                                                        currentCovarianceHistory));
             currentCovarianceHistoryMetadata = null;
             currentCovarianceHistory         = null;
@@ -347,12 +347,12 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
                 // this is the first maneuver block, we need to allocate the container
                 maneuverBlocks = new ArrayList<>();
             }
-            currentManeuverHistoryMetadata = new ManeuverHistoryMetadata(metadata.getEpochT0());
+            currentManeuverHistoryMetadata = new OrbitManeuverHistoryMetadata(metadata.getEpochT0());
             currentManeuverHistory         = new ArrayList<>();
             anticipateNext(this::processManeuverToken);
         } else {
             anticipateNext(structureProcessor);
-            maneuverBlocks.add(new ManeuverHistory(currentManeuverHistoryMetadata,
+            maneuverBlocks.add(new OrbitManeuverHistory(currentManeuverHistoryMetadata,
                                                    currentManeuverHistory));
             currentManeuverHistoryMetadata = null;
             currentManeuverHistory         = null;
@@ -532,12 +532,12 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
      */
     private boolean processPhysicalPropertyToken(final ParseToken token) {
         if (physicBlock == null) {
-            physicBlock = new PhysicalProperties(metadata.getEpochT0());
+            physicBlock = new OrbitPhysicalProperties(metadata.getEpochT0());
         }
         anticipateNext(this::processDataSubStructureToken);
         try {
             return token.getName() != null &&
-                   PhysicalPropertiesKey.valueOf(token.getName()).process(token, context, physicBlock);
+                   OrbitPhysicalPropertiesKey.valueOf(token.getName()).process(token, context, physicBlock);
         } catch (IllegalArgumentException iae) {
             // token has not been recognized
             return false;
@@ -552,7 +552,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
         if (token.getName() != null && !token.getName().equals(Ocm.COV_LINE)) {
             // we are in the section metadata part
             try {
-                return CovarianceHistoryMetadataKey.valueOf(token.getName()).
+                return OrbitCovarianceHistoryMetadataKey.valueOf(token.getName()).
                        process(token, context, currentCovarianceHistoryMetadata);
             } catch (IllegalArgumentException iae) {
                 // token has not been recognized
@@ -575,7 +575,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                               token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
                 }
-                currentCovarianceHistory.add(new Covariance(currentCovarianceHistoryMetadata.getCovType(),
+                currentCovarianceHistory.add(new OrbitCovariance(currentCovarianceHistoryMetadata.getCovType(),
                                                             currentCovarianceHistoryMetadata.getCovOrdering(),
                                                             context.getTimeSystem().getConverter(context).parse(fields[0]),
                                                             fields, 1));
@@ -595,7 +595,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
         if (token.getName() != null && !token.getName().equals(Ocm.MAN_LINE)) {
             // we are in the section metadata part
             try {
-                return ManeuverHistoryMetadataKey.valueOf(token.getName()).
+                return OrbitManeuverHistoryMetadataKey.valueOf(token.getName()).
                        process(token, context, currentManeuverHistoryMetadata);
             } catch (IllegalArgumentException iae) {
                 // token has not been recognized
@@ -618,7 +618,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                               token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());
                 }
-                final Maneuver maneuver = new Maneuver();
+                final OrbitManeuver maneuver = new OrbitManeuver();
                 for (int i = 0; i < fields.length; ++i) {
                     types.get(i).process(fields[i], context, maneuver, token.getLineNumber(), token.getFileName());
                 }

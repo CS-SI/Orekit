@@ -1041,7 +1041,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
             final double mass = elements[6];
             if (mass <= 0.0) {
-                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
+                throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS, mass);
             }
 
             final Orbit orbit       = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngle.MEAN, date, getMu(), getFrame());

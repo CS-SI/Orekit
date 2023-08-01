@@ -33,12 +33,6 @@ import org.orekit.files.ccsds.utils.generation.Generator;
  */
 public class CdmMetadataWriter extends AbstractWriter {
 
-    /** Constant for boolean translation. */
-    private static final String YES = "YES";
-
-    /** Constant for boolean translation. */
-    private static final String NO = "NO";
-
     /** Metadata. */
     private final CdmMetadata metadata;
 
@@ -119,10 +113,18 @@ public class CdmMetadataWriter extends AbstractWriter {
             generator.writeEntry(CdmMetadataKey.N_BODY_PERTURBATIONS.name(), names, false);
         }
 
-        // other perturbations
-        generator.writeEntry(CdmMetadataKey.SOLAR_RAD_PRESSURE.name(), metadata.getSolarRadiationPressure() ? YES : NO, null, false);
-        generator.writeEntry(CdmMetadataKey.EARTH_TIDES.name(), metadata.getEarthTides() ? YES : NO, null, false);
-        generator.writeEntry(CdmMetadataKey.INTRACK_THRUST.name(), metadata.getIntrackThrust() ? YES : NO, null, false);
+        if (metadata.getSolarRadiationPressure() != null) {
+            generator.writeEntry(CdmMetadataKey.SOLAR_RAD_PRESSURE.name(), metadata.getSolarRadiationPressure().name(),
+                            null, false);
+        }
+        if (metadata.getEarthTides() != null) {
+            generator.writeEntry(CdmMetadataKey.EARTH_TIDES.name(), metadata.getEarthTides().name(),
+                            null, false);
+        }
+        if (metadata.getIntrackThrust() != null) {
+            generator.writeEntry(CdmMetadataKey.INTRACK_THRUST.name(), metadata.getIntrackThrust().name(),
+                            null, false);
+        }
 
     }
 

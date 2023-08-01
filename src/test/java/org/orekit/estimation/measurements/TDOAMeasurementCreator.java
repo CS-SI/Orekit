@@ -89,7 +89,7 @@ public class TDOAMeasurementCreator extends MeasurementCreator {
             // Signal time of flight to primary station
             final double referenceDelay = solver.solve(1000, new UnivariateFunction() {
                 public double value(final double x) {
-                    final Transform t = primary.getOffsetToInertial(inertial, date.shiftedBy(x));
+                    final Transform t = primary.getOffsetToInertial(inertial, date.shiftedBy(x), false);
                     final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                     return d - x * Constants.SPEED_OF_LIGHT;
                 }
@@ -99,7 +99,7 @@ public class TDOAMeasurementCreator extends MeasurementCreator {
             // Signal time of flight to secondary station
             final double relativeDelay = solver.solve(1000, new UnivariateFunction() {
                 public double value(final double x) {
-                    final Transform t = secondary.getOffsetToInertial(inertial, date.shiftedBy(x));
+                    final Transform t = secondary.getOffsetToInertial(inertial, date.shiftedBy(x), false);
                     final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                     return d - x * Constants.SPEED_OF_LIGHT;
                 }

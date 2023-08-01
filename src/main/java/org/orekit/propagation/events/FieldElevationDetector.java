@@ -104,10 +104,10 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      * @param refractionModel reference to refraction model
      * @param topo reference to a topocentric model
      */
-    private FieldElevationDetector(final T maxCheck, final T threshold,
-                                   final int maxIter, final FieldEventHandler<T> handler,
-                                   final double minElevation, final ElevationMask mask,
-                                   final AtmosphericRefractionModel refractionModel,
+    protected FieldElevationDetector(final T maxCheck, final T threshold,
+                                     final int maxIter, final FieldEventHandler<T> handler,
+                                     final double minElevation, final ElevationMask mask,
+                                     final AtmosphericRefractionModel refractionModel,
                                    final TopocentricFrame topo) {
         super(maxCheck, threshold, maxIter, handler);
         this.minElevation    = minElevation;

@@ -104,10 +104,10 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
      * @param bodyShape body shape with respect to which altitude should be evaluated
      * @since 6.1
      */
-    private AltitudeDetector(final double maxCheck, final double threshold,
-                             final int maxIter, final EventHandler handler,
-                             final double altitude,
-                             final BodyShape bodyShape) {
+    protected AltitudeDetector(final double maxCheck, final double threshold,
+                               final int maxIter, final EventHandler handler,
+                               final double altitude,
+                               final BodyShape bodyShape) {
         super(maxCheck, threshold, maxIter, handler);
         this.altitude  = altitude;
         this.bodyShape = bodyShape;

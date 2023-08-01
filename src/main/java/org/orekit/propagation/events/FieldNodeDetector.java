@@ -93,9 +93,9 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      * @since 6.1
      */
-    private FieldNodeDetector(final T maxCheck, final T threshold,
-                         final int maxIter, final FieldEventHandler<T> handler,
-                         final Frame frame) {
+    protected FieldNodeDetector(final T maxCheck, final T threshold,
+                                final int maxIter, final FieldEventHandler<T> handler,
+                                final Frame frame) {
         super(maxCheck, threshold, maxIter, handler);
         this.frame = frame;
     }

@@ -728,6 +728,24 @@ public class TLETest {
 
     }
 
+    @Test
+    void roundToNextDayError() {
+        //Given
+        final AbsoluteDate tleDate = new AbsoluteDate("2022-01-01T23:59:59.99999999", TimeScalesFactory.getUTC());
+
+        final TLE tle =
+                new TLE(99999, 'U', 2022, 999, "A", 0, 1, tleDate, 0.0, 0.0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 99, 11606 * 1e-4,
+                        TimeScalesFactory.getUTC());
+
+        //When
+        final AbsoluteDate returnedDate = tle.getDate();
+
+        //Then
+        // Assert that TLE class did not round the date to the next day
+        Assertions.assertEquals(tleDate, returnedDate);
+    }
+
+
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");

@@ -28,7 +28,7 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-GALILEO.txt", 2.9e-12, 1.1e-15, false);
+        doTestAxes("patched-eclips/beta-small-negative-GALILEO.txt", 2.9e-12, 1.3e-15, false);
     }
 
     @Test
@@ -53,7 +53,7 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testOriginalSmallNegativeBeta() {
-        doTestAxes("original-eclips/beta-small-negative-GALILEO.txt", 5.9e-3, 1.1e-15, false);
+        doTestAxes("original-eclips/beta-small-negative-GALILEO.txt", 5.9e-3, 1.3e-15, false);
     }
 
     @Test

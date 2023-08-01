@@ -19,6 +19,7 @@ package org.orekit.estimation.sequential;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
@@ -33,7 +34,7 @@ import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.frames.Frame;
@@ -43,12 +44,14 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.SpacecraftStateInterpolator;
 import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.conversion.EphemerisPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.ParameterDriversList;
 
@@ -100,12 +103,20 @@ public class EphemerisKalmanEstimatorTest {
             states.add(propagator.propagate(initDate.shiftedBy(t)));
         }
 
-        final Ephemeris ephemeris = new Ephemeris(states, 3);
+        // Create interpolator
+        final TimeInterpolator<SpacecraftState> interpolator =
+                new SpacecraftStateInterpolator(3, inertialFrame, inertialFrame);
+
+
+        final Ephemeris ephemeris = new Ephemeris(states, interpolator);
 
         final double refBias = 1234.56;
         final List<ObservedMeasurement<?>> measurements =
                         KeplerianEstimationTestUtils.createMeasurements(ephemeris,
-                                                                        new RangeMeasurementCreator(context, refBias),
+                                                                        new TwoWayRangeMeasurementCreator(context,
+                                                                                                          Vector3D.ZERO, null,
+                                                                                                          Vector3D.ZERO, null,
+                                                                                                          refBias),
                                                                         1.0, 5.0, 10.0);
 
         // estimated bias
@@ -119,9 +130,7 @@ public class EphemerisKalmanEstimatorTest {
         drivers.add(rangeBias.getParametersDrivers().get(0));
 
         // Propagator builder
-        final EphemerisPropagatorBuilder builder = new EphemerisPropagatorBuilder(states, 3,
-        		ephemeris.getExtrapolationThreshold(),
-        		ephemeris.getAttitudeProvider());
+        final EphemerisPropagatorBuilder builder = new EphemerisPropagatorBuilder(states, interpolator);
 
         // Covariance matrix initialization (perfect value)
         final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
@@ -163,7 +172,12 @@ public class EphemerisKalmanEstimatorTest {
             states.add(propagator.propagate(initDate.shiftedBy(t)));
         }
 
-        final Ephemeris ephemeris = new Ephemeris(states, 3);
+        // Create interpolator
+        final TimeInterpolator<SpacecraftState> interpolator =
+                new SpacecraftStateInterpolator(3, inertialFrame, inertialFrame);
+
+
+        final Ephemeris ephemeris = new Ephemeris(states, interpolator);
 
         final double refClockBias = 653.47e-11;
         final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, refClockBias);
@@ -178,9 +192,7 @@ public class EphemerisKalmanEstimatorTest {
         drivers.add(creator.getSatellite().getClockDriftDriver());
 
         // Propagator builder
-        final EphemerisPropagatorBuilder builder = new EphemerisPropagatorBuilder(states, 3,
-        		ephemeris.getExtrapolationThreshold(),
-        		ephemeris.getAttitudeProvider());
+        final EphemerisPropagatorBuilder builder = new EphemerisPropagatorBuilder(states, interpolator);
 
         // Covariance matrix initialization (perfect value)
         final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
@@ -219,7 +231,12 @@ public class EphemerisKalmanEstimatorTest {
             states.add(propagator.propagate(initDate.shiftedBy(t)));
         }
 
-        final Ephemeris ephemeris = new Ephemeris(states, 3);
+        // Create interpolator
+        final TimeInterpolator<SpacecraftState> interpolator =
+                new SpacecraftStateInterpolator(3, inertialFrame, inertialFrame);
+
+
+        final Ephemeris ephemeris = new Ephemeris(states, interpolator);
 
         // The Kalman has some difficulties to estimate the biases when values are small
         // It could be interesting to investigate
@@ -242,9 +259,7 @@ public class EphemerisKalmanEstimatorTest {
         azElBias.getParametersDrivers().forEach(driver -> drivers.add(driver));
 
         // Propagator builder
-        final EphemerisPropagatorBuilder builder = new EphemerisPropagatorBuilder(states, 3,
-        		ephemeris.getExtrapolationThreshold(),
-        		ephemeris.getAttitudeProvider());
+        final EphemerisPropagatorBuilder builder = new EphemerisPropagatorBuilder(states, interpolator);
 
         // Covariance matrix initialization (perfect value)
         final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {

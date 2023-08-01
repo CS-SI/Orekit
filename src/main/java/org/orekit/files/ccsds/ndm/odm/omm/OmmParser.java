@@ -26,17 +26,17 @@ import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
-import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
-import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
+import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParametersKey;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.section.CommentsContainer;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.Segment;
@@ -72,7 +72,7 @@ public class OmmParser extends OdmParser<Omm, OmmParser> {
     private final double defaultMass;
 
     /** File header. */
-    private Header header;
+    private OdmHeader header;
 
     /** File segments. */
     private List<Segment<OmmMetadata, OmmData>> segments;
@@ -141,14 +141,14 @@ public class OmmParser extends OdmParser<Omm, OmmParser> {
 
     /** {@inheritDoc} */
     @Override
-    public Header getHeader() {
+    public OdmHeader getHeader() {
         return header;
     }
 
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                    = new Header(3.0);
+        header                    = new OdmHeader();
         segments                  = new ArrayList<>();
         metadata                  = null;
         context                   = null;
@@ -446,7 +446,7 @@ public class OmmParser extends OdmParser<Omm, OmmParser> {
     private boolean processCovarianceToken(final ParseToken token) {
         if (covarianceBlock == null) {
             // save the current metadata for later retrieval of reference frame
-            final CommonMetadata savedMetadata = metadata;
+            final OdmCommonMetadata savedMetadata = metadata;
             covarianceBlock = new CartesianCovariance(() -> savedMetadata.getReferenceFrame());
             if (moveCommentsIfEmpty(tleBlock, covarianceBlock)) {
                 // get rid of the empty logical block

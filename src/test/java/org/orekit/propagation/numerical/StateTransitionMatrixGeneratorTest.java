@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.ForceModel;
@@ -473,7 +473,7 @@ public class StateTransitionMatrixGeneratorTest {
                                                                                          propagator.getAllForceModels(),
                                                                                          propagator.getAttitudeProvider());
         propagator.addAdditionalDerivativesProvider(stmGenerator);
-        Assertions.assertTrue(stmGenerator.yield(new SpacecraftState(initialOrbit)));
+        Assertions.assertTrue(stmGenerator.yields(new SpacecraftState(initialOrbit)));
      }
 
     @Test
@@ -673,7 +673,7 @@ public class StateTransitionMatrixGeneratorTest {
     private AttitudeProvider buildAttitudeProvider() {
         final double delta = FastMath.toRadians(-7.4978);
         final double alpha = FastMath.toRadians(351);
-        return new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+        return new FrameAlignedProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
     }
 
     /** Mock {@link ForceModel}. */

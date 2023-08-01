@@ -115,9 +115,6 @@ UNABLE_TO_PARSE_ELEMENT_IN_FILE = <MISSING TRANSLATION>
 # unable to find file {0}
 UNABLE_TO_FIND_FILE = imposible de atopa-lo ficheiro {0}
 
-# spacecraft mass becomes negative: {0} kg
-SPACECRAFT_MASS_BECOMES_NEGATIVE = masa do vehículo facéndose negativa (m : {0})
-
 # positive flow rate (q: {0})
 POSITIVE_FLOW_RATE = fluxo de masa positiva (q : {0}) 
 
@@ -352,6 +349,9 @@ CCSDS_UNKNOWN_CONVENTIONS = non se inicializou ningunha convención IERS antes d
 # frame {0} is not valid in this CCSDS file context
 CCSDS_INVALID_FRAME = o sistema de referencia {0} non é válido neste contexto de ficheiro CCSDS
 
+# this LVLH local orbital frame uses a different definition, please use LVLH_CCSDS instead
+CCSDS_DIFFERENT_LVLH_DEFINITION = <MISSING TRANSLATION>
+
 # inconsistent time systems: {0} ≠ {1}
 CCSDS_INCONSISTENT_TIME_SYSTEMS = sistemas temporais inconsistentes: {0} ≠ {1}
 
@@ -363,6 +363,9 @@ CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = <MISSING TRANSLATION>
 
 # Time system should have already been set before line {0} of file {1}
 CCSDS_TIME_SYSTEM_NOT_READ_YET = <MISSING TRANSLATION>
+
+# cannot estimate precession without proper derivatives
+CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES = <MISSING TRANSLATION>
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = o nome {0} xa está empregado por un estado adicional
@@ -391,11 +394,20 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = <MISSING TRANSLATION>
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = final inesperado dun ficheiro sp3 (despois da liña {0})
 
+# STK coordinate system "{0}" is invalid or not yet supported
+STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
+
+# STK coordinate system "{0}" has not been mapped to an Orekit frame
+STK_UNMAPPED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
+
+# unexpected end of STK file (after line {0})
+STK_UNEXPECTED_END_OF_FILE = final inesperado dun ficheiro STK (despois da liña {0})
+
 # unsupported clock file version {0}
 CLOCK_FILE_UNSUPPORTED_VERSION = versión de ficheiro de reloxo {0} non incluída
 
-# unsupported navigation messages file version {0}
-NAVIGATION_FILE_UNSUPPORTED_VERSION = <MISSING TRANSLATION>
+# version {0} from file {1} is not supported, supported version: {2}
+UNSUPPORTED_FILE_FORMAT_VERSION = <MISSING TRANSLATION>
 
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = ficheiro de modelo xeomagnético {0} ausente do ano {1}
@@ -475,11 +487,11 @@ NOT_ENOUGH_GNSS_FOR_DOP = <MISSING TRANSLATION>
 # use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = <MISSING TRANSLATION>
 
-# inconsistent time systems in the attitude blocks: {0} ≠ {1}
-CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
+# unknown attitude type {0}
+CCSDS_UNKNOWN_ATTITUDE_TYPE = <MISSING TRANSLATION>
 
-# attitude type {0} in CCSDS AEM files is not implemented in Orekit
-CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+# incomplete data
+CCSDS_INCOMPLETE_DATA = <MISSING TRANSLATION>
 
 # invalid rotation sequence {0} at line {1} of file {2}
 CCSDS_INVALID_ROTATION_SEQUENCE = <MISSING TRANSLATION>
@@ -490,14 +502,26 @@ CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE = <MISSING TRANSLATION>
 # retrograde factor not supported in element set {0}
 CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL = <MISSING TRANSLATION>
 
-# element set type {0} ({1}) expects {2} elements
-CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
-
 # wrong number of units for maneuver {0}
 CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
 
 # missing time field for maneuver {0}
 CCSDS_MANEUVER_MISSING_TIME = <MISSING TRANSLATION>
+
+# attitude type {0} and rate type {1} calls for {2} states, got {3}
+CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES = <MISSING TRANSLATION>
+
+# incompatible keys {0} and {1} should not both be used
+CCSDS_INCOMPATIBLE_KEYS_BOTH_USED = <MISSING TRANSLATION>
+
+# sensor index {0} is already used
+CCSDS_SENSOR_INDEX_ALREADY_USED = <MISSING TRANSLATION>
+
+# missing sensor index {0}
+CCSDS_MISSING_SENSOR_INDEX = <MISSING TRANSLATION>
+
+# inconsistent number of elements: expected {0}, got {1}
+INCONSISTENT_NUMBER_OF_ELEMENTS = <MISSING TRANSLATION>
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = <MISSING TRANSLATION>
@@ -532,6 +556,9 @@ UNKNOWN_SATELLITE_SYSTEM = <MISSING TRANSLATION>
 # unknown time system {0}
 UNKNOWN_TIME_SYSTEM = sistema de tempo descoñecido {0}
 
+# unknown UTC Id {0}
+UNKNOWN_UTC_ID = <MISSING TRANSLATION>
+
 # unknown clock data type {0}
 UNKNOWN_CLOCK_DATA_TYPE = tipo de datos de reloxo descoñecido {0}
 
@@ -549,6 +576,9 @@ UNKNOWN_RINEX_FREQUENCY = <MISSING TRANSLATION>
 
 # mismatched frequencies in file {0}, line {1} (expected {2}, got {3})
 MISMATCHED_FREQUENCIES = <MISSING TRANSLATION>
+
+# wrong parsing type for file {0}
+WRONG_PARSING_TYPE = <MISSING TRANSLATION>
 
 # wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)
 WRONG_COLUMNS_NUMBER = <MISSING TRANSLATION>
@@ -717,6 +747,12 @@ UNEXPECTED_CONTENT_TYPE = <MISSING TRANSLATION>
 # cannot parse GNSS data from {0}
 CANNOT_PARSE_GNSS_DATA = <MISSING TRANSLATION>
 
+# invalid GNSS data: {0}
+INVALID_GNSS_DATA = <MISSING TRANSLATION>
+
+# GNSS parity error on word {0}
+GNSS_PARITY_ERROR = <MISSING TRANSLATION>
+
 # unknown host {0}
 UNKNOWN_HOST = <MISSING TRANSLATION>
 
@@ -753,11 +789,8 @@ ATTEMPT_TO_GENERATE_MALFORMED_FILE = <MISSING TRANSLATION>
 # {0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})
 FIND_ROOT = <MISSING TRANSLATION>
 
-# backward propagation not allowed here
-BACKWARD_PROPAGATION_NOT_ALLOWED = <MISSING TRANSLATION>
-
-# no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}
-NO_STATION_ECCENTRICITY_FOR_EPOCH = <MISSING TRANSLATION>
+# missing station data for epoch {0}
+MISSING_STATION_DATA_FOR_EPOCH = <MISSING TRANSLATION>
 
 # inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
 INCONSISTENT_SELECTION = <MISSING TRANSLATION>
@@ -774,8 +807,35 @@ UNSUPPORTED_TRANSFORM = <MISSING TRANSLATION>
 # orbital parameters type: {0} is different from expected orbital type : {1}
 WRONG_ORBIT_PARAMETERS_TYPE = <MISSING TRANSLATION>
 
+# {0} expects {1} elements, got {2}
+WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
+
 # cannot change covariance type if defined in a local orbital frame
 CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = <MISSING TRANSLATION>
 
 # cannot change covariance type if defined in a non pseudo-inertial reference frame
 CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = <MISSING TRANSLATION>
+
+# primary collision object time of closest approach is different from the secondary collision object's one
+DIFFERENT_TIME_OF_CLOSEST_APPROACH = <MISSING TRANSLATION>
+
+# first date {0} does not match second date {1}
+DATES_MISMATCH = <MISSING TRANSLATION>
+
+# first orbit mu {0} does not match second orbit mu {1}
+ORBITS_MUS_MISMATCH = <MISSING TRANSLATION>
+
+# one state is defined using an orbit while the other is defined using an absolute position-velocity-acceleration
+DIFFERENT_STATE_DEFINITION = <MISSING TRANSLATION>
+
+# state date {0} does not match its covariance date {1}
+STATE_AND_COVARIANCE_DATES_MISMATCH = <MISSING TRANSLATION>
+
+# creating a spacecraft state interpolator requires at least one orbit interpolator or an absolute position-velocity-acceleration interpolator
+NO_INTERPOLATOR_FOR_STATE_DEFINITION = <MISSING TRANSLATION>
+
+# wrong interpolator defined for this spacecraft state type (orbit or absolute PV)
+WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION = <MISSING TRANSLATION>
+
+# multiple interpolators are used so they may use different numbers of interpolation points
+MULTIPLE_INTERPOLATOR_USED = <MISSING TRANSLATION>

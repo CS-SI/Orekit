@@ -37,13 +37,17 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolator;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedAngularCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinatesHermiteInterpolator;
 
 /** This classes manages a sequence of different attitude providers that are activated
  * in turn according to switching events.
@@ -501,14 +505,19 @@ public class AttitudesSequence implements AttitudeProvider {
             public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                         final AbsoluteDate date, final Frame frame) {
 
-                // interpolate between the two boundary attitudes
+                // Create sample
                 final TimeStampedAngularCoordinates start =
-                                transitionPreceding.withReferenceFrame(frame).getOrientation();
+                        transitionPreceding.withReferenceFrame(frame).getOrientation();
                 final TimeStampedAngularCoordinates end =
-                                future.getAttitude(pvProv, transitionEnd, frame).getOrientation();
-                final TimeStampedAngularCoordinates interpolated =
-                                TimeStampedAngularCoordinates.interpolate(date, transitionFilter,
-                                                                          Arrays.asList(start, end));
+                        future.getAttitude(pvProv, transitionEnd, frame).getOrientation();
+                final List<TimeStampedAngularCoordinates> sample =  Arrays.asList(start, end);
+
+                // Create interpolator
+                final TimeInterpolator<TimeStampedAngularCoordinates> interpolator =
+                        new TimeStampedAngularCoordinatesHermiteInterpolator(sample.size(), transitionFilter);
+
+                // interpolate between the two boundary attitudes
+                final TimeStampedAngularCoordinates interpolated = interpolator.interpolate(date, sample);
 
                 return new Attitude(frame, interpolated);
 
@@ -519,17 +528,22 @@ public class AttitudesSequence implements AttitudeProvider {
                                                                                 final FieldAbsoluteDate<S> date,
                                                                                 final Frame frame) {
 
-                // interpolate between the two boundary attitudes
+                // create sample
                 final TimeStampedFieldAngularCoordinates<S> start =
-                                new TimeStampedFieldAngularCoordinates<>(date.getField(),
-                                                                         transitionPreceding.withReferenceFrame(frame).getOrientation());
+                        new TimeStampedFieldAngularCoordinates<>(date.getField(),
+                                                                 transitionPreceding.withReferenceFrame(frame).getOrientation());
                 final TimeStampedFieldAngularCoordinates<S> end =
-                                future.getAttitude(pvProv,
-                                                   new FieldAbsoluteDate<>(date.getField(), transitionEnd),
-                                                   frame).getOrientation();
-                final TimeStampedFieldAngularCoordinates<S> interpolated =
-                                TimeStampedFieldAngularCoordinates.interpolate(date, transitionFilter,
-                                                                               Arrays.asList(start, end));
+                        future.getAttitude(pvProv,
+                                           new FieldAbsoluteDate<>(date.getField(), transitionEnd),
+                                           frame).getOrientation();
+                final List<TimeStampedFieldAngularCoordinates<S>> sample = Arrays.asList(start, end);
+
+                // create interpolator
+                final FieldTimeInterpolator<TimeStampedFieldAngularCoordinates<S>, S> interpolator =
+                        new TimeStampedFieldAngularCoordinatesHermiteInterpolator<>(sample.size(), transitionFilter);
+
+                // interpolate between the two boundary attitudes
+                final TimeStampedFieldAngularCoordinates<S> interpolated = interpolator.interpolate(date, sample);
 
                 return new FieldAttitude<>(frame, interpolated);
             }

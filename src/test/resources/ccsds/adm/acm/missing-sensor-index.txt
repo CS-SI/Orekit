@@ -1,0 +1,37 @@
+CCSDS_ACM_VERS           = 2.0
+CREATION_DATE            = 2017-12-01T00:00:00
+ORIGINATOR               = NASA
+MESSAGE_ID               = A7015Z5
+
+META_START
+OBJECT_NAME              = SDO
+INTERNATIONAL_DESIGNATOR = 2010-005A
+TIME_SYSTEM              = UTC
+EPOCH_TZERO              = 2017-12-26T19:40:00.000
+META_STOP
+
+
+AD_START
+COMMENT  test file with intentional error: one sensor not counted
+AD_METHOD               = EKF
+ATTITUDE_SOURCE         = OBC
+ATTITUDE_STATES         = QUATERNION
+REF_FRAME_A             = J2000
+REF_FRAME_B             = SC_BODY_1
+SENSOR_START
+SENSOR_NUMBER           = 5
+SENSOR_USED             = AST1
+SENSOR_STOP
+SENSOR_START
+SENSOR_NUMBER           = 4
+SENSOR_USED             = AST2
+SENSOR_STOP
+SENSOR_START
+SENSOR_NUMBER           = 2
+SENSOR_USED             = DSS
+SENSOR_STOP
+SENSOR_START
+SENSOR_NUMBER           = 1
+SENSOR_USED             = IMU
+SENSOR_STOP
+AD_STOP

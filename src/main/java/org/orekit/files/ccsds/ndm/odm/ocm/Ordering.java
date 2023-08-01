@@ -16,7 +16,7 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-/** Keys for {@link Covariance} elements ordering.
+/** Keys for {@link OrbitCovariance} elements ordering.
  * @author Luc Maisonobe
  * @since 11.0
  */
@@ -74,7 +74,7 @@ public enum Ordering {
 
     },
 
-    /** Full symmetrix Matrix. */
+    /** Full symmetric Matrix. */
     FULL {
 
         /** {@inheritDoc} */

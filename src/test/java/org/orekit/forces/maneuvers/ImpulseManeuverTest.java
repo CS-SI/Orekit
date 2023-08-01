@@ -29,9 +29,10 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
@@ -107,7 +108,7 @@ public class ImpulseManeuverTest {
 
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, new LofOffset(initialOrbit.getFrame(), LOFType.VNC));
         DateDetector dateDetector = new DateDetector(epoch.shiftedBy(driftTimeInSec));
-        InertialProvider attitudeOverride = new InertialProvider(new Rotation(RotationOrder.XYX,
+        FrameAlignedProvider attitudeOverride = new FrameAlignedProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,
                                                                               0, 0, 0));
         ImpulseManeuver burnAtEpoch = new ImpulseManeuver(dateDetector, attitudeOverride, deltaV, isp).withThreshold(driftTimeInSec/4);
@@ -174,7 +175,7 @@ public class ImpulseManeuverTest {
         final double isp = 300;
         ImpulseManeuver maneuver =
                         new ImpulseManeuver(dateDetector,
-                                            new InertialProvider(Rotation.IDENTITY),
+                                            new FrameAlignedProvider(Rotation.IDENTITY),
                                             deltaV, isp).
                         withMaxCheck(3600.0).
                         withThreshold(1.0e-6);
@@ -231,7 +232,7 @@ public class ImpulseManeuverTest {
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
         propagator.resetInitialState(initialState.addAdditionalState("testOnly", -1.0));
         DateDetector dateDetector = new DateDetector(epoch.shiftedBy(0.5 * totalPropagationTime));
-        InertialProvider attitudeOverride = new InertialProvider(new Rotation(RotationOrder.XYX,
+        FrameAlignedProvider attitudeOverride = new FrameAlignedProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,
                                                                               0, 0, 0));
         ImpulseManeuver burnAtEpoch = new ImpulseManeuver(dateDetector, attitudeOverride, deltaV, isp).withThreshold(1.0e-3);
@@ -278,7 +279,7 @@ public class ImpulseManeuverTest {
         MatricesHarvester harvester = propagator.setupMatricesComputation("derivatives", null, null);
         propagator.resetInitialState(new SpacecraftState(initialOrbit, initialAttitude));
         DateDetector dateDetector = new DateDetector(epoch.shiftedBy(0.5 * totalPropagationTime));
-        InertialProvider attitudeOverride = new InertialProvider(new Rotation(RotationOrder.XYX,
+        FrameAlignedProvider attitudeOverride = new FrameAlignedProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,
                                                                               0, 0, 0));
         ImpulseManeuver burnAtEpoch = new ImpulseManeuver(dateDetector, attitudeOverride, deltaV, isp).withThreshold(1.0e-3);
@@ -341,6 +342,64 @@ public class ImpulseManeuverTest {
         Assertions.assertTrue(trigger.initialized);
 
     }
+
+    @Test
+    public void testControlVector3DNormType() {
+
+        // GIVEN
+        // Initial orbit
+        final double        a             = Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 2000.e3;
+        final double        e             = 1e-4;
+        final double        i             = 0.5;
+        final double        pa            = 0.;
+        final double        raan          = 6.;
+        final double        anomaly       = 1.;
+        final PositionAngle positionAngle = PositionAngle.MEAN;
+        final Frame gcrf                  = FramesFactory.getGCRF();
+        final AbsoluteDate  date          = AbsoluteDate.ARBITRARY_EPOCH;
+        final double        mu            = Constants.EGM96_EARTH_MU;
+
+        final KeplerianOrbit orbit = new KeplerianOrbit(a, e, i, pa, raan, anomaly, positionAngle, gcrf, date, mu);
+
+        // Thrust configuration
+        final DateDetector     dateDetector       = new DateDetector(date.shiftedBy(1000.));
+        final AbsoluteDate     endPropagationDate = dateDetector.getDate().shiftedBy(10000.);
+        final AttitudeProvider provider           = new FrameAlignedProvider(gcrf);
+        final Vector3D         deltaV             = new Vector3D(2., -1., 0.5);
+        final double           initialMass        = 1000.;
+        final double           isp                = 100.;
+
+        // Building propagators
+        final KeplerianPropagator propagatorNorm1   = new KeplerianPropagator(orbit, provider, orbit.getMu(), initialMass);
+        final KeplerianPropagator propagatorNorm2   = new KeplerianPropagator(orbit, provider, orbit.getMu(), initialMass);
+        final KeplerianPropagator propagatorNormInf = new KeplerianPropagator(orbit, provider, orbit.getMu(), initialMass);
+
+        // Add impulse maneuvers
+        propagatorNorm1.addEventDetector(new ImpulseManeuver(dateDetector, provider, deltaV, isp,
+                ControlVector3DNormType.NORM_1));
+        propagatorNorm2.addEventDetector(new ImpulseManeuver(dateDetector, provider, deltaV, isp,
+                ControlVector3DNormType.NORM_2));
+        propagatorNormInf.addEventDetector(new ImpulseManeuver(dateDetector, provider, deltaV, isp,
+                ControlVector3DNormType.NORM_INF));
+
+        // WHEN
+        final double finalMassWithNorm1   = propagatorNorm1.propagate(endPropagationDate).getMass();
+        final double finalMassWithNorm2   = propagatorNorm2.propagate(endPropagationDate).getMass();
+        final double finalMassWithNormInf = propagatorNormInf.propagate(endPropagationDate).getMass();
+
+        // THEN
+        // Assert that we do not find the same final mass when using different control vector norm
+        Assertions.assertNotEquals(finalMassWithNorm1, finalMassWithNorm2);
+        Assertions.assertNotEquals(finalMassWithNorm1, finalMassWithNormInf);
+        Assertions.assertNotEquals(finalMassWithNormInf, finalMassWithNorm2);
+
+        // Assert that final mass is equal to expected mass
+        final double factorExponential = -1. / (isp * Constants.G0_STANDARD_GRAVITY);
+        Assertions.assertEquals(finalMassWithNorm1, initialMass * FastMath.exp(deltaV.getNorm1() * factorExponential));
+        Assertions.assertEquals(finalMassWithNorm2, initialMass * FastMath.exp(deltaV.getNorm() * factorExponential));
+        Assertions.assertEquals(finalMassWithNormInf, initialMass * FastMath.exp(deltaV.getNormInf() * factorExponential));
+    }
+
 
     @BeforeEach
     public void setUp() {

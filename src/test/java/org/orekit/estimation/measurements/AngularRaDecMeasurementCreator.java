@@ -74,7 +74,7 @@ public class AngularRaDecMeasurementCreator extends MeasurementCreator {
 
                 final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
                     public double value(final double x) {
-                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
+                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x), false);
                         final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                         return d - x * Constants.SPEED_OF_LIGHT;
                     }
@@ -96,7 +96,7 @@ public class AngularRaDecMeasurementCreator extends MeasurementCreator {
                 station.getPrimeMeridianOffsetDriver().setReferenceDate(date);
                 station.getPolarOffsetXDriver().setReferenceDate(date);
                 station.getPolarOffsetYDriver().setReferenceDate(date);
-                final Transform offsetToInertialArrival = station.getOffsetToInertial(inertialFrame, date);
+                final Transform offsetToInertialArrival = station.getOffsetToInertial(inertialFrame, date, false);
                 final Vector3D  stationPArrival = offsetToInertialArrival.transformPosition(Vector3D.ZERO);
 
                 // Vector station position at signal arrival - satellite at signal departure

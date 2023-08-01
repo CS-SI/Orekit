@@ -43,7 +43,7 @@ discrete events. Here is a short list of the features offered by the library:</p
   <li>Geometry
     <ul>
       <li>frames hierarchy supporting fixed and time-dependent (or telemetry-dependent) frames</li>
-      <li>predefined frames (EME2000/J2000, ICRF, GCRF, all ITRF from 1988 to 2014 and
+      <li>predefined frames (EME2000/J2000, ICRF, GCRF, all ITRF from 1988 to 2020 and
           intermediate frames, TOD, MOD, GTOD and TEME and PZ-90.11 frames, Veis, topocentric, tnw and qsw local orbital
           frames, Moon, Sun, planets, solar system barycenter, Earth-Moon barycenter, ecliptic)</li>
       <li>user extensible (used operationally in real time with a set of about 60 frames on several spacecraft)</li>
@@ -78,7 +78,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>impulse maneuvers for any propagator type</li>
       <li>continuous maneuvers for numerical propagator type</li>
       <li>configurable low thrust maneuver model based on event detectors</li>
-      <li>propulsion models intended to be used with maneuver class</li>
+      <li>used-defined propulsion models intended to be used with maneuver class (constant and piecewise polynomials already provided by the library)</li>
       <li>user-friendly interface for maneuver triggers</li>
     </ul>
   </li>
@@ -202,7 +202,7 @@ discrete events. Here is a short list of the features offered by the library:</p
               GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)</li>
         </ul>
       </li>
-      <li>loading and writing of CCSDS Attitude Data Messages (both AEM, and APM types are supported, in both KVN and XML formats, standalone or in combined NDM)</li>
+      <li>loading and writing of CCSDS Attitude Data Messages (both AEM, APM and ACM types are supported, in both KVN and XML formats, standalone or in combined NDM)</li>
     </ul>
   </li>
   <li>Orbit determination
@@ -234,6 +234,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>multi-satellites orbit determination</li>
       <li>ground stations displacements due to solid tides</li>
       <li>ground stations displacements due to ocean loading (based on Onsala Space Observatory files in BLQ format)</li>
+      <li>ground stations displacements due to plate tectonics</li>
       <li>several predefined measurements
         <ul>
           <li>range</li>
@@ -294,6 +295,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>loading of RINEX clock files (version 2 and version 3)</li>
       <li>parsing of IGS SSR messages for all constellations (version 1)</li>
       <li>implementation of Ntrip protocol</li>
+      <li>decoding of GPS navigation messages</li>
     </ul>
   </li>
   <li>Orbit file handling

@@ -25,14 +25,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
@@ -217,24 +216,28 @@ public class RinexClockParser {
         final ParseInfo pi = new ParseInfo();
 
         int lineNumber = 0;
-        Stream<LineParser> candidateParsers = Stream.of(LineParser.HEADER_VERSION);
+        Iterable<LineParser> candidateParsers = Collections.singleton(LineParser.HEADER_VERSION);
+        nextLine:
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
             ++lineNumber;
-            final String l = line;
-            final Optional<LineParser> selected = candidateParsers.filter(p -> p.canHandle(l)).findFirst();
-            if (selected.isPresent()) {
-                try {
-                    selected.get().parse(line, pi);
-                } catch (StringIndexOutOfBoundsException | NumberFormatException | InputMismatchException e) {
-                    throw new OrekitException(e,
-                                              OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              lineNumber, fileName, line);
+            for (final LineParser candidate : candidateParsers) {
+                if (candidate.canHandle(line)) {
+                    try {
+                        candidate.parse(line, pi);
+                        candidateParsers = candidate.allowedNext();
+                        continue nextLine;
+                    } catch (StringIndexOutOfBoundsException | NumberFormatException | InputMismatchException e) {
+                        throw new OrekitException(e,
+                                                  OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                  lineNumber, fileName, line);
+                    }
                 }
-                candidateParsers = selected.get().allowedNext();
-            } else {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          lineNumber, fileName, line);
             }
+
+            // no parsers found for this line
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      lineNumber, fileName, line);
+
         }
 
         return pi.file;
@@ -837,8 +840,8 @@ public class RinexClockParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(CLOCK_DATA);
+            public Iterable<LineParser> allowedNext() {
+                return Collections.singleton(CLOCK_DATA);
             }
         },
 
@@ -899,8 +902,8 @@ public class RinexClockParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(CLOCK_DATA, CLOCK_DATA_CONTINUATION);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(CLOCK_DATA, CLOCK_DATA_CONTINUATION);
             }
         },
 
@@ -940,8 +943,8 @@ public class RinexClockParser {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(CLOCK_DATA);
+            public Iterable<LineParser> allowedNext() {
+                return Collections.singleton(CLOCK_DATA);
             }
         };
 
@@ -969,11 +972,11 @@ public class RinexClockParser {
          * </p>
          * @return allowed parsers for next line
          */
-        public Stream<LineParser> allowedNext() {
-            return Stream.of(HEADER_PROGRAM, HEADER_COMMENT, HEADER_SYSTEM_OBS, HEADER_SYSTEM_OBS_CONTINUATION, HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS,
-                             HEADER_LEAP_SECONDS_GNSS, HEADER_DCBS, HEADER_PCVS, HEADER_TYPES_OF_DATA, HEADER_STATIONS_NAME, HEADER_STATION_CLOCK_REF,
-                             HEADER_ANALYSIS_CENTER, HEADER_NUMBER_OF_CLOCK_REF, HEADER_ANALYSIS_CLOCK_REF, HEADER_NUMBER_OF_SOLN_STATIONS,
-                             HEADER_SOLN_STATIONS, HEADER_NUMBER_OF_SOLN_SATS, HEADER_PRN_LIST, HEADER_END);
+        public Iterable<LineParser> allowedNext() {
+            return Arrays.asList(HEADER_PROGRAM, HEADER_COMMENT, HEADER_SYSTEM_OBS, HEADER_SYSTEM_OBS_CONTINUATION, HEADER_TIME_SYSTEM, HEADER_LEAP_SECONDS,
+                                 HEADER_LEAP_SECONDS_GNSS, HEADER_DCBS, HEADER_PCVS, HEADER_TYPES_OF_DATA, HEADER_STATIONS_NAME, HEADER_STATION_CLOCK_REF,
+                                 HEADER_ANALYSIS_CENTER, HEADER_NUMBER_OF_CLOCK_REF, HEADER_ANALYSIS_CLOCK_REF, HEADER_NUMBER_OF_SOLN_STATIONS,
+                                 HEADER_SOLN_STATIONS, HEADER_NUMBER_OF_SOLN_SATS, HEADER_PRN_LIST, HEADER_END);
         }
 
         /** Check if parser can handle line.

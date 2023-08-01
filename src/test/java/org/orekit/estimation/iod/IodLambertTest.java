@@ -34,6 +34,7 @@ import org.orekit.estimation.measurements.Position;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -109,7 +110,7 @@ public class IodLambertTest {
         // instantiate the IOD method
         final IodLambert iod = new IodLambert(mu);
 
-        final KeplerianOrbit orbit = iod.estimate(frame,
+        final Orbit orbit = iod.estimate(frame,
                                             true,
                                             nRev,
                                             /*stapos1.add*/(position1), date1,
@@ -174,7 +175,7 @@ public class IodLambertTest {
             final IodLambert iod = new IodLambert(mu);
 
             // Estimate the orbit
-            final KeplerianOrbit orbit = iod.estimate(frame, posigrades[i], nRevs[i], position1, date1, position2, date2);
+            final KeplerianOrbit orbit = new KeplerianOrbit(iod.estimate(frame, posigrades[i], nRevs[i], position1, date1, position2, date2));
 
             // Test relative values
             final double relTol = 1e-12;
@@ -205,13 +206,13 @@ public class IodLambertTest {
         final Vector3D p3 = propagator.propagate(t3).getPosition(teme);
 
         IodLambert lambert = new IodLambert(Constants.WGS84_EARTH_MU);
-        KeplerianOrbit k0 = lambert.estimate(teme, true, 0, p1, t1, p2, t2);
+        Orbit k0 = lambert.estimate(teme, true, 0, p1, t1, p2, t2);
         Assertions.assertEquals(6.08e-4, k0.getE(), 1.0e-6);
         Assertions.assertEquals(8.55, FastMath.toDegrees(k0.getI()), 0.01);
         Assertions.assertEquals(0.0, Vector3D.distance(p1, k0.getPosition(t1, teme)), 2.0e-8);
         Assertions.assertEquals(0.0, Vector3D.distance(p2, k0.getPosition(t2, teme)), 2.0e-7);
 
-        KeplerianOrbit k1 = lambert.estimate(teme, true, 1, p1, t1, p3, t3);
+        Orbit k1 = lambert.estimate(teme, true, 1, p1, t1, p3, t3);
         Assertions.assertEquals(5.97e-4, k1.getE(), 1.0e-6);
         Assertions.assertEquals(8.55, FastMath.toDegrees(k1.getI()), 0.01);
         Assertions.assertEquals(0.0, Vector3D.distance(p1, k1.getPosition(t1, teme)), 1.4e-8);
@@ -338,7 +339,7 @@ public class IodLambertTest {
 
             // Solve Lambert problem
             IodLambert iodLambert = new IodLambert(mu);
-            KeplerianOrbit resultOrbit1 = iodLambert.estimate(j2000, posigrade, nRev, p1, t1, p2, t2);
+            Orbit resultOrbit1 = iodLambert.estimate(j2000, posigrade, nRev, p1, t1, p2, t2);
 
             // Get position and velocity coordinates @t1 and @t2 from the output Keplerian orbit of iodLambert.estimate
             PVCoordinates resultPv1 = resultOrbit1.getPVCoordinates(t1, j2000);
@@ -358,12 +359,12 @@ public class IodLambertTest {
             // Tolerances
             double dP1Tol, dP2Tol, dV1Tol, dV2Tol;
             if (testCase == 1) {
-                dP1Tol = 4.28e-25;
+                dP1Tol = 5.65e-25;
                 dV1Tol = 5.97e-12;
                 dP2Tol = 7.57e-9;
                 dV2Tol = 7.50e-12;
             } else {
-                dP1Tol = 2.81e-25;
+                dP1Tol = 5.47e-25;
                 dV1Tol = 3.03e-12;
                 dP2Tol = 9.86e-7;
                 dV2Tol = 4.01e-10;
@@ -405,7 +406,7 @@ public class IodLambertTest {
         final Vector3D velR2 = new Vector3D(-3792.46619, -1777.07641, 6856.81495);
 
         // Lambert IOD
-        final KeplerianOrbit orbit = lambert.estimate(inertialFrame, true, 0,
+        final Orbit orbit = lambert.estimate(inertialFrame, true, 0,
                                                       new Position(dateRef, posR1, 1.0, 1.0, satellite),
                                                       new Position(date2,   posR2, 1.0, 1.0, satellite));
 

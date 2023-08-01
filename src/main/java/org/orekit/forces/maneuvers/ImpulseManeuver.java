@@ -57,6 +57,8 @@ import org.orekit.utils.PVCoordinates;
  * that LOF aligned attitude provider; e.g. if the LOF aligned attitude provider
  * was constructed using LOFType.VNC the velocity increment should be
  * provided in VNC coordinates.</p>
+ * <p>The norm through which the delta-V maps to the mass consumption is chosen via the
+ * enum {@link ControlVector3DNormType}. Default is Euclidean. </p>
  * <p>Beware that the triggering event detector must behave properly both
  * before and after maneuver. If for example a node detector is used to trigger
  * an inclination maneuver and the maneuver change the orbit to an equatorial one,
@@ -86,15 +88,16 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
     /** Indicator for forward propagation. */
     private boolean forward;
 
+    /** Type of norm linking delta-V to mass consumption. */
+    private final ControlVector3DNormType controlVector3DNormType;
+
     /** Build a new instance.
      * @param trigger triggering event
      * @param deltaVSat velocity increment in satellite frame
      * @param isp engine specific impulse (s)
      */
     public ImpulseManeuver(final EventDetector trigger, final Vector3D deltaVSat, final double isp) {
-        this(trigger.getMaxCheckInterval(), trigger.getThreshold(),
-             trigger.getMaxIterationCount(), new Handler(),
-             trigger, null, deltaVSat, isp);
+        this(trigger, null, deltaVSat, isp);
     }
 
 
@@ -104,10 +107,25 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
      * @param deltaVSat velocity increment in satellite frame
      * @param isp engine specific impulse (s)
      */
-    public ImpulseManeuver(final EventDetector trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat, final double isp) {
+    public ImpulseManeuver(final EventDetector trigger, final AttitudeProvider attitudeOverride,
+                           final Vector3D deltaVSat, final double isp) {
         this(trigger.getMaxCheckInterval(), trigger.getThreshold(),
              trigger.getMaxIterationCount(), new Handler(),
-             trigger, attitudeOverride, deltaVSat, isp);
+             trigger, attitudeOverride, deltaVSat, isp, ControlVector3DNormType.NORM_2);
+    }
+
+    /** Build a new instance.
+     * @param trigger triggering event
+     * @param attitudeOverride the attitude provider to use for the maneuver
+     * @param deltaVSat velocity increment in satellite frame
+     * @param isp engine specific impulse (s)
+     * @param controlVector3DNormType increment's norm for mass consumption
+     */
+    public ImpulseManeuver(final EventDetector trigger, final AttitudeProvider attitudeOverride,
+                           final Vector3D deltaVSat, final double isp, final ControlVector3DNormType controlVector3DNormType) {
+        this(trigger.getMaxCheckInterval(), trigger.getThreshold(),
+                trigger.getMaxIterationCount(), new Handler(),
+                trigger, attitudeOverride, deltaVSat, isp, controlVector3DNormType);
     }
 
     /** Private constructor with full parameters.
@@ -124,18 +142,20 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
      * @param attitudeOverride the attitude provider to use for the maneuver
      * @param deltaVSat velocity increment in satellite frame
      * @param isp engine specific impulse (s)
+     * @param controlVector3DNormType increment's norm for mass consumption
      * @since 6.1
      */
-    private ImpulseManeuver(final double maxCheck, final double threshold,
-                            final int maxIter, final EventHandler handler,
-                            final EventDetector trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat,
-                            final double isp) {
+    protected ImpulseManeuver(final double maxCheck, final double threshold,
+                              final int maxIter, final EventHandler handler,
+                              final EventDetector trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat,
+                              final double isp, final ControlVector3DNormType controlVector3DNormType) {
         super(maxCheck, threshold, maxIter, handler);
         this.attitudeOverride = attitudeOverride;
         this.trigger   = trigger;
         this.deltaVSat = deltaVSat;
         this.isp       = isp;
         this.vExhaust  = Constants.G0_STANDARD_GRAVITY * isp;
+        this.controlVector3DNormType = controlVector3DNormType;
     }
 
     /** {@inheritDoc} */
@@ -143,7 +163,7 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
     protected ImpulseManeuver create(final double newMaxCheck, final double newThreshold,
                                      final int newMaxIter, final EventHandler newHandler) {
         return new ImpulseManeuver(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                   trigger, attitudeOverride, deltaVSat, isp);
+                                   trigger, attitudeOverride, deltaVSat, isp, controlVector3DNormType);
     }
 
     /** {@inheritDoc} */
@@ -230,7 +250,8 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
                     new CartesianOrbit(newPV, oldState.getFrame(), date, oldState.getMu());
 
             // compute new mass
-            final double newMass = oldState.getMass() * FastMath.exp(-sign * deltaV.getNorm() / im.vExhaust);
+            final double normDeltaV = im.controlVector3DNormType.evaluate(im.deltaVSat);
+            final double newMass = oldState.getMass() * FastMath.exp(-sign * normDeltaV / im.vExhaust);
 
             // pack everything in a new state
             SpacecraftState newState = new SpacecraftState(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),

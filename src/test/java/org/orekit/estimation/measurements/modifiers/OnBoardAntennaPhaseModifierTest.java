@@ -39,6 +39,7 @@ import org.orekit.utils.Constants;
 
 import java.util.List;
 
+@Deprecated
 public class OnBoardAntennaPhaseModifierTest {
 
     @Test
@@ -66,9 +67,8 @@ public class OnBoardAntennaPhaseModifierTest {
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new PhaseMeasurementCreator(context, Frequency.G01,
-                                                                                           ambiguity,
-                                                                                           satClockOffset,
-                                                                                           Vector3D.ZERO),
+                                                                                           ambiguity, satClockOffset,
+                                                                                           Vector3D.ZERO, null, Vector3D.ZERO, null),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements with antenna offset
@@ -78,9 +78,9 @@ public class OnBoardAntennaPhaseModifierTest {
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
                                                                new PhaseMeasurementCreator(context, Frequency.G01,
-                                                                                           ambiguity,
-                                                                                           satClockOffset,
-                                                                                           new Vector3D(xOffset, 0, 0)),
+                                                                                           ambiguity, satClockOffset,
+                                                                                           Vector3D.ZERO, null,
+                                                                                           new Vector3D(xOffset, 0, 0), null),
                                                                1.0, 3.0, 300.0);
 
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
@@ -115,9 +115,8 @@ public class OnBoardAntennaPhaseModifierTest {
         final List<ObservedMeasurement<?>> spacecraftCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p1,
                                                                new PhaseMeasurementCreator(context, Frequency.G01,
-                                                                                           ambiguity,
-                                                                                           satClockOffset,
-                                                                                           Vector3D.ZERO),
+                                                                                           ambiguity, satClockOffset,
+                                                                                           Vector3D.ZERO, null, Vector3D.ZERO, null),
                                                                1.0, 3.0, 300.0);
 
         // create perfect range measurements with antenna offset
@@ -127,9 +126,8 @@ public class OnBoardAntennaPhaseModifierTest {
         final List<ObservedMeasurement<?>> antennaCenteredMeasurements =
                         EstimationTestUtils.createMeasurements(p2,
                                                                new PhaseMeasurementCreator(context, Frequency.G01,
-                                                                                           ambiguity,
-                                                                                           satClockOffset,
-                                                                                           apc),
+                                                                                           ambiguity, satClockOffset,
+                                                                                           Vector3D.ZERO, null, apc, null),
                                                                1.0, 3.0, 300.0);
 
         final Propagator p3 = EstimationTestUtils.createPropagator(context.initialOrbit,

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <aem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:noNamespaceSchemaLocation="http://sanaregistry.org/r/ndmxml/ndmxml-1.0-master.xsd"
+  xsi:noNamespaceSchemaLocation="http://sanaregistry.org/r/ndmxml_unqualified/ndmxml-2.0.0-master-2.0.xsd"
   id="CCSDS_AEM_VERS" version="1.0">
   <header>
     <COMMENT>This example shows an AEM with a rotation</COMMENT>

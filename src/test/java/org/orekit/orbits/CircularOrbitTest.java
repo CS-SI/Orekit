@@ -36,7 +36,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
-import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -48,8 +47,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
@@ -752,103 +749,6 @@ public class CircularOrbitTest {
                           32 * (oP3h.getAlpha(type)                     - oM3h.getAlpha(type)) -
                          168 * (oP2h.getAlpha(type)                     - oM2h.getAlpha(type)) +
                          672 * (oP1h.getAlpha(type)                     - oM1h.getAlpha(type))) / (840 * h);
-
-    }
-
-    @Test
-    public void testInterpolationWithDerivatives() {
-        doTestInterpolation(true,
-                            397, 1.88e-8,
-                            610, 3.52e-6,
-                            4870, 115);
-    }
-
-    @Test
-    public void testInterpolationWithoutDerivatives() {
-        doTestInterpolation(false,
-                            397, 0.0372,
-                            610.0, 1.23,
-                            4870, 8869);
-    }
-
-    private void doTestInterpolation(boolean useDerivatives,
-                                     double shiftErrorWithin, double interpolationErrorWithin,
-                                     double shiftErrorSlightlyPast, double interpolationErrorSlightlyPast,
-                                     double shiftErrorFarPast, double interpolationErrorFarPast)
-        {
-
-        final double ehMu  = 3.9860047e14;
-        final double ae  = 6.378137e6;
-        final double c20 = -1.08263e-3;
-        final double c30 = 2.54e-6;
-        final double c40 = 1.62e-6;
-        final double c50 = 2.3e-7;
-        final double c60 = -5.5e-7;
-
-        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
-        final Vector3D position = new Vector3D(3220103., 69623., 6449822.);
-        final Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
-        final CircularOrbit initialOrbit = new CircularOrbit(new PVCoordinates(position, velocity),
-                                                             FramesFactory.getEME2000(), date, ehMu);
-
-        EcksteinHechlerPropagator propagator =
-                new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
-
-        // set up a 5 points sample
-        List<Orbit> sample = new ArrayList<Orbit>();
-        for (double dt = 0; dt < 300.0; dt += 60.0) {
-            Orbit orbit = propagator.propagate(date.shiftedBy(dt)).getOrbit();
-            if (!useDerivatives) {
-                // remove derivatives
-                double[] stateVector = new double[6];
-                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
-                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
-                                                        orbit.getDate(), orbit.getMu(), orbit.getFrame());
-            }
-            sample.add(orbit);
-        }
-
-        // well inside the sample, interpolation should be much better than Keplerian shift
-        double maxShiftError = 0;
-        double maxInterpolationError = 0;
-        for (double dt = 0; dt < 241.0; dt += 1.0) {
-            AbsoluteDate t        = initialOrbit.getDate().shiftedBy(dt);
-            Vector3D shifted      = initialOrbit.shiftedBy(dt).getPosition();
-            Vector3D interpolated = initialOrbit.interpolate(t, sample).getPosition();
-            Vector3D propagated   = propagator.propagate(t).getPosition();
-            maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
-            maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
-        }
-        Assertions.assertEquals(shiftErrorWithin, maxShiftError, 0.01 * shiftErrorWithin);
-        Assertions.assertEquals(interpolationErrorWithin, maxInterpolationError, 0.01 * interpolationErrorWithin);
-
-        // slightly past sample end, interpolation should quickly increase, but remain reasonable
-        maxShiftError = 0;
-        maxInterpolationError = 0;
-        for (double dt = 240; dt < 300.0; dt += 1.0) {
-            AbsoluteDate t        = initialOrbit.getDate().shiftedBy(dt);
-            Vector3D shifted      = initialOrbit.shiftedBy(dt).getPosition();
-            Vector3D interpolated = initialOrbit.interpolate(t, sample).getPosition();
-            Vector3D propagated   = propagator.propagate(t).getPosition();
-            maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
-            maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
-        }
-        Assertions.assertEquals(shiftErrorSlightlyPast, maxShiftError, 0.01 * shiftErrorSlightlyPast);
-        Assertions.assertEquals(interpolationErrorSlightlyPast, maxInterpolationError, 0.01 * interpolationErrorSlightlyPast);
-
-        // far past sample end, interpolation should become really wrong
-        maxShiftError = 0;
-        maxInterpolationError = 0;
-        for (double dt = 300; dt < 1000; dt += 1.0) {
-            AbsoluteDate t        = initialOrbit.getDate().shiftedBy(dt);
-            Vector3D shifted      = initialOrbit.shiftedBy(dt).getPosition();
-            Vector3D interpolated = initialOrbit.interpolate(t, sample).getPosition();
-            Vector3D propagated   = propagator.propagate(t).getPosition();
-            maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
-            maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
-        }
-        Assertions.assertEquals(shiftErrorFarPast, maxShiftError, 0.01 * shiftErrorFarPast);
-        Assertions.assertEquals(interpolationErrorFarPast, maxInterpolationError, 0.01 * interpolationErrorFarPast);
 
     }
 

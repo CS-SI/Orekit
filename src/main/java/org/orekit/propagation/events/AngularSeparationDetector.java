@@ -77,12 +77,12 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      * the beacon at the same time if they are too close to each other
      * @param proximityAngle proximity angle as seen from observer, at which events are triggered (rad)
      */
-    private AngularSeparationDetector(final double maxCheck, final double threshold,
-                                      final int maxIter,
-                                      final EventHandler handler,
-                                      final PVCoordinatesProvider beacon,
-                                      final PVCoordinatesProvider observer,
-                                      final double proximityAngle) {
+    protected AngularSeparationDetector(final double maxCheck, final double threshold,
+                                        final int maxIter,
+                                        final EventHandler handler,
+                                        final PVCoordinatesProvider beacon,
+                                        final PVCoordinatesProvider observer,
+                                        final double proximityAngle) {
         super(maxCheck, threshold, maxIter, handler);
         this.beacon         = beacon;
         this.observer       = observer;

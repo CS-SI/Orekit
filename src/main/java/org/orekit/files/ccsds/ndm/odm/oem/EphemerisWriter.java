@@ -23,7 +23,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
@@ -50,7 +50,7 @@ public class EphemerisWriter implements EphemerisFileWriter {
     private final OemWriter writer;
 
     /** Header. */
-    private final Header header;
+    private final OdmHeader header;
 
     /** Current metadata. */
     private final OemMetadata metadata;
@@ -60,6 +60,11 @@ public class EphemerisWriter implements EphemerisFileWriter {
 
     /** Output name for error messages. */
     private final String outputName;
+
+    /** Maximum offset for relative dates.
+     * @since 12.0
+     */
+    private final double maxRelativeOffset;
 
     /** Column number for aligning units. */
     private final int unitsColumn;
@@ -83,19 +88,22 @@ public class EphemerisWriter implements EphemerisFileWriter {
      * @param template template for metadata
      * @param fileFormat file format to use
      * @param outputName output name for error messages
+     * @param maxRelativeOffset maximum offset in seconds to use relative dates
+     * (if a date is too far from reference, it will be displayed as calendar elements)
      * @param unitsColumn columns number for aligning units (if negative or zero, units are not output)
-     * @since 11.0
+     * @since 12.0
      */
     public EphemerisWriter(final OemWriter writer,
-                           final Header header, final OemMetadata template,
+                           final OdmHeader header, final OemMetadata template,
                            final FileFormat fileFormat, final String outputName,
-                           final int unitsColumn) {
-        this.writer      = writer;
-        this.header      = header;
-        this.metadata    = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
-        this.fileFormat  = fileFormat;
-        this.outputName  = outputName;
-        this.unitsColumn = unitsColumn;
+                           final double maxRelativeOffset, final int unitsColumn) {
+        this.writer            = writer;
+        this.header            = header;
+        this.metadata          = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
+        this.fileFormat        = fileFormat;
+        this.outputName        = outputName;
+        this.maxRelativeOffset = maxRelativeOffset;
+        this.unitsColumn       = unitsColumn;
     }
 
     /** {@inheritDoc}
@@ -105,7 +113,7 @@ public class EphemerisWriter implements EphemerisFileWriter {
      * {@code ephemerisFile} will be the start time, stop time, reference frame, interpolation
      * method and interpolation degree. The missing values (like object name, local spacecraft
      * body frame...) will be inherited from the template  metadata set at writer
-     * {@link #EphemerisWriter(OemWriter, Header, OemMetadata, FileFormat, String, int) construction}.
+     * {@link #EphemerisWriter(OemWriter, OdmHeader, OemMetadata, FileFormat, String, double, int) construction}.
      * </p>
      */
     @Override
@@ -135,8 +143,10 @@ public class EphemerisWriter implements EphemerisFileWriter {
         }
 
         try (Generator generator = fileFormat == FileFormat.KVN ?
-                                   new KvnGenerator(appendable, OemWriter.KVN_PADDING_WIDTH, outputName, unitsColumn) :
-                                   new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName, unitsColumn > 0)) {
+                                   new KvnGenerator(appendable, OemWriter.KVN_PADDING_WIDTH, outputName,
+                                                    maxRelativeOffset, unitsColumn) :
+                                   new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName,
+                                                    maxRelativeOffset, unitsColumn > 0, null)) {
 
             writer.writeHeader(generator, header);
 

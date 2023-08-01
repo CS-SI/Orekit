@@ -76,12 +76,12 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
      * @param newMaxIter   max iterations.
      * @param newHandler   event handler.
      */
-    private BooleanDetector(final List<EventDetector> detectors,
-                            final Operator operator,
-                            final double newMaxCheck,
-                            final double newThreshold,
-                            final int newMaxIter,
-                            final EventHandler newHandler) {
+    protected BooleanDetector(final List<EventDetector> detectors,
+                              final Operator operator,
+                              final double newMaxCheck,
+                              final double newThreshold,
+                              final int newMaxIter,
+                              final EventHandler newHandler) {
         super(newMaxCheck, newThreshold, newMaxIter, newHandler);
         this.detectors = detectors;
         this.operator = operator;

@@ -28,12 +28,12 @@ import org.orekit.files.ccsds.utils.parsing.ProcessingState;
 public class KvnStructureProcessingState implements ProcessingState {
 
     /** Parser for the complete message. */
-    private final AbstractConstituentParser<?, ?> parser;
+    private final AbstractConstituentParser<?, ?, ?> parser;
 
     /** Simple constructor.
      * @param parser parser for the complete message
      */
-    public KvnStructureProcessingState(final AbstractConstituentParser<?, ?> parser) {
+    public KvnStructureProcessingState(final AbstractConstituentParser<?, ?, ?> parser) {
         this.parser = parser;
     }
 

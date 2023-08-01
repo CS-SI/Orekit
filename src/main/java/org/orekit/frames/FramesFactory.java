@@ -18,9 +18,13 @@ package org.orekit.frames;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.CelestialBodies;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScales;
+import org.orekit.time.UT1Scale;
+import org.orekit.time.UTCScale;
 import org.orekit.utils.IERSConventions;
 
 
@@ -162,19 +166,19 @@ public class FramesFactory {
     public static final String RAPID_DATA_PREDICTION_XML_1980_FILENAME = "^finals\\..*\\.xml$";
 
     /** Default regular expression for the EOPC04 files (IAU1980 compatibles). */
-    public static final String EOPC04_1980_FILENAME = "^eopc04_\\d\\d\\.(\\d\\d)$";
+    public static final String EOPC04_1980_FILENAME = "^eopc04(_\\d\\d)?\\.\\d\\d$";
 
     /** Default regular expression for the BulletinB files (IAU1980 compatibles). */
     public static final String BULLETINB_1980_FILENAME = "^bulletinb(_IAU1980)?((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
 
     /** Default regular expression for the Rapid Data and Prediction EOP columns files (IAU2000 compatibles). */
-    public static final String RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME = "^finals2000A\\.[^.]*$";
+    public static final String RAPID_DATA_PREDICTION_COLUMNS_2000_FILENAME = "^finals2000A\\.[^.]*$";
 
     /** Default regular expression for the Rapid Data and Prediction EOP XML files (IAU2000 compatibles). */
-    public static final String RAPID_DATA_PREDICITON_XML_2000_FILENAME = "^finals2000A\\..*\\.xml$";
+    public static final String RAPID_DATA_PREDICTION_XML_2000_FILENAME = "^finals2000A\\..*\\.xml$";
 
     /** Default regular expression for the EOPC04 files (IAU2000 compatibles). */
-    public static final String EOPC04_2000_FILENAME = "^eopc04_\\d\\d_IAU2000\\.(\\d\\d)$";
+    public static final String EOPC04_2000_FILENAME = "^eopc04(_\\d\\d_IAU2000)?\\.\\d\\d$";
 
     /** Default regular expression for the BulletinB files (IAU2000 compatibles). */
     public static final String BULLETINB_2000_FILENAME = "^bulletinb(_IAU2000)?((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
@@ -425,7 +429,7 @@ public class FramesFactory {
         return getFrames().getTIRF(conventions);
     }
 
-    /** Get an specific International Terrestrial Reference Frame.
+    /** Get a specific International Terrestrial Reference Frame.
      * <p>
      * Note that if a specific version of ITRF is required, then {@code simpleEOP}
      * should most probably be set to {@code false}, as ignoring tidal effects
@@ -443,6 +447,27 @@ public class FramesFactory {
                                         final IERSConventions conventions,
                                         final boolean simpleEOP) {
         return getFrames().getITRF(version, conventions, simpleEOP);
+    }
+
+    /** Build an uncached International Terrestrial Reference Frame with specific {@link EOPHistory EOP history}.
+     * <p>
+     * This frame and its parent frames (TIRF and CIRF) will <em>not</em> be cached, they are
+     * rebuilt from scratch each time this method is called. This factory method is intended
+     * to be used when EOP history is changed at run time. For regular ITRF use, the
+     * {@link #getITRF(IERSConventions, boolean)} and {link {@link #getITRF(ITRFVersion, IERSConventions, boolean)}
+     * are more suitable.
+     * </p>
+     * @param eopHistory EOP history
+     * @param utc UTC time scale
+     * @return an ITRF frame with specified EOP history
+     * @since 12.0
+     */
+    public static Frame buildUncachedITRF(final EOPHistory eopHistory, final UTCScale utc) {
+        final TimeScales timeScales = TimeScales.of(utc.getBaseOffsets(),
+                                                    (conventions, timescales) -> eopHistory.getEntries());
+        final UT1Scale   ut1        = timeScales.getUT1(eopHistory.getConventions(), eopHistory.isSimpleEop());
+        final Frames     frames     = Frames.of(timeScales, (CelestialBodies) null);
+        return frames.buildUncachedITRF(ut1);
     }
 
     /** Get the TIRF reference frame.
@@ -481,7 +506,7 @@ public class FramesFactory {
      * @param conventions IERS conventions to apply
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
-          * @since 6.1
+     * @since 6.1
      */
     @DefaultDataContext
     public static FactoryManagedFrame getITRFEquinox(final IERSConventions conventions,

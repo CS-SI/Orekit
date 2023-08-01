@@ -51,13 +51,25 @@ public enum OmmTleKey {
     BSTAR((token, context, container) -> token.processAsDouble(Units.ONE_PER_ER, context.getParsedUnitsBehavior(),
                                                                container::setBStar)),
 
+    /** SGP4-XP drag-like coefficient.
+     * @since 12.0
+     */
+    BTERM((token, context, container) -> token.processAsDouble(Units.M2_PER_KG, context.getParsedUnitsBehavior(),
+                                                               container::setBTerm)),
+
     /** First time derivative of mean motion. */
     MEAN_MOTION_DOT((token, context, container) -> token.processAsDouble(Units.REV_PER_DAY2_SCALED, context.getParsedUnitsBehavior(),
                                                                          container::setMeanMotionDot)),
 
     /** Second time derivative of mean motion. */
     MEAN_MOTION_DDOT((token, context, container) -> token.processAsDouble(Units.REV_PER_DAY3_SCALED, context.getParsedUnitsBehavior(),
-                                                                          container::setMeanMotionDotDot));
+                                                                          container::setMeanMotionDotDot)),
+
+    /** SGP4-XP solar radiation pressure-like coefficient.
+     * @since 12.0
+     */
+    AGOM((token, context, container) -> token.processAsDouble(Units.M2_PER_KG, context.getParsedUnitsBehavior(),
+                                                              container::setAGoM));
 
     /** Processing method. */
     private final TokenProcessor processor;

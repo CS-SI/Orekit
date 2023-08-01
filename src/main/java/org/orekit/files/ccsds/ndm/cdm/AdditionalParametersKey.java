@@ -159,7 +159,7 @@ public enum AdditionalParametersKey {
 
     /** The distance of the closest point in the objects orbit above the equatorial radius of the central body. */
     PERIAPSIS_ALTITUDE((token, context, container) -> token.processAsDouble(Unit.KILOMETRE, context.getParsedUnitsBehavior(),
-                                                                     container::setPeriapsissAltitude)),
+                                                                     container::setPeriapsisAltitude)),
 
     /** The angle between the objects orbit plane and the orbit centers equatorial plane. */
     INCLINATION((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),

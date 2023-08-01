@@ -36,12 +36,13 @@ import org.orekit.utils.IERSConventions;
  * way to use parsers is to either dedicate one parser for each message
  * and drop it afterwards, or to use a single-thread loop.
  * </p>
+ * @param <H> type of the header
  * @param <T> type of the file
  * @param <P> type of the parser
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class AbstractConstituentParser<T extends NdmConstituent<?, ?>, P extends AbstractConstituentParser<T, ?>>
+public abstract class AbstractConstituentParser<H extends Header, T extends NdmConstituent<H, ?>, P extends AbstractConstituentParser<H, T, ?>>
     extends AbstractMessageParser<T> {
 
     /** IERS Conventions. */
@@ -111,7 +112,7 @@ public abstract class AbstractConstituentParser<T extends NdmConstituent<?, ?>, 
     /** Get file header to fill.
      * @return file header to fill
      */
-    public abstract Header getHeader();
+    public abstract H getHeader();
 
     /** Prepare header for parsing.
      * @return true if parser was able to perform the action

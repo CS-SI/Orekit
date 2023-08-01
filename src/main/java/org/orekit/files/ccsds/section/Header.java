@@ -43,22 +43,31 @@ public class Header extends CommentsContainer {
     /** Minimum version for {@link HeaderKey#MESSAGE_ID}. */
     private final double minVersionMessageId;
 
+    /** Minimum version for {@link HeaderKey#CLASSIFICATION}. */
+    private final double minVersionClassification;
+
     /**
      * Constructor.
      * @param minVersionMessageId minimum version for {@link HeaderKey#MESSAGE_ID}
+     * @param minVersionClassification minimum version for {@link HeaderKey#CLASSIFICATION}
      */
-    public Header(final double minVersionMessageId) {
-        this.formatVersion       = Double.NaN;
-        this.minVersionMessageId = minVersionMessageId;
+    public Header(final double minVersionMessageId,
+                  final double minVersionClassification) {
+        this.formatVersion            = Double.NaN;
+        this.minVersionMessageId      = minVersionMessageId;
+        this.minVersionClassification = minVersionClassification;
     }
 
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(creationDate, HeaderKey.CREATION_DATE);
-        checkNotNull(originator,   HeaderKey.ORIGINATOR);
-        checkAllowed(version, messageId, HeaderKey.MESSAGE_ID, minVersionMessageId, Double.POSITIVE_INFINITY);
+        checkNotNull(creationDate, HeaderKey.CREATION_DATE.name());
+        checkNotNull(originator,   HeaderKey.ORIGINATOR.name());
+        checkAllowed(version, messageId,      HeaderKey.MESSAGE_ID.name(),
+                     minVersionMessageId, Double.POSITIVE_INFINITY);
+        checkAllowed(version, classification, HeaderKey.CLASSIFICATION.name(),
+                     minVersionClassification, Double.POSITIVE_INFINITY);
     }
 
     /**

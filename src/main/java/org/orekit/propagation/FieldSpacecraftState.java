@@ -17,15 +17,8 @@
 package org.orekit.propagation;
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
@@ -44,7 +37,6 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldTimeInterpolable;
 import org.orekit.time.FieldTimeShiftable;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.DoubleArrayDictionary;
@@ -82,13 +74,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Vincent Mouraux
  */
 public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
-    implements FieldTimeStamped<T>, FieldTimeShiftable<FieldSpacecraftState<T>, T>, FieldTimeInterpolable<FieldSpacecraftState<T>, T> {
+    implements FieldTimeStamped<T>, FieldTimeShiftable<FieldSpacecraftState<T>, T> {
 
     /** Default mass. */
     private static final double DEFAULT_MASS = 1000.0;
 
     /**
-     * tolerance on date comparison in {@link #checkConsistency(FieldOrbit<T>, FieldAttitude<T>)}. 100 ns
+     * tolerance on date comparison in {@link #checkConsistency(FieldOrbit, FieldAttitude)}. 100 ns
      * corresponds to sub-mm accuracy at LEO orbital velocities.
      */
     private static final double DATE_INCONSISTENCY_THRESHOLD = 100e-9;
@@ -693,119 +685,6 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         }
 
         return shifted;
-
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * The additional states that are interpolated are the ones already present
-     * in the instance. The sample instances must therefore have at least the same
-     * additional states has the instance. They may have more additional states,
-     * but the extra ones will be ignored.
-     * </p>
-     * <p>
-     * The instance and all the sample instances <em>must</em> be based on similar
-     * trajectory data, i.e. they must either all be based on orbits or all be based
-     * on absolute position-velocity-acceleration. Any inconsistency will trigger
-     * an {@link OrekitIllegalStateException}.
-     * </p>
-     * <p>
-     * As this implementation of interpolation is polynomial, it should be used only
-     * with small samples (about 10-20 points) in order to avoid <a
-     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
-     * and numerical problems (including NaN appearing).
-     * </p>
-     * @exception OrekitIllegalStateException if some instances are not based on
-     * similar trajectory data
-     */
-    public FieldSpacecraftState<T> interpolate(final FieldAbsoluteDate<T> date,
-                                               final Stream<FieldSpacecraftState<T>> sample) {
-
-        // prepare interpolators
-        final List<FieldOrbit<T>> orbits;
-        final List<FieldAbsolutePVCoordinates<T>> absPvas;
-        if (isOrbitDefined()) {
-            orbits  = new ArrayList<FieldOrbit<T>>();
-            absPvas = null;
-        } else {
-            orbits  = null;
-            absPvas = new ArrayList<FieldAbsolutePVCoordinates<T>>();
-        }
-        final List<FieldAttitude<T>> attitudes = new ArrayList<>();
-        final FieldHermiteInterpolator<T> massInterpolator = new FieldHermiteInterpolator<>();
-        final List<FieldArrayDictionary<T>.Entry> addionalEntries = additional.getData();
-        final Map<String, FieldHermiteInterpolator<T>> additionalInterpolators =
-                new HashMap<String, FieldHermiteInterpolator<T>>(additional.size());
-        for (final FieldArrayDictionary<T>.Entry entry : addionalEntries) {
-            additionalInterpolators.put(entry.getKey(), new FieldHermiteInterpolator<>());
-        }
-        final List<FieldArrayDictionary<T>.Entry> addionalDotEntries = additionalDot.getData();
-        final Map<String, FieldHermiteInterpolator<T>> additionalDotInterpolators =
-                new HashMap<String, FieldHermiteInterpolator<T>>(additionalDot.size());
-        for (final FieldArrayDictionary<T>.Entry entry : addionalDotEntries) {
-            additionalDotInterpolators.put(entry.getKey(), new FieldHermiteInterpolator<>());
-        }
-
-        // extract sample data
-        sample.forEach(state -> {
-            final T deltaT = state.getDate().durationFrom(date);
-            if (isOrbitDefined()) {
-                orbits.add(state.getOrbit());
-            } else {
-                absPvas.add(state.getAbsPVA());
-            }
-            attitudes.add(state.getAttitude());
-            final T[] mm = MathArrays.buildArray(date.getField(), 1);
-            mm[0] = state.getMass();
-            massInterpolator.addSamplePoint(deltaT,
-                                            mm);
-            for (final Map.Entry<String, FieldHermiteInterpolator<T>> entry : additionalInterpolators.entrySet()) {
-                entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
-            }
-            for (final Map.Entry<String, FieldHermiteInterpolator<T>> entry : additionalDotInterpolators.entrySet()) {
-                entry.getValue().addSamplePoint(deltaT, state.getAdditionalStateDerivative(entry.getKey()));
-            }
-        });
-
-        // perform interpolations
-        final FieldOrbit<T> interpolatedOrbit;
-        final FieldAbsolutePVCoordinates<T> interpolatedAbsPva;
-        if (isOrbitDefined()) {
-            interpolatedOrbit  = orbit.interpolate(date, orbits);
-            interpolatedAbsPva = null;
-        } else {
-            interpolatedOrbit  = null;
-            interpolatedAbsPva = absPva.interpolate(date, absPvas);
-        }
-        final FieldAttitude<T> interpolatedAttitude = attitude.interpolate(date, attitudes);
-        final T interpolatedMass       = massInterpolator.value(date.getField().getZero())[0];
-        final FieldArrayDictionary<T> interpolatedAdditional;
-        if (additionalInterpolators.isEmpty()) {
-            interpolatedAdditional = null;
-        } else {
-            interpolatedAdditional = new FieldArrayDictionary<>(date.getField(), additionalInterpolators.size());
-            for (final Map.Entry<String, FieldHermiteInterpolator<T>> entry : additionalInterpolators.entrySet()) {
-                interpolatedAdditional.put(entry.getKey(), entry.getValue().value(date.getField().getZero()));
-            }
-        }
-        final FieldArrayDictionary<T> interpolatedAdditionalDot;
-        if (additionalDotInterpolators.isEmpty()) {
-            interpolatedAdditionalDot = null;
-        } else {
-            interpolatedAdditionalDot = new FieldArrayDictionary<>(date.getField(), additionalDotInterpolators.size());
-            for (final Map.Entry<String, FieldHermiteInterpolator<T>> entry : additionalDotInterpolators.entrySet()) {
-                interpolatedAdditionalDot.put(entry.getKey(), entry.getValue().value(date.getField().getZero()));
-            }
-        }
-
-        // create the complete interpolated state
-        if (isOrbitDefined()) {
-            return new FieldSpacecraftState<>(interpolatedOrbit, interpolatedAttitude, interpolatedMass,
-                                              interpolatedAdditional, interpolatedAdditionalDot);
-        } else {
-            return new FieldSpacecraftState<>(interpolatedAbsPva, interpolatedAttitude, interpolatedMass,
-                                              interpolatedAdditional, interpolatedAdditionalDot);
-        }
 
     }
 

@@ -20,7 +20,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
-import org.orekit.propagation.analytical.gnss.data.QZSSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -32,7 +32,7 @@ import org.orekit.time.TimeScales;
 public class Rtcm1044Data extends RtcmEphemerisData {
 
     /** QZSS navigation message. */
-    private QZSSNavigationMessage qzssNavigationMessage;
+    private QZSSLegacyNavigationMessage qzssNavigationMessage;
 
     /** QZSS Time of clock. */
     private double qzssToc;
@@ -60,7 +60,7 @@ public class Rtcm1044Data extends RtcmEphemerisData {
      * @return the QZSS navigation message
      */
     @DefaultDataContext
-    public QZSSNavigationMessage getQzssNavigationMessage() {
+    public QZSSLegacyNavigationMessage getQzssNavigationMessage() {
         return getQzssNavigationMessage(DataContext.getDefault().getTimeScales());
     }
 
@@ -75,7 +75,7 @@ public class Rtcm1044Data extends RtcmEphemerisData {
      * @param timeScales time scales to use for initializing epochs
      * @return the QZSS navigation message
      */
-    public QZSSNavigationMessage getQzssNavigationMessage(final TimeScales timeScales) {
+    public QZSSLegacyNavigationMessage getQzssNavigationMessage(final TimeScales timeScales) {
 
         // Satellite system
         final SatelliteSystem system = SatelliteSystem.QZSS;
@@ -97,7 +97,7 @@ public class Rtcm1044Data extends RtcmEphemerisData {
      * Set the QZSS navigation message.
      * @param qzssNavigationMessage the QZSS navigation message to set
      */
-    public void setQzssNavigationMessage(final QZSSNavigationMessage qzssNavigationMessage) {
+    public void setQzssNavigationMessage(final QZSSLegacyNavigationMessage qzssNavigationMessage) {
         this.qzssNavigationMessage = qzssNavigationMessage;
     }
 

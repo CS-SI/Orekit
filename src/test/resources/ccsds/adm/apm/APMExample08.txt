@@ -1,0 +1,36 @@
+CCSDS_APM_VERS = 2.0
+CREATION_DATE  = 2023-02-03T12:00:00
+ORIGINATOR  = GSFC
+MESSAGE_ID  = A000002
+
+COMMENT          Rotation From Nadir
+OBJECT_NAME    = LRO
+OBJECT_ID      = 2009-031A
+CENTER_NAME    = MOON
+TIME_SYSTEM    = TAI
+
+COMMENT          Current Attitude
+COMMENT          Angular Velocity
+
+
+EPOCH          = 2023-01-01T00:00:00.0000
+
+QUAT_START
+REF_FRAME_A          = EME2000
+REF_FRAME_B          = SC_BODY
+
+Q1                   = 0.171010
+Q2                   = -0.030154
+Q3                   = 0.336824
+QC                   = 0.925417
+QUAT_STOP
+
+ANGVEL_START
+REF_FRAME_A          = EME2000
+REF_FRAME_B          = SC_BODY
+
+ANGVEL_FRAME         = SC_BODY
+ANGVEL_X             = 0.0001 [deg/s]
+ANGVEL_Y             = 0.05 [deg/s]
+ANGVEL_Z             = 0.00003 [deg/s]
+ANGVEL_STOP

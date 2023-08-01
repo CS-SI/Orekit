@@ -16,8 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
@@ -98,11 +98,13 @@ public class AttitudeEndpoints implements AttitudeBuilder {
      * <p>
      * This method should throw an exception if some mandatory entry is missing
      * </p>
+     * @param version format version
      * @param aKey key for frame A
      * @param bKey key for frame B
      * @param dirKey key for direction
      */
-    public void checkMandatoryEntriesExceptExternalFrame(final Enum<?> aKey, final Enum<?> bKey,
+    public void checkMandatoryEntriesExceptExternalFrame(final double version,
+                                                         final Enum<?> aKey, final Enum<?> bKey,
                                                          final Enum<?> dirKey) {
 
         if (frameA == null) {
@@ -118,7 +120,14 @@ public class AttitudeEndpoints implements AttitudeBuilder {
             }
         }
 
-        checkNotNull(a2b, dirKey);
+        if (version < 2.0) {
+            // in ADM version 1, direction is mandatory
+            checkNotNull(a2b, dirKey);
+        } else if (!isA2b()) {
+            // in ADM version 2, direction is always A → B
+            throw new OrekitException(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION,
+                                      dirKey, version);
+        }
 
     }
 
@@ -181,7 +190,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
 
     /** Check if attitude is from external frame to spacecraft body frame.
      * <p>
-     * {@link #checkMandatoryEntriesExceptExternalFrame(Enum, Enum, Enum)
+     * {@link #checkMandatoryEntriesExceptExternalFrame(double, Enum, Enum, Enum)
      * Mandatory entries} must have been initialized properly to non-null
      * values before this method is called, otherwise {@code NullPointerException}
      * will be thrown.
@@ -189,7 +198,7 @@ public class AttitudeEndpoints implements AttitudeBuilder {
      * @return true if attitude is from external frame to spacecraft body frame
      */
     public boolean isExternal2SpacecraftBody() {
-        return a2b ^ frameB.asSpacecraftBodyFrame() == null;
+        return isA2b() ^ frameB.asSpacecraftBodyFrame() == null;
     }
 
     /** Check if a endpoint is compatible with another one.

@@ -19,12 +19,17 @@ package org.orekit.files.ccsds.ndm.odm.omm;
 
 import java.util.regex.Pattern;
 
-import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 
-public class OmmMetadata extends CommonMetadata {
+public class OmmMetadata extends OdmCommonMetadata {
 
     /** Constant for SGP/SGP4 mean elements theory. */
     public static final String SGP_SGP4_THEORY = "SGP/SGP4";
+
+    /** Constant for SGP4-XP mean elements theory.
+     * @since 12.0
+     */
+    public static final String SGP4_XP_THEORY = "SGP4-XP";
 
     /** Constant for DSST mean elements theory. */
     public static final String DSST_THEORY = "DSST";

@@ -103,13 +103,11 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      * @param maxIter             Maximum number of iterations in the event time search.
      * @param handler             Event handler to call at event occurrences.
      * @param secondaryPVProvider PVCoordinates provider of the other object with which we want to find out the extremum
-     *                            * approach.
+     *                            approach.
      * @see EventHandler
      */
-    public ExtremumApproachDetector(
-            final double maxCheck, final double threshold, final int maxIter,
-            final EventHandler handler,
-            final PVCoordinatesProvider secondaryPVProvider) {
+    protected ExtremumApproachDetector(final double maxCheck, final double threshold, final int maxIter,
+                                       final EventHandler handler, final PVCoordinatesProvider secondaryPVProvider) {
         super(maxCheck, threshold, maxIter, handler);
         this.secondaryPVProvider = secondaryPVProvider;
     }
@@ -132,7 +130,7 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      * @param s Spacecraft state.
      * @return Relative position between primary (=s) and secondaryPVProvider.
      */
-    protected PVCoordinates computeDeltaPV(final SpacecraftState s) {
+    public PVCoordinates computeDeltaPV(final SpacecraftState s) {
         return new PVCoordinates(s.getPVCoordinates(),
                                  secondaryPVProvider.getPVCoordinates(s.getDate(), s.getFrame()));
     }
@@ -142,5 +140,14 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
     protected ExtremumApproachDetector create(final double newMaxCheck, final double newThreshold, final int newMaxIter,
                                               final EventHandler newHandler) {
         return new ExtremumApproachDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, secondaryPVProvider);
+    }
+
+    /**
+     * Get the secondary position-velocity provider stored in this instance.
+     *
+     * @return the secondary position-velocity provider stored in this instance
+     */
+    public PVCoordinatesProvider getSecondaryPVProvider() {
+        return secondaryPVProvider;
     }
 }

@@ -35,6 +35,7 @@ import org.hipparchus.util.MerweUnscentedTransform;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -148,7 +149,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
                                                                   useSun, useMoon, useTides);
 
         // Measurements
-        final double sigma = 2.0;
+        final double sigma = 1.0;
         final List<ObservedMeasurement<?>> measurements = initializeMeasurements(observations, initialOrbit, sigma);
 
         // Covariance
@@ -266,7 +267,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final Frame orbitFrame = FramesFactory.getEME2000();
 
         // Bounded propagator from the CPF file
-        final BoundedPropagator bounded = ephemeris.getPropagator();
+        final BoundedPropagator bounded = ephemeris.getPropagator(new FrameAlignedProvider(orbitFrame));
 
         // Initial date
         final AbsoluteDate initialDate = bounded.getMinDate();

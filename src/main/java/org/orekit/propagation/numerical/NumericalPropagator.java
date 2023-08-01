@@ -218,7 +218,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      */
     public NumericalPropagator(final ODEIntegrator integrator,
                                final AttitudeProvider attitudeProvider) {
-        super(integrator, PropagationType.MEAN);
+        super(integrator, PropagationType.OSCULATING);
         forceModels             = new ArrayList<ForceModel>();
         ignoreCentralAttraction = false;
         initMapper();
@@ -844,7 +844,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
             final double mass = y[6];
             if (mass <= 0.0) {
-                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
+                throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS, mass);
             }
 
             if (getOrbitType() == null) {

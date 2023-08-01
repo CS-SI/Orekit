@@ -27,10 +27,7 @@ import org.orekit.files.ccsds.utils.lexical.ParseToken;
 public enum AdmMetadataKey {
 
     /** Object name entry. */
-    OBJECT_NAME((token, context, container) -> token.processAsUppercaseString(container::setObjectName)),
-
-    /** Object ID entry. */
-    OBJECT_ID((token, context, container) -> token.processAsUppercaseString(container::setObjectID)),
+    OBJECT_NAME((token, context, container) -> token.processAsFreeTextString(container::setObjectName)),
 
     /** Center name entry. */
     CENTER_NAME((token, context, container) -> token.processAsCenter(container::setCenter,

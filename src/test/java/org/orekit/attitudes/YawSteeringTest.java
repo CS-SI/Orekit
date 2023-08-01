@@ -46,6 +46,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -54,6 +55,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -168,9 +170,12 @@ public class YawSteeringTest {
             Orbit o = circOrbit.shiftedBy(dt);
             sample.add(law.getTargetPV(o, o.getDate(), o.getFrame()));
         }
-        TimeStampedPVCoordinates reference =
-                TimeStampedPVCoordinates.interpolate(circOrbit.getDate(),
-                                                     CartesianDerivativesFilter.USE_P, sample);
+
+        // create interpolator
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_P);
+
+        TimeStampedPVCoordinates reference = interpolator.interpolate(circOrbit.getDate(), sample);
 
         TimeStampedPVCoordinates target =
                 law.getTargetPV(circOrbit, circOrbit.getDate(), circOrbit.getFrame());

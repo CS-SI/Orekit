@@ -93,4 +93,12 @@ public class TimeConverter {
         return timeScale;
     }
 
+    /** Get the reference date for relative dates (may be null if no relative dates are used).
+     * @return reference date for relative dates (may be null if no relative dates are used)
+     * @since 12.0
+     */
+    public AbsoluteDate getReferenceDate() {
+        return referenceDate;
+    }
+
 }

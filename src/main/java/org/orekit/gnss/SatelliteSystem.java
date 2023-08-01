@@ -18,6 +18,7 @@ package org.orekit.gnss;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -33,28 +34,28 @@ import org.orekit.time.TimeScales;
 public enum SatelliteSystem {
 
     /** GPS system. */
-    GPS('G'),
+    GPS('G', timescales -> timescales.getGPS()),
 
     /** GLONASS system. */
-    GLONASS('R'),
+    GLONASS('R', timescales -> timescales.getGLONASS()),
 
     /** Galileo system. */
-    GALILEO('E'),
+    GALILEO('E', timescales -> timescales.getGST()),
 
     /** Beidou system. */
-    BEIDOU('C'),
+    BEIDOU('C', timescales -> timescales.getBDT()),
 
     /** Quasi-Zenith Satellite System system. */
-    QZSS('J'),
+    QZSS('J', timescales -> timescales.getQZSS()),
 
     /** Indian Regional Navigation Satellite System system. */
-    IRNSS('I'),
+    IRNSS('I', timescales -> timescales.getIRNSS()),
 
     /** SBAS system. */
-    SBAS('S'),
+    SBAS('S', timescales -> null),
 
     /** Mixed system. */
-    MIXED('M');
+    MIXED('M', timescales -> null);
 
     /** Parsing map. */
     private static final Map<Character, SatelliteSystem> KEYS_MAP = new HashMap<>();
@@ -67,11 +68,18 @@ public enum SatelliteSystem {
     /** Key for the system. */
     private final char key;
 
+    /** Provider for default time scale.
+     * @since 12.0
+     */
+    private final Function<TimeScales, TimeScale> defaultTimeScaleProvider;
+
     /** Simple constructor.
      * @param key key letter
+     * @param defaultTimeScaleProvider provider for default time scale
      */
-    SatelliteSystem(final char key) {
-        this.key = key;
+    SatelliteSystem(final char key, final Function<TimeScales, TimeScale> defaultTimeScaleProvider) {
+        this.key                      = key;
+        this.defaultTimeScaleProvider = defaultTimeScaleProvider;
     }
 
     /** Get the key for the system.
@@ -98,46 +106,25 @@ public enum SatelliteSystem {
         return satelliteSystem;
     }
 
+    /** Parse a string to get the satellite system.
+     * <p>
+     * The string first character must be the satellite system, or empty to get GPS as default
+     * </p>
+     * @param s string to parse
+     * @return the satellite system
+     * @since 12.0
+     */
+    public static SatelliteSystem parseSatelliteSystemWithGPSDefault(final String s) {
+        return s.isEmpty() ? SatelliteSystem.GPS : parseSatelliteSystem(s);
+    }
+
     /** Get default time scale for satellite system.
      * @param timeScales the set of timeScales to use
      * @return the default time scale among the given set matching to satellite system,
      *         null if there are not
      */
     public TimeScale getDefaultTimeSystem(final TimeScales timeScales) {
-
-        TimeScale timeScale = null;
-        switch (this) {
-            case GPS:
-                timeScale = timeScales.getGPS();
-                break;
-
-            case GALILEO:
-                timeScale = timeScales.getGST();
-                break;
-
-            case GLONASS:
-                timeScale = timeScales.getGLONASS();
-                break;
-
-            case QZSS:
-                timeScale = timeScales.getQZSS();
-                break;
-
-            case BEIDOU:
-                timeScale = timeScales.getBDT();
-                break;
-
-            case IRNSS:
-                timeScale = timeScales.getIRNSS();
-                break;
-
-            // Default value is null
-            default:
-                timeScale = null;
-                break;
-        }
-
-        return timeScale;
+        return defaultTimeScaleProvider.apply(timeScales);
     }
 
 }

@@ -352,7 +352,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
         final SingleBodyRelativeAttraction forceModel = new SingleBodyRelativeAttraction(moon);
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
                                              new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
-                                             1.0e-16, false);
+                                             5.0e-16, false);
     }
 
     @Test

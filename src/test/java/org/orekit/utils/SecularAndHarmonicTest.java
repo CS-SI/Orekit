@@ -165,6 +165,10 @@ public class SecularAndHarmonicTest {
                                      1e-14);
         }
 
+        Assertions.assertEquals(1,             resettingModel.getSecularDegree());
+        Assertions.assertEquals(1,             resettingModel.getPulsations().length);
+        Assertions.assertEquals(SUN_PULSATION, resettingModel.getPulsations()[0], 1.0e-10);
+
     }
 
     @Test

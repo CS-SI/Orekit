@@ -33,12 +33,14 @@ import org.orekit.propagation.analytical.gnss.data.GalileoAlmanac;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -175,17 +177,19 @@ public class GalileoPropagatorTest {
             for (int i = -3; i <= 3; ++i) {
                 sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
             }
-            final PVCoordinates interpolated =
-                            TimeStampedPVCoordinates.interpolate(central,
-                                                                 CartesianDerivativesFilter.USE_P,
-                                                                 sample);
+
+            // create interpolator
+            final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                    new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_P);
+
+            final PVCoordinates interpolated = interpolator.interpolate(central, sample);
             errorP = FastMath.max(errorP, Vector3D.distance(pv.getPosition(), interpolated.getPosition()));
             errorV = FastMath.max(errorV, Vector3D.distance(pv.getVelocity(), interpolated.getVelocity()));
             errorA = FastMath.max(errorA, Vector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()));
         }
-        Assertions.assertEquals(0.0, errorP, 2.4e-10);
+        Assertions.assertEquals(0.0, errorP, 1.9e-9);
         Assertions.assertEquals(0.0, errorV, 4.4e-8);
-        Assertions.assertEquals(0.0, errorA, 1.7e-9);
+        Assertions.assertEquals(0.0, errorA, 1.8e-9);
 
     }
 

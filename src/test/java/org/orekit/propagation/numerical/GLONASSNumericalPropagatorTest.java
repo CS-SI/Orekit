@@ -30,6 +30,7 @@ import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GLONASSEphemeris;
 import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
@@ -214,6 +215,12 @@ public class GLONASSNumericalPropagatorTest {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void testIssue1032() {
+        final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagatorBuilder(new ClassicalRungeKuttaIntegrator(10.), ephemeris, false).build();
+        Assertions.assertEquals(PropagationType.OSCULATING, propagator.getPropagationType());
     }
 
 }

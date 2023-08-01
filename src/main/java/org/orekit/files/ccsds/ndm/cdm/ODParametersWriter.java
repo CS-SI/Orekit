@@ -56,8 +56,8 @@ public class ODParametersWriter extends AbstractWriter {
 
         generator.writeComments(ODparameters.getComments());
         // OD parameters
-        generator.writeEntry(ODParametersKey.TIME_LASTOB_START.name(),   timeConverter, ODparameters.getTimeLastObsStart(),  false);
-        generator.writeEntry(ODParametersKey.TIME_LASTOB_END.name(),     timeConverter, ODparameters.getTimeLastObsEnd(),    false);
+        generator.writeEntry(ODParametersKey.TIME_LASTOB_START.name(),   timeConverter, ODparameters.getTimeLastObsStart(),  true, false);
+        generator.writeEntry(ODParametersKey.TIME_LASTOB_END.name(),     timeConverter, ODparameters.getTimeLastObsEnd(),    true, false);
         generator.writeEntry(ODParametersKey.RECOMMENDED_OD_SPAN.name(), ODparameters.getRecommendedOdSpan(), Unit.DAY,      false);
         generator.writeEntry(ODParametersKey.ACTUAL_OD_SPAN.name(),      ODparameters.getActualOdSpan(),      Unit.DAY,      false);
         generator.writeEntry(ODParametersKey.OBS_AVAILABLE.name(),       ODparameters.getObsAvailable(),                     false);

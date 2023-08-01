@@ -79,9 +79,9 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * @param handler event handler to call at event occurrences
      * @param topo topocentric frame centered on ground point
      */
-    private ElevationExtremumDetector(final double maxCheck, final double threshold,
-                                      final int maxIter, final EventHandler handler,
-                                      final TopocentricFrame topo) {
+    protected ElevationExtremumDetector(final double maxCheck, final double threshold,
+                                        final int maxIter, final EventHandler handler,
+                                        final TopocentricFrame topo) {
         super(maxCheck, threshold, maxIter, handler);
         this.topo = topo;
     }

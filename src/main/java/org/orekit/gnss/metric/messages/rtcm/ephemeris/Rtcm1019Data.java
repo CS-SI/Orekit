@@ -20,7 +20,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
-import org.orekit.propagation.analytical.gnss.data.GPSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
@@ -32,7 +32,7 @@ import org.orekit.time.TimeScales;
 public class Rtcm1019Data extends RtcmEphemerisData {
 
     /** GPS navigation message. */
-    private GPSNavigationMessage gpsNavigationMessage;
+    private GPSLegacyNavigationMessage gpsNavigationMessage;
 
     /** GPS Time of clock. */
     private double gpsToc;
@@ -63,7 +63,7 @@ public class Rtcm1019Data extends RtcmEphemerisData {
      * @return the GPS navigation message
      */
     @DefaultDataContext
-    public GPSNavigationMessage getGpsNavigationMessage() {
+    public GPSLegacyNavigationMessage getGpsNavigationMessage() {
         return getGpsNavigationMessage(DataContext.getDefault().getTimeScales());
     }
 
@@ -78,7 +78,7 @@ public class Rtcm1019Data extends RtcmEphemerisData {
      * @param timeScales time scales to use for initializing epochs
      * @return the GPS navigation message
      */
-    public GPSNavigationMessage getGpsNavigationMessage(final TimeScales timeScales) {
+    public GPSLegacyNavigationMessage getGpsNavigationMessage(final TimeScales timeScales) {
 
         // Satellite system
         final SatelliteSystem system = SatelliteSystem.GPS;
@@ -100,7 +100,7 @@ public class Rtcm1019Data extends RtcmEphemerisData {
      * Set the GPS navigation message.
      * @param gpsNavigationMessage the GPS navigation message to set
      */
-    public void setGpsNavigationMessage(final GPSNavigationMessage gpsNavigationMessage) {
+    public void setGpsNavigationMessage(final GPSLegacyNavigationMessage gpsNavigationMessage) {
         this.gpsNavigationMessage = gpsNavigationMessage;
     }
 

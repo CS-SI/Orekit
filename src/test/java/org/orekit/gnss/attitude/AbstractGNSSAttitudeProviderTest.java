@@ -38,7 +38,9 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolator;
 import org.orekit.time.GNSSDate;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -46,7 +48,9 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -57,6 +61,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class AbstractGNSSAttitudeProviderTest {
@@ -212,28 +217,41 @@ public abstract class AbstractGNSSAttitudeProviderTest {
         @Override
         public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date,
                                                          Frame frame) {
-           return TimeStampedPVCoordinates.interpolate(date,
-                                                        CartesianDerivativesFilter.USE_P,
-                                                        getCloseLines(date).
-                                                        map(parsedLine ->
-                                                            new TimeStampedPVCoordinates(parsedLine.gpsDate.getDate(),
-                                                                                         parsedLine.sunP,
-                                                                                         Vector3D.ZERO,
-                                                                                         Vector3D.ZERO)));
+            // create sample
+            final List<TimeStampedPVCoordinates> sample = getCloseLines(date).
+                    map(parsedLine ->
+                                new TimeStampedPVCoordinates(
+                                        parsedLine.gpsDate.getDate(),
+                                        parsedLine.sunP,
+                                        Vector3D.ZERO,
+                                        Vector3D.ZERO)).collect(Collectors.toList());
+
+            // create interpolator
+            final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                    new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), 1000000, CartesianDerivativesFilter.USE_P);
+
+            return interpolator.interpolate(date, sample);
         }
 
         @Override
         public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T>
             getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
             final Field<T> field = date.getField();
-            return TimeStampedFieldPVCoordinates.interpolate(date,
-                                                             CartesianDerivativesFilter.USE_P,
-                                                             getCloseLines(date.toAbsoluteDate()).
-                                                             map(parsedLine ->
-                                                                 new TimeStampedFieldPVCoordinates<>(parsedLine.gpsDate.getDate(),
-                                                                                                     new FieldVector3D<>(field, parsedLine.sunP),
-                                                                                                     FieldVector3D.getZero(field),
-                                                                                                     FieldVector3D.getZero(field))));
+
+            // create sample
+            final List<TimeStampedFieldPVCoordinates<T>> sample = getCloseLines(date.toAbsoluteDate()).
+                    map(parsedLine ->
+                                new TimeStampedFieldPVCoordinates<>(parsedLine.gpsDate.getDate(),
+                                                                    new FieldVector3D<>(field, parsedLine.sunP),
+                                                                    FieldVector3D.getZero(field),
+                                                                    FieldVector3D.getZero(field))).collect(
+                            Collectors.toList());
+            // create interpolator
+            final FieldTimeInterpolator<TimeStampedFieldPVCoordinates<T>, T> interpolator =
+                    new TimeStampedFieldPVCoordinatesHermiteInterpolator<>(sample.size(), 1.025 * Constants.JULIAN_DAY,
+                                                                           CartesianDerivativesFilter.USE_P);
+
+            return interpolator.interpolate(date, sample);
         }
 
     }

@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -42,6 +43,26 @@ public class GLONASSNavigationMessage extends AbstractEphemerisMessage implement
 
     /** Frequency number. */
     private int frequencyNumber;
+
+    /** Status flags.
+     * @since 12.0
+     */
+    private int statusFlags;
+
+    /** Health flags.
+     * @since 12.0
+     */
+    private int healthFlags;
+
+    /** Group Delay Difference (s).
+     * @since 12.0
+     */
+    private double groupDelayDifference;
+
+    /** User range accuracy (m).
+     * @since 12.0
+     */
+    private double ura;
 
     /** Constructor. */
     public GLONASSNavigationMessage() {
@@ -174,6 +195,74 @@ public class GLONASSNavigationMessage extends AbstractEphemerisMessage implement
      */
     public void setTime(final double time) {
         this.time = time;
+    }
+
+    /** Get status flags.
+     * @return status flags
+     * @since 12.0
+     */
+    public int getStatusFlags() {
+        return statusFlags;
+    }
+
+    /** Set status flag.
+     * @param statusFlags status flag (parsed as a double)
+     * @since 12.0
+     */
+    public void setStatusFlags(final double statusFlags) {
+        this.statusFlags = (int) FastMath.rint(statusFlags);
+    }
+
+    /** Set health flag.
+     * @param healthFlags health flag (parsed as a double)
+     * @since 12.0
+     */
+    public void setHealthFlags(final double healthFlags) {
+        this.healthFlags = Double.isNaN(healthFlags) ? 15 : (int) FastMath.rint(healthFlags);
+    }
+
+    /** Get health flags.
+     * @return health flags
+     * @since 12.0
+     */
+    public int getHealthFlags() {
+        return healthFlags;
+    }
+
+    /** Get group delay difference.
+     * @return group delay difference
+     * @since 12.0
+     */
+    public double getGroupDelayDifference() {
+        return groupDelayDifference;
+    }
+
+    /** Set group delay difference.
+     * @param groupDelayDifference group delay difference
+     * @since 12.0
+     */
+    public void setGroupDelayDifference(final double groupDelayDifference) {
+        this.groupDelayDifference = Double.isNaN(groupDelayDifference) ?
+                                    0.999999999999e+09 :
+                                    groupDelayDifference;
+    }
+
+    /**
+     * Getter for the user range accuray (meters).
+     * @return the user range accuracy
+     * @since 12.0
+     */
+    public double getURA() {
+        return ura;
+    }
+
+    /**
+     * Setter for the user range accuracy.
+     * @param accuracy the value to set
+     * @since 12.0
+     */
+    public void setURA(final double accuracy) {
+        this.ura = accuracy;
     }
 
     /**
