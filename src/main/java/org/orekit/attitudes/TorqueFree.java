@@ -56,10 +56,14 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 /** This class handles torque-free motion of a general (non-symmetrical) body.
  * <p>
  * This attitude model is analytical, it can be called at any arbitrary date
- * before or after the date of the initial attitude and will provide the
- * corresponding attitude exactly in O(1) time. The equations are based on Landau
- * and Lifchitz Course of Theoretical Physics, Mechanics vol 1, chapter 37.
- * Some adaptations have been made to Landau and Lifchitz equations:
+ * before or after the date of the initial attitude. Despite being an analytical
+ * model, it is <em>not</em> an approximation. It provides the attitude exactly
+ * in O(1) time.
+ * </p>
+ * <p>
+ * The equations are based on Landau and Lifchitz Course of Theoretical Physics,
+ * Mechanics vol 1, chapter 37. Some adaptations have been made to Landau and
+ * Lifchitz equations:
  * </p>
  * <ul>
  *   <li>inertia can be in any order</li>
@@ -69,6 +73,12 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  *   <li>the φ angle model is based on a precomputed quadrature over one period computed
  *   at construction (the Landau and Lifchitz equations 37.17 to 37.20 seem to be wrong)</li>
  * </ul>
+ * <p>
+ * The precomputed quadrature is performed numerically, but as it is performed only once at
+ * construction and the full integrated model over one period is saved, it can be applied
+ * analytically later on for any number of periods, hence we consider this attitude mode
+ * to be analytical.
+ * </p>
  * @author Luc Maisonobe
  * @author Lucas Girodet
  * @since 12.0
@@ -212,6 +222,11 @@ public class TorqueFree implements AttitudeProvider {
             final Vector3D n3  = Vector3D.dotProduct(Vector3D.crossProduct(a1, a2), a3) > 0 ?
                                   a3.normalize() : a3.normalize().negate();
 
+            final Vector3D omega0 = initialAttitude.getSpin();
+            final Vector3D m0     = new Vector3D(i1 * Vector3D.dotProduct(omega0, n1), n1,
+                                                 i2 * Vector3D.dotProduct(omega0, n2), n2,
+                                                 i3 * Vector3D.dotProduct(omega0, n3), n3);
+
             // sort axes in increasing moments of inertia order
             Inertia tmpInertia = new Inertia(new InertiaAxis(i1, n1), new InertiaAxis(i2, n2), new InertiaAxis(i3, n3));
             if (tmpInertia.getInertiaAxis1().getI() > tmpInertia.getInertiaAxis2().getI()) {
@@ -226,10 +241,12 @@ public class TorqueFree implements AttitudeProvider {
 
             // in order to simplify implementation, we want the motion to be about axis 3
             // which is either the minimum or the maximum inertia axis
-            final Vector3D omega0            = initialAttitude.getSpin();
-            final double   o12               = omega0.getX() * omega0.getX();
-            final double   o22               = omega0.getY() * omega0.getY();
-            final double   o32               = omega0.getZ() * omega0.getZ();
+            final double  o1                 = Vector3D.dotProduct(omega0, n1);
+            final double  o2                 = Vector3D.dotProduct(omega0, n2);
+            final double  o3                 = Vector3D.dotProduct(omega0, n3);
+            final double  o12                = o1 * o1;
+            final double  o22                = o2 * o2;
+            final double  o32                = o3 * o3;
             final double   twoE              = i1 * o12 + i2 * o22 + i3 * o32;
             final double   m2                = i1 * i1 * o12 + i2 * i2 * o22 + i3 * i3 * o32;
             final double   separatrixInertia = (twoE == 0) ? 0.0 : m2 / twoE;
@@ -251,11 +268,15 @@ public class TorqueFree implements AttitudeProvider {
             final double i1C = tmpInertia.getInertiaAxis1().getI();
             final double i2C = tmpInertia.getInertiaAxis2().getI();
             final double i3C = tmpInertia.getInertiaAxis3().getI();
+            final double i32 = i3C - i2C;
+            final double i31 = i3C - i1C;
+            final double i21 = i2C - i1C;
 
             // convert initial conditions to Euler angles such the M is aligned with Z in sorted computation frame
-            sortedToBody   = new Rotation(n1, n2, tmpInertia.getInertiaAxis1().getA(), tmpInertia.getInertiaAxis2().getA());
+            sortedToBody   = new Rotation(Vector3D.PLUS_I, Vector3D.PLUS_J,
+                                          tmpInertia.getInertiaAxis1().getA(), tmpInertia.getInertiaAxis2().getA());
             final Vector3D omega0Sorted = sortedToBody.applyInverseTo(omega0);
-            final Vector3D m0Sorted     = new Vector3D(i1C * omega0Sorted.getX(), i2C * omega0Sorted.getY(), i3C * omega0Sorted.getZ());
+            final Vector3D m0Sorted     = sortedToBody.applyInverseTo(m0);
             final double   phi0         = 0; // this angle can be set arbitrarily, so 0 is a fair value (Eq. 37.13 - 37.14)
             final double   theta0       = FastMath.acos(m0Sorted.getZ() / m0Sorted.getNorm());
             final double   psi0         = FastMath.atan2(m0Sorted.getX(), m0Sorted.getY()); // it is really atan2(x, y), not atan2(y, x) as usual!
@@ -265,10 +286,6 @@ public class TorqueFree implements AttitudeProvider {
                                                            phi0, theta0, psi0);
             inertToAligned = alignedToSorted0.
                              applyInverseTo(sortedToBody.applyInverseTo(initialAttitude.getRotation()));
-
-            final double i32  = i3C - i2C;
-            final double i31  = i3C - i1C;
-            final double i21  = i2C - i1C;
 
             // Ω is always o1Scale * cn((t-tref) * tScale), o2Scale * sn((t-tref) * tScale), o3Scale * dn((t-tref) * tScale)
             tScale  = FastMath.copySign(FastMath.sqrt(i32 * (m2 - twoE * i1C) / (i1C * i2C * i3C)),
@@ -464,9 +481,9 @@ public class TorqueFree implements AttitudeProvider {
             final T                zero = field.getZero();
             final T                fI1  = zero.newInstance(i1);
             final FieldVector3D<T> fA1  = new FieldVector3D<>(field, a1);
-            final T fI2  = zero.newInstance(i2);
+            final T                fI2  = zero.newInstance(i2);
             final FieldVector3D<T> fA2  = new FieldVector3D<>(field, a2);
-            final T fI3  = zero.newInstance(i3);
+            final T                fI3  = zero.newInstance(i3);
             final FieldVector3D<T> fA3  = new FieldVector3D<>(field, a3);
 
             // build inertia tensor
@@ -474,6 +491,11 @@ public class TorqueFree implements AttitudeProvider {
             final FieldVector3D<T> n2  = fA2.normalize();
             final FieldVector3D<T> n3  = Vector3D.dotProduct(Vector3D.crossProduct(a1, a2), a3) > 0 ?
                                          fA3.normalize() : fA3.normalize().negate();
+
+            final FieldVector3D<T> omega0 = new FieldVector3D<>(field, initialAttitude.getSpin());
+            final FieldVector3D<T> m0 = new FieldVector3D<>(fI1.multiply(FieldVector3D.dotProduct(omega0, n1)), n1,
+                                                            fI2.multiply(FieldVector3D.dotProduct(omega0, n2)), n2,
+                                                            fI3.multiply(FieldVector3D.dotProduct(omega0, n3)), n3);
 
             // sort axes in increasing moments of inertia order
             FieldInertia<T> tmpInertia = new FieldInertia<>(new FieldInertiaAxis<>(fI1, n1),
@@ -491,20 +513,22 @@ public class TorqueFree implements AttitudeProvider {
 
             // in order to simplify implementation, we want the motion to be about axis 3
             // which is either the minimum or the maximum inertia axis
-            final FieldVector3D<T> omega0            = new FieldVector3D<>(field, initialAttitude.getSpin());
-            final T                o12               = omega0.getX().multiply(omega0.getX());
-            final T                o22               = omega0.getY().multiply(omega0.getY());
-            final T                o32               = omega0.getZ().multiply(omega0.getZ());
-            final T                twoE              = fI1.multiply(o12).add(fI2.multiply(o22)).add(fI3.multiply(o32));
-            final T                m2                = fI1.multiply(i1).multiply(o12).add(fI2.multiply(fI2).multiply(o22)).add(fI3.multiply(fI3).multiply(o32));
-            final T                separatrixInertia = (twoE.isZero()) ? zero : m2.divide(twoE);
-            final boolean          clockwise;
+            final T       o1                = FieldVector3D.dotProduct(omega0, n1);
+            final T       o2                = FieldVector3D.dotProduct(omega0, n2);
+            final T       o3                = FieldVector3D.dotProduct(omega0, n3);
+            final T       o12               = o1.multiply(o1);
+            final T       o22               = o2.multiply(o2);
+            final T       o32               = o3.multiply(o3);
+            final T       twoE              = fI1.multiply(o12).add(fI2.multiply(o22)).add(fI3.multiply(o32));
+            final T       m2                = fI1.multiply(fI1).multiply(o12).add(fI2.multiply(fI2).multiply(o22)).add(fI3.multiply(fI3).multiply(o32));
+            final T       separatrixInertia = (twoE.isZero()) ? zero : m2.divide(twoE);
+            final boolean clockwise;
             if (separatrixInertia.subtract(tmpInertia.getInertiaAxis2().getI()).getReal() < 0) {
                 // motion is about minimum inertia axis
                 // we swap axes to put them in decreasing moments order
                 // motion will be clockwise about axis 3
-                clockwise = true;
-                tmpInertia   = tmpInertia.swap13();
+                clockwise  = true;
+                tmpInertia = tmpInertia.swap13();
             } else {
                 // motion is about maximum inertia axis
                 // we keep axes in increasing moments order
@@ -516,26 +540,26 @@ public class TorqueFree implements AttitudeProvider {
             final T i1C = tmpInertia.getInertiaAxis1().getI();
             final T i2C = tmpInertia.getInertiaAxis2().getI();
             final T i3C = tmpInertia.getInertiaAxis3().getI();
+            final T i32 = i3C.subtract(i2C);
+            final T i31 = i3C.subtract(i1C);
+            final T i21 = i2C.subtract(i1C);
 
             // convert initial conditions to Euler angles such the M is aligned with Z in sorted computation frame
-            sortedToBody   = new FieldRotation<>(n1, n2, tmpInertia.getInertiaAxis1().getA(), tmpInertia.getInertiaAxis2().getA());
+            sortedToBody   = new FieldRotation<>(FieldVector3D.getPlusI(field),
+                                                 FieldVector3D.getPlusJ(field),
+                                                 tmpInertia.getInertiaAxis1().getA(),
+                                                 tmpInertia.getInertiaAxis2().getA());
             final FieldVector3D<T> omega0Sorted = sortedToBody.applyInverseTo(omega0);
-            final FieldVector3D<T> m0Sorted     = new FieldVector3D<>(i1C.multiply(omega0Sorted.getX()),
-                            i2C.multiply(omega0Sorted.getY()),
-                            i3C.multiply(omega0Sorted.getZ()));
-            final T   phi0         = zero; // this angle can be set arbitrarily, so 0 is a fair value (Eq. 37.13 - 37.14)
-            final T   theta0       = FastMath.acos(m0Sorted.getZ().divide(m0Sorted.getNorm()));
-            final T   psi0         = FastMath.atan2(m0Sorted.getX(), m0Sorted.getY()); // it is really atan2(x, y), not atan2(y, x) as usual!
+            final FieldVector3D<T> m0Sorted     = sortedToBody.applyInverseTo(m0);
+            final T                phi0         = zero; // this angle can be set arbitrarily, so 0 is a fair value (Eq. 37.13 - 37.14)
+            final T                theta0       = FastMath.acos(m0Sorted.getZ().divide(m0Sorted.getNorm()));
+            final T                psi0         = FastMath.atan2(m0Sorted.getX(), m0Sorted.getY()); // it is really atan2(x, y), not atan2(y, x) as usual!
 
             // compute offset rotation between inertial frame aligned with momentum and regular inertial frame
             final FieldRotation<T> alignedToSorted0 = new FieldRotation<>(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
-                            phi0, theta0, psi0);
+                                                                          phi0, theta0, psi0);
             inertToAligned = alignedToSorted0.
                              applyInverseTo(sortedToBody.applyInverseTo(new FieldRotation<>(field, initialAttitude.getRotation())));
-
-            final T i32  = i3C.subtract(i2C);
-            final T i31  = i3C.subtract(i1C);
-            final T i21  = i2C.subtract(i1C);
 
             // Ω is always o1Scale * cn((t-tref) * tScale), o2Scale * sn((t-tref) * tScale), o3Scale * dn((t-tref) * tScale)
             tScale  = FastMath.copySign(FastMath.sqrt(i32.multiply(m2.subtract(twoE.multiply(i1C))).divide(i1C.multiply(i2C).multiply(i3C))),
