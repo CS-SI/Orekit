@@ -235,4 +235,50 @@ public class NeQuickModelTest {
         Assertions.assertEquals(1.13, delay.getReal(), 0.01);
     }
 
+    @Test
+    public void testAntiMeridian() {
+
+        // Model
+        final NeQuickModel model = new NeQuickModel(medium);
+
+        // Date
+        final AbsoluteDate date = new AbsoluteDate(2018,  4,  2, 16, 0, 0, TimeScalesFactory.getUTC());
+
+        // Geodetic points
+        final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(-31.80), FastMath.toRadians(-179.99), 12.78);
+        final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(-14.31), FastMath.toRadians(-177.43), 20100697.90);
+        double stec = model.stec(date, recP, satP);
+        Assertions.assertEquals(6.839, stec, 0.001);
+
+    }
+
+    @Test
+    public void testFieldAntiMeridian() {
+        doTestFieldAntiMeridian(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestFieldAntiMeridian(final Field<T> field) {
+
+        final T zero = field.getZero();
+
+        // Model
+        final NeQuickModel model = new NeQuickModel(medium);
+
+        // Date
+        final FieldAbsoluteDate<T> date =
+                        new FieldAbsoluteDate<T>(field,
+                                                 new AbsoluteDate(2018,  4,  2, 16, 0, 0, TimeScalesFactory.getUTC()));
+
+        // Geodetic points
+        final FieldGeodeticPoint<T> recP = new FieldGeodeticPoint<>(FastMath.toRadians(zero.newInstance(-31.80)),
+                                                                    FastMath.toRadians(zero.newInstance(-179.99)),
+                                                                    zero.newInstance(12.78));
+        final FieldGeodeticPoint<T> satP = new FieldGeodeticPoint<>(FastMath.toRadians(zero.newInstance(-14.31)),
+                                                                    FastMath.toRadians(zero.newInstance(-177.43)),
+                                                                    zero.newInstance(20100697.90));
+        T stec = model.stec(date, recP, satP);
+        Assertions.assertEquals(6.839, stec.getReal(), 0.001);
+
+    }
+
 }
