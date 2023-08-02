@@ -119,8 +119,6 @@ public class RinexObservationWriterTest {
             writer.writeCompleteFile(robs);
         }
 
-        System.out.println(caw.toString());
-
         // reparse the written file
         final byte[]           bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
         final DataSource       source  = new DataSource("", () -> new ByteArrayInputStream(bytes));
