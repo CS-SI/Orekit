@@ -30,6 +30,9 @@
       <action dev="luc" type="update" issue="1147">
         Allow custom satellite systems in GNSS.
       </action>
+      <action dev="luc" type="add" issue="1028" due-to="Lucas Girodet">
+        Added torque-free attitude mode for general (non-symmetrical) body.
+      </action>
       <action dev="maxime" type="add" issue="1023">
         Forbid Python keywords in method, class, interface and enum names.
       </action>
