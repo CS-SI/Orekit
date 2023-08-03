@@ -24,6 +24,9 @@
       <action dev="maxime" type="fix" issue="1153">
         Fixed failing tests on Windows in probability of collision package.
       </action>
+      <action dev="serrof" type="add" issue="1061">
+          Added a Field implementation of impulsive maneuvers.
+      </action>
       <action dev="luc" type="add" issue="1028" due-to="Lucas Girodet">
         Added torque-free attitude mode for general (non-symmetrical) body.
       </action>
