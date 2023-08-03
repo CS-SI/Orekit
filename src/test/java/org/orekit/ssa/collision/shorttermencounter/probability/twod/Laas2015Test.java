@@ -437,7 +437,7 @@ class Laas2015Test {
 
         // GIVEN
         final String cdmPath   = "/collision-resources/ION_SCV8_vs_STARLINK_1233.txt";
-        final DataSource  data = new DataSource(cdmPath, () -> getClass().getResourceAsStream(cdmPath));
+        final DataSource  data = new DataSource(cdmPath, () -> Thread.currentThread().getClass().getResourceAsStream(cdmPath));
         final Cdm         cdm  = new ParserBuilder().buildCdmParser().parseMessage(data);
 
         // Radii taken from comments in the conjunction data message
@@ -848,7 +848,7 @@ class Laas2015Test {
 
         // GIVEN
         final String cdmPath   = "/collision-resources/ION_SCV8_vs_STARLINK_1233.txt";
-        final DataSource  data = new DataSource(cdmPath, () -> getClass().getResourceAsStream(cdmPath));
+        final DataSource  data = new DataSource(cdmPath, () -> Thread.currentThread().getClass().getResourceAsStream(cdmPath));
         final Cdm         cdm  = new ParserBuilder().buildCdmParser().parseMessage(data);
 
         // Radii taken from comments in the conjunction data message
