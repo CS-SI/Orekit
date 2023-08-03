@@ -16,6 +16,9 @@
  */
 package org.orekit.ssa.collision.shorttermencounter.probability.twod;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -52,20 +55,9 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.List;
-
 class Patera2005Test {
 
-    /**
-     * Path to cdm used in tests.
-     */
-    private final String CDM_PATH = "collision-resources/ION_SCV8_vs_STARLINK_1233.txt";
-
-    /**
-     * Patera method (2005) to compute probability of collision.
-     */
+    /** Patera method (2005) to compute probability of collision. */
     private final ShortTermEncounter2DPOCMethod method = new Patera2005();
 
     @BeforeAll
@@ -453,10 +445,9 @@ class Patera2005Test {
     void testComputeProbabilityFromACdm() {
 
         // GIVEN
-        final ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        final URL         inputUrl    = classloader.getResource(CDM_PATH);
-        final DataSource  data        = new DataSource(inputUrl.getPath());
-        final Cdm         cdm         = new ParserBuilder().buildCdmParser().parseMessage(data);
+        final String cdmPath   = "/collision-resources/ION_SCV8_vs_STARLINK_1233.txt";
+        final DataSource  data = new DataSource(cdmPath, () -> getClass().getResourceAsStream(cdmPath));
+        final Cdm         cdm  = new ParserBuilder().buildCdmParser().parseMessage(data);
 
         // Radii taken from comments in the conjunction data message
         final double primaryRadius   = 5;
@@ -889,10 +880,9 @@ class Patera2005Test {
     void testComputeProbabilityFromACdmField() {
 
         // GIVEN
-        final ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        final URL         inputUrl    = classloader.getResource(CDM_PATH);
-        final DataSource  data        = new DataSource(inputUrl.getPath());
-        final Cdm         cdm         = new ParserBuilder().buildCdmParser().parseMessage(data);
+        final String cdmPath   = "/collision-resources/ION_SCV8_vs_STARLINK_1233.txt";
+        final DataSource  data = new DataSource(cdmPath, () -> getClass().getResourceAsStream(cdmPath));
+        final Cdm         cdm  = new ParserBuilder().buildCdmParser().parseMessage(data);
 
         final Field<Binary64> field = Binary64Field.getInstance();
 

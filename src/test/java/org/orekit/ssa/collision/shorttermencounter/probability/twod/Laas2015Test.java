@@ -30,18 +30,9 @@ import org.orekit.files.ccsds.ndm.cdm.Cdm;
 import org.orekit.ssa.metrics.FieldProbabilityOfCollision;
 import org.orekit.ssa.metrics.ProbabilityOfCollision;
 
-import java.net.URL;
-
 class Laas2015Test {
 
-    /**
-     * Path to cdm used in tests.
-     */
-    private final String CDM_PATH = "collision-resources/ION_SCV8_vs_STARLINK_1233.txt";
-
-    /**
-     * Systems analysis and architecture laboratory's method to compute probability of collision.
-     */
+    /** Systems analysis and architecture laboratory's method to compute probability of collision. */
     private final ShortTermEncounter2DPOCMethod method = new Laas2015();
 
     @BeforeAll
@@ -445,10 +436,9 @@ class Laas2015Test {
     void testComputeProbabilityFromACdm() {
 
         // GIVEN
-        final ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        final URL         inputUrl    = classloader.getResource(CDM_PATH);
-        final DataSource  data        = new DataSource(inputUrl.getPath());
-        final Cdm         cdm         = new ParserBuilder().buildCdmParser().parseMessage(data);
+        final String cdmPath   = "/collision-resources/ION_SCV8_vs_STARLINK_1233.txt";
+        final DataSource  data = new DataSource(cdmPath, () -> getClass().getResourceAsStream(cdmPath));
+        final Cdm         cdm  = new ParserBuilder().buildCdmParser().parseMessage(data);
 
         // Radii taken from comments in the conjunction data message
         final double primaryRadius   = 5;
@@ -857,10 +847,9 @@ class Laas2015Test {
     void testReturnExpectedProbabilityFromACdmField() {
 
         // GIVEN
-        final ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        final URL         inputUrl    = classloader.getResource(CDM_PATH);
-        final DataSource  data        = new DataSource(inputUrl.getPath());
-        final Cdm         cdm         = new ParserBuilder().buildCdmParser().parseMessage(data);
+        final String cdmPath   = "/collision-resources/ION_SCV8_vs_STARLINK_1233.txt";
+        final DataSource  data = new DataSource(cdmPath, () -> getClass().getResourceAsStream(cdmPath));
+        final Cdm         cdm  = new ParserBuilder().buildCdmParser().parseMessage(data);
 
         // Radii taken from comments in the conjunction data message
         final Binary64 primaryRadius   = new Binary64(5);
