@@ -17,20 +17,19 @@
 
 package org.orekit.files.sinex;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.utils.Constants;
-import org.junit.Test;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 
@@ -38,11 +37,15 @@ import org.orekit.time.TimeScalesFactory;
 public class SinexLoaderDCBTest {
     
     private TimeScale utc;
-    
-    @Before
-    public void setUp() {
+
+    @BeforeAll
+    public static void setUpData() {
         // Sets the root of data to read
         Utils.setDataRoot("gnss:sinex");
+    }
+    
+    @BeforeEach
+    public void setUpTimeScale() {
         utc = TimeScalesFactory.getUTC();
     }
     
@@ -54,7 +57,7 @@ public class SinexLoaderDCBTest {
         AbsoluteDate refCreaDate = new AbsoluteDate(new DateComponents(2022, 1, 1), utc).
                 shiftedBy(Constants.JULIAN_DAY * (11 - 1)).
                 shiftedBy(58414);
-        Assert.assertEquals(creaDate, refCreaDate);
+        Assertions.assertEquals(creaDate, refCreaDate);
     }
     
     @Test
@@ -68,11 +71,11 @@ public class SinexLoaderDCBTest {
         String determinationMethod = dcbDesc.getDeterminationMethod();
         int observationSampling = dcbDesc.getObservationSampling();
         int parameterSpacing = dcbDesc.getParameterSpacing();
-        Assert.assertEquals(timeSystem, SatelliteSystem.GPS);
-        Assert.assertEquals(biasMode, "RELATIVE");
-        Assert.assertEquals(determinationMethod, "INTER-FREQUENCY_BIAS_ESTIMATION");
-        Assert.assertEquals(parameterSpacing, 86400);
-        Assert.assertEquals(observationSampling, 30);
+        Assertions.assertEquals(timeSystem, SatelliteSystem.GPS);
+        Assertions.assertEquals(biasMode, "RELATIVE");
+        Assertions.assertEquals(determinationMethod, "INTER-FREQUENCY_BIAS_ESTIMATION");
+        Assertions.assertEquals(parameterSpacing, 86400);
+        Assertions.assertEquals(observationSampling, 30);
     }
     
     @Test
@@ -86,11 +89,11 @@ public class SinexLoaderDCBTest {
         String determinationMethod = dcbDesc.getDeterminationMethod();
         int observationSampling = dcbDesc.getObservationSampling();
         int parameterSpacing = dcbDesc.getParameterSpacing();
-        Assert.assertEquals(timeSystem, SatelliteSystem.GPS);
-        Assert.assertEquals(biasMode, "RELATIVE");
-        Assert.assertEquals(determinationMethod, "INTER-FREQUENCY_BIAS_ESTIMATION");
-        Assert.assertEquals(parameterSpacing, 86400);
-        Assert.assertEquals(observationSampling, 30);
+        Assertions.assertEquals(timeSystem, SatelliteSystem.GPS);
+        Assertions.assertEquals(biasMode, "RELATIVE");
+        Assertions.assertEquals(determinationMethod, "INTER-FREQUENCY_BIAS_ESTIMATION");
+        Assertions.assertEquals(parameterSpacing, 86400);
+        Assertions.assertEquals(observationSampling, 30);
     }
     
     @Test
@@ -104,10 +107,10 @@ public class SinexLoaderDCBTest {
         HashSet< HashSet<ObservationType> > ObsPairs = DCBTest.getAvailableObservationPairs();
         
         // Defining the observation pair present in the truncated file.
-        HashSet<ObservationType> OP1 = new HashSet<ObservationType>();
-        HashSet<ObservationType> OP2 = new HashSet<ObservationType>();
-        HashSet<ObservationType> OP3 = new HashSet<ObservationType>();
-        HashSet<ObservationType> OP4 = new HashSet<ObservationType>();
+        HashSet<ObservationType> OP1 = new HashSet<>();
+        HashSet<ObservationType> OP2 = new HashSet<>();
+        HashSet<ObservationType> OP3 = new HashSet<>();
+        HashSet<ObservationType> OP4 = new HashSet<>();
 
         ObservationType Ob1 = ObservationType.valueOf("C1C");
         ObservationType Ob2 = ObservationType.valueOf("C1W");
@@ -125,14 +128,14 @@ public class SinexLoaderDCBTest {
         OP4.add(Ob5);
         OP4.add(Ob6);
         
-        HashSet< HashSet<ObservationType> > observationSetsRef = new HashSet< HashSet<ObservationType> >();
+        HashSet< HashSet<ObservationType> > observationSetsRef = new HashSet<>();
         observationSetsRef.add(OP1);
         observationSetsRef.add(OP2);
         observationSetsRef.add(OP3);
         observationSetsRef.add(OP4);
         
         // Check
-        Assert.assertEquals(null, ObsPairs, observationSetsRef);
+        Assertions.assertEquals(ObsPairs, observationSetsRef);
         
         // Defining observation codes for further checks.
         String Obs1 = "C1C";
@@ -148,7 +151,7 @@ public class SinexLoaderDCBTest {
                 shiftedBy(secInDay);
         AbsoluteDate firstDate =  DCBTest.getMinDateObservationPair(Obs1, Obs2);
         
-        Assert.assertEquals(firstDate, refFirstDate);
+        Assertions.assertEquals(firstDate, refFirstDate);
         
         // Max Date Test
         year = 2021;
@@ -160,7 +163,7 @@ public class SinexLoaderDCBTest {
                 shiftedBy(secInDay);
         AbsoluteDate lastDate =  DCBTest.getMaxDateObservationPair(Obs1, Obs2);
         
-        Assert.assertEquals(lastDate, refLastDate);
+        Assertions.assertEquals(lastDate, refLastDate);
         
         // Value test for Satellites
         year = 2021;
@@ -174,12 +177,12 @@ public class SinexLoaderDCBTest {
         double valueDcb = DCBTest.getDCB(Obs1, Obs2, refDate);
         double valueDcbReal = -1.0697e-9;
         
-        Assert.assertEquals(valueDcbReal, valueDcb, 1e-13);
+        Assertions.assertEquals(valueDcbReal, valueDcb, 1e-13);
         
         // Value Test for a Station
         DCBStation DCBStation = loader.getDCBStation("ALIC");
         DCB DCBTestStation = DCBStation.getDcbObject(SatelliteSystem.parseSatelliteSystem("R"));
-        HashSet<ObservationType> OPStation = new HashSet<ObservationType>();
+        HashSet<ObservationType> OPStation = new HashSet<>();
         ObservationType Ob7 = ObservationType.valueOf("C1P");
         OPStation.add(Ob1);
         OPStation.add(Ob7);
@@ -195,14 +198,14 @@ public class SinexLoaderDCBTest {
         double valueDcbStation = DCBTestStation.getDCB("C1C", "C1P", refDateStation);
         double valueDcbRealStation = -0.6458e-9;
         
-        Assert.assertEquals(valueDcbRealStation, valueDcbStation, 1e-13);
+        Assertions.assertEquals(valueDcbRealStation, valueDcbStation, 1e-13);
         
                 
         // Test getSatelliteSystem
-        Assert.assertEquals(DCBSat.getSatelliteSytem(), SatelliteSystem.GPS);
+        Assertions.assertEquals(DCBSat.getSatelliteSytem(), SatelliteSystem.GPS);
         
         // Test getPRN
-        Assert.assertEquals("G01", DCBSat.getPRN());
+        Assertions.assertEquals("G01", DCBSat.getPRN());
         
     }
     
@@ -214,7 +217,7 @@ public class SinexLoaderDCBTest {
         DCBStation DCBTest = loader.getDCBStation(stationIdRef);
          
          // Test getStationId : Station Case
-         Assert.assertEquals(stationIdRef, DCBTest.getStationId());
+         Assertions.assertEquals(stationIdRef, DCBTest.getStationId());
          
          //Test getAvailableSystems
          final SatelliteSystem sat1 = SatelliteSystem.parseSatelliteSystem("G");
@@ -224,6 +227,6 @@ public class SinexLoaderDCBTest {
          setSystemRef.add(sat2);
          
          final Set<SatelliteSystem> setSystem = DCBTest.getAvailableSatelliteSystems();
-         Assert.assertEquals(setSystemRef, setSystem);
+         Assertions.assertEquals(setSystemRef, setSystem);
     }
 }

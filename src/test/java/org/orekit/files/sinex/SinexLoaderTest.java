@@ -73,7 +73,7 @@ public class SinexLoaderTest {
         try {
             Method method = SinexLoader.class.getDeclaredMethod("stringEpochToAbsoluteDate", String.class, TimeScale.class);
             method.setAccessible(true);
-            final AbsoluteDate date = (AbsoluteDate) method.invoke(loader, "95:120:86399", utc);
+            final AbsoluteDate date    = (AbsoluteDate) method.invoke(loader, "95:120:86399", utc);
             final AbsoluteDate refDate = new AbsoluteDate("1995-04-30T23:59:59.000", TimeScalesFactory.getUTC());
             Assertions.assertEquals(0., refDate.durationFrom(date), 0.);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
@@ -156,8 +156,6 @@ public class SinexLoaderTest {
         // Load file (it corresponds to a small version of the real complete file)
         SinexLoader loader = new SinexLoader("ecc_xyz-small-multiple-ecc.snx");
         Assertions.assertEquals(4, loader.getStations().size());
-        AbsoluteDate creationDate = loader.getCreationDate();
-        Assert.assertEquals(4, loader.getStations().size());
 
         // Verify station 7236
         final Station  station7236    = loader.getStation("7236");

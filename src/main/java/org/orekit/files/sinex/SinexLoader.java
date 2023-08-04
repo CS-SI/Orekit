@@ -48,7 +48,6 @@ import org.orekit.frames.EOPEntry;
 import org.orekit.frames.EOPHistoryLoader;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.frames.ITRFVersion;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
@@ -57,7 +56,6 @@ import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
-import org.orekit.utils.units.Unit;
 import org.orekit.utils.units.Unit;
 
 /**
@@ -186,8 +184,8 @@ public class SinexLoader implements EOPHistoryLoader {
     public SinexLoader(final String supportedNames,
                        final DataProvidersManager dataProvidersManager,
                        final TimeScale utc) {
-        this.utc             = utc;
-        this.creationDate    = AbsoluteDate.FUTURE_INFINITY;
+        this.utc          = utc;
+        this.creationDate = AbsoluteDate.FUTURE_INFINITY;
 
         this.dcbDescription  = new DCBDescription();
         this.dcbStationMap   = new HashMap<>();
@@ -228,16 +226,16 @@ public class SinexLoader implements EOPHistoryLoader {
      */
     public SinexLoader(final DataSource source, final TimeScale utc) {
         try {
-            this.utc            = utc;
+            this.utc          = utc;
             this.creationDate = AbsoluteDate.FUTURE_INFINITY;
 
             this.stations       = new HashMap<>();
             this.itrfVersionEop = ITRFVersion.ITRF_2014;
             this.map            = new HashMap<>();
 
-            this.dcbStationMap = new HashMap<>();
+            this.dcbStationMap   = new HashMap<>();
             this.dcbSatelliteMap = new HashMap<>();
-            this.dcbDescription = new DCBDescription();
+            this.dcbDescription  = new DCBDescription();
 
             try (InputStream         is  = source.getOpener().openStreamOnce();
                  BufferedInputStream bis = new BufferedInputStream(is)) {
@@ -414,9 +412,13 @@ public class SinexLoader implements EOPHistoryLoader {
                     // in the case of an absent date as the final date of the data.
                     // Its position is fixed in the file, at the first line, in the 4th column.
                     if (lineNumber == 1 && PATTERN_BEGIN.matcher(line).matches()) {
-                        final String[]     splitFirstLine = PATTERN_SPACE.split(line);
-                        final AbsoluteDate fileStartDate  = stringEpochToAbsoluteDate(splitFirstLine[5]);
-                        final AbsoluteDate fileEndDate    = stringEpochToAbsoluteDate(splitFirstLine[6]);
+                        final String[] splitFirstLine = PATTERN_SPACE.split(line);
+                        final AbsoluteDate fileStartDate = stringEpochToAbsoluteDate(splitFirstLine[5], scale);
+                        final AbsoluteDate fileEndDate   = stringEpochToAbsoluteDate(splitFirstLine[6], scale);
+
+                        // Update creation date
+                        creationDate = stringEpochToAbsoluteDate(splitFirstLine[3], scale);
+
                         if (startDate == null) {
                             // First data loading, needs to initialize the start and end dates for EOP history
                             startDate = fileStartDate;
@@ -500,8 +502,8 @@ public class SinexLoader implements EOPHistoryLoader {
                                     // read antenna type data
                                     final Station station = getStation(parseString(line, 1, 4));
 
-                                    final AbsoluteDate start = stringEpochToAbsoluteDate(parseString(line, 16, 12));
-                                    final AbsoluteDate end   = stringEpochToAbsoluteDate(parseString(line, 29, 12));
+                                    final AbsoluteDate start = stringEpochToAbsoluteDate(parseString(line, 16, 12), scale);
+                                    final AbsoluteDate end   = stringEpochToAbsoluteDate(parseString(line, 29, 12), scale);
 
                                     // antenna type
                                     final String type = parseString(line, 42, 20);
@@ -547,7 +549,7 @@ public class SinexLoader implements EOPHistoryLoader {
                                     station.setValidUntil(stringEpochToAbsoluteDate(parseString(line, 29, 12), scale));
                                 } else if (inEstimate) {
                                     final Station       station     = getStation(parseString(line, 14, 4));
-                                    final AbsoluteDate  currentDate = stringEpochToAbsoluteDate(parseString(line, 27, 12));
+                                    final AbsoluteDate  currentDate = stringEpochToAbsoluteDate(parseString(line, 27, 12), scale);
                                     final String        dataType    = parseString(line, 7, 6);
                                     // check if this station exists or if we are parsing EOP
                                     if (station != null || EOP_TYPES.contains(dataType)) {
@@ -690,7 +692,7 @@ public class SinexLoader implements EOPHistoryLoader {
                                     final String Obs1 = parseString(line, 25, 4);
                                     final String Obs2 = parseString(line, 30, 4);
                                     final AbsoluteDate beginDate = stringEpochToAbsoluteDate( parseString(line, 35, 14), scale);
-                                    final AbsoluteDate endDate = stringEpochToAbsoluteDate( parseString(line, 50, 14), scale);
+                                    final AbsoluteDate finalDate = stringEpochToAbsoluteDate( parseString(line, 50, 14), scale);
                                     final Unit unitDcb = Unit.parse(parseString(line, 65, 4));
                                     final double valueDcb = unitDcb.toSI(Double.parseDouble(parseString(line, 70, 21)));
 
@@ -707,7 +709,7 @@ public class SinexLoader implements EOPHistoryLoader {
                                         }
                                         final DCB dcb = dcbSatellite.getDcbObject();
                                         // Add the data to the DCB object.
-                                        dcb.addDCBLine(Obs1, Obs2, beginDate, endDate, valueDcb);
+                                        dcb.addDCBLine(Obs1, Obs2, beginDate, finalDate, valueDcb);
                                         // Adding the object to the HashMap if not present.
                                         addDCBSatellite(dcbSatellite, id);
                                     } else {
@@ -723,7 +725,7 @@ public class SinexLoader implements EOPHistoryLoader {
                                         if (dcb == null) {
                                             dcbStation.addDcbObject(satSystem, new DCB());
                                         }
-                                        dcbStation.getDcbObject(satSystem).addDCBLine(Obs1, Obs2, beginDate, endDate, valueDcb);
+                                        dcbStation.getDcbObject(satSystem).addDCBLine(Obs1, Obs2, beginDate, finalDate, valueDcb);
                                         // Adding the object to the HashMap if not present.
                                         addDCBStation(dcbStation, id);
                                     }
