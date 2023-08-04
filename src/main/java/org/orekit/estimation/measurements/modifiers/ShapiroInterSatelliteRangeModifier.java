@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.utils.ParameterDriver;
@@ -49,7 +49,7 @@ public class ShapiroInterSatelliteRangeModifier extends AbstractShapiroBaseModif
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<InterSatellitesRange> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<InterSatellitesRange> estimated) {
         doModify(estimated);
     }
 

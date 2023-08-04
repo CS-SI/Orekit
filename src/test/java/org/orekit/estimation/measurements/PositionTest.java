@@ -74,7 +74,7 @@ public class PositionTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the position value
-            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             for (int i = 0; i < 3; i++) {
@@ -126,7 +126,9 @@ public class PositionTest {
             final double[][] finiteDifferencesJacobian =
                 Differentiation.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) {
-                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                        return measurement.
+                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                               getEstimatedValue();
                     }
                                                   }, measurement.getDimension(),
                                                   propagator.getAttitudeProvider(), OrbitType.CARTESIAN,

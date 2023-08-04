@@ -23,6 +23,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.TurnAroundRange;
@@ -166,13 +167,29 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<TurnAroundRange> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<TurnAroundRange> estimated) {
+
         final TurnAroundRange measurement      = estimated.getObservedMeasurement();
         final GroundStation   primaryStation   = measurement.getPrimaryStation();
         final GroundStation   secondaryStation = measurement.getSecondaryStation();
         final SpacecraftState state            = estimated.getStates()[0];
 
-        final double[] oldValue = estimated.getEstimatedValue();
+        // Update estimated value taking into account the ionospheric delay.
+        // The ionospheric delay is directly added to the TurnAroundRange.
+        final double[] newValue     = estimated.getEstimatedValue();
+        final double primaryDelay   = rangeErrorIonosphericModel(primaryStation, state);
+        final double secondaryDelay = rangeErrorIonosphericModel(secondaryStation, state);
+        newValue[0] = newValue[0] + primaryDelay + secondaryDelay;
+        estimated.setEstimatedValue(newValue);
+
+    }
+
+    @Override
+    public void modify(final EstimatedMeasurement<TurnAroundRange> estimated) {
+        final TurnAroundRange measurement      = estimated.getObservedMeasurement();
+        final GroundStation   primaryStation   = measurement.getPrimaryStation();
+        final GroundStation   secondaryStation = measurement.getSecondaryStation();
+        final SpacecraftState state            = estimated.getStates()[0];
 
         // Update estimated derivatives with Jacobian of the measure wrt state
         final ModifierGradientConverter converter =
@@ -255,7 +272,7 @@ public class TurnAroundRangeIonosphericDelayModifier implements EstimationModifi
 
         // Update estimated value taking into account the ionospheric delay.
         // The ionospheric delay is directly added to the TurnAroundRange.
-        final double[] newValue = oldValue.clone();
+        final double[] newValue = estimated.getEstimatedValue();
         newValue[0] = newValue[0] + primaryGDelay.getReal() + secondaryGDelay.getReal();
         estimated.setEstimatedValue(newValue);
     }

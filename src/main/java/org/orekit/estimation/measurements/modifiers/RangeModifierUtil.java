@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -46,6 +47,29 @@ public class RangeModifierUtil {
      * @param <T> type of the measurement
      * @param estimated estimated measurement to modify
      * @param station ground station
+     * @param modelEffect model effect
+     * @since 12.0
+     */
+    public static <T extends ObservedMeasurement<T>> void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated,
+                                                                                   final GroundStation station,
+                                                                                   final ParametricModelEffect modelEffect) {
+
+        final SpacecraftState state    = estimated.getStates()[0];
+        final double[]        oldValue = estimated.getEstimatedValue();
+
+        // update estimated value taking into account the ionospheric delay.
+        // The ionospheric delay is directly added to the range.
+        final double[] newValue = oldValue.clone();
+        final double delay = modelEffect.evaluate(station, state);
+        newValue[0] = newValue[0] + delay;
+        estimated.setEstimatedValue(newValue);
+
+    }
+
+    /** Apply a modifier to an estimated measurement.
+     * @param <T> type of the measurement
+     * @param estimated estimated measurement to modify
+     * @param station ground station
      * @param converter gradient converter
      * @param parametricModel parametric modifier model
      * @param modelEffect model effect
@@ -58,8 +82,7 @@ public class RangeModifierUtil {
                                                                  final ParametricModelEffect modelEffect,
                                                                  final ParametricModelEffectGradient modelEffectGradient) {
 
-        final SpacecraftState state    = estimated.getStates()[0];
-        final double[]        oldValue = estimated.getEstimatedValue();
+        final SpacecraftState state = estimated.getStates()[0];
 
         // update estimated derivatives with Jacobian of the measure wrt state
         final FieldSpacecraftState<Gradient> gState = converter.getState(parametricModel);
@@ -103,10 +126,7 @@ public class RangeModifierUtil {
         }
 
         // update estimated value taking into account the ionospheric delay.
-        // The ionospheric delay is directly added to the range.
-        final double[] newValue = oldValue.clone();
-        newValue[0] = newValue[0] + gDelay.getValue();
-        estimated.setEstimatedValue(newValue);
+        modifyWithoutDerivatives(estimated, station, modelEffect);
 
     }
 

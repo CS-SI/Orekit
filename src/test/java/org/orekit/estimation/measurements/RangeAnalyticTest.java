@@ -391,7 +391,9 @@ public class RangeAnalyticTest {
                         // Compute a reference value using finite differences
                         jacobianRef = Differentiation.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) {
-                                return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                                return measurement.
+                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                       getEstimatedValue();
                             }
                         }, measurement.getDimension(), propagator.getAttitudeProvider(),
                            OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);

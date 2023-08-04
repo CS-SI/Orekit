@@ -78,7 +78,7 @@ public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> 
         }
 
         // estimate the perfect value of the measurement
-        final double[] angular = dummy.estimate(0, 0, relevant).getEstimatedValue();
+        final double[] angular = dummy.estimateWithoutDerivatives(0, 0, relevant).getEstimatedValue();
 
         // add the noise
         final double[] noise = getNoise();

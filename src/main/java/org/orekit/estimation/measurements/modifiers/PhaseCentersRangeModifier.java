@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.gnss.antenna.FrequencyPattern;
@@ -51,7 +51,7 @@ public class PhaseCentersRangeModifier implements EstimationModifier<Range> {
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<Range> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Range> estimated) {
         if (estimated.getObservedMeasurement().isTwoWay()) {
             modifyTwoWay(estimated);
         } else {
@@ -62,7 +62,7 @@ public class PhaseCentersRangeModifier implements EstimationModifier<Range> {
     /** Apply a modifier to a one-way range measurement.
      * @param estimated estimated measurement to modify
      */
-    private void modifyOneWay(final EstimatedMeasurement<Range> estimated) {
+    private void modifyOneWay(final EstimatedMeasurementBase<Range> estimated) {
         estimated.setEstimatedValue(estimated.getEstimatedValue()[0] +
                                     modifier.oneWayDistanceModification(estimated));
     }
@@ -70,7 +70,7 @@ public class PhaseCentersRangeModifier implements EstimationModifier<Range> {
     /** Apply a modifier to a two-way range measurement.
      * @param estimated estimated measurement to modify
      */
-    private void modifyTwoWay(final EstimatedMeasurement<Range> estimated) {
+    private void modifyTwoWay(final EstimatedMeasurementBase<Range> estimated) {
         estimated.setEstimatedValue(estimated.getEstimatedValue()[0] +
                                     modifier.twoWayDistanceModification(estimated));
     }

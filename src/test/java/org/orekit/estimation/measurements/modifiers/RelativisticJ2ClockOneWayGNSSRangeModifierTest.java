@@ -22,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSRange;
@@ -63,7 +64,7 @@ public class RelativisticJ2ClockOneWayGNSSRangeModifierTest {
                                                           1.0, 1.0, new ObservableSatellite(0));
 
         // Inter-satellites range before applying the modifier
-        final EstimatedMeasurement<OneWayGNSSRange> estimatedBefore = range.estimate(0, 0, states);
+        final EstimatedMeasurementBase<OneWayGNSSRange> estimatedBefore = range.estimateWithoutDerivatives(0, 0, states);
 
         // Inter-satellites range before applying the modifier
         final EstimationModifier<OneWayGNSSRange> modifier = new RelativisticJ2ClockOneWayGNSSRangeModifier(Constants.WGS84_EARTH_MU,

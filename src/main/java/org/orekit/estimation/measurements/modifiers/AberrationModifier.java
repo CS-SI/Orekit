@@ -16,6 +16,11 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
@@ -28,6 +33,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.FieldTransform;
@@ -39,11 +45,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -249,6 +250,33 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
 
 
     @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<AngularRaDec> estimated) {
+
+        // Observation date
+        final AbsoluteDate date = estimated.getDate();
+
+        // Observation station
+        final GroundStation station = estimated.getObservedMeasurement().getStation();
+
+        // Observation frame
+        final Frame frame = estimated.getObservedMeasurement().getReferenceFrame();
+
+        // Convert measurement to natural direction
+        final double[] estimatedRaDec = estimated.getEstimatedValue();
+        final double[] naturalRaDec = properToNatural(estimatedRaDec, station, date, frame);
+
+        // Normalise RA
+        final double[] observed           = estimated.getObservedValue();
+        final double   baseRightAscension = naturalRaDec[0];
+        final double   twoPiWrap          = MathUtils.normalizeAngle(baseRightAscension, observed[0]) - baseRightAscension;
+        final double   rightAscension     = baseRightAscension + twoPiWrap;
+
+        // New estimated values
+        estimated.setEstimatedValue(rightAscension, naturalRaDec[1]);
+
+    }
+
+    @Override
     public void modify(final EstimatedMeasurement<AngularRaDec> estimated) {
 
         // Observation date
@@ -309,4 +337,5 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
             }
         }
     }
+
 }

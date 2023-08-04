@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.utils.Constants;
@@ -51,7 +51,7 @@ public class RelativisticClockRangeModifier extends AbstractRelativisticClockMod
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<Range> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Range> estimated) {
         // Relativistic effect
         final double dtRel = relativisticCorrection(estimated);
 

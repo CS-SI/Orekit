@@ -16,11 +16,18 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.FieldTransform;
+import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -29,11 +36,6 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /** Class modeling a Frequency Difference of Arrival measurement with a satellite as emitter
  * and two ground stations as receivers.
@@ -49,7 +51,7 @@ import java.util.Map;
  * The motion of the stations and the satellite during the signal flight time are taken into account.
  * </p>
  * @author Mark Rutten
- * @since ??
+ * @since 12.0
  */
 public class FDOA extends AbstractMeasurement<FDOA> {
 
@@ -119,6 +121,95 @@ public class FDOA extends AbstractMeasurement<FDOA> {
      */
     public GroundStation getSecondStation() {
         return secondStation;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EstimatedMeasurementBase<FDOA> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
+                                                                                     final SpacecraftState[] states) {
+
+        final SpacecraftState state = states[0];
+
+        // coordinates of the spacecraft
+        final TimeStampedPVCoordinates pva = state.getPVCoordinates();
+
+        // transform between prime station frame and inertial frame
+        // at the real date of measurement, i.e. taking station clock offset into account
+        final Transform primeToInert = primeStation.getOffsetToInertial(state.getFrame(), getDate(), false);
+        final AbsoluteDate measurementDate = primeToInert.getDate();
+
+        // prime station PV in inertial frame at the real date of the measurement
+        final TimeStampedPVCoordinates primePV =
+                        primeToInert.transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate,
+                                                                                         Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
+
+        // compute downlink delay from emitter to prime receiver
+        final double tau1 = signalTimeOfFlight(pva, primePV.getPosition(), measurementDate);
+
+        // elapsed time between state date and signal arrival to the prime receiver
+        final double dtMtau1 = measurementDate.durationFrom(state.getDate()) - tau1;
+
+        // satellite state at signal emission
+        final SpacecraftState emitterState = state.shiftedBy(dtMtau1);
+
+        // satellite pv at signal emission (re)computed with gradient
+        final TimeStampedPVCoordinates emitterPV = pva.shiftedBy(dtMtau1);
+
+        // second station PV in inertial frame at real date of signal reception
+        TimeStampedPVCoordinates secondPV;
+        // initialize search loop of the reception date by second station
+        double tau2 = tau1;
+        double delta;
+        int count = 0;
+        do {
+            final double previous = tau2;
+            // date of signal arrival on second receiver
+            final AbsoluteDate dateAt2 = emitterState.getDate().shiftedBy(previous);
+            // transform between second station frame and inertial frame
+            // at the date of signal arrival, taking clock offset into account
+            final Transform secondToInert = secondStation.getOffsetToInertial(state.getFrame(), dateAt2, false);
+            // second receiver position in inertial frame at the real date of signal reception
+            secondPV = secondToInert.transformPVCoordinates(new TimeStampedPVCoordinates(secondToInert.getDate(),
+                                                                                         Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
+            // downlink delay from emitter to second receiver
+            tau2 = linkDelay(emitterPV.getPosition(), secondPV.getPosition());
+
+            // Change in the computed downlink delay
+            delta = FastMath.abs(tau2 - previous);
+        } while (count++ < 10 && delta >= 2 * FastMath.ulp(tau2));
+
+        // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
+        final double offset1 = primeStation.getClockOffsetDriver().getValue(emitterState.getDate());
+        final double offset2 = secondStation.getClockOffsetDriver().getValue(emitterState.getDate());
+        final double tdoa    = (tau1 + offset1) - (tau2 + offset2);
+
+        // Range-rate sat->primary station
+        final EstimatedMeasurementBase<FDOA> evalPrimary = oneWayTheoreticalEvaluation(iteration, evaluation, true,
+                                                                                       primePV, emitterPV, emitterState);
+
+        // Range-rate sat->secondary station
+        final EstimatedMeasurementBase<FDOA> evalSecondary = oneWayTheoreticalEvaluation(iteration, evaluation, true,
+                                                                                         secondPV, emitterPV, emitterState);
+
+        // Evaluate the FDOA value and derivatives
+        // -------------------------------------------
+        final EstimatedMeasurementBase<FDOA> estimated =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       new SpacecraftState[] {
+                                                           emitterState
+                                                       },
+                                                       new TimeStampedPVCoordinates[] {
+                                                           emitterPV,
+                                                           tdoa > 0 ? secondPV : primePV,
+                                                           tdoa > 0 ? primePV : secondPV
+                                                       });
+
+        // set FDOA value
+        final double rangeRateToHz = -centreFrequency / Constants.SPEED_OF_LIGHT;
+        estimated.setEstimatedValue((evalPrimary.getEstimatedValue()[0] - evalSecondary.getEstimatedValue()[0]) * rangeRateToHz);
+
+        return estimated;
+
     }
 
     /** {@inheritDoc} */
@@ -271,11 +362,63 @@ public class FDOA extends AbstractMeasurement<FDOA> {
      * @param receiver the position of the receiver (same frame as emitter)
      * @return the propagation delay
      */
+    private double linkDelay(final Vector3D emitter,
+                               final Vector3D receiver) {
+        return receiver.distance(emitter) / Constants.SPEED_OF_LIGHT;
+    }
+
+    /** Compute propagation delay on a link.
+     * @param emitter  the position of the emitter
+     * @param receiver the position of the receiver (same frame as emitter)
+     * @return the propagation delay
+     */
     private Gradient linkDelay(final FieldVector3D<Gradient> emitter,
                                final FieldVector3D<Gradient> receiver) {
         return receiver.distance(emitter).divide(Constants.SPEED_OF_LIGHT);
     }
 
+    /** Evaluate range rate measurement in one-way.
+     * @param iteration iteration number
+     * @param evaluation evaluations counter
+     * @param downlink indicator for downlink leg
+     * @param stationPV station coordinates when signal is at station
+     * @param transitPV spacecraft coordinates at onboard signal transit
+     * @param transitState orbital state at onboard signal transit
+     * @return theoretical value for the current leg
+     */
+    private EstimatedMeasurementBase<FDOA> oneWayTheoreticalEvaluation(final int iteration, final int evaluation, final boolean downlink,
+                                                                       final TimeStampedPVCoordinates stationPV,
+                                                                       final TimeStampedPVCoordinates transitPV,
+                                                                       final SpacecraftState transitState) {
+
+        // prepare the evaluation
+        final EstimatedMeasurementBase<FDOA> estimated =
+            new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                           new SpacecraftState[] {
+                                               transitState
+                                           }, new TimeStampedPVCoordinates[] {
+                                               downlink ? transitPV : stationPV,
+                                               downlink ? stationPV : transitPV
+                                           });
+
+        // range rate value
+        final Vector3D stationPosition  = stationPV.getPosition();
+        final Vector3D relativePosition = stationPosition.subtract(transitPV.getPosition());
+
+        final Vector3D stationVelocity  = stationPV.getVelocity();
+        final Vector3D relativeVelocity = stationVelocity.subtract(transitPV.getVelocity());
+
+        // radial direction
+        final Vector3D lineOfSight      = relativePosition.normalize();
+
+        // range rate
+        final double rangeRate = Vector3D.dotProduct(relativeVelocity, lineOfSight);
+
+        estimated.setEstimatedValue(rangeRate);
+
+        return estimated;
+
+    }
     /** Evaluate range rate measurement in one-way.
      * @param iteration iteration number
      * @param evaluation evaluations counter
@@ -334,4 +477,5 @@ public class FDOA extends AbstractMeasurement<FDOA> {
         return estimated;
 
     }
+
 }

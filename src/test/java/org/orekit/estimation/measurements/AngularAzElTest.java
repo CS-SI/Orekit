@@ -72,7 +72,7 @@ public class AngularAzElTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the AZEL value
-            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             azDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -148,7 +148,9 @@ public class AngularAzElTest {
             final double[][] finiteDifferencesJacobian =
                 Differentiation.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) {
-                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                        return measurement.
+                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                               getEstimatedValue();
                     }
                 }, measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
                    PositionAngle.TRUE, 250.0, 4).value(state);
@@ -185,12 +187,12 @@ public class AngularAzElTest {
         }
 
         // median errors on Azimuth
-        Assertions.assertEquals(0.0, new Median().evaluate(AzerrorsP), 1.1e-10);
-        Assertions.assertEquals(0.0, new Median().evaluate(AzerrorsV), 5.7e-5);
+        Assertions.assertEquals(0.0, new Median().evaluate(AzerrorsP), 1.2e-10);
+        Assertions.assertEquals(0.0, new Median().evaluate(AzerrorsV), 6.1e-5);
 
         // median errors on Elevation
-        Assertions.assertEquals(0.0, new Median().evaluate(ElerrorsP), 3.5e-11);
-        Assertions.assertEquals(0.0, new Median().evaluate(ElerrorsV), 1.4e-5);
+        Assertions.assertEquals(0.0, new Median().evaluate(ElerrorsP), 7.4e-11);
+        Assertions.assertEquals(0.0, new Median().evaluate(ElerrorsV), 2.3e-5);
     }
 
     /** Test the values of the parameters' derivatives using a numerical
@@ -255,7 +257,9 @@ public class AngularAzElTest {
                                         /** {@inheritDoc} */
                                         @Override
                                         public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
-                                            return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[k];
+                                            return measurement.
+                                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                   getEstimatedValue()[k];
                                         }
                                     }, 3, 50.0 * drivers[i].getScale());
                     final double ref = dMkdP.value(drivers[i], date);

@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.RangeRate;
@@ -74,6 +75,17 @@ public class RangeRateIonosphericDelayModifier extends BaseRangeRateIonosphericD
                                                                                    final FieldSpacecraftState<T> state,
                                                                                    final T[] parameters) {
         return super.rangeRateErrorIonosphericModel(station, state, parameters).multiply(fTwoWay);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<RangeRate> estimated) {
+
+        final RangeRate       measurement = estimated.getObservedMeasurement();
+        final GroundStation   station     = measurement.getStation();
+
+        RangeModifierUtil.modifyWithoutDerivatives(estimated,  station, this::rangeRateErrorIonosphericModel);
+
     }
 
     /** {@inheritDoc} */

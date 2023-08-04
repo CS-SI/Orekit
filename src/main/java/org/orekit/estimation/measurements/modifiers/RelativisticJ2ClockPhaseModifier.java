@@ -20,7 +20,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.utils.Constants;
@@ -64,7 +64,7 @@ public class RelativisticJ2ClockPhaseModifier extends AbstractRelativisticJ2Cloc
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<Phase> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Phase> estimated) {
         // Relativistic clock correction
         final double dtJ2 = relativisticJ2Correction(estimated);
 

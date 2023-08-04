@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSRange;
 import org.orekit.utils.Constants;
@@ -51,7 +51,7 @@ public class RelativisticClockOneWayGNSSRangeModifier extends AbstractRelativist
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<OneWayGNSSRange> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<OneWayGNSSRange> estimated) {
         // Relativistic clock correction
         final double dtRel = relativisticCorrection(estimated);
 

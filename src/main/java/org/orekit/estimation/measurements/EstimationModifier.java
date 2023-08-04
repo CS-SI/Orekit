@@ -47,9 +47,17 @@ public interface EstimationModifier<T extends ObservedMeasurement<T>> {
      */
     List<ParameterDriver> getParametersDrivers();
 
+    /** Apply a modifier to an estimated measurement without derivatives.
+     * @param estimated estimated measurement to modify
+     * @since 12.0
+     */
+    void modifyWithoutDerivatives(EstimatedMeasurementBase<T> estimated);
+
     /** Apply a modifier to an estimated measurement.
      * @param estimated estimated measurement to modify
      */
-    void modify(EstimatedMeasurement<T> estimated);
+    default void modify(EstimatedMeasurement<T> estimated) {
+        modifyWithoutDerivatives(estimated);
+    }
 
 }

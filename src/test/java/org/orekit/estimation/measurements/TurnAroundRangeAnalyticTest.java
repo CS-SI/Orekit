@@ -94,7 +94,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    6.5e-9, 2.0e-8, 3.1e-7, 8.5e-5, 3.4e-4, 1.2e-2);
+                                    7.0e-9, 2.5e-8, 3.9e-7, 8.2e-5, 3.1e-4, 7.3e-3);
     }
 
     /**
@@ -395,7 +395,9 @@ public class TurnAroundRangeAnalyticTest {
                 // Compute a reference value using finite differences
                 jacobianRef = Differentiation.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) {
-                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                        return measurement.
+                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                               getEstimatedValue();
                     }
                 }, measurement.getDimension(), propagator.getAttitudeProvider(),
                    OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
@@ -596,7 +598,9 @@ public class TurnAroundRangeAnalyticTest {
                                         /** {@inheritDoc} */
                                         @Override
                                         public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
-                                            return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                            return measurement.
+                                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                   getEstimatedValue()[0];
                                         }
                                     }, 3, 20.0 * drivers[i].getScale());
                     ref = dMkdP.value(drivers[i], date);

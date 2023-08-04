@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
 import org.orekit.utils.Constants;
@@ -51,7 +51,7 @@ public class RelativisticClockInterSatellitesPhaseModifier extends AbstractRelat
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<InterSatellitesPhase> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<InterSatellitesPhase> estimated) {
         // Relativistic clock correction
         final double dtRel = relativisticCorrection(estimated);
 
