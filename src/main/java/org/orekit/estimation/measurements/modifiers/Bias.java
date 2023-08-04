@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling a measurement bias.
  * @param <T> the type of the measurement
@@ -80,12 +81,16 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
 
         // apply the bias to the measurement value
         final double[] value = estimated.getEstimatedValue();
+        int nb = 0;
         for (int i = 0; i < drivers.size(); ++i) {
             final ParameterDriver driver = drivers.get(i);
-            value[i] += driver.getValue();
-            if (driver.isSelected()) {
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                value[nb] += driver.getValue(span.getStart());
+                if (driver.isSelected()) {
                 // add the partial derivatives
-                estimated.setParameterDerivatives(driver, derivatives[i]);
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[nb++]);
+                }
             }
         }
         estimated.setEstimatedValue(value);

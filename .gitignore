@@ -2,8 +2,11 @@
 .project
 .settings
 .checkstyle
+.idea
 bin
 target
 /build
 /lib
 *.class
+.idea/
+orekit.iml

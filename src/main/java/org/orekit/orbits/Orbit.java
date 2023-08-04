@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,9 +29,9 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
@@ -62,8 +62,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public abstract class Orbit
-    implements TimeStamped, TimeShiftable<Orbit>, TimeInterpolable<Orbit>,
-               Serializable, PVCoordinatesProvider {
+    implements TimeStamped, TimeShiftable<Orbit>, Serializable, PVCoordinatesProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 438733454597999578L;
@@ -76,6 +75,11 @@ public abstract class Orbit
 
     /** Value of mu used to compute position and velocity (m³/s²). */
     private final double mu;
+
+    /** Computed position.
+     * @since 12.0
+     */
+    private transient Vector3D position;
 
     /** Computed PVCoordinates. */
     private transient TimeStampedPVCoordinates pvCoordinates;
@@ -163,23 +167,26 @@ public abstract class Orbit
      */
     protected static boolean hasNonKeplerianAcceleration(final PVCoordinates pva, final double mu) {
 
-        final Vector3D a = pva.getAcceleration();
-        if (a == null) {
-            return false;
-        }
-
         final Vector3D p = pva.getPosition();
         final double r2 = p.getNormSq();
         final double r  = FastMath.sqrt(r2);
         final Vector3D keplerianAcceleration = new Vector3D(-mu / (r * r2), p);
-        if (a.getNorm() > 1.0e-9 * keplerianAcceleration.getNorm()) {
+
+        // Check if acceleration is null or relatively close to 0 compared to the keplerain acceleration
+        final Vector3D a = pva.getAcceleration();
+        if (a == null || a.getNorm() < 1e-9 * keplerianAcceleration.getNorm()) {
+            return false;
+        }
+
+        final Vector3D nonKeplerianAcceleration = a.subtract(keplerianAcceleration);
+
+        if ( nonKeplerianAcceleration.getNorm() > 1e-9 * keplerianAcceleration.getNorm()) {
             // we have a relevant acceleration, we can compute derivatives
             return true;
         } else {
             // the provided acceleration is either too small to be reliable (probably even 0), or NaN
             return false;
         }
-
     }
 
     /** Get the orbit type.
@@ -406,6 +413,13 @@ public abstract class Orbit
         return FastMath.sqrt(mu / absA) / absA;
     }
 
+    /** Get the derivative of the mean anomaly with respect to the semi major axis.
+     * @return derivative of the mean anomaly with respect to the semi major axis
+     */
+    public double getMeanAnomalyDotWrtA() {
+        return -1.5 * getKeplerianMeanMotion() / getA();
+    }
+
     /** Get the date of orbital parameters.
      * @return date of the orbital parameters
      */
@@ -439,6 +453,40 @@ public abstract class Orbit
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
     }
 
+    /** Get the position in a specified frame.
+     * @param outputFrame frame in which the position coordinates shall be computed
+     * @return position in the specified output frame
+     * @see #getPosition()
+     * @since 12.0
+     */
+    public Vector3D getPosition(final Frame outputFrame) {
+        if (position == null) {
+            position = initPosition();
+        }
+
+        // If output frame requested is the same as definition frame,
+        // PV coordinates are returned directly
+        if (outputFrame == frame) {
+            return position;
+        }
+
+        // Else, PV coordinates are transformed to output frame
+        final StaticTransform t = frame.getStaticTransformTo(outputFrame, date);
+        return t.transformPosition(position);
+
+    }
+
+    /** Get the position in definition frame.
+     * @return position in the definition frame
+     * @see #getPVCoordinates()
+     * @since 12.0
+     */
+    public Vector3D getPosition() {
+        if (position == null) {
+            position = initPosition();
+        }
+        return position;
+    }
 
     /** Get the {@link TimeStampedPVCoordinates} in definition frame.
      * @return pvCoordinates in the definition frame
@@ -447,9 +495,16 @@ public abstract class Orbit
     public TimeStampedPVCoordinates getPVCoordinates() {
         if (pvCoordinates == null) {
             pvCoordinates = initPVCoordinates();
+            position      = pvCoordinates.getPosition();
         }
         return pvCoordinates;
     }
+
+    /** Compute the position coordinates from the canonical parameters.
+     * @return computed position coordinates
+     * @since 12.0
+     */
+    protected abstract Vector3D initPosition();
 
     /** Compute the position/velocity coordinates from the canonical parameters.
      * @return computed position/velocity coordinates

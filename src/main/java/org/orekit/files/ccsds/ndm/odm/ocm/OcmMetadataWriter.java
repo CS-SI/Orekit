@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,9 @@
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
+import org.hipparchus.util.Precision;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.section.AbstractWriter;
@@ -57,9 +59,6 @@ class OcmMetadataWriter extends AbstractWriter {
 
         generator.writeComments(metadata.getComments());
 
-        generator.writeEntry(OcmMetadataKey.CLASSIFICATION.name(),
-                             metadata.getClassification(), null, false);
-
         // object
         generator.writeEntry(OdmMetadataKey.OBJECT_NAME.name(),
                              metadata.getObjectName(), null, false);
@@ -79,6 +78,8 @@ class OcmMetadataWriter extends AbstractWriter {
                              metadata.getOriginatorPosition(), null, false);
         generator.writeEntry(OcmMetadataKey.ORIGINATOR_PHONE.name(),
                              metadata.getOriginatorPhone(), null, false);
+        generator.writeEntry(OcmMetadataKey.ORIGINATOR_EMAIL.name(),
+                             metadata.getOriginatorEmail(), null, false);
         generator.writeEntry(OcmMetadataKey.ORIGINATOR_ADDRESS.name(),
                              metadata.getOriginatorAddress(), null, false);
 
@@ -91,6 +92,8 @@ class OcmMetadataWriter extends AbstractWriter {
                              metadata.getTechPosition(), null, false);
         generator.writeEntry(OcmMetadataKey.TECH_PHONE.name(),
                              metadata.getTechPhone(), null, false);
+        generator.writeEntry(OcmMetadataKey.TECH_EMAIL.name(),
+                             metadata.getTechEmail(), null, false);
         generator.writeEntry(OcmMetadataKey.TECH_ADDRESS.name(),
                              metadata.getTechAddress(), null, false);
 
@@ -99,15 +102,15 @@ class OcmMetadataWriter extends AbstractWriter {
                              metadata.getPreviousMessageID(), null, false);
         generator.writeEntry(OcmMetadataKey.NEXT_MESSAGE_ID.name(),
                              metadata.getNextMessageID(), null, false);
-        generator.writeEntry(OcmMetadataKey.ADM_MESSAGE_LINK.name(),
+        generator.writeEntry(OcmMetadataKey.ADM_MSG_LINK.name(),
                              metadata.getAdmMessageLink(), null, false);
-        generator.writeEntry(OcmMetadataKey.CDM_MESSAGE_LINK.name(),
+        generator.writeEntry(OcmMetadataKey.CDM_MSG_LINK.name(),
                              metadata.getCdmMessageLink(), null, false);
-        generator.writeEntry(OcmMetadataKey.PRM_MESSAGE_LINK.name(),
+        generator.writeEntry(OcmMetadataKey.PRM_MSG_LINK.name(),
                              metadata.getPrmMessageLink(), null, false);
-        generator.writeEntry(OcmMetadataKey.RDM_MESSAGE_LINK.name(),
+        generator.writeEntry(OcmMetadataKey.RDM_MSG_LINK.name(),
                              metadata.getRdmMessageLink(), null, false);
-        generator.writeEntry(OcmMetadataKey.TDM_MESSAGE_LINK.name(),
+        generator.writeEntry(OcmMetadataKey.TDM_MSG_LINK.name(),
                              metadata.getTdmMessageLink(), null, false);
 
         // operator
@@ -126,29 +129,39 @@ class OcmMetadataWriter extends AbstractWriter {
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(),
                              metadata.getTimeSystem(), false);
         generator.writeEntry(OcmMetadataKey.EPOCH_TZERO.name(), timeConverter,
-                             metadata.getEpochT0(), true);
+                             metadata.getEpochT0(), true, true);
 
         // definitions
         generator.writeEntry(OcmMetadataKey.OPS_STATUS.name(),
                              metadata.getOpsStatus(), false);
         generator.writeEntry(OcmMetadataKey.ORBIT_CATEGORY.name(),
                              metadata.getOrbitCategory(), false);
-        generator.writeEntry(OcmMetadataKey.OCM_DATA_ELEMENTS.name(),
-                             metadata.getOcmDataElements(), false);
+        if (metadata.getOcmDataElements() != null) {
+            generator.writeEntry(OcmMetadataKey.OCM_DATA_ELEMENTS.name(),
+                                 metadata.getOcmDataElements().stream().map(e -> e.name()).collect(Collectors.toList()), false);
+        }
 
         // other times
-        generator.writeEntry(OcmMetadataKey.SCLK_OFFSET_AT_EPOCH.name(), metadata.getSclkOffsetAtEpoch(), Unit.SECOND, false);
-        generator.writeEntry(OcmMetadataKey.SCLK_SEC_PER_SI_SEC.name(),  metadata.getSclkSecPerSISec(),   Unit.SECOND, false);
+        if (!(Precision.equals(metadata.getSclkOffsetAtEpoch(), OcmMetadata.DEFAULT_SCLK_OFFSET_AT_EPOCH) &&
+              Precision.equals(metadata.getSclkSecPerSISec(),   OcmMetadata.DEFAULT_SCLK_SEC_PER_SI_SEC))) {
+            generator.writeEntry(OcmMetadataKey.SCLK_OFFSET_AT_EPOCH.name(), metadata.getSclkOffsetAtEpoch(), Unit.SECOND, false);
+            generator.writeEntry(OcmMetadataKey.SCLK_SEC_PER_SI_SEC.name(),  metadata.getSclkSecPerSISec(),   Unit.SECOND, false);
+        }
         generator.writeEntry(OcmMetadataKey.PREVIOUS_MESSAGE_EPOCH.name(), timeConverter,
-                             metadata.getPreviousMessageEpoch(), false);
+                             metadata.getPreviousMessageEpoch(), true, false);
         generator.writeEntry(OcmMetadataKey.NEXT_MESSAGE_EPOCH.name(), timeConverter,
-                             metadata.getNextMessageEpoch(), false);
+                             metadata.getNextMessageEpoch(), true, false);
         generator.writeEntry(OcmMetadataKey.START_TIME.name(), timeConverter,
-                             metadata.getStartTime(), false);
+                             metadata.getStartTime(), false, false);
         generator.writeEntry(OcmMetadataKey.STOP_TIME.name(), timeConverter,
-                             metadata.getStopTime(), false);
+                             metadata.getStopTime(), false, false);
         generator.writeEntry(OcmMetadataKey.TIME_SPAN.name(),        metadata.getTimeSpan(),  Unit.DAY,    false);
         generator.writeEntry(OcmMetadataKey.TAIMUTC_AT_TZERO.name(), metadata.getTaimutcT0(), Unit.SECOND, false);
+        if (metadata.getNextLeapEpoch() != null) {
+            generator.writeEntry(OcmMetadataKey.NEXT_LEAP_EPOCH.name(), timeConverter,
+                                 metadata.getNextLeapEpoch(), true, true);
+            generator.writeEntry(OcmMetadataKey.NEXT_LEAP_TAIMUTC.name(), metadata.getNextLeapTaimutc(), Unit.SECOND, true);
+        }
         generator.writeEntry(OcmMetadataKey.UT1MUTC_AT_TZERO.name(), metadata.getUt1mutcT0(), Unit.SECOND, false);
 
         // data sources

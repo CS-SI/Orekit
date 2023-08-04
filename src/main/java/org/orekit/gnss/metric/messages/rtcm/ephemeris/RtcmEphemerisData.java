@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.gnss.metric.messages.rtcm.ephemeris;
 
+import org.orekit.gnss.metric.messages.common.AccuracyProvider;
 import org.orekit.gnss.metric.messages.rtcm.RtcmData;
-import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.AccuracyProvider;
 
 /**
  * Container for common data in RTCM ephemeris message type.
@@ -25,9 +25,6 @@ import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.AccuracyProvider;
  * @since 11.0
  */
 public class RtcmEphemerisData extends RtcmData {
-
-    /** Seconds to milliseconds converter. */
-    protected static final double SEC_TO_MILLI = 1000.0;
 
     /** Satellite ID. */
     private int rtcmSatelliteId;

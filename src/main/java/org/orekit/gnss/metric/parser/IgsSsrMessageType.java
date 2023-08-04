@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,10 +27,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.ParsedMessage;
-import org.orekit.gnss.metric.messages.ssr.igm.ClockCorrection;
-import org.orekit.gnss.metric.messages.ssr.igm.CodeBias;
-import org.orekit.gnss.metric.messages.ssr.igm.OrbitCorrection;
-import org.orekit.gnss.metric.messages.ssr.igm.PhaseBias;
+import org.orekit.gnss.metric.messages.common.ClockCorrection;
+import org.orekit.gnss.metric.messages.common.CodeBias;
+import org.orekit.gnss.metric.messages.common.OrbitCorrection;
+import org.orekit.gnss.metric.messages.common.PhaseBias;
 import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm01;
 import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm01Data;
 import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm01Header;

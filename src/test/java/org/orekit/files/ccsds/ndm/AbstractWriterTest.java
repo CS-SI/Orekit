@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,8 @@
  */
 package org.orekit.files.ccsds.ndm;
 
-import java.io.ByteArrayInputStream;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.section.Header;
@@ -33,10 +28,20 @@ import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.files.ccsds.utils.generation.MessageWriter;
 import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.files.ccsds.utils.lexical.MessageParser;
+import org.orekit.utils.Constants;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 public abstract class AbstractWriterTest<H extends Header, S extends Segment<?, ?>, F extends NdmConstituent<H, S>> {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
@@ -57,11 +62,14 @@ public abstract class AbstractWriterTest<H extends Header, S extends Segment<?, 
             final F          original = getParser().parseMessage(source1);
 
             // write the parsed file back to a characters array
+            final MessageWriter<H, S, F> writer = getWriter();
             final CharArrayWriter caw = new CharArrayWriter();
             try (Generator generator = format == FileFormat.KVN ?
-                                       new KvnGenerator(caw, 25, "dummy.kvn", unitsColumn) :
-                                       new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", unitsColumn > 0)) {
-                getWriter().writeMessage(generator, original);
+                                       new KvnGenerator(caw, 25, "dummy.kvn", Constants.JULIAN_DAY, unitsColumn) :
+                                       new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml",
+                                                        Constants.JULIAN_DAY, unitsColumn > 0,
+                                                        XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION)) {
+                writer.writeMessage(generator, original);
             }
 
             // reparse the written file
@@ -71,8 +79,24 @@ public abstract class AbstractWriterTest<H extends Header, S extends Segment<?, 
 
             NdmTestUtils.checkEquals(original, rebuilt);
 
+            if (format == FileFormat.XML) {
+                // check schema
+               try (InputStream       is  = new ByteArrayInputStream(bytes);
+                    InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
+                    BufferedReader    br  = new BufferedReader(isr)) {
+                    Assertions.assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", br.readLine());
+                    Assertions.assertEquals("<" + writer.getRoot() +
+                                            " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
+                                            " xsi:noNamespaceSchemaLocation=\"" + XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION +
+                                            "\" id=\"" + writer.getFormatVersionKey() +
+                                            "\" version=\"" + String.format(Locale.US, "%.1f", writer.getVersion()) +
+                                            "\">",
+                                            br.readLine());
+                }
+            }
+
         } catch (IOException ioe) {
-            Assert.fail(ioe.getLocalizedMessage());
+            Assertions.fail(ioe.getLocalizedMessage());
         }
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +31,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling a range measurement from a ground station.
  * <p>
@@ -75,13 +75,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Maxime Journot
  * @since 8.0
  */
-public class Range extends AbstractMeasurement<Range> {
+public class Range extends GroundReceiverMeasurement<Range> {
 
-    /** Ground station from which measurement is performed. */
-    private final GroundStation station;
-
-    /** Flag indicating whether it is a two-way measurement. */
-    private final boolean twoway;
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "Range";
 
     /** Simple constructor.
      * @param station ground station from which measurement is performed
@@ -96,37 +93,7 @@ public class Range extends AbstractMeasurement<Range> {
     public Range(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight,
                  final ObservableSatellite satellite) {
-        super(date, range, sigma, baseWeight, Collections.singletonList(satellite));
-        addParameterDriver(station.getClockOffsetDriver());
-        addParameterDriver(station.getEastOffsetDriver());
-        addParameterDriver(station.getNorthOffsetDriver());
-        addParameterDriver(station.getZenithOffsetDriver());
-        addParameterDriver(station.getPrimeMeridianOffsetDriver());
-        addParameterDriver(station.getPrimeMeridianDriftDriver());
-        addParameterDriver(station.getPolarOffsetXDriver());
-        addParameterDriver(station.getPolarDriftXDriver());
-        addParameterDriver(station.getPolarOffsetYDriver());
-        addParameterDriver(station.getPolarDriftYDriver());
-        if (!twoWay) {
-            // for one way measurements, the satellite clock offset affects the measurement
-            addParameterDriver(satellite.getClockOffsetDriver());
-        }
-        this.station = station;
-        this.twoway = twoWay;
-    }
-
-    /** Get the ground station from which measurement is performed.
-     * @return ground station from which measurement is performed
-     */
-    public GroundStation getStation() {
-        return station;
-    }
-
-    /** Check if the instance represents a two-way measurement.
-     * @return true if the instance represents a two-way measurement
-     */
-    public boolean isTwoWay() {
-        return twoway;
+        super(station, twoWay, date, range, sigma, baseWeight, satellite);
     }
 
     /** {@inheritDoc} */
@@ -149,7 +116,9 @@ public class Range extends AbstractMeasurement<Range> {
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
-                indices.put(driver.getName(), nbParams++);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    indices.put(span.getData(), nbParams++);
+                }
             }
         }
         final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
@@ -160,7 +129,7 @@ public class Range extends AbstractMeasurement<Range> {
         // transform between station and inertial frame, expressed as a gradient
         // The components of station's position in offset frame are the 3 last derivative parameters
         final FieldTransform<Gradient> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
+                        getStation().getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
         final FieldAbsoluteDate<Gradient> downlinkDateDS = offsetToInertialDownlink.getFieldDate();
 
         // Station position in inertial frame at end of the downlink leg
@@ -185,7 +154,7 @@ public class Range extends AbstractMeasurement<Range> {
         final EstimatedMeasurement<Range> estimated;
         final Gradient range;
 
-        if (twoway) {
+        if (isTwoWay()) {
 
             // Station at transit state date (derivatives of tauD taken into account)
             final TimeStampedFieldPVCoordinates<Gradient> stationAtTransitDate =
@@ -223,8 +192,8 @@ public class Range extends AbstractMeasurement<Range> {
 
             // Clock offsets
             final ObservableSatellite satellite = getSatellites().get(0);
-            final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, indices);
-            final Gradient            dtg       = station.getClockOffsetDriver().getValue(nbParams, indices);
+            final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, indices, state.getDate());
+            final Gradient            dtg       = getStation().getClockOffsetDriver().getValue(nbParams, indices, state.getDate());
 
             // Range value
             range = tauD.add(dtg).subtract(dts).multiply(Constants.SPEED_OF_LIGHT);
@@ -240,9 +209,11 @@ public class Range extends AbstractMeasurement<Range> {
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
-            final Integer index = indices.get(driver.getName());
-            if (index != null) {
-                estimated.setParameterDerivatives(driver, derivatives[index]);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
+                }
             }
         }
 

@@ -58,7 +58,7 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
     public AngularSeparationFromSatelliteDetector(final PVCoordinatesProvider primaryObject,
                                                   final PVCoordinatesProvider secondaryObject,
                                                   final double proximityAngle) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnDecreasing<AngularSeparationFromSatelliteDetector>(),
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnDecreasing(),
              primaryObject, secondaryObject, proximityAngle);
     }
 
@@ -77,12 +77,12 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
      *        the primaryObject as seen from the spacecraft
      * @param proximityAngle proximity angle as seen from secondaryObject, at which events are triggered (rad)
      */
-    private AngularSeparationFromSatelliteDetector(final double maxCheck, final double threshold,
-                                                   final int maxIter,
-                                                   final EventHandler<? super AngularSeparationFromSatelliteDetector> handler,
-                                                   final PVCoordinatesProvider primaryObject,
-                                                   final PVCoordinatesProvider secondaryObject,
-                                                   final double proximityAngle) {
+    protected AngularSeparationFromSatelliteDetector(final double maxCheck, final double threshold,
+                                                     final int maxIter,
+                                                     final EventHandler handler,
+                                                     final PVCoordinatesProvider primaryObject,
+                                                     final PVCoordinatesProvider secondaryObject,
+                                                     final double proximityAngle) {
         super(maxCheck, threshold, maxIter, handler);
         this.primaryObject         = primaryObject;
         this.secondaryObject       = secondaryObject;
@@ -92,7 +92,7 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
     /** {@inheritDoc} */
     @Override
     protected AngularSeparationFromSatelliteDetector create(final double newMaxCheck, final double newThreshold,
-                                               final int newMaxIter, final EventHandler<? super AngularSeparationFromSatelliteDetector> newHandler) {
+                                               final int newMaxIter, final EventHandler newHandler) {
         return new AngularSeparationFromSatelliteDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                              primaryObject, secondaryObject, proximityAngle);
     }

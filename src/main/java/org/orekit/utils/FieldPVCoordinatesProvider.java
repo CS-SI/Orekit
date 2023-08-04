@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@
 package org.orekit.utils;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -31,6 +32,16 @@ import org.orekit.time.FieldAbsoluteDate;
  * </p>
  */
 public interface FieldPVCoordinatesProvider<T extends CalculusFieldElement<T>> {
+
+    /** Get the position of the body in the selected frame.
+     * @param date current date
+     * @param frame the frame where to define the position
+     * @return position of the body (m and)
+     * @since 12.0
+     */
+    default FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date, final Frame frame) {
+        return getPVCoordinates(date, frame).getPosition();
+    }
 
     /** Get the {@link FieldPVCoordinates} of the body in the selected frame.
      * @param date current date

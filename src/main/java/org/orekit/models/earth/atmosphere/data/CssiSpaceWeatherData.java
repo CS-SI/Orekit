@@ -31,7 +31,6 @@ import org.orekit.models.earth.atmosphere.NRLMSISE00InputParameters;
 import org.orekit.models.earth.atmosphere.data.CssiSpaceWeatherDataLoader.LineParameters;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ImmutableTimeStampedCache;
 
@@ -64,7 +63,7 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
     private static final int N_NEIGHBORS = 2;
 
     /** Data set. */
-    private final transient ImmutableTimeStampedCache<TimeStamped> data;
+    private final transient ImmutableTimeStampedCache<LineParameters> data;
 
     /** UTC time scale. */
     private final TimeScale utc;
@@ -160,9 +159,9 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
             return;
         }
 
-        final List<TimeStamped> neigbors = data.getNeighbors(date).collect(Collectors.toList());
-        previousParam = (LineParameters) neigbors.get(0);
-        nextParam = (LineParameters) neigbors.get(1);
+        final List<LineParameters> neigbors = data.getNeighbors(date).collect(Collectors.toList());
+        previousParam = neigbors.get(0);
+        nextParam = neigbors.get(1);
         if (previousParam.getDate().compareTo(date) > 0) { // TODO delete dead code
             /**
              * Throwing exception if neighbors are unbalanced because we are at the
@@ -372,6 +371,7 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
         }
     }
 
+    /** {@inheritDoc}. */
     public String getSupportedNames() {
         return super.getSupportedNames();
     }

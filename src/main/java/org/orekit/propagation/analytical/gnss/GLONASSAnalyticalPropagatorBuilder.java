@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,17 +18,23 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.analytical.gnss.data.GLONASSAlmanac;
+import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
 import org.orekit.utils.IERSConventions;
 
 /**
  * This nested class aims at building a GLONASSAnalyticalPropagator.
  * <p>It implements the classical builder pattern.</p>
+ * <p>
+ * <b>Caution:</b> The Glonass analytical propagator can only be used with {@link GLONASSAlmanac}.
+ * Using this propagator with a {@link GLONASSNavigationMessage} is prone to error.
+ * </p>
  * @author Bryan Cazabonne
  * @since 11.0
  */
@@ -112,13 +118,13 @@ public class GLONASSAnalyticalPropagatorBuilder {
      */
     public GLONASSAnalyticalPropagatorBuilder(final GLONASSOrbitalElements glonassOrbElt,
                                               final DataContext dataContext) {
-        this.orbit = glonassOrbElt;
-        this.dataContext = dataContext;
-        this.mass  = Propagator.DEFAULT_MASS;
-        final Frames frames = dataContext.getFrames();
-        this.eci   = frames.getEME2000();
-        this.ecef  = frames.getITRF(IERSConventions.IERS_2010, true);
-        attitudeProvider = InertialProvider.of(this.eci);
+        this.orbit            = glonassOrbElt;
+        this.dataContext      = dataContext;
+        this.mass             = Propagator.DEFAULT_MASS;
+        final Frames frames   = dataContext.getFrames();
+        this.eci              = frames.getEME2000();
+        this.ecef             = frames.getITRF(IERSConventions.IERS_2010, true);
+        this.attitudeProvider = FrameAlignedProvider.of(this.eci);
     }
 
     /** Sets the attitude provider.

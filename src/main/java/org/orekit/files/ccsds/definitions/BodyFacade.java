@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,10 @@
  */
 package org.orekit.files.ccsds.definitions;
 
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
+import org.orekit.data.DataContext;
 
 /** Facade in front of several center bodies in CCSDS messages.
  * @author Luc Maisonobe
@@ -51,6 +54,44 @@ public class BodyFacade {
      */
     public CelestialBody getBody() {
         return body;
+    }
+
+    /**
+     * Create a body facade from an input center name.
+     *
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     *
+     * @param centerName input center name
+     * @return a body facade corresponding to the input center name
+     * @since 11.2
+     */
+    @DefaultDataContext
+    public static BodyFacade create(final CenterName centerName) {
+        return create(centerName, DataContext.getDefault());
+    }
+
+    /**
+     * Create a body facade from an input center name.
+     *
+     * @param centerName input center name
+     * @param context data context
+     * @return a body facade corresponding to the input center name
+     * @since 12.0
+     */
+    public static BodyFacade create(final CenterName centerName, final DataContext context) {
+        return create(centerName, context.getCelestialBodies());
+    }
+
+    /**
+     * Create a body facade from an input center name.
+     *
+     * @param centerName input center name
+     * @param bodies celestial bodies
+     * @return a body facade corresponding to the input center name
+     * @since 12.0
+     */
+    public static BodyFacade create(final CenterName centerName, final CelestialBodies bodies) {
+        return new BodyFacade(centerName.name(), centerName.getCelestialBody(bodies));
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +29,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -47,13 +47,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Joris Olympio
  * @since 8.0
  */
-public class RangeRate extends AbstractMeasurement<RangeRate> {
+public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
 
-    /** Ground station from which measurement is performed. */
-    private final GroundStation station;
-
-    /** Flag indicating whether it is a two-way measurement. */
-    private final boolean twoway;
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "RangeRate";
 
     /** Simple constructor.
      * @param station ground station from which measurement is performed
@@ -68,35 +65,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
     public RangeRate(final GroundStation station, final AbsoluteDate date,
                      final double rangeRate, final double sigma, final double baseWeight,
                      final boolean twoway, final ObservableSatellite satellite) {
-        super(date, rangeRate, sigma, baseWeight, Collections.singletonList(satellite));
-        addParameterDriver(station.getClockOffsetDriver());
-        addParameterDriver(station.getClockDriftDriver());
-        addParameterDriver(satellite.getClockDriftDriver());
-        addParameterDriver(station.getEastOffsetDriver());
-        addParameterDriver(station.getNorthOffsetDriver());
-        addParameterDriver(station.getZenithOffsetDriver());
-        addParameterDriver(station.getPrimeMeridianOffsetDriver());
-        addParameterDriver(station.getPrimeMeridianDriftDriver());
-        addParameterDriver(station.getPolarOffsetXDriver());
-        addParameterDriver(station.getPolarDriftXDriver());
-        addParameterDriver(station.getPolarOffsetYDriver());
-        addParameterDriver(station.getPolarDriftYDriver());
-        this.station = station;
-        this.twoway  = twoway;
-    }
-
-    /** Check if the instance represents a two-way measurement.
-     * @return true if the instance represents a two-way measurement
-     */
-    public boolean isTwoWay() {
-        return twoway;
-    }
-
-    /** Get the ground station from which measurement is performed.
-     * @return ground station from which measurement is performed
-     */
-    public GroundStation getStation() {
-        return station;
+        super(station, twoway, date, rangeRate, sigma, baseWeight, satellite);
     }
 
     /** {@inheritDoc} */
@@ -118,7 +87,9 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
-                indices.put(driver.getName(), nbParams++);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    indices.put(span.getData(), nbParams++);
+                }
             }
         }
         final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
@@ -129,7 +100,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         // transform between station and inertial frame, expressed as a gradient
         // The components of station's position in offset frame are the 3 last derivative parameters
         final FieldTransform<Gradient> offsetToInertialDownlink =
-                        station.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
+                        getStation().getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
         final FieldAbsoluteDate<Gradient> downlinkDateDS =
                         offsetToInertialDownlink.getFieldDate();
 
@@ -158,11 +129,11 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                         oneWayTheoreticalEvaluation(iteration, evaluation, true,
                                                     stationDownlink, transitPV, transitState, indices, nbParams);
         final EstimatedMeasurement<RangeRate> estimated;
-        if (twoway) {
+        if (isTwoWay()) {
             // one-way (uplink) light time correction
             final FieldTransform<Gradient> offsetToInertialApproxUplink =
-                            station.getOffsetToInertial(state.getFrame(),
-                                                        downlinkDateDS.shiftedBy(tauD.multiply(-2)), nbParams, indices);
+                            getStation().getOffsetToInertial(state.getFrame(),
+                                                             downlinkDateDS.shiftedBy(tauD.multiply(-2)), nbParams, indices);
             final FieldAbsoluteDate<Gradient> approxUplinkDateDS =
                             offsetToInertialApproxUplink.getFieldDate();
 
@@ -202,13 +173,15 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
 
             // combine uplink and downlink partial derivatives with respect to parameters
             evalOneWay1.getDerivativesDrivers().forEach(driver -> {
-                final double[] pd1 = evalOneWay1.getParameterDerivatives(driver);
-                final double[] pd2 = evalOneWay2.getParameterDerivatives(driver);
-                final double[] pd = new double[pd1.length];
-                for (int i = 0; i < pd.length; ++i) {
-                    pd[i] = 0.5 * (pd1[i] + pd2[i]);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    final double[] pd1 = evalOneWay1.getParameterDerivatives(driver, span.getStart());
+                    final double[] pd2 = evalOneWay2.getParameterDerivatives(driver, span.getStart());
+                    final double[] pd = new double[pd1.length];
+                    for (int i = 0; i < pd.length; ++i) {
+                        pd[i] = 0.5 * (pd1[i] + pd2[i]);
+                    }
+                    estimated.setParameterDerivatives(driver, span.getStart(), pd);
                 }
-                estimated.setParameterDerivatives(driver, pd);
             });
 
         } else {
@@ -264,11 +237,11 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         // range rate
         Gradient rangeRate = lineOfSightVelocity;
 
-        if (!twoway) {
+        if (!isTwoWay()) {
             // clock drifts, taken in account only in case of one way
             final ObservableSatellite satellite    = getSatellites().get(0);
-            final Gradient            dtsDot       = satellite.getClockDriftDriver().getValue(nbParams, indices);
-            final Gradient            dtgDot       = station.getClockDriftDriver().getValue(nbParams, indices);
+            final Gradient            dtsDot       = satellite.getClockDriftDriver().getValue(nbParams, indices, transitState.getDate());
+            final Gradient            dtgDot       = getStation().getClockDriftDriver().getValue(nbParams, indices, stationPV.getDate().toAbsoluteDate());
 
             final Gradient clockDriftBiais = dtgDot.subtract(dtsDot).multiply(Constants.SPEED_OF_LIGHT);
 
@@ -284,9 +257,11 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
-            final Integer index = indices.get(driver.getName());
-            if (index != null) {
-                estimated.setParameterDerivatives(driver, derivatives[index]);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
+                }
             }
         }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,7 @@ import org.hipparchus.util.SinCos;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.geometry.fov.FieldOfView;
 import org.orekit.models.earth.tessellation.DivertedSingularityAiming;
 import org.orekit.models.earth.tessellation.EllipsoidTessellator;
@@ -104,7 +104,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
                                     final SphericalPolygonsSet zone,
                                     final double samplingStep) {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new StopOnIncreasing<FootprintOverlapDetector>(),
+             new StopOnIncreasing(),
              fov, body, zone, samplingStep, sample(body, zone, samplingStep));
     }
 
@@ -124,13 +124,13 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      * @param sampledZone sampling of the geographic zone
      * @param samplingStep linear step used for sampling the geographic zone (in meters)
      */
-    private FootprintOverlapDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<? super FootprintOverlapDetector> handler,
-                                     final FieldOfView fov,
-                                     final OneAxisEllipsoid body,
-                                     final SphericalPolygonsSet zone,
-                                     final double samplingStep,
-                                     final List<SamplingPoint> sampledZone) {
+    protected FootprintOverlapDetector(final double maxCheck, final double threshold,
+                                       final int maxIter, final EventHandler handler,
+                                       final FieldOfView fov,
+                                       final OneAxisEllipsoid body,
+                                       final SphericalPolygonsSet zone,
+                                       final double samplingStep,
+                                       final List<SamplingPoint> sampledZone) {
 
         super(maxCheck, threshold, maxIter, handler);
         this.fov          = fov;
@@ -194,7 +194,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
     @Override
     protected FootprintOverlapDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<? super FootprintOverlapDetector> newHandler) {
+                                              final EventHandler newHandler) {
         return new FootprintOverlapDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                             fov, body, zone, samplingStep, sampledZone);
     }
@@ -248,7 +248,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
         double value = FastMath.PI;
 
         // get spacecraft position in body frame
-        final Vector3D      scBody      = s.getPVCoordinates(body.getBodyFrame()).getPosition();
+        final Vector3D      scBody      = s.getPosition(body.getBodyFrame());
 
         // map the point to a sphere
         final GeodeticPoint gp          = body.transform(scBody, body.getBodyFrame(), s.getDate());
@@ -272,9 +272,10 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
         }
 
         // the spacecraft may be visible from some points in the zone, check them all
-        final Transform bodyToSc = new Transform(s.getDate(),
-                                                 body.getBodyFrame().getTransformTo(s.getFrame(), s.getDate()),
-                                                 s.toTransform());
+        final StaticTransform bodyToSc = StaticTransform.compose(
+                s.getDate(),
+                body.getBodyFrame().getStaticTransformTo(s.getFrame(), s.getDate()),
+                s.toTransform());
         for (final SamplingPoint point : sampledZone) {
             final Vector3D lineOfSightBody = point.getPosition().subtract(scBody);
             if (Vector3D.dotProduct(lineOfSightBody, point.getZenith()) <= 0) {

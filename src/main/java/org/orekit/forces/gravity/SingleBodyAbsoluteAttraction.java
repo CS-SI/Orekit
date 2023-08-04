@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,7 @@ package org.orekit.forces.gravity;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -30,8 +28,6 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.utils.ParameterDriver;
 
 /** Body attraction force model computed as absolute acceleration towards a body.
@@ -108,8 +104,8 @@ public class SingleBodyAbsoluteAttraction extends AbstractForceModel {
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         // compute bodies separation vectors and squared norm
-        final Vector3D bodyPosition = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-        final Vector3D satToBody     = bodyPosition.subtract(s.getPVCoordinates().getPosition());
+        final Vector3D bodyPosition = body.getPosition(s.getDate(), s.getFrame());
+        final Vector3D satToBody     = bodyPosition.subtract(s.getPosition());
         final double r2Sat           = satToBody.getNormSq();
 
         // compute absolute acceleration
@@ -123,24 +119,13 @@ public class SingleBodyAbsoluteAttraction extends AbstractForceModel {
                                                                          final T[] parameters) {
          // compute bodies separation vectors and squared norm
         final FieldVector3D<T> centralToBody = new FieldVector3D<>(s.getA().getField(),
-                                                                   body.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition());
-        final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
+                                                                   body.getPosition(s.getDate().toAbsoluteDate(), s.getFrame()));
+        final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPosition());
         final T                r2Sat         = satToBody.getNormSq();
 
         // compute absolute acceleration
         return new FieldVector3D<>(parameters[0].divide(r2Sat.multiply(r2Sat.sqrt())), satToBody);
 
-    }
-
-    /** {@inheritDoc} */
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
-    @Override
-    /** {@inheritDoc} */
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
     /** {@inheritDoc} */

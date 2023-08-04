@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -74,7 +74,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      */
     public FieldNodeDetector(final T threshold, final FieldOrbit<T> orbit, final Frame frame) {
         this(orbit.getA().getField().getZero().add(2 * estimateNodesTimeSeparation(orbit.toOrbit()) / 3), threshold,
-             DEFAULT_MAX_ITER, new FieldStopOnIncreasing<FieldNodeDetector<T>, T>(),
+             DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
              frame);
     }
 
@@ -93,9 +93,9 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      * @since 6.1
      */
-    private FieldNodeDetector(final T maxCheck, final T threshold,
-                         final int maxIter, final FieldEventHandler<? super FieldNodeDetector<T>, T> handler,
-                         final Frame frame) {
+    protected FieldNodeDetector(final T maxCheck, final T threshold,
+                                final int maxIter, final FieldEventHandler<T> handler,
+                                final Frame frame) {
         super(maxCheck, threshold, maxIter, handler);
         this.frame = frame;
     }
@@ -103,7 +103,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
     /** {@inheritDoc} */
     @Override
     protected FieldNodeDetector<T> create(final T newMaxCheck, final T newThreshold,
-                                  final int newMaxIter, final FieldEventHandler<? super FieldNodeDetector<T>, T> newHandler) {
+                                          final int newMaxIter, final FieldEventHandler<T> newHandler) {
         return new FieldNodeDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler, frame);
     }
 
@@ -160,7 +160,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      * @return value of the switching function
      */
     public T g(final FieldSpacecraftState<T> s) {
-        return s.getPVCoordinates(frame).getPosition().getZ();
+        return s.getPosition(frame).getZ();
     }
 
 //    public NodeDetector toNoField() {

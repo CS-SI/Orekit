@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,10 @@ import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Blendable;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -44,7 +46,7 @@ import org.orekit.time.TimeShiftable;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */
-public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable {
+public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PVCoordinates>, Serializable {
 
     /** Fixed position/velocity at origin (both p, v and a are zero vectors). */
     public static final PVCoordinates ZERO = new PVCoordinates(Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
@@ -198,6 +200,16 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
             velocity     = Vector3D.ZERO;
             acceleration = Vector3D.ZERO;
         }
+    }
+
+    /**
+     * Builds PV coordinates with the givne position, zero velocity, and zero
+     * acceleration.
+     *
+     * @param position position vector (m)
+     */
+    public PVCoordinates(final Vector3D position) {
+        this(position, Vector3D.ZERO);
     }
 
     /** Transform the instance to a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
@@ -475,9 +487,27 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
     public PVCoordinates shiftedBy(final double dt) {
-        return new PVCoordinates(new Vector3D(1, position, dt, velocity, 0.5 * dt * dt, acceleration),
+        return new PVCoordinates(positionShiftedBy(dt),
                                  new Vector3D(1, velocity, dt, acceleration),
                                  acceleration);
+    }
+
+    /**
+     * Get a time-shifted position. Same as {@link #shiftedBy(double)} except
+     * that only the sifted position is returned.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple Taylor expansion. It is <em>not</em> intended as a replacement
+     * for proper orbit propagation (it is not even Keplerian!) but should be
+     * sufficient for either small time shifts or coarse accuracy.
+     * </p>
+     *
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is
+     * immutable)
+     */
+    public Vector3D positionShiftedBy(final double dt) {
+        return new Vector3D(1, position, dt, velocity, 0.5 * dt * dt, acceleration);
     }
 
     /** Gets the position.
@@ -601,6 +631,17 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      */
     private Object writeReplace() {
         return new DTO(this);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PVCoordinates blendArithmeticallyWith(final PVCoordinates other, final double blendingValue)
+            throws MathIllegalArgumentException {
+        final Vector3D blendedPosition     = position.blendArithmeticallyWith(other.position, blendingValue);
+        final Vector3D blendedVelocity     = velocity.blendArithmeticallyWith(other.velocity, blendingValue);
+        final Vector3D blendedAcceleration = acceleration.blendArithmeticallyWith(other.acceleration, blendingValue);
+
+        return new PVCoordinates(blendedPosition, blendedVelocity, blendedAcceleration);
     }
 
     /** Internal class used only for serialization. */

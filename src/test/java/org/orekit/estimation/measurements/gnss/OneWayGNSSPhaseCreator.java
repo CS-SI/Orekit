@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,7 +42,7 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
 
     public OneWayGNSSPhaseCreator(final BoundedPropagator ephemeris,
                                   final Frequency frequency,
-                                  final int ambiguity, 
+                                  final int ambiguity,
                                   final double localClockOffset,
                                   final double remoteClockOffset) {
         this(ephemeris, frequency, ambiguity, localClockOffset, remoteClockOffset, Vector3D.ZERO, Vector3D.ZERO);
@@ -50,7 +50,7 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
 
     public OneWayGNSSPhaseCreator(final BoundedPropagator ephemeris,
                                   final Frequency frequency,
-                                  final int ambiguity, 
+                                  final int ambiguity,
                                   final double localClockOffset,
                                   final double remoteClockOffset,
                                   final Vector3D antennaPhaseCenter1,
@@ -77,8 +77,8 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
 
     public void handleStep(final SpacecraftState currentState) {
         try {
-            final double           n         = ambiguity.getParametersDrivers().get(0).getValue();
-            final double           localClk  = local.getClockOffsetDriver().getValue();
+            final double           n         = ambiguity.getParametersDrivers().get(0).getValue(currentState.getDate());
+            final double           localClk  = local.getClockOffsetDriver().getValue(currentState.getDate());
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);
             final AbsoluteDate     date      = currentState.getDate();
             final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter1);

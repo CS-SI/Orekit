@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<apm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://sanaregistry.org/r/ndmxml_unqualified/ndmxml-4.0.0-master-4.0.xsd" id="CCSDS_APM_VERS" version="2.0">
+  <header>
+    <CREATION_DATE>2023-04-04T14:34:01.0</CREATION_DATE>
+    <ORIGINATOR>OREKIT</ORIGINATOR>
+  </header>
+
+  <body>
+    <segment>
+      <metadata>
+        <OBJECT_NAME>OREKIT_SAT</OBJECT_NAME>
+        <OBJECT_ID>2002-999Z</OBJECT_ID>
+        <TIME_SYSTEM>UTC</TIME_SYSTEM>
+      </metadata>
+      <data>
+        <COMMENT>this is a made up test message</COMMENT>
+        <EPOCH>2008-04-07T00:00:00.0</EPOCH>
+        <spin>
+          <REF_FRAME_A>EME2000</REF_FRAME_A>
+          <REF_FRAME_B>SC_BODY_1</REF_FRAME_B>
+          <SPIN_ALPHA units="deg">93.41653162826968</SPIN_ALPHA>
+          <SPIN_DELTA units="deg">-4.086638116176034</SPIN_DELTA>
+          <SPIN_ANGLE units="deg">126.92845735704692</SPIN_ANGLE>
+          <SPIN_ANGLE_VEL units="deg/s">2.912145975922623E-4</SPIN_ANGLE_VEL>
+          <MOMENTUM_ALPHA units="deg">-179.99966238606228</MOMENTUM_ALPHA>
+          <MOMENTUM_DELTA units="deg">0.6951967467774982</MOMENTUM_DELTA>
+          <NUTATION_VEL units="deg/s">0.05969332280288882</NUTATION_VEL>
+        </spin>
+      </data>
+    </segment>
+  </body>
+</apm>

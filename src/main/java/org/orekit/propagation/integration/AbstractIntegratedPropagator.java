@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.DenseOutputModel;
 import org.hipparchus.ode.ExpandableODE;
@@ -35,7 +38,7 @@ import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.OrdinaryDifferentialEquation;
 import org.hipparchus.ode.SecondaryODE;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.ode.events.EventHandlerConfiguration;
+import org.hipparchus.ode.events.ODEEventDetector;
 import org.hipparchus.ode.events.ODEEventHandler;
 import org.hipparchus.ode.sampling.AbstractODEStateInterpolator;
 import org.hipparchus.ode.sampling.ODEStateInterpolator;
@@ -54,6 +57,7 @@ import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -171,16 +175,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         return stateMapper.getOrbitType();
     }
 
-    /** Check if only the mean elements should be used in a semianalitical propagation.
-     * @return {@link PropagationType MEAN} if only mean elements have to be used or
-     *         {@link PropagationType OSCULATING} if osculating elements have to be also used.
-     * @deprecated as of 11.1, replaced by {@link #getPropagationType()}
-     */
-    @Deprecated
-    protected PropagationType isMeanOrbit() {
-        return getPropagationType();
-    }
-
     /** Get the propagation type.
      * @return propagation type.
      * @since 11.1
@@ -268,15 +262,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         return managed;
     }
 
-    /** Add a set of user-specified equations to be integrated along with the orbit propagation.
-     * @param additional additional equations
-     * @deprecated as of 11.1, replaced by {@link #addAdditionalDerivativesProvider(AdditionalDerivativesProvider)}
-     */
-    @Deprecated
-    public void addAdditionalEquations(final AdditionalEquations additional) {
-        addAdditionalDerivativesProvider(new AdditionalEquationsAdapter(additional, this::getInitialState));
-    }
-
     /** Add a provider for user-specified state derivatives to be integrated along with the orbit propagation.
      * @param provider provider for additional derivatives
      * @see #addAdditionalStateProvider(org.orekit.propagation.AdditionalStateProvider)
@@ -334,10 +319,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param detector event detector to wrap
      */
     protected void setUpEventDetector(final ODEIntegrator integ, final EventDetector detector) {
-        integ.addEventHandler(new AdaptedEventDetector(detector),
-                              detector.getMaxCheckInterval(),
-                              detector.getThreshold(),
-                              detector.getMaxIterationCount());
+        integ.addEventDetector(new AdaptedEventDetector(detector));
     }
 
     /** {@inheritDoc} */
@@ -397,6 +379,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // prepare handling of STM and Jacobian matrices
             setUpStmAndJacobianGenerators();
+
+            // Initialize additional states
+            initializeAdditionalStates(tEnd);
 
             if (!tStart.equals(getInitialState().getDate())) {
                 // if propagation start date is not initial date,
@@ -459,7 +444,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             if (getInitialState().getMass() <= 0.0) {
-                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
+                throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS,
                                           getInitialState().getMass());
             }
 
@@ -749,8 +734,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // update space dynamics view
             SpacecraftState currentState = stateMapper.mapArrayToState(t, y, null, PropagationType.MEAN);
-            currentState = updateAdditionalStates(currentState);
 
+            currentState = updateAdditionalStates(currentState);
             // compute main state differentials
             return main.computeDerivatives(currentState);
 
@@ -808,7 +793,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             int yieldCount = 0;
             while (!pending.isEmpty()) {
                 final AdditionalDerivativesProvider provider = pending.remove();
-                if (provider.yield(updated)) {
+                if (provider.yields(updated)) {
                     // this provider has to wait for another one,
                     // we put it again in the pending queue
                     pending.add(provider);
@@ -820,12 +805,20 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                     }
                 } else {
                     // we can use these equations right now
-                    final String   name        = provider.getName();
-                    final int      offset      = secondaryOffsets.get(name);
-                    final int      dimension   = provider.getDimension();
-                    final double[] derivatives = provider.derivatives(updated);
-                    System.arraycopy(derivatives, 0, secondaryDot, offset, dimension);
-                    updated = updated.addAdditionalStateDerivative(name, derivatives);
+                    final String              name           = provider.getName();
+                    final int                 offset         = secondaryOffsets.get(name);
+                    final int                 dimension      = provider.getDimension();
+                    final CombinedDerivatives derivatives    = provider.combinedDerivatives(updated);
+                    final double[]            additionalPart = derivatives.getAdditionalDerivatives();
+                    final double[]            mainPart       = derivatives.getMainStateDerivativesIncrements();
+                    System.arraycopy(additionalPart, 0, secondaryDot, offset, dimension);
+                    updated = updated.addAdditionalStateDerivative(name, additionalPart);
+                    if (mainPart != null) {
+                        // this equation does change the main state derivatives
+                        for (int i = 0; i < mainPart.length; ++i) {
+                            primaryDot[i] += mainPart[i];
+                        }
+                    }
                     yieldCount = 0;
                 }
             }
@@ -860,13 +853,18 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** Adapt an {@link org.orekit.propagation.events.EventDetector}
-     * to Hipparchus {@link org.hipparchus.ode.events.ODEEventHandler} interface.
+     * to Hipparchus {@link org.hipparchus.ode.events.ODEEventDetector} interface.
      * @author Fabien Maussion
      */
-    private class AdaptedEventDetector implements ODEEventHandler {
+    private class AdaptedEventDetector implements ODEEventDetector {
 
         /** Underlying event detector. */
         private final EventDetector detector;
+
+        /** Underlying event handler.
+         * @since 12.0
+         */
+        private final EventHandler handler;
 
         /** Time of the previous call to g. */
         private double lastT;
@@ -879,8 +877,27 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         */
         AdaptedEventDetector(final EventDetector detector) {
             this.detector = detector;
+            this.handler  = detector.getHandler();
             this.lastT    = Double.NaN;
             this.lastG    = Double.NaN;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double getMaxCheckInterval() {
+            return detector.getMaxCheckInterval();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int getMaxIterationCount() {
+            return detector.getMaxIterationCount();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public BracketedUnivariateSolver<UnivariateFunction> getSolver() {
+            return new BracketingNthOrderBrentSolver(0, detector.getThreshold(), 0, 5);
         }
 
         /** {@inheritDoc} */
@@ -900,33 +917,41 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final ODEStateAndDerivative s, final boolean increasing) {
-            return detector.eventOccurred(convert(s), increasing);
-        }
+        public ODEEventHandler getHandler() {
 
-        /** {@inheritDoc} */
-        public ODEState resetState(final ODEStateAndDerivative s) {
+            return new ODEEventHandler() {
 
-            final SpacecraftState oldState = convert(s);
-            final SpacecraftState newState = detector.resetState(oldState);
-            stateChanged(newState);
+                /** {@inheritDoc} */
+                public Action eventOccurred(final ODEStateAndDerivative s, final ODEEventDetector d, final boolean increasing) {
+                    return handler.eventOccurred(convert(s), detector, increasing);
+                }
 
-            // main part
-            final double[] primary    = new double[s.getPrimaryStateDimension()];
-            stateMapper.mapStateToArray(newState, primary, null);
+                /** {@inheritDoc} */
+                public ODEState resetState(final ODEEventDetector d, final ODEStateAndDerivative s) {
 
-            // secondary part
-            final double[][] secondary = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
-            for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
-                final String name      = provider.getName();
-                final int    offset    = secondaryOffsets.get(name);
-                final int    dimension = provider.getDimension();
-                System.arraycopy(newState.getAdditionalState(name), 0, secondary[0], offset, dimension);
-            }
+                    final SpacecraftState oldState = convert(s);
+                    final SpacecraftState newState = handler.resetState(detector, oldState);
+                    stateChanged(newState);
 
-            return new ODEState(newState.getDate().durationFrom(getStartDate()),
-                                primary, secondary);
+                    // main part
+                    final double[] primary    = new double[s.getPrimaryStateDimension()];
+                    stateMapper.mapStateToArray(newState, primary, null);
 
+                    // secondary part
+                    final double[][] secondary = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
+                    for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
+                        final String name      = provider.getName();
+                        final int    offset    = secondaryOffsets.get(name);
+                        final int    dimension = provider.getDimension();
+                        System.arraycopy(newState.getAdditionalState(name), 0, secondary[0], offset, dimension);
+                    }
+
+                    return new ODEState(newState.getDate().durationFrom(getStartDate()),
+                                        primary, secondary);
+
+                }
+
+            };
         }
 
     }
@@ -1048,6 +1073,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Generated ephemeris. */
         private BoundedPropagator ephemeris;
 
+        /** Last interpolator handled by the object.*/
+        private  ODEStateInterpolator lastInterpolator;
+
         /** Set the end date.
          * @param endDate end date
          */
@@ -1065,11 +1093,15 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // ephemeris will be generated when last step is processed
             this.ephemeris = null;
 
+            this.lastInterpolator = null;
+
         }
 
         /** {@inheritDoc} */
         @Override
         public BoundedPropagator getGeneratedEphemeris() {
+            // Each time we try to get the ephemeris, rebuild it using the last data.
+            buildEphemeris();
             return ephemeris;
         }
 
@@ -1077,11 +1109,26 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         @Override
         public void handleStep(final ODEStateInterpolator interpolator) {
             model.handleStep(interpolator);
+            lastInterpolator = interpolator;
         }
 
         /** {@inheritDoc} */
         @Override
         public void finish(final ODEStateAndDerivative finalState) {
+            buildEphemeris();
+        }
+
+        /** Method used to produce ephemeris at a given time.
+         * Can be used at multiple times, updating the ephemeris to
+         * its last state.
+         */
+        private void buildEphemeris() {
+            // buildEphemeris was built in order to allow access to what was previously the finish method.
+            // This now allows to call it through getGeneratedEphemeris, therefore through an external call,
+            // which was not previously the case.
+
+            // Update the model's finalTime with the last interpolator.
+            model.finish(lastInterpolator.getCurrentState());
 
             // set up the boundary dates
             final double tI = model.getInitialTime();
@@ -1112,15 +1159,18 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             // get the names of additional states managed by differential equations
-            final String[] names = new String[additionalDerivativesProviders.size()];
+            final String[] names      = new String[additionalDerivativesProviders.size()];
+            final int[]    dimensions = new int[additionalDerivativesProviders.size()];
             for (int i = 0; i < names.length; ++i) {
                 names[i] = additionalDerivativesProviders.get(i).getName();
+                dimensions[i] = additionalDerivativesProviders.get(i).getDimension();
             }
 
             // create the ephemeris
             ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
                                                 stateMapper, propagationType, model,
-                                                unmanaged, getAdditionalStateProviders(), names);
+                                                unmanaged, getAdditionalStateProviders(),
+                                                names, dimensions);
 
         }
 
@@ -1141,8 +1191,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Wrapped integrator. */
         private final ODEIntegrator integrator;
 
-        /** Initial event handlers list. */
-        private final List<EventHandlerConfiguration> eventHandlersConfigurations;
+        /** Initial event detectors list. */
+        private final List<ODEEventDetector> detectors;
 
         /** Initial step handlers list. */
         private final List<ODEStepHandler> stepHandlers;
@@ -1151,9 +1201,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @param integrator wrapped integrator
          */
         IntegratorResetter(final ODEIntegrator integrator) {
-            this.integrator                  = integrator;
-            this.eventHandlersConfigurations = new ArrayList<>(integrator.getEventHandlersConfigurations());
-            this.stepHandlers                = new ArrayList<>(integrator.getStepHandlers());
+            this.integrator   = integrator;
+            this.detectors    = new ArrayList<>(integrator.getEventDetectors());
+            this.stepHandlers = new ArrayList<>(integrator.getStepHandlers());
         }
 
         /** {@inheritDoc}
@@ -1165,12 +1215,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public void close() {
 
             // reset event handlers
-            integrator.clearEventHandlers();
-            eventHandlersConfigurations.forEach(c -> integrator.addEventHandler(c.getEventHandler(),
-                                                                                c.getMaxCheckInterval(),
-                                                                                c.getConvergence(),
-                                                                                c.getMaxIterationCount(),
-                                                                                c.getSolver()));
+            integrator.clearEventDetectors();
+            detectors.forEach(c -> integrator.addEventDetector(c));
 
             // reset step handlers
             integrator.clearStepHandlers();

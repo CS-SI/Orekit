@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.section.CommentsContainer;
@@ -36,6 +35,16 @@ import org.orekit.utils.units.Unit;
  * @since 11.0
  */
 public class TrajectoryStateHistoryMetadata extends CommentsContainer {
+
+    /** Default interpolation method.
+     * @since 12.0
+     */
+    public static final InterpolationMethod DEFAULT_INTERPOLATION_METHOD = InterpolationMethod.HERMITE;
+
+    /** Default interpolation degree.
+     * @since 12.0
+     */
+    public static final int DEFAULT_INTERPOLATION_DEGREE = 3;
 
     /** Trajectory identification number. */
     private String trajID;
@@ -58,8 +67,10 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     /** Interpolation degree. */
     private int interpolationDegree;
 
-    /** Type of averaging (Osculating, mean Brouwer, other...). */
-    private String orbAveraging;
+    /** Orbit propagator used to generate this trajectory.
+     * @since 11.2
+     */
+    private String propagator;
 
     /** Origin of reference frame. */
     private BodyFacade center;
@@ -85,7 +96,10 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     private int orbRevNumBasis;
 
     /** Trajectory element set type. */
-    private ElementsType trajType;
+    private OrbitElementsType trajType;
+
+    /** Type of averaging (Osculating, mean Brouwer, other...). */
+    private String orbAveraging;
 
     /** Units of trajectory element set. */
     private List<Unit> trajUnits;
@@ -94,12 +108,12 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
      * @param epochT0 T0 epoch from file metadata
      * @param dataContext data context
      */
-    TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0, final DataContext dataContext) {
+    public TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0, final DataContext dataContext) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
         trajBasis           = "PREDICTED";
-        interpolationMethod = InterpolationMethod.HERMITE;
-        interpolationDegree = 3;
+        interpolationMethod = DEFAULT_INTERPOLATION_METHOD;
+        interpolationDegree = DEFAULT_INTERPOLATION_DEGREE;
         orbAveraging        = "OSCULATING";
         center              = new BodyFacade("EARTH",
                                              dataContext.getCelestialBodies().getEarth());
@@ -107,7 +121,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
                                               CelestialBodyFrame.ICRF, null, null,
                                               CelestialBodyFrame.ICRF.name());
         trajFrameEpoch      = epochT0;
-        trajType            = ElementsType.CARTPV;
+        trajType            = OrbitElementsType.CARTPV;
         orbRevNum           = -1;
         orbRevNumBasis      = -1;
     }
@@ -116,8 +130,13 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
+        if (trajType != OrbitElementsType.CARTP   &&
+            trajType != OrbitElementsType.CARTPV  &&
+            trajType != OrbitElementsType.CARTPVA) {
+            checkNotNull(orbAveraging, TrajectoryStateHistoryMetadataKey.ORB_AVERAGING.name());
+        }
         if (trajUnits != null) {
-            trajType.checkUnits(trajUnits);
+            Unit.ensureCompatible(trajType.toString(), trajType.getUnits(), false, trajUnits);
         }
         if (orbRevNum >= 0 && orbRevNumBasis < 0) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
@@ -230,19 +249,21 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         this.interpolationDegree = interpolationDegree;
     }
 
-    /** Get type of averaging (Osculating, mean Brouwer, other.
-     * @return type of averaging (Osculating, mean Brouwer, other
-     .). */
-    public String getOrbAveraging() {
-        return orbAveraging;
+    /** Get the orbit propagator used to generate this trajectory.
+     * @return orbit propagator used to generate this trajectory
+     * @since 11.2
+     */
+    public String getPropagator() {
+        return propagator;
     }
 
-    /** Set type of averaging (Osculating, mean Brouwer, other.
-     * @param orbAveraging type of averaging (Osculating, mean Brouwer, other
-     .). */
-    public void setOrbAveraging(final String orbAveraging) {
+    /** Set the orbit propagator used to generate this trajectory.
+     * @param propagator orbit propagator used to generate this trajectory
+     * @since 11.2
+     */
+    public void setPropagator(final String propagator) {
         refuseFurtherComments();
-        this.orbAveraging = orbAveraging;
+        this.propagator = propagator;
     }
 
     /** Get the origin of reference frame.
@@ -361,16 +382,31 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     /** Get trajectory element set type.
      * @return trajectory element set type
      */
-    public ElementsType getTrajType() {
+    public OrbitElementsType getTrajType() {
         return trajType;
     }
 
     /** Set trajectory element set type.
      * @param trajType trajectory element set type
      */
-    public void setTrajType(final ElementsType trajType) {
+    public void setTrajType(final OrbitElementsType trajType) {
         refuseFurtherComments();
         this.trajType = trajType;
+    }
+
+    /** Get type of averaging (Osculating, mean Brouwer, other.
+     * @return type of averaging (Osculating, mean Brouwer, other
+     .). */
+    public String getOrbAveraging() {
+        return orbAveraging;
+    }
+
+    /** Set type of averaging (Osculating, mean Brouwer, other.
+     * @param orbAveraging type of averaging (Osculating, mean Brouwer, other
+     .). */
+    public void setOrbAveraging(final String orbAveraging) {
+        refuseFurtherComments();
+        this.orbAveraging = orbAveraging;
     }
 
     /** Get trajectory element set units.

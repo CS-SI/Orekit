@@ -70,16 +70,6 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
         return handler;
     }
 
-    /** Determines whether this handler needs dense output.
-     * This handler needs dense output in order to provide data at
-     * regularly spaced steps regardless of the steps the propagator
-     * uses, so this method always returns true.
-     * @return always true
-     */
-    public boolean requiresDenseOutput() {
-        return true;
-    }
-
     /** {@inheritDoc} */
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
         lastState = null;
@@ -114,7 +104,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
 
         // use the interpolator to push fixed steps events to the underlying handler
         AbsoluteDate nextTime = lastState.getDate().shiftedBy(step);
-        boolean nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0);
+        boolean nextInStep = forward ^ nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0;
         while (nextInStep) {
 
             // output the stored previous step
@@ -125,7 +115,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
 
             // prepare next iteration
             nextTime = nextTime.shiftedBy(step);
-            nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0);
+            nextInStep = forward ^ nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0;
 
         }
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,7 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CR3BPSystem;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -34,7 +33,6 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.cr3bp.CR3BPForceModel;
 import org.orekit.propagation.numerical.cr3bp.STMEquations;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
@@ -90,24 +88,6 @@ public class CR3BPDifferentialCorrection {
 
     }
 
-    /** Simple Constructor.
-     * <p> Standard constructor using DormandPrince853 integrator for the differential correction </p>
-     * @param firstguess first guess PVCoordinates of the point to start differential correction
-     * @param syst CR3BP System considered
-     * @param orbitalPeriod Orbital Period of the required orbit
-     * @param attitudeProvider the attitude law for the numerical propagator
-     * @param utc UTC time scale
-     * @deprecated as of 11.1, replaced by {@link #CR3BPDifferentialCorrection(PVCoordinates, CR3BPSystem, double)}
-     */
-    @Deprecated
-    public CR3BPDifferentialCorrection(final PVCoordinates firstguess,
-                                       final CR3BPSystem syst,
-                                       final double orbitalPeriod,
-                                       final AttitudeProvider attitudeProvider,
-                                       final TimeScale utc) {
-        this(firstguess, syst, orbitalPeriod);
-    }
-
     /** Build the propagator.
      * @return propagator
      * @since 11.1
@@ -132,7 +112,7 @@ public class CR3BPDifferentialCorrection {
 
         // Propagator definition
         final NumericalPropagator propagator =
-                        new NumericalPropagator(integrator, new InertialProvider(Rotation.IDENTITY, syst.getRotatingFrame()));
+                        new NumericalPropagator(integrator, new FrameAlignedProvider(Rotation.IDENTITY, syst.getRotatingFrame()));
 
         // CR3BP has no defined orbit type
         propagator.setOrbitType(null);

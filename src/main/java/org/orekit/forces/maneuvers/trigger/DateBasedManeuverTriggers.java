@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,14 +21,14 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.util.FastMath;
 import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldParameterDrivenDateIntervalDetector;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
-/** Maneuver triggers based on a start and end date, with no parameter drivers.
+/** Maneuver triggers based on a start and end date.
  * @author Maxime Journot
  * @since 10.2
  */
@@ -36,6 +36,11 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
 
     /** Default name for trigger. */
     public static final String DEFAULT_NAME = "";
+
+    /** Minimum max check interval (avoids infinite loops if duration is zero).
+     * @since 11.2
+     */
+    private static final double MIN_MAX_CHECK = 1.0e-3;
 
     /** Name of the trigger (used as prefix for start and stop parameters drivers). */
     private final String name;
@@ -71,9 +76,11 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
      */
     private static ParameterDrivenDateIntervalDetector createDetector(final String prefix, final AbsoluteDate date, final double duration) {
         if (duration >= 0) {
-            return new ParameterDrivenDateIntervalDetector(prefix, date, date.shiftedBy(duration));
+            return new ParameterDrivenDateIntervalDetector(prefix, date, date.shiftedBy(duration)).
+                   withMaxCheck(FastMath.max(MIN_MAX_CHECK, duration));
         } else {
-            return new ParameterDrivenDateIntervalDetector(prefix, date.shiftedBy(duration), date);
+            return new ParameterDrivenDateIntervalDetector(prefix, date.shiftedBy(duration), date).
+                   withMaxCheck(FastMath.max(MIN_MAX_CHECK, -duration));
         }
     }
 
@@ -107,7 +114,7 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
 
     /** {@inheritDoc} */
     @Override
-    protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
+    protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
         FieldAbstractDetector<D, S> convertIntervalDetector(final Field<S> field, final ParameterDrivenDateIntervalDetector detector) {
 
         final FieldParameterDrivenDateIntervalDetector<S> fd =

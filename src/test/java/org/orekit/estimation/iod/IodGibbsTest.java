@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,11 +17,9 @@
 
 package org.orekit.estimation.iod;
 
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -34,7 +32,7 @@ import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -42,6 +40,8 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+
+import java.util.List;
 
 /**
  *
@@ -90,11 +90,11 @@ public class IodGibbsTest {
 
         // instantiate the IOD method
         final IodGibbs gibbs = new IodGibbs(mu);
-        final KeplerianOrbit orbit = gibbs.estimate(frame, pv1, pv2, pv3);
+        final Orbit    orbit = gibbs.estimate(frame, pv1, pv2, pv3);
 
-        Assert.assertEquals(context.initialOrbit.getA(), orbit.getA(), 1.0e-9 * context.initialOrbit.getA());
-        Assert.assertEquals(context.initialOrbit.getE(), orbit.getE(),  1.0e-9 * context.initialOrbit.getE());
-        Assert.assertEquals(context.initialOrbit.getI(),  orbit.getI(), 1.0e-9 * context.initialOrbit.getI());
+        Assertions.assertEquals(context.initialOrbit.getA(), orbit.getA(), 1.0e-9 * context.initialOrbit.getA());
+        Assertions.assertEquals(context.initialOrbit.getE(), orbit.getE(),  1.0e-9 * context.initialOrbit.getE());
+        Assertions.assertEquals(context.initialOrbit.getI(),  orbit.getI(), 1.0e-9 * context.initialOrbit.getI());
     }
 
     @Test
@@ -123,11 +123,11 @@ public class IodGibbsTest {
         final Vector3D velR2 = new Vector3D(0.0, 5531.148, -5191.806);
 
         //Gibbs IOD
-        final KeplerianOrbit orbit = gibbs.estimate(FramesFactory.getEME2000(),
-                                                    posR1, dateRef, posR2, date2, posR3, date3);
+        final Orbit orbit = gibbs.estimate(FramesFactory.getEME2000(),
+                                           posR1, dateRef, posR2, date2, posR3, date3);
 
         //test
-        Assert.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(), 1e-3);
+        Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(), 1e-3);
     }
 
     @Test
@@ -157,11 +157,11 @@ public class IodGibbsTest {
         final Vector3D velR2 = new Vector3D(-6441.632, 3777.625, -1720.582);
 
         //Gibbs IOD
-        final KeplerianOrbit orbit = gibbs.estimate(FramesFactory.getEME2000(),
-                                                    posR1, dateRef, posR2, date2, posR3, date3);
+        final Orbit orbit = gibbs.estimate(FramesFactory.getEME2000(),
+                                           posR1, dateRef, posR2, date2, posR3, date3);
 
         //test for the norm of the velocity
-        Assert.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
+        Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
 
     }
 
@@ -193,13 +193,13 @@ public class IodGibbsTest {
         final Vector3D velR2 = new Vector3D(-6441.632, 3777.625, -1720.582);
 
         // Gibbs IOD
-        final KeplerianOrbit orbit = gibbs.estimate(FramesFactory.getEME2000(),
-                                                    new Position(dateRef, posR1, 1.0, 1.0, satellite),
-                                                    new Position(date2,   posR2, 1.0, 1.0, satellite), 
-                                                    new Position(date3,   posR3, 1.0, 1.0, satellite));
+        final Orbit orbit = gibbs.estimate(FramesFactory.getEME2000(),
+                                           new Position(dateRef, posR1, 1.0, 1.0, satellite),
+                                           new Position(date2, posR2, 1.0, 1.0, satellite),
+                                           new Position(date3, posR3, 1.0, 1.0, satellite));
 
         // Test for the norm of the velocity
-        Assert.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
+        Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
 
     }
 
@@ -222,7 +222,7 @@ public class IodGibbsTest {
         try {
             gibbs.estimate(frame, pv1, pv2, pv3);
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NON_DIFFERENT_DATES_FOR_OBSERVATIONS, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NON_DIFFERENT_DATES_FOR_OBSERVATIONS, oe.getSpecifier());
         }
     }
 
@@ -245,7 +245,7 @@ public class IodGibbsTest {
         try {
             gibbs.estimate(frame, pv1, pv2, pv3);
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NON_COPLANAR_POINTS, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NON_COPLANAR_POINTS, oe.getSpecifier());
         }
     }
 

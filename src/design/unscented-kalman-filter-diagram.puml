@@ -1,0 +1,142 @@
+' Copyright 2002-2023 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+  skinparam linetype              ortho
+  skinparam arrowSize 1
+
+  package org.hipparchus #ECEBD8 {
+
+    package util #DDEBD8 {
+
+      interface UnscentedTransformProvider {
+        + RealVector[] unscentedTransform(RealVector state, RealMatrix covariance)
+        + RealVector getWc()
+        + RealVector getWm()
+      }
+      
+      class MerweUnscentedTransform
+
+      class JulierUnscentedTransform
+
+      MerweUnscentedTransform  ..|> UnscentedTransformProvider
+      JulierUnscentedTransform ..|> UnscentedTransformProvider
+
+    }
+
+    package filtering.kalman #DDEBD8 {
+      
+      interface "KalmanFilter<T extends Measurement>" as KalmanFilter_T {
+         + estimationStep(measurement)
+         + getPredicted()
+         + getCorrected()
+      }
+    
+      interface Measurement {
+         + getTime()
+         + getValue()
+         + getCovariance()
+      }
+
+      package unscented #F3EFEB {
+    
+        interface UnscentedProcess {
+          + UnscentedEvolution getEvolution()
+          + RealVector getInnovations()
+        }
+    
+        class UnscentedEvolution {
+          + RealVector[] getCurrentStates()
+          + double getCurrentTime()
+          + RealVector[] getCurrentMeasurements()
+          + RealMatrix getProcessNoiseMatrix()
+        }
+    
+        class "UnscentedKalmanFilter<T extends Measurement>" as UnscentedKalmanFilter_T {
+          - ProcessEstimate predicted
+          - ProcessEstimate corrected
+          - UnscentedTransformProvider utProvider
+          + RealVector[] unscentedTransform()
+          + predict(double time, RealVector[] predictedStates, RealMatrix noise)
+          + correct(T measurement, RealMatrix innovationCovarianceMatrix, RealMatrix crossCovarianceMatrix, RealVector innovation)
+        }
+    
+        UnscentedKalmanFilter_T o-->"1"  UnscentedProcess : estimate
+        UnscentedKalmanFilter_T --> UnscentedEvolution
+        UnscentedKalmanFilter_T ..|> KalmanFilter_T
+        UnscentedProcess --> UnscentedEvolution : generate
+        Measurement <-- KalmanFilter_T : consume
+        UnscentedKalmanFilter_T *-up-> UnscentedTransformProvider
+    
+      }
+    
+    }
+
+  }
+
+  package org.orekit #ECEBD8 {
+
+    package estimation.sequential.unscented #DDEBD8 {
+
+      class UnscentedKalmanEstimator {
+        - UnscentedKalmanFilter filter
+        - UnscentedKalmanModel processModel
+        + Propagator[] processMeasurements(List<ObservedMeasurement> measurements)
+        + Propagator[] estimationStep(ObservedMeasurement<?> observedMeasurement)
+      }
+
+      class UnscentedKalmanEstimatorBuilder {
+        + decomposer(MatrixDecomposer decomposer)
+        + addPropagationConfiguration(Propagator propagator, CovarianceMatrixProvider initialCovariance)
+        + unscentedTransformProvider(UnscentedTransformProvider transformProvider)
+        + estimatedMeasurementsParameters(ParameterDriversList estimatedMeasurementsParams, CovarianceMatrixProvider provider)
+        + UnscentedKalmanEstimator build()
+      }
+
+      class UnscentedKalmanModel {
+        - ParameterDriversList allEstimatedOrbitalParameters
+        - ParameterDriversList allEstimatedPropagationParameters
+        - ParameterDriversList estimatedMeasurementsParameters
+        - AbsoluteDate currentDate
+        - ProcessEstimate correctedEstimate
+        - List<NumericalPropagatorBuilder> builder
+        + ProcessEstimate getEstimate()
+        + AbsoluteDate getCurrentDate()
+        + SpacecraftState[] getPredictedSpacecraftStates()
+        + SpacecraftState[] getCorrectedSpacecraftStates()
+        + RealMatrix getPhysicalEstimatedCovarianceMatrix()
+      }
+
+      UnscentedKalmanEstimator <--   UnscentedKalmanEstimatorBuilder : create
+      UnscentedProcess <|.left.  UnscentedKalmanModel
+      UnscentedKalmanModel <-right-*   UnscentedKalmanEstimator
+      UnscentedKalmanEstimator *-left-> UnscentedKalmanFilter_T
+
+    }
+
+  }
+
+@enduml

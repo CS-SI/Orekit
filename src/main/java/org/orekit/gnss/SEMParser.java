@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -267,9 +267,7 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
             almanac.setSatConfiguration(Integer.parseInt(token[0].trim()));
 
             // Adds the almanac to the list
-            final AbsoluteDate date =
-                    new GNSSDate(week, toa * 1000, SatelliteSystem.GPS, timeScales)
-                            .getDate();
+            final AbsoluteDate date = new GNSSDate(week, toa, SatelliteSystem.GPS, timeScales).getDate();
             almanac.setDate(date);
             almanac.setTime(toa);
             almanac.setWeek(week);

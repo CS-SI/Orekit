@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,9 @@
 package org.orekit.propagation.events;
 
 import java.lang.reflect.Array;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -24,20 +27,25 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.analytical.tle.FieldTLE;
+import org.orekit.propagation.analytical.tle.FieldTLEPropagator;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
+import org.orekit.propagation.integration.FieldCombinedDerivatives;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -57,23 +65,34 @@ public class FieldDateDetectorTest {
 
     @Test
     public void testSimpleTimer() {
-        doTestSimpleTimer(Decimal64Field.getInstance());
+        doTestSimpleTimer(Binary64Field.getInstance());
     }
+
     @Test
     public void testEmbeddedTimer() {
-        doTestEmbeddedTimer(Decimal64Field.getInstance());
+        doTestEmbeddedTimer(Binary64Field.getInstance());
     }
+
     @Test
     public void testAutoEmbeddedTimer() {
-        doTestAutoEmbeddedTimer(Decimal64Field.getInstance());
+        doTestAutoEmbeddedTimer(Binary64Field.getInstance());
     }
-    @Test(expected=IllegalArgumentException.class)
+
+    @Test
     public void testExceptionTimer() {
-        doTestExceptionTimer(Decimal64Field.getInstance());
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            doTestExceptionTimer(Binary64Field.getInstance());
+        });
     }
+
     @Test
     public void testGenericHandler() {
-        doTestGenericHandler(Decimal64Field.getInstance());
+        doTestGenericHandler(Binary64Field.getInstance());
+    }
+
+    @Test
+    public void testIssue935() {
+        doTestIssue935(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestSimpleTimer(final Field<T> field) {
@@ -97,7 +116,9 @@ public class FieldDateDetectorTest {
         propagator.addAdditionalDerivativesProvider(new FieldAdditionalDerivativesProvider<T>() {
             public String getName()                              { return "dummy"; }
             public int    getDimension()                         { return 1; }
-            public T[]    derivatives(FieldSpacecraftState<T> s) { return MathArrays.buildArray(field, 1); }
+            public FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<T> s) {
+                return new FieldCombinedDerivatives<>(MathArrays.buildArray(field, 1), null);
+                }
         });
         propagator.getMultiplexer().add(interpolator -> {
             FieldSpacecraftState<T> prev = interpolator.getPreviousState();
@@ -109,18 +130,18 @@ public class FieldDateDetectorTest {
             FieldSpacecraftState<T> restrictedPrev = restricted.getPreviousState();
             FieldSpacecraftState<T> restrictedCurr = restricted.getCurrentState();
             T restrictedDt = restrictedCurr.getDate().durationFrom(restrictedPrev.getDate());
-            Assert.assertEquals(dt.multiply(0.5).getReal(), restrictedDt.getReal(), 1.0e-10);
+            Assertions.assertEquals(dt.multiply(0.5).getReal(), restrictedDt.getReal(), 1.0e-10);
         });
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState.addAdditionalState("dummy", MathArrays.buildArray(field, 1)));
 
         FieldDateDetector<T>  dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold),
                                                                      toArray(iniDate.shiftedBy(2.0*dt)));
-        Assert.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate).getReal(), 1.0e-10);
+        Assertions.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate).getReal(), 1.0e-10);
         propagator.addEventDetector(dateDetector);
         final FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
 
-        Assert.assertEquals(2.0*dt, finalState.getDate().durationFrom(iniDate).getReal(), threshold);
+        Assertions.assertEquals(2.0*dt, finalState.getDate().durationFrom(iniDate).getReal(), threshold);
     }
 
 
@@ -147,11 +168,10 @@ public class FieldDateDetectorTest {
         @SuppressWarnings("unchecked")
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold),
                                                                     (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 0));
-        Assert.assertNull(dateDetector.getDate());
+        Assertions.assertNull(dateDetector.getDate());
         FieldEventDetector<T> nodeDetector = new FieldNodeDetector<>(iniOrbit, iniOrbit.getFrame()).
-                withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>() {
-                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldNodeDetector<T> nd, boolean increasing)
-                        {
+                withHandler(new FieldContinueOnEvent<T>() {
+                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> nd, boolean increasing) {
                         if (increasing) {
                             nodeDate = s.getDate().toAbsoluteDate();
                             dateDetector.addEventDate(s.getDate().shiftedBy(dt));
@@ -164,7 +184,7 @@ public class FieldDateDetectorTest {
         propagator.addEventDetector(dateDetector);
         final FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
 
-        Assert.assertEquals(dt, finalState.getDate().durationFrom(nodeDate).getReal(), threshold);
+        Assertions.assertEquals(dt, finalState.getDate().durationFrom(nodeDate).getReal(), threshold);
     }
 
 
@@ -191,11 +211,10 @@ public class FieldDateDetectorTest {
 
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold),
                                                                     toArray(iniDate.shiftedBy(-dt))).
-                withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T >() {
-                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T>  dd,  boolean increasing)
-                            {
+                withHandler(new FieldContinueOnEvent<T >() {
+                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T>  dd,  boolean increasing) {
                         FieldAbsoluteDate<T> nextDate = s.getDate().shiftedBy(-dt);
-                        dd.addEventDate(nextDate);
+                        ((FieldDateDetector<T>) dd).addEventDate(nextDate);
                         ++evtno;
                         return Action.CONTINUE;
                     }
@@ -203,7 +222,7 @@ public class FieldDateDetectorTest {
         propagator.addEventDetector(dateDetector);
         propagator.propagate(iniDate.shiftedBy(-100.*dt));
 
-        Assert.assertEquals(100, evtno);
+        Assertions.assertEquals(100, evtno);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestExceptionTimer(Field<T> field) {
@@ -229,12 +248,12 @@ public class FieldDateDetectorTest {
 
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold),
                                                                     toArray(iniDate.shiftedBy(dt))).
-                withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T >() {
-                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T>  dd, boolean increasing)
+                withHandler(new FieldContinueOnEvent<T>() {
+                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T>  dd, boolean increasing)
                         {
                         double step = (evtno % 2 == 0) ? 2.*maxCheck : maxCheck/2.;
                         FieldAbsoluteDate<T> nextDate = s.getDate().shiftedBy(step);
-                        dd.addEventDate(nextDate);
+                        ((FieldDateDetector<T>) dd).addEventDate(nextDate);
                         ++evtno;
                         return Action.CONTINUE;
                     }
@@ -272,19 +291,17 @@ public class FieldDateDetectorTest {
         final FieldDateDetector<T> dateDetector = new FieldDateDetector<>(zero.add(maxCheck), zero.add(threshold),
                                                                           toArray(iniDate.shiftedBy(dt)));
         // generic event handler that works with all detectors.
-        FieldEventHandler<FieldEventDetector<T>, T> handler = new FieldEventHandler<FieldEventDetector<T>, T>() {
+        FieldEventHandler<T> handler = new FieldEventHandler<T>() {
             @Override
             public Action eventOccurred(FieldSpacecraftState<T> s,
                                         FieldEventDetector<T> detector,
-                                        boolean increasing)
-                    {
+                                        boolean increasing) {
                 return Action.STOP;
             }
 
             @Override
             public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector,
-                                              FieldSpacecraftState<T> oldState)
-                    {
+                                              FieldSpacecraftState<T> oldState) {
                 throw new RuntimeException("Should not be called");
             }
         };
@@ -298,7 +315,52 @@ public class FieldDateDetectorTest {
         FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(100 * dt));
 
         //verify
-        Assert.assertEquals(dt, finalState.getDate().durationFrom(iniDate).getReal(), threshold);
+        Assertions.assertEquals(dt, finalState.getDate().durationFrom(iniDate).getReal(), threshold);
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestIssue935(Field<T> field) {
+
+        // startTime, endTime
+        long start = 1570802400000L;
+        long end = 1570838399000L;
+
+        // Build propagator
+        FieldTLE<T> tle = new FieldTLE<>(field,
+                                         "1 43197U 18015F   19284.07336221  .00000533  00000-0  24811-4 0  9998",
+                                         "2 43197  97.4059  50.1428 0017543 265.5429 181.0400 15.24136761 93779");
+        FieldPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tle, tle.getParameters(field));
+
+       // Max check to seconds
+        int maxCheck = (int) ((end - start) / 2000);
+        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field.getZero().newInstance(maxCheck),
+                                                                    field.getZero().newInstance(1.0e-6),
+                                                                    getAbsoluteDateFromTimestamp(field, start)).
+                                    withHandler(new FieldStopOnEvent<>());
+        dateDetector.addEventDate(getAbsoluteDateFromTimestamp(field, end));
+
+        // Add event detectors to orbit
+        propagator.addEventDetector(dateDetector);
+
+        // Propagate
+        final FieldAbsoluteDate<T> startDate = getAbsoluteDateFromTimestamp(field, start);
+        final FieldAbsoluteDate<T> endDate   = getAbsoluteDateFromTimestamp(field, end);
+        FieldSpacecraftState<T> lastState = propagator.propagate(startDate, endDate.shiftedBy(1));
+        Assertions.assertEquals(0.0, lastState.getDate().durationFrom(endDate).getReal(), 1.0e-15);
+
+    }
+
+    public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> getAbsoluteDateFromTimestamp(final Field<T> field,
+                                                                                                        final long timestamp) {
+        LocalDateTime utcDate = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
+                                                        ZoneId.of("UTC"));
+        int year = utcDate.getYear();
+        int month = utcDate.getMonthValue();
+        int day = utcDate.getDayOfMonth();
+        int hour = utcDate.getHour();
+        int minute = utcDate.getMinute();
+        double second = utcDate.getSecond();
+        double millis = utcDate.getNano() / 1e9;
+        return new FieldAbsoluteDate<>(field, year, month, day, hour, minute, second, TimeScalesFactory.getUTC()).shiftedBy(millis);
     }
 
     private <T extends CalculusFieldElement<T>> FieldTimeStamped<T>[] toArray(final FieldAbsoluteDate<T> date) {
@@ -308,7 +370,7 @@ public class FieldDateDetectorTest {
         return array;
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
             Utils.setDataRoot("regular-data");
             mu = 3.9860047e14;

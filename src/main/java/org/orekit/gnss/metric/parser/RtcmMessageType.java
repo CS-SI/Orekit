@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,9 @@
  */
 package org.orekit.gnss.metric.parser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,6 +26,27 @@ import java.util.regex.Pattern;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.metric.messages.ParsedMessage;
+import org.orekit.gnss.metric.messages.common.AccuracyProvider;
+import org.orekit.gnss.metric.messages.common.ClockCorrection;
+import org.orekit.gnss.metric.messages.common.GlonassUserRangeAccuracy;
+import org.orekit.gnss.metric.messages.common.OrbitCorrection;
+import org.orekit.gnss.metric.messages.common.SignalInSpaceAccuracy;
+import org.orekit.gnss.metric.messages.common.SsrUpdateInterval;
+import org.orekit.gnss.metric.messages.common.UserRangeAccuracy;
+import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1057;
+import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1058;
+import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1060;
+import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1063;
+import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1064;
+import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1066;
+import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1240;
+import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1241;
+import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1243;
+import org.orekit.gnss.metric.messages.rtcm.correction.RtcmClockCorrectionData;
+import org.orekit.gnss.metric.messages.rtcm.correction.RtcmCombinedCorrectionData;
+import org.orekit.gnss.metric.messages.rtcm.correction.RtcmCorrectionHeader;
+import org.orekit.gnss.metric.messages.rtcm.correction.RtcmOrbitCorrectionData;
+import org.orekit.gnss.metric.messages.rtcm.correction.RtcmOrbitCorrectionHeader;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1019;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1019Data;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1020;
@@ -34,15 +57,11 @@ import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044Data;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1045Data;
-import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.AccuracyProvider;
-import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.GlonassUserRangeAccuracy;
-import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.SignalInSpaceAccuracy;
-import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.UserRangeAccuracy;
-import org.orekit.propagation.analytical.gnss.data.BeidouNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.GPSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.QZSSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 
 /** Enum containing the supported RTCM messages types.
 *
@@ -65,7 +84,7 @@ public enum RtcmMessageType implements MessageType {
 
             // Initialize data container and navigation message
             final Rtcm1019Data         rtcm1019Data  = new Rtcm1019Data();
-            final GPSNavigationMessage gpsNavMessage = new GPSNavigationMessage();
+            final GPSLegacyNavigationMessage gpsNavMessage = new GPSLegacyNavigationMessage();
 
             // Set the satellite ID
             final int gpsId = RtcmDataField.DF009.intValue(encodedMessage);
@@ -203,7 +222,7 @@ public enum RtcmMessageType implements MessageType {
 
             // Initialize data container and navigation message
             final Rtcm1042Data            rtcm1042Data  = new Rtcm1042Data();
-            final BeidouNavigationMessage beidouNavMessage = new BeidouNavigationMessage();
+            final BeidouLegacyNavigationMessage beidouNavMessage = new BeidouLegacyNavigationMessage();
 
             // Set the satellite ID
             final int beidouId = RtcmDataField.DF488.intValue(encodedMessage);
@@ -266,7 +285,7 @@ public enum RtcmMessageType implements MessageType {
 
             // Initialize data container and navigation message
             final Rtcm1044Data          rtcm1044Data   = new Rtcm1044Data();
-            final QZSSNavigationMessage qzssNavMessage = new QZSSNavigationMessage();
+            final QZSSLegacyNavigationMessage qzssNavMessage = new QZSSLegacyNavigationMessage();
 
             // Set the satellite ID
             final int qzssId = RtcmDataField.DF429.intValue(encodedMessage);
@@ -386,6 +405,543 @@ public enum RtcmMessageType implements MessageType {
 
             // Return the parsed message
             return new Rtcm1045(1045, rtcm1045Data);
+
+        }
+
+    },
+
+    /** GPS Orbit Correction. */
+    RTCM_1057("1057") {
+
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+
+            // Header data
+            final RtcmOrbitCorrectionHeader rtcm1057Header = new RtcmOrbitCorrectionHeader();
+            rtcm1057Header.setEpochTime1s(RtcmDataField.DF385.intValue(encodedMessage));
+            rtcm1057Header.setSsrUpdateInterval(new SsrUpdateInterval(RtcmDataField.DF391.intValue(encodedMessage)));
+            rtcm1057Header.setMultipleMessageIndicator(RtcmDataField.DF388.intValue(encodedMessage));
+            rtcm1057Header.setSatelliteReferenceDatum(RtcmDataField.DF375.intValue(encodedMessage));
+            rtcm1057Header.setIodSsr(RtcmDataField.DF413.intValue(encodedMessage));
+            rtcm1057Header.setSsrProviderId(RtcmDataField.DF414.intValue(encodedMessage));
+            rtcm1057Header.setSsrSolutionId(RtcmDataField.DF415.intValue(encodedMessage));
+
+            // Number of satellites
+            final int satNumber = RtcmDataField.DF387.intValue(encodedMessage);
+            rtcm1057Header.setNumberOfSatellites(satNumber);
+
+            // Initialize list of data
+            final List<RtcmOrbitCorrectionData> rtcm1057Data = new ArrayList<>();
+
+            // Loop on satellites and fill data
+            for (int index = 0; index < satNumber; index++) {
+
+                // Satellite ID
+                final int rtcm1057SatId = RtcmDataField.DF068.intValue(encodedMessage);
+
+                // GNSS IOD
+                final int rtcm1057Iod = RtcmDataField.DF071.intValue(encodedMessage);
+
+                // Orbit correction
+                final OrbitCorrection rtcm1057OrbitCorr =
+                                new OrbitCorrection(RtcmDataField.DF365.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF366.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF367.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF368.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF369.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF370.doubleValue(encodedMessage));
+
+                // Initialize a new container and fill data
+                final RtcmOrbitCorrectionData currentRtcm1057Data = new RtcmOrbitCorrectionData();
+                currentRtcm1057Data.setSatelliteID(rtcm1057SatId);
+                currentRtcm1057Data.setGnssIod(rtcm1057Iod);
+                currentRtcm1057Data.setOrbitCorrection(rtcm1057OrbitCorr);
+
+                // Update the list
+                rtcm1057Data.add(currentRtcm1057Data);
+
+            }
+
+            // Return the parsed message
+            return new Rtcm1057(messageNumber, rtcm1057Header, rtcm1057Data);
+
+        }
+
+    },
+
+    /** GPS Clock Correction. */
+    RTCM_1058("1058") {
+
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+
+            // Header data
+            final RtcmCorrectionHeader rtcm1058Header = new RtcmCorrectionHeader();
+            rtcm1058Header.setEpochTime1s(RtcmDataField.DF385.intValue(encodedMessage));
+            rtcm1058Header.setSsrUpdateInterval(new SsrUpdateInterval(RtcmDataField.DF391.intValue(encodedMessage)));
+            rtcm1058Header.setMultipleMessageIndicator(RtcmDataField.DF388.intValue(encodedMessage));
+            rtcm1058Header.setIodSsr(RtcmDataField.DF413.intValue(encodedMessage));
+            rtcm1058Header.setSsrProviderId(RtcmDataField.DF414.intValue(encodedMessage));
+            rtcm1058Header.setSsrSolutionId(RtcmDataField.DF415.intValue(encodedMessage));
+
+            // Number of satellites
+            final int satNumber = RtcmDataField.DF387.intValue(encodedMessage);
+            rtcm1058Header.setNumberOfSatellites(satNumber);
+
+            // Initialize list of data
+            final List<RtcmClockCorrectionData> rtcm1058Data = new ArrayList<>();
+
+            // Loop on satellites and fill data
+            for (int index = 0; index < satNumber; index++) {
+
+                // Satellite ID
+                final int rtcm1058SatId = RtcmDataField.DF068.intValue(encodedMessage);
+
+                // Clock correction
+                final ClockCorrection rtcm1058ClockCorr =
+                                new ClockCorrection(RtcmDataField.DF376.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF377.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF378.doubleValue(encodedMessage));
+
+                // Initialize a new container and fill data
+                final RtcmClockCorrectionData currentRtcm1058Data = new RtcmClockCorrectionData();
+                currentRtcm1058Data.setSatelliteID(rtcm1058SatId);
+                currentRtcm1058Data.setClockCorrection(rtcm1058ClockCorr);
+
+                // Update the list
+                rtcm1058Data.add(currentRtcm1058Data);
+
+            }
+
+            // Return the parsed message
+            return new Rtcm1058(messageNumber, rtcm1058Header, rtcm1058Data);
+
+        }
+
+    },
+
+    /** GPS Combined Orbit and Clock Correction. */
+    RTCM_1060("1060") {
+
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+
+            // Header data
+            final RtcmOrbitCorrectionHeader rtcm1060Header = new RtcmOrbitCorrectionHeader();
+            rtcm1060Header.setEpochTime1s(RtcmDataField.DF385.intValue(encodedMessage));
+            rtcm1060Header.setSsrUpdateInterval(new SsrUpdateInterval(RtcmDataField.DF391.intValue(encodedMessage)));
+            rtcm1060Header.setMultipleMessageIndicator(RtcmDataField.DF388.intValue(encodedMessage));
+            rtcm1060Header.setSatelliteReferenceDatum(RtcmDataField.DF375.intValue(encodedMessage));
+            rtcm1060Header.setIodSsr(RtcmDataField.DF413.intValue(encodedMessage));
+            rtcm1060Header.setSsrProviderId(RtcmDataField.DF414.intValue(encodedMessage));
+            rtcm1060Header.setSsrSolutionId(RtcmDataField.DF415.intValue(encodedMessage));
+
+            // Number of satellites
+            final int satNumber = RtcmDataField.DF387.intValue(encodedMessage);
+            rtcm1060Header.setNumberOfSatellites(satNumber);
+
+            // Initialize list of data
+            final List<RtcmCombinedCorrectionData> rtcm1060Data = new ArrayList<>();
+
+            // Loop on satellites and fill data
+            for (int index = 0; index < satNumber; index++) {
+
+                // Satellite ID
+                final int rtcm1060SatId = RtcmDataField.DF068.intValue(encodedMessage);
+
+                // GNSS IOD
+                final int rtcm1060Iod = RtcmDataField.DF071.intValue(encodedMessage);
+
+                // Orbit correction
+                final OrbitCorrection rtcm1060OrbitCorr =
+                                new OrbitCorrection(RtcmDataField.DF365.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF366.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF367.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF368.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF369.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF370.doubleValue(encodedMessage));
+
+                // Clock correction
+                final ClockCorrection rtcm1060ClockCorr =
+                                new ClockCorrection(RtcmDataField.DF376.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF377.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF378.doubleValue(encodedMessage));
+
+                // Initialize a new container and fill data
+                final RtcmCombinedCorrectionData currentRtcm1060Data = new RtcmCombinedCorrectionData();
+                currentRtcm1060Data.setSatelliteID(rtcm1060SatId);
+                currentRtcm1060Data.setGnssIod(rtcm1060Iod);
+                currentRtcm1060Data.setOrbitCorrection(rtcm1060OrbitCorr);
+                currentRtcm1060Data.setClockCorrection(rtcm1060ClockCorr);
+
+                // Update the list
+                rtcm1060Data.add(currentRtcm1060Data);
+
+            }
+
+            // Return the parsed message
+            return new Rtcm1060(messageNumber, rtcm1060Header, rtcm1060Data);
+
+        }
+
+    },
+
+    /** GLONASS Orbit Correction. */
+    RTCM_1063("1063") {
+
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+
+            // Header data
+            final RtcmOrbitCorrectionHeader rtcm1063Header = new RtcmOrbitCorrectionHeader();
+            rtcm1063Header.setEpochTime1s(RtcmDataField.DF386.intValue(encodedMessage));
+            rtcm1063Header.setSsrUpdateInterval(new SsrUpdateInterval(RtcmDataField.DF391.intValue(encodedMessage)));
+            rtcm1063Header.setMultipleMessageIndicator(RtcmDataField.DF388.intValue(encodedMessage));
+            rtcm1063Header.setSatelliteReferenceDatum(RtcmDataField.DF375.intValue(encodedMessage));
+            rtcm1063Header.setIodSsr(RtcmDataField.DF413.intValue(encodedMessage));
+            rtcm1063Header.setSsrProviderId(RtcmDataField.DF414.intValue(encodedMessage));
+            rtcm1063Header.setSsrSolutionId(RtcmDataField.DF415.intValue(encodedMessage));
+
+            // Number of satellites
+            final int satNumber = RtcmDataField.DF387.intValue(encodedMessage);
+            rtcm1063Header.setNumberOfSatellites(satNumber);
+
+            // Initialize list of data
+            final List<RtcmOrbitCorrectionData> rtcm1063Data = new ArrayList<>();
+
+            // Loop on satellites and fill data
+            for (int index = 0; index < satNumber; index++) {
+
+                // Satellite ID
+                final int rtcm1063SatId = RtcmDataField.DF384.intValue(encodedMessage);
+
+                // GNSS IOD
+                final int rtcm1063Iod = RtcmDataField.DF392.intValue(encodedMessage);
+
+                // Orbit correction
+                final OrbitCorrection rtcm1063OrbitCorr =
+                                new OrbitCorrection(RtcmDataField.DF365.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF366.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF367.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF368.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF369.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF370.doubleValue(encodedMessage));
+
+                // Initialize a new container and fill data
+                final RtcmOrbitCorrectionData currentRtcm1063Data = new RtcmOrbitCorrectionData();
+                currentRtcm1063Data.setSatelliteID(rtcm1063SatId);
+                currentRtcm1063Data.setGnssIod(rtcm1063Iod);
+                currentRtcm1063Data.setOrbitCorrection(rtcm1063OrbitCorr);
+
+                // Update the list
+                rtcm1063Data.add(currentRtcm1063Data);
+
+            }
+
+            // Return the parsed message
+            return new Rtcm1063(messageNumber, rtcm1063Header, rtcm1063Data);
+
+        }
+
+    },
+
+    /** GLONASS Clock Correction. */
+    RTCM_1064("1064") {
+
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+
+            // Header data
+            final RtcmCorrectionHeader rtcm1064Header = new RtcmCorrectionHeader();
+            rtcm1064Header.setEpochTime1s(RtcmDataField.DF386.intValue(encodedMessage));
+            rtcm1064Header.setSsrUpdateInterval(new SsrUpdateInterval(RtcmDataField.DF391.intValue(encodedMessage)));
+            rtcm1064Header.setMultipleMessageIndicator(RtcmDataField.DF388.intValue(encodedMessage));
+            rtcm1064Header.setIodSsr(RtcmDataField.DF413.intValue(encodedMessage));
+            rtcm1064Header.setSsrProviderId(RtcmDataField.DF414.intValue(encodedMessage));
+            rtcm1064Header.setSsrSolutionId(RtcmDataField.DF415.intValue(encodedMessage));
+
+            // Number of satellites
+            final int satNumber = RtcmDataField.DF387.intValue(encodedMessage);
+            rtcm1064Header.setNumberOfSatellites(satNumber);
+
+            // Initialize list of data
+            final List<RtcmClockCorrectionData> rtcm1064Data = new ArrayList<>();
+
+            // Loop on satellites and fill data
+            for (int index = 0; index < satNumber; index++) {
+
+                // Satellite ID
+                final int rtcm1064SatId = RtcmDataField.DF384.intValue(encodedMessage);
+
+                // Clock correction
+                final ClockCorrection rtcm1064ClockCorr =
+                                new ClockCorrection(RtcmDataField.DF376.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF377.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF378.doubleValue(encodedMessage));
+
+                // Initialize a new container and fill data
+                final RtcmClockCorrectionData currentRtcm1058Data = new RtcmClockCorrectionData();
+                currentRtcm1058Data.setSatelliteID(rtcm1064SatId);
+                currentRtcm1058Data.setClockCorrection(rtcm1064ClockCorr);
+
+                // Update the list
+                rtcm1064Data.add(currentRtcm1058Data);
+
+            }
+
+            // Return the parsed message
+            return new Rtcm1064(messageNumber, rtcm1064Header, rtcm1064Data);
+
+        }
+
+    },
+
+    /** GLONASS Combined Orbit and Clock Correction. */
+    RTCM_1066("1066") {
+
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+
+            // Header data
+            final RtcmOrbitCorrectionHeader rtcm1066Header = new RtcmOrbitCorrectionHeader();
+            rtcm1066Header.setEpochTime1s(RtcmDataField.DF386.intValue(encodedMessage));
+            rtcm1066Header.setSsrUpdateInterval(new SsrUpdateInterval(RtcmDataField.DF391.intValue(encodedMessage)));
+            rtcm1066Header.setMultipleMessageIndicator(RtcmDataField.DF388.intValue(encodedMessage));
+            rtcm1066Header.setSatelliteReferenceDatum(RtcmDataField.DF375.intValue(encodedMessage));
+            rtcm1066Header.setIodSsr(RtcmDataField.DF413.intValue(encodedMessage));
+            rtcm1066Header.setSsrProviderId(RtcmDataField.DF414.intValue(encodedMessage));
+            rtcm1066Header.setSsrSolutionId(RtcmDataField.DF415.intValue(encodedMessage));
+
+            // Number of satellites
+            final int satNumber = RtcmDataField.DF387.intValue(encodedMessage);
+            rtcm1066Header.setNumberOfSatellites(satNumber);
+
+            // Initialize list of data
+            final List<RtcmCombinedCorrectionData> rtcm1066Data = new ArrayList<>();
+
+            // Loop on satellites and fill data
+            for (int index = 0; index < satNumber; index++) {
+
+                // Satellite ID
+                final int rtcm1066SatId = RtcmDataField.DF384.intValue(encodedMessage);
+
+                // GNSS IOD
+                final int rtcm1066Iod = RtcmDataField.DF392.intValue(encodedMessage);
+
+                // Orbit correction
+                final OrbitCorrection rtcm1066OrbitCorr =
+                                new OrbitCorrection(RtcmDataField.DF365.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF366.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF367.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF368.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF369.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF370.doubleValue(encodedMessage));
+
+                // Clock correction
+                final ClockCorrection rtcm1066ClockCorr =
+                                new ClockCorrection(RtcmDataField.DF376.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF377.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF378.doubleValue(encodedMessage));
+
+                // Initialize a new container and fill data
+                final RtcmCombinedCorrectionData currentRtcm1066Data = new RtcmCombinedCorrectionData();
+                currentRtcm1066Data.setSatelliteID(rtcm1066SatId);
+                currentRtcm1066Data.setGnssIod(rtcm1066Iod);
+                currentRtcm1066Data.setOrbitCorrection(rtcm1066OrbitCorr);
+                currentRtcm1066Data.setClockCorrection(rtcm1066ClockCorr);
+
+                // Update the list
+                rtcm1066Data.add(currentRtcm1066Data);
+
+            }
+
+            // Return the parsed message
+            return new Rtcm1066(messageNumber, rtcm1066Header, rtcm1066Data);
+
+        }
+
+    },
+
+    /** Galileo Orbit Correction Message. */
+    RTCM_1240("1240") {
+
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+
+            // Header data
+            final RtcmOrbitCorrectionHeader rtcm1240Header = new RtcmOrbitCorrectionHeader();
+            rtcm1240Header.setEpochTime1s(RtcmDataField.DF458.intValue(encodedMessage));
+            rtcm1240Header.setSsrUpdateInterval(new SsrUpdateInterval(RtcmDataField.DF391.intValue(encodedMessage)));
+            rtcm1240Header.setMultipleMessageIndicator(RtcmDataField.DF388.intValue(encodedMessage));
+            rtcm1240Header.setSatelliteReferenceDatum(RtcmDataField.DF375.intValue(encodedMessage));
+            rtcm1240Header.setIodSsr(RtcmDataField.DF413.intValue(encodedMessage));
+            rtcm1240Header.setSsrProviderId(RtcmDataField.DF414.intValue(encodedMessage));
+            rtcm1240Header.setSsrSolutionId(RtcmDataField.DF415.intValue(encodedMessage));
+
+            // Number of satellites
+            final int satNumber = RtcmDataField.DF387.intValue(encodedMessage);
+            rtcm1240Header.setNumberOfSatellites(satNumber);
+
+            // Initialize list of data
+            final List<RtcmOrbitCorrectionData> rtcm1240Data = new ArrayList<>();
+
+            // Loop on satellites and fill data
+            for (int index = 0; index < satNumber; index++) {
+
+                // Satellite ID
+                final int rtcm1240SatId = RtcmDataField.DF252.intValue(encodedMessage);
+
+                // GNSS IOD
+                final int rtcm1240Iod = RtcmDataField.DF290.intValue(encodedMessage);
+
+                // Orbit correction
+                final OrbitCorrection rtcm1240OrbitCorr =
+                                new OrbitCorrection(RtcmDataField.DF365.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF366.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF367.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF368.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF369.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF370.doubleValue(encodedMessage));
+
+                // Initialize a new container and fill data
+                final RtcmOrbitCorrectionData currentRtcm1240Data = new RtcmOrbitCorrectionData();
+                currentRtcm1240Data.setSatelliteID(rtcm1240SatId);
+                currentRtcm1240Data.setGnssIod(rtcm1240Iod);
+                currentRtcm1240Data.setOrbitCorrection(rtcm1240OrbitCorr);
+
+                // Update the list
+                rtcm1240Data.add(currentRtcm1240Data);
+
+            }
+
+            // Return the parsed message
+            return new Rtcm1240(messageNumber, rtcm1240Header, rtcm1240Data);
+
+        }
+
+    },
+
+    /** Galileo Clock Correction Message. */
+    RTCM_1241("1241") {
+
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+
+            // Header data
+            final RtcmCorrectionHeader rtcm1241Header = new RtcmCorrectionHeader();
+            rtcm1241Header.setEpochTime1s(RtcmDataField.DF458.intValue(encodedMessage));
+            rtcm1241Header.setSsrUpdateInterval(new SsrUpdateInterval(RtcmDataField.DF391.intValue(encodedMessage)));
+            rtcm1241Header.setMultipleMessageIndicator(RtcmDataField.DF388.intValue(encodedMessage));
+            rtcm1241Header.setIodSsr(RtcmDataField.DF413.intValue(encodedMessage));
+            rtcm1241Header.setSsrProviderId(RtcmDataField.DF414.intValue(encodedMessage));
+            rtcm1241Header.setSsrSolutionId(RtcmDataField.DF415.intValue(encodedMessage));
+
+            // Number of satellites
+            final int satNumber = RtcmDataField.DF387.intValue(encodedMessage);
+            rtcm1241Header.setNumberOfSatellites(satNumber);
+
+            // Initialize list of data
+            final List<RtcmClockCorrectionData> rtcm1241Data = new ArrayList<>();
+
+            // Loop on satellites and fill data
+            for (int index = 0; index < satNumber; index++) {
+
+                // Satellite ID
+                final int rtcm1241SatId = RtcmDataField.DF252.intValue(encodedMessage);
+
+                // Clock correction
+                final ClockCorrection rtcm1241ClockCorr =
+                                new ClockCorrection(RtcmDataField.DF376.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF377.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF378.doubleValue(encodedMessage));
+
+                // Initialize a new container and fill data
+                final RtcmClockCorrectionData currentRtcm1241Data = new RtcmClockCorrectionData();
+                currentRtcm1241Data.setSatelliteID(rtcm1241SatId);
+                currentRtcm1241Data.setClockCorrection(rtcm1241ClockCorr);
+
+                // Update the list
+                rtcm1241Data.add(currentRtcm1241Data);
+
+            }
+
+            // Return the parsed message
+            return new Rtcm1241(messageNumber, rtcm1241Header, rtcm1241Data);
+
+        }
+
+    },
+
+    /** Galileo Combined Orbit and Clock Correction Message. */
+    RTCM_1243("1243") {
+
+        /** {@inheritDoc} */
+        @Override
+        public ParsedMessage parse(final EncodedMessage encodedMessage, final int messageNumber) {
+
+            // Header data
+            final RtcmOrbitCorrectionHeader rtcm1243Header = new RtcmOrbitCorrectionHeader();
+            rtcm1243Header.setEpochTime1s(RtcmDataField.DF458.intValue(encodedMessage));
+            rtcm1243Header.setSsrUpdateInterval(new SsrUpdateInterval(RtcmDataField.DF391.intValue(encodedMessage)));
+            rtcm1243Header.setMultipleMessageIndicator(RtcmDataField.DF388.intValue(encodedMessage));
+            rtcm1243Header.setSatelliteReferenceDatum(RtcmDataField.DF375.intValue(encodedMessage));
+            rtcm1243Header.setIodSsr(RtcmDataField.DF413.intValue(encodedMessage));
+            rtcm1243Header.setSsrProviderId(RtcmDataField.DF414.intValue(encodedMessage));
+            rtcm1243Header.setSsrSolutionId(RtcmDataField.DF415.intValue(encodedMessage));
+
+            // Number of satellites
+            final int satNumber = RtcmDataField.DF387.intValue(encodedMessage);
+            rtcm1243Header.setNumberOfSatellites(satNumber);
+
+            // Initialize list of data
+            final List<RtcmCombinedCorrectionData> rtcm1243Data = new ArrayList<>();
+
+            // Loop on satellites and fill data
+            for (int index = 0; index < satNumber; index++) {
+
+                // Satellite ID
+                final int rtcm1243SatId = RtcmDataField.DF252.intValue(encodedMessage);
+
+                // GNSS IOD
+                final int rtcm1243Iod = RtcmDataField.DF290.intValue(encodedMessage);
+
+                // Orbit correction
+                final OrbitCorrection rtcm1243OrbitCorr =
+                                new OrbitCorrection(RtcmDataField.DF365.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF366.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF367.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF368.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF369.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF370.doubleValue(encodedMessage));
+
+                // Clock correction
+                final ClockCorrection rtcm1243ClockCorr =
+                                new ClockCorrection(RtcmDataField.DF376.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF377.doubleValue(encodedMessage),
+                                                    RtcmDataField.DF378.doubleValue(encodedMessage));
+
+                // Initialize a new container and fill data
+                final RtcmCombinedCorrectionData currentRtcm1243Data = new RtcmCombinedCorrectionData();
+                currentRtcm1243Data.setSatelliteID(rtcm1243SatId);
+                currentRtcm1243Data.setGnssIod(rtcm1243Iod);
+                currentRtcm1243Data.setOrbitCorrection(rtcm1243OrbitCorr);
+                currentRtcm1243Data.setClockCorrection(rtcm1243ClockCorr);
+
+                // Update the list
+                rtcm1243Data.add(currentRtcm1243Data);
+
+            }
+
+            // Return the parsed message
+            return new Rtcm1243(messageNumber, rtcm1243Header, rtcm1243Data);
 
         }
 

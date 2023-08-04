@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,19 +37,58 @@ public class Units {
     /** m² unit. */
     public static final Unit M2 = Unit.parse("m²");
 
+    /** m⁴ unit. */
+    public static final Unit M4 = Unit.parse("m⁴");
+
+    /** Meters per second units. */
+    public static final Unit M_PER_S = Unit.parse("m/s");
+
+    /** Meters per square second units. */
+    public static final Unit M_PER_S2 = Unit.parse("m/s²");
+
+    /** Square meters per second units. */
+    public static final Unit M2_PER_S = Unit.parse("m²/s");
+
+    /** Square meters per square second units. */
+    public static final Unit M2_PER_S2 = Unit.parse("m²/s²");
+
+    /** Square meters per cube second units. */
+    public static final Unit M2_PER_S3 = Unit.parse("m²/s³");
+
+    /** Square meters per s⁴ units. */
+    public static final Unit M2_PER_S4 = Unit.parse("m²/s⁴");
+
+    /** m² per kilograms units. */
+    public static final Unit M2_PER_KG = Unit.parse("m²/kg");
+
+    /** m³ per kilograms units. */
+    public static final Unit M3_PER_KG = Unit.parse("m³/kg");
+
+    /** m⁴ per kilograms units. */
+    public static final Unit M4_PER_KG = Unit.parse("m⁴/kg");
+
+    /** m⁴ per square kilograms units. */
+    public static final Unit M4_PER_KG2 = Unit.parse("m⁴/kg²");
+
+    /** Cubic meters per kilograms second units. */
+    public static final Unit M3_PER_KGS = Unit.parse("m³/(kg.s)");
+
+    /** Cubic meters per kilograms (square second) units. */
+    public static final Unit M3_PER_KGS2 = Unit.parse("m³/(kg.s²)");
+
     /** #/year unit. */
     public static final Unit NB_PER_Y = Unit.parse("#/yr");
 
     /** Square kilometers units. */
     public static final Unit KM2 = Unit.parse("km²");
 
-    /** Kilometers par second units. */
+    /** Kilometers per second units. */
     public static final Unit KM_PER_S = Unit.parse("km/s");
 
-    /** Kilometers par square second units. */
+    /** Kilometers per square second units. */
     public static final Unit KM_PER_S2 = Unit.parse("km/s²");
 
-    /** Square kilometers par second units. */
+    /** Square kilometers per second units. */
     public static final Unit KM2_PER_S = Unit.parse("km²/s");
 
     /** Square kilometers per square second units. */
@@ -67,8 +106,19 @@ public class Units {
     /** Degree per second unit. */
     public static final Unit DEG_PER_S = Unit.parse("°/s");
 
+    /** Degree per second^3/2 unit. */
+    public static final Unit DEG_PER_S_3_2 = Unit.parse("°/√(s³)");
+
+    /** Degree per second^1/2 unit. */
+    public static final Unit DEG_PER_S_1_2 = Unit.parse("°/√s");
+
     /** Newton metre unit. */
     public static final Unit N_M = Unit.parse("N.m");
+
+    /** Newton metre second unit.
+     * @since 12.0
+     */
+    public static final Unit N_M_S = Unit.parse("N.m.s");
 
     /** Nano Tesla unit. */
     public static final Unit NANO_TESLA = Unit.parse("nT");
@@ -78,6 +128,12 @@ public class Units {
 
     /** Hertz per second unit. */
     public static final Unit HZ_PER_S = Unit.parse("Hz/s");
+
+    /** Watt per kilograms units. */
+    public static final Unit W_PER_KG = Unit.parse("W/kg");
+
+    /** Earth radii reciprocal unit. */
+    public static final Unit ONE_PER_ER = Unit.parse("1/ER");
 
     /** Private constructor for a utility class.
      */

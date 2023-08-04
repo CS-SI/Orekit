@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,12 +22,12 @@ import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceWriter;
-import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataWriter;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParametersWriter;
 import org.orekit.files.ccsds.ndm.odm.StateVectorWriter;
 import org.orekit.files.ccsds.ndm.odm.UserDefinedWriter;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.ContextBinding;
@@ -44,7 +44,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OpmWriter extends AbstractMessageWriter<Header, Segment<CommonMetadata, OpmData>, Opm> {
+public class OpmWriter extends AbstractMessageWriter<OdmHeader, Segment<OdmCommonMetadata, OpmData>, Opm> {
 
     /** Version number implemented. **/
     public static final double CCSDS_OPM_VERS = 3.0;
@@ -74,13 +74,13 @@ public class OpmWriter extends AbstractMessageWriter<Header, Segment<CommonMetad
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegmentContent(final Generator generator, final double formatVersion,
-                                    final Segment<CommonMetadata, OpmData> segment)
+    protected void writeSegmentContent(final Generator generator, final double formatVersion,
+                                       final Segment<OdmCommonMetadata, OpmData> segment)
         throws IOException {
 
         // write the metadata
         final ContextBinding oldContext = getContext();
-        final CommonMetadata metadata   = segment.getMetadata();
+        final OdmCommonMetadata metadata   = segment.getMetadata();
         setContext(new ContextBinding(oldContext::getConventions,
                                       oldContext::isSimpleEOP,
                                       oldContext::getDataContext,

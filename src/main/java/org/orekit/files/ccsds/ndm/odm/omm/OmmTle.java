@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,33 @@ import org.orekit.files.ccsds.section.CommentsContainer;
  */
 public class OmmTle extends CommentsContainer {
 
+    /** Constant for EPHEMERIS_TYPE SGP.
+     * @since 12.0
+     */
+    public static final int EPHEMERIS_TYPE_SGP = 0;
+
+    /** Constant for EPHEMERIS_TYPE SGP4.
+     * @since 12.0
+     */
+    public static final int EPHEMERIS_TYPE_SGP4 = 2;
+
+    /** Constant for EPHEMERIS_TYPE PPT3.
+     * @since 12.0
+     */
+    public static final int EPHEMERIS_TYPE_PPT3 = 3;
+
+    /** Constant for EPHEMERIS_TYPE SGP4-XP.
+     * @since 12.0
+     */
+    public static final int EPHEMERIS_TYPE_SGP4_XP = 4;
+
+    /** Constant for EPHEMERIS_TYPE Special Perturbations.
+     * @since 12.0
+     */
+    public static final int EPHEMERIS_TYPE_SPECIAL_PERTURBATIONS = 6;
+
     /** Ephemeris Type, only required if MEAN_ELEMENT_THEORY = SGP/SGP4. Some sources suggest the coding for
-     * the EPHEMERIS_TYPE keyword: 1 = SGP, 2 = SGP4, 3 = SDP4, 4 = SGP8, 5 = SDP8. Default value = 0.
+     * the EPHEMERIS_TYPE keyword: 0 = SGP, 2 = SGP4, 3 = PPT3, 4 = SGP4-XP, 6 = Special Perturbations. Default value = 0.
      */
     private int ephemerisType;
 
@@ -49,34 +74,62 @@ public class OmmTle extends CommentsContainer {
     /** SGP/SGP4 drag-like coefficient (in units 1/[Earth radii]), only required if MEAN_ELEMENT_THEORY = SGP/SGP4. */
     private double bStar;
 
+    /** SGP4-XP drag-like coefficient (in m²/kg), only required if MEAN_ELEMENT_THEORY = SGP4-XP.
+     * @since 12.0
+     */
+    private double bTerm;
+
     /** First Time Derivative of the Mean Motion, only required if MEAN_ELEMENT_THEORY = SGP. */
     private double meanMotionDot;
 
     /** Second Time Derivative of Mean Motion, only required if MEAN_ELEMENT_THEORY = SGP. */
     private double meanMotionDotDot;
 
+    /** SGP4-XP solar radiation pressure-like coefficient Aγ/m (in m²/kg), only required if MEAN_ELEMENT_THEORY = SGP4-XP.
+     * @since 12.0
+     */
+    private double agOm;
+
     /** Create an empty data set.
      */
     public OmmTle() {
-        ephemerisType      = 0;
+        ephemerisType      = EPHEMERIS_TYPE_SGP;
         classificationType = 'U';
         noradID            = -1;
         elementSetNo       = -1;
         revAtEpoch         = -1;
         bStar              =  Double.NaN;
+        bTerm              =  Double.NaN;
         meanMotionDot      =  Double.NaN;
         meanMotionDotDot   =  Double.NaN;
+        agOm               =  Double.NaN;
     }
 
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNaN(meanMotionDot,     OmmTleKey.MEAN_MOTION_DOT);
-        checkNotNaN(meanMotionDotDot,  OmmTleKey.MEAN_MOTION_DDOT);
-        checkNotNegative(noradID,      OmmTleKey.NORAD_CAT_ID);
-        checkNotNegative(elementSetNo, OmmTleKey.ELEMENT_SET_NO);
-        checkNotNegative(revAtEpoch,   OmmTleKey.REV_AT_EPOCH);
+
+        checkNotNegative(noradID,      OmmTleKey.NORAD_CAT_ID.name());
+        checkNotNegative(elementSetNo, OmmTleKey.ELEMENT_SET_NO.name());
+        checkNotNegative(revAtEpoch,   OmmTleKey.REV_AT_EPOCH.name());
+
+        if (ephemerisType == EPHEMERIS_TYPE_SGP4) {
+            checkNotNaN(bStar, OmmTleKey.BSTAR.name());
+        } else if (ephemerisType == EPHEMERIS_TYPE_SGP4_XP) {
+            checkNotNaN(bTerm, OmmTleKey.BTERM.name());
+        }
+
+        if (ephemerisType == EPHEMERIS_TYPE_SGP  || ephemerisType == EPHEMERIS_TYPE_PPT3) {
+            checkNotNaN(meanMotionDot, OmmTleKey.MEAN_MOTION_DOT.name());
+        }
+
+        if (ephemerisType == EPHEMERIS_TYPE_SGP  || ephemerisType == EPHEMERIS_TYPE_PPT3) {
+            checkNotNaN(meanMotionDotDot, OmmTleKey.MEAN_MOTION_DDOT.name());
+        } else if (ephemerisType == EPHEMERIS_TYPE_SGP4_XP) {
+            checkNotNaN(agOm, OmmTleKey.AGOM.name());
+        }
+
     }
 
     /** Get the ephemeris type.
@@ -169,6 +222,23 @@ public class OmmTle extends CommentsContainer {
         this.bStar = bstar;
     }
 
+    /** Get the SGP4-XP drag-like coefficient.
+     * @return the SGP4-XP drag-like coefficient
+     * @since 12.0
+     */
+    public double getBTerm() {
+        return bTerm;
+    }
+
+    /** Set the SGP4-XP drag-like coefficient.
+     * @param bterm the SGP4-XP drag-like coefficient to be set
+     * @since 12.0
+     */
+    public void setBTerm(final double bterm) {
+        refuseFurtherComments();
+        this.bTerm = bterm;
+    }
+
     /** Get the first time derivative of the mean motion.
      * @return the first time derivative of the mean motion
      */
@@ -197,6 +267,23 @@ public class OmmTle extends CommentsContainer {
     public void setMeanMotionDotDot(final double meanMotionDotDot) {
         refuseFurtherComments();
         this.meanMotionDotDot = meanMotionDotDot;
+    }
+
+    /** Get the SGP4-XP solar radiation pressure-like coefficient Aγ/m.
+     * @return the SGP4-XP solar radiation pressure-like coefficient Aγ/m
+     * @since 12.0
+     */
+    public double getAGoM() {
+        return agOm;
+    }
+
+    /** Set the SGP4-XP solar radiation pressure-like coefficient Aγ/m.
+     * @param agom the SGP4-XP solar radiation pressure-like coefficient Aγ/m to be set
+     * @since 12.0
+     */
+    public void setAGoM(final double agom) {
+        refuseFurtherComments();
+        this.agOm = agom;
     }
 
 }

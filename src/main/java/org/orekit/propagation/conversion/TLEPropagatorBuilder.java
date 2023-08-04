@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,15 +19,12 @@ package org.orekit.propagation.conversion;
 import java.util.List;
 
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.AbstractKalmanModel;
-import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -44,7 +41,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Thomas Paulet
  * @since 6.0
  */
-public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Default value for epsilon. */
     private static final double EPSILON_DEFAULT = 1.0e-10;
@@ -151,6 +148,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
      * classification, .... and is also used together with the {@code positionScale} to
      * convert from the {@link ParameterDriver#setNormalizedValue(double) normalized}
      * parameters used by the callers of this builder to the real orbital parameters.
+     * The default attitude provider is aligned with the orbit's inertial frame.
      * </p>
      * @param templateTLE reference TLE from which real orbits will be built
      * @param positionAngle position angle type to use
@@ -170,7 +168,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
         super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames())
                         .getInitialState().getOrbit(),
               positionAngle, positionScale, false,
-              InertialProvider.of(dataContext.getFrames().getTEME()));
+              FrameAlignedProvider.of(dataContext.getFrames().getTEME()));
         for (final ParameterDriver driver : templateTLE.getParametersDrivers()) {
             addSupportedParameter(driver);
         }
@@ -178,6 +176,13 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
         this.dataContext   = dataContext;
         this.epsilon       = epsilon;
         this.maxIterations = maxIterations;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public TLEPropagatorBuilder copy() {
+        return new TLEPropagatorBuilder(templateTLE, getPositionAngle(), getPositionScale(),
+                                        dataContext, epsilon, maxIterations);
     }
 
     /** {@inheritDoc} */
@@ -216,20 +221,12 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
     }
 
     /** {@inheritDoc} */
-    public AbstractBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                                final List<ObservedMeasurement<?>> measurements,
-                                final ParameterDriversList estimatedMeasurementsParameters,
-                                final ModelObserver observer) {
-        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
-    }
-
     @Override
-    public AbstractKalmanModel
-        buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                         final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                         final ParameterDriversList estimatedMeasurementsParameters,
-                         final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
+    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                       final List<ObservedMeasurement<?>> measurements,
+                                                       final ParameterDriversList estimatedMeasurementsParameters,
+                                                       final ModelObserver observer) {
+        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
 }

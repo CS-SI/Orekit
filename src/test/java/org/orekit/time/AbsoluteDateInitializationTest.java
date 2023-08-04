@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.time;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 
 /**
@@ -36,7 +36,7 @@ public class AbsoluteDateInitializationTest {
         // just some code that makes an assertion using AbsoluteDate,
         // the real code under test is AbsoluteDate initialization.
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Assert.assertEquals(new AbsoluteDate(date, 10).durationFrom(date), 10.0, 0.0);
+        Assertions.assertEquals(new AbsoluteDate(date, 10).durationFrom(date), 10.0, 0.0);
     }
 
 }

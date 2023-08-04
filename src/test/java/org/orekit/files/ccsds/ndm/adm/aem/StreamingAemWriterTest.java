@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,24 +23,25 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
@@ -51,7 +52,7 @@ public class StreamingAemWriterTest {
     private static final double DATE_PRECISION = 1e-3;
 
     /** Set Orekit data. */
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
@@ -83,12 +84,12 @@ public class StreamingAemWriterTest {
             FrameFacade       frameA       = ephemerisBlock.getMetadata().getEndpoints().getFrameA();
             FrameFacade       frameB       = ephemerisBlock.getMetadata().getEndpoints().getFrameB();
             boolean           a2b          = ephemerisBlock.getMetadata().getEndpoints().isA2b();
-            AttitudeType   attitudeType = ephemerisBlock.getMetadata().getAttitudeType();
+            AttitudeType      attitudeType = ephemerisBlock.getMetadata().getAttitudeType();
             boolean           isFirst      = ephemerisBlock.getMetadata().isFirst();
 
             // Initialize the header and metadata
             // Here, we use only one data segment.
-            Header header = new Header(3.0);
+            AdmHeader header = new AdmHeader();
             header.setOriginator(originator);
             header.addComment(headerCmt);
 
@@ -106,7 +107,8 @@ public class StreamingAemWriterTest {
 
             StringBuilder buffer = new StringBuilder();
             StreamingAemWriter writer =
-                            new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.KVN_PADDING_WIDTH, ex + "-new", 60),
+                            new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.KVN_PADDING_WIDTH, ex + "-new",
+                                                                    Constants.JULIAN_DAY, 60),
                                                    new WriterBuilder(). buildAemWriter(),
                                                    header, metadata);
 
@@ -115,8 +117,8 @@ public class StreamingAemWriterTest {
             StreamingAemWriter.SegmentWriter segment = writer.newSegment();
             KeplerianPropagator propagator =
                             createPropagator(ephemerisBlock.getStart(),
-                                             new InertialProvider(ephemerisBlock.getAngularCoordinates().get(0).getRotation(),
-                                                                  FramesFactory.getEME2000()));
+                                             new FrameAlignedProvider(ephemerisBlock.getAngularCoordinates().get(0).getRotation(),
+                                                                      FramesFactory.getEME2000()));
 
             // We propagate 60 seconds after the start date with a step equals to 10.0 seconds
             // It is expected to have an attitude data block containing 7 data lines
@@ -131,20 +133,20 @@ public class StreamingAemWriterTest {
             Aem generatedAem = parser.parseMessage(source1);
 
             // There is only one attitude ephemeris block
-            Assert.assertEquals(1, generatedAem.getSegments().size());
+            Assertions.assertEquals(1, generatedAem.getSegments().size());
             AemSegment attitudeBlocks = generatedAem.getSegments().get(0);
             // There are 7 data lines in the attitude ephemeris block
             List<? extends TimeStampedAngularCoordinates> ac  = attitudeBlocks.getAngularCoordinates();
-            Assert.assertEquals(7, ac.size());
+            Assertions.assertEquals(7, ac.size());
 
             // Verify
             for (int i = 0; i < 7; i++) {
-                Assert.assertEquals(step * i, ac.get(i).getDate().durationFrom(ephemerisBlock.getStart()), DATE_PRECISION);
+                Assertions.assertEquals(step * i, ac.get(i).getDate().durationFrom(ephemerisBlock.getStart()), DATE_PRECISION);
                 Rotation rot = ac.get(i).getRotation();
-                Assert.assertEquals(0.68427, rot.getQ0(), QUATERNION_PRECISION);
-                Assert.assertEquals(0.56748, rot.getQ1(), QUATERNION_PRECISION);
-                Assert.assertEquals(0.03146, rot.getQ2(), QUATERNION_PRECISION);
-                Assert.assertEquals(0.45689, rot.getQ3(), QUATERNION_PRECISION);
+                Assertions.assertEquals(0.68427, rot.getQ0(), QUATERNION_PRECISION);
+                Assertions.assertEquals(0.56748, rot.getQ1(), QUATERNION_PRECISION);
+                Assertions.assertEquals(0.03146, rot.getQ2(), QUATERNION_PRECISION);
+                Assertions.assertEquals(0.45689, rot.getQ3(), QUATERNION_PRECISION);
             }
 
         }

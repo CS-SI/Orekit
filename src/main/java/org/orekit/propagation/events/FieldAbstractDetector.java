@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,17 +17,20 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.ode.events.Action;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Common parts shared by several orbital events finders.
+ * @param <D> type of the detector
+ * @param <T> type of the field element
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
-                                            T extends CalculusFieldElement<T>> implements FieldEventDetector<T> {
+public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T>, T extends CalculusFieldElement<T>>
+    implements FieldEventDetector<T> {
 
     /** Default maximum checking interval (s). */
     public static final double DEFAULT_MAXCHECK = 600;
@@ -48,7 +51,7 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
     private final int maxIter;
 
     /** Default handler for event overrides. */
-    private final FieldEventHandler<? super D, T> handler;
+    private final FieldEventHandler<T> handler;
 
     /** Propagation direction. */
     private boolean forward;
@@ -60,7 +63,9 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
      * @param handler event handler to call at event occurrences
      */
     protected FieldAbstractDetector(final T maxCheck, final T threshold, final int maxIter,
-                                    final FieldEventHandler<? super D, T> handler) {
+                                    final FieldEventHandler<T> handler) {
+        checkStrictlyPositive(maxCheck.getReal());
+        checkStrictlyPositive(threshold.getReal());
         this.maxCheck  = maxCheck;
         this.threshold = threshold;
         this.maxIter   = maxIter;
@@ -68,12 +73,22 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
         this.forward   = true;
     }
 
+    /** Check value is strictly positive.
+     * @param value value to check
+     * @exception OrekitException if value is not strictly positive
+     * @since 11.2
+     */
+    private void checkStrictlyPositive(final double value) throws OrekitException {
+        if (value <= 0.0) {
+            throw new OrekitException(OrekitMessages.NOT_STRICTLY_POSITIVE, value);
+        }
+    }
+
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     public void init(final FieldSpacecraftState<T> s0,
                      final FieldAbsoluteDate<T> t) {
         forward = t.durationFrom(s0.getDate()).getReal() >= 0.0;
-        getHandler().init(s0, t, (D) this);
+        getHandler().init(s0, t, this);
     }
 
     /** {@inheritDoc} */
@@ -142,29 +157,13 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
      * @return a new detector with updated configuration (the instance is not changed)
      * @since 6.1
      */
-    public D withHandler(final FieldEventHandler<? super D, T> newHandler) {
+    public D withHandler(final FieldEventHandler<T> newHandler) {
         return create(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), newHandler);
     }
 
-    /** Get the handler.
-     * @return event handler to call at event occurrences
-     */
-    public FieldEventHandler<? super D, T> getHandler() {
+    /** {@inheritDoc} */
+    public FieldEventHandler<T> getHandler() {
         return handler;
-    }
-
-    /** {@inheritDoc} */
-    public Action eventOccurred(final FieldSpacecraftState<T> s, final boolean increasing) {
-        @SuppressWarnings("unchecked")
-        final Action whatNext = getHandler().eventOccurred(s, (D) this, increasing);
-        return whatNext;
-    }
-
-    /** {@inheritDoc} */
-    public FieldSpacecraftState<T> resetState(final FieldSpacecraftState<T> oldState) {
-        @SuppressWarnings("unchecked")
-        final FieldSpacecraftState<T> newState = getHandler().resetState((D) this, oldState);
-        return newState;
     }
 
     /** Build a new instance.
@@ -175,7 +174,7 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
      * @return a new instance of the appropriate sub-type
      */
     protected abstract D create(T newMaxCheck, T newThreshold,
-                                int newMaxIter, FieldEventHandler<? super D, T> newHandler);
+                                int newMaxIter, FieldEventHandler<T> newHandler);
 
     /** Check if the current propagation is forward or backward.
      * @return true if the current propagation is forward

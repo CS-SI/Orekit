@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,9 @@ package org.orekit.propagation.numerical.cr3bp;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -29,6 +30,7 @@ import org.orekit.utils.AbstractMultipleShooting;
  * Multiple shooting method applicable for orbits, either propagation in CR3BP, or in an ephemeris model.
  * @see "TRAJECTORY DESIGN AND ORBIT MAINTENANCE STRATEGIES IN MULTI-BODY DYNAMICAL REGIMES by Thomas A. Pavlak, Purdue University"
  * @author William Desprats
+ * @author Alberto Foss&agrave;
  */
 public class CR3BPMultipleShooter extends AbstractMultipleShooting {
 
@@ -40,42 +42,23 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
      */
     private final List<STMEquations> stmEquations;
 
-    /** Number of patch points. */
-    private int npoints;
+    /** True if orbit is closed. */
+    private boolean isClosedOrbit;
 
     /** Simple Constructor.
-     * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>
-     * @param initialGuessList initial patch points to be corrected.
-     * @param propagatorList list of propagators associated to each patch point.
-     * @param additionalEquations list of additional equations linked to propagatorList.
-     * @param arcDuration initial guess of the duration of each arc.
-     * @param tolerance convergence tolerance on the constraint vector
-     * @deprecated as of 11.1, replaced by {@link #CR3BPMultipleShooter(List, List, List, double, double, int)}
-     */
-    @Deprecated
-    public CR3BPMultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                 final List<org.orekit.propagation.integration.AdditionalEquations> additionalEquations,
-                                 final double arcDuration, final double tolerance) {
-        super(initialGuessList, propagatorList, additionalEquations, arcDuration, tolerance, STM);
-        stmEquations = additionalEquations.stream().map(ae -> (STMEquations) ae).collect(Collectors.toList());
-        npoints      = initialGuessList.size();
-    }
-
-    /** Simple Constructor.
-     * <p> Standard constructor for multiple shooting which can be used with the CR3BP model.</p>
-     * @param initialGuessList initial patch points to be corrected.
-     * @param propagatorList list of propagators associated to each patch point.
-     * @param stmEquations list of additional derivatives providers linked to propagatorList.
-     * @param arcDuration initial guess of the duration of each arc.
+     * <p> Standard constructor for multiple shooting which can be used with the CR3BP model. </p>
+     * @param initialGuessList initial patch points to be corrected
+     * @param propagatorList list of propagators associated to each patch point
+     * @param stmEquations list of additional derivatives providers linked to propagatorList
      * @param tolerance convergence tolerance on the constraint vector
      * @param maxIter maximum number of iterations
      */
-    public CR3BPMultipleShooter(final List<SpacecraftState> initialGuessList, final List<NumericalPropagator> propagatorList,
-                                final List<STMEquations> stmEquations, final double arcDuration,
+    public CR3BPMultipleShooter(final List<SpacecraftState> initialGuessList,
+                                final List<NumericalPropagator> propagatorList,
+                                final List<STMEquations> stmEquations,
                                 final double tolerance, final int maxIter) {
-        super(initialGuessList, propagatorList, arcDuration, tolerance, maxIter, STM);
+        super(initialGuessList, propagatorList, tolerance, maxIter, true, STM);
         this.stmEquations = stmEquations;
-        this.npoints      = initialGuessList.size();
     }
 
     /** {@inheritDoc} */
@@ -84,54 +67,81 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
     }
 
     /** {@inheritDoc} */
+    @Override
+    public void setEpochFreedom(final int patchIndex, final boolean isFree) {
+        throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setScaleLength(final double scaleLength) {
+        throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setScaleTime(final double scaleTime) {
+        throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED);
+    }
+
+    /** Set the constraint of a closed orbit or not.
+     *  @param isClosed true if orbit should be closed
+     */
+    public void setClosedOrbitConstraint(final boolean isClosed) {
+        this.isClosedOrbit = isClosed;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected double[][] computeAdditionalJacobianMatrix(final List<SpacecraftState> propagatedSP) {
 
         final Map<Integer, Double> mapConstraints = getConstraintsMap();
+        final boolean[] freeCompsMap              = getFreeCompsMap();
 
         // Number of additional constraints
-        final int n = mapConstraints.size() + (isClosedOrbit() ? 6 : 0);
+        final int nRows = mapConstraints.size() + (isClosedOrbit ? 6 : 0);
+        final int nCols = getNumberOfFreeComponents();
 
-        final int ncolumns = getNumberOfFreeVariables() - 1;
+        final double[][] M = new double[nRows][nCols];
 
-        final double[][] M = new double[n][ncolumns];
-
-        int k = 0;
-        if (isClosedOrbit()) {
+        int j = 0;
+        if (isClosedOrbit) {
             // The Jacobian matrix has the following form:
             //
             //      [-1  0              0  ...  1  0             ]
             //      [ 0 -1  0           0  ...     1  0          ]
-            // C =  [    0 -1  0        0  ...        1  0       ]
+            // F =  [    0 -1  0        0  ...        1  0       ]
             //      [       0 -1  0     0  ...           1  0    ]
-            //      [          0  -1 0  0  ...              1  0 ]
+            //      [          0 -1  0  0  ...              1  0 ]
             //      [          0  0 -1  0  ...              0  1 ]
 
+            int index = 0;
             for (int i = 0; i < 6; i++) {
-                M[i][i] = -1;
-                M[i][ncolumns - 6 + i] = 1;
+                if (freeCompsMap[i]) {
+                    M[i][index] = -1.0;
+                    index++;
+                }
             }
-            k = 6;
+            index = nCols - 6;
+            for (int i = 0; i < 6; i++) {
+                if (freeCompsMap[nCols - 6 + i]) {
+                    M[i][index] = 1.0;
+                    index++;
+                }
+            }
+            j = 6;
         }
 
-        for (int index : mapConstraints.keySet()) {
-            M[k][index] = 1;
-            k++;
+        for (int k : mapConstraints.keySet()) {
+            M[j][k] = 1.0;
+            j++;
         }
+
         return M;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected double[][] computeEpochJacobianMatrix(final List<SpacecraftState> propagatedSP) {
-        final int nFreeEpoch = getNumberOfFreeEpoch();
-        // Rows and columns dimensions
-        final int ncolumns   = 1 + nFreeEpoch;
-        final int nrows      = npoints - 1;
-        // Return an empty array
-        return new double[nrows][ncolumns];
-    }
-
-    /** {@inheritDoc} */
     protected double[] computeAdditionalConstraints(final List<SpacecraftState> propagatedSP) {
 
         // The additional constraint vector has the following form :
@@ -146,33 +156,36 @@ public class CR3BPMultipleShooter extends AbstractMultipleShooting {
         //           [    ...    ]    | a patch point equals to a
         //           [vz2i - vz2d]----  desired value)
 
-        final Map<Integer, Double> mapConstraints = getConstraintsMap();
-        // Number of additional constraints
-        final int n = mapConstraints.size() + (isClosedOrbit() ? 6 : 0);
-
+        final Map<Integer, Double> mapConstraints           = getConstraintsMap();
         final List<SpacecraftState> patchedSpacecraftStates = getPatchedSpacecraftState();
 
-        final double[] fxAdditionnal = new double[n];
+        final double[] fxAdditional = new double[mapConstraints.size() + (isClosedOrbit ? 6 : 0)];
         int i = 0;
 
-        if (isClosedOrbit()) {
+        if (isClosedOrbit) {
 
             final AbsolutePVCoordinates apv1i = patchedSpacecraftStates.get(0).getAbsPVA();
-            final AbsolutePVCoordinates apvni = patchedSpacecraftStates.get(npoints - 1).getAbsPVA();
+            final AbsolutePVCoordinates apvni = patchedSpacecraftStates.get(patchedSpacecraftStates.size() - 1).getAbsPVA();
 
-            fxAdditionnal[0] = apvni.getPosition().getX() - apv1i.getPosition().getX();
-            fxAdditionnal[1] = apvni.getPosition().getY() - apv1i.getPosition().getY();
-            fxAdditionnal[2] = apvni.getPosition().getZ() - apv1i.getPosition().getZ();
-            fxAdditionnal[3] = apvni.getVelocity().getX() - apv1i.getVelocity().getX();
-            fxAdditionnal[4] = apvni.getVelocity().getY() - apv1i.getVelocity().getY();
-            fxAdditionnal[5] = apvni.getVelocity().getZ() - apv1i.getVelocity().getZ();
+            fxAdditional[0] = apvni.getPosition().getX() - apv1i.getPosition().getX();
+            fxAdditional[1] = apvni.getPosition().getY() - apv1i.getPosition().getY();
+            fxAdditional[2] = apvni.getPosition().getZ() - apv1i.getPosition().getZ();
+            fxAdditional[3] = apvni.getVelocity().getX() - apv1i.getVelocity().getX();
+            fxAdditional[4] = apvni.getVelocity().getY() - apv1i.getVelocity().getY();
+            fxAdditional[5] = apvni.getVelocity().getZ() - apv1i.getVelocity().getZ();
 
             i = 6;
         }
 
         // Update additional constraints
-        updateAdditionalConstraints(i, fxAdditionnal);
-        return fxAdditionnal;
+        updateAdditionalConstraints(i, fxAdditional);
+        return fxAdditional;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected int getNumberOfConstraints() {
+        return super.getNumberOfConstraints() + (isClosedOrbit ? 6 : 0);
     }
 
 }

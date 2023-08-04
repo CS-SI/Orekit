@@ -18,10 +18,10 @@ package org.orekit.bodies;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link FieldGeodeticPoint}.
@@ -38,21 +38,21 @@ public class FieldGeodeticPointTest {
     @Test
     public void testGeodeticPointAngleNormalization() {
         // action
-        FieldGeodeticPoint<Decimal64> point =
-                new FieldGeodeticPoint<Decimal64>(new Decimal64(FastMath.toRadians(135)),
-                                                  new Decimal64(FastMath.toRadians(90 - 360)),
-                                                  new Decimal64(0));
+        FieldGeodeticPoint<Binary64> point =
+                new FieldGeodeticPoint<Binary64>(new Binary64(FastMath.toRadians(135)),
+                                                  new Binary64(FastMath.toRadians(90 - 360)),
+                                                  new Binary64(0));
 
         // verify
-        Assert.assertEquals(FastMath.toRadians(45), point.getLatitude().getReal(), 1.0e-15);
-        Assert.assertEquals(FastMath.toRadians(-90), point.getLongitude().getReal(), 1.0e-15);
+        Assertions.assertEquals(FastMath.toRadians(45), point.getLatitude().getReal(), 1.0e-15);
+        Assertions.assertEquals(FastMath.toRadians(-90), point.getLongitude().getReal(), 1.0e-15);
 
-        Assert.assertEquals(0, Vector3D.distance(point.getEast().toVector3D(),   Vector3D.PLUS_I), 1.0e-15);
-        Assert.assertEquals(0, Vector3D.distance(point.getNorth().toVector3D(),  new Vector3D( 0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
-        Assert.assertEquals(0, Vector3D.distance(point.getWest().toVector3D(),   Vector3D.MINUS_I), 1.0e-15);
-        Assert.assertEquals(0, Vector3D.distance(point.getSouth().toVector3D(),  new Vector3D(-0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
-        Assert.assertEquals(0, Vector3D.distance(point.getZenith().toVector3D(), new Vector3D(-0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
-        Assert.assertEquals(0, Vector3D.distance(point.getNadir().toVector3D(),  new Vector3D( 0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.distance(point.getEast().toVector3D(),   Vector3D.PLUS_I), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.distance(point.getNorth().toVector3D(),  new Vector3D( 0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.distance(point.getWest().toVector3D(),   Vector3D.MINUS_I), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.distance(point.getSouth().toVector3D(),  new Vector3D(-0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.distance(point.getZenith().toVector3D(), new Vector3D(-0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
+        Assertions.assertEquals(0, Vector3D.distance(point.getNadir().toVector3D(),  new Vector3D( 0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
 
     }
 
@@ -80,20 +80,20 @@ public class FieldGeodeticPointTest {
 
         for (double[] point : points) {
             // action
-            FieldGeodeticPoint<Decimal64> gp =
-                    new FieldGeodeticPoint<Decimal64>(new Decimal64(point[0]),
-                                                      new Decimal64(point[1]),
-                                                      Decimal64.ZERO);
-            Assert.assertEquals(0, gp.getEast().crossProduct(gp.getNorth()).distance(gp.getZenith()).getReal(), 1.0e-15);
-            Assert.assertEquals(0, gp.getNorth().crossProduct(gp.getWest()).distance(gp.getZenith()).getReal(), 1.0e-15);
-            Assert.assertEquals(0, gp.getSouth().crossProduct(gp.getWest()).distance(gp.getNadir()).getReal(), 1.0e-15);
-            Assert.assertEquals(0, gp.getEast().crossProduct(gp.getSouth()).distance(gp.getNadir()).getReal(), 1.0e-15);
-            Assert.assertEquals(0, gp.getZenith().crossProduct(gp.getSouth()).distance(gp.getEast()).getReal(), 1.0e-15);
-            Assert.assertEquals(0, gp.getNadir().crossProduct(gp.getWest()).distance(gp.getNorth()).getReal(), 1.0e-15);
+            FieldGeodeticPoint<Binary64> gp =
+                    new FieldGeodeticPoint<Binary64>(new Binary64(point[0]),
+                                                      new Binary64(point[1]),
+                                                      Binary64.ZERO);
+            Assertions.assertEquals(0, gp.getEast().crossProduct(gp.getNorth()).distance(gp.getZenith()).getReal(), 1.0e-15);
+            Assertions.assertEquals(0, gp.getNorth().crossProduct(gp.getWest()).distance(gp.getZenith()).getReal(), 1.0e-15);
+            Assertions.assertEquals(0, gp.getSouth().crossProduct(gp.getWest()).distance(gp.getNadir()).getReal(), 1.0e-15);
+            Assertions.assertEquals(0, gp.getEast().crossProduct(gp.getSouth()).distance(gp.getNadir()).getReal(), 1.0e-15);
+            Assertions.assertEquals(0, gp.getZenith().crossProduct(gp.getSouth()).distance(gp.getEast()).getReal(), 1.0e-15);
+            Assertions.assertEquals(0, gp.getNadir().crossProduct(gp.getWest()).distance(gp.getNorth()).getReal(), 1.0e-15);
 
             // verify to within 5 ulps
-            Assert.assertEquals(point[2], gp.getLatitude().getReal(), 5 * FastMath.ulp(point[2]));
-            Assert.assertEquals(point[3], gp.getLongitude().getReal(), 5 * FastMath.ulp(point[3]));
+            Assertions.assertEquals(point[2], gp.getLatitude().getReal(), 5 * FastMath.ulp(point[2]));
+            Assertions.assertEquals(point[3], gp.getLongitude().getReal(), 5 * FastMath.ulp(point[3]));
         }
     }
 
@@ -103,33 +103,33 @@ public class FieldGeodeticPointTest {
     @Test
     public void testEquals() {
         // setup
-        FieldGeodeticPoint<Decimal64> point =
-                new FieldGeodeticPoint<Decimal64>(new Decimal64(1),
-                                                  new Decimal64(2),
-                                                  new Decimal64(3));
+        FieldGeodeticPoint<Binary64> point =
+                new FieldGeodeticPoint<Binary64>(new Binary64(1),
+                                                  new Binary64(2),
+                                                  new Binary64(3));
 
         // actions + verify
-        Assert.assertEquals(point, new FieldGeodeticPoint<Decimal64>(new Decimal64(1),
-                                                                     new Decimal64(2),
-                                                                     new Decimal64(3)));
-        Assert.assertFalse(point.equals(new FieldGeodeticPoint<Decimal64>(new Decimal64(0),
-                                                                          new Decimal64(2),
-                                                                          new Decimal64(3))));
-        Assert.assertFalse(point.equals(new FieldGeodeticPoint<Decimal64>(new Decimal64(1),
-                                                                          new Decimal64(0),
-                                                                          new Decimal64(3))));
-        Assert.assertFalse(point.equals(new FieldGeodeticPoint<Decimal64>(new Decimal64(1),
-                                                                          new Decimal64(2),
-                                                                          new Decimal64(0))));
-        Assert.assertFalse(point.equals(new Object()));
-        Assert.assertEquals(point.hashCode(),
-                            new FieldGeodeticPoint<Decimal64>(new Decimal64(1),
-                                                              new Decimal64(2),
-                                                              new Decimal64(3)).hashCode());
-        Assert.assertNotEquals(point.hashCode(),
-                               new FieldGeodeticPoint<Decimal64>(new Decimal64(1),
-                                                                 new Decimal64(FastMath.nextUp(2)),
-                                                                 new Decimal64(3)).hashCode());
+        Assertions.assertEquals(point, new FieldGeodeticPoint<Binary64>(new Binary64(1),
+                                                                     new Binary64(2),
+                                                                     new Binary64(3)));
+        Assertions.assertFalse(point.equals(new FieldGeodeticPoint<Binary64>(new Binary64(0),
+                                                                          new Binary64(2),
+                                                                          new Binary64(3))));
+        Assertions.assertFalse(point.equals(new FieldGeodeticPoint<Binary64>(new Binary64(1),
+                                                                          new Binary64(0),
+                                                                          new Binary64(3))));
+        Assertions.assertFalse(point.equals(new FieldGeodeticPoint<Binary64>(new Binary64(1),
+                                                                          new Binary64(2),
+                                                                          new Binary64(0))));
+        Assertions.assertFalse(point.equals(new Object()));
+        Assertions.assertEquals(point.hashCode(),
+                            new FieldGeodeticPoint<Binary64>(new Binary64(1),
+                                                              new Binary64(2),
+                                                              new Binary64(3)).hashCode());
+        Assertions.assertNotEquals(point.hashCode(),
+                               new FieldGeodeticPoint<Binary64>(new Binary64(1),
+                                                                 new Binary64(FastMath.nextUp(2)),
+                                                                 new Binary64(3)).hashCode());
     }
 
     /**
@@ -138,16 +138,16 @@ public class FieldGeodeticPointTest {
     @Test
     public void testToString() {
         // setup
-        FieldGeodeticPoint<Decimal64> point =
-                new FieldGeodeticPoint<Decimal64>(new Decimal64(FastMath.toRadians(30)),
-                                                  new Decimal64(FastMath.toRadians(60)),
-                                                  new Decimal64(90));
+        FieldGeodeticPoint<Binary64> point =
+                new FieldGeodeticPoint<Binary64>(new Binary64(FastMath.toRadians(30)),
+                                                  new Binary64(FastMath.toRadians(60)),
+                                                  new Binary64(90));
 
         // action
         String actual = point.toString();
 
         // verify
-        Assert.assertEquals("{lat: 30 deg, lon: 60 deg, alt: 90}", actual);
+        Assertions.assertEquals("{lat: 30 deg, lon: 60 deg, alt: 90}", actual);
     }
 
 }

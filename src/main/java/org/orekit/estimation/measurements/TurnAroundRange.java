@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +32,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -57,10 +57,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * @since 9.0
  */
-public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
+public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> {
 
-    /** Primary ground station from which measurement is performed. */
-    private final GroundStation primaryStation;
+    /** Type of the measurement. */
+    public static final String MEASUREMENT_TYPE = "TurnAroundRange";
 
     /** Secondary ground station reflecting the signal. */
     private final GroundStation secondaryStation;
@@ -79,17 +79,8 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
                            final AbsoluteDate date, final double turnAroundRange,
                            final double sigma, final double baseWeight,
                            final ObservableSatellite satellite) {
-        super(date, turnAroundRange, sigma, baseWeight, Collections.singletonList(satellite));
-        addParameterDriver(primaryStation.getClockOffsetDriver());
-        addParameterDriver(primaryStation.getEastOffsetDriver());
-        addParameterDriver(primaryStation.getNorthOffsetDriver());
-        addParameterDriver(primaryStation.getZenithOffsetDriver());
-        addParameterDriver(primaryStation.getPrimeMeridianOffsetDriver());
-        addParameterDriver(primaryStation.getPrimeMeridianDriftDriver());
-        addParameterDriver(primaryStation.getPolarOffsetXDriver());
-        addParameterDriver(primaryStation.getPolarDriftXDriver());
-        addParameterDriver(primaryStation.getPolarOffsetYDriver());
-        addParameterDriver(primaryStation.getPolarDriftYDriver());
+        super(primaryStation, true, date, turnAroundRange, sigma, baseWeight, satellite);
+
         // the secondary station clock is not used at all, we ignore the corresponding parameter driver
         addParameterDriver(secondaryStation.getEastOffsetDriver());
         addParameterDriver(secondaryStation.getNorthOffsetDriver());
@@ -100,15 +91,15 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         addParameterDriver(secondaryStation.getPolarDriftXDriver());
         addParameterDriver(secondaryStation.getPolarOffsetYDriver());
         addParameterDriver(secondaryStation.getPolarDriftYDriver());
-        this.primaryStation   = primaryStation;
         this.secondaryStation = secondaryStation;
+
     }
 
     /** Get the primary ground station from which measurement is performed.
      * @return primary ground station from which measurement is performed
      */
     public GroundStation getPrimaryStation() {
-        return primaryStation;
+        return getStation();
     }
 
     /** Get the secondary ground station reflecting the signal.
@@ -140,8 +131,13 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
             // we have to check for duplicate keys because primary and secondary station share
             // pole and prime meridian parameters names that must be considered
             // as one set only (they are combined together by the estimation engine)
-            if (driver.isSelected() && !indices.containsKey(driver.getName())) {
-                indices.put(driver.getName(), nbParams++);
+            if (driver.isSelected()) {
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    if (!indices.containsKey(span.getData())) {
+                        indices.put(span.getData(), nbParams++);
+                    }
+                }
             }
         }
         final Field<Gradient>         field   = GradientField.getField(nbParams);
@@ -175,7 +171,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
 
         // transform between primary station topocentric frame (east-north-zenith) and inertial frame expressed as gradients
         final FieldTransform<Gradient> primaryToInert =
-                        primaryStation.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
+                        getStation().getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
         final FieldAbsoluteDate<Gradient> measurementDateDS = primaryToInert.getFieldDate();
 
         // Primary station PV in inertial frame at measurement date
@@ -244,7 +240,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         final FieldAbsoluteDate<Gradient> approxEmissionDate =
                         measurementDateDS.shiftedBy(-2 * (secondaryTauU.getValue() + primaryTauD.getValue()));
         final FieldTransform<Gradient> primaryToInertApprox =
-                        primaryStation.getOffsetToInertial(state.getFrame(), approxEmissionDate, nbParams, indices);
+                        getStation().getOffsetToInertial(state.getFrame(), approxEmissionDate, nbParams, indices);
 
         // Primary station PV in inertial frame at approximate emission date
         final TimeStampedFieldPVCoordinates<Gradient> QPrimaryApprox =
@@ -305,9 +301,11 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
-            final Integer index = indices.get(driver.getName());
-            if (index != null) {
-                estimated.setParameterDerivatives(driver, derivatives[index]);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
+                }
             }
         }
 

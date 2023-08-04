@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,13 +25,13 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.ForceModel;
@@ -64,7 +64,7 @@ import org.orekit.utils.ParameterDriversList;
 /** Unit tests for {@link IntegrableJacobianColumnGenerator}. */
 public class IntegrableJacobianColumnGeneratorTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
@@ -113,7 +113,7 @@ public class IntegrableJacobianColumnGeneratorTest {
                 ParameterDriver selected = null;
                 for (final ForceModel forceModel : propagator.getAllForceModels()) {
                     for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-                        driver.setValue(driver.getReferenceValue());
+                        driver.setValue(driver.getReferenceValue(), initialOrbit.getDate());
                         if (driver.getName().equals(parameterName)) {
                             driver.setSelected(true);
                             selected = driver;
@@ -125,7 +125,7 @@ public class IntegrableJacobianColumnGeneratorTest {
 
                 SpacecraftState initialState = new SpacecraftState(initialOrbit);
                 propagator.setInitialState(initialState);
-                PickUpHandler pickUp = new PickUpHandler(propagator, null, null, selected.getName());
+                PickUpHandler pickUp = new PickUpHandler(propagator, null, null, selected.getNameSpan(new AbsoluteDate()));
                 propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
                 RealMatrix dYdP = pickUp.getdYdP();
@@ -209,7 +209,7 @@ public class IntegrableJacobianColumnGeneratorTest {
                                    sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
                 for (int i = 0; i < 6; ++i) {
-                    Assert.assertEquals(dYdPRef[i][0], dYdP.getEntry(i, 0), FastMath.abs(dYdPRef[i][0] * tolerance));
+                    Assertions.assertEquals(dYdPRef[i][0], dYdP.getEntry(i, 0), FastMath.abs(dYdPRef[i][0] * tolerance));
                 }
 
             }
@@ -236,7 +236,8 @@ public class IntegrableJacobianColumnGeneratorTest {
         final double f = 420;
         final double delta = FastMath.toRadians(-7.4978);
         final double alpha = FastMath.toRadians(351);
-        final AttitudeProvider law = new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+        final AttitudeProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(alpha, delta),
+                                                                           Vector3D.PLUS_I));
 
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
@@ -286,7 +287,7 @@ public class IntegrableJacobianColumnGeneratorTest {
 
         final AbsoluteDate finalDate = fireDate.shiftedBy(3800);
         final SpacecraftState finalorb = propagator.propagate(finalDate);
-        Assert.assertEquals(0, finalDate.durationFrom(finalorb.getDate()), 1.0e-11);
+        Assertions.assertEquals(0, finalDate.durationFrom(finalorb.getDate()), 1.0e-11);
 
     }
 

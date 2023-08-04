@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,10 +52,7 @@ public class KvnLexicalAnalyzer implements LexicalAnalyzer {
     private static final String STOP_KEY           = "([A-Z][A-Z_0-9]*)_STOP";
 
     /** Regular expression matching a value that must be stored in the matcher. */
-    private static final String VALUE              = "(\\p{Graph}.*?)";
-
-    /** Regular expression matching a value that must be stored in the matcher. */
-    private static final String OPTIONAL_VALUE     = "((?:(\\p{Graph}.*?)?))";
+    private static final String OPTIONAL_VALUE     = "((?:(?:\\p{Graph}.*?)?))";
 
     /** Operators allowed in units specifications. */
     private static final String UNITS_OPERATORS    = "-+*×.·/⁄^√⁺⁻";
@@ -87,8 +84,12 @@ public class KvnLexicalAnalyzer implements LexicalAnalyzer {
     /** Regular expression matching comment entry. */
     private static final Pattern COMMENT_ENTRY     = Pattern.compile(LINE_START + COMMENT_KEY + OPTIONAL_VALUE + LINE_END);
 
-    /** Regular expression matching non-comment entry with optional units. */
-    private static final Pattern NON_COMMENT_ENTRY = Pattern.compile(LINE_START + NON_COMMENT_KEY + VALUE + UNITS + LINE_END);
+    /** Regular expression matching non-comment entry with optional units.
+     * <p>
+     * Note than since 12.0, we allow empty values at lexical analysis level and detect them at parsing level
+     * </p>
+     */
+    private static final Pattern NON_COMMENT_ENTRY = Pattern.compile(LINE_START + NON_COMMENT_KEY + OPTIONAL_VALUE + UNITS + LINE_END);
 
     /** Regular expression matching no-value entry starting a block. */
     private static final Pattern START_ENTRY       = Pattern.compile(LINE_START + START_KEY + LINE_END);

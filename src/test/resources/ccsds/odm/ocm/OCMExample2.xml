@@ -9,7 +9,7 @@
   <COMMENT>This example shows the specification of multiple comment lines</COMMENT>
     <CREATION_DATE>1998-11-06T09:23:57</CREATION_DATE>
     <ORIGINATOR>JAXA</ORIGINATOR>
-    <MESSAGE_ID> OCM 201113719185</MESSAGE_ID> </header>
+    <MESSAGE_ID>OCM 201113719185</MESSAGE_ID> </header>
   <body>
     <segment>
       <metadata>
@@ -58,9 +58,9 @@
            <FIXED_F10P7>105.0</FIXED_F10P7>
            <FIXED_F10P7_MEAN>120.0</FIXED_F10P7_MEAN>
         </pert>
-        <userDef>
+        <user>
            <USER_DEFINED parameter="EARTH_MODEL">WGS-84</USER_DEFINED>
-        </userDef>
+        </user>
       </data>
     </segment>
   </body>

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import java.util.List;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadata;
+import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.time.AbsoluteDate;
 
 /** Meta-data for {@link OcmMetadata Orbit Comprehensive Message}.
@@ -29,11 +30,15 @@ import org.orekit.time.AbsoluteDate;
  */
 public class OcmMetadata extends OdmMetadata {
 
-    /** Default interpolation method for EOP and Space Weather data. */
-    private static final String DEFAULT_INTERPOLATION_METHOD = "LINEAR";
+    /** Default value for SCLK_OFFSET_AT_EPOCH.
+     * @since 12.0
+     */
+    public static final double DEFAULT_SCLK_OFFSET_AT_EPOCH = 0.0;
 
-    /** Classification for this message. */
-    private String classification;
+    /** Default value for SCLK_SEC_PER_SI_SEC.
+     * @since 12.0
+     */
+    public static final double DEFAULT_SCLK_SEC_PER_SI_SEC = 1.0;
 
     /** International designator for the object as assigned by the UN Committee
      * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
@@ -57,6 +62,11 @@ public class OcmMetadata extends OdmMetadata {
     /** Phone number of Programmatic Point Of Contact at originator. */
     private String originatorPhone;
 
+    /** Email address of Programmatic Point Of Contact at originator.
+     * @since 11.2
+     */
+    private String originatorEmail;
+
     /** Address of Programmatic Point Of Contact at originator. */
     private String originatorAddress;
 
@@ -72,6 +82,11 @@ public class OcmMetadata extends OdmMetadata {
     /** Phone number of Technical Point Of Contact at originator. */
     private String techPhone;
 
+    /** Email address of Technical Point Of Contact at originator.
+     * @since 11.2
+     */
+    private String techEmail;
+
     /** Address of Technical Point Of Contact at originator. */
     private String techAddress;
 
@@ -81,13 +96,13 @@ public class OcmMetadata extends OdmMetadata {
     /** Unique ID identifying next message from a given originator. */
     private String nextMessageID;
 
-    /** Unique identifier of Attitude Data Message linkrd to this Orbit Data Message. */
+    /** Unique identifier of Attitude Data Message linked to this Orbit Data Message. */
     private String admMessageLink;
 
-    /** Unique identifier of Conjunction Data Message linkrd to this Orbit Data Message. */
+    /** Unique identifier of Conjunction Data Message linked to this Orbit Data Message. */
     private String cdmMessageLink;
 
-    /** Unique identifier of Pointing Request Message linkrd to this Orbit Data Message. */
+    /** Unique identifier of Pointing Request Message linked to this Orbit Data Message. */
     private String prmMessageLink;
 
     /** Unique identifier of Reentry Data Messages linked to this Orbit Data Message. */
@@ -118,11 +133,11 @@ public class OcmMetadata extends OdmMetadata {
     /** Operational status. */
     private OpsStatus opsStatus;
 
-    /** Orbit catgory. */
+    /** Orbit category. */
     private OrbitCategory orbitCategory;
 
     /** List of elements of information data blocks included in this message. */
-    private List<String> ocmDataElements;
+    private List<OcmElements> ocmDataElements;
 
     /** Spacecraft clock count at {@link #getEpochT0()}. */
     private double sclkOffsetAtEpoch;
@@ -148,6 +163,16 @@ public class OcmMetadata extends OdmMetadata {
     /** Difference (TAI – UTC) in seconds at epoch {@link #epochT0}. */
     private double taimutcT0;
 
+    /** Epoch of next leap second.
+     * @since 11.2
+     */
+    private AbsoluteDate nextLeapEpoch;
+
+    /** Difference (TAI – UTC) in seconds incorporated at {@link #nextLeapEpoch}.
+     * @since 11.2
+     */
+    private double nextLeapTaimutc;
+
     /** Difference (UT1 – UTC) in seconds at epoch {@link #epochT0}. */
     private double ut1mutcT0;
 
@@ -163,14 +188,16 @@ public class OcmMetadata extends OdmMetadata {
     /** Create a new meta-data.
      * @param dataContext data context
      */
-    OcmMetadata(final DataContext dataContext) {
+    public OcmMetadata(final DataContext dataContext) {
 
         // set up the few fields that have default values as per CCSDS standard
         super(TimeSystem.UTC);
-        catalogName       = "CSPOC";
-        sclkOffsetAtEpoch = 0.0;
-        sclkSecPerSISec   = 1.0;
-        interpMethodEOP   = DEFAULT_INTERPOLATION_METHOD;
+        sclkOffsetAtEpoch = DEFAULT_SCLK_OFFSET_AT_EPOCH;
+        sclkSecPerSISec   = DEFAULT_SCLK_SEC_PER_SI_SEC;
+        timeSpan          = Double.NaN;
+        taimutcT0         = Double.NaN;
+        ut1mutcT0         = Double.NaN;
+        nextLeapTaimutc   = Double.NaN;
 
     }
 
@@ -180,23 +207,12 @@ public class OcmMetadata extends OdmMetadata {
         // we don't call super.checkMandatoryEntries() because
         // all of the parameters considered mandatory at ODM level
         // for OPM, OMM and OEM are in fact optional in OCM
-        // only EPOCH_TZERO, which is specific to OCM, is mandatory
-        checkNotNull(epochT0, OcmMetadataKey.EPOCH_TZERO);
-    }
-
-    /** Get the message classification.
-     * @return message classification.
-     */
-    public String getClassification() {
-        return classification;
-    }
-
-    /** Set the message classification.
-     * @param classification message classification
-     */
-    public void setClassification(final String classification) {
-        refuseFurtherComments();
-        this.classification = classification;
+        // only TIME_SYSTEM and EPOCH_TZERO are mandatory
+        checkNotNull(getTimeSystem(), MetadataKey.TIME_SYSTEM.name());
+        checkNotNull(epochT0,         OcmMetadataKey.EPOCH_TZERO.name());
+        if (nextLeapEpoch != null) {
+            checkNotNaN(nextLeapTaimutc, OcmMetadataKey.NEXT_LEAP_TAIMUTC.name());
+        }
     }
 
     /** Get the international designator for the object.
@@ -296,12 +312,29 @@ public class OcmMetadata extends OdmMetadata {
         return originatorPhone;
     }
 
-    /** GSet the phone number of Programmatic Point Of Contact at originator.
+    /** Set the phone number of Programmatic Point Of Contact at originator.
      * @param originatorPhone phone number of Programmatic Point Of Contact at originator
      */
     public void setOriginatorPhone(final String originatorPhone) {
         refuseFurtherComments();
         this.originatorPhone = originatorPhone;
+    }
+
+    /** Get the email address of Programmatic Point Of Contact at originator.
+     * @return email address of Programmatic Point Of Contact at originator
+     * @since 11.2
+     */
+    public String getOriginatorEmail() {
+        return originatorEmail;
+    }
+
+    /** Set the email address of Programmatic Point Of Contact at originator.
+     * @param originatorEmail email address of Programmatic Point Of Contact at originator
+     * @since 11.2
+     */
+    public void setOriginatorEmail(final String originatorEmail) {
+        refuseFurtherComments();
+        this.originatorEmail = originatorEmail;
     }
 
     /** Get the address of Programmatic Point Of Contact at originator.
@@ -377,6 +410,23 @@ public class OcmMetadata extends OdmMetadata {
     public void setTechPhone(final String techPhone) {
         refuseFurtherComments();
         this.techPhone = techPhone;
+    }
+
+    /** Get the email address of Technical Point Of Contact at originator.
+     * @return email address of Technical Point Of Contact at originator
+     * @since 11.2
+     */
+    public String getTechEmail() {
+        return techEmail;
+    }
+
+    /** Set the email address of Technical Point Of Contact at originator.
+     * @param techEmail email address of Technical Point Of Contact at originator
+     * @since 11.2
+     */
+    public void setTechEmail(final String techEmail) {
+        refuseFurtherComments();
+        this.techEmail = techEmail;
     }
 
     /** Get the address of Technical Point Of Contact at originator.
@@ -622,14 +672,14 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the list of elements of information data blocks included in this message.
      * @return list of elements of information data blocks included in this message
      */
-    public List<String> getOcmDataElements() {
+    public List<OcmElements> getOcmDataElements() {
         return ocmDataElements;
     }
 
     /** Set the list of elements of information data blocks included in this message.
      * @param ocmDataElements list of elements of information data blocks included in this message
      */
-    public void setOcmDataElements(final List<String> ocmDataElements) {
+    public void setOcmDataElements(final List<OcmElements> ocmDataElements) {
         refuseFurtherComments();
         this.ocmDataElements = ocmDataElements;
     }
@@ -752,6 +802,40 @@ public class OcmMetadata extends OdmMetadata {
     public void setTaimutcT0(final double taimutcT0) {
         refuseFurtherComments();
         this.taimutcT0 = taimutcT0;
+    }
+
+    /** Get the epoch of next leap second.
+     * @return epoch of next leap second
+     * @since 11.2
+     */
+    public AbsoluteDate getNextLeapEpoch() {
+        return nextLeapEpoch;
+    }
+
+    /** Set the epoch of next leap second.
+     * @param nextLeapEpoch epoch of next leap second
+     * @since 11.2
+     */
+    public void setNextLeapEpoch(final AbsoluteDate nextLeapEpoch) {
+        refuseFurtherComments();
+        this.nextLeapEpoch = nextLeapEpoch;
+    }
+
+    /** Get the difference (TAI – UTC) in seconds incorporated at epoch {@link #getNextLeapEpoch()}.
+     * @return difference (TAI – UTC) in seconds incorporated at epoch {@link #getNextLeapEpoch()}
+     * @since 11.2
+     */
+    public double getNextLeapTaimutc() {
+        return nextLeapTaimutc;
+    }
+
+    /** Set the difference (TAI – UTC) in seconds incorporated at epoch {@link #getNextLeapEpoch()}.
+     * @param nextLeapTaimutc difference (TAI – UTC) in seconds incorporated at epoch {@link #getNextLeapEpoch()}
+     * @since 11.2
+     */
+    public void setNextLeapTaimutc(final double nextLeapTaimutc) {
+        refuseFurtherComments();
+        this.nextLeapTaimutc = nextLeapTaimutc;
     }
 
     /** Get the difference (UT1 – UTC) in seconds at epoch {@link #getEpochT0()}.

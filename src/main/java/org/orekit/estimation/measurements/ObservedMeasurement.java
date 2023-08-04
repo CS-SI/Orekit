@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -136,4 +136,13 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
      */
     EstimatedMeasurement<T> estimate(int iteration, int evaluation, SpacecraftState[] states);
 
+    /**
+     * Get the type of measurement.
+     * <p>
+     * Default behavior is to return the class simple name as a String.
+     * @return type of measurement
+     */
+    default String getMeasurementType() {
+        return this.getClass().getSimpleName();
+    }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,6 +35,9 @@ import org.orekit.time.TimeScale;
  * @since 9.2
  */
 public enum ITRFVersion {
+
+    /** Constant for ITRF 2020. */
+    ITRF_2020(2020),
 
     /** Constant for ITRF 2014. */
     ITRF_2014(2014),
@@ -147,6 +150,20 @@ public enum ITRFVersion {
 
     }
 
+    /** Get last supported ITRF version.
+     * @return last supported ITRF version
+     * @since 11.2
+     */
+    public static ITRFVersion getLast() {
+        ITRFVersion last = ITRFVersion.ITRF_1988;
+        for (final ITRFVersion iv : ITRFVersion.values()) {
+            if (iv.getYear() > last.getYear()) {
+                last = iv;
+            }
+        }
+        return last;
+    }
+
     /** Find a converter between specified ITRF frames.
      *
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
@@ -186,9 +203,10 @@ public enum ITRFVersion {
         }
 
         if (provider == null) {
-            // no direct provider found, use ITRF 2014 as a pivot frame
-            provider = TransformProviderUtils.getCombinedProvider(getDirectTransformProvider(origin, ITRF_2014, tt),
-                                                                  getDirectTransformProvider(ITRF_2014, destination, tt));
+            // no direct provider found, use last supported ITRF as a pivot frame
+            final ITRFVersion last = getLast();
+            provider = TransformProviderUtils.getCombinedProvider(getDirectTransformProvider(origin, last, tt),
+                                                                  getDirectTransformProvider(last, destination, tt));
         }
 
         // build the converter, to keep the origin and destination information
@@ -269,10 +287,21 @@ public enum ITRFVersion {
             return provider.getTransform(date);
         }
 
+        @Override
+        public StaticTransform getStaticTransform(final AbsoluteDate date) {
+            return provider.getStaticTransform(date);
+        }
+
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
             return provider.getTransform(date);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+            return provider.getStaticTransform(date);
         }
 
     }

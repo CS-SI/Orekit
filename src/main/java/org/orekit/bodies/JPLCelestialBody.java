@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.bodies;
 import java.io.Serializable;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -30,8 +31,10 @@ import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
@@ -219,6 +222,29 @@ class JPLCelestialBody implements CelestialBody {
 
                 }
 
+                @Override
+                public StaticTransform getStaticTransform(final AbsoluteDate date) {
+                    // compute translation from parent frame to self
+                    final PVCoordinates pv = getPVCoordinates(date, definingFrame);
+
+                    // compute rotation from ICRF frame to self,
+                    // as per the "Report of the IAU/IAG Working Group on Cartographic
+                    // Coordinates and Rotational Elements of the Planets and Satellites"
+                    // These definitions are common for all recent versions of this report
+                    // published every three years, the precise values of pole direction
+                    // and W angle coefficients may vary from publication year as models are
+                    // adjusted. These coefficients are not in this class, they are in the
+                    // specialized classes that do implement the getPole and getPrimeMeridianAngle
+                    // methods
+                    final Vector3D pole  = iauPole.getPole(date);
+                    final Vector3D qNode = iauPole.getNode(date);
+                    final Rotation rotation =
+                            new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I);
+
+                    // update transform from parent to self
+                    return StaticTransform.of(date, pv.getPosition().negate(), rotation);
+                }
+
                 /** {@inheritDoc} */
                 public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
@@ -250,6 +276,31 @@ class JPLCelestialBody implements CelestialBody {
                     // update transform from parent to self
                     return new FieldTransform<>(date, translation, rotation);
 
+                }
+
+                @Override
+                public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+                    // field
+                    final Field<T> field = date.getField();
+                    // compute translation from parent frame to self
+                    final FieldPVCoordinates<T> pv = getPVCoordinates(date, definingFrame);
+
+                    // compute rotation from ICRF frame to self,
+                    // as per the "Report of the IAU/IAG Working Group on Cartographic
+                    // Coordinates and Rotational Elements of the Planets and Satellites"
+                    // These definitions are common for all recent versions of this report
+                    // published every three years, the precise values of pole direction
+                    // and W angle coefficients may vary from publication year as models are
+                    // adjusted. These coefficients are not in this class, they are in the
+                    // specialized classes that do implement the getPole and getPrimeMeridianAngle
+                    // methods
+                    final FieldVector3D<T> pole  = iauPole.getPole(date);
+                    final FieldVector3D<T> qNode = iauPole.getNode(date);
+                    final FieldRotation<T> rotation =
+                            new FieldRotation<>(pole, qNode, FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field));
+
+                    // update transform from parent to self
+                    return FieldStaticTransform.of(date, pv.getPosition().negate(), rotation);
                 }
 
             }, frameName == null ? name + INERTIAL_FRAME_SUFFIX : frameName, true);

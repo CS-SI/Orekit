@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,15 @@
  */
 package org.orekit.models.earth.ionosphere;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -55,7 +55,7 @@ public class NeQuickModelTest {
     private double[] medium;
     private double[] high;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
         high = new double[] {
@@ -64,7 +64,7 @@ public class NeQuickModelTest {
         medium = new double[] {
             121.129893, 0.351254133, 0.0134635348
         };
-        
+
     }
 
     @Test
@@ -82,12 +82,12 @@ public class NeQuickModelTest {
 
         // STEC
         final double stec = model.stec(date, recP, satP);
-        Assert.assertEquals(20.40, stec, 0.09);
+        Assertions.assertEquals(20.40, stec, 0.09);
     }
 
     @Test
     public void testFieldHighSolarActivity() {
-        doTestFieldHighSolarActivity(Decimal64Field.getInstance());
+        doTestFieldHighSolarActivity(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldHighSolarActivity(final Field<T> field) {
@@ -109,7 +109,7 @@ public class NeQuickModelTest {
 
         // STEC
         final T stec = model.stec(date, recP, satP);
-        Assert.assertEquals(20.40, stec.getReal(), 0.09);
+        Assertions.assertEquals(20.40, stec.getReal(), 0.09);
     }
 
     @Test
@@ -127,12 +127,12 @@ public class NeQuickModelTest {
 
         // STEC
         final double stec = model.stec(date, recP, satP);
-        Assert.assertEquals(6.96, stec, 0.05);
-    }    
+        Assertions.assertEquals(6.96, stec, 0.05);
+    }
 
     @Test
     public void testFieldMediumSolarActivity() {
-        doTestFieldMediumSolarActivity(Decimal64Field.getInstance());
+        doTestFieldMediumSolarActivity(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldMediumSolarActivity(final Field<T> field) {
@@ -154,8 +154,8 @@ public class NeQuickModelTest {
 
         // STEC
         final T stec = model.stec(date, recP, satP);
-        Assert.assertEquals(6.96, stec.getReal(), 0.05);
-    }   
+        Assertions.assertEquals(6.96, stec.getReal(), 0.05);
+    }
 
     @Test
     public void testDelay() {
@@ -187,19 +187,19 @@ public class NeQuickModelTest {
                                              Frequency.G01.getMHzFrequency() * 1.0E6, model.getParameters());
        
         // Verify
-        Assert.assertEquals(1.13, delay, 0.01);
+        Assertions.assertEquals(1.13, delay, 0.01);
     }
 
     @Test
     public void testFieldDelay() {
-        doTestFieldDelay(Decimal64Field.getInstance());
+        doTestFieldDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
 
         // Zero and One
         final T zero = field.getZero();
-        final T one  = field.getOne();        
+        final T one  = field.getOne();
 
         // Model
         final NeQuickModel model = new NeQuickModel(medium);
@@ -232,7 +232,7 @@ public class NeQuickModelTest {
                                         Frequency.G01.getMHzFrequency() * 1.0E6, model.getParameters(field));
        
         // Verify
-        Assert.assertEquals(1.13, delay.getReal(), 0.01);
+        Assertions.assertEquals(1.13, delay.getReal(), 0.01);
     }
 
 }

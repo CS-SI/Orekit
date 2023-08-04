@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,13 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.orekit.utils.units.Unit;
 import org.orekit.utils.units.UnitsCache;
-import org.xml.sax.Attributes;
 
 /** Regular builder using XML elements names and content for tokens.
  * <p>
@@ -48,22 +49,22 @@ public class RegularXmlTokenBuilder implements XmlTokenBuilder {
 
     /** {@inheritDoc} */
     @Override
-    public List<ParseToken> buildTokens(final boolean startTag, final String qName,
-                                        final String content, final Attributes attributes,
+    public List<ParseToken> buildTokens(final boolean startTag, final boolean isLeaf, final String qName,
+                                        final String content, final Map<String, String> attributes,
                                         final int lineNumber, final String fileName) {
 
-        // elaborate the token type
-        final TokenType tokenType = (content == null) ?
-                                    (startTag ? TokenType.START : TokenType.STOP) :
-                                    TokenType.ENTRY;
-
-        // get units
-        final Unit units = cache.getUnits(attributes.getValue(UNITS));
-
-        // final build
-        final ParseToken token = new ParseToken(tokenType, qName, content, units, lineNumber, fileName);
-
-        return Collections.singletonList(token);
+        if (startTag) {
+            return Collections.singletonList(new ParseToken(TokenType.START, qName, content, Unit.NONE, lineNumber, fileName));
+        } else {
+            final List<ParseToken> built = new ArrayList<>(2);
+            if (isLeaf) {
+                // get units
+                final Unit units = cache.getUnits(attributes.get(UNITS));
+                built.add(new ParseToken(TokenType.ENTRY, qName, content, units, lineNumber, fileName));
+            }
+            built.add(new ParseToken(TokenType.STOP, qName, null, Unit.NONE, lineNumber, fileName));
+            return built;
+        }
 
     }
 

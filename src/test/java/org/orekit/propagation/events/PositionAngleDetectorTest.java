@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,9 +21,9 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -44,6 +44,7 @@ import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -62,10 +63,10 @@ public class PositionAngleDetectorTest {
             new PositionAngleDetector(OrbitType.CARTESIAN, PositionAngle.TRUE, 0.0).
             withMaxCheck(600.0).
             withThreshold(1.0e-6);
-            Assert.fail("an exception should habe been thrown");
+            Assertions.fail("an exception should habe been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(OrekitMessages.ORBIT_TYPE_NOT_ALLOWED, oiae.getSpecifier());
-            Assert.assertEquals(OrbitType.CARTESIAN, oiae.getParts()[0]);
+            Assertions.assertEquals(OrekitMessages.ORBIT_TYPE_NOT_ALLOWED, oiae.getSpecifier());
+            Assertions.assertEquals(OrbitType.CARTESIAN, oiae.getParts()[0]);
         }
     }
 
@@ -215,13 +216,13 @@ public class PositionAngleDetectorTest {
                                                                      propagationType,
                                                                      PositionAngle.TRUE,
                                                                      FastMath.toRadians(01.0)).
-                                           withHandler(new ContinueOnEvent<>());
+                                           withHandler(new ContinueOnEvent());
         PositionAngleDetector detector90 = new PositionAngleDetector(maxCheck,
                                                                      threshold,
                                                                      propagationType,
                                                                      PositionAngle.TRUE,
                                                                      FastMath.toRadians(90.0)).
-                                           withHandler(new ContinueOnEvent<>());
+                                           withHandler(new ContinueOnEvent());
 
         // detect events with numerical propagator (and generate ephemeris)
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
@@ -231,22 +232,91 @@ public class PositionAngleDetectorTest {
         propagator.addEventDetector(logger1.monitorDetector(detector90));
         final AbsoluteDate finalDate = propagator.propagate(new AbsoluteDate(initialDate, Constants.JULIAN_DAY)).getDate();
         final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
-        Assert.assertEquals(6, logger1.getLoggedEvents().size());
+        Assertions.assertEquals(6, logger1.getLoggedEvents().size());
 
         // detect events with generated ephemeris
         EventsLogger logger2 = new EventsLogger();
         ephemeris.addEventDetector(logger2.monitorDetector(detector01));
         ephemeris.addEventDetector(logger2.monitorDetector(detector90));
         ephemeris.propagate(initialDate, finalDate);
-        Assert.assertEquals(logger1.getLoggedEvents().size(), logger2.getLoggedEvents().size());
+        Assertions.assertEquals(logger1.getLoggedEvents().size(), logger2.getLoggedEvents().size());
         for (int k = 0; k < logger1.getLoggedEvents().size(); ++k) {
             AbsoluteDate date1 = logger1.getLoggedEvents().get(k).getState().getDate();
             AbsoluteDate date2 = logger2.getLoggedEvents().get(k).getState().getDate();
-            Assert.assertEquals(0.0, date2.durationFrom(date1), threshold);
+            Assertions.assertEquals(0.0, date2.durationFrom(date1), threshold);
         }
 
     }
 
+    
+    @Test
+    public void testIssue779() {
+
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final AbsoluteDate initialDate = new AbsoluteDate(2022, 05, 10, 00, 00, 00.000, utc);
+
+        // General orbit
+        double a = 24396159;                     // semi major axis in meters
+        double e = 0.72831215;                   // eccentricity
+        double i = FastMath.toRadians(7);        // inclination
+        double omega = FastMath.toRadians(180);  // perigee argument
+        double raan = FastMath.toRadians(261);   // right ascension of ascending node
+        double lM = 0;                           // mean anomaly
+
+        Orbit orbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN,
+        									   FramesFactory.getEME2000(), initialDate, 
+        									   Constants.WGS84_EARTH_MU);
+                
+       
+        
+
+        // Event detectors configurations
+        final double maxCheck  = 600.0;
+        final double threshold = 1.0e-6;
+        final double angle = 90.0;
+        
+        
+        // First, configure a propagation with the default event handler (expected to stop on event)
+        Propagator np1 = new KeplerianPropagator(orbit);
+        PositionAngleDetector detectorDefault = new PositionAngleDetector(maxCheck,
+                                                                     threshold,
+                                                                     OrbitType.KEPLERIAN,
+                                                                     PositionAngle.MEAN,
+                                                                     FastMath.toRadians(angle));
+        
+        // Create and add event logger
+        EventsLogger logger1 = new EventsLogger();
+        np1.addEventDetector(logger1.monitorDetector(detectorDefault));
+        
+        // Propagate
+        np1.propagate(initialDate.shiftedBy(Constants.JULIAN_DAY));
+        
+
+        
+        // Then, repeat the test with a Continue On Event handler
+        Propagator np2 = new KeplerianPropagator(orbit);
+        
+        // Create and configure the Continue On Event handler
+        PositionAngleDetector detectorContinue = new PositionAngleDetector(maxCheck,
+                                                                     threshold,
+                                                                     OrbitType.KEPLERIAN,
+                                                                     PositionAngle.MEAN,
+                                                                     FastMath.toRadians(angle)).
+                                           				withHandler(new ContinueOnEvent());
+
+        // Create and add the event logger
+        EventsLogger logger2 = new EventsLogger();
+        np2.addEventDetector(logger2.monitorDetector(detectorContinue));
+        
+        // Propagate
+        np2.propagate(initialDate.shiftedBy(Constants.JULIAN_DAY));
+        
+        // Check test results
+        Assertions.assertEquals(1, logger1.getLoggedEvents().size());
+        Assertions.assertTrue(logger2.getLoggedEvents().size() > 1);
+    }
+    
+    
     private void doTest(final OrbitType orbitType, final PositionAngle positionAngle,
                         final double angle, final double deltaT, final int expectedCrossings) {
 
@@ -254,14 +324,14 @@ public class PositionAngleDetectorTest {
                 new PositionAngleDetector(orbitType, positionAngle, angle).
                 withMaxCheck(60).
                 withThreshold(1.e-10).
-                withHandler(new ContinueOnEvent<PositionAngleDetector>());
+                withHandler(new ContinueOnEvent());
 
-        Assert.assertEquals(60.0, d.getMaxCheckInterval(), 1.0e-15);
-        Assert.assertEquals(1.0e-10, d.getThreshold(), 1.0e-15);
-        Assert.assertEquals(orbitType, d.getOrbitType());
-        Assert.assertEquals(positionAngle, d.getPositionAngle());
-        Assert.assertEquals(angle, d.getAngle(), 1.0e-14);
-        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        Assertions.assertEquals(60.0, d.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(1.0e-10, d.getThreshold(), 1.0e-15);
+        Assertions.assertEquals(orbitType, d.getOrbitType());
+        Assertions.assertEquals(positionAngle, d.getPositionAngle());
+        Assertions.assertEquals(angle, d.getAngle(), 1.0e-14);
+        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -290,14 +360,14 @@ public class PositionAngleDetectorTest {
         for (LoggedEvent e : logger.getLoggedEvents()) {
             SpacecraftState state = e.getState();
             orbitType.mapOrbitToArray(state.getOrbit(), positionAngle, array, null);
-            Assert.assertEquals(angle, MathUtils.normalizeAngle(array[5], angle), 1.0e-10);
-            Assert.assertEquals(state.getDate(), e.getDate());
+            Assertions.assertEquals(angle, MathUtils.normalizeAngle(array[5], angle), 1.0e-10);
+            Assertions.assertEquals(state.getDate(), e.getDate());
         }
-        Assert.assertEquals(expectedCrossings, logger.getLoggedEvents().size());
+        Assertions.assertEquals(expectedCrossings, logger.getLoggedEvents().size());
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:potential");
     }

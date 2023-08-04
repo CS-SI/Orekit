@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -207,7 +207,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
      */
     public T beta(final FieldAbsoluteDate<T> d) {
         final TimeStampedFieldPVCoordinates<T> svPV = pvProv.getPVCoordinates(d, inertialFrame);
-        return FieldVector3D.angle(sun.getPVCoordinates(d, inertialFrame).getPosition(), svPV.getMomentum()).
+        return FieldVector3D.angle(sun.getPosition(d, inertialFrame), svPV.getMomentum()).
                negate().
                add(svPV.getPosition().getX().getPi().multiply(0.5));
     }
@@ -220,7 +220,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
         final FieldPVCoordinates<FieldDerivativeStructure<T>> svPV =
                         pvProv.getPVCoordinates(removeDerivatives(d), inertialFrame).
                         toDerivativeStructurePV(d.getField().getZero().getOrder());
-        return FieldVector3D.angle(sun.getPVCoordinates(d, inertialFrame).getPosition(), svPV.getMomentum()).
+        return FieldVector3D.angle(sun.getPosition(d, inertialFrame), svPV.getMomentum()).
                negate().
                add(svPV.getPosition().getX().getPi().multiply(0.5));
     }
@@ -279,7 +279,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
         final double dt0 = turnSpan.getTurnEndDate().durationFrom(date).getReal();
         final UnivariateFunction yawReached = dt -> {
             final AbsoluteDate  t       = absDate.shiftedBy(dt);
-            final Vector3D      pSun    = sun.getPVCoordinates(t, inertialFrame).getPosition();
+            final Vector3D      pSun    = sun.getPosition(t, inertialFrame);
             final PVCoordinates pv      = pvProv.getPVCoordinates(date.shiftedBy(dt), inertialFrame).toPVCoordinates();
             final Vector3D      pSat    = pv.getPosition();
             final Vector3D      targetX = Vector3D.crossProduct(pSat, Vector3D.crossProduct(pSun, pSat)).normalize();

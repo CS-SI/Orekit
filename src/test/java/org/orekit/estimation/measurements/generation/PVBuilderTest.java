@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.util.SortedSet;
-
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
@@ -25,9 +23,9 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
@@ -43,6 +41,8 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.BurstSelector;
 import org.orekit.time.TimeScalesFactory;
+
+import java.util.SortedSet;
 
 public class PVBuilderTest {
 
@@ -98,22 +98,25 @@ public class PVBuilderTest {
         generator.addScheduler(new ContinuousScheduler<>(getBuilder(new Well19937a(seed), satellite),
                                                          new BurstSelector(maxBurstSize, highRateStep, burstPeriod,
                                                                            TimeScalesFactory.getUTC())));
+        final GatheringSubscriber gatherer = new GatheringSubscriber();
+        generator.addSubscriber(gatherer);
         final double period = context.initialOrbit.getKeplerianPeriod();
         AbsoluteDate t0     = context.initialOrbit.getDate().shiftedBy(startPeriod * period);
         AbsoluteDate t1     = context.initialOrbit.getDate().shiftedBy(endPeriod   * period);
-        SortedSet<ObservedMeasurement<?>> measurements = generator.generate(t0, t1);
+        generator.generate(t0, t1);
+        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
         Propagator propagator = buildPropagator();
         double maxErrorP = 0;
         double maxErrorV = 0;
         AbsoluteDate previous = null;
-        AbsoluteDate tInf = t0.compareTo(t1) < 0 ? t0 : t1;
-        AbsoluteDate tSup = t0.compareTo(t1) < 0 ? t1 : t0;
+        AbsoluteDate tInf = t0.isBefore(t1) ? t0 : t1;
+        AbsoluteDate tSup = t0.isBefore(t1) ? t1 : t0;
         int count = 0;
         for (ObservedMeasurement<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
-            Assert.assertTrue(date.compareTo(tInf) >= 0);
-            Assert.assertTrue(date.compareTo(tSup) <= 0);
+            Assertions.assertTrue(date.compareTo(tInf) >= 0);
+            Assertions.assertTrue(date.compareTo(tSup) <= 0);
             if (previous != null) {
                 // measurements are always chronological, even with backward propagation,
                 // due to the SortedSet (which is intended for combining several
@@ -121,7 +124,13 @@ public class PVBuilderTest {
                 final double expected = (count % maxBurstSize == 0) ?
                                         burstPeriod - (maxBurstSize - 1) * highRateStep :
                                         highRateStep;
-                Assert.assertEquals(expected, date.durationFrom(previous), 1.0e-10 * expected);
+                if (t0.isBefore(t1)) {
+                    // measurements are expected to be chronological
+                    Assertions.assertEquals(expected, date.durationFrom(previous), 1.0e-10 * expected);
+                } else {
+                    // measurements are expected to be reverse chronological
+                    Assertions.assertEquals(expected, previous.durationFrom(date), 1.0e-10 * expected);
+                }
             }
             previous = date;
             ++count;
@@ -134,11 +143,11 @@ public class PVBuilderTest {
                 maxErrorV = FastMath.max(maxErrorV, FastMath.abs(e[i] - m[i]));
             }
         }
-        Assert.assertEquals(0.0, maxErrorP, toleranceP);
-        Assert.assertEquals(0.0, maxErrorV, toleranceV);
+        Assertions.assertEquals(0.0, maxErrorP, toleranceP);
+        Assertions.assertEquals(0.0, maxErrorV, toleranceV);
      }
 
-     @Before
+     @BeforeEach
      public void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

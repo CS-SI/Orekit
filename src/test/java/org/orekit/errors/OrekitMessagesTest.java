@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,13 @@
  */
 package org.orekit.errors;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class OrekitMessagesTest {
 
@@ -30,7 +30,7 @@ public class OrekitMessagesTest {
 
     @Test
     public void testMessageNumber() {
-        Assert.assertEquals(252, OrekitMessages.values().length);
+        Assertions.assertEquals(280, OrekitMessages.values().length);
     }
 
     @Test
@@ -44,9 +44,9 @@ public class OrekitMessagesTest {
                 for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
                     keyPresent |= messageKey.equals(keys.nextElement());
                 }
-                Assert.assertTrue("missing key \"" + message.name() + "\" for language " + language, keyPresent);
+                Assertions.assertTrue(keyPresent,"missing key \"" + message.name() + "\" for language " + language);
             }
-            Assert.assertEquals(language, bundle.getLocale().getLanguage());
+            Assertions.assertEquals(language, bundle.getLocale().getLanguage());
         }
 
     }
@@ -59,29 +59,37 @@ public class OrekitMessagesTest {
             for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
                 final String propertyKey = keys.nextElement();
                 try {
-                    Assert.assertNotNull(OrekitMessages.valueOf(propertyKey));
+                    Assertions.assertNotNull(OrekitMessages.valueOf(propertyKey));
                 } catch (IllegalArgumentException iae) {
-                    Assert.fail("unknown key \"" + propertyKey + "\" in language " + language);
+                    Assertions.fail("unknown key \"" + propertyKey + "\" in language " + language);
                 }
             }
-            Assert.assertEquals(language, bundle.getLocale().getLanguage());
+            Assertions.assertEquals(language, bundle.getLocale().getLanguage());
         }
 
     }
 
     @Test
     public void testNoMissingFrenchTranslation() {
+
         for (OrekitMessages message : OrekitMessages.values()) {
             String translated = message.getLocalizedString(Locale.FRENCH);
-            Assert.assertFalse(message.name(), translated.toLowerCase().contains("missing translation"));
-        }
+            // To detect a missing translation, check if the returned string is the original text in English.
+            Assertions.assertNotEquals(message.name(), translated, message.getSourceString());
+         }
     }
 
     @Test
     public void testNoOpEnglishTranslation() {
         for (OrekitMessages message : OrekitMessages.values()) {
             String translated = message.getLocalizedString(Locale.ENGLISH);
-            Assert.assertEquals(message.getSourceString(), translated);
+
+            // Check that the original message is not empty.
+            Assertions.assertFalse(message.getSourceString().length() == 0,message.name());
+
+            // Check that both texts are the same
+            Assertions.assertEquals(message.getSourceString(), translated,message.name());
+
         }
     }
 
@@ -92,8 +100,8 @@ public class OrekitMessagesTest {
             for (OrekitMessages message : OrekitMessages.values()) {
                 MessageFormat source = new MessageFormat(message.getSourceString());
                 MessageFormat translated = new MessageFormat(message.getLocalizedString(locale));
-                Assert.assertEquals(message.name() + " (" + language + ")", source.getFormatsByArgumentIndex().length,
-                        translated.getFormatsByArgumentIndex().length);
+                Assertions.assertEquals(source.getFormatsByArgumentIndex().length,
+                        translated.getFormatsByArgumentIndex().length,message.name() + " (" + language + ")");
             }
         }
     }

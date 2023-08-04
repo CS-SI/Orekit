@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,7 +59,7 @@ public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends Fiel
      */
     public FieldApsideDetector(final T threshold, final FieldOrbit<T> orbit) {
         super(orbit.getKeplerianPeriod().divide(3), threshold,
-              DEFAULT_MAX_ITER, new FieldStopOnIncreasing<FieldApsideDetector<T>, T>());
+              DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>());
     }
 
     /** Private constructor with full parameters.
@@ -73,8 +73,8 @@ public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends Fiel
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      */
-    private FieldApsideDetector(final T maxCheck, final T threshold,
-                                final int maxIter, final FieldEventHandler<? super FieldApsideDetector<T>, T> handler) {
+    protected FieldApsideDetector(final T maxCheck, final T threshold,
+                                  final int maxIter, final FieldEventHandler<T> handler) {
         super(maxCheck, threshold, maxIter, handler);
     }
 
@@ -82,7 +82,7 @@ public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends Fiel
     @Override
     protected FieldApsideDetector<T> create(final T newMaxCheck, final T newThreshold,
                                             final int newMaxIter,
-                                            final FieldEventHandler<? super FieldApsideDetector<T>, T> newHandler) {
+                                            final FieldEventHandler<T> newHandler) {
         return new FieldApsideDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 

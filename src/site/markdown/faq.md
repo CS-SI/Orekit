@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2022 CS GROUP
+<!--- Copyright 2002-2023 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -144,6 +144,14 @@ Math to Hipparchus
   Orekit 11.0.1 | Hipparchus          2.0
   Orekit 11.0.2 | Hipparchus          2.0
   Orekit 11.1   | Hipparchus          2.0
+  Orekit 11.1.1 | Hipparchus          2.0
+  Orekit 11.1.2 | Hipparchus          2.1
+  Orekit 11.2   | Hipparchus          2.1
+  Orekit 11.2.1 | Hipparchus          2.1
+  Orekit 11.3   | Hipparchus          2.3
+  Orekit 11.3.1 | Hipparchus          2.3
+  Orekit 11.3.2 | Hipparchus          2.3
+  Orekit 11.3.3 | Hipparchus          2.3
 
 ### Maven failed to compile Orekit and complained about a missing artifact.
 

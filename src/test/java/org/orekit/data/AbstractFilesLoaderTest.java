@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,13 @@
  */
 package org.orekit.data;
 
-import java.util.SortedSet;
-
 import org.hipparchus.util.FastMath;
 import org.orekit.Utils;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
+
+import java.util.SortedSet;
 
 public abstract class AbstractFilesLoaderTest {
 

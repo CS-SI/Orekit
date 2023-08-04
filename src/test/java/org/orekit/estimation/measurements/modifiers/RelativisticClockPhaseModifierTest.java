@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,11 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Arrays;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -41,6 +39,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import java.util.Arrays;
 
 public class RelativisticClockPhaseModifierTest {
 
@@ -79,7 +79,7 @@ public class RelativisticClockPhaseModifierTest {
 
         // Station PV
         final Vector3D zero = Vector3D.ZERO;
-        final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate()).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
+        final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate(), false).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
 
         // Range measurement
         final Phase phase = new Phase(station, state.getDate(), 26584264.45, Frequency.G01.getWavelength(), 1.0, 1.0, new ObservableSatellite(0));
@@ -87,19 +87,19 @@ public class RelativisticClockPhaseModifierTest {
                         new SpacecraftState[] {state},
                         new TimeStampedPVCoordinates[] {state.getPVCoordinates(), stationPV});
         estimated.setEstimatedValue(phase.getObservedValue()[0]);
-        Assert.assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
+        Assertions.assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
 
         // Measurement modifier
         final RelativisticClockPhaseModifier modifier = new RelativisticClockPhaseModifier();
         modifier.modify(estimated);
-        Assert.assertEquals(0, modifier.getParametersDrivers().size());
+        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
 
         // Verify
-        Assert.assertEquals(-6.87 / Frequency.G01.getWavelength(), estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
+        Assertions.assertEquals(-6.87 / Frequency.G01.getWavelength(), estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

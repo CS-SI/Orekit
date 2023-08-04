@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,9 @@
  */
 package org.orekit.estimation.sequential;
 
-import java.util.List;
-
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.orekit.estimation.BrouwerLyddaneContext;
 import org.orekit.estimation.BrouwerLyddaneEstimationTestUtils;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -30,6 +28,8 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.conversion.BrouwerLyddanePropagatorBuilder;
+
+import java.util.List;
 
 public class BrouwerLyddaneKalmanEstimatorTest {
 
@@ -60,35 +60,35 @@ public class BrouwerLyddaneKalmanEstimatorTest {
         // Reference propagator for estimation performances
         final BrouwerLyddanePropagator referencePropagator = propagatorBuilder.
                         buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-        
+
         // Reference position/velocity at last measurement date
         final Orbit refOrbit = referencePropagator.
                         propagate(measurements.get(measurements.size()-1).getDate()).getOrbit();
-        
+
         // Covariance matrix initialization
         final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1e-2, 1e-2, 1e-2, 1e-5, 1e-5, 1e-5
-        });        
+        });
 
         // Process noise matrix
         RealMatrix Q = MatrixUtils.createRealDiagonalMatrix(new double [] {
             1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8
         });
-  
+
 
         // Build the Kalman filter
         final KalmanEstimator kalman = new KalmanEstimatorBuilder().
                         addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
                         build();
-        
+
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 2.33e-8;
+        final double   posEps            = 2.70e-8;
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 6.59e-11;
-        final double[] expectedsigmasPos = {0.998894, 0.933798, 0.997346};
+        final double[] expectedsigmasPos = {0.998881, 0.933800, 0.997357};
         final double   sigmaPosEps       = 1e-6;
-        final double[] expectedSigmasVel = {9.475825e-4, 9.903811e-4, 5.061704e-4};
+        final double[] expectedSigmasVel = {9.475737e-4, 9.904671e-4, 5.060183e-4};
         final double   sigmaVelEps       = 1e-10;
         BrouwerLyddaneEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                                          refOrbit, positionAngle,

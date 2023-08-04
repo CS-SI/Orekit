@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -187,7 +187,7 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
         int yieldCount = 0;
         while (!pending.isEmpty()) {
             final FieldAdditionalStateProvider<T> provider = pending.remove();
-            if (provider.yield(updated)) {
+            if (provider.yields(updated)) {
                 // this generator has to wait for another one,
                 // we put it again in the pending queue
                 pending.add(provider);
@@ -206,6 +206,17 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
 
         return updated;
 
+    }
+
+    /**
+     * Initialize the additional state providers at the start of propagation.
+     * @param target date of propagation. Not equal to {@code initialState.getDate()}.
+     * @since 11.2
+     */
+    protected void initializeAdditionalStates(final FieldAbsoluteDate<T> target) {
+        for (final FieldAdditionalStateProvider<T> provider : additionalStateProviders) {
+            provider.init(initialState, target);
+        }
     }
 
     /** {@inheritDoc} */

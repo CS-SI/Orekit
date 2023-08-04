@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,7 @@
 package org.orekit.propagation;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
 
-import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -40,7 +34,6 @@ import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -74,13 +67,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  */
 public class SpacecraftState
-    implements TimeStamped, TimeShiftable<SpacecraftState>, TimeInterpolable<SpacecraftState>, Serializable {
+    implements TimeStamped, TimeShiftable<SpacecraftState>, Serializable {
+
+    /** Default mass. */
+    public static final double DEFAULT_MASS = 1000.0;
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20211119L;
-
-    /** Default mass. */
-    private static final double DEFAULT_MASS = 1000.0;
 
     /**
      * tolerance on date comparison in {@link #checkConsistency(Orbit, Attitude)}. 100 ns
@@ -159,17 +152,6 @@ public class SpacecraftState
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
      * @param additional additional states
-     * @deprecated as of 11.1, replaced by {@link #SpacecraftState(Orbit, DoubleArrayDictionary)}
-     */
-    @Deprecated
-    public SpacecraftState(final Orbit orbit, final Map<String, double[]> additional) {
-        this(orbit, new DoubleArrayDictionary(additional));
-    }
-
-    /** Build a spacecraft state from orbit and additional states.
-     * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
-     * @param orbit the orbit
-     * @param additional additional states
      * @since 11.1
      */
     public SpacecraftState(final Orbit orbit, final DoubleArrayDictionary additional) {
@@ -177,21 +159,6 @@ public class SpacecraftState
              new LofOffset(orbit.getFrame(),
                            LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              DEFAULT_MASS, additional);
-    }
-
-    /** Build a spacecraft state from orbit, attitude and additional states.
-     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
-     * @param orbit the orbit
-     * @param attitude attitude
-     * @param additional additional states
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
-     * @deprecated as of 11.1, replaced by {@link #SpacecraftState(Orbit, Attitude, DoubleArrayDictionary)}
-     */
-    @Deprecated
-    public SpacecraftState(final Orbit orbit, final Attitude attitude, final Map<String, double[]> additional)
-        throws IllegalArgumentException {
-        this(orbit, attitude, new DoubleArrayDictionary(additional));
     }
 
     /** Build a spacecraft state from orbit, attitude and additional states.
@@ -213,40 +180,12 @@ public class SpacecraftState
      * @param orbit the orbit
      * @param mass the mass (kg)
      * @param additional additional states
-     * @deprecated as of 11.1, replaced by {@link #SpacecraftState(Orbit, double, DoubleArrayDictionary)}
-     */
-    @Deprecated
-    public SpacecraftState(final Orbit orbit, final double mass, final Map<String, double[]> additional) {
-        this(orbit, mass, new DoubleArrayDictionary(additional));
-    }
-
-    /** Create a new instance from orbit, mass and additional states.
-     * <p>Attitude law is set to an unspecified default attitude.</p>
-     * @param orbit the orbit
-     * @param mass the mass (kg)
-     * @param additional additional states
      * @since 11.1
      */
     public SpacecraftState(final Orbit orbit, final double mass, final DoubleArrayDictionary additional) {
         this(orbit,
              new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
-    }
-
-    /** Build a spacecraft state from orbit, attitude, mass and additional states.
-     * @param orbit the orbit
-     * @param attitude attitude
-     * @param mass the mass (kg)
-     * @param additional additional states (may be null if no additional states are available)
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
-     * @deprecated as of 11.1, replaced by {@link #SpacecraftState(Orbit, Attitude, double, DoubleArrayDictionary)}
-     */
-    @Deprecated
-    public SpacecraftState(final Orbit orbit, final Attitude attitude,
-                           final double mass, final Map<String, double[]> additional)
-        throws IllegalArgumentException {
-        this(orbit, attitude, mass, new DoubleArrayDictionary(additional));
     }
 
     /** Build a spacecraft state from orbit, attitude, mass and additional states.
@@ -345,38 +284,12 @@ public class SpacecraftState
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param absPva position-velocity-acceleration
      * @param additional additional states
-     * @deprecated as of 11.1, replaced by {@link #SpacecraftState(AbsolutePVCoordinates, DoubleArrayDictionary)}
-     */
-    @Deprecated
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final Map<String, double[]> additional) {
-        this(absPva, new DoubleArrayDictionary(additional));
-    }
-
-    /** Build a spacecraft state from position-velocity-acceleration and additional states.
-     * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
-     * @param absPva position-velocity-acceleration
-     * @param additional additional states
      * @since 11.1
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final DoubleArrayDictionary additional) {
         this(absPva,
              new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              DEFAULT_MASS, additional);
-    }
-
-    /** Build a spacecraft state from position-velocity-acceleration, attitude and additional states.
-     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
-     * @param absPva position-velocity-acceleration
-     * @param attitude attitude
-     * @param additional additional states
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
-     * @deprecated as of 11.1, replaced by {@link #SpacecraftState(AbsolutePVCoordinates, Attitude, DoubleArrayDictionary)}
-     */
-    @Deprecated
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude, final Map<String, double[]> additional)
-        throws IllegalArgumentException {
-        this(absPva, attitude, new DoubleArrayDictionary(additional));
     }
 
     /** Build a spacecraft state from position-velocity-acceleration, attitude and additional states.
@@ -398,39 +311,12 @@ public class SpacecraftState
      * @param absPva position-velocity-acceleration
      * @param mass the mass (kg)
      * @param additional additional states
-     * @deprecated as of 11.1, replaced by {@link #SpacecraftState(AbsolutePVCoordinates, double, DoubleArrayDictionary)}
-     */
-    @Deprecated
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass, final Map<String, double[]> additional) {
-        this(absPva, mass, new DoubleArrayDictionary(additional));
-    }
-
-    /** Create a new instance from position-velocity-acceleration, mass and additional states.
-     * <p>Attitude law is set to an unspecified default attitude.</p>
-     * @param absPva position-velocity-acceleration
-     * @param mass the mass (kg)
-     * @param additional additional states
      * @since 11.1
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass, final DoubleArrayDictionary additional) {
         this(absPva,
              new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, additional);
-    }
-
-    /** Build a spacecraft state from position-velocity-acceleration, attitude, mass and additional states.
-     * @param absPva position-velocity-acceleration
-     * @param attitude attitude
-     * @param mass the mass (kg)
-     * @param additional additional states (may be null if no additional states are available)
-     * @exception IllegalArgumentException if orbit and attitude dates
-     * or frames are not equal
-     * @deprecated as of 11.1, replaced by {@link #SpacecraftState(AbsolutePVCoordinates, Attitude, double, DoubleArrayDictionary)}
-     */
-    public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude,
-                           final double mass, final Map<String, double[]> additional)
-        throws IllegalArgumentException {
-        this(absPva, attitude, mass, new DoubleArrayDictionary(additional));
     }
 
     /** Build a spacecraft state from position-velocity-acceleration, attitude, mass and additional states.
@@ -495,7 +381,7 @@ public class SpacecraftState
      * @return a new instance, with the additional state added
      * @see #hasAdditionalState(String)
      * @see #getAdditionalState(String)
-     * @see #getAdditionalStates()
+     * @see #getAdditionalStatesValues()
      */
     public SpacecraftState addAdditionalState(final String name, final double... value) {
         final DoubleArrayDictionary newDict = new DoubleArrayDictionary(additional);
@@ -627,124 +513,35 @@ public class SpacecraftState
     public SpacecraftState shiftedBy(final double dt) {
         if (absPva == null) {
             return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
-                    mass, additional, additionalDot);
+                                       mass, shiftAdditional(dt), additionalDot);
         } else {
             return new SpacecraftState(absPva.shiftedBy(dt), attitude.shiftedBy(dt),
-                    mass, additional, additionalDot);
+                                       mass, shiftAdditional(dt), additionalDot);
         }
     }
 
-    /** {@inheritDoc}
-     * <p>
-     * The additional states that are interpolated are the ones already present
-     * in the instance. The sample instances must therefore have at least the same
-     * additional states has the instance. They may have more additional states,
-     * but the extra ones will be ignored.
-     * </p>
-     * <p>
-     * The instance and all the sample instances <em>must</em> be based on similar
-     * trajectory data, i.e. they must either all be based on orbits or all be based
-     * on absolute position-velocity-acceleration. Any inconsistency will trigger
-     * an {@link OrekitIllegalStateException}.
-     * </p>
-     * <p>
-     * As this implementation of interpolation is polynomial, it should be used only
-     * with small samples (about 10-20 points) in order to avoid <a
-     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
-     * and numerical problems (including NaN appearing).
-     * </p>
-     * @exception OrekitIllegalStateException if some instances are not based on
-     * similar trajectory data
+    /** Shift additional states.
+     * @param dt time shift in seconds
+     * @return shifted additional states
+     * @since 11.1.1
      */
-    public SpacecraftState interpolate(final AbsoluteDate date,
-                                       final Stream<SpacecraftState> sample) {
+    private DoubleArrayDictionary shiftAdditional(final double dt) {
 
-        // prepare interpolators
-        final List<Orbit> orbits;
-        final List<AbsolutePVCoordinates> absPvas;
-        if (isOrbitDefined()) {
-            orbits  = new ArrayList<Orbit>();
-            absPvas = null;
-        } else {
-            orbits  = null;
-            absPvas = new ArrayList<AbsolutePVCoordinates>();
-        }
-        final List<Attitude> attitudes = new ArrayList<>();
-        final HermiteInterpolator massInterpolator = new HermiteInterpolator();
-        final List<DoubleArrayDictionary.Entry> addionalEntries = additional.getData();
-        final Map<String, HermiteInterpolator> additionalInterpolators =
-                new HashMap<String, HermiteInterpolator>(addionalEntries.size());
-        for (final DoubleArrayDictionary.Entry entry : addionalEntries) {
-            additionalInterpolators.put(entry.getKey(), new HermiteInterpolator());
-        }
-        final List<DoubleArrayDictionary.Entry> additionalDotEntries = additionalDot.getData();
-        final Map<String, HermiteInterpolator> additionalDotInterpolators =
-                new HashMap<String, HermiteInterpolator>(additionalDotEntries.size());
-        for (final DoubleArrayDictionary.Entry entry : additionalDotEntries) {
-            additionalDotInterpolators.put(entry.getKey(), new HermiteInterpolator());
+        // fast handling when there are no derivatives at all
+        if (additionalDot.size() == 0) {
+            return additional;
         }
 
-        // extract sample data
-        sample.forEach(state -> {
-            final double deltaT = state.getDate().durationFrom(date);
-            if (isOrbitDefined()) {
-                orbits.add(state.getOrbit());
-            } else {
-                absPvas.add(state.getAbsPVA());
-            }
-            attitudes.add(state.getAttitude());
-            massInterpolator.addSamplePoint(deltaT,
-                                            new double[] {
-                                                state.getMass()
-                                                });
-            for (final Map.Entry<String, HermiteInterpolator> entry : additionalInterpolators.entrySet()) {
-                entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
-            }
-            for (final Map.Entry<String, HermiteInterpolator> entry : additionalDotInterpolators.entrySet()) {
-                entry.getValue().addSamplePoint(deltaT, state.getAdditionalStateDerivative(entry.getKey()));
-            }
-
-        });
-
-        // perform interpolations
-        final Orbit interpolatedOrbit;
-        final AbsolutePVCoordinates interpolatedAbsPva;
-        if (isOrbitDefined()) {
-            interpolatedOrbit  = orbit.interpolate(date, orbits);
-            interpolatedAbsPva = null;
-        } else {
-            interpolatedOrbit  = null;
-            interpolatedAbsPva = absPva.interpolate(date, absPvas);
-        }
-        final Attitude interpolatedAttitude = attitude.interpolate(date, attitudes);
-        final double interpolatedMass       = massInterpolator.value(0)[0];
-        final DoubleArrayDictionary interpolatedAdditional;
-        if (additionalInterpolators.isEmpty()) {
-            interpolatedAdditional = null;
-        } else {
-            interpolatedAdditional = new DoubleArrayDictionary(additionalInterpolators.size());
-            for (final Map.Entry<String, HermiteInterpolator> entry : additionalInterpolators.entrySet()) {
-                interpolatedAdditional.put(entry.getKey(), entry.getValue().value(0));
-            }
-        }
-        final DoubleArrayDictionary interpolatedAdditionalDot;
-        if (additionalDotInterpolators.isEmpty()) {
-            interpolatedAdditionalDot = null;
-        } else {
-            interpolatedAdditionalDot = new DoubleArrayDictionary(additionalDotInterpolators.size());
-            for (final Map.Entry<String, HermiteInterpolator> entry : additionalDotInterpolators.entrySet()) {
-                interpolatedAdditionalDot.put(entry.getKey(), entry.getValue().value(0));
+        // there are derivatives, we need to take them into account in the additional state
+        final DoubleArrayDictionary shifted = new DoubleArrayDictionary(additional);
+        for (final DoubleArrayDictionary.Entry dotEntry : additionalDot.getData()) {
+            final DoubleArrayDictionary.Entry entry = shifted.getEntry(dotEntry.getKey());
+            if (entry != null) {
+                entry.scaledIncrement(dt, dotEntry);
             }
         }
 
-        // create the complete interpolated state
-        if (isOrbitDefined()) {
-            return new SpacecraftState(interpolatedOrbit, interpolatedAttitude, interpolatedMass,
-                                       interpolatedAdditional, interpolatedAdditionalDot);
-        } else {
-            return new SpacecraftState(interpolatedAbsPva, interpolatedAttitude, interpolatedMass,
-                                       interpolatedAdditional, interpolatedAdditionalDot);
-        }
+        return shifted;
 
     }
 
@@ -806,7 +603,7 @@ public class SpacecraftState
      * @return true if the additional state is available
      * @see #addAdditionalState(String, double[])
      * @see #getAdditionalState(String)
-     * @see #getAdditionalStates()
+     * @see #getAdditionalStatesValues()
      */
     public boolean hasAdditionalState(final String name) {
         return additional.getEntry(name) != null;
@@ -889,7 +686,7 @@ public class SpacecraftState
      * @return value of the additional state
      * @see #addAdditionalState(String, double[])
      * @see #hasAdditionalState(String)
-     * @see #getAdditionalStates()
+     * @see #getAdditionalStatesValues()
      */
     public double[] getAdditionalState(final String name) {
         final DoubleArrayDictionary.Entry entry = additional.getEntry(name);
@@ -913,18 +710,6 @@ public class SpacecraftState
             throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE, name);
         }
         return entry.getValue();
-    }
-
-    /** Get an unmodifiable map of additional states.
-     * @return unmodifiable map of additional states
-     * @see #addAdditionalState(String, double[])
-     * @see #hasAdditionalState(String)
-     * @see #getAdditionalState(String)
-     * @deprecated as of 11.1, replaced by {@link #getAdditionalStatesValues()}
-     */
-    @Deprecated
-    public Map<String, double[]> getAdditionalStates() {
-        return getAdditionalStatesValues().toMap();
     }
 
     /** Get an unmodifiable map of additional states.
@@ -1096,6 +881,15 @@ public class SpacecraftState
         return (absPva == null) ? orbit.getI() : Double.NaN;
     }
 
+    /** Get the position in orbit definition frame.
+     * @return position in orbit definition frame
+     * @since 12.0
+     * @see #getPVCoordinates()
+     */
+    public Vector3D getPosition() {
+        return (absPva == null) ? orbit.getPosition() : absPva.getPosition();
+    }
+
     /** Get the {@link TimeStampedPVCoordinates} in orbit definition frame.
      * <p>
      * Compute the position and velocity of the satellite. This method caches its
@@ -1108,6 +902,16 @@ public class SpacecraftState
      */
     public TimeStampedPVCoordinates getPVCoordinates() {
         return (absPva == null) ? orbit.getPVCoordinates() : absPva.getPVCoordinates();
+    }
+
+    /** Get the position in given output frame.
+     * @param outputFrame frame in which position should be defined
+     * @return position in given output frame
+     * @since 12.0
+     * @see #getPVCoordinates(Frame)
+     */
+    public Vector3D getPosition(final Frame outputFrame) {
+        return (absPva == null) ? orbit.getPosition(outputFrame) : absPva.getPosition(outputFrame);
     }
 
     /** Get the {@link TimeStampedPVCoordinates} in given output frame.

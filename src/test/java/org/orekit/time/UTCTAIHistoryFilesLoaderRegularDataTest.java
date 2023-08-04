@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,25 +16,23 @@
  */
 package org.orekit.time;
 
-
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 
 public class UTCTAIHistoryFilesLoaderRegularDataTest {
 
     @Test
     public void testRegular() {
-        Assert.assertEquals(-32.0, TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 10e-8);
+        Assertions.assertEquals(-32.0, TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 10e-8);
     }
 
     @Test
     public void testFirstLeap() {
         UTCScale utc = (UTCScale) TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
-        Assert.assertEquals(1.4228180,
+        Assertions.assertEquals(1.4228180,
                             afterLeap.durationFrom(utc.getFirstKnownLeapSecond()),
                             1.0e-12);
     }
@@ -42,13 +40,13 @@ public class UTCTAIHistoryFilesLoaderRegularDataTest {
     @Test
     public void testLaststLeap() {
         UTCScale utc = (UTCScale) TimeScalesFactory.getUTC();
-        AbsoluteDate afterLeap = new AbsoluteDate(2015, 7, 1, 0, 0, 0.0, utc);
-        Assert.assertEquals(1.0,
+        AbsoluteDate afterLeap = new AbsoluteDate(2017, 1, 1, 0, 0, 0.0, utc);
+        Assertions.assertEquals(1.0,
                             afterLeap.durationFrom(utc.getLastKnownLeapSecond()),
                             1.0e-12);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }

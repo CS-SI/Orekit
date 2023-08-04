@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,21 +16,20 @@
  */
 package org.orekit.propagation.events;
 
-import java.util.List;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.hipparchus.util.Binary64Field;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -42,6 +41,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldPVCoordinates;
 
+import java.util.List;
+
 public class FieldEventsLoggerTest {
 
     private double               mu;
@@ -52,32 +53,31 @@ public class FieldEventsLoggerTest {
 //    private FieldEventDetector<T>        penumbraDetector;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
             Utils.setDataRoot("regular-data");
             mu  = 3.9860047e14;
     }
 
-
     @Test
     public void testLogUmbra() {
-        doTestLogUmbra(Decimal64Field.getInstance());
+        doTestLogUmbra(Binary64Field.getInstance());
     }
     @Test
     public void testLogPenumbra() {
-        doTestLogPenumbra(Decimal64Field.getInstance());
+        doTestLogPenumbra(Binary64Field.getInstance());
     }
     @Test
     public void testLogAll() {
-        doTestLogAll(Decimal64Field.getInstance());
+        doTestLogAll(Binary64Field.getInstance());
     }
     @Test
     public void testImmutableList() {
-        doTestImmutableList(Decimal64Field.getInstance());
+        doTestImmutableList(Binary64Field.getInstance());
     }
     @Test
     public void testClearLog() {
-        doTestClearLog(Decimal64Field.getInstance());
+        doTestClearLog(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestLogUmbra(Field<T> field) {
@@ -104,23 +104,21 @@ public class FieldEventsLoggerTest {
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
-        FieldEventDetector<T> umbraDetector = buildDetector(field, true);
-        FieldEventDetector<T> penumbraDetector = buildDetector(field, false);
+        FieldEclipseDetector<T> umbraDetector = buildDetector(field, true);
+        FieldEclipseDetector<T> penumbraDetector = buildDetector(field, false);
 
 
 
         FieldEventsLogger<T> logger = new FieldEventsLogger<>();
-        @SuppressWarnings("unchecked")
-        FieldEventDetector<T> monitored = ((FieldAbstractDetector<FieldEventDetector<T>, T>) logger.monitorDetector(umbraDetector)).
-                withMaxIter(200);
-        Assert.assertEquals(100, umbraDetector.getMaxIterationCount());
-        Assert.assertEquals(200, monitored.getMaxIterationCount());
+        FieldEventDetector<T> monitored = logger.monitorDetector(umbraDetector).withMaxIter(200);
+        Assertions.assertEquals(100, umbraDetector.getMaxIterationCount());
+        Assertions.assertEquals(200, monitored.getMaxIterationCount());
 
         propagator.addEventDetector(monitored);
         propagator.addEventDetector(penumbraDetector);
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215)).getDate();
-        Assert.assertEquals(11, count);
+        Assertions.assertEquals(11, count);
         checkCounts(logger, 3, 3, 0, 0, umbraDetector, penumbraDetector);
     }
 
@@ -157,7 +155,7 @@ public class FieldEventsLoggerTest {
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215)).getDate();
-        Assert.assertEquals(11, count);
+        Assertions.assertEquals(11, count);
         checkCounts(logger, 0, 0, 2, 3, umbraDetector, penumbraDetector);
     }
 
@@ -200,7 +198,7 @@ public class FieldEventsLoggerTest {
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215));
-        Assert.assertEquals(11, count);
+        Assertions.assertEquals(11, count);
         checkCounts(logger, 3, 3, 2, 3, umbraDetector, penumbraDetector);
     }
 
@@ -238,11 +236,11 @@ public class FieldEventsLoggerTest {
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215));
         List<FieldEventsLogger.FieldLoggedEvent<T>> firstList = logger.getLoggedEvents();
-        Assert.assertEquals(11, firstList.size());
+        Assertions.assertEquals(11, firstList.size());
         propagator.propagate(iniDate.shiftedBy(30000));
         List<FieldEventsLogger.FieldLoggedEvent<T>> secondList = logger.getLoggedEvents();
-        Assert.assertEquals(11, firstList.size());
-        Assert.assertEquals(20, secondList.size());
+        Assertions.assertEquals(11, firstList.size());
+        Assertions.assertEquals(20, secondList.size());
         for (int i = 0; i < firstList.size(); ++i) {
 
             FieldEventsLogger.FieldLoggedEvent<T> e1 = firstList.get(i);
@@ -250,10 +248,10 @@ public class FieldEventsLoggerTest {
             FieldPVCoordinates<T> pv1 = e1.getState().getPVCoordinates();
             FieldPVCoordinates<T> pv2 = e2.getState().getPVCoordinates();
 
-            Assert.assertTrue(e1.getEventDetector() == e2.getEventDetector());
-            Assert.assertEquals(0, pv1.getPosition().subtract(pv2.getPosition()).getNorm().getReal(), 1.0e-10);
-            Assert.assertEquals(0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm().getReal(), 1.0e-10);
-            Assert.assertEquals(e1.isIncreasing(), e2.isIncreasing());
+            Assertions.assertTrue(e1.getEventDetector() == e2.getEventDetector());
+            Assertions.assertEquals(0, pv1.getPosition().subtract(pv2.getPosition()).getNorm().getReal(), 1.0e-10);
+            Assertions.assertEquals(0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm().getReal(), 1.0e-10);
+            Assertions.assertEquals(e1.isIncreasing(), e2.isIncreasing());
 
         }
     }
@@ -296,12 +294,12 @@ public class FieldEventsLoggerTest {
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215));
         List<FieldEventsLogger.FieldLoggedEvent<T>> firstList = logger.getLoggedEvents();
-        Assert.assertEquals(11, firstList.size());
+        Assertions.assertEquals(11, firstList.size());
         logger.clearLoggedEvents();
         propagator.propagate(iniDate.shiftedBy(30000));
         List<FieldEventsLogger.FieldLoggedEvent<T>> secondList = logger.getLoggedEvents();
-        Assert.assertEquals(11, firstList.size());
-        Assert.assertEquals( 9, secondList.size());
+        Assertions.assertEquals(11, firstList.size());
+        Assertions.assertEquals( 9, secondList.size());
     }
 
     private <T extends CalculusFieldElement<T>> void checkCounts(FieldEventsLogger<T> logger,
@@ -328,17 +326,19 @@ public class FieldEventsLoggerTest {
                 }
             }
         }
-        Assert.assertEquals(expectedUmbraIncreasingCount,    umbraIncreasingCount);
-        Assert.assertEquals(expectedUmbraDecreasingCount,    umbraDecreasingCount);
-        Assert.assertEquals(expectedPenumbraIncreasingCount, penumbraIncreasingCount);
-        Assert.assertEquals(expectedPenumbraDecreasingCount, penumbraDecreasingCount);
+        Assertions.assertEquals(expectedUmbraIncreasingCount,    umbraIncreasingCount);
+        Assertions.assertEquals(expectedUmbraDecreasingCount,    umbraDecreasingCount);
+        Assertions.assertEquals(expectedPenumbraIncreasingCount, penumbraIncreasingCount);
+        Assertions.assertEquals(expectedPenumbraDecreasingCount, penumbraDecreasingCount);
     }
 
-    private <T extends CalculusFieldElement<T>> FieldEventDetector<T> buildDetector(Field<T> field, final boolean totalEclipse) {
+    private <T extends CalculusFieldElement<T>> FieldEclipseDetector<T> buildDetector(Field<T> field, final boolean totalEclipse) {
 
         FieldEclipseDetector<T> detector =
-                new FieldEclipseDetector<>(field.getZero().add(60.), field.getZero().add(1.e-3), CelestialBodyFactory.getSun(), 696000000,
-                                           CelestialBodyFactory.getEarth(), 6400000);
+                new FieldEclipseDetector<>(field, CelestialBodyFactory.getSun(), 696000000,
+                                           new OneAxisEllipsoid(6400000, 0.0, FramesFactory.getGCRF())).
+                withMaxCheck(field.getZero().newInstance(60)).
+                withThreshold(field.getZero().newInstance(1.0e-3));
 
         if (totalEclipse) {
             detector = detector.withUmbra();
@@ -346,20 +346,18 @@ public class FieldEventsLoggerTest {
             detector = detector.withPenumbra();
         }
 
-        detector = detector.withHandler(new FieldEventHandler<FieldEclipseDetector<T>, T>() {
-
-            public Action eventOccurred(FieldSpacecraftState<T> s, FieldEclipseDetector<T> detector, boolean increasing) {
+        detector = detector.withHandler(new FieldEventHandler<T>() {
+            public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
                 ++count;
                 return Action.CONTINUE;
             }
-
         } );
 
         return detector;
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         count = 0;
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,7 +73,7 @@ public class WindUp implements EstimationModifier<Phase> {
         // get ground antenna dipole
         final Frame         inertial      = estimated.getStates()[0].getFrame();
         final GroundStation station       = estimated.getObservedMeasurement().getStation();
-        final Rotation      offsetToInert = station.getOffsetToInertial(inertial, estimated.getDate()).getRotation();
+        final Rotation      offsetToInert = station.getOffsetToInertial(inertial, participants[1].getDate(), true).getRotation();
         final Vector3D      iGround       = offsetToInert.applyTo(Vector3D.PLUS_I);
         final Vector3D      jGround       = offsetToInert.applyTo(Vector3D.PLUS_J);
         final Vector3D      dGround       = new Vector3D(1.0, iGround, -Vector3D.dotProduct(iGround, los), los).

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,10 +18,10 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
@@ -85,11 +85,11 @@ public class BackAndForthDetectorTest {
         propagator.propagate(date1);
         propagator.propagate(date0);
 
-        Assert.assertEquals(4, visi.getVisiNb());
+        Assertions.assertEquals(4, visi.getVisiNb());
 
     }
 
-    private static class Visibility implements EventHandler<ElevationDetector> {
+    private static class Visibility implements EventHandler {
         private int _visiNb;
 
         public Visibility() {
@@ -100,19 +100,19 @@ public class BackAndForthDetectorTest {
             return _visiNb;
         }
 
-        public Action eventOccurred(SpacecraftState s, ElevationDetector ed, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, EventDetector ed, boolean increasing) {
             _visiNb++;
             return Action.CONTINUE;
         }
 
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
     }
 

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<apm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://sanaregistry.org/r/ndmxml_unqualified/ndmxml-4.0.0-master-4.0.xsd" id="CCSDS_APM_VERS" version="2.0">
+  <header>
+    <CREATION_DATE>2023-04-04T13:30:30.0</CREATION_DATE>
+    <ORIGINATOR>OREKIT</ORIGINATOR>
+  </header>
+
+  <body>
+    <segment>
+      <metadata>
+        <OBJECT_NAME>OREKIT_SAT</OBJECT_NAME>
+        <OBJECT_ID>2002-999Z</OBJECT_ID>
+        <TIME_SYSTEM>UTC</TIME_SYSTEM>
+      </metadata>
+      <data>
+        <COMMENT>this is a made up test message</COMMENT>
+        <EPOCH>2008-04-07T00:00:00.0</EPOCH>
+        <quaternionState>
+          <REF_FRAME_A>EME2000</REF_FRAME_A>
+          <REF_FRAME_B>SC_BODY_1</REF_FRAME_B>
+          <quaternion>
+            <Q1>-0.6447327809733585</Q1>
+            <Q2>-0.3463409538535587</Q2>
+            <Q3>-0.28613054916357517</Q3>
+            <QC>0.6184633325084984</QC>
+          </quaternion>
+          <quaternionDot>
+            <Q1_DOT>-1.3272033450196288E-4</Q1_DOT>
+            <Q2_DOT>-3.2795194482559584E-4</Q2_DOT>
+            <Q3_DOT>3.464798547870986E-4</Q3_DOT>
+            <QC_DOT>-1.6171349757177208E-4</QC_DOT>
+          </quaternionDot>
+        </quaternionState>
+      </data>
+    </segment>
+  </body>
+</apm>

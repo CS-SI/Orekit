@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2022 CS GROUP
+<!--- Copyright 2002-2023 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -128,27 +128,44 @@ Here's how to make your first contribution:
 3. Clone **your** repository on your workstation and checkout the **develop**
    branch.
 
-4. Create a new branch on your fork. The branch must:
-	- have the **develop** branch as the source branch.
-	- have a name related to the future contribution. For instance, if you
-      want to correct an issue, the name must be **issue-XXX** where **XXX**
-      represents the issue number.
+4. Within your checked out repository, configure your username and email address so your contributions can be properly submitted:
+    ```
+    git config user.name "First Last"
+    git config user.email "address@domain.tld"
+    ```  
+   
+5. Create a new branch on your fork.
 
-5. Be sure to activate checkstyle (use the **checkstyle.xml** file at the root
+   The branch must have a name related to the future contribution.  
+   For instance, if you want to correct an issue, the name must be **issue-XXX** where **XXX** represents the issue number.
+
+   If you are contributing a new feature or are correcting a bug that will need an API change, have the **develop** branch as the source branch.  
+   Your contribution will be eligible for a minor version or major version (if API is changed).
+   
+   **Important note:**  
+   If you are correcting a bug with no API change needed, have the latest **release-X.Y** branch as the source branch.  
+   Your contribution will be eligible for a patch version.  
+   Patch versions are released more often and it really simplifies the work of the release manager if you start from the latest release branch.
+
+6. Be sure to activate checkstyle (use the **checkstyle.xml** file at the root
     of the project) to help you follow the coding rules of Orekit (see
     examples below).
 
-6. Perform your development and validation.
+7. Perform your development and validation.
 
-7. Update the **changes.xml** file in *src/changes/* directory (see former
-    entries to help you).
+8. Update the **changes.xml** file in *src/changes/* directory (see former
+    entries to help you).  
+   *Note*: do this only if your work is planned for a minor/major version.  
+   If your contribution can be added to a patch version, then the release manager will update the changes.xml file.  
+   This file is a big source of merge conflicts so it's much easier to handle it in a go when doing the release.  
+   See point 5 for the differences between minor/major versions and patch versions.
 
-8. Run all Orekit tests to ensure everything works.
+9. Run all Orekit tests to ensure everything works.
 
-9. Commit your code on your branch and push it to Gitlab (you can make several
+10. Commit your code on your branch and push it to Gitlab (you can make several
     local commits and push them at once).
 
-10. Submit a merge request (a "MR" in the Gitlab jargon) on the forge, by
+11. Submit a merge request (a "MR" in the Gitlab jargon) on the forge, by
     clicking on the *New merge request* button:
 
     ![merge requests](./images/merge-requests.png)
@@ -158,7 +175,7 @@ Here's how to make your first contribution:
     official repository an the **develop** branch). Be sure that the target of
     your request is the **develop** branch of the official repository.
 
-11. Gitlab notifies the core team members of your merge request. One of them
+12. Gitlab notifies the core team members of your merge request. One of them
     will review it as soon as he or she can. If your contribution seems to
     meet the project's expectations, he or she will accept it. If not, he or
     she will explain to you how it could be improved. You can then enhance
@@ -203,7 +220,7 @@ Pressing the *Add...* button at the top right of the install wizard will
 display a small popup asking for the name and location of a new software site.
 
 * Name = Checkstyle
-* Location = http://eclipse-cs.sf.net/update/
+* Location = https://checkstyle.org/eclipse-cs-update-site
 
 Press *Add* to close the popup.
 

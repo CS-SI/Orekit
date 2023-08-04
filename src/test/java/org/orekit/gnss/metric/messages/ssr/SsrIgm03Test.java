@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,18 @@
  */
 package org.orekit.gnss.metric.messages.ssr;
 
-import java.util.ArrayList;
-
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm03;
 import org.orekit.gnss.metric.messages.ssr.igm.SsrIgm03Data;
-import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
+import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.IgsSsrMessagesParser;
+
+import java.util.ArrayList;
 
 public class SsrIgm03Test {
 
@@ -59,7 +59,7 @@ public class SsrIgm03Test {
                          "001110101111110111111" +            // Delta Clock C1
                          "0011101011111101111111000110000";   // Delta Clock C2
 
-        final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        final EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
         message.start();
 
         ArrayList<Integer> messages = new ArrayList<>();
@@ -68,33 +68,33 @@ public class SsrIgm03Test {
         final SsrIgm03 igm03 = (SsrIgm03) new IgsSsrMessagesParser(messages).parse(message, false);
 
         // Verify size
-        Assert.assertEquals(1,                            igm03.getData().size());
-        Assert.assertEquals(SatelliteSystem.GALILEO,      igm03.getSatelliteSystem());
+        Assertions.assertEquals(1,                            igm03.getData().size());
+        Assertions.assertEquals(SatelliteSystem.GALILEO,      igm03.getSatelliteSystem());
 
         // Verify header
-        Assert.assertEquals(63,                           igm03.getTypeCode());
-        Assert.assertEquals(517695.0,                     igm03.getHeader().getSsrEpoch1s(), eps);
-        Assert.assertEquals(2.0,                          igm03.getHeader().getSsrUpdateInterval(), eps);
-        Assert.assertEquals(0,                            igm03.getHeader().getSsrMultipleMessageIndicator());
-        Assert.assertEquals(7,                            igm03.getHeader().getIodSsr());
-        Assert.assertEquals(3951,                         igm03.getHeader().getSsrProviderId());
-        Assert.assertEquals(1,                            igm03.getHeader().getSsrSolutionId());
-        Assert.assertEquals(0,                            igm03.getHeader().getCrsIndicator());
-        Assert.assertEquals(1,                            igm03.getHeader().getNumberOfSatellites());
+        Assertions.assertEquals(63,                           igm03.getTypeCode());
+        Assertions.assertEquals(517695.0,                     igm03.getHeader().getSsrEpoch1s(), eps);
+        Assertions.assertEquals(2.0,                          igm03.getHeader().getSsrUpdateInterval(), eps);
+        Assertions.assertEquals(0,                            igm03.getHeader().getSsrMultipleMessageIndicator());
+        Assertions.assertEquals(7,                            igm03.getHeader().getIodSsr());
+        Assertions.assertEquals(3951,                         igm03.getHeader().getSsrProviderId());
+        Assertions.assertEquals(1,                            igm03.getHeader().getSsrSolutionId());
+        Assertions.assertEquals(0,                            igm03.getHeader().getCrsIndicator());
+        Assertions.assertEquals(1,                            igm03.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite E12
         final SsrIgm03Data e12 = igm03.getSsrIgm03Data().get("E12").get(0);
-        Assert.assertEquals(12,                           e12.getSatelliteID());
-        Assert.assertEquals(132,                          e12.getGnssIod());
-        Assert.assertEquals(18.0095,                      e12.getOrbitCorrection().getDeltaOrbitRadial(),        eps);
-        Assert.assertEquals(122.8668,                     e12.getOrbitCorrection().getDeltaOrbitAlongTrack(),    eps);
-        Assert.assertEquals(122.8668,                     e12.getOrbitCorrection().getDeltaOrbitCrossTrack(),    eps);
-        Assert.assertEquals(0.090047,                     e12.getOrbitCorrection().getDotOrbitDeltaRadial(),     eps);
-        Assert.assertEquals(0.614332,                     e12.getOrbitCorrection().getDotOrbitDeltaAlongTrack(), eps);
-        Assert.assertEquals(0.614332,                     e12.getOrbitCorrection().getDotOrbitDeltaCrossTrack(), eps);
-        Assert.assertEquals(96.6527,                      e12.getClockCorrection().getDeltaClockC0(),            eps);
-        Assert.assertEquals(0.483263,                     e12.getClockCorrection().getDeltaClockC1(),            eps);
-        Assert.assertEquals(0.61857734,                   e12.getClockCorrection().getDeltaClockC2(),            eps);
+        Assertions.assertEquals(12,                           e12.getSatelliteID());
+        Assertions.assertEquals(132,                          e12.getGnssIod());
+        Assertions.assertEquals(18.0095,                      e12.getOrbitCorrection().getDeltaOrbitRadial(),        eps);
+        Assertions.assertEquals(122.8668,                     e12.getOrbitCorrection().getDeltaOrbitAlongTrack(),    eps);
+        Assertions.assertEquals(122.8668,                     e12.getOrbitCorrection().getDeltaOrbitCrossTrack(),    eps);
+        Assertions.assertEquals(0.090047,                     e12.getOrbitCorrection().getDotOrbitDeltaRadial(),     eps);
+        Assertions.assertEquals(0.614332,                     e12.getOrbitCorrection().getDotOrbitDeltaAlongTrack(), eps);
+        Assertions.assertEquals(0.614332,                     e12.getOrbitCorrection().getDotOrbitDeltaCrossTrack(), eps);
+        Assertions.assertEquals(96.6527,                      e12.getClockCorrection().getDeltaClockC0(),            eps);
+        Assertions.assertEquals(0.483263,                     e12.getClockCorrection().getDeltaClockC1(),            eps);
+        Assertions.assertEquals(0.61857734,                   e12.getClockCorrection().getDeltaClockC2(),            eps);
 
     }
 
@@ -124,7 +124,7 @@ public class SsrIgm03Test {
                          "001110101111110111111" +            // Delta Clock C1
                          "0011101011111101111111000110000";   // Delta Clock C2
 
-        final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        final EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
         message.start();
 
         ArrayList<Integer> messages = new ArrayList<>();
@@ -133,33 +133,33 @@ public class SsrIgm03Test {
         final SsrIgm03 igm03 = (SsrIgm03) new IgsSsrMessagesParser(messages).parse(message, false);
 
         // Verify size
-        Assert.assertEquals(1,                            igm03.getData().size());
-        Assert.assertEquals(SatelliteSystem.GPS,          igm03.getSatelliteSystem());
+        Assertions.assertEquals(1,                            igm03.getData().size());
+        Assertions.assertEquals(SatelliteSystem.GPS,          igm03.getSatelliteSystem());
 
         // Verify header
-        Assert.assertEquals(23,                           igm03.getTypeCode());
-        Assert.assertEquals(517695.0,                     igm03.getHeader().getSsrEpoch1s(), eps);
-        Assert.assertEquals(300.0,                        igm03.getHeader().getSsrUpdateInterval(), eps);
-        Assert.assertEquals(0,                            igm03.getHeader().getSsrMultipleMessageIndicator());
-        Assert.assertEquals(7,                            igm03.getHeader().getIodSsr());
-        Assert.assertEquals(3951,                         igm03.getHeader().getSsrProviderId());
-        Assert.assertEquals(1,                            igm03.getHeader().getSsrSolutionId());
-        Assert.assertEquals(0,                            igm03.getHeader().getCrsIndicator());
-        Assert.assertEquals(1,                            igm03.getHeader().getNumberOfSatellites());
+        Assertions.assertEquals(23,                           igm03.getTypeCode());
+        Assertions.assertEquals(517695.0,                     igm03.getHeader().getSsrEpoch1s(), eps);
+        Assertions.assertEquals(300.0,                        igm03.getHeader().getSsrUpdateInterval(), eps);
+        Assertions.assertEquals(0,                            igm03.getHeader().getSsrMultipleMessageIndicator());
+        Assertions.assertEquals(7,                            igm03.getHeader().getIodSsr());
+        Assertions.assertEquals(3951,                         igm03.getHeader().getSsrProviderId());
+        Assertions.assertEquals(1,                            igm03.getHeader().getSsrSolutionId());
+        Assertions.assertEquals(0,                            igm03.getHeader().getCrsIndicator());
+        Assertions.assertEquals(1,                            igm03.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite G01
         final SsrIgm03Data g01 = igm03.getSsrIgm03Data().get("G01").get(0);
-        Assert.assertEquals(1,                            g01.getSatelliteID());
-        Assert.assertEquals(132,                          g01.getGnssIod());
-        Assert.assertEquals(18.0095,                      g01.getOrbitCorrection().getDeltaOrbitRadial(),         eps);
-        Assert.assertEquals(122.8668,                     g01.getOrbitCorrection().getDeltaOrbitAlongTrack(),    eps);
-        Assert.assertEquals(122.8668,                     g01.getOrbitCorrection().getDeltaOrbitCrossTrack(),    eps);
-        Assert.assertEquals(0.090047,                     g01.getOrbitCorrection().getDotOrbitDeltaRadial(),     eps);
-        Assert.assertEquals(0.614332,                     g01.getOrbitCorrection().getDotOrbitDeltaAlongTrack(), eps);
-        Assert.assertEquals(0.614332,                     g01.getOrbitCorrection().getDotOrbitDeltaCrossTrack(), eps);
-        Assert.assertEquals(96.6527,                      g01.getClockCorrection().getDeltaClockC0(),            eps);
-        Assert.assertEquals(0.483263,                     g01.getClockCorrection().getDeltaClockC1(),            eps);
-        Assert.assertEquals(0.61857734,                   g01.getClockCorrection().getDeltaClockC2(),            eps);
+        Assertions.assertEquals(1,                            g01.getSatelliteID());
+        Assertions.assertEquals(132,                          g01.getGnssIod());
+        Assertions.assertEquals(18.0095,                      g01.getOrbitCorrection().getDeltaOrbitRadial(),         eps);
+        Assertions.assertEquals(122.8668,                     g01.getOrbitCorrection().getDeltaOrbitAlongTrack(),    eps);
+        Assertions.assertEquals(122.8668,                     g01.getOrbitCorrection().getDeltaOrbitCrossTrack(),    eps);
+        Assertions.assertEquals(0.090047,                     g01.getOrbitCorrection().getDotOrbitDeltaRadial(),     eps);
+        Assertions.assertEquals(0.614332,                     g01.getOrbitCorrection().getDotOrbitDeltaAlongTrack(), eps);
+        Assertions.assertEquals(0.614332,                     g01.getOrbitCorrection().getDotOrbitDeltaCrossTrack(), eps);
+        Assertions.assertEquals(96.6527,                      g01.getClockCorrection().getDeltaClockC0(),            eps);
+        Assertions.assertEquals(0.483263,                     g01.getClockCorrection().getDeltaClockC1(),            eps);
+        Assertions.assertEquals(0.61857734,                   g01.getClockCorrection().getDeltaClockC2(),            eps);
 
     }
 
@@ -189,7 +189,7 @@ public class SsrIgm03Test {
                         "001110101111110111111" +            // Delta Clock C1
                         "0011101011111101111111000110000";   // Delta Clock C2
 
-       final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+       final EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
        message.start();
 
        ArrayList<Integer> messages = new ArrayList<>();
@@ -197,18 +197,18 @@ public class SsrIgm03Test {
 
        final SsrIgm03 igm03 = (SsrIgm03) new IgsSsrMessagesParser(messages).parse(message, false);
 
-       Assert.assertNull(igm03);
+       Assertions.assertNull(igm03);
     }
 
     @Test
     public void testEmptyMessage() {
         try {
             final byte[] array = new byte[0];
-            final EncodedMessage emptyMessage = new ByteArrayEncodedMessages(array);
+            final EncodedMessage emptyMessage = new ByteArrayEncodedMessage(array);
             new IgsSsrMessagesParser(new ArrayList<Integer>()).parse(emptyMessage, false);
-            Assert.fail("an exception should have been thrown");
+            Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());
         }
 
     }

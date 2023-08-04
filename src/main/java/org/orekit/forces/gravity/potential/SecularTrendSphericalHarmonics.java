@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,22 +45,6 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
     /** Simple constructor.
      * @param provider underlying provider for the non secular part
      * @param referenceDate reference date for the harmonics (considered to be at 12:00 TT)
-     * @param cTrend secular trend of the cosine coefficients (s<sup>-1</sup>)
-     * @param sTrend secular trend of the sine coefficients (s<sup>-1</sup>)
-     * @deprecated as of 11.1, replaced by {@link #SecularTrendSphericalHarmonics(RawSphericalHarmonicsProvider,
-     * AbsoluteDate, Flattener, double[], double[])
-     */
-    @Deprecated
-    SecularTrendSphericalHarmonics(final RawSphericalHarmonicsProvider provider,
-                                   final AbsoluteDate referenceDate,
-                                   final double[][] cTrend, final double[][] sTrend) {
-        this(provider, referenceDate, buildFlattener(cTrend),
-             buildFlattener(cTrend).flatten(cTrend), buildFlattener(sTrend).flatten(sTrend));
-    }
-
-    /** Simple constructor.
-     * @param provider underlying provider for the non secular part
-     * @param referenceDate reference date for the harmonics (considered to be at 12:00 TT)
      * @param flattener flattener from triangular to flatten array
      * @param cTrend secular trend of the cosine coefficients (s<sup>-1</sup>)
      * @param sTrend secular trend of the sine coefficients (s<sup>-1</sup>)
@@ -73,15 +57,6 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
         this.flattener     = flattener;
         this.cTrend        = cTrend.clone();
         this.sTrend        = sTrend.clone();
-    }
-
-    /** Get a flattener for a triangular array.
-     * @param triangular triangular array to flatten
-     * @return flattener suited for triangular array dimensions
-     * @since 11.1
-     */
-    private static Flattener buildFlattener(final double[][] triangular) {
-        return new Flattener(triangular.length - 1, triangular[triangular.length - 1].length - 1);
     }
 
     /** {@inheritDoc} */
@@ -107,12 +82,6 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
     /** {@inheritDoc} */
     public AbsoluteDate getReferenceDate() {
         return referenceDate;
-    }
-
-    /** {@inheritDoc} */
-    @Deprecated
-    public double getOffset(final AbsoluteDate date) {
-        return date.durationFrom(referenceDate);
     }
 
     /** {@inheritDoc} */

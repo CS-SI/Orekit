@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,10 @@ package org.orekit.propagation.integration;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
@@ -55,7 +55,7 @@ public class AdditionalDerivativesProvidersTest {
         final double rate      = 1.5;
         final double dt        = 600.0;
         Linear linear = new Linear("linear", reference, rate);
-        Assert.assertFalse(linear.wasCalled());
+        Assertions.assertFalse(linear.wasCalled());
 
         // action
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
@@ -66,8 +66,8 @@ public class AdditionalDerivativesProvidersTest {
         SpacecraftState finalState = propagatorNumerical.propagate(initDate.shiftedBy(dt));
 
         // verify
-        Assert.assertTrue(linear.wasCalled());
-        Assert.assertEquals(reference + dt * rate, finalState.getAdditionalState(linear.getName())[0], 1.0e-10);
+        Assertions.assertTrue(linear.wasCalled());
+        Assertions.assertEquals(reference + dt * rate, finalState.getAdditionalState(linear.getName())[0], 1.0e-10);
 
     }
 
@@ -81,7 +81,7 @@ public class AdditionalDerivativesProvidersTest {
         final double rate      = 1.5;
         final double dt        = 600.0;
         Linear linear = new Linear("linear", reference, rate);
-        Assert.assertFalse(linear.wasCalled());
+        Assertions.assertFalse(linear.wasCalled());
 
         // action
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
@@ -92,8 +92,8 @@ public class AdditionalDerivativesProvidersTest {
         SpacecraftState finalState = propagatorDSST.propagate(initDate.shiftedBy(dt));
 
         // verify
-        Assert.assertTrue(linear.wasCalled());
-        Assert.assertEquals(reference + dt * rate, finalState.getAdditionalState(linear.getName())[0], 1.0e-10);
+        Assertions.assertTrue(linear.wasCalled());
+        Assertions.assertEquals(reference + dt * rate, finalState.getAdditionalState(linear.getName())[0], 1.0e-10);
 
     }
 
@@ -104,11 +104,11 @@ public class AdditionalDerivativesProvidersTest {
         final double reference1 = 3.5;
         final double rate1      = 1.5;
         Linear linear1 = new Linear("linear-1", reference1, rate1);
-        Assert.assertFalse(linear1.wasCalled());
+        Assertions.assertFalse(linear1.wasCalled());
         final double reference2 = 4.5;
         final double rate2      = 1.25;
         Linear linear2 = new Linear("linear-2", reference2, rate2);
-        Assert.assertFalse(linear2.wasCalled());
+        Assertions.assertFalse(linear2.wasCalled());
         final double dt = 600;
 
         // action
@@ -120,15 +120,15 @@ public class AdditionalDerivativesProvidersTest {
                                             addAdditionalState(linear2.getName(), reference2));
         propagatorNumerical.addAdditionalDerivativesProvider(linear1);
         propagatorNumerical.addAdditionalDerivativesProvider(linear2);
-        propagatorNumerical.addEventDetector(new ImpulseManeuver<>(new DateDetector(initDate.shiftedBy(dt / 2.0)),
-                                                                   new Vector3D(0.1, 0.2, 0.3), 350.0));
+        propagatorNumerical.addEventDetector(new ImpulseManeuver(new DateDetector(initDate.shiftedBy(dt / 2.0)),
+                                                                 new Vector3D(0.1, 0.2, 0.3), 350.0));
         SpacecraftState finalState = propagatorNumerical.propagate(initDate.shiftedBy(dt));
 
         // verify
-        Assert.assertTrue(linear1.wasCalled());
-        Assert.assertTrue(linear2.wasCalled());
-        Assert.assertEquals(reference1 + dt * rate1, finalState.getAdditionalState(linear1.getName())[0], 1.0e-10);
-        Assert.assertEquals(reference2 + dt * rate2, finalState.getAdditionalState(linear2.getName())[0], 1.0e-10);
+        Assertions.assertTrue(linear1.wasCalled());
+        Assertions.assertTrue(linear2.wasCalled());
+        Assertions.assertEquals(reference1 + dt * rate1, finalState.getAdditionalState(linear1.getName())[0], 1.0e-10);
+        Assertions.assertEquals(reference2 + dt * rate2, finalState.getAdditionalState(linear2.getName())[0], 1.0e-10);
 
     }
 
@@ -155,14 +155,38 @@ public class AdditionalDerivativesProvidersTest {
         SpacecraftState finalState = propagatorNumerical.propagate(initDate.shiftedBy(dt));
 
         // verify
-        Assert.assertEquals(init1 + dt * rate, finalState.getAdditionalState(yield1.getName())[0],           1.0e-10);
-        Assert.assertEquals(init2 + dt * rate, finalState.getAdditionalState(yield2.getName())[0],           1.0e-10);
-        Assert.assertEquals(rate,              finalState.getAdditionalStateDerivative(yield1.getName())[0], 1.0e-10);
-        Assert.assertEquals(rate,              finalState.getAdditionalStateDerivative(yield2.getName())[0], 1.0e-10);
+        Assertions.assertEquals(init1 + dt * rate, finalState.getAdditionalState(yield1.getName())[0], 1.0e-10);
+        Assertions.assertEquals(init2 + dt * rate, finalState.getAdditionalState(yield2.getName())[0], 1.0e-10);
+        Assertions.assertEquals(rate, finalState.getAdditionalStateDerivative(yield1.getName())[0], 1.0e-10);
+        Assertions.assertEquals(rate, finalState.getAdditionalStateDerivative(yield2.getName())[0], 1.0e-10);
 
     }
 
-    @Before
+    @Test
+    public void testCoupling() {
+
+        // setup
+        final double   dt       = 600.0;
+        final Coupling coupling = new Coupling("coupling", 3.5, -2.0, 1.0);
+
+        // action
+        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(60);
+        NumericalPropagator propagatorNumerical = new NumericalPropagator(integrator);
+        propagatorNumerical.setInitialState(initialState.
+                                            addAdditionalState(coupling.getName(),
+                                                               coupling.secondaryInit));
+        propagatorNumerical.addAdditionalDerivativesProvider(coupling);
+        SpacecraftState finalState = propagatorNumerical.propagate(initDate.shiftedBy(dt));
+
+        // verify
+        Assertions.assertEquals(coupling.secondaryInit + dt * coupling.secondaryRate,
+                finalState.getAdditionalState(coupling.getName())[0], 1.0e-10);
+        Assertions.assertEquals(initialState.getA() + dt * coupling.smaRate, finalState.getA(), 1.0e-10);
+
+    }
+
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
@@ -176,7 +200,7 @@ public class AdditionalDerivativesProvidersTest {
         tolerance = NumericalPropagator.tolerances(0.001, orbit, OrbitType.EQUINOCTIAL);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         initDate     = null;
         initialState = null;
@@ -199,13 +223,13 @@ public class AdditionalDerivativesProvidersTest {
 
         @Override
         public void init(SpacecraftState initiaState, AbsoluteDate target) {
-            Assert.assertEquals(expectedAtInit, initiaState.getAdditionalState(getName())[0], 1.0e-15);
+            Assertions.assertEquals(expectedAtInit, initiaState.getAdditionalState(getName())[0], 1.0e-15);
             called = true;
         }
 
         @Override
-        public double[] derivatives(SpacecraftState s) {
-            return new double[] { rate };
+        public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+            return new CombinedDerivatives(new double[] { rate }, null);
         }
 
         @Override
@@ -237,13 +261,50 @@ public class AdditionalDerivativesProvidersTest {
         }
 
         @Override
-        public double[] derivatives(final SpacecraftState s) {
-            return dependency == null ? new double[] { rate } : s.getAdditionalStateDerivative(dependency);
+        public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+            return new CombinedDerivatives(dependency == null ?
+                                           new double[] { rate } :
+                                           s.getAdditionalStateDerivative(dependency),
+                                           null);
         }
 
         @Override
-        public boolean yield(final SpacecraftState state) {
+        public boolean yields(final SpacecraftState state) {
             return dependency != null && !state.hasAdditionalStateDerivative(dependency);
+        }
+
+        @Override
+        public int getDimension() {
+            return 1;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+    }
+
+    private static class Coupling implements AdditionalDerivativesProvider {
+
+        private final String  name;
+        private final double  secondaryInit;
+        private final double  secondaryRate;
+        private final double  smaRate;
+
+        public Coupling(final String name,
+                        final double secondaryInit, final double secondaryRate,
+                        final double smaRate) {
+            this.name          = name;
+            this.secondaryInit = secondaryInit;
+            this.secondaryRate = secondaryRate;
+            this.smaRate       = smaRate;
+        }
+
+        @Override
+        public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
+            return new CombinedDerivatives(new double[] { secondaryRate },
+                                           new double[] { smaRate, 0.0, 0.0, 0.0, 0.0, 0.0 });
         }
 
         @Override

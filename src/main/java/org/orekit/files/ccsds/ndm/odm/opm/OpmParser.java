@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,24 +19,25 @@ package org.orekit.files.ccsds.ndm.odm.opm;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
-import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
-import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
+import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.SpacecraftParametersKey;
 import org.orekit.files.ccsds.ndm.odm.StateVector;
 import org.orekit.files.ccsds.ndm.odm.StateVectorKey;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.section.CommentsContainer;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
 import org.orekit.files.ccsds.section.Segment;
@@ -72,13 +73,13 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
     private final double defaultMass;
 
     /** File header. */
-    private Header header;
+    private OdmHeader header;
 
     /** File segments. */
-    private List<Segment<CommonMetadata, OpmData>> segments;
+    private List<Segment<OdmCommonMetadata, OpmData>> segments;
 
     /** OPM metadata being read. */
-    private CommonMetadata metadata;
+    private OdmCommonMetadata metadata;
 
     /** Context binding valid for current metadata. */
     private ContextBinding context;
@@ -120,13 +121,16 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
      * @param mu gravitational coefficient
      * @param defaultMass default mass to use if there are no spacecraft parameters block logical block in the file
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
     public OpmParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final double mu,
-                     final double defaultMass, final ParsedUnitsBehavior parsedUnitsBehavior) {
+                     final double defaultMass, final ParsedUnitsBehavior parsedUnitsBehavior,
+                     final Function<ParseToken, List<ParseToken>>[] filters) {
         super(Opm.ROOT, Opm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, mu, parsedUnitsBehavior);
+              missionReferenceDate, mu, parsedUnitsBehavior, filters);
         this.defaultMass = defaultMass;
     }
 
@@ -145,14 +149,14 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
 
     /** {@inheritDoc} */
     @Override
-    public Header getHeader() {
+    public OdmHeader getHeader() {
         return header;
     }
 
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                    = new Header(3.0);
+        header                    = new OdmHeader();
         segments                  = new ArrayList<>();
         metadata                  = null;
         context                   = null;
@@ -199,7 +203,7 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
         if (metadata != null) {
             return false;
         }
-        metadata  = new CommonMetadata();
+        metadata  = new OdmCommonMetadata();
         context   = new ContextBinding(this::getConventions, this::isSimpleEOP,
                                        this::getDataContext, this::getParsedUnitsBehavior,
                                        this::getMissionReferenceDate,
@@ -457,7 +461,7 @@ public class OpmParser extends OdmParser<Opm, OpmParser> {
     private boolean processCovarianceToken(final ParseToken token) {
         if (covarianceBlock == null) {
             // save the current metadata for later retrieval of reference frame
-            final CommonMetadata savedMetadata = metadata;
+            final OdmCommonMetadata savedMetadata = metadata;
             covarianceBlock = new CartesianCovariance(() -> savedMetadata.getReferenceFrame());
             if (moveCommentsIfEmpty(spacecraftParametersBlock, covarianceBlock)) {
                 // get rid of the empty logical block

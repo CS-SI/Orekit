@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,17 +16,15 @@
  */
 package org.orekit.models.earth.ionosphere;
 
-import java.util.Collections;
-
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.GeodeticPoint;
@@ -53,11 +51,13 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 
+import java.util.Collections;
+
 public class SsrVtecIonosphericModelTest {
 
     private SsrIm201 vtecMessage;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
 
@@ -113,13 +113,13 @@ public class SsrVtecIonosphericModelTest {
 
         // Delay
         final double delay = model.pathDelay(state, baseFrame, frequency, model.getParameters());
-        Assert.assertEquals(13.488, delay, 0.001);
+        Assertions.assertEquals(13.488, delay, 0.001);
 
     }
 
     @Test
     public void testFieldDelay() {
-        doTestFieldDelay(Decimal64Field.getInstance());
+        doTestFieldDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
@@ -150,7 +150,7 @@ public class SsrVtecIonosphericModelTest {
 
         // Delay
         final T delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(field));
-        Assert.assertEquals(13.488, delay.getReal(), 0.001);
+        Assertions.assertEquals(13.488, delay.getReal(), 0.001);
     }
 
     @Test
@@ -181,12 +181,12 @@ public class SsrVtecIonosphericModelTest {
 
         // Delay
         final double delay = model.pathDelay(state, baseFrame, frequency, model.getParameters());
-        Assert.assertEquals(0.0, delay, Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, delay, Double.MIN_VALUE);
     }
 
     @Test
     public void testFieldZeroDelay() {
-        doTestFieldZeroDelay(Decimal64Field.getInstance());
+        doTestFieldZeroDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldZeroDelay(final Field<T> field) {
@@ -217,7 +217,7 @@ public class SsrVtecIonosphericModelTest {
 
         // Delay
         final T delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(field));
-        Assert.assertEquals(0.0, delay.getReal(), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, delay.getReal(), Double.MIN_VALUE);
     }
 
     @Test
@@ -235,7 +235,7 @@ public class SsrVtecIonosphericModelTest {
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Topocentric frame
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
-        
+
         // Ionospheric model
         final SsrVtecIonosphericModel model = new SsrVtecIonosphericModel(vtecMessage);
 
@@ -311,7 +311,7 @@ public class SsrVtecIonosphericModelTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assert.assertEquals(compDeriv[i + 1], refDeriv[0][i], 2.3e-11);
+            Assertions.assertEquals(compDeriv[i + 1], refDeriv[0][i], 2.3e-11);
         }
     }
 
@@ -346,7 +346,7 @@ public class SsrVtecIonosphericModelTest {
                 final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(latitude), FastMath.toRadians(longitude), height);
                 final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
                 final double delay = model.pathDelay(state, baseFrame, frequency, model.getParameters());
-                Assert.assertTrue(delay >= 0 && delay < 20.0);
+                Assertions.assertTrue(delay >= 0 && delay < 20.0);
             }
         }
 
@@ -354,7 +354,7 @@ public class SsrVtecIonosphericModelTest {
 
     @Test
     public void testFieldDelayRange() {
-        doTestFieldDelayRange(Decimal64Field.getInstance());
+        doTestFieldDelayRange(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDelayRange(final Field<T> field) {
@@ -387,7 +387,7 @@ public class SsrVtecIonosphericModelTest {
                 final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(latitude), FastMath.toRadians(longitude), height);
                 final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
                 final T delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(field));
-                Assert.assertTrue(delay.getReal() >= 0 && delay.getReal() < 20.0);
+                Assertions.assertTrue(delay.getReal() >= 0 && delay.getReal() < 20.0);
             }
         }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,14 +30,19 @@ public enum HeaderKey {
     COMMENT((token, context, header) ->
             token.getType() == TokenType.ENTRY ? header.addComment(token.getContentAsNormalizedString()) : true),
 
+    /** Classification.
+     * @since 12.0
+     */
+    CLASSIFICATION((token, context, header) -> token.processAsFreeTextString(header::setClassification)),
+
     /** Creation date. */
     CREATION_DATE((token, context, header) -> token.processAsDate(header::setCreationDate, context)),
 
     /** Creating agency or operator. */
-    ORIGINATOR((token, context, header) -> token.processAsUppercaseString(header::setOriginator)),
+    ORIGINATOR((token, context, header) -> token.processAsFreeTextString(header::setOriginator)),
 
     /** ID that uniquely identifies a message from a given originator. */
-    MESSAGE_ID((token, context, header) -> token.processAsUppercaseString(header::setMessageId));
+    MESSAGE_ID((token, context, header) -> token.processAsFreeTextString(header::setMessageId));
 
     /** Processing method. */
     private final TokenProcessor processor;

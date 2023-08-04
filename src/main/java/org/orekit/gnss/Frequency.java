@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -86,6 +86,24 @@ public enum Frequency {
 
     /** Beidou B3 (1268.52 MHz). */
     B03(SatelliteSystem.BEIDOU,  "B3", 124),
+
+    /** Beidou B1C (1575.42 MHz). */
+    B1C(SatelliteSystem.BEIDOU,  "B1C", 154),
+
+    /** Beidou B1A (1575.42 MHz). */
+    B1A(SatelliteSystem.BEIDOU,  "B1A", 154),
+
+    /** Beidou B2a (1176.45 MHz). */
+    B2A(SatelliteSystem.BEIDOU, "B2a", 115),
+
+    /** Beidou B2b (1207.14 MHz). */
+    B2B(SatelliteSystem.BEIDOU, "B2b", 118),
+
+    /** Beidou B2 (B2a + B2b) (1191.795MHz). */
+    B08(SatelliteSystem.BEIDOU, "B2 (B2a+B2b)", 116.5),
+
+    /** Beidou B3A (1268.52 MHz). */
+    B3A(SatelliteSystem.BEIDOU, "B3A", 124),
 
     /** QZSS L1 (1575.42 MHz). */
     J01(SatelliteSystem.QZSS,    "L1", 154),

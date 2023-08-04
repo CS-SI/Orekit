@@ -1,4 +1,4 @@
-' Copyright 2002-2022 CS GROUP
+' Copyright 2002-2023 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -34,9 +34,13 @@
       Package forces #CBDBC8 {
         interface DSSTForceModel
         interface ShortPeriodTerms
+        interface J2SquaredModel
         DSSTForceModel <|-- DSSTZonal
         DSSTZonal --> ZonalShortPeriodicCoefficients
         ShortPeriodTerms <|-- ZonalShortPeriodicCoefficients
+        DSSTForceModel <|-- DSSTJ2SquaredClosedForm
+        J2SquaredModel "1" <--* DSSTJ2SquaredClosedForm
+        J2SquaredModel <|-- ZeisModel
       }
 
       package utilities #CBDBC8 {
@@ -51,6 +55,7 @@
       package forces.gravity.potential #DDEBD8 {
           interface UnnormalizedSphericalHarmonicsProvider
           UnnormalizedSphericalHarmonicsProvider "1" <--* DSSTZonal
+          UnnormalizedSphericalHarmonicsProvider "1" <--* DSSTJ2SquaredClosedForm
       }
   }
 

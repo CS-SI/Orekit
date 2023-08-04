@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import java.util.List;
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /**
  * Base class for phase ambiguity modifier.
@@ -63,13 +64,16 @@ public class AbstractAmbiguityModifier {
      */
     protected void doModify(final EstimatedMeasurement<?> estimated) {
         // Apply the ambiguity to the measurement value
-        final double[] value = estimated.getEstimatedValue();
-        value[0] += ambiguity.getValue();
-        if (ambiguity.isSelected()) {
+        for (Span<String> span = ambiguity.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+            final double[] value = estimated.getEstimatedValue();
+            value[0] += ambiguity.getValue(span.getStart());
+            if (ambiguity.isSelected()) {
             // add the partial derivatives
-            estimated.setParameterDerivatives(ambiguity, 1.0);
+                estimated.setParameterDerivatives(ambiguity, span.getStart(), 1.0);
+            }
+            estimated.setEstimatedValue(value);
         }
-        estimated.setEstimatedValue(value);
     }
 
 }
