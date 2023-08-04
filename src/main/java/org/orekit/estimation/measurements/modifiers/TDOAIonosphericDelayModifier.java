@@ -21,6 +21,7 @@ import java.util.List;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.TDOA;
@@ -100,7 +101,19 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
     }
 
     @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<TDOA> estimated) {
+
+        final TDOA measurement              = estimated.getObservedMeasurement();
+        final GroundStation   primeStation  = measurement.getPrimeStation();
+        final GroundStation   secondStation = measurement.getSecondStation();
+
+        TDOAModifierUtil.modifyWithoutDerivatives(estimated,  primeStation, secondStation, this::timeErrorIonosphericModel);
+
+    }
+
+    @Override
     public void modify(final EstimatedMeasurement<TDOA> estimated) {
+
         final TDOA measurement              = estimated.getObservedMeasurement();
         final GroundStation   primeStation  = measurement.getPrimeStation();
         final GroundStation   secondStation = measurement.getSecondStation();

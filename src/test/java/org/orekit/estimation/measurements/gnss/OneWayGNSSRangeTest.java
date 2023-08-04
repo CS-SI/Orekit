@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
@@ -48,8 +48,8 @@ import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
-import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class OneWayGNSSRangeTest {
 
@@ -171,11 +171,11 @@ public class OneWayGNSSRangeTest {
 
                     // Values of the range & errors
                     final double rangeObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0,
-                                                                                   new SpacecraftState[] {
-                                                                                       state,
-                                                                                       ephemeris.propagate(state.getDate())
-                                                                                   });
+                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
+                                                                                                         new SpacecraftState[] {
+                                                                                                             state,
+                                                                                                             ephemeris.propagate(state.getDate())
+                                                                                                         });
 
                     final double rangeEstimated = estimated.getEstimatedValue()[0];
                     final double absoluteError = rangeEstimated-rangeObserved;
@@ -313,7 +313,7 @@ public class OneWayGNSSRangeTest {
                         public double[] value(final SpacecraftState state) {
                             final SpacecraftState[] s = states.clone();
                             s[index] = state;
-                            return measurement.estimate(0, 0, s).getEstimatedValue();
+                            return measurement.estimateWithoutDerivatives(0, 0, s).getEstimatedValue();
                         }
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
                        OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(states[index]);
@@ -474,7 +474,9 @@ public class OneWayGNSSRangeTest {
                                                 /** {@inheritDoc} */
                                                 @Override
                                                 public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
-                                                    return measurement.estimate(0, 0, states).getEstimatedValue()[0];
+                                                    return measurement.
+                                                           estimateWithoutDerivatives(0, 0, states).
+                                                           getEstimatedValue()[0];
                                                 }
                                             }, 3, 20.0 * drivers[i].getScale());
                             final double ref = dMkdP.value(drivers[i], date);

@@ -23,15 +23,16 @@ import java.util.Map;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Phase measurement between two satellites.
  * <p>
@@ -101,6 +102,56 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
      */
     public ParameterDriver getAmbiguityDriver() {
         return ambiguityDriver;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EstimatedMeasurementBase<InterSatellitesPhase> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                                     final int evaluation,
+                                                                                                     final SpacecraftState[] states) {
+
+        // Coordinates of both satellites
+        final SpacecraftState local = states[0];
+        final TimeStampedPVCoordinates pvaL = local.getPVCoordinates();
+        final SpacecraftState remote = states[1];
+        final TimeStampedPVCoordinates pvaR = remote.getPVCoordinates();
+
+        // Compute propagation times
+        // Downlink delay
+        final double dtl = getSatellites().get(0).getClockOffsetDriver().getValue(AbsoluteDate.ARBITRARY_EPOCH);
+        final AbsoluteDate arrivalDate = getDate().shiftedBy(-dtl);
+
+        final TimeStampedPVCoordinates s1Downlink = pvaL.shiftedBy(arrivalDate.durationFrom(pvaL.getDate()));
+        final double tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate);
+
+        // Transit state
+        final double delta      = getDate().durationFrom(remote.getDate());
+        final double deltaMTauD = delta - tauD;
+
+        // prepare the evaluation
+        final EstimatedMeasurementBase<InterSatellitesPhase> estimatedPhase =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       new SpacecraftState[] {
+                                                           local.shiftedBy(deltaMTauD),
+                                                           remote.shiftedBy(deltaMTauD)
+                                                       }, new TimeStampedPVCoordinates[] {
+                                                           remote.shiftedBy(delta - tauD).getPVCoordinates(),
+                                                           local.shiftedBy(delta).getPVCoordinates()
+                                                       });
+
+        // Clock offsets
+        final double dtr = getSatellites().get(1).getClockOffsetDriver().getValue(AbsoluteDate.ARBITRARY_EPOCH);
+
+        // Phase value
+        final double cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
+        final double ambiguity   = ambiguityDriver.getValue(AbsoluteDate.ARBITRARY_EPOCH);
+        final double phase       = (tauD + dtl - dtr) * cOverLambda + ambiguity;
+
+        estimatedPhase.setEstimatedValue(phase);
+
+        // Return the estimated measurement
+        return estimatedPhase;
+
     }
 
     /** {@inheritDoc} */

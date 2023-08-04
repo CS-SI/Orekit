@@ -207,6 +207,13 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
         return isp;
     }
 
+    /** Get the control vector's norm type.
+     * @return norm type
+     */
+    public ControlVector3DNormType getControlVector3DNormType() {
+        return controlVector3DNormType;
+    }
+
     /** Local handler. */
     private static class Handler implements EventHandler {
 

@@ -19,13 +19,14 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.TurnAroundRange;
@@ -182,6 +183,24 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         return tropoModel.getParametersDrivers();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<TurnAroundRange> estimated) {
+
+        final TurnAroundRange measurement      = estimated.getObservedMeasurement();
+        final GroundStation   primaryStation   = measurement.getPrimaryStation();
+        final GroundStation   secondaryStation = measurement.getSecondaryStation();
+        final SpacecraftState state            = estimated.getStates()[0];
+
+        // Update estimated value taking into account the tropospheric delay.
+        // The tropospheric delay is directly added to the TurnAroundRange.
+        final double[] newValue       = estimated.getEstimatedValue();
+        final double   primaryDelay   = rangeErrorTroposphericModel(primaryStation, state);
+        final double   secondaryDelay = rangeErrorTroposphericModel(secondaryStation, state);
+        newValue[0] = newValue[0] + primaryDelay + secondaryDelay;
+        estimated.setEstimatedValue(newValue);
+
+    }
     /** {@inheritDoc} */
     @Override
     public void modify(final EstimatedMeasurement<TurnAroundRange> estimated) {

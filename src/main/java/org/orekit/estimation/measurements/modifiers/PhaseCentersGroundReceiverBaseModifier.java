@@ -16,7 +16,7 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundReceiverMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
@@ -53,7 +53,7 @@ public class PhaseCentersGroundReceiverBaseModifier<T extends GroundReceiverMeas
      * @param estimated estimated measurement to modify
      * @return distance modification to add to raw measurement
      */
-    public double oneWayDistanceModification(final EstimatedMeasurement<T> estimated) {
+    public double oneWayDistanceModification(final EstimatedMeasurementBase<T> estimated) {
 
         // get all participants
         // note that clock offset is compensated in participants,
@@ -64,7 +64,7 @@ public class PhaseCentersGroundReceiverBaseModifier<T extends GroundReceiverMeas
         final Frame         inertial       = estimated.getStates()[0].getFrame();
         final GroundStation station        = estimated.getObservedMeasurement().getStation();
         final AbsoluteDate  receptionDate  = participants[1].getDate();
-        final Transform     stationToInert = station.getOffsetToInertial(inertial, receptionDate, true);
+        final Transform     stationToInert = station.getOffsetToInertial(inertial, receptionDate, false);
 
         // spacecraft at emission date
         final AbsoluteDate    emissionDate      = participants[0].getDate();
@@ -81,7 +81,7 @@ public class PhaseCentersGroundReceiverBaseModifier<T extends GroundReceiverMeas
      * @param estimated estimated measurement to modify
      * @return distance modification to add to raw measurement
      */
-    public double twoWayDistanceModification(final EstimatedMeasurement<T> estimated) {
+    public double twoWayDistanceModification(final EstimatedMeasurementBase<T> estimated) {
 
         // get all participants
         // note that clock offset is compensated in participants,
@@ -92,7 +92,7 @@ public class PhaseCentersGroundReceiverBaseModifier<T extends GroundReceiverMeas
         final Frame         inertial                = estimated.getStates()[0].getFrame();
         final GroundStation station                 = estimated.getObservedMeasurement().getStation();
         final AbsoluteDate  receptionDate           = participants[2].getDate();
-        final Transform     stationToInertReception = station.getOffsetToInertial(inertial, receptionDate, true);
+        final Transform     stationToInertReception = station.getOffsetToInertial(inertial, receptionDate, false);
 
         // transform from spacecraft to inertial frame at transit date
         final AbsoluteDate    transitDate           = participants[1].getDate();

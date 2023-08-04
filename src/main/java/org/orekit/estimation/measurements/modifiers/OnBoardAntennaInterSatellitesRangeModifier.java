@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.frames.Transform;
@@ -62,7 +62,7 @@ public class OnBoardAntennaInterSatellitesRangeModifier implements EstimationMod
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<InterSatellitesRange> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<InterSatellitesRange> estimated) {
         if (estimated.getParticipants().length < 3) {
             modifyOneWay(estimated);
         } else {
@@ -73,7 +73,7 @@ public class OnBoardAntennaInterSatellitesRangeModifier implements EstimationMod
     /** Apply a modifier to an estimated measurement in the one-way case.
      * @param estimated estimated measurement to modify
      */
-    private void modifyOneWay(final EstimatedMeasurement<InterSatellitesRange> estimated) {
+    private void modifyOneWay(final EstimatedMeasurementBase<InterSatellitesRange> estimated) {
 
         // the participants are satellite 2 at emission, satellite 1 at reception
         final TimeStampedPVCoordinates[] participants  = estimated.getParticipants();
@@ -115,7 +115,7 @@ public class OnBoardAntennaInterSatellitesRangeModifier implements EstimationMod
     /** Apply a modifier to an estimated measurement in the two-way case.
      * @param estimated estimated measurement to modify
      */
-    private void modifyTwoWay(final EstimatedMeasurement<InterSatellitesRange> estimated) {
+    private void modifyTwoWay(final EstimatedMeasurementBase<InterSatellitesRange> estimated) {
 
         // the participants are satellite 1 at emission, satellite 2 at transit, satellite 1 at reception
         final TimeStampedPVCoordinates[] participants  = estimated.getParticipants();
