@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.junit.jupiter.api.Assertions;
@@ -23,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSRange;
@@ -39,8 +41,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.List;
 
 public class ShapiroOneWayGNSSRangeModifierTest {
 
@@ -93,7 +93,7 @@ public class ShapiroOneWayGNSSRangeModifierTest {
                 p3.propagate(sr.getDate()),
                 ephemeris.propagate(sr.getDate())
             };
-            EstimatedMeasurement<OneWayGNSSRange> evalNoMod = sr.estimate(0, 0, states);
+            EstimatedMeasurementBase<OneWayGNSSRange> evalNoMod = sr.estimateWithoutDerivatives(0, 0, states);
 
             // add modifier
             sr.addModifier(modifier);
@@ -102,7 +102,7 @@ public class ShapiroOneWayGNSSRangeModifierTest {
                 found = found || existing == modifier;
             }
             Assertions.assertTrue(found);
-            EstimatedMeasurement<OneWayGNSSRange> eval = sr.estimate(0, 0, states);
+            EstimatedMeasurementBase<OneWayGNSSRange> eval = sr.estimateWithoutDerivatives(0, 0, states);
 
             stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
 

@@ -29,9 +29,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class modeling a range measurement from a ground station.
  * <p>
@@ -94,6 +94,68 @@ public class Range extends GroundReceiverMeasurement<Range> {
                  final double range, final double sigma, final double baseWeight,
                  final ObservableSatellite satellite) {
         super(station, twoWay, date, range, sigma, baseWeight, satellite);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EstimatedMeasurementBase<Range> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                      final int evaluation,
+                                                                                      final SpacecraftState[] states) {
+
+        final GroundReceiverCommonParametersWithoutDerivatives common = computeCommonParameters(states[0]);
+        final TimeStampedPVCoordinates transitPV = common.getTransitState().getPVCoordinates();
+
+        // prepare the evaluation
+        final EstimatedMeasurementBase<Range> estimated;
+        final double range;
+
+        if (isTwoWay()) {
+
+            // Station at transit state date (derivatives of tauD taken into account)
+            final TimeStampedPVCoordinates stationAtTransitDate = common.getStationDownlink().shiftedBy(-common.getTauD());
+            // Uplink delay
+            final double tauU = signalTimeOfFlight(stationAtTransitDate, transitPV.getPosition(), transitPV.getDate());
+            final TimeStampedPVCoordinates stationUplink = common.getStationDownlink().shiftedBy(-common.getTauD() - tauU);
+
+            // Prepare the evaluation
+            estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                        new SpacecraftState[] {
+                                                            common.getTransitState()
+                                                        }, new TimeStampedPVCoordinates[] {
+                                                            stationUplink,
+                                                            transitPV,
+                                                            common.getStationDownlink()
+                                                        });
+
+            // Range value
+            final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
+            final double tau    = common.getTauD() + tauU;
+            range               = tau * cOver2;
+
+        } else {
+
+            estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       new SpacecraftState[] {
+                                                           common.getTransitState()
+                                                       }, new TimeStampedPVCoordinates[] {
+                                                           transitPV,
+                                                           common.getStationDownlink()
+                                                       });
+
+            // Clock offsets
+            final ObservableSatellite satellite = getSatellites().get(0);
+            final double              dts       = satellite.getClockOffsetDriver().getValue(common.getState().getDate());
+            final double              dtg       = getStation().getClockOffsetDriver().getValue(common.getState().getDate());
+
+            // Range value
+            range = (common.getTauD() + dtg - dts) * Constants.SPEED_OF_LIGHT;
+
+        }
+
+        estimated.setEstimatedValue(range);
+
+        return estimated;
+
     }
 
     /** {@inheritDoc} */

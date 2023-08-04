@@ -20,7 +20,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.utils.Constants;
@@ -66,7 +66,7 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifier extends AbstractRelativi
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<OneWayGNSSPhase> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<OneWayGNSSPhase> estimated) {
         // Relativistic clock correction
         final double dtJ2 = relativisticJ2Correction(estimated);
 

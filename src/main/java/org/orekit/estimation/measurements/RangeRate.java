@@ -23,7 +23,9 @@ import java.util.Map;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.FieldTransform;
+import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -66,6 +68,61 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
                      final double rangeRate, final double sigma, final double baseWeight,
                      final boolean twoway, final ObservableSatellite satellite) {
         super(station, twoway, date, rangeRate, sigma, baseWeight, satellite);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EstimatedMeasurementBase<RangeRate> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                          final int evaluation,
+                                                                                          final SpacecraftState[] states) {
+
+        final GroundReceiverCommonParametersWithoutDerivatives common = computeCommonParameters(states[0]);
+        final TimeStampedPVCoordinates transitPV = common.getTransitPV();
+
+        // one-way (downlink) range-rate
+        final EstimatedMeasurementBase<RangeRate> evalOneWay1 =
+                        oneWayTheoreticalEvaluation(iteration, evaluation, true,
+                                                    common.getStationDownlink(),
+                                                    transitPV,
+                                                    common.getTransitState());
+        final EstimatedMeasurementBase<RangeRate> estimated;
+        if (isTwoWay()) {
+            // one-way (uplink) light time correction
+            final Transform offsetToInertialApproxUplink =
+                            getStation().getOffsetToInertial(common.getState().getFrame(),
+                                                             common.getStationDownlink().getDate().shiftedBy(-2 * common.getTauD()),
+                                                             false);
+            final AbsoluteDate approxUplinkDate = offsetToInertialApproxUplink.getDate();
+
+            final TimeStampedPVCoordinates stationApproxUplink =
+                            offsetToInertialApproxUplink.transformPVCoordinates(new TimeStampedPVCoordinates(approxUplinkDate,
+                                                                                                             Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
+
+            final double tauU = signalTimeOfFlight(stationApproxUplink, transitPV.getPosition(), transitPV.getDate());
+
+            final TimeStampedPVCoordinates stationUplink =
+                            stationApproxUplink.shiftedBy(transitPV.getDate().durationFrom(approxUplinkDate) - tauU);
+
+            final EstimatedMeasurementBase<RangeRate> evalOneWay2 =
+                            oneWayTheoreticalEvaluation(iteration, evaluation, false,
+                                                        stationUplink, transitPV, common.getTransitState());
+
+            // combine uplink and downlink values
+            estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       evalOneWay1.getStates(),
+                                                       new TimeStampedPVCoordinates[] {
+                                                           evalOneWay2.getParticipants()[0],
+                                                           evalOneWay1.getParticipants()[0],
+                                                           evalOneWay1.getParticipants()[1]
+                                                       });
+            estimated.setEstimatedValue(0.5 * (evalOneWay1.getEstimatedValue()[0] + evalOneWay2.getEstimatedValue()[0]));
+
+        } else {
+            estimated = evalOneWay1;
+        }
+
+        return estimated;
+
     }
 
     /** {@inheritDoc} */
@@ -187,6 +244,65 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
         } else {
             estimated = evalOneWay1;
         }
+
+        return estimated;
+
+    }
+
+    /** Evaluate measurement in one-way without derivatives.
+     * @param iteration iteration number
+     * @param evaluation evaluations counter
+     * @param downlink indicator for downlink leg
+     * @param stationPV station coordinates when signal is at station
+     * @param transitPV spacecraft coordinates at onboard signal transit
+     * @param transitState orbital state at onboard signal transit
+     * @return theoretical value
+     * @see #evaluate(SpacecraftStatet)
+     * @since 12.0
+     */
+    private EstimatedMeasurementBase<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int evaluation, final boolean downlink,
+                                                                            final TimeStampedPVCoordinates stationPV,
+                                                                            final TimeStampedPVCoordinates transitPV,
+                                                                            final SpacecraftState transitState) {
+
+        // prepare the evaluation
+        final EstimatedMeasurementBase<RangeRate> estimated =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       new SpacecraftState[] {
+                                                           transitState
+                                                       }, new TimeStampedPVCoordinates[] {
+                                                           downlink ? transitPV : stationPV,
+                                                           downlink ? stationPV : transitPV
+                                                       });
+
+        // range rate value
+        final Vector3D stationPosition  = stationPV.getPosition();
+        final Vector3D relativePosition = stationPosition.subtract(transitPV.getPosition());
+
+        final Vector3D stationVelocity  = stationPV.getVelocity();
+        final Vector3D relativeVelocity = stationVelocity.subtract(transitPV.getVelocity());
+
+        // radial direction
+        final Vector3D lineOfSight      = relativePosition.normalize();
+
+        // line of sight velocity
+        final double lineOfSightVelocity = Vector3D.dotProduct(relativeVelocity, lineOfSight);
+
+        // range rate
+        double rangeRate = lineOfSightVelocity;
+
+        if (!isTwoWay()) {
+            // clock drifts, taken in account only in case of one way
+            final ObservableSatellite satellite    = getSatellites().get(0);
+            final double              dtsDot       = satellite.getClockDriftDriver().getValue(transitState.getDate());
+            final double              dtgDot       = getStation().getClockDriftDriver().getValue(stationPV.getDate());
+
+            final double clockDriftBiais = (dtgDot - dtsDot) * Constants.SPEED_OF_LIGHT;
+
+            rangeRate = rangeRate + clockDriftBiais;
+        }
+
+        estimated.setEstimatedValue(rangeRate);
 
         return estimated;
 

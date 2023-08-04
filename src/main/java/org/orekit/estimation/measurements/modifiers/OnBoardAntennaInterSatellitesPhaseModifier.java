@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
 import org.orekit.frames.Transform;
@@ -61,7 +61,7 @@ public class OnBoardAntennaInterSatellitesPhaseModifier implements EstimationMod
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<InterSatellitesPhase> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<InterSatellitesPhase> estimated) {
 
         // The participants are satellite 2 at emission, satellite 1 at reception
         final TimeStampedPVCoordinates[] participants  = estimated.getParticipants();
@@ -96,6 +96,5 @@ public class OnBoardAntennaInterSatellitesPhaseModifier implements EstimationMod
         estimated.setEstimatedValue(value);
 
     }
-
 
 }

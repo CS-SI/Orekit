@@ -24,6 +24,8 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
+import org.orekit.estimation.measurements.GroundReceiverCommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.GroundReceiverMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -104,6 +106,40 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
 
     /** {@inheritDoc} */
     @Override
+    protected EstimatedMeasurementBase<Phase> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                      final int evaluation,
+                                                                                      final SpacecraftState[] states) {
+
+        final GroundReceiverCommonParametersWithoutDerivatives common = computeCommonParameters(states[0]);
+
+        // prepare the evaluation
+        final EstimatedMeasurementBase<Phase> estimated =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       new SpacecraftState[] {
+                                                           common.getTransitState()
+                                                       }, new TimeStampedPVCoordinates[] {
+                                                           common.getTransitPV(),
+                                                           common.getStationDownlink()
+                                                       });
+
+        // Clock offsets
+        final ObservableSatellite satellite = getSatellites().get(0);
+        final double              dts       = satellite.getClockOffsetDriver().getValue(common.getState().getDate());
+        final double              dtg       = getStation().getClockOffsetDriver().getValue(getDate());
+
+        // Phase value
+        final double cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
+        final double ambiguity   = ambiguityDriver.getValue(common.getState().getDate());
+        final double phase       = (common.getTauD() + dtg - dts) * cOverLambda + ambiguity;
+
+        estimated.setEstimatedValue(phase);
+
+        return estimated;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected EstimatedMeasurement<Phase> theoreticalEvaluation(final int iteration,
                                                                 final int evaluation,
                                                                 final SpacecraftState[] states) {
@@ -170,7 +206,7 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
         // Clock offsets
         final ObservableSatellite satellite = getSatellites().get(0);
         final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, indices, state.getDate());
-        final Gradient            dtg       = getStation().getClockOffsetDriver().getValue(nbParams, indices, state.getDate());
+        final Gradient            dtg       = getStation().getClockOffsetDriver().getValue(nbParams, indices, getDate());
 
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;

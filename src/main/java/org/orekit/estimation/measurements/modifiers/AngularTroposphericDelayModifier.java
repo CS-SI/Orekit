@@ -21,7 +21,7 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.orekit.estimation.measurements.AngularAzEl;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
@@ -90,7 +90,7 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<AngularAzEl> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<AngularAzEl> estimated) {
         final AngularAzEl     measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
         final SpacecraftState state   = estimated.getStates()[0];
@@ -117,4 +117,5 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
         // Azimuth - elevation values
         estimated.setEstimatedValue(azimuth, elevation);
     }
+
 }

@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -39,6 +40,31 @@ class TDOAModifierUtil {
     /** Private constructor for utility class.*/
     private TDOAModifierUtil() {
         // not used
+    }
+
+    /** Apply a modifier to an estimated measurement.
+     * @param <T> type of the measurement
+     * @param estimated estimated measurement to modify
+     * @param primeStation prime station
+     * @param secondStation second station
+     * @param modelEffect model effect
+     */
+    public static <T extends ObservedMeasurement<T>> void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated,
+                                                                                   final GroundStation primeStation,
+                                                                                   final GroundStation secondStation,
+                                                                                   final ParametricModelEffect modelEffect) {
+
+        final SpacecraftState state       = estimated.getStates()[0];
+        final double[]        oldValue    = estimated.getEstimatedValue();
+        final double          primeDelay  = modelEffect.evaluate(primeStation, state);
+        final double          secondDelay = modelEffect.evaluate(secondStation, state);
+
+        // Update estimated value taking into account the ionospheric delay for each downlink.
+        // The ionospheric time delay is directly applied to the TDOA.
+        final double[] newValue = oldValue.clone();
+        newValue[0] += primeDelay;
+        newValue[0] -= secondDelay;
+        estimated.setEstimatedValue(newValue);
     }
 
     /** Apply a modifier to an estimated measurement.

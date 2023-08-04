@@ -24,6 +24,8 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.frames.FieldTransform;
 import org.orekit.propagation.SpacecraftState;
@@ -60,6 +62,46 @@ public class AngularAzEl extends GroundReceiverMeasurement<AngularAzEl> {
                        final double[] angular, final double[] sigma, final double[] baseWeight,
                        final ObservableSatellite satellite) {
         super(station, false, date, angular, sigma, baseWeight, satellite);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EstimatedMeasurementBase<AngularAzEl> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                            final int evaluation,
+                                                                                            final SpacecraftState[] states) {
+
+        final GroundReceiverCommonParametersWithoutDerivatives common = computeCommonParameters(states[0]);
+        final TimeStampedPVCoordinates transitPV = common.getTransitPV();
+
+        // Station topocentric frame (east-north-zenith) in inertial frame expressed as Gradient
+        final Vector3D east   = common.getOffsetToInertialDownlink().transformVector(Vector3D.PLUS_I);
+        final Vector3D north  = common.getOffsetToInertialDownlink().transformVector(Vector3D.PLUS_J);
+        final Vector3D zenith = common.getOffsetToInertialDownlink().transformVector(Vector3D.PLUS_K);
+
+        // Station-satellite vector expressed in inertial frame
+        final Vector3D staSat = transitPV.getPosition().subtract(common.getStationDownlink().getPosition());
+
+        // Compute azimuth/elevation
+        final double baseAzimuth = FastMath.atan2(staSat.dotProduct(east), staSat.dotProduct(north));
+        final double twoPiWrap   = MathUtils.normalizeAngle(baseAzimuth, getObservedValue()[0]) - baseAzimuth;
+        final double azimuth     = baseAzimuth + twoPiWrap;
+        final double elevation   = FastMath.asin(staSat.dotProduct(zenith) / staSat.getNorm());
+
+        // Prepare the estimation
+        final EstimatedMeasurementBase<AngularAzEl> estimated =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       new SpacecraftState[] {
+                                                           common.getTransitState()
+                                                       }, new TimeStampedPVCoordinates[] {
+                                                           transitPV,
+                                                           common.getStationDownlink()
+                                                       });
+
+        // azimuth - elevation values
+        estimated.setEstimatedValue(azimuth, elevation);
+
+        return estimated;
+
     }
 
     /** {@inheritDoc} */
@@ -172,5 +214,7 @@ public class AngularAzEl extends GroundReceiverMeasurement<AngularAzEl> {
         }
 
         return estimated;
+
     }
+
 }

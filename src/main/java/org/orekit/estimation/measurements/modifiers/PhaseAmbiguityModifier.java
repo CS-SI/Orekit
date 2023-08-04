@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.List;
 
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.utils.ParameterDriver;
@@ -49,6 +50,11 @@ public class PhaseAmbiguityModifier extends AbstractAmbiguityModifier implements
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return getDrivers();
+    }
+
+    @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Phase> estimated) {
+        doModifyWithoutDerivatives(estimated);
     }
 
     @Override

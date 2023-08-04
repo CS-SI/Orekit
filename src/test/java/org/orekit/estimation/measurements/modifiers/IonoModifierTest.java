@@ -38,17 +38,18 @@ import org.orekit.estimation.measurements.BistaticRangeMeasurementCreator;
 import org.orekit.estimation.measurements.BistaticRangeRate;
 import org.orekit.estimation.measurements.BistaticRangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.TDOA;
 import org.orekit.estimation.measurements.TDOAMeasurementCreator;
 import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.estimation.measurements.TurnAroundRangeMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
 import org.orekit.frames.TopocentricFrame;
@@ -122,7 +123,7 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(date);
 
             Phase phase = (Phase) measurement;
-            EstimatedMeasurement<Phase> evalNoMod = phase.estimate(12, 17, new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<Phase> evalNoMod = phase.estimateWithoutDerivatives(12, 17, new SpacecraftState[] { refstate });
             Assertions.assertEquals(12, evalNoMod.getIteration());
             Assertions.assertEquals(17, evalNoMod.getCount());
 
@@ -195,7 +196,7 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(date);
 
             Phase phase = (Phase) measurement;
-            EstimatedMeasurement<Phase> evalNoMod = phase.estimate(12, 17, new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<Phase> evalNoMod = phase.estimateWithoutDerivatives(12, 17,new SpacecraftState[] { refstate });
             Assertions.assertEquals(12, evalNoMod.getIteration());
             Assertions.assertEquals(17, evalNoMod.getCount());
 
@@ -259,7 +260,7 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(date);
 
             Range range = (Range) measurement;
-            EstimatedMeasurement<Range> evalNoMod = range.estimate(12, 17, new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<Range> evalNoMod = range.estimateWithoutDerivatives(12, 17, new SpacecraftState[] { refstate });
             Assertions.assertEquals(12, evalNoMod.getIteration());
             Assertions.assertEquals(17, evalNoMod.getCount());
 
@@ -324,13 +325,13 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(date);
 
             RangeRate rangeRate = (RangeRate) measurement;
-            EstimatedMeasurement<RangeRate> evalNoMod = rangeRate.estimate(0, 0, new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<RangeRate> evalNoMod = rangeRate.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refstate });
 
             // add modifier
             rangeRate.addModifier(modifier);
 
             //
-            EstimatedMeasurement<RangeRate> eval = rangeRate.estimate(0, 0, new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<RangeRate> eval = rangeRate.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refstate });
 
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
@@ -378,7 +379,7 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(date);
 
             TurnAroundRange turnAroundRange = (TurnAroundRange) measurement;
-            EstimatedMeasurement<TurnAroundRange> evalNoMod = turnAroundRange.estimate(12, 17, new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<TurnAroundRange> evalNoMod = turnAroundRange.estimateWithoutDerivatives(12, 17, new SpacecraftState[] { refstate });
             Assertions.assertEquals(12, evalNoMod.getIteration());
             Assertions.assertEquals(17, evalNoMod.getCount());
 
@@ -445,13 +446,14 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(biRange.getDate());
 
             // Estimate without modifier
-            EstimatedMeasurement<BistaticRange> evalNoMod = biRange.estimate(0, 0, new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<BistaticRange> evalNoMod = biRange.estimateWithoutDerivatives(0, 0,
+                                                                                                   new SpacecraftState[] { refstate });
 
             // add modifier
             biRange.addModifier(modifier);
 
             // Estimate with modifier
-            EstimatedMeasurement<BistaticRange> eval = biRange.estimate(0, 0, new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<BistaticRange> eval = biRange.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refstate });
 
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
@@ -494,13 +496,15 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(biRangeRate.getDate());
 
             // Estimate without modifier
-            EstimatedMeasurement<BistaticRangeRate> evalNoMod = biRangeRate.estimate(0, 0, new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<BistaticRangeRate> evalNoMod = biRangeRate.estimateWithoutDerivatives(0, 0,
+                                                                                                           new SpacecraftState[] { refstate });
 
             // add modifier
             biRangeRate.addModifier(modifier);
 
             // Estimate with modifier
-            EstimatedMeasurement<BistaticRangeRate> eval = biRangeRate.estimate(0, 0, new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<BistaticRangeRate> eval = biRangeRate.estimateWithoutDerivatives(0, 0,
+                                                                                                      new SpacecraftState[] { refstate });
 
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
@@ -546,7 +550,7 @@ public class IonoModifierTest {
             final SpacecraftState refState = propagator.propagate(tdoa.getDate());
 
             // Estimate without modifier
-            EstimatedMeasurement<TDOA> evalNoMod = tdoa.estimate(0, 0, new SpacecraftState[] { refState });
+            EstimatedMeasurementBase<TDOA> evalNoMod = tdoa.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
 
             // add modifier
             tdoa.addModifier(modifier);
@@ -596,12 +600,13 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(date);
 
             AngularAzEl angular = (AngularAzEl) measurement;
-            EstimatedMeasurement<AngularAzEl> evalNoMod = angular.estimate(0, 0, new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<AngularAzEl> evalNoMod = angular.estimateWithoutDerivatives(0, 0,
+                                                                                                 new SpacecraftState[] { refstate });
 
             // add modifier
             angular.addModifier(modifier);
             //
-            EstimatedMeasurement<AngularAzEl> eval = angular.estimate(0, 0, new SpacecraftState[] { refstate });
+            EstimatedMeasurementBase<AngularAzEl> eval = angular.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refstate });
 
             final double diffAz = MathUtils.normalizeAngle(eval.getEstimatedValue()[0], evalNoMod.getEstimatedValue()[0]) - evalNoMod.getEstimatedValue()[0];
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];

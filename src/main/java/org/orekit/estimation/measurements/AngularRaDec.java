@@ -29,6 +29,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -79,6 +80,48 @@ public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec> {
      */
     public Frame getReferenceFrame() {
         return referenceFrame;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EstimatedMeasurementBase<AngularRaDec> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                             final int evaluation,
+                                                                                             final SpacecraftState[] states) {
+
+        final GroundReceiverCommonParametersWithoutDerivatives common = computeCommonParameters(states[0]);
+        final TimeStampedPVCoordinates transitPV = common.getTransitPV();
+
+        // Station-satellite vector expressed in inertial frame
+        final Vector3D staSatInertial = transitPV.getPosition().subtract(common.getStationDownlink().getPosition());
+
+        // Field transform from inertial to reference frame at station's reception date
+        final Transform inertialToReferenceDownlink = common.getState().getFrame().
+                                                      getTransformTo(referenceFrame, common.getStationDownlink().getDate());
+
+        // Station-satellite vector in reference frame
+        final Vector3D staSatReference = inertialToReferenceDownlink.transformVector(staSatInertial);
+
+        // Compute right ascension and declination
+        final double baseRightAscension = staSatReference.getAlpha();
+        final double twoPiWrap          = MathUtils.normalizeAngle(baseRightAscension, getObservedValue()[0]) - baseRightAscension;
+        final double rightAscension     = baseRightAscension + twoPiWrap;
+        final double declination        = staSatReference.getDelta();
+
+        // Prepare the estimation
+        final EstimatedMeasurementBase<AngularRaDec> estimated =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       new SpacecraftState[] {
+                                                           common.getTransitState()
+                                                       }, new TimeStampedPVCoordinates[] {
+                                                           transitPV,
+                                                           common.getStationDownlink()
+                                                       });
+
+        // azimuth - elevation values
+        estimated.setEstimatedValue(rightAscension, declination);
+
+        return estimated;
+
     }
 
     /** {@inheritDoc} */
@@ -192,6 +235,7 @@ public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec> {
         }
 
         return estimated;
+
     }
 
     /** Calculate the Line Of Sight of the given Radec.
@@ -214,12 +258,13 @@ public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec> {
         final TimeStampedPVCoordinates satPV       = prop.getPVCoordinates(date, gcrf);
         final AbsolutePVCoordinates    satPVInGCRF = new AbsolutePVCoordinates(gcrf, satPV);
         final SpacecraftState[]        satState    = new SpacecraftState[] { new SpacecraftState(satPVInGCRF) };
-        final double[]                 angular     = this.estimate(0, 0, satState).getEstimatedValue();
+        final double[]                 angular     = this.estimateWithoutDerivatives(0, 0, satState).getEstimatedValue();
 
         final double ra = angular[0];
         final double dec = angular[1];
 
         return new Vector3D(ra, dec);
+
     }
 
 }

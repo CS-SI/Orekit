@@ -72,7 +72,9 @@ public class TLEPVTest {
             final double[][] finiteDifferencesJacobian =
                 Differentiation.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) {
-                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                        return measurement.
+                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                               getEstimatedValue();
                     }
                                                   }, measurement.getDimension(),
                                                   propagator.getAttitudeProvider(), OrbitType.CARTESIAN,

@@ -26,6 +26,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.gnss.Phase;
@@ -178,13 +179,27 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<Phase> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Phase> estimated) {
+
         final Phase           measurement = estimated.getObservedMeasurement();
         final GroundStation   station     = measurement.getStation();
         final SpacecraftState state       = estimated.getStates()[0];
 
-        // Old range value
-        final double[] oldValue = estimated.getEstimatedValue();
+        // Update estimated value taking into account the tropospheric delay.
+        // The tropospheric delay is directly added to the phase.
+        final double[] newValue = estimated.getEstimatedValue();
+        final double delay = phaseErrorTroposphericModel(station, state, measurement.getWavelength());
+        newValue[0] = newValue[0] + delay;
+        estimated.setEstimatedValue(newValue);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void modify(final EstimatedMeasurement<Phase> estimated) {
+        final Phase           measurement = estimated.getObservedMeasurement();
+        final GroundStation   station     = measurement.getStation();
+        final SpacecraftState state       = estimated.getStates()[0];
 
         // update estimated derivatives with Jacobian of the measure wrt state
         final ModifierGradientConverter converter = new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame()));
@@ -236,10 +251,8 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         }
 
         // Update estimated value taking into account the tropospheric delay.
-        // The tropospheric delay is directly added to the phase.
-        final double[] newValue = oldValue.clone();
-        newValue[0] = newValue[0] + gDelay.getReal();
-        estimated.setEstimatedValue(newValue);
+        modifyWithoutDerivatives(estimated);
+
     }
 
 }

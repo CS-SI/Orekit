@@ -172,11 +172,11 @@ public class InterSatellitesRangeTest {
 
                     // Values of the Range & errors
                     final double RangeObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0,
-                                                                                   new SpacecraftState[] {
-                                                                                       state,
-                                                                                       ephemeris.propagate(state.getDate())
-                                                                                   });
+                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
+                                                                                                         new SpacecraftState[] {
+                                                                                                             state,
+                                                                                                             ephemeris.propagate(state.getDate())
+                                                                                                         });
 
                     final InterSatellitesRange isr = (InterSatellitesRange) estimated.getObservedMeasurement();
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
@@ -330,7 +330,7 @@ public class InterSatellitesRangeTest {
                         public double[] value(final SpacecraftState state) {
                             final SpacecraftState[] s = states.clone();
                             s[index] = state;
-                            return measurement.estimate(0, 0, s).getEstimatedValue();
+                            return measurement.estimateWithoutDerivatives(0, 0, s).getEstimatedValue();
                         }
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
                        OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(states[index]);
@@ -517,7 +517,9 @@ public class InterSatellitesRangeTest {
                                                 /** {@inheritDoc} */
                                                 @Override
                                                 public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
-                                                    return measurement.estimate(0, 0, states).getEstimatedValue()[0];
+                                                    return measurement.
+                                                           estimateWithoutDerivatives(0, 0, states).
+                                                           getEstimatedValue()[0];
                                                 }
                                             }, 3, 20.0 * drivers[i].getScale());
                             final double ref = dMkdP.value(drivers[i], span.getStart());

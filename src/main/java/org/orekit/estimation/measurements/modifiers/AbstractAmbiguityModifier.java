@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 
@@ -62,18 +63,31 @@ public class AbstractAmbiguityModifier {
     /** Modify measurement.
      * @param estimated measurement to modify
      */
-    protected void doModify(final EstimatedMeasurement<?> estimated) {
+    protected void doModifyWithoutDerivatives(final EstimatedMeasurementBase<?> estimated) {
         // Apply the ambiguity to the measurement value
         for (Span<String> span = ambiguity.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
             final double[] value = estimated.getEstimatedValue();
             value[0] += ambiguity.getValue(span.getStart());
+            estimated.setEstimatedValue(value);
+        }
+    }
+
+    /** Modify measurement.
+     * @param estimated measurement to modify
+     */
+    protected void doModify(final EstimatedMeasurement<?> estimated) {
+
+        // apply the ambiguity to the measurement derivatives
+        for (Span<String> span = ambiguity.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
             if (ambiguity.isSelected()) {
             // add the partial derivatives
                 estimated.setParameterDerivatives(ambiguity, span.getStart(), 1.0);
             }
-            estimated.setEstimatedValue(value);
         }
+
+        // apply the ambiguity to the measurement value
+        doModifyWithoutDerivatives(estimated);
+
     }
 
 }

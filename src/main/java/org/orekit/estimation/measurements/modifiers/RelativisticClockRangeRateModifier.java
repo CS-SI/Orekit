@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.propagation.SpacecraftState;
@@ -58,7 +58,7 @@ public class RelativisticClockRangeRateModifier extends AbstractRelativisticCloc
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<RangeRate> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<RangeRate> estimated) {
         // Spacecraft state
         final SpacecraftState state = estimated.getStates()[0];
 

@@ -17,7 +17,7 @@
 package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -46,7 +46,7 @@ public class AbstractRelativisticClockModifier {
      * @param estimated estimated measurement
      * @return the relativistic clock correction in seconds
      */
-    protected double relativisticCorrection(final EstimatedMeasurement<?> estimated) {
+    protected double relativisticCorrection(final EstimatedMeasurementBase<?> estimated) {
         // Participants
         final TimeStampedPVCoordinates[] pv = estimated.getParticipants();
         // Relativistic clock correction taking into account two-ways measurements

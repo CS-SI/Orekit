@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -23,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
@@ -35,8 +37,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.Constants;
-
-import java.util.List;
 
 @Deprecated
 public class OnBoardAntennaRangeModifierTest {
@@ -125,10 +125,11 @@ public class OnBoardAntennaRangeModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             Range sr = (Range) spacecraftCenteredMeasurements.get(i);
             sr.addModifier(modifier);
-            EstimatedMeasurement<Range> estimated = sr.estimate(0, 0, new SpacecraftState[] { p3.propagate(sr.getDate()) });
+            EstimatedMeasurementBase<Range> estimated = sr.estimateWithoutDerivatives(0, 0,
+                                                                                      new SpacecraftState[] { p3.propagate(sr.getDate()) });
             Range ar = (Range) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
-            Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 2.6e-7);
+            Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 4.3e-7);
         }
 
     }

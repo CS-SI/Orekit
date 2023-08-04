@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSRange;
 import org.orekit.frames.Transform;
@@ -70,7 +70,7 @@ public class OnBoardAntennaOneWayGNSSRangeModifier implements EstimationModifier
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<OneWayGNSSRange> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<OneWayGNSSRange> estimated) {
 
         // The participants are remote satellite at emission, local satellite at reception
         final TimeStampedPVCoordinates[] participants  = estimated.getParticipants();

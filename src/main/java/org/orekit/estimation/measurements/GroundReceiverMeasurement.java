@@ -18,7 +18,11 @@ package org.orekit.estimation.measurements;
 
 import java.util.Collections;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.frames.Transform;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Base class modeling a measurement where receiver is a ground station.
  * @author Thierry Ceolin
@@ -42,7 +46,6 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
-     * @since 12.0
      */
     public GroundReceiverMeasurement(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
                                      final double observed, final double sigma, final double baseWeight,
@@ -76,7 +79,6 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
-     * @since 12.0
      */
     public GroundReceiverMeasurement(final GroundStation station, final boolean twoWay, final AbsoluteDate date,
                                      final double[] observed, final double[] sigma, final double[] baseWeight,
@@ -114,6 +116,46 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
      */
     public boolean isTwoWay() {
         return twoway;
+    }
+
+    /** Compute common estimation parameters.
+     * @param state orbital state at measurement date
+     * @return common parameters
+     */
+    protected GroundReceiverCommonParametersWithoutDerivatives computeCommonParameters(final SpacecraftState state) {
+
+        // Coordinates of the spacecraft
+        final TimeStampedPVCoordinates pva = state.getPVCoordinates();
+
+        // transform between station and inertial frame
+        final Transform offsetToInertialDownlink =
+                        getStation().getOffsetToInertial(state.getFrame(), getDate(), false);
+        final AbsoluteDate downlinkDate = offsetToInertialDownlink.getDate();
+
+        // Station position in inertial frame at end of the downlink leg
+        final TimeStampedPVCoordinates origin = new TimeStampedPVCoordinates(downlinkDate,
+                                                                             Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
+        final TimeStampedPVCoordinates stationDownlink = offsetToInertialDownlink.transformPVCoordinates(origin);
+
+        // Compute propagation times
+        // (if state has already been set up to pre-compensate propagation delay,
+        //  we will have delta == tauD and transitState will be the same as state)
+
+        // Downlink delay
+        final double tauD = signalTimeOfFlight(pva, stationDownlink.getPosition(), downlinkDate);
+
+        // Transit state & Transit state (re)computed with gradients
+        final double          delta        = downlinkDate.durationFrom(state.getDate());
+        final double          deltaMTauD   = delta - tauD;
+        final SpacecraftState transitState = state.shiftedBy(deltaMTauD);
+
+        return new GroundReceiverCommonParametersWithoutDerivatives(state,
+                                                                    offsetToInertialDownlink,
+                                                                    stationDownlink,
+                                                                    tauD,
+                                                                    transitState,
+                                                                    transitState.getPVCoordinates());
+
     }
 
 }
