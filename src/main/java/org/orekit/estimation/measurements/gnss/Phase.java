@@ -17,26 +17,20 @@
 package org.orekit.estimation.measurements.gnss;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
+import org.orekit.estimation.measurements.GroundReceiverCommonParametersWithDerivatives;
 import org.orekit.estimation.measurements.GroundReceiverCommonParametersWithoutDerivatives;
 import org.orekit.estimation.measurements.GroundReceiverMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.frames.FieldTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling a phase measurement from a ground station.
@@ -110,7 +104,7 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
                                                                                       final int evaluation,
                                                                                       final SpacecraftState[] states) {
 
-        final GroundReceiverCommonParametersWithoutDerivatives common = computeCommonParameters(states[0]);
+        final GroundReceiverCommonParametersWithoutDerivatives common = computeCommonParametersWithout(states[0]);
 
         // prepare the evaluation
         final EstimatedMeasurementBase<Phase> estimated =
@@ -154,64 +148,28 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
         //  - 0..2 - Position of the spacecraft in inertial frame
         //  - 3..5 - Velocity of the spacecraft in inertial frame
         //  - 6..n - station parameters (ambiguity, clock offset, station offsets, pole, prime meridian...)
-        int nbParams = 6;
-        final Map<String, Integer> indices = new HashMap<>();
-        for (ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isSelected()) {
-                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    indices.put(span.getData(), nbParams++);
-                }
-            }
-        }
-        final FieldVector3D<Gradient> zero = FieldVector3D.getZero(GradientField.getField(nbParams));
-
-        // Coordinates of the spacecraft expressed as a gradient
-        final TimeStampedFieldPVCoordinates<Gradient> pvaDS = getCoordinates(state, 0, nbParams);
-
-        // transform between station and inertial frame, expressed as a gradient
-        // The components of station's position in offset frame are the 3 last derivative parameters
-        final FieldTransform<Gradient> offsetToInertialDownlink =
-                        getStation().getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
-        final FieldAbsoluteDate<Gradient> downlinkDateDS =
-                        offsetToInertialDownlink.getFieldDate();
-
-        // Station position in inertial frame at end of the downlink leg
-        final TimeStampedFieldPVCoordinates<Gradient> stationDownlink =
-                        offsetToInertialDownlink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(downlinkDateDS,
-                                                                                                            zero, zero, zero));
-
-        // Compute propagation times
-        // (if state has already been set up to pre-compensate propagation delay,
-        //  we will have delta == tauD and transitState will be the same as state)
-
-        // Downlink delay
-        final Gradient tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
-
-        // Transit state & Transit state (re)computed with gradients
-        final Gradient        delta        = downlinkDateDS.durationFrom(state.getDate());
-        final Gradient        deltaMTauD   = tauD.negate().add(delta);
-        final SpacecraftState transitState = state.shiftedBy(deltaMTauD.getValue());
-        final TimeStampedFieldPVCoordinates<Gradient> transitStateDS = pvaDS.shiftedBy(deltaMTauD);
+        final GroundReceiverCommonParametersWithDerivatives common = computeCommonParametersWithDerivatives(state);
+        final int nbParams = common.getTauD().getFreeParameters();
 
         // prepare the evaluation
         final EstimatedMeasurement<Phase> estimated =
                         new EstimatedMeasurement<Phase>(this, iteration, evaluation,
                                                         new SpacecraftState[] {
-                                                            transitState
+                                                            common.getTransitState()
                                                         }, new TimeStampedPVCoordinates[] {
-                                                            transitStateDS.toTimeStampedPVCoordinates(),
-                                                            stationDownlink.toTimeStampedPVCoordinates()
+                                                            common.getTransitPV().toTimeStampedPVCoordinates(),
+                                                            common.getStationDownlink().toTimeStampedPVCoordinates()
                                                         });
 
         // Clock offsets
         final ObservableSatellite satellite = getSatellites().get(0);
-        final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, indices, state.getDate());
-        final Gradient            dtg       = getStation().getClockOffsetDriver().getValue(nbParams, indices, getDate());
+        final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
+        final Gradient            dtg       = getStation().getClockOffsetDriver().getValue(nbParams, common.getIndices(), getDate());
 
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
-        final Gradient ambiguity   = ambiguityDriver.getValue(nbParams, indices, state.getDate());
-        final Gradient phase       = tauD.add(dtg).subtract(dts).multiply(cOverLambda).add(ambiguity);
+        final Gradient ambiguity   = ambiguityDriver.getValue(nbParams, common.getIndices(), state.getDate());
+        final Gradient phase       = common.getTauD().add(dtg).subtract(dts).multiply(cOverLambda).add(ambiguity);
 
         estimated.setEstimatedValue(phase.getValue());
 
@@ -224,7 +182,7 @@ public class Phase extends GroundReceiverMeasurement<Phase> {
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
-                final Integer index = indices.get(span.getData());
+                final Integer index = common.getIndices().get(span.getData());
                 if (index != null) {
                     estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
                 }
