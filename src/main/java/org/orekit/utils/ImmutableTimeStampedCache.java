@@ -45,11 +45,6 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
     implements TimeStampedCache<T> {
 
     /**
-     * A single chronological comparator since instances are thread safe.
-     */
-    private static final ChronologicalComparator CMP = new ChronologicalComparator();
-
-    /**
      * An empty immutable cache that always throws an exception on attempted
      * access.
      */
@@ -67,6 +62,16 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
      * the size list to return from {@link #getNeighbors(AbsoluteDate)}.
      */
     private final int neighborsSize;
+
+    /** Earliest date.
+     * @since 12.0
+     */
+    private final AbsoluteDate earliestDate;
+
+    /** Latest date.
+     * @since 12.0
+     */
+    private final AbsoluteDate latestDate;
 
     /**
      * Create a new cache with the given neighbors size and data.
@@ -96,16 +101,22 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
         // assign instance variables
         this.neighborsSize = neighborsSize;
         // sort and copy data first
-        this.data = new ArrayList<T>(data);
-        Collections.sort(this.data, CMP);
+        this.data = new ArrayList<>(data);
+        Collections.sort(this.data, new ChronologicalComparator());
+
+        this.earliestDate = this.data.get(0).getDate();
+        this.latestDate   = this.data.get(this.data.size() - 1).getDate();
+
     }
 
     /**
      * private constructor for {@link #EMPTY_CACHE}.
      */
     private ImmutableTimeStampedCache() {
-        this.data = null;
+        this.data          = null;
         this.neighborsSize = 0;
+        this.earliestDate  = AbsoluteDate.ARBITRARY_EPOCH;
+        this.latestDate    = AbsoluteDate.ARBITRARY_EPOCH;
     }
 
     /** {@inheritDoc} */
@@ -145,16 +156,41 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
      *         {@code t} is after the last entry.
      */
     private int findIndex(final AbsoluteDate t) {
-        // Guaranteed log(n) time
-        int i = Collections.binarySearch(this.data, t, CMP);
-        if (i == -this.data.size() - 1) {
-            // beyond last entry
-            i = this.data.size();
-        } else if (i < 0) {
-            // did not find exact match, but contained in data interval
-            i = -i - 2;
+
+        // left bracket of search algorithm
+        int    iInf  = 0;
+        double dtInf = t.durationFrom(earliestDate);
+        if (dtInf < 0) {
+            // before first entry
+            return -1;
         }
-        return i;
+
+        // right bracket of search algorithm
+        int    iSup  = data.size() - 1;
+        double dtSup = t.durationFrom(latestDate);
+        if (dtSup > 0) {
+            // after last entry
+            return -1;
+        }
+
+        // search entries, using linear interpolation
+        // this should take only 2 iterations for near linear entries (most frequent use case)
+        // regardless of the number of entries
+        // this is much faster than binary search for large number of entries
+        while (iSup - iInf > 1) {
+            final int    iInterp = (int) FastMath.rint((iInf * dtSup - iSup * dtInf) / (dtSup - dtInf));
+            final int    iMed    = FastMath.max(iInf + 1, FastMath.min(iInterp, iSup - 1));
+            final double dtMed   = t.durationFrom(data.get(iMed).getDate());
+            if (dtMed < 0) {
+                iSup  = iMed;
+                dtSup = dtMed;
+            } else {
+                iInf  = iMed;
+                dtInf = dtMed;
+            }
+        }
+
+        return iInf;
     }
 
     /** {@inheritDoc} */

@@ -16,6 +16,12 @@
  */
 package org.orekit.utils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Assertions;
@@ -25,12 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Unit tests for {@link ImmutableTimeStampedCache}.
@@ -265,4 +265,33 @@ public class ImmutableTimeStampedCacheTest {
         Assertions.assertEquals(cache.getAll().size(), 0);
         Assertions.assertEquals(cache.getNeighborsSize(), 0);
     }
+
+    @Test
+    public void testNonLinear() {
+        final ImmutableTimeStampedCache<AbsoluteDate> nonLinearCache = new ImmutableTimeStampedCache<>(2,
+                        Arrays.asList(date.shiftedBy(10),
+                                      date.shiftedBy(14),
+                                      date.shiftedBy(18),
+                                      date.shiftedBy(23),
+                                      date.shiftedBy(30),
+                                      date.shiftedBy(36),
+                                      date.shiftedBy(45),
+                                      date.shiftedBy(55),
+                                      date.shiftedBy(67),
+                                      date.shiftedBy(90),
+                                      date.shiftedBy(118)));
+        for (double dt = 10; dt < 118; dt += 0.01) {
+            checkNeighbors(nonLinearCache, dt);
+        }
+    }
+
+    private void checkNeighbors(final ImmutableTimeStampedCache<AbsoluteDate> nonLinearCache,
+                                final double offset) {
+        List<AbsoluteDate> s = nonLinearCache.getNeighbors(date.shiftedBy(offset)).collect(Collectors.toList());
+        Assertions.assertEquals(2, s.size());
+        Assertions.assertTrue(s.get(0).durationFrom(date) <= offset);
+        Assertions.assertTrue(s.get(1).durationFrom(date) >  offset);
+    }
+
+    
 }
