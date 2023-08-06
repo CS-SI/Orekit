@@ -785,12 +785,8 @@ public class SP3ParserTest {
 
     @Test
     public void testSpliceWrongSatelliteCount() {
-        try {
-            splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_satellite_count.sp3");
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.SP3_INCOMPATIBLE_FILE_METADATA, oe.getSpecifier());
-        }
+        final SP3 spliced = splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_satellite_count.sp3");
+        Assertions.assertEquals(86, spliced.getSatelliteCount());
     }
 
     @Test
@@ -835,12 +831,8 @@ public class SP3ParserTest {
 
     @Test
     public void testSpliceWrongSatelliteList() {
-        try {
-            splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_satellite_list.sp3");
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.SP3_INCOMPATIBLE_SATELLITE_MEDATADA, oe.getSpecifier());
-        }
+        final SP3 spliced = splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_satellite_list.sp3");
+        Assertions.assertEquals(86, spliced.getSatelliteCount());
     }
 
     @Test
@@ -910,17 +902,6 @@ public class SP3ParserTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.SP3_INCOMPATIBLE_SATELLITE_MEDATADA, oe.getSpecifier());
-        }
-    }
-
-    @Test
-    public void testSpliceWrongAccuracy() {
-        try {
-            splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_accuracy.sp3");
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.SP3_INCOMPATIBLE_SATELLITE_MEDATADA, oe.getSpecifier());
-            Assertions.assertEquals("E03", oe.getParts()[0]);
         }
     }
 

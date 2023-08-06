@@ -197,10 +197,16 @@ public class SP3
      * <p>
      * Splicing SP3 files is intended to be used when continuous computation
      * covering more than one file is needed. The files should all have the exact same
-     * metadata: {@link #getType() type, {@link #getTimeSystem() time system},
-     * {@link #getCoordinateSystem() coordinate system}… otherwise an exception
-     * will be raised. Once sorted (which is done internally), the gap between each file
-     * should not exceed the {@link #getEpochInterval() epoch interval}.
+     * metadata: {@link #getType() type}, {@link #getTimeSystem() time system},
+     * {@link #getCoordinateSystem() coordinate system}, except for satellite accuracy
+     * which can be different from one file to the next one, and some satellites may
+     * be missing in some files… Once sorted (which is done internally), the gap between
+     * each file should not exceed the {@link #getEpochInterval() epoch interval}.
+     * </p>
+     * <p>
+     * The spliced file only contains the satellites that were present in all files.
+     * Satellites present in some files and absent from other files are silently
+     * dropped.
      * </p>
      * <p>
      * Depending on producer, successive SP3 files either have a gap between the last
@@ -239,11 +245,30 @@ public class SP3
         spliced.setCoordinateSystem(first.getCoordinateSystem());
         spliced.setOrbitTypeKey(first.getOrbitTypeKey());
         spliced.setAgency(first.getAgency());
+
+        // identify the satellites that are present in all files
+        final List<String> firstSats  = new ArrayList<>();
+        final List<String> commonSats = new ArrayList<>();
         for (final Map.Entry<String, SP3Ephemeris> entry : first.satellites.entrySet()) {
-            spliced.addSatellite(entry.getKey());
+            firstSats.add(entry.getKey());
+            commonSats.add(entry.getKey());
         }
-        for (int i = 0; i < first.getSatelliteCount(); ++i) {
-            spliced.setAccuracy(i, first.getAccuracy(i));
+        for (final SP3 current : sorted) {
+            for (final String sat : commonSats) {
+                if (!current.containsSatellite(sat)) {
+                    commonSats.remove(sat);
+                    break;
+                }
+            }
+        }
+        for (int i = 0; i < commonSats.size(); ++i) {
+            final String sat = commonSats.get(i);
+            spliced.addSatellite(sat);
+            for (int j = 0; j < firstSats.size(); ++j) {
+                if (sat.equals(firstSats.get(j))) {
+                    spliced.setAccuracy(i, first.getAccuracy(j));
+                }
+            }
         }
 
         // splice files
@@ -262,9 +287,11 @@ public class SP3
 
                 // append the pending data from previous file
                 for (final Map.Entry<String, SP3Ephemeris> entry : previous.satellites.entrySet()) {
-                    final List<SP3Coordinate> coordinates = entry.getValue().getCoordinates();
-                    for (int i = 0; i < coordinates.size() - (dropLast ? 1 : 0); ++i) {
-                        spliced.addSatelliteCoordinate(entry.getKey(), coordinates.get(i));
+                    if (commonSats.contains(entry.getKey())) {
+                        final List<SP3Coordinate> coordinates = entry.getValue().getCoordinates();
+                        for (int i = 0; i < coordinates.size() - (dropLast ? 1 : 0); ++i) {
+                            spliced.addSatelliteCoordinate(entry.getKey(), coordinates.get(i));
+                        }
                     }
                 }
 
@@ -277,8 +304,10 @@ public class SP3
 
         // append the pending data from last file
         for (final Map.Entry<String, SP3Ephemeris> entry : previous.satellites.entrySet()) {
-            for (final SP3Coordinate coordinate : entry.getValue().getCoordinates()) {
-                spliced.addSatelliteCoordinate(entry.getKey(), coordinate);
+            if (commonSats.contains(entry.getKey())) {
+                for (final SP3Coordinate coordinate : entry.getValue().getCoordinates()) {
+                    spliced.addSatelliteCoordinate(entry.getKey(), coordinate);
+                }
             }
         }
         return spliced;
@@ -296,7 +325,6 @@ public class SP3
 
         if (!(previous.getType()             == getType()                  &&
               previous.getTimeSystem()       == getTimeSystem()            &&
-              previous.getSatelliteCount()   == getSatelliteCount()        &&
               previous.getOrbitType()        == getOrbitType()             &&
               previous.getCoordinateSystem().equals(getCoordinateSystem()) &&
               previous.getDataUsed().equals(getDataUsed())                 &&
@@ -308,22 +336,22 @@ public class SP3
         for (final Map.Entry<String, SP3Ephemeris> entry : previous.satellites.entrySet()) {
             final SP3Ephemeris previousEphem = entry.getValue();
             final SP3Ephemeris currentEphem  = satellites.get(entry.getKey());
-            if (currentEphem == null ||
-                !(previousEphem.getAvailableDerivatives()    == currentEphem.getAvailableDerivatives() &&
-                  previousEphem.getFrame()                   == currentEphem.getFrame()                &&
-                  previousEphem.getInterpolationSamples()    == currentEphem.getInterpolationSamples() &&
-                  Precision.equals(previousEphem.getMu(),       currentEphem.getMu(), 2)               &&
-                  Precision.equals(previousEphem.getAccuracy(), currentEphem.getAccuracy(), 2))) {
-                throw new OrekitException(OrekitMessages.SP3_INCOMPATIBLE_SATELLITE_MEDATADA,
-                                          entry.getKey());
-            } else {
-                final double dt = currentEphem.getStart().durationFrom(previousEphem.getStop());
-                if (dt > getEpochInterval()) {
-                    throw new OrekitException(OrekitMessages.SP3_TOO_LARGE_GAP_FOR_SPLICING,
-                                              entry.getKey(),
-                                              currentEphem.getStart().durationFrom(previousEphem.getStop()));
+            if (currentEphem != null) {
+                if (!(previousEphem.getAvailableDerivatives()    == currentEphem.getAvailableDerivatives() &&
+                      previousEphem.getFrame()                   == currentEphem.getFrame()                &&
+                      previousEphem.getInterpolationSamples()    == currentEphem.getInterpolationSamples() &&
+                      Precision.equals(previousEphem.getMu(),       currentEphem.getMu(), 2))) {
+                    throw new OrekitException(OrekitMessages.SP3_INCOMPATIBLE_SATELLITE_MEDATADA,
+                                              entry.getKey());
+                } else {
+                    final double dt = currentEphem.getStart().durationFrom(previousEphem.getStop());
+                    if (dt > getEpochInterval()) {
+                        throw new OrekitException(OrekitMessages.SP3_TOO_LARGE_GAP_FOR_SPLICING,
+                                                  entry.getKey(),
+                                                  currentEphem.getStart().durationFrom(previousEphem.getStop()));
+                    }
+                    dropLast = dt < 0.001 * getEpochInterval();
                 }
-                dropLast = dt < 0.001 * getEpochInterval();
             }
         }
 
