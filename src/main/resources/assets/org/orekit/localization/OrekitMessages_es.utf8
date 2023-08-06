@@ -397,6 +397,15 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = se han encontrado {0} épocas en el fichero {1} e
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = final inesperado de un fichero sp3 (después de la línea {0})
 
+# cannot splice sp3 files with incompatible metadata
+SP3_INCOMPATIBLE_FILE_METADATA = <MISSING TRANSLATION>
+
+# cannot splice sp3 files with incompatible satellite metadata for satellite {0}
+SP3_INCOMPATIBLE_SATELLITE_MEDATADA = <MISSING TRANSLATION>
+
+# cannot splice sp3 files with large gap for satellite {0} ({1} s)
+SP3_TOO_LARGE_GAP_FOR_SPLICING = <MISSING TRANSLATION>
+
 # STK coordinate system "{0}" is invalid or not yet supported
 STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
 
