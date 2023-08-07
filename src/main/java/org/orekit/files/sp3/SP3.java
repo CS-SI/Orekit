@@ -318,7 +318,7 @@ public class SP3
      * @param previous SP3 file (should already be sorted to be before current instance), can be null
      * @return true if last entry of previous file should be dropped as first entry of current file
      * is at very close date and will take precedence
-     * @throw OrekitException if metadata are incompatible
+     * @exception OrekitException if metadata are incompatible
      * @since 12.0
      */
     private boolean checkSplice(final SP3 previous) throws OrekitException {

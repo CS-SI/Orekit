@@ -132,7 +132,7 @@ performance:
   needs:
     - job: deploy:artifacts
       artifacts: false
-  trigger: evanward1/orekit-performance
+  trigger: orekit/orekit-performance
   only:
     - develop@orekit/orekit
 
