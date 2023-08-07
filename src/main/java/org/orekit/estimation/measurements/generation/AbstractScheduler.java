@@ -54,9 +54,8 @@ public abstract class AbstractScheduler<T extends ObservedMeasurement<T>> implem
         builder.init(start, end);
     }
 
-    /** Get the measurements builder.
-     * @return measurements builder
-     */
+    /** {@inheritDoc} */
+    @Override
     public MeasurementBuilder<T> getBuilder() {
         return builder;
     }
