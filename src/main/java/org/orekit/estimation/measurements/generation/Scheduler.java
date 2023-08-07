@@ -31,6 +31,12 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface Scheduler<T extends ObservedMeasurement<T>> {
 
+    /** Get the builder associated with this scheduler.
+     * @return builder associated with this scheduler
+     * @since 12.0
+     */
+    MeasurementBuilder<T> getBuilder();
+
     /** Initialize scheduler at the start of a measurements generation.
      * <p>
      * This method is called once at the start of the measurements generation. It
