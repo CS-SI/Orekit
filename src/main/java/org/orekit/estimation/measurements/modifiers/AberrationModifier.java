@@ -28,6 +28,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -65,6 +66,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
      * @param frame        the frame of the measurement
      * @return the "proper" direction (station-relative coordinates)
      */
+    @DefaultDataContext
     public static double[] naturalToProper(final double[] naturalRaDec, final GroundStation station,
                                            final AbsoluteDate date, final Frame frame) {
 
@@ -94,6 +96,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
      * @param frame       the frame of the measurement
      * @return the "natural" direction (in barycentric coordinates)
      */
+    @DefaultDataContext
     public static double[] properToNatural(final double[] properRaDec, final GroundStation station,
                                            final AbsoluteDate date, final Frame frame) {
 
@@ -145,6 +148,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
      * @param frame             the frame of the measurement
      * @return the "proper" direction (station-relative coordinates)
      */
+    @DefaultDataContext
     public static Gradient[] fieldNaturalToProper(final Gradient[] naturalRaDec,
                                                   final FieldTransform<Gradient> stationToInertial,
                                                   final Frame frame) {
@@ -184,6 +188,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
      * @param frame             the frame of the measurement
      * @return the "natural" direction (in barycentric coordinates)
      */
+    @DefaultDataContext
     public static Gradient[] fieldProperToNatural(final Gradient[] properRaDec,
                                                   final FieldTransform<Gradient> stationToInertial,
                                                   final Frame frame) {
@@ -250,6 +255,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
 
 
     @Override
+    @DefaultDataContext
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<AngularRaDec> estimated) {
 
         // Observation date
@@ -277,6 +283,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
     }
 
     @Override
+    @DefaultDataContext
     public void modify(final EstimatedMeasurement<AngularRaDec> estimated) {
 
         // Observation date

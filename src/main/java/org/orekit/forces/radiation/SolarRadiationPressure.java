@@ -281,8 +281,8 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         final T zero = state.getDate().getField().getZero();
         final T one  = state.getDate().getField().getOne();
 
-        final FieldVector3D<T> sunPosition = sun.getPosition(state.getDate(), state.getFrame());
-        if (sunPosition.getNorm().getReal() < 2 * Constants.SUN_RADIUS) {
+        final Vector3D sunPosition = sun.getPosition(state.getDate().toAbsoluteDate(), state.getFrame());
+        if (sunPosition.getNorm() < 2 * Constants.SUN_RADIUS) {
             // we are in fact computing a trajectory around Sun (or solar system barycenter),
             // not around a planet,we consider lighting ratio is always 1
             return one;

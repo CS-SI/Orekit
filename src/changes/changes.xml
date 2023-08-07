@@ -39,6 +39,9 @@
       <action dev="luc" type="update" issue="1147">
         Allow custom satellite systems in GNSS.
       </action>
+      <action dev="sebastien" type="update" issue="1154">
+        Moved orekit-performance project to official forge and updated CI.
+      </action>
       <action dev="luc" type="add" issue="1064">
         Allow estimating measurements values without computing derivatives.
       </action>
