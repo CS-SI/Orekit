@@ -60,7 +60,7 @@ public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> 
 
     /** {@inheritDoc} */
     @Override
-    public AngularAzEl build(Map<ObservableSatellite, SpacecraftState> states) {
+    public AngularAzEl build(final Map<ObservableSatellite, SpacecraftState> states) {
 
         final double[] sigma                = getTheoreticalStandardDeviation();
         final double[] baseWeight           = getBaseWeight();
