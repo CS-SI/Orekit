@@ -16,9 +16,10 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -52,7 +53,8 @@ public interface Scheduler<T extends ObservedMeasurement<T>> {
     /** Generate a sequence of measurements.
      * @param interpolators interpolators for spacecraft states
      * @return generated measurements
+     * @since 12.0
      */
-    SortedSet<T> generate(List<OrekitStepInterpolator> interpolators);
+    SortedSet<T> generate(Map<ObservableSatellite, OrekitStepInterpolator> interpolators);
 
 }

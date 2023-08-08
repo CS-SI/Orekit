@@ -17,8 +17,10 @@
 package org.orekit.estimation.measurements.generation;
 
 import java.util.List;
+import java.util.Map;
 
 import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -53,10 +55,16 @@ public interface MeasurementBuilder<T extends ObservedMeasurement<T>> {
      */
     List<EstimationModifier<T>> getModifiers();
 
+    /** Get the satellites related to this measurement.
+     * @return satellites related to this measurement
+     * @since 12.0
+     */
+    ObservableSatellite[] getSatellites();
+
     /** Generate a single measurement.
-     * @param states all spacecraft states (i.e. including ones that may not be relevant for the current builder)
+     * @param states spacecraft states relevant for this builder
      * @return generated measurement
      */
-    T build(SpacecraftState[] states);
+    T build(Map<ObservableSatellite, SpacecraftState> states);
 
 }

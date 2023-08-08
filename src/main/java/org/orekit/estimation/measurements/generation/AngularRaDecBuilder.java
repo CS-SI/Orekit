@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.EstimationModifier;
@@ -39,6 +41,11 @@ public class AngularRaDecBuilder extends AbstractMeasurementBuilder<AngularRaDec
     /** Reference frame in which the right ascension - declination angles are given. */
     private final Frame referenceFrame;
 
+    /** Satellite related to this builder.
+     * @since 12.0
+     */
+    private final ObservableSatellite satellite;
+
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param station ground station from which measurement is performed
@@ -54,16 +61,16 @@ public class AngularRaDecBuilder extends AbstractMeasurementBuilder<AngularRaDec
         super(noiseSource, sigma, baseWeight, satellite);
         this.station        = station;
         this.referenceFrame = referenceFrame;
+        this.satellite      = satellite;
     }
 
     /** {@inheritDoc} */
     @Override
-    public AngularRaDec build(final SpacecraftState[] states) {
+    public AngularRaDec build(final Map<ObservableSatellite, SpacecraftState> states) {
 
-        final ObservableSatellite satellite = getSatellites()[0];
         final double[] sigma                = getTheoreticalStandardDeviation();
         final double[] baseWeight           = getBaseWeight();
-        final SpacecraftState[] relevant    = new SpacecraftState[] { states[satellite.getPropagatorIndex()] };
+        final SpacecraftState[] relevant    = new SpacecraftState[] { states.get(satellite) };
 
         // create a dummy measurement
         final AngularRaDec dummy = new AngularRaDec(station, referenceFrame, relevant[0].getDate(),
