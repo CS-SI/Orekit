@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.BistaticRangeRate;
 import org.orekit.estimation.measurements.EstimationModifier;
@@ -38,6 +40,11 @@ public class BistaticRangeRateBuilder extends AbstractMeasurementBuilder<Bistati
     /** Receiver ground station. */
     private final GroundStation receiver;
 
+    /** Satellite related to this builder.
+     * @since 12.0
+     */
+    private final ObservableSatellite satellite;
+
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param emitter emitter ground station
@@ -47,22 +54,22 @@ public class BistaticRangeRateBuilder extends AbstractMeasurementBuilder<Bistati
      * @param satellite satellite related to this builder
      */
     public BistaticRangeRateBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                  final GroundStation emitter, final GroundStation receiver,
-                                  final double sigma, final double baseWeight,
-                                  final ObservableSatellite satellite) {
+                                    final GroundStation emitter, final GroundStation receiver,
+                                    final double sigma, final double baseWeight,
+                                    final ObservableSatellite satellite) {
         super(noiseSource, sigma, baseWeight, satellite);
-        this.emitter  = emitter;
-        this.receiver = receiver;
+        this.emitter   = emitter;
+        this.receiver  = receiver;
+        this.satellite = satellite;
     }
 
     /** {@inheritDoc} */
     @Override
-    public BistaticRangeRate build(final SpacecraftState[] states) {
+    public BistaticRangeRate build(final Map<ObservableSatellite, SpacecraftState> states) {
 
-        final ObservableSatellite satellite = getSatellites()[0];
         final double sigma                  = getTheoreticalStandardDeviation()[0];
         final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState[] relevant    = new SpacecraftState[] { states[satellite.getPropagatorIndex()] };
+        final SpacecraftState[] relevant    = new SpacecraftState[] { states.get(satellite) };
 
         // create a dummy measurement
         final BistaticRangeRate dummy = new BistaticRangeRate(emitter, receiver, relevant[0].getDate(),

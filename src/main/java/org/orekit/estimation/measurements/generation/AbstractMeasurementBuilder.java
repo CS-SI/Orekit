@@ -163,10 +163,9 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
         return baseWeight.clone();
     }
 
-    /** Get the satellites related to this measurement.
-     * @return satellites related to this measurement
-     */
-    protected ObservableSatellite[] getSatellites() {
+    /** {@inheritDoc} */
+    @Override
+    public ObservableSatellite[] getSatellites() {
         return satellites.clone();
     }
 

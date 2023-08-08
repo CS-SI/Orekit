@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.EstimationModifier;
@@ -35,6 +37,11 @@ public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> 
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
 
+    /** Satellite related to this builder.
+     * @since 12.0
+     */
+    private final ObservableSatellite satellite;
+
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param station ground station from which measurement is performed
@@ -47,17 +54,17 @@ public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> 
                               final double[] sigma, final double[] baseWeight,
                               final ObservableSatellite satellite) {
         super(noiseSource, sigma, baseWeight, satellite);
-        this.station = station;
+        this.station   = station;
+        this.satellite = satellite;
     }
 
     /** {@inheritDoc} */
     @Override
-    public AngularAzEl build(final SpacecraftState[] states) {
+    public AngularAzEl build(Map<ObservableSatellite, SpacecraftState> states) {
 
-        final ObservableSatellite satellite = getSatellites()[0];
         final double[] sigma                = getTheoreticalStandardDeviation();
         final double[] baseWeight           = getBaseWeight();
-        final SpacecraftState[] relevant    = new SpacecraftState[] { states[satellite.getPropagatorIndex()] };
+        final SpacecraftState[] relevant    = new SpacecraftState[] { states.get(satellite) };
 
         // create a dummy measurement
         final AngularAzEl dummy = new AngularAzEl(station, relevant[0].getDate(),

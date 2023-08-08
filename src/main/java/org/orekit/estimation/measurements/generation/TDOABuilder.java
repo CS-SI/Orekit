@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
@@ -38,6 +40,11 @@ public class TDOABuilder extends AbstractMeasurementBuilder<TDOA> {
     /** Second ground station. */
     private final GroundStation secondStation;
 
+    /** Satellite related to this builder.
+     * @since 12.0
+     */
+    private final ObservableSatellite satellite;
+
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param primeStation ground station that gives the date of the measurement
@@ -54,16 +61,16 @@ public class TDOABuilder extends AbstractMeasurementBuilder<TDOA> {
         super(noiseSource, sigma, baseWeight, satellite);
         this.primeStation  = primeStation;
         this.secondStation = secondStation;
+        this.satellite     = satellite;
     }
 
     /** {@inheritDoc} */
     @Override
-    public TDOA build(final SpacecraftState[] states) {
+    public TDOA build(final Map<ObservableSatellite, SpacecraftState> states) {
 
-        final ObservableSatellite satellite = getSatellites()[0];
         final double sigma                  = getTheoreticalStandardDeviation()[0];
         final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState[] relevant    = new SpacecraftState[] { states[satellite.getPropagatorIndex()] };
+        final SpacecraftState[] relevant    = new SpacecraftState[] { states.get(satellite) };
 
         // create a dummy measurement
         final TDOA dummy = new TDOA(primeStation, secondStation, relevant[0].getDate(),

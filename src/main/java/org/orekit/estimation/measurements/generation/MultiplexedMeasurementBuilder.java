@@ -19,9 +19,11 @@ package org.orekit.estimation.measurements.generation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.MultiplexedMeasurement;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -36,6 +38,9 @@ public class MultiplexedMeasurementBuilder implements MeasurementBuilder<Multipl
     /** Builders for individual measurements. */
     private final List<MeasurementBuilder<?>> builders;
 
+    /** Satellites related to this builder. */
+    private final ObservableSatellite[] satellites;
+
     /** Modifiers that apply to the measurement.*/
     private final List<EstimationModifier<MultiplexedMeasurement>> modifiers;
 
@@ -45,6 +50,17 @@ public class MultiplexedMeasurementBuilder implements MeasurementBuilder<Multipl
     public MultiplexedMeasurementBuilder(final List<MeasurementBuilder<?>> builders) {
         this.builders  = builders;
         this.modifiers = new ArrayList<>();
+
+        List<ObservableSatellite> list = new ArrayList<>();
+        for (final MeasurementBuilder<?> builder : builders) {
+            for (final ObservableSatellite satellite : builder.getSatellites()) {
+                if (!list.contains(satellite)) {
+                    list.add(satellite);
+                }
+            }
+        }
+        this.satellites = list.toArray(new ObservableSatellite[0]);
+
     }
 
     /** {@inheritDoc}
@@ -73,7 +89,7 @@ public class MultiplexedMeasurementBuilder implements MeasurementBuilder<Multipl
 
     /** {@inheritDoc} */
     @Override
-    public MultiplexedMeasurement build(final SpacecraftState[] states) {
+    public MultiplexedMeasurement build(final Map<ObservableSatellite, SpacecraftState> states) {
 
         final List<ObservedMeasurement<?>> measurements = new ArrayList<>(builders.size());
         for (final MeasurementBuilder<?> builder : builders) {
@@ -88,6 +104,12 @@ public class MultiplexedMeasurementBuilder implements MeasurementBuilder<Multipl
         }
         return measurement;
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ObservableSatellite[] getSatellites() {
+        return satellites.clone();
     }
 
 }
