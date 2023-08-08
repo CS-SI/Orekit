@@ -154,10 +154,10 @@ public class Generator {
             final StepHandlerMultiplexer multiplexer = propagators.get(entry.getKey().getPropagatorIndex()).getMultiplexer();
             final List<OrekitStepHandler> toBeRemoved = new ArrayList<>();
             for (final OrekitStepHandler handler : multiplexer.getHandlers()) {
-               if (handler instanceof SingleSatGeneratorHandler &&
-                   ((SingleSatGeneratorHandler<?>) handler).globalHandler == globalHandler) {
-                   toBeRemoved.add(handler);
-               }
+                if (handler instanceof SingleSatGeneratorHandler &&
+                    ((SingleSatGeneratorHandler<?>) handler).globalHandler == globalHandler) {
+                    toBeRemoved.add(handler);
+                }
             }
             for (final OrekitStepHandler handler : toBeRemoved) {
                 multiplexer.remove(handler);
@@ -255,7 +255,7 @@ public class Generator {
                                     final List<ObservableSatellite> observableSatellites, final boolean forward) {
 
             // measurements comparator, consistent with generation direction
-            Comparator<ObservedMeasurement<?>> comparator = forward ? Comparator.naturalOrder() : Comparator.reverseOrder();
+            final Comparator<ObservedMeasurement<?>> comparator = forward ? Comparator.naturalOrder() : Comparator.reverseOrder();
 
             this.schedulers           = schedulers;
             this.subscribers          = subscribers;
