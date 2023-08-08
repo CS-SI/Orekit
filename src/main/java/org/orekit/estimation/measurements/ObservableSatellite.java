@@ -102,7 +102,8 @@ public class ObservableSatellite {
         } else {
             return false;
 
-        }}
+        }
+    }
 
     /** {@inheritDoc}
      * @since 12.0
