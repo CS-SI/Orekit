@@ -51,7 +51,7 @@ public class MultiplexedMeasurementBuilder implements MeasurementBuilder<Multipl
         this.builders  = builders;
         this.modifiers = new ArrayList<>();
 
-        List<ObservableSatellite> list = new ArrayList<>();
+        final List<ObservableSatellite> list = new ArrayList<>();
         for (final MeasurementBuilder<?> builder : builders) {
             for (final ObservableSatellite satellite : builder.getSatellites()) {
                 if (!list.contains(satellite)) {
