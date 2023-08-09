@@ -21,9 +21,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.FieldElement;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -260,10 +258,9 @@ public class Frame implements Serializable {
      * @return transform from the instance to the destination frame
      */
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date) {
-        final Field<T> field = date.getField();
 
         return getTransformTo(destination,
-                              FieldTransform.getIdentity(field),
+                              FieldTransform.getIdentity(date.getField()),
                               frame -> frame.getTransformProvider().getTransform(date),
                               (t1, t2) -> new FieldTransform<>(date, t1, t2),
                               FieldTransform::getInverse);
@@ -303,9 +300,8 @@ public class Frame implements Serializable {
      * #getTransformTo(Frame, FieldAbsoluteDate)} when rates are not needed.
      *
      * <p>A first check is made on the FieldAbsoluteDate because "fielded" transforms have low-performance.<br>
-     * First we check if the Field T is a {@link Gradient} or a {@link DerivativeStructure} and if all
-     * the derivatives of the date w/r to the field are zero.<br>
-     * If so, we use the un-fielded version of the transform computation instead of the fielded one which is very slow.
+     * The date field is checked with {@link FieldElement#isZero()}.<br>
+     * If true, the un-fielded version of the transform computation is used.
      *
      * @param <T>         type of the elements
      * @param destination destination frame to which we want to transform
@@ -317,8 +313,8 @@ public class Frame implements Serializable {
      */
     public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransformTo(final Frame destination,
                                                 final FieldAbsoluteDate<T> date) {
-        if (date.hasNullDerivatives()) {
-            // If eventual derivatives of date w/r to field are all null, then use the un-fielded version for performances
+        if (date.hasZeroField()) {
+            // If date field is Zero, then use the un-fielded version for performances
             return FieldStaticTransform.of(date, getStaticTransformTo(destination, date.toAbsoluteDate()));
 
         } else {

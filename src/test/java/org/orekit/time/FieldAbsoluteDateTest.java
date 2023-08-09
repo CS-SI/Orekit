@@ -16,6 +16,11 @@
  */
 package org.orekit.time;
 
+import java.io.IOException;
+import java.time.Instant;
+import java.util.Date;
+import java.util.TimeZone;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
@@ -32,11 +37,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.util.Date;
-import java.util.TimeZone;
 
 public class FieldAbsoluteDateTest {
 

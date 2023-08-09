@@ -22,13 +22,12 @@ import java.util.TimeZone;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.FieldElement;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.MathUtils.FieldSumAndResidual;
 import org.hipparchus.util.MathUtils.SumAndResidual;
-import org.hipparchus.util.Precision;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -1113,8 +1112,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>> implements Fie
      * @param field field for the components
      * @return an arbitrary date.
      */
-    public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> getArbitraryEpoch(
-                                                                                             final Field<T> field) {
+    public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> getArbitraryEpoch(final Field<T> field) {
 
         return new FieldAbsoluteDate<>(field, AbsoluteDate.ARBITRARY_EPOCH);
     }
@@ -1275,11 +1273,9 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>> implements Fie
         // extract calendar elements
         final DateComponents dateComponents = new DateComponents(DateComponents.J2000_EPOCH, date);
         // extract time element, accounting for leap seconds
-        final double leap =
-                        timeScale.insideLeap(this) ? timeScale.getLeap(this.toAbsoluteDate()) : 0;
+        final double leap = timeScale.insideLeap(this) ? timeScale.getLeap(this.toAbsoluteDate()) : 0;
         final int minuteDuration = timeScale.minuteDuration(this);
-        final TimeComponents timeComponents =
-                        TimeComponents.fromSeconds((int) time, offset2000B, leap, minuteDuration);
+        final TimeComponents timeComponents = TimeComponents.fromSeconds((int) time, offset2000B, leap, minuteDuration);
 
         // build the components
         return new DateTimeComponents(dateComponents, timeComponents);
@@ -1640,27 +1636,15 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>> implements Fie
         return new AbsoluteDate(epoch, offset.getReal());
     }
 
-    /** Check if the Field is of type {@link Gradient} or {@link DerivativeStructure} and if the derivatives are all null.
-     * @return true if all derivatives are null, false otherwise
+    /** Check if the Field is semantically equal to zero.
+     *
+     * <p> Using {@link FieldElement#isZero()}
+     *
+     * @return true the Field is semantically equal to zero
      * @since 12.0
      */
-    public boolean hasNullDerivatives() {
-
-        double sumDerivatives = 0;
-
-        if (offset instanceof Gradient) {
-            for (double gradient : ((Gradient) offset).getGradient()) {
-                sumDerivatives += FastMath.abs(gradient);
-            }
-        } else if (offset instanceof DerivativeStructure) {
-            final double[] derivatives = ((DerivativeStructure) offset).getAllDerivatives();
-            for (int i = 1; i < derivatives.length; i++) {
-                sumDerivatives += FastMath.abs(derivatives[i]);
-            }
-        } else {
-            sumDerivatives = Double.POSITIVE_INFINITY;
-        }
-        return sumDerivatives < Precision.EPSILON;
+    public boolean hasZeroField() {
+        return !(offset instanceof Binary64) && offset.subtract(offset.getReal()).isZero();
     }
 }
 

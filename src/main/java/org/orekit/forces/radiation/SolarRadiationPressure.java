@@ -66,6 +66,9 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
     /** Margin to force recompute lighting ratio derivatives when we are really inside penumbra. */
     private static final double ANGULAR_MARGIN = 1.0e-10;
 
+    /** Threshold to decide whether the S/C frame is Sun-centered. */
+    private static final double SUN_CENTERED_FRAME_THRESHOLD = 2. * Constants.SUN_RADIUS;
+
     /** Reference flux normalized for a 1m distance (N). */
     private final double kRef;
 
@@ -154,6 +157,20 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
 
     }
 
+    /** Check whether the S/C frame is Sun-centered.
+     *
+     * @param state spacecraft state
+     * @return true if S/C frame is Sun-centered
+     * @since 12.0
+     */
+    private boolean isSunCenteredFrame(final SpacecraftState state) {
+        // S/C frame is considered Sun-centered if Sun (or Solar System barycenter) position
+        // in that frame is smaller than SUN_CENTERED_FRAME_THRESHOLD
+        return sun.getPosition(state.getDate(), state.getFrame()).
+                        getNorm() < SUN_CENTERED_FRAME_THRESHOLD;
+    }
+
+
     /** Get the lighting ratio ([0-1]).
      * @param state spacecraft state
      * @return lighting ratio
@@ -161,10 +178,10 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
      */
     public double getLightingRatio(final SpacecraftState state) {
 
-        final Vector3D sunPosition = sun.getPosition(state.getDate(), state.getFrame());
-        if (sunPosition.getNorm() < 2 * Constants.SUN_RADIUS) {
-            // we are in fact computing a trajectory around Sun (or solar system barycenter),
-            // not around a planet, we consider lighting ratio is always 1
+        // Check if S/C frame is Sun-centered
+        if (isSunCenteredFrame(state)) {
+            // We are in fact computing a trajectory around Sun (or solar system barycenter),
+            // not around a planet, we consider lighting ratio will always be 1
             return 1.0;
         }
 
@@ -219,7 +236,6 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         result -= n - 1;
 
         return result;
-
     }
 
     /** Get the masking ratio ([0-1]) considering one pair of bodies.
@@ -278,22 +294,19 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
      */
     public <T extends CalculusFieldElement<T>> T getLightingRatio(final FieldSpacecraftState<T> state) {
 
-        final T zero = state.getDate().getField().getZero();
         final T one  = state.getDate().getField().getOne();
-
-        final Vector3D sunPosition = sun.getPosition(state.getDate().toAbsoluteDate(), state.getFrame());
-        if (sunPosition.getNorm() < 2 * Constants.SUN_RADIUS) {
-            // we are in fact computing a trajectory around Sun (or solar system barycenter),
-            // not around a planet,we consider lighting ratio is always 1
+        if (isSunCenteredFrame(state.toSpacecraftState())) {
+            // We are in fact computing a trajectory around Sun (or solar system barycenter),
+            // not around a planet, we consider lighting ratio will always be 1
             return one;
         }
-
+        final T zero = state.getDate().getField().getZero();
         final List<OccultationEngine> occultingBodies = getOccultingBodies();
         final int n = occultingBodies.size();
 
         @SuppressWarnings("unchecked")
         final OccultationEngine.FieldOccultationAngles<T>[] angles =
-                        (OccultationEngine.FieldOccultationAngles<T>[]) Array.newInstance(OccultationEngine.FieldOccultationAngles.class, n);
+        (OccultationEngine.FieldOccultationAngles<T>[]) Array.newInstance(OccultationEngine.FieldOccultationAngles.class, n);
         for (int i = 0; i < n; ++i) {
             angles[i] = occultingBodies.get(i).angles(state);
         }
@@ -341,7 +354,6 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         result = result.subtract(n - 1);
 
         return result;
-
     }
 
 
