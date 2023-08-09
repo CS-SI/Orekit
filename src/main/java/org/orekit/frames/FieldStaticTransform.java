@@ -232,6 +232,13 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>> extends
         return of(date, translation, FieldRotation.getIdentity(date.getField()));
     }
 
+    static <T extends CalculusFieldElement<T>> FieldStaticTransform<T> of(final FieldAbsoluteDate<T> date,
+                                                                          final StaticTransform staticTransform) {
+        return of(date,
+                  new FieldVector3D<>(date.getField(), staticTransform.getTranslation()),
+                  new FieldRotation<>(date.getField(), staticTransform.getRotation()));
+    }
+
     /**
      * Create a new static transform from a translation and rotation.
      *

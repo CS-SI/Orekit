@@ -22,6 +22,8 @@ import java.util.function.Function;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -259,12 +261,12 @@ public class Frame implements Serializable {
      */
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
-        return getTransformTo(
-                destination,
-                FieldTransform.getIdentity(field),
-                frame -> frame.getTransformProvider().getTransform(date),
-                (t1, t2) -> new FieldTransform<>(date, t1, t2),
-                FieldTransform::getInverse);
+
+        return getTransformTo(destination,
+                              FieldTransform.getIdentity(field),
+                              frame -> frame.getTransformProvider().getTransform(date),
+                              (t1, t2) -> new FieldTransform<>(date, t1, t2),
+                              FieldTransform::getInverse);
     }
 
     /**
@@ -300,6 +302,11 @@ public class Frame implements Serializable {
      * <p>This method is often more performant than {@link
      * #getTransformTo(Frame, FieldAbsoluteDate)} when rates are not needed.
      *
+     * <p>A first check is made on the FieldAbsoluteDate because "fielded" transforms have low-performance.<br>
+     * First we check if the Field T is a {@link Gradient} or a {@link DerivativeStructure} and if all
+     * the derivatives of the date w/r to the field are zero.<br>
+     * If so, we use the un-fielded version of the transform computation instead of the fielded one which is very slow.
+     *
      * @param <T>         type of the elements
      * @param destination destination frame to which we want to transform
      *                    vectors
@@ -310,12 +317,18 @@ public class Frame implements Serializable {
      */
     public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransformTo(final Frame destination,
                                                 final FieldAbsoluteDate<T> date) {
-        return getTransformTo(
-                destination,
-                FieldStaticTransform.getIdentity(date.getField()),
-                frame -> frame.getTransformProvider().getStaticTransform(date),
-                (t1, t2) -> FieldStaticTransform.compose(date, t1, t2),
-                FieldStaticTransform::getInverse);
+        if (date.hasNullDerivatives()) {
+            // If eventual derivatives of date w/r to field are all null, then use the un-fielded version for performances
+            return FieldStaticTransform.of(date, getStaticTransformTo(destination, date.toAbsoluteDate()));
+
+        } else {
+            // Use classic fielded function
+            return getTransformTo(destination,
+                                  FieldStaticTransform.getIdentity(date.getField()),
+                                  frame -> frame.getTransformProvider().getStaticTransform(date),
+                                  (t1, t2) -> FieldStaticTransform.compose(date, t1, t2),
+                                  FieldStaticTransform::getInverse);
+        }
     }
 
     /**

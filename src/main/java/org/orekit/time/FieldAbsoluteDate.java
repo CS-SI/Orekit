@@ -20,12 +20,15 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.MathUtils.FieldSumAndResidual;
 import org.hipparchus.util.MathUtils.SumAndResidual;
+import org.hipparchus.util.Precision;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -100,8 +103,7 @@ import org.orekit.utils.Constants;
  * @see TimeStamped
  * @see ChronologicalComparator
  */
-public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
-    implements FieldTimeStamped<T>, TimeShiftable<FieldAbsoluteDate<T>>, Comparable<FieldAbsoluteDate<T>> {
+public class FieldAbsoluteDate<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T>, TimeShiftable<FieldAbsoluteDate<T>>, Comparable<FieldAbsoluteDate<T>> {
 
     /** Reference epoch in seconds from 2000-01-01T12:00:00 TAI.
      * <p>Beware, it is not {@link #getJ2000Epoch(Field)} since it is in TAI and not in TT.</p> */
@@ -282,7 +284,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * are given (parameters out of range)
      */
     public FieldAbsoluteDate(final Field<T> field, final DateComponents date, final TimeScale timeScale)
-        throws IllegalArgumentException {
+                    throws IllegalArgumentException {
         this(field, date, TimeComponents.H00, timeScale);
     }
 
@@ -297,7 +299,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * are given (parameters out of range)
      */
     public FieldAbsoluteDate(final Field<T> field, final int year, final int month, final int day,
-                        final TimeScale timeScale) throws IllegalArgumentException {
+                             final TimeScale timeScale) throws IllegalArgumentException {
         this(field, new DateComponents(year, month, day), TimeComponents.H00, timeScale);
     }
 
@@ -312,7 +314,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * are given (parameters out of range)
      */
     public FieldAbsoluteDate(final Field<T> field, final int year, final Month month, final int day,
-                        final TimeScale timeScale) throws IllegalArgumentException {
+                             final TimeScale timeScale) throws IllegalArgumentException {
         this(field, new DateComponents(year, month, day), TimeComponents.H00, timeScale);
     }
 
@@ -323,8 +325,8 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      */
     public FieldAbsoluteDate(final Field<T> field, final Date location, final TimeScale timeScale) {
         this(field, new DateComponents(DateComponents.JAVA_EPOCH,
-                                (int) (location.getTime() / 86400000l)),
-                                new TimeComponents(0.001 * (location.getTime() % 86400000l)),
+                                       (int) (location.getTime() / 86400000l)),
+             new TimeComponents(0.001 * (location.getTime() % 86400000l)),
              timeScale);
     }
 
@@ -446,15 +448,15 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      */
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> parseCCSDSUnsegmentedTimeCode(final Field<T> field,
-                                                                                                     final byte preambleField1,
-                                                                                                     final byte preambleField2,
-                                                                                                     final byte[] timeField,
-                                                                                                     final FieldAbsoluteDate<T> agencyDefinedEpoch) {
+                                                                                                         final byte preambleField1,
+                                                                                                         final byte preambleField2,
+                                                                                                         final byte[] timeField,
+                                                                                                         final FieldAbsoluteDate<T> agencyDefinedEpoch) {
         return parseCCSDSUnsegmentedTimeCode(field, preambleField1, preambleField2,
-                timeField, agencyDefinedEpoch,
-                new FieldAbsoluteDate<>(
-                        field,
-                        DataContext.getDefault().getTimeScales().getCcsdsEpoch()));
+                                             timeField, agencyDefinedEpoch,
+                                             new FieldAbsoluteDate<>(
+                                                             field,
+                                                             DataContext.getDefault().getTimeScales().getCcsdsEpoch()));
     }
 
     /**
@@ -490,12 +492,12 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @since 10.1
      */
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> parseCCSDSUnsegmentedTimeCode(
-            final Field<T> field,
-            final byte preambleField1,
-            final byte preambleField2,
-            final byte[] timeField,
-            final FieldAbsoluteDate<T> agencyDefinedEpoch,
-            final FieldAbsoluteDate<T> ccsdsEpoch) {
+                                                                                                         final Field<T> field,
+                                                                                                         final byte preambleField1,
+                                                                                                         final byte preambleField2,
+                                                                                                         final byte[] timeField,
+                                                                                                         final FieldAbsoluteDate<T> agencyDefinedEpoch,
+                                                                                                         final FieldAbsoluteDate<T> ccsdsEpoch) {
 
         // time code identification and reference epoch
         final FieldAbsoluteDate<T> epochF;
@@ -565,10 +567,10 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      */
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> parseCCSDSDaySegmentedTimeCode(final Field<T> field,
-                                                                                                      final byte preambleField, final byte[] timeField,
-                                                                                                      final DateComponents agencyDefinedEpoch) {
+                                                                                                          final byte preambleField, final byte[] timeField,
+                                                                                                          final DateComponents agencyDefinedEpoch) {
         return parseCCSDSDaySegmentedTimeCode(field, preambleField, timeField,
-                agencyDefinedEpoch, DataContext.getDefault().getTimeScales().getUTC());
+                                              agencyDefinedEpoch, DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /**
@@ -592,11 +594,11 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @since 10.1
      */
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> parseCCSDSDaySegmentedTimeCode(
-            final Field<T> field,
-            final byte preambleField,
-            final byte[] timeField,
-            final DateComponents agencyDefinedEpoch,
-            final TimeScale utc) {
+                                                                                                          final Field<T> field,
+                                                                                                          final byte preambleField,
+                                                                                                          final byte[] timeField,
+                                                                                                          final DateComponents agencyDefinedEpoch,
+                                                                                                          final TimeScale utc) {
 
         // time code identification
         if ((preambleField & 0xF0) != 0x40) {
@@ -673,7 +675,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     @DefaultDataContext
     public FieldAbsoluteDate<T> parseCCSDSCalendarSegmentedTimeCode(final byte preambleField, final byte[] timeField) {
         return parseCCSDSCalendarSegmentedTimeCode(preambleField, timeField,
-                DataContext.getDefault().getTimeScales().getUTC());
+                                                   DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /**
@@ -691,9 +693,9 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @since 10.1
      */
     public FieldAbsoluteDate<T> parseCCSDSCalendarSegmentedTimeCode(
-            final byte preambleField,
-            final byte[] timeField,
-            final TimeScale utc) {
+                                                                    final byte preambleField,
+                                                                    final byte[] timeField,
+                                                                    final TimeScale utc) {
 
         // time code identification
         if ((preambleField & 0xF0) != 0x50) {
@@ -766,9 +768,9 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @param <T> the type of the field elements
      */
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> createJDDate(final int jd, final T secondsSinceNoon,
-                                                                                    final TimeScale timeScale) {
+                                                                                        final TimeScale timeScale) {
         return new FieldAbsoluteDate<>(secondsSinceNoon.getField(), new DateComponents(DateComponents.JULIAN_EPOCH, jd),
-                                       TimeComponents.H12, timeScale).shiftedBy(secondsSinceNoon);
+                        TimeComponents.H12, timeScale).shiftedBy(secondsSinceNoon);
     }
 
     /** Build an instance corresponding to a Modified Julian Day date.
@@ -779,11 +781,11 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @param <T> the type of the field elements
      */
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> createMJDDate(final int mjd, final T secondsInDay,
-                                                                                     final TimeScale timeScale) {
+                                                                                         final TimeScale timeScale) {
         return new FieldAbsoluteDate<>(secondsInDay.getField(),
-                                       new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                       TimeComponents.H00,
-                                       timeScale).shiftedBy(secondsInDay);
+                        new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                        TimeComponents.H00,
+                        timeScale).shiftedBy(secondsInDay);
     }
 
     /** Build an instance corresponding to a GPS date.
@@ -802,7 +804,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> createGPSDate(final int weekNumber, final T milliInWeek) {
         return createGPSDate(weekNumber, milliInWeek,
-                DataContext.getDefault().getTimeScales().getGPS());
+                             DataContext.getDefault().getTimeScales().getGPS());
     }
 
     /**
@@ -819,14 +821,14 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @since 10.1
      */
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> createGPSDate(
-            final int weekNumber,
-            final T milliInWeek,
-            final TimeScale gps) {
+                                                                                         final int weekNumber,
+                                                                                         final T milliInWeek,
+                                                                                         final TimeScale gps) {
 
         final int day = (int) FastMath.floor(milliInWeek.getReal() / (1000.0 * Constants.JULIAN_DAY));
         final T secondsInDay = milliInWeek.divide(1000.0).subtract(day * Constants.JULIAN_DAY);
         return new FieldAbsoluteDate<>(milliInWeek.getField(), new DateComponents(DateComponents.GPS_EPOCH, weekNumber * 7 + day),
-                                       TimeComponents.H00, gps).shiftedBy(secondsInDay);
+                        TimeComponents.H00, gps).shiftedBy(secondsInDay);
     }
 
     /** Build an instance corresponding to a Julian Epoch (JE).
@@ -849,7 +851,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> createJulianEpoch(final T julianEpoch) {
         return createJulianEpoch(julianEpoch,
-                DataContext.getDefault().getTimeScales());
+                                 DataContext.getDefault().getTimeScales());
     }
 
     /**
@@ -874,12 +876,12 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @since 10.1
      */
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> createJulianEpoch(
-            final T julianEpoch,
-            final TimeScales timeScales) {
+                                                                                             final T julianEpoch,
+                                                                                             final TimeScales timeScales) {
 
         final Field<T> field = julianEpoch.getField();
         return new FieldAbsoluteDate<>(new FieldAbsoluteDate<>(field, timeScales.getJ2000Epoch()),
-                                       julianEpoch.subtract(2000.0).multiply(Constants.JULIAN_YEAR));
+                        julianEpoch.subtract(2000.0).multiply(Constants.JULIAN_YEAR));
     }
 
     /** Build an instance corresponding to a Besselian Epoch (BE).
@@ -905,7 +907,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> createBesselianEpoch(final T besselianEpoch) {
         return createBesselianEpoch(besselianEpoch,
-                DataContext.getDefault().getTimeScales());
+                                    DataContext.getDefault().getTimeScales());
     }
 
     /**
@@ -933,13 +935,13 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @since 10.1
      */
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> createBesselianEpoch(
-            final T besselianEpoch,
-            final TimeScales timeScales) {
+                                                                                                final T besselianEpoch,
+                                                                                                final TimeScales timeScales) {
 
         final Field<T> field = besselianEpoch.getField();
         return new FieldAbsoluteDate<>(new FieldAbsoluteDate<>(field, timeScales.getJ2000Epoch()),
-                                       besselianEpoch.subtract(1900).multiply(Constants.BESSELIAN_YEAR).add(
-                                       Constants.JULIAN_DAY * (-36525) + Constants.JULIAN_DAY * 0.31352));
+                        besselianEpoch.subtract(1900).multiply(Constants.BESSELIAN_YEAR).add(
+                                                                                             Constants.JULIAN_DAY * (-36525) + Constants.JULIAN_DAY * 0.31352));
     }
 
     /** Reference epoch for julian dates: -4712-01-01T12:00:00 Terrestrial Time.
@@ -960,7 +962,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> getJulianEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field,
-                DataContext.getDefault().getTimeScales().getJulianEpoch());
+                        DataContext.getDefault().getTimeScales().getJulianEpoch());
     }
 
     /** Reference epoch for modified julian dates: 1858-11-17T00:00:00 Terrestrial Time.
@@ -976,7 +978,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> getModifiedJulianEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field,
-                DataContext.getDefault().getTimeScales().getModifiedJulianEpoch());
+                        DataContext.getDefault().getTimeScales().getModifiedJulianEpoch());
     }
 
     /** Reference epoch for 1950 dates: 1950-01-01T00:00:00 Terrestrial Time.
@@ -992,7 +994,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> getFiftiesEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field,
-                DataContext.getDefault().getTimeScales().getFiftiesEpoch());
+                        DataContext.getDefault().getTimeScales().getFiftiesEpoch());
     }
 
     /** Reference epoch for CCSDS Time Code Format (CCSDS 301.0-B-4):
@@ -1009,7 +1011,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> getCCSDSEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field,
-                DataContext.getDefault().getTimeScales().getCcsdsEpoch());
+                        DataContext.getDefault().getTimeScales().getCcsdsEpoch());
     }
 
     /** Reference epoch for Galileo System Time: 1999-08-22T00:00:00 UTC.
@@ -1025,7 +1027,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> getGalileoEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field,
-                DataContext.getDefault().getTimeScales().getGalileoEpoch());
+                        DataContext.getDefault().getTimeScales().getGalileoEpoch());
     }
 
     /** Reference epoch for GPS weeks: 1980-01-06T00:00:00 GPS time.
@@ -1041,7 +1043,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> getGPSEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field,
-                DataContext.getDefault().getTimeScales().getGpsEpoch());
+                        DataContext.getDefault().getTimeScales().getGpsEpoch());
     }
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC).
@@ -1058,7 +1060,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> getJ2000Epoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field,
-                DataContext.getDefault().getTimeScales().getJ2000Epoch());
+                        DataContext.getDefault().getTimeScales().getJ2000Epoch());
     }
 
     /** Java Reference epoch: 1970-01-01T00:00:00 Universal Time Coordinate.
@@ -1078,7 +1080,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> getJavaEpoch(final Field<T> field) {
         return new FieldAbsoluteDate<>(field,
-                DataContext.getDefault().getTimeScales().getJavaEpoch());
+                        DataContext.getDefault().getTimeScales().getJavaEpoch());
     }
 
     /** Dummy date at infinity in the past direction.
@@ -1112,7 +1114,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @return an arbitrary date.
      */
     public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> getArbitraryEpoch(
-            final Field<T> field) {
+                                                                                             final Field<T> field) {
 
         return new FieldAbsoluteDate<>(field, AbsoluteDate.ARBITRARY_EPOCH);
     }
@@ -1204,7 +1206,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     public T offsetFrom(final FieldAbsoluteDate<T> instant, final TimeScale timeScale) {
         final long   elapsedDurationA = epoch - instant.epoch;
         final T elapsedDurationB = offset.add(timeScale.offsetFromTAI(this)).
-                                   subtract(instant.offset.add(timeScale.offsetFromTAI(instant)));
+                        subtract(instant.offset.add(timeScale.offsetFromTAI(instant)));
         return  elapsedDurationB.add(elapsedDurationA);
     }
 
@@ -1274,10 +1276,10 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         final DateComponents dateComponents = new DateComponents(DateComponents.J2000_EPOCH, date);
         // extract time element, accounting for leap seconds
         final double leap =
-                timeScale.insideLeap(this) ? timeScale.getLeap(this.toAbsoluteDate()) : 0;
+                        timeScale.insideLeap(this) ? timeScale.getLeap(this.toAbsoluteDate()) : 0;
         final int minuteDuration = timeScale.minuteDuration(this);
         final TimeComponents timeComponents =
-                TimeComponents.fromSeconds((int) time, offset2000B, leap, minuteDuration);
+                        TimeComponents.fromSeconds((int) time, offset2000B, leap, minuteDuration);
 
         // build the components
         return new DateTimeComponents(dateComponents, timeComponents);
@@ -1296,7 +1298,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     @DefaultDataContext
     public DateTimeComponents getComponents(final int minutesFromUTC) {
         return getComponents(minutesFromUTC,
-                DataContext.getDefault().getTimeScales().getUTC());
+                             DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /**
@@ -1377,7 +1379,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     public DateTimeComponents getComponents(final TimeZone timeZone,
                                             final TimeScale utc) {
         final FieldAbsoluteDate<T> javaEpoch =
-                new FieldAbsoluteDate<>(field, DateComponents.JAVA_EPOCH, utc);
+                        new FieldAbsoluteDate<>(field, DateComponents.JAVA_EPOCH, utc);
         final long milliseconds = FastMath.round((offsetFrom(javaEpoch, utc).getReal()) * 1000);
         return getComponents(timeZone.getOffset(milliseconds) / 60000, utc);
     }
@@ -1567,7 +1569,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     @DefaultDataContext
     public String toString(final int minutesFromUTC) {
         return toString(minutesFromUTC,
-                DataContext.getDefault().getTimeScales().getUTC());
+                        DataContext.getDefault().getTimeScales().getUTC());
     }
 
     /**
@@ -1638,6 +1640,28 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         return new AbsoluteDate(epoch, offset.getReal());
     }
 
+    /** Check if the Field is of type {@link Gradient} or {@link DerivativeStructure} and if the derivatives are all null.
+     * @return true if all derivatives are null, false otherwise
+     * @since 12.0
+     */
+    public boolean hasNullDerivatives() {
+
+        double sumDerivatives = 0;
+
+        if (offset instanceof Gradient) {
+            for (double gradient : ((Gradient) offset).getGradient()) {
+                sumDerivatives += FastMath.abs(gradient);
+            }
+        } else if (offset instanceof DerivativeStructure) {
+            final double[] derivatives = ((DerivativeStructure) offset).getAllDerivatives();
+            for (int i = 1; i < derivatives.length; i++) {
+                sumDerivatives += FastMath.abs(derivatives[i]);
+            }
+        } else {
+            sumDerivatives = Double.POSITIVE_INFINITY;
+        }
+        return sumDerivatives < Precision.EPSILON;
+    }
 }
 
 

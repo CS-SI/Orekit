@@ -167,8 +167,8 @@ public class FieldNiellMappingFunctionModelTest {
         // Field Orbit
         final Frame frame = FramesFactory.getEME2000();
         final FieldOrbit<DerivativeStructure> dsOrbit = new FieldKeplerianOrbit<>(a0, e0, i0, pa0, raan0, anomaly0,
-                                                                                  PositionAngle.MEAN, frame,
-                                                                                  dsDate, zero.add(3.9860047e14));
+                        PositionAngle.MEAN, frame,
+                        dsDate, zero.add(3.9860047e14));
         // Field State
         final FieldSpacecraftState<DerivativeStructure> dsState = new FieldSpacecraftState<>(dsOrbit);
 
@@ -239,9 +239,12 @@ public class FieldNiellMappingFunctionModelTest {
                                delayP1, delayP2, delayP3, delayP4);
         }
 
+        // Tolerances
+        final double epsMFH = 6.506e-12;
+        final double epsMFW = 1.557e-11;
         for (int i = 0; i < 6; i++) {
-            Assertions.assertEquals(compMFH[i + 1], refMF[0][i], 6.5e-12);
-            Assertions.assertEquals(compMFW[i + 1], refMF[1][i], 1.6e-11);
+            Assertions.assertEquals(0., FastMath.abs(compMFH[i + 1] - refMF[0][i]), epsMFH);
+            Assertions.assertEquals(0., FastMath.abs(compMFW[i + 1] - refMF[1][i]), epsMFW);
         }
     }
 
@@ -253,9 +256,9 @@ public class FieldNiellMappingFunctionModelTest {
                                     double[] sP3h, double[] sP4h) {
         for (int i = 0; i < jacobian.length; ++i) {
             jacobian[i][column] = ( -3 * (sP4h[i] - sM4h[i]) +
-                                    32 * (sP3h[i] - sM3h[i]) -
-                                   168 * (sP2h[i] - sM2h[i]) +
-                                   672 * (sP1h[i] - sM1h[i])) / (840 * h);
+                            32 * (sP3h[i] - sM3h[i]) -
+                            168 * (sP2h[i] - sM2h[i]) +
+                            672 * (sP1h[i] - sM1h[i])) / (840 * h);
         }
     }
 
@@ -271,7 +274,7 @@ public class FieldNiellMappingFunctionModelTest {
     }
 
     private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
-                                  boolean withMass) {
+                                    boolean withMass) {
         double[][] array = new double[2][withMass ? 7 : 6];
         orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
         if (withMass) {
@@ -285,8 +288,8 @@ public class FieldNiellMappingFunctionModelTest {
                                          Attitude attitude) {
         Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
         return (array.length > 6) ?
-               new SpacecraftState(orbit, attitude) :
-               new SpacecraftState(orbit, attitude, array[0][6]);
+                                   new SpacecraftState(orbit, attitude) :
+                                       new SpacecraftState(orbit, attitude, array[0][6]);
     }
 
 }
