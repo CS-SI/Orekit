@@ -24,6 +24,9 @@
       <action dev="maxime" type="update" issue="1151">
         Increased performance of orbit determination when using solar radiation pressure.
       </action>
+      <action dev="luc" type="update" issue="1157">
+        Improved parallelism in measurements generation.
+      </action>
       <action dev="luc" type="update" issue="1156">
         Moved getBuilder from AbstractScheduler base class to Scheduler interface.
       </action>

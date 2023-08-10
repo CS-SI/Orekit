@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.InterSatellitesRange;
@@ -34,6 +36,17 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
     /** Flag indicating whether it is a two-way measurement. */
     private final boolean twoway;
 
+    /** Satellite which receives the signal and performs the measurement.
+     * @since 12.0
+     */
+    private final ObservableSatellite local;
+
+    /** Satellite which simply emits the signal in the one-way case,
+     * or reflects the signal in the two-way case.
+     * @since 12.0
+     */
+    private final ObservableSatellite remote;
+
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param local satellite which receives the signal and performs the measurement
@@ -48,23 +61,23 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
                                        final boolean twoWay, final double sigma, final double baseWeight) {
         super(noiseSource, sigma, baseWeight, local, remote);
         this.twoway  = twoWay;
+        this.local      = local;
+        this.remote     = remote;
     }
 
     /** {@inheritDoc} */
     @Override
-    public InterSatellitesRange build(final SpacecraftState[] states) {
+    public InterSatellitesRange build(final Map<ObservableSatellite, SpacecraftState> states) {
 
-        final ObservableSatellite[] satellites = getSatellites();
         final double sigma                     = getTheoreticalStandardDeviation()[0];
         final double baseWeight                = getBaseWeight()[0];
         final SpacecraftState[] relevant       = new SpacecraftState[] {
-            states[satellites[0].getPropagatorIndex()],
-            states[satellites[1].getPropagatorIndex()]
+            states.get(local),
+            states.get(remote)
         };
-        final SpacecraftState state            = states[satellites[0].getPropagatorIndex()];
 
         // create a dummy measurement
-        final InterSatellitesRange dummy = new InterSatellitesRange(satellites[0], satellites[1], twoway, state.getDate(),
+        final InterSatellitesRange dummy = new InterSatellitesRange(local, remote, twoway, relevant[0].getDate(),
                                                                     Double.NaN, sigma, baseWeight);
         for (final EstimationModifier<InterSatellitesRange> modifier : getModifiers()) {
             dummy.addModifier(modifier);
@@ -89,7 +102,7 @@ public class InterSatellitesRangeBuilder extends AbstractMeasurementBuilder<Inte
         }
 
         // generate measurement
-        final InterSatellitesRange measurement = new InterSatellitesRange(satellites[0], satellites[1], twoway, state.getDate(),
+        final InterSatellitesRange measurement = new InterSatellitesRange(local, remote, twoway, relevant[0].getDate(),
                                                                           range, sigma, baseWeight);
         for (final EstimationModifier<InterSatellitesRange> modifier : getModifiers()) {
             measurement.addModifier(modifier);

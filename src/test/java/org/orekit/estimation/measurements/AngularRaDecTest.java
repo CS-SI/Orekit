@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -310,10 +311,11 @@ public class AngularRaDecTest {
         final double[][] raDec = new double[frames.length][];
         for (int i = 0; i < frames.length; i++) {
             // build RA-Dec with specific reference frame
+            final ObservableSatellite os = new ObservableSatellite(0);
             final AngularRaDecBuilder builder = new AngularRaDecBuilder(null, station, frames[i],
-                    new double[]{1., 1.}, new double[]{1., 1.}, new ObservableSatellite(0));
+                    new double[]{1., 1.}, new double[]{1., 1.}, os);
             builder.init(spacecraftState.getDate(), spacecraftState.getDate());
-            final double[] moreRaDec = builder.build(new SpacecraftState[] {spacecraftState}).getObservedValue();
+            final double[] moreRaDec = builder.build(Collections.singletonMap(os, spacecraftState)).getObservedValue();
             // convert in common frame
             final StaticTransform transform = frames[i].getStaticTransformTo(orbit.getFrame(), epoch);
             final Vector3D transformedLoS = transform.transformVector(new Vector3D(moreRaDec[0], moreRaDec[1]));
