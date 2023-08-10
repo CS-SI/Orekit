@@ -22,13 +22,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 
@@ -135,6 +134,7 @@ public class ImmutableTimeStampedCacheTest {
             Assertions.fail("Expected Exception");
         } catch (TimeStampedCacheException e) {
             // expected
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE, e.getSpecifier());
         }
 
         // on fist date
@@ -164,8 +164,7 @@ public class ImmutableTimeStampedCacheTest {
             Assertions.fail("Expected Exception");
         } catch (TimeStampedCacheException e) {
             // expected
-            MatcherAssert.assertThat(e.getMessage(),
-                    CoreMatchers.containsString(central.toString()));
+           Assertions.assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER, e.getSpecifier());
         }
     }
 
@@ -293,5 +292,4 @@ public class ImmutableTimeStampedCacheTest {
         Assertions.assertTrue(s.get(1).durationFrom(date) >  offset);
     }
 
-    
 }

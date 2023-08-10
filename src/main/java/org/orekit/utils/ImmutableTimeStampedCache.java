@@ -170,7 +170,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
         double dtSup = t.durationFrom(latestDate);
         if (dtSup > 0) {
             // after last entry
-            return -1;
+            return data.size();
         }
 
         // search entries, using linear interpolation
