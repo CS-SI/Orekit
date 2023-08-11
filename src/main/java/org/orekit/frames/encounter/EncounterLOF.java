@@ -18,7 +18,9 @@ package org.orekit.frames.encounter;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.FieldVector2D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
@@ -29,6 +31,10 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.MathArrays;
 import org.orekit.frames.LOF;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.PVCoordinates;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,6 +50,88 @@ import java.util.stream.Collectors;
  * @since 12.0
  */
 public interface EncounterLOF extends LOF {
+
+    /**
+     * {@inheritDoc} It is unnecessary to use this method when dealing with {@link EncounterLOF}, use
+     * {@link #rotationFromInertial(Field, FieldPVCoordinates)} instead.
+     */
+    @Override
+    default <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(Field<T> field,
+                                                                                      FieldAbsoluteDate<T> date,
+                                                                                      FieldPVCoordinates<T> pv) {
+        return rotationFromInertial(field, pv);
+    }
+
+    /**
+     * {@inheritDoc} It is unnecessary to use this method when dealing with {@link EncounterLOF}, use
+     * {@link #rotationFromInertial(PVCoordinates)} instead.
+     */
+    @Override
+    default Rotation rotationFromInertial(AbsoluteDate date, PVCoordinates pv) {
+        return rotationFromInertial(pv);
+    }
+
+    /**
+     * Get the rotation from inertial to this encounter local orbital frame.
+     * <p>
+     * <b>BEWARE: The given origin's position and velocity coordinates must be given in the frame in which this instance
+     * has been expressed in.</b>
+     *
+     * @param field field to which the elements belong
+     * @param origin position-velocity of the origin in the same inertial frame as the one this instance has been expressed
+     * in.
+     * @param <T> type of the field elements
+     *
+     * @return rotation from inertial to this encounter local orbital frame
+     */
+    default <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+                                                                                      final FieldPVCoordinates<T> origin) {
+        return rotationFromInertial(field, origin, getFieldOther(field));
+    }
+
+    /**
+     * Get the rotation from inertial to this encounter local orbital frame.
+     * <p>
+     * <b>BEWARE: The given origin's position and velocity coordinates must be given in the frame in which this instance
+     * has been expressed in.</b>
+     *
+     * @param origin position-velocity of the origin in some inertial frame
+     *
+     * @return rotation from inertial to this encounter local orbital frame
+     */
+    default Rotation rotationFromInertial(final PVCoordinates origin) {
+        return rotationFromInertial(origin, getOther());
+    }
+
+    /**
+     * Get the rotation from inertial to this encounter local orbital frame.
+     * <p>
+     * <b>BEWARE: The given origin's position and velocity coordinates must be given in the frame in which this instance
+     * has been expressed in.</b>
+     *
+     * @param field field to which the elements belong
+     * @param origin position-velocity of the origin in the same inertial frame as other
+     * @param other position-velocity of the other in the same inertial frame as origin
+     * @param <T> type of the field elements
+     *
+     * @return rotation from inertial to this encounter local orbital frame
+     */
+    <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(Field<T> field,
+                                                                              FieldPVCoordinates<T> origin,
+                                                                              FieldPVCoordinates<T> other);
+
+    /**
+     * Get the rotation from inertial to this encounter local orbital frame.
+     * <p>
+     * <b>BEWARE: The given origin's position and velocity coordinates must be given in the frame in which this instance
+     * has been expressed in.</b>
+     *
+     * @param origin position-velocity of the origin in the same inertial frame as other
+     * @param other position-velocity of the other instance in the same inertial frame as origin
+     *
+     * @return rotation from inertial to this encounter local orbital frame
+     */
+    Rotation rotationFromInertial(PVCoordinates origin, PVCoordinates other);
 
     /**
      * Project given {@link RealMatrix matrix} expressed in this encounter local orbital frame onto the collision plane.
@@ -162,11 +250,22 @@ public interface EncounterLOF extends LOF {
     }
 
     /**
+     * @param field field of the element
+     * @param <T> type of the element
+     *
+     * @return other's position and velocity coordinates
+     */
+    <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getFieldOther(Field<T> field);
+
+    /**
      * Get the axis normal to the collision plane (i, j or k) in this encounter local orbital frame.
      *
      * @return axis normal to the collision plane (i, j or k) in this encounter local orbital frame
      */
     Vector3D getAxisNormalToCollisionPlane();
+
+    /** @return other's position and velocity coordinates */
+    PVCoordinates getOther();
 
     /** @return flag that indicates if current local orbital frame shall be treated as pseudo-inertial */
     @Override

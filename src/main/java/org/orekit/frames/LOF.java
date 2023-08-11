@@ -38,12 +38,14 @@ public interface LOF {
     /**
      * Get the rotation from input to output {@link LOF local orbital frame}.
      * <p>
-     * This rotation does not include any time derivatives.
-     * </p>
+     * This rotation does not include any time derivatives. If first time derivatives (i.e. rotation rate) is needed as well,
+     * the full {@link #transformFromLOFInToLOFOut(LOF, LOF, FieldAbsoluteDate, FieldPVCoordinates)} method must be called and
+     * the complete rotation transform must be extracted from it.
      *
      * @param field field to which the elements belong
      * @param in input commonly used local orbital frame
      * @param out output commonly used local orbital frame
+     * @param date date of the rotation
      * @param pv position-velocity of the spacecraft in some inertial frame
      * @param <T> type of the field elements
      *
@@ -53,8 +55,9 @@ public interface LOF {
      */
     static <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromLOFInToLOFOut(final Field<T> field,
                                                                                           final LOF in, final LOF out,
+                                                                                          final FieldAbsoluteDate<T> date,
                                                                                           final FieldPVCoordinates<T> pv) {
-        return out.rotationFromLOF(field, in, pv);
+        return out.rotationFromLOF(field, in, date, pv);
     }
 
     /**
@@ -79,19 +82,21 @@ public interface LOF {
     /**
      * Get the rotation from input to output {@link LOF local orbital frame}.
      * <p>
-     * This rotation does not include any time derivatives.
-     * </p>
+     * This rotation does not include any time derivatives. If first time derivatives (i.e. rotation rate) is needed as well,
+     * the full {@link #transformFromLOFInToLOFOut(LOF, LOF, AbsoluteDate, PVCoordinates)}   method must be called and
+     * the complete rotation transform must be extracted from it.
      *
      * @param in input commonly used local orbital frame
      * @param out output commonly used local orbital frame
+     * @param date date of the rotation
      * @param pv position-velocity of the spacecraft in some inertial frame
      *
      * @return rotation from input to output local orbital frame.
      *
      * @since 11.3
      */
-    static Rotation rotationFromLOFInToLOFOut(final LOF in, final LOF out, final PVCoordinates pv) {
-        return out.rotationFromLOF(in, pv);
+    static Rotation rotationFromLOFInToLOFOut(final LOF in, final LOF out, final AbsoluteDate date, final PVCoordinates pv) {
+        return out.rotationFromLOF(in, date, pv);
     }
 
     /**
@@ -113,9 +118,14 @@ public interface LOF {
 
     /**
      * Get the rotation from input {@link LOF local orbital frame} to the instance.
+     * <p>
+     * This rotation does not include any time derivatives. If first time derivatives (i.e. rotation rate) is needed as well,
+     * the full {@link #transformFromLOF(LOF, FieldAbsoluteDate, FieldPVCoordinates)}   method must be called and
+     * the complete rotation transform must be extracted from it.
      *
      * @param field field to which the elements belong
      * @param fromLOF input local orbital frame
+     * @param date date of the rotation
      * @param pv position-velocity of the spacecraft in some inertial frame
      * @param <T> type of the field elements
      *
@@ -125,13 +135,14 @@ public interface LOF {
      */
     default <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromLOF(final Field<T> field,
                                                                                  final LOF fromLOF,
+                                                                                 final FieldAbsoluteDate<T> date,
                                                                                  final FieldPVCoordinates<T> pv) {
 
         // First compute the rotation from the input LOF to the pivot inertial
-        final FieldRotation<T> fromLOFToInertial = fromLOF.rotationFromInertial(field, pv).revert();
+        final FieldRotation<T> fromLOFToInertial = fromLOF.rotationFromInertial(field, date, pv).revert();
 
         // Then compute the rotation from the pivot inertial to the output LOF
-        final FieldRotation<T> inertialToThis = this.rotationFromInertial(field, pv);
+        final FieldRotation<T> inertialToThis = this.rotationFromInertial(field, date, pv);
 
         // Output composed rotation
         return fromLOFToInertial.compose(inertialToThis, RotationConvention.FRAME_TRANSFORM);
@@ -181,7 +192,7 @@ public interface LOF {
         final FieldTransform<T> translation = new FieldTransform<>(date, pv.negate());
 
         // compute the rotation part of the transform
-        final FieldRotation<T> r        = rotationFromInertial(date.getField(), pv);
+        final FieldRotation<T> r        = rotationFromInertial(date.getField(), date, pv);
         final FieldVector3D<T> p        = pv.getPosition();
         final FieldVector3D<T> momentum = pv.getMomentum();
         final FieldTransform<T> rotation = new FieldTransform<>(date, r,
@@ -199,11 +210,12 @@ public interface LOF {
      * Get the rotation from inertial frame to local orbital frame.
      * <p>
      * This rotation does not include any time derivatives. If first time derivatives (i.e. rotation rate) is needed as well,
-     * the full {@link #transformFromInertial(FieldAbsoluteDate, FieldPVCoordinates) transformFromInertial} method must be
+     * the full {@link #transformFromInertial(FieldAbsoluteDate, FieldPVCoordinates)} method must be
      * called and the complete rotation transform must be extracted from it.
      * </p>
      *
      * @param field field to which the elements belong
+     * @param date date of the rotation
      * @param pv position-velocity of the spacecraft in some inertial frame
      * @param <T> type of the field elements
      *
@@ -211,25 +223,31 @@ public interface LOF {
      *
      * @since 9.0
      */
-    <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(Field<T> field, FieldPVCoordinates<T> pv);
+    <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(Field<T> field, FieldAbsoluteDate<T> date,
+                                                                              FieldPVCoordinates<T> pv);
 
     /**
      * Get the rotation from input {@link LOF local orbital frame} to the instance.
+     * <p>
+     * This rotation does not include any time derivatives. If first time derivatives (i.e. rotation rate) is needed as well,
+     * the full {@link #transformFromLOF(LOF, AbsoluteDate, PVCoordinates)}  method must be called and
+     * the complete rotation transform must be extracted from it.
      *
      * @param fromLOF input local orbital frame
+     * @param date date of the rotation
      * @param pv position-velocity of the spacecraft in some inertial frame
      *
      * @return rotation from input local orbital frame to the instance
      *
      * @since 11.3
      */
-    default Rotation rotationFromLOF(final LOF fromLOF, final PVCoordinates pv) {
+    default Rotation rotationFromLOF(final LOF fromLOF, final AbsoluteDate date, final PVCoordinates pv) {
 
         // First compute the rotation from the input LOF to the pivot inertial
-        final Rotation fromLOFToInertial = fromLOF.rotationFromInertial(pv).revert();
+        final Rotation fromLOFToInertial = fromLOF.rotationFromInertial(date, pv).revert();
 
         // Then compute the rotation from the pivot inertial to the output LOF
-        final Rotation inertialToThis = this.rotationFromInertial(pv);
+        final Rotation inertialToThis = this.rotationFromInertial(date, pv);
 
         // Output composed rotation
         return fromLOFToInertial.compose(inertialToThis, RotationConvention.FRAME_TRANSFORM);
@@ -272,7 +290,7 @@ public interface LOF {
         final Transform translation = new Transform(date, pv.negate());
 
         // compute the rotation part of the transform
-        final Rotation  r        = rotationFromInertial(pv);
+        final Rotation  r        = rotationFromInertial(date, pv);
         final Vector3D  p        = pv.getPosition();
         final Vector3D  momentum = pv.getMomentum();
         final Transform rotation = new Transform(date, r, new Vector3D(1.0 / p.getNormSq(), r.applyTo(momentum)));
@@ -290,14 +308,13 @@ public interface LOF {
      * This rotation does not include any time derivatives. If first time derivatives (i.e. rotation rate) is needed as well,
      * the full {@link #transformFromInertial(AbsoluteDate, PVCoordinates) transformFromInertial} method must be called and
      * the complete rotation transform must be extracted from it.
-     * </p>
      *
+     * @param date date of the rotation
      * @param pv position-velocity of the spacecraft in some inertial frame
      *
      * @return rotation from inertial frame to local orbital frame
      */
-    Rotation rotationFromInertial(PVCoordinates pv);
-
+    Rotation rotationFromInertial(AbsoluteDate date, PVCoordinates pv);
     /** @return flag that indicates if current local orbital frame shall be treated as pseudo-inertial */
     default boolean isQuasiInertial() {
         return false;
