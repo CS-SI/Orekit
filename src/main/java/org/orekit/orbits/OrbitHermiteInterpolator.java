@@ -45,7 +45,7 @@ import java.util.stream.Stream;
  * <a href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a> and numerical problems
  * (including NaN appearing).
  *
- * @author Luc Maisonaube
+ * @author Luc Maisonobe
  * @author Vincent Cucchietti
  * @see Orbit
  * @see HermiteInterpolator

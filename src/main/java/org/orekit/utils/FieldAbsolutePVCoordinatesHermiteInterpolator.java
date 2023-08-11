@@ -33,7 +33,7 @@ import java.util.List;
  * (about 10-20 points) in order to avoid <a href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
  * and numerical problems (including NaN appearing).
  *
- * @author Luc Maisonaube
+ * @author Luc Maisonobe
  * @author Vincent Cucchietti
  * @see FieldHermiteInterpolator
  * @see FieldAbsolutePVCoordinates
