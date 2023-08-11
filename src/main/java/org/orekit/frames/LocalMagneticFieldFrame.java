@@ -61,7 +61,7 @@ public class LocalMagneticFieldFrame implements LOF {
      * <ul>
      *     <li> x: Magnetic field</li>
      *     <li> y: Completes orthonormal frame</li>
-     *     <li> z: Cross product of the magnetic field with the orbital momentum<</li>
+     *     <li> z: Cross product of the magnetic field with the orbital momentum</li>
      * </ul>.
      * <b>BEWARE : Do not use this constructor if it is planned to be used with an equatorial orbit as the magnetic field and
      * orbital momentum vectors will be parallel and cause an error to be thrown</b>
