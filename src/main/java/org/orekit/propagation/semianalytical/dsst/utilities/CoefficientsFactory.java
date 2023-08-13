@@ -17,11 +17,10 @@
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -202,16 +201,6 @@ public class CoefficientsFactory {
         }
 
         return GsHs;
-    }
-
-    /** Compute the V<sub>n,s</sub> coefficients from 2.8.2-(1)(2).
-     * @param order Order of the computation. Computation will be done from 0 to order -1
-     * @return Map of the V<sub>n, s</sub> coefficients
-     * @deprecated as of 11.3.3, replaced by {@link #computeVnsCoefficients(int)}
-     */
-    @Deprecated
-    public static TreeMap<NSKey, Double> computeVns(final int order) {
-        return new TreeMap<>(computeVnsCoefficients(order));
     }
 
     /** Compute the V<sub>n,s</sub> coefficients from 2.8.2-(1)(2).
