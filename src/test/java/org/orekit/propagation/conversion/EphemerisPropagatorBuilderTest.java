@@ -57,20 +57,19 @@ public class EphemerisPropagatorBuilderTest {
                                                Constants.EIGEN5C_EARTH_MU);
         final List<SpacecraftState> states = new ArrayList<>();
         states.add(new SpacecraftState(orbit));
-        states.add(new SpacecraftState(orbit));
+        states.add(new SpacecraftState(orbit.shiftedBy(1)));
 
         final Frame                             frame             = FramesFactory.getGCRF();
         final TimeInterpolator<SpacecraftState> stateInterpolator = new SpacecraftStateInterpolator(frame);
-        final AttitudeProvider                  attitudeProvider  = Mockito.mock(AttitudeProvider.class);
 
         final EphemerisPropagatorBuilder builder =
-                new EphemerisPropagatorBuilder(states, stateInterpolator, attitudeProvider);
+                new EphemerisPropagatorBuilder(states, stateInterpolator);
 
         // When
         final Ephemeris builtPropagator = (Ephemeris) builder.buildPropagator(builder.getSelectedNormalizedParameters());
 
         // Then
-        final Ephemeris expectedPropagator = new Ephemeris(states, stateInterpolator, attitudeProvider);
+        final Ephemeris expectedPropagator = new Ephemeris(states, stateInterpolator);
 
         Assertions.assertEquals(expectedPropagator.getFrame(), builtPropagator.getFrame());
         Assertions.assertEquals(expectedPropagator.getMinDate(), builtPropagator.getMinDate());

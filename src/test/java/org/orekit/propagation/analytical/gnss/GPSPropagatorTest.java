@@ -22,6 +22,7 @@ import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -30,6 +31,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SEMParser;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
@@ -367,6 +369,22 @@ public class GPSPropagatorTest {
         // Verify that an infinite loop did not occur
         Assertions.assertEquals(Vector3D.NaN, pv0.getPosition());
         Assertions.assertEquals(Vector3D.NaN, pv0.getVelocity());
+
+    }
+
+    /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
+    @Test
+    public void testIssue949() {
+        // GIVEN
+        // Setup propagator
+        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
+
+        // Setup additional state provider which use the initial state in its init method
+        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
+        propagator.addAdditionalStateProvider(additionalStateProvider);
+
+        // WHEN & THEN
+        Assertions.assertDoesNotThrow(() -> propagator.propagate(new AbsoluteDate()), "No error should have been thrown");
 
     }
 
