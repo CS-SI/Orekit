@@ -24,6 +24,9 @@
       <action dev="maxime" type="update" issue="1151">
         Increased performance of orbit determination when using solar radiation pressure.
       </action>
+      <action dev="vincent" type="update" issue="1144">
+        Changed methods computing rotation in LOF to expect date as argument in addition to the PVCoordinates.
+      </action>
       <action dev="luc" type="update" issue="1157">
         Improved parallelism in measurements generation.
       </action>
@@ -337,6 +340,9 @@
       </action>
       <action dev="luc" type="fix" issue="997">
         Fixed longitude crossing detection in stepless propagators.
+      </action>
+      <action dev="alfe" type="add" issue="995">
+        Added attitude provider: BdotPointing.
       </action>
       <action dev="luc" type="fix" issue="994">
         Fixed typo in method name OcmData.getTrajectoryBlocks().

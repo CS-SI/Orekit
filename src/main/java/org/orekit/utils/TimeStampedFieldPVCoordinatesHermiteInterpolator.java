@@ -34,7 +34,7 @@ import java.util.stream.Stream;
  *
  * @param <KK> type of the field element
  *
- * @author Luc Maisonaube
+ * @author Luc Maisonobe
  * @author Vincent Cucchietti
  * @see FieldHermiteInterpolator
  * @see TimeStampedFieldPVCoordinates
