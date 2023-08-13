@@ -193,7 +193,7 @@ public class GLONASSAnalyticalPropagatorTest {
 
     /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
     @Test
-    void testIssue949() {
+    public void testIssue949() {
         // GIVEN
         // Setup propagator
         final GLONASSAnalyticalPropagator propagator = almanac.getPropagator();

@@ -265,7 +265,7 @@ public class AdapterPropagatorTest {
 
     /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
     @Test
-    void testIssue949() {
+    public void testIssue949() {
         // GIVEN
         final AbsoluteDate initialDate  = new AbsoluteDate();
         final Orbit        initialOrbit = TestUtils.getDefaultOrbit(initialDate);

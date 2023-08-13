@@ -374,7 +374,7 @@ public class GPSPropagatorTest {
 
     /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
     @Test
-    void testIssue949() {
+    public void testIssue949() {
         // GIVEN
         // Setup propagator
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
