@@ -56,18 +56,11 @@ public class CRDConfiguration {
     }
 
     /**
-     * Set the system configuration record.
-     *
-     * @deprecated
-     * <p>since 11.3, use {@link #addConfigurationRecord(BaseConfiguration)} instead.
-     * @param systemRecord the record to set
+     * Get the system configuration record.
+     * @return the system configuration record
      */
-    @Deprecated
-    public void setSystemRecord(final SystemConfiguration systemRecord) {
-        // NOTE: The systemRecord is the one and only one SystemConfiguration.
-        // So clear the list systemConfigurationRecords firstly.
-        systemConfigurationRecords.clear();
-        addConfigurationRecord(systemRecord);
+    public SystemConfiguration getLastSystemRecord() {
+        return systemConfigurationRecords.isEmpty() ? null : systemConfigurationRecords.get(systemConfigurationRecords.size() - 1);
     }
 
     /**
@@ -79,35 +72,11 @@ public class CRDConfiguration {
     }
 
     /**
-     * Set the laser configuration record.
-     *
-     * @deprecated
-     * <p>since 11.3, use {@link #addConfigurationRecord(BaseConfiguration)} instead.
-     * @param laserRecord the record to set
-     */
-    @Deprecated
-    public void setLaserRecord(final LaserConfiguration laserRecord) {
-        addConfigurationRecord(laserRecord);
-    }
-
-    /**
      * Get the detector configuration record.
      * @return the detector configuration record
      */
     public DetectorConfiguration getDetectorRecord() {
         return getDetectorRecord(getSystemRecord());
-    }
-
-    /**
-     * Set the detector configuration record.
-     *
-     * @deprecated
-     * <p>since 11.3, use {@link #addConfigurationRecord(BaseConfiguration)} instead.
-     * @param detectorRecord the record to set
-     */
-    @Deprecated
-    public void setDetectorRecord(final DetectorConfiguration detectorRecord) {
-        addConfigurationRecord(detectorRecord);
     }
 
     /**
@@ -119,18 +88,6 @@ public class CRDConfiguration {
     }
 
     /**
-     * Set the timing system configuration record.
-     *
-     * @deprecated
-     * <p>since 11.3, use {@link #addConfigurationRecord(BaseConfiguration)} instead.
-     * @param timingRecord the record to set
-     */
-    @Deprecated
-    public void setTimingRecord(final TimingSystemConfiguration timingRecord) {
-        addConfigurationRecord(timingRecord);
-    }
-
-    /**
      * Get the transponder configuration record.
      * @return the transponder configuration record
      */
@@ -138,17 +95,6 @@ public class CRDConfiguration {
         return getTransponderRecord(getSystemRecord());
     }
 
-    /**
-     * Set the transponder configuration record.
-     *
-     * @deprecated
-     * <p>since 11.3, use {@link #addConfigurationRecord(BaseConfiguration)} instead.
-     * @param transponderRecord the record to set
-     */
-    @Deprecated
-    public void setTransponderRecord(final TransponderConfiguration transponderRecord) {
-        addConfigurationRecord(transponderRecord);
-    }
 
     /**
      * Get the software configuration record.
@@ -156,18 +102,6 @@ public class CRDConfiguration {
      */
     public SoftwareConfiguration getSoftwareRecord() {
         return getSoftwareRecord(getSystemRecord());
-    }
-
-    /**
-     * Set the software configuration record.
-     *
-     * @deprecated
-     * <p>since 11.3, use {@link #addConfigurationRecord(BaseConfiguration)} instead.
-     * @param softwareRecord the record to set
-     */
-    @Deprecated
-    public void setSoftwareRecord(final SoftwareConfiguration softwareRecord) {
-        addConfigurationRecord(softwareRecord);
     }
 
     /**
@@ -179,21 +113,9 @@ public class CRDConfiguration {
     }
 
     /**
-     * Set the meteorological record.
-     *
-     * @deprecated
-     * <p>since 11.3, use {@link #addConfigurationRecord(BaseConfiguration)} instead.
-     * @param meteorologicalRecord the meteorological record to set
-     */
-    @Deprecated
-    public void setMeteorologicalRecord(final MeteorologicalConfiguration meteorologicalRecord) {
-        addConfigurationRecord(meteorologicalRecord);
-    }
-
-    /**
      * Add a configuration record, such as SystemConfiguation, LaserConfiguration, DetectorConfiguration, etc.
      * @param config the configuration record
-     * @since 11.3
+     * @since 12.0
      */
     public void addConfigurationRecord(final BaseConfiguration config) {
         if (config == null) {
@@ -211,7 +133,7 @@ public class CRDConfiguration {
     /**
      * Get the configuration records map.
      * @return the configuration records map
-     * @since 11.3
+     * @since 12.0
      */
     public Map<String, BaseConfiguration> getConfigurationRecordMap() {
         return Collections.unmodifiableMap(mapConfigurationRecords);
@@ -221,7 +143,7 @@ public class CRDConfiguration {
      * Get configuration record corresponding to the configId.
      * @param configId the id of configuration
      * @return the configuration with configId, or null
-     * @since 11.3
+     * @since 12.0
      */
     public BaseConfiguration getConfigurationRecord(final String configId) {
         return mapConfigurationRecords.get(configId);
@@ -230,7 +152,7 @@ public class CRDConfiguration {
     /**
      * Get a set of configuration ids.
      * @return an unmodifiable set of configuration ids
-     * @since 11.3
+     * @since 12.0
      */
     public Set<String> getSystemConfigurationIds() {
         return Collections.unmodifiableSet(mapConfigurationRecords.keySet());
@@ -239,7 +161,7 @@ public class CRDConfiguration {
     /**
      * Get a list of system configurations.
      * @return an unmodifiable list of system configurations
-     * @since 11.3
+     * @since 12.0
      */
     public List<SystemConfiguration> getSystemConfigurationRecords() {
         return Collections.unmodifiableList(systemConfigurationRecords);
@@ -250,7 +172,7 @@ public class CRDConfiguration {
      * @param systemRecord system configuration record
      * @param c the class, such as LaserConfiguration, DetectorConfiguration, TimingSystemConfiguration, etc
      * @return the configuration record
-     * @since 11.3
+     * @since 12.0
      */
     private BaseConfiguration getRecord(final SystemConfiguration systemRecord,
             final Class<? extends BaseConfiguration> c) {
@@ -269,7 +191,7 @@ public class CRDConfiguration {
      * Get system configuration record. If configId is null, the default(first system configuration record) is returned.
      * @param configId system configuration id, it can be null.
      * @return the system configuration record
-     * @since 11.3
+     * @since 12.0
      */
     public SystemConfiguration getSystemRecord(final String configId) {
         if (configId == null) {
@@ -285,7 +207,7 @@ public class CRDConfiguration {
      * Get laser configuration record related to the systemRecord.
      * @param systemRecord the system configuration
      * @return the laser configuration record related the the systemRecord
-     * @since 11.3
+     * @since 12.0
      */
     public LaserConfiguration getLaserRecord(final SystemConfiguration systemRecord) {
         final BaseConfiguration config = getRecord(systemRecord, LaserConfiguration.class);
@@ -296,7 +218,7 @@ public class CRDConfiguration {
      * Get detector configuration record related to the systemRecord.
      * @param systemRecord the system configuration
      * @return the detector configuration record related the the systemRecord
-     * @since 11.3
+     * @since 12.0
      */
     public DetectorConfiguration getDetectorRecord(final SystemConfiguration systemRecord) {
         final BaseConfiguration config = getRecord(systemRecord, DetectorConfiguration.class);
@@ -307,7 +229,7 @@ public class CRDConfiguration {
      * Get timing system configuration record related to the systemRecord.
      * @param systemRecord the system configuration
      * @return the timing system configuration record related the the systemRecord
-     * @since 11.3
+     * @since 12.0
      */
     public TimingSystemConfiguration getTimingRecord(final SystemConfiguration systemRecord) {
         final BaseConfiguration config = getRecord(systemRecord, TimingSystemConfiguration.class);
@@ -318,7 +240,7 @@ public class CRDConfiguration {
      * Get transponder configuration record related to the systemRecord.
      * @param systemRecord the system configuration
      * @return the transponder configuration record related the the systemRecord
-     * @since 11.3
+     * @since 12.0
      */
     public TransponderConfiguration getTransponderRecord(final SystemConfiguration systemRecord) {
         final BaseConfiguration config = getRecord(systemRecord, TransponderConfiguration.class);
@@ -329,7 +251,7 @@ public class CRDConfiguration {
      * Get software configuration record related to the systemRecord.
      * @param systemRecord the system configuration
      * @return the software configuration record related the the systemRecord
-     * @since 11.3
+     * @since 12.0
      */
     public SoftwareConfiguration getSoftwareRecord(final SystemConfiguration systemRecord) {
         final BaseConfiguration config = getRecord(systemRecord, SoftwareConfiguration.class);
@@ -340,7 +262,7 @@ public class CRDConfiguration {
      * Get meteorological configuration record related to the systemRecord.
      * @param systemRecord the system configuration
      * @return the meteorological configuration record related the the systemRecord
-     * @since 11.3
+     * @since 12.0
      */
     public MeteorologicalConfiguration getMeteorologicalRecord(final SystemConfiguration systemRecord) {
         final BaseConfiguration config = getRecord(systemRecord, MeteorologicalConfiguration.class);
@@ -351,7 +273,7 @@ public class CRDConfiguration {
      * Get calibration target configuration record related to the systemRecord.
      * @param systemRecord the system configuration
      * @return the calibration target configuration record related the the systemRecord
-     * @since 11.3
+     * @since 12.0
      */
     public CalibrationTargetConfiguration getCalibrationTargetRecord(final SystemConfiguration systemRecord) {
         final BaseConfiguration config = getRecord(systemRecord, CalibrationTargetConfiguration.class);
@@ -361,7 +283,7 @@ public class CRDConfiguration {
     /**
      * Get the calibration target configuration record.
      * @return the calibration target configuration record
-     * @since 11.3
+     * @since 12.0
      */
     public CalibrationTargetConfiguration getCalibrationTargetRecord() {
         return getCalibrationTargetRecord(getSystemRecord());
@@ -369,7 +291,7 @@ public class CRDConfiguration {
 
     /**
      * Base class for configuration record.
-     * @since 11.3
+     * @since 12.0
      */
     public abstract static class BaseConfiguration {
 
@@ -414,7 +336,7 @@ public class CRDConfiguration {
         /**
          * Get a string representation of the instance in the CRD format.
          * @return a string representation of the instance, in the CRD format.
-         * @since 11.3
+         * @since 12.0
          */
         public abstract String toCrdString();
     }
@@ -470,7 +392,7 @@ public class CRDConfiguration {
         /**
          * Get the components (config ids) for system configuration.
          * @return an unmodifiable list of components
-         * @since 11.3
+         * @since 12.0
          */
         public List<String> getComponents() {
             return Collections.unmodifiableList(components);
@@ -479,7 +401,7 @@ public class CRDConfiguration {
         /**
          * Set the components (config ids) for system configuration.
          * @param components the components (config ids)
-         * @since 11.3
+         * @since 12.0
          */
         public void setComponents(final String[] components) {
             this.components = Arrays.asList(components);
@@ -499,7 +421,7 @@ public class CRDConfiguration {
             for (final String comp : components) {
                 sb.append(String.format(" %s", comp));
             }
-            return sb.toString();
+            return sb.toString().replace(',', '.');
         }
     }
 
@@ -670,7 +592,7 @@ public class CRDConfiguration {
                     laserType, primaryWavelength * 1e9, nominalFireRate,
                     pulseEnergy, pulseWidth, beamDivergence,
                     pulseInOutgoingSemiTrain);
-            return CRD.handleNaN(str);
+            return CRD.handleNaN(str).replace(',', '.');
         }
 
     }
@@ -1000,7 +922,7 @@ public class CRDConfiguration {
                     transmissionOfSpectralFilter, spatialFilter,
                     externalSignalProcessing, amplifierGain,
                     amplifierBandwidth * 1e-3, amplifierInUse);
-            return CRD.handleNaN(str);
+            return CRD.handleNaN(str).replace(',', '.');
         }
     }
 
@@ -1131,7 +1053,7 @@ public class CRDConfiguration {
             final String str = String.format("%s %s %s %s %s %.1f",
                     getConfigurationId(), timeSource, frequencySource, timer,
                     timerSerialNumber, epochDelayCorrection * 1e6);
-            return CRD.handleNaN(str);
+            return CRD.handleNaN(str).replace(',', '.');
         }
     }
 
@@ -1324,7 +1246,7 @@ public class CRDConfiguration {
                     transpClkRefTime,
                     stationClockAndDriftApplied, spacecraftClockAndDriftApplied,
                     isSpacecraftTimeSimplified ? 1 : 0);
-            return CRD.handleNaN(str);
+            return CRD.handleNaN(str).replace(',', '.');
         }
 
     }
@@ -1663,7 +1585,7 @@ public class CRDConfiguration {
 
     /**
      * Container for calibration target configuration record.
-     * @since 11.3
+     * @since 12.0
      */
     public static class CalibrationTargetConfiguration extends BaseConfiguration {
 
@@ -1818,7 +1740,7 @@ public class CRDConfiguration {
                     getConfigurationId(), targetName, surveyedTargetDistance,
                     surveyError * 1e3, sumOfAllConstantDelays, pulseEnergy,
                     processingSoftwareName, processingSoftwareVersion);
-            return CRD.handleNaN(str);
+            return CRD.handleNaN(str).replace(',', '.');
         }
 
     }

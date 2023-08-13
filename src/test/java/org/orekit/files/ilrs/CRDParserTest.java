@@ -971,7 +971,8 @@ public class CRDParserTest {
         final SystemConfiguration b4_systemConfig_new = new SystemConfiguration();
         b4_systemConfig_new.setSystemId(b4_systemConfig.getConfigurationId());
         b4_systemConfig_new.setWavelength(b4_systemConfig.getWavelength());
-        b4_systemConfig_new.setComponents((String[])b4_systemConfig.getComponents().toArray());
+        String[] components = new String[b4_systemConfig.getComponents().size()];
+        b4_systemConfig_new.setComponents(b4_systemConfig.getComponents().toArray(components));
         Assertions.assertEquals(true, b4_systemConfig.equals(b4_systemConfig_new));
 
         // block5: c4
@@ -1192,38 +1193,6 @@ public class CRDParserTest {
         config.addConfigurationRecord(b3_systemConfig_std2);
         Assertions.assertEquals(2, config.getSystemConfigurationRecords().size());
         Assertions.assertSame(b3_systemConfig_std1, config.getSystemRecord());        
-        config.setSystemRecord(b10_systemConfig);
-        Assertions.assertEquals(1, config.getSystemConfigurationRecords().size());
-        Assertions.assertSame(b10_systemConfig, config.getSystemRecord());
-
-        Assertions.assertSame(null, config.getLaserRecord());
-        config.setLaserRecord(b10_laserConfig);
-        Assertions.assertSame(b10_laserConfig, config.getLaserRecord());
-
-        Assertions.assertSame(null, config.getDetectorRecord());
-        config.setDetectorRecord(b10_detectorConfig);
-        Assertions.assertSame(b10_detectorConfig, config.getDetectorRecord());
-
-        Assertions.assertSame(null, config.getTimingRecord());
-        config.setTimingRecord(b10_timingConfig);
-        Assertions.assertSame(b10_timingConfig, config.getTimingRecord());
-
-        Assertions.assertSame(null, config.getTransponderRecord());
-        Assertions.assertEquals(6, config.getConfigurationRecordMap().size());
-        config.setTransponderRecord(null);
-        Assertions.assertEquals(6, config.getConfigurationRecordMap().size());
-        config.setTransponderRecord(b5_transponderConfig);
-        Assertions.assertEquals(7, config.getConfigurationRecordMap().size());
-        Assertions.assertSame(null, config.getTransponderRecord());
-        Assertions.assertSame(b5_transponderConfig, config.getConfigurationRecord("mc1"));
-
-        Assertions.assertSame(null, config.getSoftwareRecord());
-        config.setSoftwareRecord(b10_softwareConfig);
-        Assertions.assertSame(b10_softwareConfig, config.getSoftwareRecord());
-
-        Assertions.assertSame(null, config.getMeteorologicalRecord());
-        config.setMeteorologicalRecord(b10_meteorologicalConfig);
-        Assertions.assertSame(b10_meteorologicalConfig, config.getMeteorologicalRecord());
 
         final RangeMeasurement range_new = new RangeMeasurement(b10_npt0.getDate(), 
                 b10_npt0.getTimeOfFlight(), b10_npt0.getEpochEvent());
@@ -1234,7 +1203,6 @@ public class CRDParserTest {
                 b10_npt0.getTimeOfFlight(), b10_npt0.getEpochEvent(), b10_npt0.getSnr());
         Assertions.assertEquals("00 not supported. use NptRangeMeasurement or FrRangeMeasurement instead.", 
                 range_new2.toCrdString());
-
 
         final NptRangeMeasurement npt_new = new NptRangeMeasurement(b10_npt0.getDate(), 
                 b10_npt0.getTimeOfFlight(), b10_npt0.getEpochEvent(), b10_npt0.getSnr(),

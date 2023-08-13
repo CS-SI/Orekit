@@ -69,7 +69,7 @@ public class CRD {
      * @param value the value
      * @param valueNotAvailable the value means not available
      * @return a string
-     * @since 11.3
+     * @since 12.0
      */
     public static String formatIntegerOrNaN(final int value, final int valueNotAvailable) {
         return value == valueNotAvailable ? STR_VALUE_NOT_AVAILABLE : String.format("%d", value);
@@ -79,7 +79,7 @@ public class CRD {
      * Replace all " NaN" with " na".
      * @param crdString the original string
      * @return the string
-     * @since 11.3
+     * @since 12.0
      */
     public static String handleNaN(final String crdString) {
         return PATTERN_NAN.matcher(crdString).replaceAll(STR_VALUE_NOT_AVAILABLE);
@@ -242,7 +242,7 @@ public class CRD {
         /**
          * Add an entry to the list of range supplement data.
          * @param rangeSupplement entry to add
-         * @since 11.3
+         * @since 12.0
          */
         public void addRangeSupplementData(final RangeSupplement rangeSupplement) {
             rangeSupplementData.add(rangeSupplement);
@@ -251,7 +251,7 @@ public class CRD {
         /**
          * Get the range supplement data for the data block.
          * @return an unmodifiable list of range supplement data
-         * @since 11.3
+         * @since 12.0
          */
         public List<RangeSupplement> getRangeSupplementData() {
             return Collections.unmodifiableList(rangeSupplementData);
@@ -260,7 +260,7 @@ public class CRD {
         /**
          * Add an entry to the list of session statistics data.
          * @param sessionStatistics entry to add
-         * @since 11.3
+         * @since 12.0
          */
         public void addSessionStatisticsData(final SessionStatistics sessionStatistics) {
             sessionStatisticsData.add(sessionStatistics);
@@ -269,7 +269,7 @@ public class CRD {
         /**
          * Get the session statistics data for the data block.
          * @return an unmodifiable list of session statistics data
-         * @since 11.3
+         * @since 12.0
          */
         public List<SessionStatistics> getSessionStatisticsData() {
             return Collections.unmodifiableList(sessionStatisticsData);
@@ -278,7 +278,7 @@ public class CRD {
         /**
          * Get the default (the first if there are many records) SessionStat record.
          * @return the default (the first if there are many records) session statistics record
-         * @since 11.3
+         * @since 12.0
          */
         public SessionStatistics getSessionStatisticsRecord() {
             return getSessionStatisticsRecord(null);
@@ -288,7 +288,7 @@ public class CRD {
          * Get the session statistics record related to the systemConfigurationId.
          * @param systemConfigurationId system configuration ID
          * @return the session statistics record
-         * @since 11.3
+         * @since 12.0
          */
         public SessionStatistics getSessionStatisticsRecord(final String systemConfigurationId) {
             if (sessionStatisticsData.isEmpty()) {
@@ -313,7 +313,7 @@ public class CRD {
         /**
          * Add an entry to the list of calibration data.
          * @param cal entry to add
-         * @since 11.3
+         * @since 12.0
          */
         public void addCalibrationData(final Calibration cal) {
             calibrationData.add(cal);
@@ -322,7 +322,7 @@ public class CRD {
         /**
          * Get the calibration data for the data block.
          * @return an unmodifiable list of calibration data
-         * @since 11.3
+         * @since 12.0
          */
         public List<Calibration> getCalibrationData() {
             return Collections.unmodifiableList(calibrationData);
@@ -331,7 +331,7 @@ public class CRD {
         /**
          * Get the Calibration record(s) related to the default system configuration id.
          * @return the Calibration record(s) related to the default system configuration id
-         * @since 11.3
+         * @since 12.0
          */
         public List<Calibration> getCalibrationRecords() {
             return getCalibrationRecords(null);
@@ -341,20 +341,14 @@ public class CRD {
          * Get the Calibration record(s) related to the given systemConfigurationId.
          * @param systemConfigurationId system configuration ID
          * @return the Calibration record(s)
-         * @since 11.3
+         * @since 12.0
          */
         public List<Calibration> getCalibrationRecords(final String systemConfigurationId) {
             if (calibrationData.isEmpty()) {
                 return null;
             }
 
-            final String systemConfigId;
-            if (systemConfigurationId == null) {
-                // use the default systemConfigurationId
-                systemConfigId = getConfigurationRecords().getSystemRecord().getConfigurationId();
-            } else {
-                systemConfigId = systemConfigurationId;
-            }
+            final String systemConfigId = systemConfigurationId == null ? getConfigurationRecords().getSystemRecord().getConfigurationId() : systemConfigurationId;
 
             final List<Calibration> list = new ArrayList<Calibration>();
             // Loop to find the appropriate one
@@ -370,7 +364,7 @@ public class CRD {
         /**
          * Add an entry to the list of calibration detail data.
          * @param cal entry to add
-         * @since 11.3
+         * @since 12.0
          */
         public void addCalibrationDetailData(final CalibrationDetail cal) {
             calibrationDetailData.add(cal);
@@ -379,7 +373,7 @@ public class CRD {
         /**
          * Get the calibration detail data for the data block.
          * @return an unmodifiable list of calibration detail data
-         * @since 11.3
+         * @since 12.0
          */
         public List<CalibrationDetail> getCalibrationDetailData() {
             return Collections.unmodifiableList(calibrationDetailData);
@@ -388,7 +382,7 @@ public class CRD {
         /**
          * Get the CalibrationDetail record(s) related to the default system configuration id.
          * @return the CalibrationDetail record(s) related to the default system configuration id
-         * @since 11.3
+         * @since 12.0
          */
         public List<CalibrationDetail> getCalibrationDetailRecords() {
             return getCalibrationDetailRecords(null);
@@ -398,20 +392,14 @@ public class CRD {
          * Get the CalibrationDetail record(s) related to the given systemConfigurationId.
          * @param systemConfigurationId system configuration ID
          * @return the CalibrationDetail record(s)
-         * @since 11.3
+         * @since 12.0
          */
         public List<CalibrationDetail> getCalibrationDetailRecords(final String systemConfigurationId) {
             if (calibrationDetailData.isEmpty()) {
                 return null;
             }
 
-            final String systemConfigId;
-            if (systemConfigurationId == null) {
-                // use the default systemConfigurationId
-                systemConfigId = getConfigurationRecords().getSystemRecord().getConfigurationId();
-            } else {
-                systemConfigId = systemConfigurationId;
-            }
+            final String systemConfigId = systemConfigurationId == null ? getConfigurationRecords().getSystemRecord().getConfigurationId() : systemConfigurationId;
 
             final List<CalibrationDetail> list = new ArrayList<CalibrationDetail>();
             // Loop to find the appropriate one
@@ -429,7 +417,7 @@ public class CRD {
          *
          * @param range a RangeMeasurement
          * @return the wavelength related to the given RangeMeasurement.
-         * @since 11.3
+         * @since 12.0
          */
         public double getWavelength(final RangeMeasurement range) {
             return getConfigurationRecords().getSystemRecord(range.getSystemConfigurationId()).getWavelength();
@@ -496,7 +484,7 @@ public class CRD {
          * @param epochEvent indicates the time event reference
          * @param snr signal to noise ratio (can be Double.NaN if unkonwn)
          * @param systemConfigurationId system configuration id
-         * @since 11.3
+         * @since 12.0
          */
         public RangeMeasurement(final AbsoluteDate date,
                                 final double timeOfFlight, final int epochEvent,
@@ -506,7 +494,6 @@ public class CRD {
             this.timeOfFlight          = timeOfFlight;
             this.epochEvent            = epochEvent;
             this.snr                   = snr;
-
             this.systemConfigurationId = systemConfigurationId;
         }
 
@@ -553,7 +540,7 @@ public class CRD {
         /**
          * Get the system configuration id.
          * @return the system configuration id
-         * @since 11.3
+         * @since 12.0
          */
         public String getSystemConfigurationId() {
             return systemConfigurationId;
@@ -562,7 +549,7 @@ public class CRD {
         /**
          * Get a string representation of the instance in the CRD format.
          * @return a string representation of the instance, in the CRD format.
-         * @since 11.3
+         * @since 12.0
          */
         public String toCrdString() {
             return "00 not supported. use NptRangeMeasurement or FrRangeMeasurement instead.";
@@ -571,7 +558,7 @@ public class CRD {
 
     /**
      * Range record -- Full rate, Sampled Engineering/Quicklook.
-     * @since 11.3
+     * @since 12.0
      */
     public static class FrRangeMeasurement extends RangeMeasurement {
 
@@ -611,9 +598,7 @@ public class CRD {
                                   final int stopNumber,
                                   final int receiveAmplitude,
                                   final int transmitAmplitude) {
-            super(date, timeOfFlight, epochEvent, Double.NaN,
-                    systemConfigurationId);
-
+            super(date, timeOfFlight, epochEvent, Double.NaN, systemConfigurationId);
             this.filterFlag        = filterFlag;
             this.detectorChannel   = detectorChannel;
             this.stopNumber        = stopNumber;
@@ -683,14 +668,14 @@ public class CRD {
                     getEpochEvent(), filterFlag, detectorChannel, stopNumber,
                     formatIntegerOrNaN(receiveAmplitude, -1),
                     formatIntegerOrNaN(transmitAmplitude, -1));
-            return handleNaN(str);
+            return handleNaN(str).replace(',', '.');
         }
 
     }
 
     /**
      * Range record -- Normal Point.
-     * @since 11.3
+     * @since 12.0
      */
     public static class NptRangeMeasurement extends RangeMeasurement {
 
@@ -770,18 +755,8 @@ public class CRD {
             this.binKurtosis       = binKurtosis;
             this.binPeakMinusMean  = binPeakMinusMean;
             this.detectorChannel   = detectorChannel;
-
-            if (binRms == -1.0e-12) { // -1=na, ps --> s
-                this.binRms = Double.NaN;
-            } else {
-                this.binRms = binRms;
-            }
-
-            if (returnRate == -1) { // -1=na
-                this.returnRate = Double.NaN;
-            } else {
-                this.returnRate = returnRate;
-            }
+            this.binRms            = binRms == -1.0e-12 ? Double.NaN : binRms; // -1=na, ps --> s
+            this.returnRate        = returnRate == -1 ? Double.NaN : returnRate; // -1=na
         }
 
         /**
@@ -871,14 +846,14 @@ public class CRD {
                     binRms * 1e12, binSkew, binKurtosis,
                     binPeakMinusMean * 1e12, returnRate, detectorChannel,
                     getSnr());
-            return handleNaN(str);
+            return handleNaN(str).replace(',', '.');
         }
 
     }
 
     /**
      * Range Supplement Record.
-     * @since 11.3
+     * @since 12.0
      */
     public static class RangeSupplement implements TimeStamped {
 
@@ -1006,7 +981,7 @@ public class CRD {
                     troposphericRefractionCorrection * 1e12,
                     centerOfMassCorrection, ndFilterValue, timeBiasApplied,
                     rangeRate);
-            return handleNaN(str);
+            return handleNaN(str).replace(',', '.');
         }
 
     }
@@ -1095,7 +1070,7 @@ public class CRD {
          * 0=measure values
          * 1=interpolated values
          * @return the origin of values
-         * @since 11.3
+         * @since 12.0
          */
         public int getOriginOfValues() {
             return originOfValues;
@@ -1104,7 +1079,7 @@ public class CRD {
         /**
          * Get a string representation of the instance in the CRD format.
          * @return a string representation of the instance, in the CRD format.
-         * @since 11.3
+         * @since 12.0
          */
         public String toCrdString() {
             return String.format("20 %s", toString());
@@ -1122,7 +1097,7 @@ public class CRD {
 
             final String str = String.format("%9.3f %7.2f %6.2f %4.0f %1d", sod,
                     pressure * 1e3, temperature, humidity, originOfValues);
-            return handleNaN(str);
+            return handleNaN(str).replace(',', '.');
         }
     }
 
@@ -1261,7 +1236,7 @@ public class CRD {
         /**
          * Get a string representation of the instance in the CRD format.
          * @return a string representation of the instance, in the CRD format.
-         * @since 11.3
+         * @since 12.0
          */
         public String toCrdString() {
             return String.format("30 %s", toString());
@@ -1284,7 +1259,7 @@ public class CRD {
                     directionFlag, originIndicator, refractionCorrected ? 1 : 0,
                     FastMath.toDegrees(azimuthRate),
                     FastMath.toDegrees(elevationRate));
-            return handleNaN(str);
+            return handleNaN(str).replace(',', '.');
         }
     }
 
@@ -1434,7 +1409,7 @@ public class CRD {
 
     /**
      * Calibration Record.
-     * @since 11.3
+     * @since 12.0
      */
     public static class Calibration implements TimeStamped {
 
@@ -1576,12 +1551,7 @@ public class CRD {
             this.detectorChannel        = detectorChannel;
             this.span                   = span;
             this.returnRate             = returnRate;
-
-            if (oneWayDistance == -1) {
-                this.oneWayDistance = Double.NaN;
-            } else {
-                this.oneWayDistance = oneWayDistance;
-            }
+            this.oneWayDistance         = oneWayDistance == -1 ? Double.NaN : oneWayDistance; // -1=na
         }
 
         @Override
@@ -1785,14 +1755,14 @@ public class CRD {
                     systemDelay * 1e12, delayShift * 1e12, rms * 1e12, skew,
                     kurtosis, peakMinusMean * 1e12, typeIndicator,
                     shiftTypeIndicator, detectorChannel, span, returnRate);
-            return handleNaN(str);
+            return handleNaN(str).replace(',', '.');
         }
 
     }
 
     /**
      * Calibration Detail Record.
-     * @since 11.3
+     * @since 12.0
      */
     public static class CalibrationDetail extends Calibration {
         // same as Calibration record except that the record type is '41' rather than '40'.
@@ -1844,7 +1814,7 @@ public class CRD {
 
     /**
      * Session (Pass) Statistics Record.
-     * @since 11.3
+     * @since 12.0
      */
     public static class SessionStatistics {
 
@@ -1973,7 +1943,7 @@ public class CRD {
             final String str = String.format("%4s %6.1f %7.3f %7.3f %6.1f %1d",
                     systemConfigurationId, rms * 1e12, skewness, kurtosis,
                     peakMinusMean * 1e12, dataQulityIndicator);
-            return handleNaN(str);
+            return handleNaN(str).replace(',', '.');
         }
 
     }

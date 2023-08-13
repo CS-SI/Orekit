@@ -162,7 +162,7 @@ public class CRDParser {
                     for (final LineParser candidate : crdParsers) {
                         if (candidate.canHandle(line)) {
                             try {
-                                
+
                                 // Note: since crd v2.01.
                                 // The literal “na” is used instead of “-1” for fields that are not applicable or not avaiable.
                                 // And there may be "-na".
@@ -195,20 +195,11 @@ public class CRDParser {
     }
 
     /**
-<<<<<<< HEAD
      * Make sure the epoch is 'right' by doing a day shift if it is required by comparing the current and session start epoch.
      * According to the CRD document, the duration of a session must be less than one day.
      * @param epoch current epoch
      * @param startEpoch start epoch of session
      * @return epoch with rollover is handled.
-=======
-     * Computes if a day shift has happened comparing the current and past epoch, described by seconds in the day.
-     * This is useful as the data is sorted in the chronological order inside the file.
-     *
-     * @param lastSecOfDay past number of seconds per day
-     * @param secOfDay current number of seconds per day
-     * @return Boolean true if change in day.
->>>>>>> refs/heads/develop
      */
     private static AbsoluteDate checkRollover(final AbsoluteDate epoch, final AbsoluteDate startEpoch) {
         // If the current epoch is before the start epoch of a session, the epoch should be shifted by 1 day.
@@ -1201,12 +1192,8 @@ public class CRDParser {
                 //
                 // The peak minus mean may be "*"
                 // 50 shao     35.0  -0.509   2.221 ****** 0
-                final double peakMinusMean;
-                if (values[5].contains("*")) {
-                    peakMinusMean = Double.NaN;
-                } else {
-                    peakMinusMean     = PS.toSI(Double.parseDouble(values[5]));
-                }
+                final double peakMinusMean = values[5].contains("*") ? Double.NaN : PS.toSI(Double.parseDouble(values[5]));
+
                 final int dataQualityIndicator = Integer.parseInt(values[6]);
 
                 final SessionStatistics stat = new SessionStatistics(systemConfigId, rms, skewness, kurtosis, peakMinusMean,
@@ -1379,14 +1366,6 @@ public class CRDParser {
             }
         }
 
-        /**
-         * Get the regular expression for identifying line.
-         * @return the regular expression for identifying line
-         */
-        public String getFirstIdentifier() {
-            return identifiers[0];
-        }
-
         /** Parse a line.
          * @param line line to parse
          * @param pi holder for transient data
@@ -1422,15 +1401,6 @@ public class CRDParser {
          */
         private static boolean readBoolean(final String value) {
             return Integer.parseInt(value) == 1;
-        }
-
-        /**
-         * Read a double value taking into consideration a possible "na".
-         * @param value input string
-         * @return the corresponding double value
-         */
-        private static double readDoubleWithNaN(final String value) {
-            return "na".equals(value) ? Double.NaN : Double.parseDouble(value);
         }
 
         /**

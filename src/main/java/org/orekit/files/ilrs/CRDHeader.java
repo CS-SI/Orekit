@@ -442,7 +442,7 @@ public class CRDHeader extends ILRSHeader {
     /**
      * Get a string representation of the H1 in the CRD format.
      * @return a string representation of the H1, in the CRD format.
-     * @since 11.3
+     * @since 12.0
      */
     public String getH1CrdString() {
         final DateComponents dc = getProductionEpoch();
@@ -454,7 +454,7 @@ public class CRDHeader extends ILRSHeader {
     /**
      * Get a string representation of the H2 in the CRD format.
      * @return a string representation of the H2, in the CRD format.
-     * @since 11.3
+     * @since 12.0
      */
     public String getH2CrdString() {
         return String.format("H2 %s %4d %02d %02d %2d %s", stationName,
@@ -465,7 +465,7 @@ public class CRDHeader extends ILRSHeader {
     /**
      * Get a string representation of the H3 in the CRD format.
      * @return a string representation of the H3, in the CRD format.
-     * @since 11.3
+     * @since 12.0
      */
     public String getH3CrdString() {
         final int targetLocation = getTargetLocation();
@@ -478,7 +478,7 @@ public class CRDHeader extends ILRSHeader {
     /**
      * Get a string representation of the H4 in the CRD format.
      * @return a string representation of the H4, in the CRD format.
-     * @since 11.3
+     * @since 12.0
      */
     public String getH4CrdString() {
         // "2006-11-13T15:23:52" -- > "2006 11 13 15 23 52"
@@ -499,7 +499,7 @@ public class CRDHeader extends ILRSHeader {
     /**
      * Get a string representation of the H5 in the CRD format.
      * @return a string representation of the H5, in the CRD format.
-     * @since 11.3
+     * @since 12.0
      */
     public String getH5CrdString() {
         return String.format("H5 %2d %02d %s %3s %5d", getPredictionType(), getYearOfCentury(),
@@ -568,7 +568,7 @@ public class CRDHeader extends ILRSHeader {
     }
 
     /** Data type for CRD data.
-     * @since 11.3
+     * @since 12.0
      */
     public enum DataType {
 
