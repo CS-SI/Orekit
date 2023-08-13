@@ -208,8 +208,7 @@ public class CoefficientsFactory {
      * @return Map of the V<sub>n, s</sub> coefficients
      * @since 11.3.3
      */
-    // TODO rename to computeVns in 12.0?
-    public static SortedMap<NSKey, Double> computeVnsCoefficients(final int order) {
+    public static SortedMap<NSKey, Double> computeVns(final int order) {
 
         if (order > LAST_VNS_ORDER) {
             // Compute coefficient
@@ -255,7 +254,7 @@ public class CoefficientsFactory {
         if ((n - s) % 2 == 0) {
             // Update the Vns coefficient
             if ((n + 1) > LAST_VNS_ORDER) {
-                computeVnsCoefficients(n + 1);
+                computeVns(n + 1);
             }
             if (s >= 0) {
                 result = fns  * VNS.get(new NSKey(n, s)) / fnm;

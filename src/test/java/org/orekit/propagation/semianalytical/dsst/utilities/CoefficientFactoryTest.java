@@ -48,7 +48,7 @@ public class CoefficientFactoryTest {
     @Test
     public void testVns() {
         final int order = 100;
-        SortedMap<NSKey, Double> Vns = CoefficientsFactory.computeVnsCoefficients(order);
+        SortedMap<NSKey, Double> Vns = CoefficientsFactory.computeVns(order);
 
         // Odd terms are null
         for (int i = 0; i < order; i++) {

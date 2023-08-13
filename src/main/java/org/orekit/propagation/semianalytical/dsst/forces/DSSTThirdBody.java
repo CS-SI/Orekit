@@ -155,7 +155,7 @@ public class DSSTThirdBody implements DSSTForceModel {
                                                  0.0, Double.POSITIVE_INFINITY));
 
         this.body = body;
-        this.Vns  = CoefficientsFactory.computeVnsCoefficients(MAX_POWER);
+        this.Vns  = CoefficientsFactory.computeVns(MAX_POWER);
         this.doesStaticContextNeedsInitialization = true;
 
         fieldShortPeriods  = new HashMap<>();
