@@ -24,14 +24,18 @@ import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.FieldAdditionalStateProvider;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 /** Utility class for tests to reduce code duplication. */
@@ -86,6 +90,31 @@ public class TestUtils {
             @Override
             public double[] getAdditionalState(final SpacecraftState state) {
                 return new double[0];
+            }
+        };
+    }
+
+    /**
+     * Method created to test issue 949.
+     *
+     * @return additional state provider with custom init() method defined which use the initial state
+     */
+    public static <T extends CalculusFieldElement<T>> FieldAdditionalStateProvider<T> getFieldAdditionalProviderWithInit() {
+        return new FieldAdditionalStateProvider<T>() {
+  
+            @Override
+            public void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
+                initialState.getMass();
+            }
+
+            @Override
+            public String getName() {
+                return "Test";
+            }
+
+            @Override
+            public T[] getAdditionalState(FieldSpacecraftState<T> state) {
+                return MathArrays.buildArray(state.getDate().getField(), 0);
             }
         };
     }
