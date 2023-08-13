@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@ import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.stat.descriptive.StorelessUnivariateStatistic;
 import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Min;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -74,6 +74,7 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolator;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -83,6 +84,7 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -115,7 +117,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void sameDateCartesian() {
-        doSameDateCartesian(Decimal64Field.getInstance());
+        doSameDateCartesian(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doSameDateCartesian(Field<T> field) {
@@ -142,8 +144,8 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         // positions match perfectly
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
-                                              finalOrbit.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(initialOrbit.getPosition(),
+                                              finalOrbit.getPosition()).getReal(),
                             1.0e-8);
 
         // velocity and circular parameters do *not* match, this is EXPECTED!
@@ -166,7 +168,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void sameDateKeplerian() {
-        doSameDateKeplerian(Decimal64Field.getInstance());
+        doSameDateKeplerian(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doSameDateKeplerian(Field<T> field) {
@@ -192,8 +194,8 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         // positions match perfectly
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
-                                              finalOrbit.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(initialOrbit.getPosition(),
+                                              finalOrbit.getPosition()).getReal(),
                             3.0e-8);
 
         // velocity and circular parameters do *not* match, this is EXPECTED!
@@ -215,7 +217,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void almostSphericalBody() {
-        doAlmostSphericalBody(Decimal64Field.getInstance());
+        doAlmostSphericalBody(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doAlmostSphericalBody(Field<T> field) {
@@ -290,7 +292,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void propagatedCartesian() {
-        doPropagatedCartesian(Decimal64Field.getInstance());
+        doPropagatedCartesian(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doPropagatedCartesian(Field<T> field) {
@@ -375,7 +377,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         FieldVector3D<T> r = new FieldVector3D<>(finalOrbit.getA(), new FieldVector3D<>(x3, U, y3, V));
 
-        Assertions.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm().getReal(),
+        Assertions.assertEquals(finalOrbit.getPosition().getNorm().getReal(),
                             r.getNorm().getReal(),
                             Utils.epsilonTest * r.getNorm().getReal());
 
@@ -384,7 +386,7 @@ public class FieldEcksteinHechlerPropagatorTest {
     @Test
     public void propagatedKeplerian() {
 
-        doPropagatedKeplerian(Decimal64Field.getInstance());
+        doPropagatedKeplerian(Binary64Field.getInstance());
 
     }
 
@@ -465,14 +467,14 @@ public class FieldEcksteinHechlerPropagatorTest {
                                                  hx.multiply(2).divide(h2p1));
         FieldVector3D<T> r = new FieldVector3D<>(finalOrbit.getA(), new FieldVector3D<>(x3, U, y3, V));
 
-        Assertions.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm().getReal(), r.getNorm().getReal(),
+        Assertions.assertEquals(finalOrbit.getPosition().getNorm().getReal(), r.getNorm().getReal(),
                      Utils.epsilonTest * r.getNorm().getReal());
 
     }
 
     @Test
     public void undergroundOrbit() {
-        doUndergroundOrbit(Decimal64Field.getInstance());
+        doUndergroundOrbit(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doUndergroundOrbit(Field<T> field) {
@@ -503,7 +505,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void equatorialOrbit() {
-        doEquatorialOrbit(Decimal64Field.getInstance());
+        doEquatorialOrbit(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doEquatorialOrbit(Field<T> field) {
@@ -534,7 +536,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void criticalInclination() {
-        doCriticalInclination(Decimal64Field.getInstance());
+        doCriticalInclination(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doCriticalInclination(Field<T> field) {
@@ -568,7 +570,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void tooEllipticalOrbit() {
-        doTooEllipticalOrbit(Decimal64Field.getInstance());
+        doTooEllipticalOrbit(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTooEllipticalOrbit(Field<T> field) {
@@ -599,7 +601,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void hyperbolic() {
-        doHyperbolic(Decimal64Field.getInstance());
+        doHyperbolic(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doHyperbolic(Field<T> field) {
@@ -620,7 +622,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void wrongAttitude() {
-        doWrongAttitude(Decimal64Field.getInstance());
+        doWrongAttitude(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doWrongAttitude(Field<T> field) {
@@ -659,7 +661,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void testAcceleration() {
-        doTestAcceleration(Decimal64Field.getInstance());
+        doTestAcceleration(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestAcceleration(Field<T> field) {
@@ -675,8 +677,12 @@ public class FieldEcksteinHechlerPropagatorTest {
         for (double dt : Arrays.asList(-0.5, 0.0, 0.5)) {
             sample.add(propagator.propagate(target.shiftedBy(dt)).getPVCoordinates());
         }
-        TimeStampedFieldPVCoordinates<T> interpolated =
-                TimeStampedFieldPVCoordinates.interpolate(target, CartesianDerivativesFilter.USE_P, sample);
+
+        // create interpolator
+        final FieldTimeInterpolator<TimeStampedFieldPVCoordinates<T>, T> interpolator =
+                new TimeStampedFieldPVCoordinatesHermiteInterpolator<>(sample.size(), CartesianDerivativesFilter.USE_P);
+
+        TimeStampedFieldPVCoordinates<T> interpolated = interpolator.interpolate(target, sample);
         FieldVector3D<T> computedP     = sample.get(1).getPosition();
         FieldVector3D<T> computedV     = sample.get(1).getVelocity();
         FieldVector3D<T> referenceP    = interpolated.getPosition();
@@ -694,7 +700,7 @@ public class FieldEcksteinHechlerPropagatorTest {
                                          propagated.getFrame(),
                                          propagated.getDate(),
                                          propagated.getMu());
-        FieldVector3D<T> keplerianP    = keplerian.getPVCoordinates().getPosition();
+        FieldVector3D<T> keplerianP    = keplerian.getPosition();
         FieldVector3D<T> keplerianV    = keplerian.getPVCoordinates().getVelocity();
         FieldVector3D<T> keplerianA    = keplerian.getPVCoordinates().getAcceleration();
 
@@ -722,7 +728,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void ascendingNode() {
-        doAscendingNode(Decimal64Field.getInstance());
+        doAscendingNode(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doAscendingNode(Field<T> field) {
@@ -755,7 +761,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void stopAtTargetDate() {
-        doStopAtTargetDate(Decimal64Field.getInstance());
+        doStopAtTargetDate(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doStopAtTargetDate(Field<T> field) {
@@ -768,7 +774,7 @@ public class FieldEcksteinHechlerPropagatorTest {
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
         Frame itrf =  FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         propagator.addEventDetector(new FieldNodeDetector<>(orbit, itrf).
-                                    withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>()));
+                                    withHandler(new FieldContinueOnEvent<T>()));
         FieldAbsoluteDate<T> farTarget = orbit.getDate().shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
         Assertions.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate()).getReal()), 1.0e-3);
@@ -776,7 +782,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void perigee() {
-        doPerigee(Decimal64Field.getInstance());
+        doPerigee(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doPerigee(Field<T> field) {
@@ -798,7 +804,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void date() {
-        doDate(Decimal64Field.getInstance());
+        doDate(Binary64Field.getInstance());
 
     }
 
@@ -820,7 +826,7 @@ public class FieldEcksteinHechlerPropagatorTest {
     @Test
     public void fixedStep() {
 
-        doFixedStep(Decimal64Field.getInstance());
+        doFixedStep(Binary64Field.getInstance());
 
 
     }
@@ -851,7 +857,7 @@ public class FieldEcksteinHechlerPropagatorTest {
     @Test
     public void setting() {
 
-        doSetting(Decimal64Field.getInstance());
+        doSetting(Binary64Field.getInstance());
 
     }
 
@@ -874,7 +880,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         FieldAbsoluteDate<T> farTarget = date.shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
-        final double elevation = topo.getElevation(propagated.getPVCoordinates().getPosition().toVector3D(),
+        final double elevation = topo.getElevation(propagated.getPosition().toVector3D(),
                                                    propagated.getFrame(),
                                                    propagated.getDate().toAbsoluteDate());
         final double zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ().getReal();
@@ -887,7 +893,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void testIssue504() {
-        doTestIssue504(Decimal64Field.getInstance());
+        doTestIssue504(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue504(Field<T> field) {
@@ -917,8 +923,8 @@ public class FieldEcksteinHechlerPropagatorTest {
         Assertions.assertEquals(initialState.getHx().getReal(),            finalState.getHx().getReal(),            1.0e-6);
         Assertions.assertEquals(initialState.getHy().getReal(),            finalState.getHy().getReal(),            2.0e-6);
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(initialState.getPVCoordinates().getPosition(),
-                                                   finalState.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(initialState.getPosition(),
+                                                   finalState.getPosition()).getReal(),
                             11.4);
         Assertions.assertEquals(0.0,
                             FieldVector3D.distance(initialState.getPVCoordinates().getVelocity(),
@@ -928,7 +934,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void testIssue504Bis() {
-        doTestIssue504Bis(Decimal64Field.getInstance());
+        doTestIssue504Bis(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue504Bis(Field<T> field) {
@@ -958,8 +964,8 @@ public class FieldEcksteinHechlerPropagatorTest {
         Assertions.assertEquals(initialState.getHx().getReal(),            finalState.getHx().getReal(),            1.0e-6);
         Assertions.assertEquals(initialState.getHy().getReal(),            finalState.getHy().getReal(),            2.0e-6);
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(initialState.getPVCoordinates().getPosition(),
-                                                   finalState.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(initialState.getPosition(),
+                                                   finalState.getPosition()).getReal(),
                             11.4);
         Assertions.assertEquals(0.0,
                             FieldVector3D.distance(initialState.getPVCoordinates().getVelocity(),
@@ -969,7 +975,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void testMeanOrbit() throws IOException {
-        doTestMeanOrbit(Decimal64Field.getInstance());
+        doTestMeanOrbit(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMeanOrbit(Field<T> field) {

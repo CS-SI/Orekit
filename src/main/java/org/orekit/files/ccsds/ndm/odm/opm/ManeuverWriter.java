@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,7 +54,7 @@ class ManeuverWriter extends AbstractWriter {
         // maneuver block
         generator.writeComments(maneuver.getComments());
 
-        generator.writeEntry(ManeuverKey.MAN_EPOCH_IGNITION.name(), timeConverter, maneuver.getEpochIgnition(),   true);
+        generator.writeEntry(ManeuverKey.MAN_EPOCH_IGNITION.name(), timeConverter, maneuver.getEpochIgnition(),   false, true);
         generator.writeEntry(ManeuverKey.MAN_DURATION.name(),       maneuver.getDuration(), Unit.SECOND,          true);
         generator.writeEntry(ManeuverKey.MAN_DELTA_MASS.name(),     maneuver.getDeltaMass(), Unit.KILOGRAM,       true);
         generator.writeEntry(ManeuverKey.MAN_REF_FRAME.name(),      maneuver.getReferenceFrame().getName(), null, true);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,16 @@
  * limitations under the License.
  */
 package org.orekit.files.ccsds.ndm.odm.oem;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.SequenceInputStream;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -51,16 +61,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.SequenceInputStream;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-
 
 public class OemParserTest {
 
@@ -92,6 +92,7 @@ public class OemParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getMars().getGM()).buildOemParser();
         final Oem file = parser.parseMessage(source);
+        Assertions.assertEquals("public, test-data", file.getHeader().getClassification());
         Assertions.assertEquals(3, file.getSegments().size());
         Assertions.assertEquals("UTC", file.getSegments().get(0).getMetadata().getTimeSystem().name());
         Assertions.assertEquals("MARS GLOBAL SURVEYOR", file.getSegments().get(0).getMetadata().getObjectName());
@@ -122,7 +123,8 @@ public class OemParserTest {
                                                    FramesFactory.getEME2000(),
                                                    new AbsoluteDate("1996-12-18T12:00:00.331", TimeScalesFactory.getUTC()),
                                                    CelestialBodyFactory.getEarth().getGM());
-        Assertions.assertArrayEquals(orbit.getPVCoordinates().getPosition().toArray(), file.getSegments().get(0).getData().getEphemeridesDataLines().get(0).getPosition().toArray(), 1e-10);
+        Assertions.assertArrayEquals(orbit.getPosition().toArray(),
+                                     file.getSegments().get(0).getData().getEphemeridesDataLines().get(0).getPosition().toArray(), 1e-10);
         Assertions.assertArrayEquals(orbit.getPVCoordinates().getVelocity().toArray(), file.getSegments().get(0).getData().getEphemeridesDataLines().get(0).getVelocity().toArray(), 1e-10);
         Assertions.assertEquals(Vector3D.ZERO, file.getSegments().get(1).getData().getEphemeridesDataLines().get(1).getAcceleration());
         final Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
@@ -256,14 +258,6 @@ public class OemParserTest {
         Assertions.assertEquals(2, segment.getMetadata().getInterpolationDegree());
         Assertions.assertEquals(3, segment.getInterpolationSamples());
         Assertions.assertEquals(segment.getAvailableDerivatives(), CartesianDerivativesFilter.USE_PV);
-        // propagator can't be created since frame can't be created
-        try {
-            satellite.getPropagator();
-            Assertions.fail("Expected Exception");
-        } catch (OrekitException e){
-            Assertions.assertEquals(e.getSpecifier(),
-                    OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY);
-        }
 
         List<OemSegment> segments = file.getSegments();
         Assertions.assertEquals(3, segments.size());
@@ -843,8 +837,17 @@ public class OemParserTest {
 
             // verify
             OemSegment segment = actual.getSegments().get(0);
-            Assertions.assertEquals(frameName,
-                                segment.getMetadata().getReferenceFrame().getName());
+            switch (frameName) {
+                case "ITRF-93" :
+                    Assertions.assertEquals("ITRF1993", segment.getMetadata().getReferenceFrame().getName());
+                    break;
+                case "ITRF-97" :
+                    Assertions.assertEquals("ITRF1997", segment.getMetadata().getReferenceFrame().getName());
+                    break;
+                default :
+                    Assertions.assertEquals(frameName, segment.getMetadata().getReferenceFrame().getName());
+                    break;
+            }
             // check expected frame
             Frame actualFrame = segment.getFrame();
             Frame expectedFrame = frame.getSecond();

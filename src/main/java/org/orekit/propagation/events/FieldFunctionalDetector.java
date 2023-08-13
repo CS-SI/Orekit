@@ -56,9 +56,9 @@ public class FieldFunctionalDetector<T extends CalculusFieldElement<T>>
      */
     public FieldFunctionalDetector(final Field<T> field) {
         this(field.getZero().add(DEFAULT_MAXCHECK),
-                field.getZero().add(DEFAULT_THRESHOLD),
-                DEFAULT_MAX_ITER,
-                new FieldContinueOnEvent<>(), value -> field.getOne());
+             field.getZero().add(DEFAULT_THRESHOLD),
+             DEFAULT_MAX_ITER,
+             new FieldContinueOnEvent<>(), value -> field.getOne());
     }
 
     /**
@@ -70,11 +70,11 @@ public class FieldFunctionalDetector<T extends CalculusFieldElement<T>>
      * @param handler   event handler to call at event occurrences
      * @param function  the switching function.
      */
-    private FieldFunctionalDetector(
+    protected FieldFunctionalDetector(
             final T maxCheck,
             final T threshold,
             final int maxIter,
-            final FieldEventHandler<? super FieldFunctionalDetector<T>, T> handler,
+            final FieldEventHandler<T> handler,
             final Function<FieldSpacecraftState<T>, T> function) {
         super(maxCheck, threshold, maxIter, handler);
         this.function = function;
@@ -91,7 +91,7 @@ public class FieldFunctionalDetector<T extends CalculusFieldElement<T>>
             final T newMaxCheck,
             final T newThreshold,
             final int newMaxIter,
-            final FieldEventHandler<? super FieldFunctionalDetector<T>, T> newHandler) {
+            final FieldEventHandler<T> newHandler) {
 
         return new FieldFunctionalDetector<>(newMaxCheck, newThreshold, newMaxIter,
                 newHandler, function);

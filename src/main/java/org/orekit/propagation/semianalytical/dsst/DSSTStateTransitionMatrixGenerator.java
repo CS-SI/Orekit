@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,6 +34,7 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Generator for State Transition Matrix.
  * @author Luc Maisonobe
@@ -114,7 +115,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
 
     /** {@inheritDoc} */
     @Override
-    public boolean yield(final SpacecraftState state) {
+    public boolean yields(final SpacecraftState state) {
         return !state.hasAdditionalState(getName());
     }
 
@@ -150,13 +151,6 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
         // set additional state
         return state.addAdditionalState(stmName, flat);
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public double[] derivatives(final SpacecraftState state) {
-        return combinedDerivatives(state).getAdditionalDerivatives();
     }
 
     /** {@inheritDoc} */
@@ -197,7 +191,7 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
         for (final DSSTForceModel forceModel : forceModels) {
 
             final FieldSpacecraftState<Gradient> dsState = converter.getState(forceModel);
-            final Gradient[] parameters = converter.getParameters(dsState, forceModel);
+            final Gradient[] parameters = converter.getParametersAtStateDate(dsState, forceModel);
             final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
             final Gradient[] meanElementRate = forceModel.getMeanElementRate(dsState, auxiliaryElements, parameters);
@@ -220,21 +214,23 @@ class DSSTStateTransitionMatrixGenerator implements AdditionalDerivativesProvide
             int paramsIndex = converter.getFreeStateParameters();
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
+                    // for each span (for each estimated value) corresponding name is added
+                    for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
-                    // get the partials derivatives for this driver
-                    DoubleArrayDictionary.Entry entry = meanElementsPartials.getEntry(driver.getName());
-                    if (entry == null) {
-                        // create an entry filled with zeroes
-                        meanElementsPartials.put(driver.getName(), new double[STATE_DIMENSION]);
-                        entry = meanElementsPartials.getEntry(driver.getName());
+                        // get the partials derivatives for this driver
+                        DoubleArrayDictionary.Entry entry = meanElementsPartials.getEntry(span.getData());
+                        if (entry == null) {
+                            // create an entry filled with zeroes
+                            meanElementsPartials.put(span.getData(), new double[STATE_DIMENSION]);
+                            entry = meanElementsPartials.getEntry(span.getData());
+                        }
+                        // add the contribution of the current force model
+                        entry.increment(new double[] {
+                            derivativesA[paramsIndex], derivativesEx[paramsIndex], derivativesEy[paramsIndex],
+                            derivativesHx[paramsIndex], derivativesHy[paramsIndex], derivativesL[paramsIndex]
+                        });
+                        ++paramsIndex;
                     }
-
-                    // add the contribution of the current force model
-                    entry.increment(new double[] {
-                        derivativesA[paramsIndex], derivativesEx[paramsIndex], derivativesEy[paramsIndex],
-                        derivativesHx[paramsIndex], derivativesHy[paramsIndex], derivativesL[paramsIndex]
-                    });
-                    ++paramsIndex;
 
                 }
             }

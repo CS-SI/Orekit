@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.utils;
 import java.io.Serializable;
 
 /** Container for Love numbers.
- * @author luc Luc Maisonobe
+ * @author Luc Maisonobe
  * @since 6.1
  */
 public class LoveNumbers implements Serializable {

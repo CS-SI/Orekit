@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.utils.ParameterDriver;
@@ -68,7 +69,7 @@ public class OutlierFilter<T extends ObservedMeasurement<T>> implements Estimati
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<T> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated) {
 
         if (estimated.getIteration() > warmup) {
 

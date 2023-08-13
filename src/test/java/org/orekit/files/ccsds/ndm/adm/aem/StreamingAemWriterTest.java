@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,11 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
@@ -23,26 +28,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
-
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
 
 
 public class StreamingAemWriterTest {
@@ -83,12 +84,12 @@ public class StreamingAemWriterTest {
             FrameFacade       frameA       = ephemerisBlock.getMetadata().getEndpoints().getFrameA();
             FrameFacade       frameB       = ephemerisBlock.getMetadata().getEndpoints().getFrameB();
             boolean           a2b          = ephemerisBlock.getMetadata().getEndpoints().isA2b();
-            AttitudeType   attitudeType = ephemerisBlock.getMetadata().getAttitudeType();
+            AttitudeType      attitudeType = ephemerisBlock.getMetadata().getAttitudeType();
             boolean           isFirst      = ephemerisBlock.getMetadata().isFirst();
 
             // Initialize the header and metadata
             // Here, we use only one data segment.
-            Header header = new Header(3.0);
+            AdmHeader header = new AdmHeader();
             header.setOriginator(originator);
             header.addComment(headerCmt);
 
@@ -106,7 +107,8 @@ public class StreamingAemWriterTest {
 
             StringBuilder buffer = new StringBuilder();
             StreamingAemWriter writer =
-                            new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.KVN_PADDING_WIDTH, ex + "-new", 60),
+                            new StreamingAemWriter(new KvnGenerator(buffer, AemWriter.KVN_PADDING_WIDTH, ex + "-new",
+                                                                    Constants.JULIAN_DAY, 60),
                                                    new WriterBuilder(). buildAemWriter(),
                                                    header, metadata);
 
@@ -115,8 +117,8 @@ public class StreamingAemWriterTest {
             StreamingAemWriter.SegmentWriter segment = writer.newSegment();
             KeplerianPropagator propagator =
                             createPropagator(ephemerisBlock.getStart(),
-                                             new InertialProvider(ephemerisBlock.getAngularCoordinates().get(0).getRotation(),
-                                                                  FramesFactory.getEME2000()));
+                                             new FrameAlignedProvider(ephemerisBlock.getAngularCoordinates().get(0).getRotation(),
+                                                                      FramesFactory.getEME2000()));
 
             // We propagate 60 seconds after the start date with a step equals to 10.0 seconds
             // It is expected to have an attitude data block containing 7 data lines

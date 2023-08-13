@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,17 +25,14 @@ import org.orekit.bodies.CR3BPSystem;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
-import org.orekit.time.AbsoluteDate;
 
 /** Class calculating the state transition matrix coefficient for CR3BP Computation.
  * @see "Dynamical systems, the three-body problem, and space mission design, Koon, Lo, Marsden, Ross"
  * @author Vincent Mouraux
  * @since 10.2
  */
-@SuppressWarnings("deprecation")
 public class STMEquations
-    implements AdditionalDerivativesProvider,
-               org.orekit.propagation.integration.AdditionalEquations {
+    implements AdditionalDerivativesProvider {
 
     /** Matrix Dimension. */
     private static final int DIM = 6;
@@ -79,26 +76,6 @@ public class STMEquations
             phi[i] = 1.0;
         }
         return s.addAdditionalState(name, phi);
-    }
-
-    /** {@inheritDoc} */
-    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
-        // FIXME: remove in 12.0 when AdditionalEquations is removed
-        AdditionalDerivativesProvider.super.init(initialState, target);
-    }
-
-    /** {@inheritDoc} */
-    public double[] computeDerivatives(final SpacecraftState s, final double[] pDot) {
-        // FIXME: remove in 12.0 when AdditionalEquations is removed
-        System.arraycopy(derivatives(s), 0, pDot, 0, pDot.length);
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public double[] derivatives(final SpacecraftState state) {
-        return combinedDerivatives(state).getAdditionalDerivatives();
     }
 
     /** {@inheritDoc} */

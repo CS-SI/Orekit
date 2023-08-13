@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.utils.generation;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.utils.Constants;
 import org.orekit.utils.units.Unit;
 
 import java.io.CharArrayWriter;
@@ -29,7 +30,7 @@ public class XmlGeneratorTest {
     @Test
     public void testSections() throws IOException {
         CharArrayWriter caw = new CharArrayWriter();
-        try (Generator generator = new XmlGenerator(caw, 2, "", true)) {
+        try (Generator generator = new XmlGenerator(caw, 2, "", Constants.JULIAN_DAY, true, null)) {
             generator.startMessage("abc", "CCSDS_ABC_VERSION", 99.0);
             generator.enterSection("BLOCK");
             generator.writeEntry("KEY", 1234567.8, Unit.parse("Hz"), false);
@@ -49,7 +50,7 @@ public class XmlGeneratorTest {
     @Test
     public void testCcsdsUnits() throws IOException {
         CharArrayWriter caw = new CharArrayWriter();
-        try (Generator generator = new XmlGenerator(caw, 2, "", true)) {
+        try (Generator generator = new XmlGenerator(caw, 2, "", Constants.JULIAN_DAY, true, "nowhere")) {
             generator.writeEntry("KEY_1",    1234567.8,   Unit.parse("km.kg³/√s"), false);
             generator.writeEntry("KEY_2",    1234567.8,   Unit.parse("n/a"),       false);
             generator.writeEntry("KEY_3",    1234567.8,   Unit.parse("1"),         false);
@@ -66,7 +67,7 @@ public class XmlGeneratorTest {
     @Test
     public void testUnitsPadding() throws IOException {
         CharArrayWriter caw = new CharArrayWriter();
-        try (Generator generator = new XmlGenerator(caw, 2, "", true)) {
+        try (Generator generator = new XmlGenerator(caw, 2, "", Constants.JULIAN_DAY, true, "nowhere")) {
             generator.writeEntry("KEY_1", 0.5 * FastMath.PI, Unit.parse("°"), false);
             generator.writeEntry("KEY_2", FastMath.PI, Unit.parse("◦"), false);
             generator.writeEntry("PERCENT", 0.25, Unit.parse("%"), false);
@@ -81,7 +82,7 @@ public class XmlGeneratorTest {
     @Test
     public void testNoUnits() throws IOException {
         CharArrayWriter caw = new CharArrayWriter();
-        try (Generator generator = new XmlGenerator(caw, 2, "", false)) {
+        try (Generator generator = new XmlGenerator(caw, 2, "", Constants.JULIAN_DAY, false, "nowhere")) {
             generator.writeEntry("KEY_1", 0.5 * FastMath.PI, Unit.parse("°"), false);
             generator.writeEntry("KEY_2", FastMath.PI, Unit.parse("◦"), true);
             Assertions.assertEquals(String.format("<?xml version=\"1.0\" encoding=\"UTF-8\"?>%n" +

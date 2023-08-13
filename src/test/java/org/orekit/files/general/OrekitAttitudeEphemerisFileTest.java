@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,14 @@
  */
 package org.orekit.files.general;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataSource;
@@ -35,6 +43,7 @@ import org.orekit.files.ccsds.definitions.SpacecraftBodyFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
 import org.orekit.files.ccsds.ndm.adm.aem.AemMetadata;
 import org.orekit.files.ccsds.ndm.adm.aem.AemSegment;
@@ -52,14 +61,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedAngularCoordinates;
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 public class OrekitAttitudeEphemerisFileTest {
 
@@ -99,7 +100,7 @@ public class OrekitAttitudeEphemerisFileTest {
         // Initialize a Keplerian propagator with an Inertial attitude provider
         // It is expected that all attitude data lines will have the same value
         final Rotation refRot = new Rotation(0.72501, -0.64585, 0.018542, -0.23854, false);
-        AttitudeProvider inertialPointing = new InertialProvider(refRot);
+        AttitudeProvider inertialPointing = new FrameAlignedProvider(refRot);
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, inertialPointing);
 
         final double propagationDurationSeconds = 1200.0;
@@ -140,8 +141,11 @@ public class OrekitAttitudeEphemerisFileTest {
 
         String tempAem = Files.createTempFile("OrekitAttitudeEphemerisFileTest", ".aem").toString();
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(tempAem), StandardCharsets.UTF_8)) {
+            final AdmHeader header = new AdmHeader();
+            header.setFormatVersion(1.0);
             new AttitudeWriter(new WriterBuilder().buildAemWriter(),
-                               null, dummyMetadata(), FileFormat.KVN, "", 60).write(writer, ephemerisFile);
+                               header, dummyMetadata(), FileFormat.KVN, "", Constants.JULIAN_DAY, 60).
+            write(writer, ephemerisFile);
         }
 
         AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> ephemerisFrom =

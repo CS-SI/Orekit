@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -94,7 +94,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    6.2e-9, 2.0e-8, 3.1e-7, 8.0e-5, 2.6e-4, 5.0e-3);
+                                    7.0e-9, 2.5e-8, 3.9e-7, 8.2e-5, 3.1e-4, 7.3e-3);
     }
 
     /**
@@ -130,7 +130,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
         genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
-                                    3.1e-8, 9.9e-8, 1.8e-6, 7.3e-5, 3.2e-4, 1.2e-2);
+                                    3.1e-8, 9.9e-8, 1.8e-6, 8.5e-5, 3.2e-4, 1.2e-2);
     }
 
     /**
@@ -302,7 +302,7 @@ public class TurnAroundRangeAnalyticTest {
         }
 
         // Assert statistical errors
-        Assertions.assertEquals(0.0, absErrorsMedian, 8.4e-08);
+        Assertions.assertEquals(0.0, absErrorsMedian, 8.5e-08);
         Assertions.assertEquals(0.0, absErrorsMin,    9.0e-08);
         Assertions.assertEquals(0.0, absErrorsMax,    2.0e-07);
         Assertions.assertEquals(0.0, relErrorsMedian, 5.1e-15);
@@ -395,7 +395,9 @@ public class TurnAroundRangeAnalyticTest {
                 // Compute a reference value using finite differences
                 jacobianRef = Differentiation.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) {
-                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                        return measurement.
+                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                               getEstimatedValue();
                     }
                 }, measurement.getDimension(), propagator.getAttitudeProvider(),
                    OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
@@ -582,7 +584,7 @@ public class TurnAroundRangeAnalyticTest {
                 if (isModifier) {
                   modifier.modify(TAR);
                 }
-                final double[] gradient  = TAR.getParameterDerivatives(drivers[i]);
+                final double[] gradient  = TAR.getParameterDerivatives(drivers[i], new AbsoluteDate());
 
                 Assertions.assertEquals(1, measurement.getDimension());
                 Assertions.assertEquals(1, gradient.length);
@@ -595,14 +597,16 @@ public class TurnAroundRangeAnalyticTest {
                                     Differentiation.differentiate(new ParameterFunction() {
                                         /** {@inheritDoc} */
                                         @Override
-                                        public double value(final ParameterDriver parameterDriver) {
-                                            return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                        public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
+                                            return measurement.
+                                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                   getEstimatedValue()[0];
                                         }
                                     }, 3, 20.0 * drivers[i].getScale());
-                    ref = dMkdP.value(drivers[i]);
+                    ref = dMkdP.value(drivers[i], date);
                 } else {
                     // Compute a reference value using TurnAroundRange function
-                    ref = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i])[0];
+                    ref = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate())[0];
                 }
 
                 // Deltas

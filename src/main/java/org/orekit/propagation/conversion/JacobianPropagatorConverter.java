@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,6 +37,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Propagator converter using the real Jacobian.
  * @author Pascal Parraud
@@ -257,14 +258,16 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                     for (int j = 0; j < dYdP.getColumnDimension(); ++j) {
                         final String name = harvester.getJacobiansColumnsNames().get(j);
                         for (final ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
-                            if (name.equals(driver.getName())) {
-                                jacobian.setEntry(row + k, column++, dYdP.getEntry(k, j) * driver.getScale());
+
+                            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                                if (name.equals(span.getData())) {
+                                    jacobian.setEntry(row + k, column++, dYdP.getEntry(k, j) * driver.getScale());
+                                }
                             }
                         }
                     }
                 }
             }
-
         }
 
     }

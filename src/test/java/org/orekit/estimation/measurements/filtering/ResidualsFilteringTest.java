@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,6 +36,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.generation.EventBasedScheduler;
+import org.orekit.estimation.measurements.generation.GatheringSubscriber;
 import org.orekit.estimation.measurements.generation.Generator;
 import org.orekit.estimation.measurements.generation.MeasurementBuilder;
 import org.orekit.estimation.measurements.generation.RangeBuilder;
@@ -135,7 +136,10 @@ public class ResidualsFilteringTest {
         final double noise      = 1;
         final double threshold  = 2.7;
         Generator generator = getGenerator(orbit, station, satellite, topo, noise);
-        SortedSet<ObservedMeasurement<?>> measurements = generator.generate(date, date.shiftedBy(3600*5));
+        final GatheringSubscriber gatherer = new GatheringSubscriber();
+        generator.addSubscriber(gatherer);
+        generator.generate(date, date.shiftedBy(3600*5));
+        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
         final ResidualFilter<Range> filter = new ResidualFilter<>(threshold);
 
         final List<ObservedMeasurement<?>> processMeasurements = new ArrayList<ObservedMeasurement<?>>();
@@ -174,7 +178,10 @@ public class ResidualsFilteringTest {
 
         final double noise = 20;
         Generator generator = getGenerator(orbit, station, satellite, topo, noise);
-        SortedSet<ObservedMeasurement<?>> measurements = generator.generate(date, date.shiftedBy(3600*5));
+        final GatheringSubscriber gatherer = new GatheringSubscriber();
+        generator.addSubscriber(gatherer);
+        generator.generate(date, date.shiftedBy(3600*5));
+        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
         final ResidualFilter<Range> filter = new ResidualFilter<>(10);
 
         final List<ObservedMeasurement<?>> processMeasurements = new ArrayList<ObservedMeasurement<?>>();

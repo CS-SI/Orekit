@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,7 +52,7 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
      */
     public LongitudeExtremumDetector(final double maxCheck, final double threshold,
                                     final OneAxisEllipsoid body) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<LongitudeExtremumDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              body);
     }
 
@@ -68,9 +68,9 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
      * @param handler event handler to call at event occurrences
      * @param body body on which the longitude is defined
      */
-    private LongitudeExtremumDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<? super LongitudeExtremumDetector> handler,
-                                     final OneAxisEllipsoid body) {
+    protected LongitudeExtremumDetector(final double maxCheck, final double threshold,
+                                        final int maxIter, final EventHandler handler,
+                                        final OneAxisEllipsoid body) {
         super(maxCheck, threshold, maxIter, handler);
         this.body = body;
     }
@@ -79,7 +79,7 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
     @Override
     protected LongitudeExtremumDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<? super LongitudeExtremumDetector> newHandler) {
+                                              final EventHandler newHandler) {
         return new LongitudeExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, body);
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,13 @@
  */
 package org.orekit.orbits;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
-import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
-import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -730,6 +724,49 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     }
 
     /** {@inheritDoc} */
+    protected FieldVector3D<T> initPosition() {
+
+        // get equinoctial parameters
+        final T lE = getLE();
+
+        // inclination-related intermediate parameters
+        final T hx2   = hx.multiply(hx);
+        final T hy2   = hy.multiply(hy);
+        final T factH = one.divide(hx2.add(1.0).add(hy2));
+
+        // reference axes defining the orbital plane
+        final T ux = hx2.add(1.0).subtract(hy2).multiply(factH);
+        final T uy = hx.multiply(hy).multiply(factH).multiply(2);
+        final T uz = hy.multiply(-2).multiply(factH);
+
+        final T vx = uy;
+        final T vy = (hy2.subtract(hx2).add(1)).multiply(factH);
+        final T vz =  hx.multiply(factH).multiply(2);
+
+        // eccentricity-related intermediate parameters
+        final T ex2  = ex.multiply(ex);
+        final T exey = ex.multiply(ey);
+        final T ey2  = ey.multiply(ey);
+        final T e2   = ex2.add(ey2);
+        final T eta  = one.subtract(e2).sqrt().add(1);
+        final T beta = one.divide(eta);
+
+        // eccentric longitude argument
+        final FieldSinCos<T> scLe = FastMath.sinCos(lE);
+        final T cLe    = scLe.cos();
+        final T sLe    = scLe.sin();
+
+        // coordinates of position and velocity in the orbital plane
+        final T x      = a.multiply(one.subtract(beta.multiply(ey2)).multiply(cLe).add(beta.multiply(exey).multiply(sLe)).subtract(ex));
+        final T y      = a.multiply(one.subtract(beta.multiply(ex2)).multiply(sLe).add(beta .multiply(exey).multiply(cLe)).subtract(ey));
+
+        return new FieldVector3D<>(x.multiply(ux).add(y.multiply(vx)),
+                                   x.multiply(uy).add(y.multiply(vy)),
+                                   x.multiply(uz).add(y.multiply(vz)));
+
+    }
+
+    /** {@inheritDoc} */
     protected TimeStampedFieldPVCoordinates<T> initPVCoordinates() {
 
         // position and velocity
@@ -787,88 +824,6 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
             // Keplerian-only motion is all we can do
             return keplerianShifted;
         }
-
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * on equinoctial elements, without derivatives (which means the interpolation
-     * falls back to Lagrange interpolation only).
-     * </p>
-     * <p>
-     * As this implementation of interpolation is polynomial, it should be used only
-     * with small samples (about 10-20 points) in order to avoid <a
-     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
-     * and numerical problems (including NaN appearing).
-     * </p>
-     * <p>
-     * If orbit interpolation on large samples is needed, using the {@link
-     * org.orekit.propagation.analytical.Ephemeris} class is a better way than using this
-     * low-level interpolation. The Ephemeris class automatically handles selection of
-     * a neighboring sub-sample with a predefined number of point from a large global sample
-     * in a thread-safe way.
-     * </p>
-     */
-    public FieldEquinoctialOrbit<T> interpolate(final FieldAbsoluteDate<T> date, final Stream<FieldOrbit<T>> sample) {
-
-        // first pass to check if derivatives are available throughout the sample
-        final List<FieldOrbit<T>> list = sample.collect(Collectors.toList());
-        boolean useDerivatives = true;
-        for (final FieldOrbit<T> orbit : list) {
-            useDerivatives = useDerivatives && orbit.hasDerivatives();
-        }
-
-        // set up an interpolator
-        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
-
-        // second pass to feed interpolator
-        FieldAbsoluteDate<T> previousDate = null;
-        T                    previousLm   = zero.add(Double.NaN);
-        for (final FieldOrbit<T> orbit : list) {
-            final FieldEquinoctialOrbit<T> equi = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(orbit);
-            final T continuousLm;
-            if (previousDate == null) {
-                continuousLm = (T) equi.getLM();
-            } else {
-                final T dt       = (T) equi.getDate().durationFrom(previousDate);
-                final T keplerLm = previousLm.add((T) equi.getKeplerianMeanMotion().multiply(dt));
-                continuousLm = MathUtils.normalizeAngle((T) equi.getLM(), keplerLm);
-            }
-            previousDate = equi.getDate();
-            previousLm   = continuousLm;
-            final T[] toAdd = MathArrays.buildArray(field, 6);
-            toAdd[0] = (T) equi.getA();
-            toAdd[1] = (T) equi.getEquinoctialEx();
-            toAdd[2] = (T) equi.getEquinoctialEy();
-            toAdd[3] = (T) equi.getHx();
-            toAdd[4] = (T) equi.getHy();
-            toAdd[5] = (T) continuousLm;
-            if (useDerivatives) {
-                final T[] toAddDot = MathArrays.buildArray(one.getField(), 6);
-                toAddDot[0] = equi.getADot();
-                toAddDot[1] = equi.getEquinoctialExDot();
-                toAddDot[2] = equi.getEquinoctialEyDot();
-                toAddDot[3] = equi.getHxDot();
-                toAddDot[4] = equi.getHyDot();
-                toAddDot[5] = equi.getLMDot();
-                interpolator.addSamplePoint(equi.getDate().durationFrom(date),
-                                            toAdd, toAddDot);
-            } else {
-                interpolator.addSamplePoint((T) equi.getDate().durationFrom(date),
-                                            toAdd);
-            }
-        }
-
-        // interpolate
-        final T[][] interpolated = interpolator.derivatives(zero, 1);
-
-        // build a new interpolated instance
-        return new FieldEquinoctialOrbit<>(interpolated[0][0], interpolated[0][1], interpolated[0][2],
-                                           interpolated[0][3], interpolated[0][4], interpolated[0][5],
-                                           interpolated[1][0], interpolated[1][1], interpolated[1][2],
-                                           interpolated[1][3], interpolated[1][4], interpolated[1][5],
-                                           PositionAngle.MEAN, getFrame(), date, getMu());
 
     }
 

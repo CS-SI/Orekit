@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -65,6 +65,15 @@ public enum RtcmDataField implements DataField {
         }
     },
 
+    /** GNSS satellite ID. */
+    DF068 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_6.decode(message).intValue();
+        }
+    },
+
     /** GPS IODE (Issue Of Data, Ephemeris). */
     DF071 {
         /** {@inheritDoc} */
@@ -106,7 +115,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_14.decode(message).intValue(), -43));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_14.decode(message).doubleValue(), -43));
         }
     },
 
@@ -115,7 +124,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.U_INT_16.decode(message).intValue() * 16.0;
+            return DataType.U_INT_16.decode(message).doubleValue() * 16.0;
         }
     },
 
@@ -124,7 +133,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_8.decode(message).intValue(), -55);
+            return FastMath.scalb(DataType.INT_8.decode(message).doubleValue(), -55);
         }
     },
 
@@ -133,7 +142,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -43);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -43);
         }
     },
 
@@ -142,7 +151,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_22.decode(message).intValue(), -31);
+            return FastMath.scalb(DataType.INT_22.decode(message).doubleValue(), -31);
         }
     },
 
@@ -160,7 +169,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -5);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -5);
         }
     },
 
@@ -169,7 +178,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_16.decode(message).intValue(), -43));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -43));
         }
     },
 
@@ -178,7 +187,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).intValue(), -31));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).doubleValue(), -31));
         }
     },
 
@@ -187,7 +196,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -29);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -29);
         }
     },
 
@@ -196,7 +205,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.U_INT_32.decode(message).longValue(), -33);
+            return FastMath.scalb(DataType.U_INT_32.decode(message).doubleValue(), -33);
         }
     },
 
@@ -205,7 +214,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -29);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -29);
         }
     },
 
@@ -214,7 +223,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.U_INT_32.decode(message).longValue(), -19);
+            return FastMath.scalb(DataType.U_INT_32.decode(message).doubleValue(), -19);
         }
     },
 
@@ -223,7 +232,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.U_INT_16.decode(message).intValue() * 16.0;
+            return DataType.U_INT_16.decode(message).doubleValue() * 16.0;
         }
     },
 
@@ -232,7 +241,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -29);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -29);
         }
     },
 
@@ -241,7 +250,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).intValue(), -31));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).doubleValue(), -31));
         }
     },
 
@@ -250,7 +259,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -29);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -29);
         }
     },
 
@@ -259,7 +268,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).intValue(), -31));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).doubleValue(), -31));
         }
     },
 
@@ -268,7 +277,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -5);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -5);
         }
     },
 
@@ -277,7 +286,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).intValue(), -31));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).doubleValue(), -31));
         }
     },
 
@@ -286,7 +295,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_24.decode(message).intValue(), -43));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_24.decode(message).doubleValue(), -43));
         }
     },
 
@@ -295,7 +304,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_8.decode(message).intValue(), -31);
+            return FastMath.scalb(DataType.INT_8.decode(message).doubleValue(), -31);
         }
     },
 
@@ -357,7 +366,7 @@ public enum RtcmDataField implements DataField {
         public double doubleValue(final EncodedMessage message) {
             final int    hours    = DataType.U_INT_5.decode(message).intValue();
             final int    minutes  = DataType.U_INT_6.decode(message).intValue();
-            final double secondes = DataType.BIT_1.decode(message).intValue() * 30.0;
+            final double secondes = DataType.BIT_1.decode(message).doubleValue() * 30.0;
             return hours * 3600.0 + minutes * 60.0 + secondes;
         }
     },
@@ -385,7 +394,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Unit.MINUTE.toSI(DataType.U_INT_7.decode(message).intValue() * 15.0);
+            return Unit.MINUTE.toSI(DataType.U_INT_7.decode(message).doubleValue() * 15.0);
         }
     },
 
@@ -394,7 +403,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.KM_PER_S.toSI(FastMath.scalb(DataType.INT_S_24.decode(message).intValue(), -20));
+            return Units.KM_PER_S.toSI(FastMath.scalb(DataType.INT_S_24.decode(message).doubleValue(), -20));
         }
     },
 
@@ -403,7 +412,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Unit.KILOMETRE.toSI(FastMath.scalb(DataType.INT_S_27.decode(message).intValue(), -11));
+            return Unit.KILOMETRE.toSI(FastMath.scalb(DataType.INT_S_27.decode(message).doubleValue(), -11));
         }
     },
 
@@ -412,7 +421,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.KM_PER_S2.toSI(FastMath.scalb(DataType.INT_S_5.decode(message).intValue(), -30));
+            return Units.KM_PER_S2.toSI(FastMath.scalb(DataType.INT_S_5.decode(message).doubleValue(), -30));
         }
     },
 
@@ -421,7 +430,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.KM_PER_S.toSI(FastMath.scalb(DataType.INT_S_24.decode(message).intValue(), -20));
+            return Units.KM_PER_S.toSI(FastMath.scalb(DataType.INT_S_24.decode(message).doubleValue(), -20));
         }
     },
 
@@ -430,7 +439,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Unit.KILOMETRE.toSI(FastMath.scalb(DataType.INT_S_27.decode(message).intValue(), -11));
+            return Unit.KILOMETRE.toSI(FastMath.scalb(DataType.INT_S_27.decode(message).doubleValue(), -11));
         }
     },
 
@@ -439,7 +448,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.KM_PER_S2.toSI(FastMath.scalb(DataType.INT_S_5.decode(message).intValue(), -30));
+            return Units.KM_PER_S2.toSI(FastMath.scalb(DataType.INT_S_5.decode(message).doubleValue(), -30));
         }
     },
 
@@ -448,7 +457,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.KM_PER_S.toSI(FastMath.scalb(DataType.INT_S_24.decode(message).intValue(), -20));
+            return Units.KM_PER_S.toSI(FastMath.scalb(DataType.INT_S_24.decode(message).doubleValue(), -20));
         }
     },
 
@@ -457,7 +466,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Unit.KILOMETRE.toSI(FastMath.scalb(DataType.INT_S_27.decode(message).intValue(), -11));
+            return Unit.KILOMETRE.toSI(FastMath.scalb(DataType.INT_S_27.decode(message).doubleValue(), -11));
         }
     },
 
@@ -466,7 +475,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.KM_PER_S2.toSI(FastMath.scalb(DataType.INT_S_5.decode(message).intValue(), -30));
+            return Units.KM_PER_S2.toSI(FastMath.scalb(DataType.INT_S_5.decode(message).doubleValue(), -30));
         }
     },
 
@@ -489,7 +498,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_S_11.decode(message).intValue(), -40);
+            return FastMath.scalb(DataType.INT_S_11.decode(message).doubleValue(), -40);
         }
     },
 
@@ -516,7 +525,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_S_22.decode(message).intValue(), -30);
+            return FastMath.scalb(DataType.INT_S_22.decode(message).doubleValue(), -30);
         }
     },
 
@@ -525,7 +534,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_S_5.decode(message).intValue(), -30);
+            return FastMath.scalb(DataType.INT_S_5.decode(message).doubleValue(), -30);
         }
     },
 
@@ -597,7 +606,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_S_32.decode(message).intValue(), -31);
+            return FastMath.scalb(DataType.INT_S_32.decode(message).doubleValue(), -31);
         }
     },
 
@@ -615,7 +624,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_S_22.decode(message).intValue(), -31);
+            return FastMath.scalb(DataType.INT_S_22.decode(message).doubleValue(), -31);
         }
     },
 
@@ -678,7 +687,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_14.decode(message).intValue(), -43));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_14.decode(message).doubleValue(), -43));
         }
     },
 
@@ -687,7 +696,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.U_INT_14.decode(message).intValue() * 60.0;
+            return DataType.U_INT_14.decode(message).doubleValue() * 60.0;
         }
     },
 
@@ -696,7 +705,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_6.decode(message).intValue(), -59);
+            return FastMath.scalb(DataType.INT_6.decode(message).doubleValue(), -59);
         }
     },
 
@@ -705,7 +714,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_21.decode(message).intValue(), -46);
+            return FastMath.scalb(DataType.INT_21.decode(message).doubleValue(), -46);
         }
     },
 
@@ -714,7 +723,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_31.decode(message).intValue(), -34);
+            return FastMath.scalb(DataType.INT_31.decode(message).doubleValue(), -34);
         }
     },
 
@@ -723,7 +732,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -5);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -5);
         }
     },
 
@@ -732,7 +741,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_16.decode(message).intValue(), -43));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -43));
         }
     },
 
@@ -741,7 +750,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).intValue(), -31));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).doubleValue(), -31));
         }
     },
 
@@ -750,7 +759,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -29);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -29);
         }
     },
 
@@ -768,7 +777,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -29);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -29);
         }
     },
 
@@ -786,7 +795,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.U_INT_14.decode(message).intValue() * 60.0;
+            return DataType.U_INT_14.decode(message).doubleValue() * 60.0;
         }
     },
 
@@ -795,7 +804,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -29);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -29);
         }
     },
 
@@ -804,7 +813,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).intValue(), -31));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).doubleValue(), -31));
         }
     },
 
@@ -813,7 +822,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -29);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -29);
         }
     },
 
@@ -822,7 +831,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).intValue(), -31));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).doubleValue(), -31));
         }
     },
 
@@ -831,7 +840,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -5);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -5);
         }
     },
 
@@ -840,7 +849,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).intValue(), -31));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).doubleValue(), -31));
         }
     },
 
@@ -849,7 +858,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_24.decode(message).intValue(), -43));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_24.decode(message).doubleValue(), -43));
         }
     },
 
@@ -858,7 +867,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_10.decode(message).intValue(), -32);
+            return FastMath.scalb(DataType.INT_10.decode(message).doubleValue(), -32);
         }
     },
 
@@ -867,7 +876,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_10.decode(message).intValue(), -32);
+            return FastMath.scalb(DataType.INT_10.decode(message).doubleValue(), -32);
         }
     },
 
@@ -907,6 +916,186 @@ public enum RtcmDataField implements DataField {
         }
     },
 
+    /** Delta Orbit Radial (m). */
+    DF365 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM.toSI(DataType.INT_22.decode(message).doubleValue() * 0.1);
+        }
+    },
+
+    /** Delta Along-Track (m). */
+    DF366 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM.toSI(DataType.INT_20.decode(message).doubleValue() * 0.4);
+        }
+    },
+
+    /** Delta Cross-Track (m). */
+    DF367 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM.toSI(DataType.INT_20.decode(message).doubleValue() * 0.4);
+        }
+    },
+
+    /** Dot Delta Radial (m/s). */
+    DF368 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM_PER_S.toSI(DataType.INT_21.decode(message).doubleValue() * 0.001);
+        }
+    },
+
+    /** Dot Delta Along-Track (m/s). */
+    DF369 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM_PER_S.toSI(DataType.INT_19.decode(message).doubleValue() * 0.004);
+        }
+    },
+
+    /** Dot Delta Cross-Track (m/s). */
+    DF370 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM_PER_S.toSI(DataType.INT_19.decode(message).doubleValue() * 0.004);
+        }
+    },
+
+    /** Satellite Reference Datum. */
+    DF375 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.BIT_1.decode(message).byteValue();
+        }
+    },
+
+    /** Delta Clock C0. */
+    DF376 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM.toSI(DataType.INT_22.decode(message).doubleValue() * 0.1);
+        }
+    },
+
+    /** Delta Clock C1. */
+    DF377 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM_PER_S.toSI(DataType.INT_21.decode(message).doubleValue() * 0.001);
+        }
+    },
+
+    /** Delta Clock C2. */
+    DF378 {
+        /** {@inheritDoc} */
+        @Override
+        public double doubleValue(final EncodedMessage message) {
+            return Units.MM_PER_S2.toSI(DataType.INT_27.decode(message).doubleValue() * 0.00002);
+        }
+    },
+
+    /** GLONASS Satellite ID. */
+    DF384 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_5.decode(message).byteValue();
+        }
+    },
+
+    /** GPS Epoch Time 1s. */
+    DF385 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_20.decode(message).intValue();
+        }
+    },
+
+    /** GLONASS Epoch Time 1s. */
+    DF386 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_17.decode(message).intValue();
+        }
+    },
+
+    /** No. of Satellites. */
+    DF387 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_6.decode(message).byteValue();
+        }
+    },
+
+    /** Multiple Message Indicator. */
+    DF388 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.BIT_1.decode(message).byteValue();
+        }
+    },
+
+    /** SSR Update Interval. */
+    DF391 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.BIT_4.decode(message).byteValue();
+        }
+    },
+
+    /** GLONASS Issue Of Date (IOD). */
+    DF392 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.BIT_8.decode(message).intValue();
+        }
+    },
+
+    /** IOD SSR. */
+    DF413 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_4.decode(message).byteValue();
+        }
+    },
+
+    /** SSR Provider ID. */
+    DF414 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_16.decode(message).intValue();
+        }
+    },
+
+    /** SSR Solution ID. */
+    DF415 {
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_4.decode(message).byteValue();
+        }
+    },
+
     /** QZSS Satellite ID. */
     DF429 {
         /** {@inheritDoc} */
@@ -922,7 +1111,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.U_INT_16.decode(message).intValue() * 16.0;
+            return DataType.U_INT_16.decode(message).doubleValue() * 16.0;
         }
     },
 
@@ -931,7 +1120,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_8.decode(message).intValue(), -55);
+            return FastMath.scalb(DataType.INT_8.decode(message).doubleValue(), -55);
         }
     },
 
@@ -940,7 +1129,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -43);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -43);
         }
     },
 
@@ -949,7 +1138,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_22.decode(message).intValue(), -31);
+            return FastMath.scalb(DataType.INT_22.decode(message).doubleValue(), -31);
         }
     },
 
@@ -967,7 +1156,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -5);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -5);
         }
     },
 
@@ -976,7 +1165,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_16.decode(message).intValue(), -43));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -43));
         }
     },
 
@@ -985,7 +1174,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).intValue(), -31));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).doubleValue(), -31));
         }
     },
 
@@ -994,7 +1183,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -29);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -29);
         }
     },
 
@@ -1012,7 +1201,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -29);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -29);
         }
     },
 
@@ -1030,7 +1219,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.U_INT_16.decode(message).intValue() * 16.0;
+            return DataType.U_INT_16.decode(message).doubleValue() * 16.0;
         }
     },
 
@@ -1039,7 +1228,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -29);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -29);
         }
     },
 
@@ -1048,7 +1237,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).intValue(), -31));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).doubleValue(), -31));
         }
     },
 
@@ -1057,7 +1246,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -29);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -29);
         }
     },
 
@@ -1066,7 +1255,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).intValue(), -31));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).doubleValue(), -31));
         }
     },
 
@@ -1075,7 +1264,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_16.decode(message).intValue(), -5);
+            return FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -5);
         }
     },
 
@@ -1084,7 +1273,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).intValue(), -31));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).doubleValue(), -31));
         }
     },
 
@@ -1093,7 +1282,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_24.decode(message).intValue(), -43));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_24.decode(message).doubleValue(), -43));
         }
     },
 
@@ -1102,7 +1291,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_14.decode(message).intValue(), -43));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_14.decode(message).doubleValue(), -43));
         }
     },
 
@@ -1147,7 +1336,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_8.decode(message).intValue(), -31);
+            return FastMath.scalb(DataType.INT_8.decode(message).doubleValue(), -31);
         }
     },
 
@@ -1166,6 +1355,19 @@ public enum RtcmDataField implements DataField {
         @Override
         public int intValue(final EncodedMessage message) {
             return DataType.BIT_1.decode(message).intValue();
+        }
+    },
+
+    /** Galileo Epoch Time 1s. */
+    DF458 {
+        // Ref: 1°/ "RTCM SPECIAL COMMITTEE NO.104, RTCM Paper 107-2014-SC104-818,
+        //           Proposal of new RTCM SSR Messages SSR Stage 1: Galileo, QZSS, SBAS, BDS for RTCM STANDARD 10403.2"
+        //      2°/ "Interface Specification for MADOCA-SEAD, Japan Aerospace Exploration Agency,
+        //           October 2016, rev February 2017"
+        /** {@inheritDoc} */
+        @Override
+        public int intValue(final EncodedMessage message) {
+            return DataType.U_INT_20.decode(message).intValue();
         }
     },
 
@@ -1201,7 +1403,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_14.decode(message).intValue(), -43));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_14.decode(message).doubleValue(), -43));
         }
     },
 
@@ -1219,7 +1421,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.U_INT_17.decode(message).intValue() * 8.0;
+            return DataType.U_INT_17.decode(message).doubleValue() * 8.0;
         }
     },
 
@@ -1228,7 +1430,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_11.decode(message).intValue(), -66);
+            return FastMath.scalb(DataType.INT_11.decode(message).doubleValue(), -66);
         }
     },
 
@@ -1237,7 +1439,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_22.decode(message).intValue(), -50);
+            return FastMath.scalb(DataType.INT_22.decode(message).doubleValue(), -50);
         }
     },
 
@@ -1246,7 +1448,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_24.decode(message).intValue(), -33);
+            return FastMath.scalb(DataType.INT_24.decode(message).doubleValue(), -33);
         }
     },
 
@@ -1264,7 +1466,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_18.decode(message).intValue(), -6);
+            return FastMath.scalb(DataType.INT_18.decode(message).doubleValue(), -6);
         }
     },
 
@@ -1273,7 +1475,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_16.decode(message).intValue(), -43));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_16.decode(message).doubleValue(), -43));
         }
     },
 
@@ -1282,7 +1484,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).intValue(), -31));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).doubleValue(), -31));
         }
     },
 
@@ -1291,7 +1493,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_18.decode(message).intValue(), -31);
+            return FastMath.scalb(DataType.INT_18.decode(message).doubleValue(), -31);
         }
     },
 
@@ -1309,7 +1511,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_18.decode(message).intValue(), -31);
+            return FastMath.scalb(DataType.INT_18.decode(message).doubleValue(), -31);
         }
     },
 
@@ -1327,7 +1529,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return DataType.U_INT_17.decode(message).intValue() * 8.0;
+            return DataType.U_INT_17.decode(message).doubleValue() * 8.0;
         }
     },
 
@@ -1336,7 +1538,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_18.decode(message).intValue(), -31);
+            return FastMath.scalb(DataType.INT_18.decode(message).doubleValue(), -31);
         }
     },
 
@@ -1345,7 +1547,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).intValue(), -31));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).doubleValue(), -31));
         }
     },
 
@@ -1354,7 +1556,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_18.decode(message).intValue(), -31);
+            return FastMath.scalb(DataType.INT_18.decode(message).doubleValue(), -31);
         }
     },
 
@@ -1363,7 +1565,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).intValue(), -31));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).doubleValue(), -31));
         }
     },
 
@@ -1372,7 +1574,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return FastMath.scalb(DataType.INT_18.decode(message).intValue(), -6);
+            return FastMath.scalb(DataType.INT_18.decode(message).doubleValue(), -6);
         }
     },
 
@@ -1381,7 +1583,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).intValue(), -31));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_32.decode(message).doubleValue(), -31));
         }
     },
 
@@ -1390,7 +1592,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_24.decode(message).intValue(), -43));
+            return Units.SEMI_CIRCLE.toSI(FastMath.scalb(DataType.INT_24.decode(message).doubleValue(), -43));
         }
     },
 
@@ -1399,7 +1601,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.NS.toSI(DataType.INT_10.decode(message).intValue() * 0.1);
+            return Units.NS.toSI(DataType.INT_10.decode(message).doubleValue() * 0.1);
         }
     },
 
@@ -1408,7 +1610,7 @@ public enum RtcmDataField implements DataField {
         /** {@inheritDoc} */
         @Override
         public double doubleValue(final EncodedMessage message) {
-            return Units.NS.toSI(DataType.INT_10.decode(message).intValue() * 0.1);
+            return Units.NS.toSI(DataType.INT_10.decode(message).doubleValue() * 0.1);
         }
     },
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
@@ -105,11 +105,11 @@ public class GNSSPropagatorBuilder {
      * @see #ecef(Frame bodyFixed)
      */
     public GNSSPropagatorBuilder(final GNSSOrbitalElements gnssOrbElt, final Frames frames) {
-        this.orbit = gnssOrbElt;
-        this.mass  = Propagator.DEFAULT_MASS;
-        this.eci   = frames.getEME2000();
-        this.ecef  = frames.getITRF(IERSConventions.IERS_2010, true);
-        attitudeProvider = InertialProvider.of(this.eci);
+        this.orbit            = gnssOrbElt;
+        this.mass             = Propagator.DEFAULT_MASS;
+        this.eci              = frames.getEME2000();
+        this.ecef             = frames.getITRF(IERSConventions.IERS_2010, true);
+        this.attitudeProvider = FrameAlignedProvider.of(this.eci);
     }
 
     /** Sets the attitude provider.

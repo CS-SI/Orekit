@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -137,7 +137,7 @@ public class SGP4 extends TLEPropagator {
         final double tsq = tSince * tSince;
         xnode = xn0ddf + xnodcf * tsq;
         double tempa = 1 - c1 * tSince;
-        double tempe = tle.getBStar() * c4 * tSince;
+        double tempe = tle.getBStar(tle.getDate().shiftedBy(tSince)) * c4 * tSince;
         double templ = t2cof * tsq;
 
         if (!lessThan220) {
@@ -150,7 +150,7 @@ public class SGP4 extends TLEPropagator {
             final double tcube = tsq * tSince;
             final double tfour = tSince * tcube;
             tempa = tempa - d2 * tsq - d3 * tcube - d4 * tfour;
-            tempe = tempe + tle.getBStar() * c5 * (FastMath.sin(xmp) - sinM0);
+            tempe = tempe + tle.getBStar(tle.getDate().shiftedBy(tSince)) * c5 * (FastMath.sin(xmp) - sinM0);
             templ = templ + t3cof * tcube + tfour * (t4cof + tSince * t5cof);
         }
 

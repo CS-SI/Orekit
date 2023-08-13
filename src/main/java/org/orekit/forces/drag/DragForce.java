@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,9 +17,7 @@
 package org.orekit.forces.drag;
 
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
@@ -29,8 +27,6 @@ import org.orekit.frames.Frame;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -49,6 +45,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Pascal Parraud
+ * @author Melina Vanel
  */
 
 public class DragForce extends AbstractDragForceModel {
@@ -75,14 +72,13 @@ public class DragForce extends AbstractDragForceModel {
 
         final AbsoluteDate date     = s.getDate();
         final Frame        frame    = s.getFrame();
-        final Vector3D     position = s.getPVCoordinates().getPosition();
+        final Vector3D     position = s.getPosition();
 
         final double rho    = atmosphere.getDensity(date, position, frame);
         final Vector3D vAtm = atmosphere.getVelocity(date, position, frame);
         final Vector3D relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
 
-        return spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                           s.getMass(), rho, relativeVelocity, parameters);
+        return spacecraft.dragAcceleration(s, rho, relativeVelocity, parameters);
 
     }
 
@@ -94,7 +90,7 @@ public class DragForce extends AbstractDragForceModel {
 
         final FieldAbsoluteDate<T> date     = s.getDate();
         final Frame                frame    = s.getFrame();
-        final FieldVector3D<T>     position = s.getPVCoordinates().getPosition();
+        final FieldVector3D<T>     position = s.getPosition();
 
         // Density and its derivatives
         final T rho;
@@ -115,8 +111,7 @@ public class DragForce extends AbstractDragForceModel {
         final FieldVector3D<T> relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
 
         // Drag acceleration along with its derivatives
-        return spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
-                                           s.getMass(), rho, relativeVelocity, parameters);
+        return spacecraft.dragAcceleration(s, rho, relativeVelocity, parameters);
 
     }
 
@@ -124,18 +119,6 @@ public class DragForce extends AbstractDragForceModel {
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return spacecraft.getDragParametersDrivers();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
     /** Get the atmospheric model.
@@ -151,4 +134,5 @@ public class DragForce extends AbstractDragForceModel {
     public DragSensitive getSpacecraft() {
         return spacecraft;
     }
+
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -128,7 +128,7 @@ public class Unit implements Serializable {
     public static final Unit TESLA = VOLT.multiply(null, SECOND).divide("T", METRE.power(null, Fraction.TWO));
 
     /** Solar Flux Unit. */
-    public static final Unit SOLAR_FLUX_UNIT = WATT.divide(null, METRE.power(null, Fraction.TWO).multiply(null, HERTZ)).scale("sfu", 1.0e-22);
+    public static final Unit SOLAR_FLUX_UNIT = WATT.divide(null, METRE.power(null, Fraction.TWO).multiply(null, HERTZ)).scale("SFU", 1.0e-22);
 
     /** Total Electron Content Unit. */
     public static final Unit TOTAL_ELECTRON_CONTENT_UNIT = METRE.power(null, new Fraction(-2)).scale("TECU", 1.0e+16);
@@ -255,6 +255,35 @@ public class Unit implements Serializable {
             builder.append('1');
         }
         return new Unit(builder.toString(), 1.0, mass, length, time, current, angle);
+    }
+
+    /** Ensure some units are compatible with reference units.
+     * @param description description of the units list (for error message generation)
+     * @param reference reference units
+     * @param units units to check
+     * @param allowScaleDifferences if true, unit with same dimension but different
+     * scale (like {@link #KILOMETRE} versus {@link #METRE}) are allowed, otherwise they will trigger an exception
+     * @exception OrekitException if units are not compatible (number of elements, dimensions or scaling)
+     */
+    public static void ensureCompatible(final String description, final List<Unit> reference,
+                                        final boolean allowScaleDifferences, final List<Unit> units) {
+        if (units.size() != reference.size()) {
+            throw new OrekitException(OrekitMessages.WRONG_NB_COMPONENTS,
+                                      description, reference.size(), units.size());
+        }
+        for (int i = 0; i < reference.size(); ++i) {
+            if (!reference.get(i).sameDimension(units.get(i))) {
+                throw new OrekitException(OrekitMessages.INCOMPATIBLE_UNITS,
+                                          reference.get(i).getName(),
+                                          units.get(i).getName());
+            }
+            if (!(allowScaleDifferences ||
+                  Precision.equals(reference.get(i).getScale(), units.get(i).getScale(), 1))) {
+                throw new OrekitException(OrekitMessages.INCOMPATIBLE_UNITS,
+                                          reference.get(i).getName(),
+                                          units.get(i).getName());
+            }
+        }
     }
 
     /** Append a dimension contribution to a unit name.

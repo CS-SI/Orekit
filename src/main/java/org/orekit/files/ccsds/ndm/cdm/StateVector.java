@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -60,12 +60,12 @@ public class StateVector extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNaN(x, StateVectorKey.X);
-        checkNotNaN(y, StateVectorKey.Y);
-        checkNotNaN(z, StateVectorKey.Z);
-        checkNotNaN(xDot, StateVectorKey.X_DOT);
-        checkNotNaN(yDot, StateVectorKey.Y_DOT);
-        checkNotNaN(zDot, StateVectorKey.Z_DOT);
+        checkNotNaN(x, StateVectorKey.X.name());
+        checkNotNaN(y, StateVectorKey.Y.name());
+        checkNotNaN(z, StateVectorKey.Z.name());
+        checkNotNaN(xDot, StateVectorKey.X_DOT.name());
+        checkNotNaN(yDot, StateVectorKey.Y_DOT.name());
+        checkNotNaN(zDot, StateVectorKey.Z_DOT.name());
 
     }
 

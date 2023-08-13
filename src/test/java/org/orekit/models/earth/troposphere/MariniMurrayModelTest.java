@@ -18,7 +18,7 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
@@ -67,7 +67,7 @@ public class MariniMurrayModelTest {
 
     @Test
     public void testFieldDelay() {
-        doTestFieldDelay(Decimal64Field.getInstance());
+        doTestFieldDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
@@ -94,7 +94,7 @@ public class MariniMurrayModelTest {
 
     @Test
     public void testFieldFixedHeight() {
-        doTestFieldFixedHeight(Decimal64Field.getInstance());
+        doTestFieldFixedHeight(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldFixedHeight(final Field<T> field) {
@@ -121,7 +121,7 @@ public class MariniMurrayModelTest {
 
     @Test
     public void compareFieldExpectedValue() {
-        doCompareFieldExpectedValues(Decimal64Field.getInstance());
+        doCompareFieldExpectedValues(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doCompareFieldExpectedValues(final Field<T> field) {

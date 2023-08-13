@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 import org.hipparchus.random.MersenneTwister;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
@@ -33,7 +33,7 @@ public class FieldGHmjTest {
 
     @Test
     public void testGHmsj() {
-        doTestGHmsj(Decimal64Field.getInstance());
+        doTestGHmsj(Binary64Field.getInstance());
     }
 
     /** Gmsj and Hmsj computation test based on 2 independent methods.
@@ -64,7 +64,7 @@ public class FieldGHmjTest {
 
     @Test
     public void testdGHdk() {
-        doTestdGHdk(Decimal64Field.getInstance());
+        doTestdGHdk(Binary64Field.getInstance());
     }
 
     /** dG/dk and dH/dk computations test based on 2 independent methods.
@@ -94,7 +94,7 @@ public class FieldGHmjTest {
 
     @Test
     public void testdGHdh() {
-        doTestdGHdh(Decimal64Field.getInstance());
+        doTestdGHdh(Binary64Field.getInstance());
     }
 
     /** dG/dh computation test based on 2 independent methods.
@@ -124,7 +124,7 @@ public class FieldGHmjTest {
 
     @Test
     public void testdGHdAlpha() {
-        doTestdGHdAlpha(Decimal64Field.getInstance());
+        doTestdGHdAlpha(Binary64Field.getInstance());
     }
 
     /** dG/dα and dH/dα computations test based on 2 independent methods.
@@ -154,7 +154,7 @@ public class FieldGHmjTest {
 
     @Test
     public void testdGHdBeta() {
-        doTestdGHdBeta(Decimal64Field.getInstance());
+        doTestdGHdBeta(Binary64Field.getInstance());
     }
 
     /** dG/dβ and dH/dβ computations test based on 2 independent methods.

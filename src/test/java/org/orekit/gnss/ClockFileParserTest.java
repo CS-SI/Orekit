@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -851,8 +851,10 @@ public class ClockFileParserTest {
                 TimeSystem.BEIDOU.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getIRNSS(),
                 TimeSystem.IRNSS.getTimeScale(DataContext.getDefault().getTimeScales()));
+        Assertions.assertEquals(TimeScalesFactory.getUTC(),
+                                TimeSystem.GMT.getTimeScale(DataContext.getDefault().getTimeScales()));
         Assertions.assertEquals(TimeScalesFactory.getGPS(),
-                TimeSystem.UNKNOWN.getTimeScale(DataContext.getDefault().getTimeScales()));
+                                TimeSystem.UNKNOWN.getTimeScale(DataContext.getDefault().getTimeScales()));
     }
 
     /** Test parsing file of issue #845 (https://gitlab.orekit.org/orekit/orekit/-/issues/845). */

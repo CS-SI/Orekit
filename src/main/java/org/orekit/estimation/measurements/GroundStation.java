@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,6 +33,7 @@ import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.EOPHistory;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -434,15 +435,20 @@ public class GroundStation {
      * a new offset frame.
      * </p>
      * @param inertial inertial frame to transform to
-     * @param clockDate date of the transform as read by the ground station clock (i.e. clock offset <em>not</em> compensated)
+     * @param date date of the transform
+     * @param clockOffsetAlreadyApplied if true, the specified {@code date} is as read
+     * by the ground station clock (i.e. clock offset <em>not</em> compensated), if false,
+     * the specified {@code date} was already compensated and is a physical absolute date
      * @return transform between offset frame and inertial frame, at <em>real</em> measurement
      * date (i.e. with clock, Earth and station offsets applied)
      */
-    public Transform getOffsetToInertial(final Frame inertial, final AbsoluteDate clockDate) {
+    public Transform getOffsetToInertial(final Frame inertial,
+                                         final AbsoluteDate date, final boolean clockOffsetAlreadyApplied) {
 
         // take clock offset into account
-        final double offset = clockOffsetDriver.getValue();
-        final AbsoluteDate offsetCompensatedDate = new AbsoluteDate(clockDate, -offset);
+        final AbsoluteDate offsetCompensatedDate = clockOffsetAlreadyApplied ?
+                                                   date :
+                                                   new AbsoluteDate(date, -clockOffsetDriver.getValue());
 
         // take Earth offsets into account
         final Transform intermediateToBody = estimatedEarthFrameProvider.getTransform(offsetCompensatedDate).getInverse();
@@ -483,7 +489,8 @@ public class GroundStation {
      * @param inertial inertial frame to transform to
      * @param clockDate date of the transform as read by the ground station clock (i.e. clock offset <em>not</em> compensated)
      * @param freeParameters total number of free parameters in the gradient
-     * @param indices indices of the estimated parameters in derivatives computations
+     * @param indices indices of the estimated parameters in derivatives computations, must be driver
+     * span name in map, not driver name or will not give right results (see {@link ParameterDriver#getValue(int, Map)})
      * @return transform between offset frame and inertial frame, at <em>real</em> measurement
      * date (i.e. with clock, Earth and station offsets applied)
      * @see #getOffsetToInertial(Frame, FieldAbsoluteDate, int, Map)
@@ -494,7 +501,7 @@ public class GroundStation {
                                                         final int freeParameters,
                                                         final Map<String, Integer> indices) {
         // take clock offset into account
-        final Gradient offset = clockOffsetDriver.getValue(freeParameters, indices);
+        final Gradient offset = clockOffsetDriver.getValue(freeParameters, indices, clockDate);
         final FieldAbsoluteDate<Gradient> offsetCompensatedDate =
                         new FieldAbsoluteDate<>(clockDate, offset.negate());
 
@@ -511,7 +518,8 @@ public class GroundStation {
      * @param inertial inertial frame to transform to
      * @param offsetCompensatedDate date of the transform, clock offset and its derivatives already compensated
      * @param freeParameters total number of free parameters in the gradient
-     * @param indices indices of the estimated parameters in derivatives computations
+     * @param indices indices of the estimated parameters in derivatives computations, must be driver
+     * span name in map, not driver name or will not give right results (see {@link ParameterDriver#getValue(int, Map)})
      * @return transform between offset frame and inertial frame, at specified date
      * @since 10.2
      */
@@ -530,12 +538,11 @@ public class GroundStation {
                         estimatedEarthFrameProvider.getTransform(offsetCompensatedDate, freeParameters, indices).getInverse();
 
         // take station offsets into account
-        final Gradient  x          = eastOffsetDriver.getValue(freeParameters, indices);
-        final Gradient  y          = northOffsetDriver.getValue(freeParameters, indices);
-        final Gradient  z          = zenithOffsetDriver.getValue(freeParameters, indices);
-        final BodyShape            baseShape  = baseFrame.getParentShape();
-        final StaticTransform      baseToBody = baseFrame
-                .getStaticTransformTo(baseShape.getBodyFrame(), null);
+        final Gradient                       x          = eastOffsetDriver.getValue(freeParameters, indices);
+        final Gradient                       y          = northOffsetDriver.getValue(freeParameters, indices);
+        final Gradient                       z          = zenithOffsetDriver.getValue(freeParameters, indices);
+        final BodyShape                      baseShape  = baseFrame.getParentShape();
+        final FieldStaticTransform<Gradient> baseToBody = baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), offsetCompensatedDate);
 
         FieldVector3D<Gradient> origin = baseToBody.transformPosition(new FieldVector3D<>(x, y, z));
         origin = origin.add(computeDisplacement(offsetCompensatedDate.toAbsoluteDate(), origin.toVector3D()));

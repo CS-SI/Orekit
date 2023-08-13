@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,9 +49,9 @@ public class TrajectoryStateHistory implements EphemerisFile.EphemerisSegment<Ti
      * @param states orbital states
      * @param mu gravitational parameter in m³/s²
      */
-    TrajectoryStateHistory(final TrajectoryStateHistoryMetadata metadata,
-                      final List<TrajectoryState> states,
-                      final double mu) {
+    public TrajectoryStateHistory(final TrajectoryStateHistoryMetadata metadata,
+                                  final List<TrajectoryState> states,
+                                  final double mu) {
         this.metadata = metadata;
         this.states   = states;
         this.mu       = mu;

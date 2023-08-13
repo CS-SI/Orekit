@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.forces.gravity.potential;
 
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,17 +51,6 @@ public class GRGSFormatReaderTest {
         Assertions.assertEquals(0.3986004415E+15 , provider.getMu(),  0);
         Assertions.assertEquals(0.6378136460E+07 , provider.getAe(),  0);
 
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecated() throws OrekitException {
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5-c1.txt", true));
-        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
-        AbsoluteDate date = new AbsoluteDate("2011-05-01T01:02:03", TimeScalesFactory.getTT());
-        Assertions.assertEquals(refDate, provider.getReferenceDate());
-        Assertions.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
     }
 
     @Test

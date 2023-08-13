@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,8 @@ import java.io.IOException;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.UserDefinedWriter;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.ContextBinding;
@@ -38,7 +38,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata, OcmData>, Ocm> {
+public class OcmWriter extends AbstractMessageWriter<OdmHeader, Segment<OcmMetadata, OcmData>, Ocm> {
 
     /** Version number implemented. **/
     public static final double CCSDS_OCM_VERS = 3.0;
@@ -66,8 +66,8 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegmentContent(final Generator generator, final double formatVersion,
-                                    final Segment<OcmMetadata, OcmData> segment)
+    protected void writeSegmentContent(final Generator generator, final double formatVersion,
+                                       final Segment<OcmMetadata, OcmData> segment)
         throws IOException {
 
         // write the metadata
@@ -89,8 +89,8 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
         }
 
         // trajectory history
-        if (segment.getData().getOTrajectoryBlocks() != null && !segment.getData().getOTrajectoryBlocks().isEmpty()) {
-            for (final TrajectoryStateHistory history : segment.getData().getOTrajectoryBlocks()) {
+        if (segment.getData().getTrajectoryBlocks() != null && !segment.getData().getTrajectoryBlocks().isEmpty()) {
+            for (final TrajectoryStateHistory history : segment.getData().getTrajectoryBlocks()) {
                 // write optional trajectory history block
                 new TrajectoryStateHistoryWriter(history, getTimeConverter()).write(generator);
             }
@@ -98,23 +98,23 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
 
         if (segment.getData().getPhysicBlock() != null) {
             // write optional physical properties block
-            new PhysicalPropertiesWriter(segment.getData().getPhysicBlock(),
+            new OrbitPhysicalPropertiesWriter(segment.getData().getPhysicBlock(),
                                          getTimeConverter()).
             write(generator);
         }
 
         // covariance history
         if (segment.getData().getCovarianceBlocks() != null && !segment.getData().getCovarianceBlocks().isEmpty()) {
-            for (final CovarianceHistory history : segment.getData().getCovarianceBlocks()) {
+            for (final OrbitCovarianceHistory history : segment.getData().getCovarianceBlocks()) {
                 // write optional covariance history block
-                new CovarianceHistoryWriter(history, getTimeConverter()).write(generator);
+                new OrbitCovarianceHistoryWriter(history, getTimeConverter()).write(generator);
             }
         }
 
         if (segment.getData().getManeuverBlocks() != null && !segment.getData().getManeuverBlocks().isEmpty()) {
-            for (final ManeuverHistory maneuver : segment.getData().getManeuverBlocks()) {
+            for (final OrbitManeuverHistory maneuver : segment.getData().getManeuverBlocks()) {
                 // write optional maneuver block
-                new ManeuverHistoryWriter(maneuver, getTimeConverter()).write(generator);
+                new OrbitManeuverHistoryWriter(maneuver, getTimeConverter()).write(generator);
             }
         }
 
@@ -134,7 +134,7 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
 
         if (segment.getData().getUserDefinedBlock() != null) {
             // write optional user defined parameters block
-            new UserDefinedWriter(OcmDataSubStructureKey.userDef.name(),
+            new UserDefinedWriter(OcmDataSubStructureKey.user.name(),
                                   OcmDataSubStructureKey.USER.name(),
                                   segment.getData().getUserDefinedBlock()).
             write(generator);

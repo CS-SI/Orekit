@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,13 +26,13 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1019;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1019Data;
-import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
+import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmDataField;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
-import org.orekit.propagation.analytical.gnss.data.GPSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.time.GNSSDate;
 
 import java.util.ArrayList;
@@ -81,7 +81,7 @@ public class Rtcm1019Test {
                         "0" +                                // L2 P data flag
                         "0";                                 // Fit Interval
 
-        final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        final EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
         message.start();
 
         ArrayList<Integer> messages = new ArrayList<>();
@@ -89,13 +89,13 @@ public class Rtcm1019Test {
 
         final Rtcm1019             rtcm1019      = (Rtcm1019) new RtcmMessagesParser(messages).parse(message, false);
         final Rtcm1019Data         ephemerisData = rtcm1019.getEphemerisData();
-        final GPSNavigationMessage gpsMessage    = ephemerisData.getGpsNavigationMessage();
+        final GPSLegacyNavigationMessage gpsMessage    = ephemerisData.getGpsNavigationMessage();
 
         // Verify propagator initialization
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(gpsMessage).build();
         Assertions.assertNotNull(propagator);
         Assertions.assertEquals(0.0, gpsMessage.getDate().
-                            durationFrom(new GNSSDate(gpsMessage.getWeek(), 1000.0 * gpsMessage.getTime(), SatelliteSystem.GPS).getDate()), eps);
+                            durationFrom(new GNSSDate(gpsMessage.getWeek(), gpsMessage.getTime(), SatelliteSystem.GPS).getDate()), eps);
 
         // Verify message number
         Assertions.assertEquals(1019,                   rtcm1019.getTypeCode());
@@ -111,20 +111,20 @@ public class Rtcm1019Test {
         Assertions.assertEquals(5.721445195376873E-4,   gpsMessage.getAf0(),                eps);
         Assertions.assertEquals(695,                    gpsMessage.getIODC());
         Assertions.assertEquals(0.0,                    gpsMessage.getCrs(),                eps);
-        Assertions.assertEquals(1.4587497595315308E-4,  gpsMessage.getMeanMotion(),         eps);
-        Assertions.assertEquals(0.16717753824407455,    gpsMessage.getM0(),                 eps);
+        Assertions.assertEquals(1.458749761151065E-4,   gpsMessage.getMeanMotion(),         eps);
+        Assertions.assertEquals(0.1671775426328288,     gpsMessage.getM0(),                 eps);
         Assertions.assertEquals(0.0,                    gpsMessage.getCuc(),                eps);
-        Assertions.assertEquals(0.0389980711042881,     gpsMessage.getE(),                  eps);
+        Assertions.assertEquals(0.03899807028938085,    gpsMessage.getE(),                  eps);
         Assertions.assertEquals(0.0,                    gpsMessage.getCus(),                eps);
-        Assertions.assertEquals(5153.5625,              FastMath.sqrt(gpsMessage.getSma()), eps);
+        Assertions.assertEquals(5153.562498092651,      FastMath.sqrt(gpsMessage.getSma()), eps);
         Assertions.assertEquals(560688.0,               gpsMessage.getTime(),               eps);
         Assertions.assertEquals(0.0,                    gpsMessage.getCic(),                eps);
         Assertions.assertEquals(0.0,                    gpsMessage.getCis(),                eps);
-        Assertions.assertEquals(0.9877147247285952,     gpsMessage.getI0(),                 eps);
+        Assertions.assertEquals(0.987714701321906,      gpsMessage.getI0(),                 eps);
         Assertions.assertEquals(0.0,                    gpsMessage.getCrc(),                eps);
         Assertions.assertEquals(0.30049130834913723,    gpsMessage.getPa(),                 eps);
         Assertions.assertEquals(-5.855958209879004E-9,  gpsMessage.getOmegaDot(),           eps);
-        Assertions.assertEquals(0.6980085400002902,     gpsMessage.getOmega0(),             eps);
+        Assertions.assertEquals(0.6980085385373721,     gpsMessage.getOmega0(),             eps);
         Assertions.assertEquals(1.3969839E-9,           gpsMessage.getTGD(),                eps);
         Assertions.assertEquals(0.0,                    gpsMessage.getSvHealth(),           eps);
 
@@ -173,7 +173,7 @@ public class Rtcm1019Test {
                         "0" +                                // L2 P data flag
                         "0";                                 // Fit Interval
 
-       final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+       final EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
        message.start();
 
        ArrayList<Integer> messages = new ArrayList<>();
@@ -187,7 +187,7 @@ public class Rtcm1019Test {
     @Test
     public void testDF103() {
         final String m = "1111111111111111";
-        final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        final EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
         Assertions.assertFalse(RtcmDataField.DF103.booleanValue(message));
     }
 
@@ -195,7 +195,7 @@ public class Rtcm1019Test {
     public void testEmptyMessage() {
         try {
             final byte[] array = new byte[0];
-            final EncodedMessage emptyMessage = new ByteArrayEncodedMessages(array);
+            final EncodedMessage emptyMessage = new ByteArrayEncodedMessage(array);
             new RtcmMessagesParser(new ArrayList<Integer>()).parse(emptyMessage, false);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -354,7 +354,7 @@ public class TriggersDerivativesTest {
         propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
             public String getName() { return triggers.getName().concat("-acc"); }
             public double[] getAdditionalState(SpacecraftState state) {
-                double[] parameters = Arrays.copyOfRange(maneuver.getParameters(), 0, propulsionModel.getParametersDrivers().size());
+                double[] parameters = Arrays.copyOfRange(maneuver.getParameters(initialState.getDate()), 0, propulsionModel.getParametersDrivers().size());
                 return new double[] {
                     propulsionModel.getAcceleration(state, state.getAttitude(), parameters).getNorm()
                 };
@@ -384,7 +384,7 @@ public class TriggersDerivativesTest {
     private AttitudeProvider buildAttitudeProvider() {
         final double delta = FastMath.toRadians(-7.4978);
         final double alpha = FastMath.toRadians(351);
-        return new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+        return new FrameAlignedProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
     }
 
     private class DerivativesSampler implements MultiSatStepHandler {

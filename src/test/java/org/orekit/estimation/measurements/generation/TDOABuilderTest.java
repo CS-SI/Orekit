@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -101,29 +101,35 @@ public class TDOABuilderTest {
                                                                                     new ElevationDetector(receiver.getBaseFrame()).
                                                                                     withConstantElevation(FastMath.toRadians(5.0))),
                                                          SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
+        final GatheringSubscriber gatherer = new GatheringSubscriber();
+        generator.addSubscriber(gatherer);
         final double period = context.initialOrbit.getKeplerianPeriod();
         AbsoluteDate t0     = context.initialOrbit.getDate().shiftedBy(startPeriod * period);
         AbsoluteDate t1     = context.initialOrbit.getDate().shiftedBy(endPeriod   * period);
-        SortedSet<ObservedMeasurement<?>> measurements = generator.generate(t0, t1);
+        generator.generate(t0, t1);
+        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
         Propagator propagator = buildPropagator();
         double maxError = 0;
         AbsoluteDate previous = null;
-        AbsoluteDate tInf = t0.compareTo(t1) < 0 ? t0 : t1;
-        AbsoluteDate tSup = t0.compareTo(t1) < 0 ? t1 : t0;
+        AbsoluteDate tInf = t0.isBefore(t1) ? t0 : t1;
+        AbsoluteDate tSup = t0.isBefore(t1) ? t1 : t0;
         for (ObservedMeasurement<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
             Assertions.assertTrue(date.compareTo(tInf) >= 0);
             Assertions.assertTrue(date.compareTo(tSup) <= 0);
             if (previous != null) {
-                // measurements are always chronological, even with backward propagation,
-                // due to the SortedSet (which is intended for combining several
-                // measurements types with different builders and schedulers)
-                Assertions.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
+                if (t0.isBefore(t1)) {
+                    // measurements are expected to be chronological
+                    Assertions.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
+                } else {
+                    // measurements are expected to be reverse chronological
+                    Assertions.assertTrue(previous.durationFrom(date) >= 0.999999 * step);
+                }
             }
             previous = date;
             SpacecraftState state = propagator.propagate(date);
-            double[] e = measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+            double[] e = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
             for (int i = 0; i < m.length; ++i) {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
             }

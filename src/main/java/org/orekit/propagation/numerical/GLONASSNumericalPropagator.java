@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,6 +36,8 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.gnss.data.GLONASSAlmanac;
+import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -66,6 +68,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * are available in the navigation message; a transformation is performed to convert these
  * accelerations into the correct coordinate system. In the case where they are not
  * available into the navigation message, these accelerations are computed.
+ * </p>
+ * <p>
+ * <b>Caution:</b> The Glonass numerical propagator can only be used with {@link GLONASSNavigationMessage}.
+ * Using this propagator with a {@link GLONASSAlmanac} is prone to error.
  * </p>
  *
  * @see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD-GLONASS-CDMA-General.-Edition-1.0-2016.pdf">
@@ -157,7 +163,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
                                       final Frame eci, final AttitudeProvider provider,
                                       final double mass, final DataContext context,
                                       final boolean isAccAvailable) {
-        super(integrator, PropagationType.MEAN);
+        super(integrator, PropagationType.OSCULATING);
         this.dataContext = context;
         this.isAccAvailable = isAccAvailable;
         // Stores the GLONASS orbital elements
@@ -599,7 +605,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
             // The parameter meanOnly is ignored for the GLONASS Propagator
             final double mass = y[6];
             if (mass <= 0.0) {
-                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
+                throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS, mass);
             }
 
             final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, yDot, getPositionAngleType(), date, getMu(), getFrame());
@@ -645,7 +651,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
 
             // Position and Velocity vectors
             final Vector3D vel = state.getPVCoordinates().getVelocity();
-            final Vector3D pos = state.getPVCoordinates().getPosition();
+            final Vector3D pos = state.getPosition();
 
             Arrays.fill(yDot, 0.0);
 

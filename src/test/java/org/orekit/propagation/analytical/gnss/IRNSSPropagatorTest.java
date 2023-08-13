@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,11 +33,13 @@ import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.IRNSSAlmanac;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +67,7 @@ public class IRNSSPropagatorTest {
         almanac.setM0(-1.396094758025);
         almanac.setAf0(-9.473115205765e-04);
         almanac.setAf1(1.250555214938e-12);
-        almanac.setDate(new GNSSDate(almanac.getWeek(), 1000.0 * almanac.getTime(), SatelliteSystem.IRNSS).getDate());
+        almanac.setDate(new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.IRNSS).getDate());
 
         frames = DataContext.getDefault().getFrames();
     }
@@ -73,7 +75,7 @@ public class IRNSSPropagatorTest {
     @Test
     public void testIRNSSCycle() {
         // Builds the IRNSS propagator from the almanac
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac, frames).build();
+        final GNSSPropagator propagator = almanac.getPropagator(frames);
         // Propagate at the IRNSS date and one IRNSS cycle later
         final AbsoluteDate date0 = almanac.getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
@@ -88,7 +90,7 @@ public class IRNSSPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the IRNSS propagator from the almanac
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac, frames).build();
+        final GNSSPropagator propagator = almanac.getPropagator(frames);
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
         Assertions.assertEquals(3.986005e+14, almanac.getMu(), 1.0e6);
         // Defines some date
@@ -106,7 +108,7 @@ public class IRNSSPropagatorTest {
     @Test
     public void testNoReset() {
         try {
-            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac, frames).build();
+            final GNSSPropagator propagator = almanac.getPropagator(frames);
             propagator.resetInitialState(propagator.getInitialState());
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -128,9 +130,9 @@ public class IRNSSPropagatorTest {
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac, frames).build();
+        final GNSSPropagator propagator = almanac.getPropagator(frames);
         GNSSOrbitalElements elements = propagator.getOrbitalElements();
-        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), 0.001 * elements.getTime(), SatelliteSystem.IRNSS).getDate();
+        AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.IRNSS).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
@@ -139,10 +141,12 @@ public class IRNSSPropagatorTest {
             for (int i = -3; i <= 3; ++i) {
                 sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
             }
-            final PVCoordinates interpolated =
-                            TimeStampedPVCoordinates.interpolate(central,
-                                                                 CartesianDerivativesFilter.USE_P,
-                                                                 sample);
+
+            // create interpolator
+            final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                    new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_P);
+
+            final PVCoordinates interpolated = interpolator.interpolate(central, sample);
             errorP = FastMath.max(errorP, Vector3D.distance(pv.getPosition(), interpolated.getPosition()));
             errorV = FastMath.max(errorV, Vector3D.distance(pv.getVelocity(), interpolated.getVelocity()));
             errorA = FastMath.max(errorA, Vector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()));
@@ -157,7 +161,7 @@ public class IRNSSPropagatorTest {
     @Test
     public void testIssue544() {
         // Builds the IRNSSPropagator from the almanac
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac, frames).build();
+        final GNSSPropagator propagator = almanac.getPropagator(frames);
         // In order to test the issue, we voluntary set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);

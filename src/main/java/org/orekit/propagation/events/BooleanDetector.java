@@ -76,12 +76,12 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
      * @param newMaxIter   max iterations.
      * @param newHandler   event handler.
      */
-    private BooleanDetector(final List<EventDetector> detectors,
-                            final Operator operator,
-                            final double newMaxCheck,
-                            final double newThreshold,
-                            final int newMaxIter,
-                            final EventHandler<? super BooleanDetector> newHandler) {
+    protected BooleanDetector(final List<EventDetector> detectors,
+                              final Operator operator,
+                              final double newMaxCheck,
+                              final double newThreshold,
+                              final int newMaxIter,
+                              final EventHandler newHandler) {
         super(newMaxCheck, newThreshold, newMaxIter, newHandler);
         this.detectors = detectors;
         this.operator = operator;
@@ -136,7 +136,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
                 detectors.stream().map(EventDetector::getMaxCheckInterval).min(Double::compareTo).get(),
                 detectors.stream().map(EventDetector::getThreshold).min(Double::compareTo).get(),
                 detectors.stream().map(EventDetector::getMaxIterationCount).min(Integer::compareTo).get(),
-                new ContinueOnEvent<>());
+                new ContinueOnEvent());
     }
 
     /**
@@ -188,7 +188,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
                 detectors.stream().map(EventDetector::getMaxCheckInterval).min(Double::compareTo).get(),
                 detectors.stream().map(EventDetector::getThreshold).min(Double::compareTo).get(),
                 detectors.stream().map(EventDetector::getMaxIterationCount).min(Integer::compareTo).get(),
-                new ContinueOnEvent<>());
+                new ContinueOnEvent());
     }
 
     /**
@@ -233,7 +233,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
     protected BooleanDetector create(final double newMaxCheck,
                                      final double newThreshold,
                                      final int newMaxIter,
-                                     final EventHandler<? super BooleanDetector> newHandler) {
+                                     final EventHandler newHandler) {
         return new BooleanDetector(detectors, operator, newMaxCheck, newThreshold,
                 newMaxIter, newHandler);
     }

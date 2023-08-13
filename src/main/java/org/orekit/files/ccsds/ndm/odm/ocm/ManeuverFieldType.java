@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -245,7 +245,7 @@ public enum ManeuverFieldType {
      * @param parsedUnit unit to check
      */
     public void checkUnit(final Unit parsedUnit) {
-        if ((unit == Unit.NONE) ^ (parsedUnit == Unit.NONE) ||
+        if (unit == Unit.NONE ^ parsedUnit == Unit.NONE ||
             !(unit.sameDimension(parsedUnit) && Precision.equals(unit.getScale(), parsedUnit.getScale(), 1))) {
             throw new OrekitException(OrekitMessages.INCOMPATIBLE_UNITS,
                                       unit.getName(), parsedUnit.getName());
@@ -275,7 +275,7 @@ public enum ManeuverFieldType {
      * @param lineNumber line number at which the field occurs
      * @param fileName name of the file in which the field occurs
      */
-    public void process(final String field, final ContextBinding context, final Maneuver maneuver,
+    public void process(final String field, final ContextBinding context, final OrbitManeuver maneuver,
                         final int lineNumber, final String fileName) {
         processor.process(field, unit, context, maneuver, lineNumber, fileName);
     }
@@ -285,7 +285,7 @@ public enum ManeuverFieldType {
      * @param maneuver maneuver containing the field to output
      * @return output field
      */
-    public String outputField(final TimeConverter converter, final Maneuver maneuver) {
+    public String outputField(final TimeConverter converter, final OrbitManeuver maneuver) {
         return writer.output(unit, converter, maneuver);
     }
 
@@ -299,7 +299,7 @@ public enum ManeuverFieldType {
          * @param lineNumber line number at which the field occurs
          * @param fileName name of the file in which the field occurs
          */
-        void process(String field, Unit unit, ContextBinding context, Maneuver maneuver,
+        void process(String field, Unit unit, ContextBinding context, OrbitManeuver maneuver,
                      int lineNumber, String fileName);
     }
 
@@ -311,7 +311,7 @@ public enum ManeuverFieldType {
          * @param maneuver maneuver containing the field to output
          * @return output field
          */
-        String output(Unit unit, TimeConverter converter, Maneuver maneuver);
+        String output(Unit unit, TimeConverter converter, OrbitManeuver maneuver);
     }
 
 }

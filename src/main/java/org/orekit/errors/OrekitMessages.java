@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,8 @@
  */
 package org.orekit.errors;
 
+import org.hipparchus.exception.Localizable;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,8 +28,6 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
-
-import org.hipparchus.exception.Localizable;
 
 /**
  * Enumeration for localized messages formats.
@@ -89,7 +89,6 @@ public enum OrekitMessages implements Localizable {
     UNABLE_TO_PARSE_LINE_IN_FILE("unable to parse line {0} of file {1}:\n{2}"),
     UNABLE_TO_PARSE_ELEMENT_IN_FILE("unable to parse element {0} at line {1}, file {2}"),
     UNABLE_TO_FIND_FILE("unable to find file {0}"),
-    SPACECRAFT_MASS_BECOMES_NEGATIVE("spacecraft mass becomes negative: {0} kg"),
     POSITIVE_FLOW_RATE("positive flow rate (q: {0})"),
     NO_GRAVITY_FIELD_DATA_LOADED("no gravity field data loaded"),
     GRAVITY_FIELD_NORMALIZATION_UNDERFLOW("gravity field normalization underflow for degree {0} and order {1}"),
@@ -153,6 +152,8 @@ public enum OrekitMessages implements Localizable {
     UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH(
             "unexpected two elevation values: {0} and {1}, for one azimuth: {2}"),
     UNSUPPORTED_PARAMETER_NAME("unsupported parameter name {0}, supported names: {1}"),
+    PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES("{0} parameter contains several span in its value TimeSpanMap, the {1} method must be called"),
+    PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET("setPeriod was already called once on {0} parameter, another parameter should be created if the periods have to be changed"),
     TOO_SMALL_SCALE_FOR_PARAMETER("scale factor for parameter {0} is too small: {1}"),
     UNKNOWN_ADDITIONAL_STATE("unknown additional state \"{0}\""),
     UNKNOWN_MONTH("unknown month \"{0}\""),
@@ -176,20 +177,26 @@ public enum OrekitMessages implements Localizable {
     CCSDS_UNKNOWN_SPACECRAFT_MASS("there is no spacecraft mass associated with this ODM file"),
     CCSDS_UNKNOWN_CONVENTIONS("no IERS conventions have been set before parsing"),
     CCSDS_INVALID_FRAME("frame {0} is not valid in this CCSDS file context"),
+    CCSDS_DIFFERENT_LVLH_DEFINITION("this LVLH local orbital frame uses a different definition, please use LVLH_CCSDS instead"),
     CCSDS_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems: {0} ≠ {1}"),
     CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED(
             "use of time system {0} in CCSDS files requires an additional ICD and is not implemented in Orekit"),
     CCSDS_TDM_KEYWORD_NOT_FOUND("No CCSDS TDM keyword was found at line {0} of file {1}:\n{2}"),
     CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER("no Range Units converter configured for parsing Tracking Data Message"),
     CCSDS_TIME_SYSTEM_NOT_READ_YET("Time system should have already been set before line {0} of file {1}"),
-    CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems in the attitude blocks: {0} ≠ {1}"),
-    CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED("attitude type {0} in CCSDS AEM files is not implemented in Orekit"),
+    CCSDS_UNKNOWN_ATTITUDE_TYPE("unknown attitude type {0}"),
+    CCSDS_INCOMPLETE_DATA("incomplete data"),
     CCSDS_INVALID_ROTATION_SEQUENCE("invalid rotation sequence {0} at line {1} of file {2}"),
     CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE("element set type {0} ({1}) is not supported yet"),
     CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL("retrograde factor not supported in element set {0}"),
-    CCSDS_ELEMENT_SET_WRONG_NB_COMPONENTS("element set type {0} ({1}) expects {2} elements"),
     CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS("wrong number of units for maneuver {0}"),
     CCSDS_MANEUVER_MISSING_TIME("missing time field for maneuver {0}"),
+    CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES("attitude type {0} and rate type {1} calls for {2} states, got {3}"),
+    CCSDS_INCOMPATIBLE_KEYS_BOTH_USED("incompatible keys {0} and {1} should not both be used"),
+    CCSDS_SENSOR_INDEX_ALREADY_USED("sensor index {0} is already used"),
+    CCSDS_MISSING_SENSOR_INDEX("missing sensor index {0}"),
+    INCONSISTENT_NUMBER_OF_ELEMENTS("inconsistent number of elements: expected {0}, got {1}"),
+    CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES("cannot estimate precession without proper derivatives"),
     ADDITIONAL_STATE_NAME_ALREADY_IN_USE("name \"{0}\" is already used for an additional state"),
     NON_RESETABLE_STATE("reset state not allowed"),
     DSST_NEWCOMB_OPERATORS_COMPUTATION("Cannot compute Newcomb operators for sigma > rho ({0} > {1})"),
@@ -200,8 +207,14 @@ public enum OrekitMessages implements Localizable {
     SP3_UNSUPPORTED_VERSION("unsupported sp3 file version {0}"),
     SP3_NUMBER_OF_EPOCH_MISMATCH("found {0} epochs in file {1}, expected {2}"),
     SP3_UNEXPECTED_END_OF_FILE("unexpected end of sp3 file (after line {0})"),
+    SP3_INCOMPATIBLE_FILE_METADATA("cannot splice sp3 files with incompatible metadata"),
+    SP3_INCOMPATIBLE_SATELLITE_MEDATADA("cannot splice sp3 files with incompatible satellite metadata for satellite {0}"),
+    SP3_TOO_LARGE_GAP_FOR_SPLICING("cannot splice sp3 files with large gap for satellite {0} ({1} s)"),
+    STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM("STK coordinate system \"{0}\" is invalid or not yet supported"),
+    STK_UNMAPPED_COORDINATE_SYSTEM("STK coordinate system \"{0}\" has not been mapped to an Orekit frame"),
+    STK_UNEXPECTED_END_OF_FILE("unexpected end of STK file (after line {0})"),
     CLOCK_FILE_UNSUPPORTED_VERSION("unsupported clock file version {0}"),
-    NAVIGATION_FILE_UNSUPPORTED_VERSION("unsupported navigation messages file version {0}"),
+    UNSUPPORTED_FILE_FORMAT_VERSION("version {0} from file {1} is not supported, supported version: {2}"),
     NON_EXISTENT_GEOMAGNETIC_MODEL("non-existent geomagnetic model {0} for year {1}"),
     UNSUPPORTED_TIME_TRANSFORM(
             "geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined"),
@@ -245,12 +258,14 @@ public enum OrekitMessages implements Localizable {
     STATION_NOT_FOUND("station {0} not found, known stations: {1}"),
     UNKNOWN_SATELLITE_SYSTEM("unknown satellite system {0}"),
     UNKNOWN_TIME_SYSTEM("unknown time system {0}"),
+    UNKNOWN_UTC_ID("unknown UTC Id {0}"),
     UNKNOWN_CLOCK_DATA_TYPE("unknown clock data type {0}"),
     UNKNOWN_SATELLITE_ANTENNA_CODE("unknown satellite antenna code {0}"),
     UNSUPPORTED_FREQUENCY_FOR_ANTENNA("frequency {0} is not supported by antenna {1}"),
     CANNOT_FIND_SATELLITE_IN_SYSTEM("cannot find satellite {0} in satellite system {1}"),
     UNKNOWN_RINEX_FREQUENCY("unknown RINEX frequency {0} in file {1}, line {2}"),
     MISMATCHED_FREQUENCIES("mismatched frequencies in file {0}, line {1} (expected {2}, got {3})"),
+    WRONG_PARSING_TYPE("wrong parsing type for file {0}"),
     WRONG_COLUMNS_NUMBER("wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)"),
     UNSUPPORTED_FILE_FORMAT("unsupported format for file {0}"),
     INCOMPLETE_HEADER("incomplete header in file {0}"),
@@ -319,6 +334,8 @@ public enum OrekitMessages implements Localizable {
     CONNECTION_ERROR("error connecting to {0}: {1}"),
     UNEXPECTED_CONTENT_TYPE("unexpected content type {0}"),
     CANNOT_PARSE_GNSS_DATA("cannot parse GNSS data from {0}"),
+    INVALID_GNSS_DATA("invalid GNSS data: {0}"),
+    GNSS_PARITY_ERROR("GNSS parity error on word {0}"),
     UNKNOWN_HOST("unknown host {0}"),
     SOURCETABLE_PARSE_ERROR("error parsing sourcetable line {0} from {1}: {2}"),
     CANNOT_PARSE_SOURCETABLE("cannot parse sourcetable from {0}"),
@@ -330,12 +347,25 @@ public enum OrekitMessages implements Localizable {
     INCOMPATIBLE_UNITS("units {0} and {1} are not compatible"),
     MISSING_VELOCITY("missing velocity data"),
     ATTEMPT_TO_GENERATE_MALFORMED_FILE("attempt to generate file {0} with a formatting error"),
-    FIND_ROOT("{0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})"),
-    BACKWARD_PROPAGATION_NOT_ALLOWED("backward propagation not allowed here"),
-    NO_STATION_ECCENTRICITY_FOR_EPOCH("no station eccentricity values for the given epoch {0}, validity interval is between {1} and {2}"),
+    FIND_ROOT(
+            "{0} failed to find root between {1} (g={2,number,0.0##############E0}) and {3} (g={4,number,0.0##############E0})\nLast iteration at {5} (g={6,number,0.0##############E0})"),
+    MISSING_STATION_DATA_FOR_EPOCH("missing station data for epoch {0}"),
     INCONSISTENT_SELECTION("inconsistent parameters selection between pairs {0}/{1} and {2}/{3}"),
-    NOT_STRICTLY_POSITIVE("value is not strictly positive: {0}");
-
+    NO_UNSCENTED_TRANSFORM_CONFIGURED("no unscented transform configured"),
+    NOT_STRICTLY_POSITIVE("value is not strictly positive: {0}"),
+    UNSUPPORTED_TRANSFORM("transform from {0} to {1} is not implemented"),
+    WRONG_ORBIT_PARAMETERS_TYPE("orbital parameters type: {0} is different from expected orbital type : {1}"),
+    WRONG_NB_COMPONENTS("{0} expects {1} elements, got {2}"),
+    CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF("cannot change covariance type if defined in a local orbital frame"),
+    CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME("cannot change covariance type if defined in a non pseudo-inertial reference frame"),
+    DIFFERENT_TIME_OF_CLOSEST_APPROACH("primary collision object time of closest approach is different from the secondary collision object's one"),
+    DATES_MISMATCH("first date {0} does not match second date {1}"),
+    ORBITS_MUS_MISMATCH("first orbit mu {0} does not match second orbit mu {1}"),
+    DIFFERENT_STATE_DEFINITION("one state is defined using an orbit while the other is defined using an absolute position-velocity-acceleration"),
+    STATE_AND_COVARIANCE_DATES_MISMATCH("state date {0} does not match its covariance date {1}"),
+    NO_INTERPOLATOR_FOR_STATE_DEFINITION("creating a spacecraft state interpolator requires at least one orbit interpolator or an absolute position-velocity-acceleration interpolator"),
+    WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION("wrong interpolator defined for this spacecraft state type (orbit or absolute PV)"),
+    MULTIPLE_INTERPOLATOR_USED("multiple interpolators are used so they may use different numbers of interpolation points");
     // CHECKSTYLE: resume JavadocVariable check
 
     /** Base name of the resource bundle in classpath. */

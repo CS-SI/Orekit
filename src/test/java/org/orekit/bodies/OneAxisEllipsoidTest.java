@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,8 +27,8 @@ import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.random.SobolSequenceGenerator;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
@@ -46,6 +46,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -53,6 +54,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -272,15 +274,16 @@ public class OneAxisEllipsoidTest {
             groundPVList.add(new TimeStampedPVCoordinates(shiftedPV.getDate(),
                                                           p, Vector3D.ZERO, Vector3D.ZERO));
         }
-        TimeStampedPVCoordinates computed =
-                model.projectToGround(TimeStampedPVCoordinates.interpolate(date,
-                                                                           CartesianDerivativesFilter.USE_P,
-                                                                           pvList),
-                                                                           frame);
-        TimeStampedPVCoordinates reference =
-                TimeStampedPVCoordinates.interpolate(date,
-                                                     CartesianDerivativesFilter.USE_P,
-                                                     groundPVList);
+
+        // create interpolators
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                new TimeStampedPVCoordinatesHermiteInterpolator(pvList.size(), CartesianDerivativesFilter.USE_P);
+
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolatorGround =
+                new TimeStampedPVCoordinatesHermiteInterpolator(groundPVList.size(), CartesianDerivativesFilter.USE_P);
+
+        TimeStampedPVCoordinates computed = model.projectToGround(interpolator.interpolate(date, pvList), frame);
+        TimeStampedPVCoordinates reference = interpolatorGround.interpolate(date, groundPVList);
 
         TimeStampedPVCoordinates pv0 = provider.getPVCoordinates(date, frame);
         Vector3D p0 = pv0.getPosition();
@@ -321,8 +324,8 @@ public class OneAxisEllipsoidTest {
         Vector3D alongTrack   = Vector3D.crossProduct(acrossTrack, zenith).normalize();
         for (double dt = -1; dt < 1; dt += 0.01) {
             AbsoluteDate date = orbit.getDate().shiftedBy(dt);
-            Vector3D taylorP = groundTaylor.getPVCoordinates(date, model.getBodyFrame()).getPosition();
-            Vector3D refP    = model.projectToGround(orbit.getPVCoordinates(date, model.getBodyFrame()).getPosition(),
+            Vector3D taylorP = groundTaylor.getPosition(date, model.getBodyFrame());
+            Vector3D refP    = model.projectToGround(orbit.getPosition(date, model.getBodyFrame()),
                                                      date, model.getBodyFrame());
             Vector3D delta = taylorP.subtract(refP);
             Assertions.assertEquals(0.0, Vector3D.dotProduct(delta, alongTrack),  0.0015);
@@ -731,15 +734,15 @@ public class OneAxisEllipsoidTest {
         Vector3D rebuiltNadir = Vector3D.crossProduct(gp.getSouth(), gp.getWest());
         Assertions.assertEquals(0, rebuiltNadir.subtract(gp.getNadir()).getNorm(), 1.0e-15);
 
-        FieldGeodeticPoint<Decimal64> gp64 = model.transform(new FieldVector3D<Decimal64>(new Decimal64(x),
-                                                                                          new Decimal64(y),
-                                                                                          new Decimal64(z)),
+        FieldGeodeticPoint<Binary64> gp64 = model.transform(new FieldVector3D<Binary64>(new Binary64(x),
+                                                                                          new Binary64(y),
+                                                                                          new Binary64(z)),
                                                              frame,
-                                                             new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date));
+                                                             new FieldAbsoluteDate<>(Binary64Field.getInstance(), date));
         Assertions.assertEquals(longitude, MathUtils.normalizeAngle(gp64.getLongitude().getReal(), longitude), 1.0e-10);
         Assertions.assertEquals(latitude,  gp64.getLatitude().getReal(),  1.0e-10);
         Assertions.assertEquals(altitude,  gp64.getAltitude().getReal(),  1.0e-10 * FastMath.abs(ae));
-        FieldVector3D<Decimal64> rebuiltNadir64 = FieldVector3D.crossProduct(gp64.getSouth(), gp64.getWest());
+        FieldVector3D<Binary64> rebuiltNadir64 = FieldVector3D.crossProduct(gp64.getSouth(), gp64.getWest());
         Assertions.assertEquals(0, rebuiltNadir64.subtract(gp64.getNadir()).getNorm().getReal(), 1.0e-15);
 
         // project to ground
@@ -831,19 +834,19 @@ public class OneAxisEllipsoidTest {
         final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1. / 298.257223563, ecef);
 
-        final Decimal64Field field = Decimal64Field.getInstance();
-        Assertions.assertEquals(Decimal64Field.getInstance().getZero(), earth.geodeticToIsometricLatitude(field.getOne().newInstance(0.)));
-        Assertions.assertEquals(Decimal64Field.getInstance().getZero(), earth.geodeticToIsometricLatitude(field.getOne().newInstance(2.0e-13)));
+        final Binary64Field field = Binary64Field.getInstance();
+        Assertions.assertEquals(Binary64Field.getInstance().getZero(), earth.geodeticToIsometricLatitude(field.getOne().newInstance(0.)));
+        Assertions.assertEquals(Binary64Field.getInstance().getZero(), earth.geodeticToIsometricLatitude(field.getOne().newInstance(2.0e-13)));
 
-        final Decimal64 ecc = field.getZero().newInstance(earth.getEccentricity());
-        for (final Decimal64 lat: new Decimal64[] {
+        final Binary64 ecc = field.getZero().newInstance(earth.getEccentricity());
+        for (final Binary64 lat: new Binary64[] {
                     field.getOne().newInstance(FastMath.toRadians(10)),
                     field.getOne().newInstance(FastMath.toRadians(-45)),
                     field.getOne().newInstance(FastMath.toRadians(80)),
                     field.getOne().newInstance(FastMath.toRadians(-90))}) {
-            final Decimal64 eSinLat = ecc.multiply(FastMath.sin(lat));
-            final Decimal64 term1 = FastMath.log(FastMath.tan(lat.getPi().divide(4.).add(lat.divide(2.))));
-            final Decimal64 term2 = ecc.divide(2.).multiply(FastMath.log(field.getOne().subtract(eSinLat).divide(field.getOne().add(eSinLat))));
+            final Binary64 eSinLat = ecc.multiply(FastMath.sin(lat));
+            final Binary64 term1 = FastMath.log(FastMath.tan(lat.getPi().divide(4.).add(lat.divide(2.))));
+            final Binary64 term2 = ecc.divide(2.).multiply(FastMath.log(field.getOne().subtract(eSinLat).divide(field.getOne().add(eSinLat))));
 
             Assertions.assertEquals(term1.add(term2), earth.geodeticToIsometricLatitude(lat));
         }
@@ -874,23 +877,23 @@ public class OneAxisEllipsoidTest {
         final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1. / 298.257223563, ecef);
 
-        final Decimal64Field field = Decimal64Field.getInstance();
+        final Binary64Field field = Binary64Field.getInstance();
 
         // values from https://distance.to
-        final FieldGeodeticPoint<Decimal64> newYork = new FieldGeodeticPoint<>(
+        final FieldGeodeticPoint<Binary64> newYork = new FieldGeodeticPoint<>(
                 FastMath.toRadians(field.getZero().add(40.71427)),
                 FastMath.toRadians(field.getZero().add(-74.00597)), field.getZero());
-        final FieldGeodeticPoint<Decimal64> chicago = new FieldGeodeticPoint<>(
+        final FieldGeodeticPoint<Binary64> chicago = new FieldGeodeticPoint<>(
                 FastMath.toRadians(field.getZero().add(41.85003)),
                 FastMath.toRadians(field.getZero().add(-87.65005)), field.getZero());
 
-        final FieldGeodeticPoint<Decimal64> london = new FieldGeodeticPoint<>(
+        final FieldGeodeticPoint<Binary64> london = new FieldGeodeticPoint<>(
             FastMath.toRadians(field.getZero().add(51.5)),
             FastMath.toRadians(field.getZero().add(-0.16667)), field.getZero());
-        final FieldGeodeticPoint<Decimal64> berlin = new FieldGeodeticPoint<>(
+        final FieldGeodeticPoint<Binary64> berlin = new FieldGeodeticPoint<>(
             FastMath.toRadians(field.getZero().add(52.523403)),
             FastMath.toRadians(field.getZero().add(13.4114)), field.getZero());
-        final FieldGeodeticPoint<Decimal64> perth = new FieldGeodeticPoint<>(
+        final FieldGeodeticPoint<Binary64> perth = new FieldGeodeticPoint<>(
             FastMath.toRadians(field.getZero().add(-31.952712)),
             FastMath.toRadians(field.getZero().add(115.8604796)), field.getZero());
 

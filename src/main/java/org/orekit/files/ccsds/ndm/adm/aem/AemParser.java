@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.adm.aem;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataContext;
@@ -25,9 +26,10 @@ import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.adm.AdmCommonMetadataKey;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadataKey;
 import org.orekit.files.ccsds.ndm.adm.AdmParser;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
@@ -61,7 +63,7 @@ public class AemParser extends AdmParser<Aem, AemParser> implements AttitudeEphe
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
     /** File header. */
-    private Header header;
+    private AdmHeader header;
 
     /** File segments. */
     private List<AemSegment> segments;
@@ -97,12 +99,15 @@ public class AemParser extends AdmParser<Aem, AemParser> implements AttitudeEphe
      * (may be null if time system is absolute)
      * @param defaultInterpolationDegree default interpolation degree
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
     public AemParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext, final AbsoluteDate missionReferenceDate,
-                     final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior) {
+                     final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior,
+                     final Function<ParseToken, List<ParseToken>>[] filters) {
         super(Aem.ROOT, Aem.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, parsedUnitsBehavior);
+              missionReferenceDate, parsedUnitsBehavior, filters);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 
@@ -114,14 +119,14 @@ public class AemParser extends AdmParser<Aem, AemParser> implements AttitudeEphe
 
     /** {@inheritDoc} */
     @Override
-    public Header getHeader() {
+    public AdmHeader getHeader() {
         return header;
     }
 
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header   = new Header(2.0);
+        header   = new AdmHeader();
         segments = new ArrayList<>();
         metadata = null;
         context  = null;
@@ -214,9 +219,7 @@ public class AemParser extends AdmParser<Aem, AemParser> implements AttitudeEphe
     /** {@inheritDoc} */
     @Override
     public Aem build() {
-        final Aem file = new Aem(header, segments, getConventions(), getDataContext());
-        file.checkTimeSystems();
-        return file;
+        return new Aem(header, segments, getConventions(), getDataContext());
     }
 
     /** Manage attitude state section in a XML message.
@@ -259,10 +262,14 @@ public class AemParser extends AdmParser<Aem, AemParser> implements AttitudeEphe
                 return AdmMetadataKey.valueOf(token.getName()).process(token, context, metadata);
             } catch (IllegalArgumentException iaeD) {
                 try {
-                    return AemMetadataKey.valueOf(token.getName()).process(token, context, metadata);
-                } catch (IllegalArgumentException iaeE) {
-                    // token has not been recognized
-                    return false;
+                    return AdmCommonMetadataKey.valueOf(token.getName()).process(token, context, metadata);
+                } catch (IllegalArgumentException iaeC) {
+                    try {
+                        return AemMetadataKey.valueOf(token.getName()).process(token, context, metadata);
+                    } catch (IllegalArgumentException iaeE) {
+                        // token has not been recognized
+                        return false;
+                    }
                 }
             }
         }

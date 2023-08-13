@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -120,6 +120,19 @@ public enum CelestialBodyFrame {
 
     },
 
+    /** Latest International Terrestrial Reference Frame. */
+    ITRF {
+
+        /** {@inheritDoc} */
+        @Override
+        public Frame getFrame(final IERSConventions conventions,
+                              final boolean simpleEOP,
+                              final DataContext dataContext) {
+            return ITRF2020.getFrame(conventions, simpleEOP, dataContext);
+        }
+
+    },
+
     /** International Terrestrial Reference Frame 2020. */
     ITRF2020 {
 
@@ -205,12 +218,6 @@ public enum CelestialBodyFrame {
 
         /** {@inheritDoc} */
         @Override
-        public String getName() {
-            return "ITRF-97";
-        }
-
-        /** {@inheritDoc} */
-        @Override
         public Frame getFrame(final IERSConventions conventions,
                               final boolean simpleEOP,
                               final DataContext dataContext) {
@@ -224,12 +231,6 @@ public enum CelestialBodyFrame {
 
     /** International Terrestrial Reference Frame 1996. */
     ITRF1996 {
-
-        /** {@inheritDoc} */
-        @Override
-        public String getName() {
-            return "ITRF-96";
-        }
 
         /** {@inheritDoc} */
         @Override
@@ -249,12 +250,6 @@ public enum CelestialBodyFrame {
 
         /** {@inheritDoc} */
         @Override
-        public String getName() {
-            return "ITRF-94";
-        }
-
-        /** {@inheritDoc} */
-        @Override
         public Frame getFrame(final IERSConventions conventions,
                               final boolean simpleEOP,
                               final DataContext dataContext) {
@@ -268,12 +263,6 @@ public enum CelestialBodyFrame {
 
     /** International Terrestrial Reference Frame 1993. */
     ITRF1993 {
-
-        /** {@inheritDoc} */
-        @Override
-        public String getName() {
-            return "ITRF-93";
-        }
 
         /** {@inheritDoc} */
         @Override
@@ -293,12 +282,6 @@ public enum CelestialBodyFrame {
 
         /** {@inheritDoc} */
         @Override
-        public String getName() {
-            return "ITRF-92";
-        }
-
-        /** {@inheritDoc} */
-        @Override
         public Frame getFrame(final IERSConventions conventions,
                               final boolean simpleEOP,
                               final DataContext dataContext) {
@@ -312,12 +295,6 @@ public enum CelestialBodyFrame {
 
     /** International Terrestrial Reference Frame 1991. */
     ITRF1991 {
-
-        /** {@inheritDoc} */
-        @Override
-        public String getName() {
-            return "ITRF-91";
-        }
 
         /** {@inheritDoc} */
         @Override
@@ -337,12 +314,6 @@ public enum CelestialBodyFrame {
 
         /** {@inheritDoc} */
         @Override
-        public String getName() {
-            return "ITRF-90";
-        }
-
-        /** {@inheritDoc} */
-        @Override
         public Frame getFrame(final IERSConventions conventions,
                               final boolean simpleEOP,
                               final DataContext dataContext) {
@@ -359,12 +330,6 @@ public enum CelestialBodyFrame {
 
         /** {@inheritDoc} */
         @Override
-        public String getName() {
-            return "ITRF-89";
-        }
-
-        /** {@inheritDoc} */
-        @Override
         public Frame getFrame(final IERSConventions conventions,
                               final boolean simpleEOP,
                               final DataContext dataContext) {
@@ -378,12 +343,6 @@ public enum CelestialBodyFrame {
 
     /** International Terrestrial Reference Frame 1988. */
     ITRF1988 {
-
-        /** {@inheritDoc} */
-        @Override
-        public String getName() {
-            return "ITRF-88";
-        }
 
         /** {@inheritDoc} */
         @Override

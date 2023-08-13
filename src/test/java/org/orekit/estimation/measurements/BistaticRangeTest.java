@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 Mark Rutten
+/* Copyright 2002-2023 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -71,14 +71,14 @@ public class BistaticRangeTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the measurement value
-            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
         }
 
         // Mean and std errors check
-        Assertions.assertEquals(0.0, diffStat.getMean(), 1.58e-7);
+        Assertions.assertEquals(0.0, diffStat.getMean(), 1.59e-7);
         Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 1.3e-7);
 
         // Test measurement type
@@ -119,7 +119,9 @@ public class BistaticRangeTest {
             final double[][] finiteDifferencesJacobian =
                     Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) {
-                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                    return measurement.
+                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                           getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
@@ -137,7 +139,7 @@ public class BistaticRangeTest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 4.2e-6);
+        Assertions.assertEquals(0, maxRelativeError, 2.7e-5);
 
     }
 
@@ -182,7 +184,9 @@ public class BistaticRangeTest {
             final double[][] finiteDifferencesJacobian =
                     Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) {
-                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                    return measurement.
+                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                           getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
@@ -200,7 +204,7 @@ public class BistaticRangeTest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 1.6e-5);
+        Assertions.assertEquals(0, maxRelativeError, 2.5e-5);
 
     }
 
@@ -270,11 +274,13 @@ public class BistaticRangeTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
-                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                    public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
+                                        return measurement.
+                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
         }
@@ -357,11 +363,11 @@ public class BistaticRangeTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
+                                    public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
                                         return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
         }

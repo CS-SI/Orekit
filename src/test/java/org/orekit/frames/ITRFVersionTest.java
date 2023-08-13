@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,8 @@ package org.orekit.frames;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -215,8 +215,8 @@ public class ITRFVersionTest {
                             Rotation.distance(sLooped.getRotation(), looped.getRotation()),
                             OrekitMatchers.closeTo(0, 0));
 
-                    FieldAbsoluteDate<Decimal64> date64 = new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date);
-                    FieldTransform<Decimal64> looped64 =
+                    FieldAbsoluteDate<Binary64> date64 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), date);
+                    FieldTransform<Binary64> looped64 =
                                     new FieldTransform<>(date64,
                                                          converter.getTransform(date64),
                                                          destinationFrame.getTransformTo(originFrame, date64));

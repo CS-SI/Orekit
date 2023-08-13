@@ -1,0 +1,30 @@
+CCSDS_APM_VERS = 2.0
+CREATION_DATE  = 2023-01-21T11:55:00
+ORIGINATOR  = GSFC
+MESSAGE_ID  = A000001
+
+COMMENT          SPINNING
+OBJECT_NAME    = MMS1
+OBJECT_ID      = 2015-011A
+CENTER_NAME    = EARTH
+TIME_SYSTEM    = TAI
+
+COMMENT          Current Attitude
+COMMENT          Spin Parameters
+
+
+EPOCH          = 2023-01-01T00:00:00.0000
+
+SPIN_START
+REF_FRAME_A          = J2000
+REF_FRAME_B          = SC_BODY_1
+
+SPIN_ALPHA           = 10 [deg]
+SPIN_DELTA           = 30 [deg]
+SPIN_ANGLE           = 0 [deg]
+SPIN_ANGLE_VEL       = 1 [deg/s]
+MOMENTUM_ALPHA       = 80 [deg]
+MOMENTUM_DELTA       = 10 [deg]
+NUTATION_VEL         = 0.5 [deg/s]
+SPIN_STOP
+

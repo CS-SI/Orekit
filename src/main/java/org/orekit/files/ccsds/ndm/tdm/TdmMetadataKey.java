@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,13 +59,13 @@ public enum TdmMetadataKey {
     MODE((token, context, container) -> token.processAsEnum(TrackingMode.class, container::setMode)),
 
     /** Path entry. */
-    PATH((token, context, container) -> token.processAsIntegerArray(container::setPath)),
+    PATH((token, context, container) -> token.processAsIntegerArrayNoSpace(container::setPath)),
 
     /** Path 1 entry. */
-    PATH_1((token, context, container) -> token.processAsIntegerArray(container::setPath1)),
+    PATH_1((token, context, container) -> token.processAsIntegerArrayNoSpace(container::setPath1)),
 
     /** Path 2 entry. */
-    PATH_2((token, context, container) -> token.processAsIntegerArray(container::setPath2)),
+    PATH_2((token, context, container) -> token.processAsIntegerArrayNoSpace(container::setPath2)),
 
     /** External ephemeris file for the participant 1. */
     EPHEMERIS_NAME_1((token, context, container) -> token.processAsIndexedNormalizedString(1, container::addEphemerisName)),

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -383,6 +383,20 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         return parameters;
     }
 
+    /** Get model parameters at special date.
+     * @param field field to which the elements belong
+     * @param date date at which the model parameters want to be known
+     * @return model parameters
+     */
+    public T[] getParameters(final Field<T> field, final FieldAbsoluteDate<T> date) {
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.size());
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = field.getZero().add(drivers.get(i).getValue(date.toAbsoluteDate()));
+        }
+        return parameters;
+    }
+
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,
      * except that it does <strong>not</strong> call any handler during
@@ -395,7 +409,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         try {
 
             // evaluate orbit
-            final FieldOrbit<T> orbit = propagateOrbit(date, getParameters(date.getField()));
+            final FieldOrbit<T> orbit = propagateOrbit(date, getParameters(date.getField(), date.getDate()));
 
             // evaluate attitude
             final FieldAttitude<T> attitude =
@@ -415,7 +429,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         /** {@inheritDoc} */
         @Override
         public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-            return propagateOrbit(date, getParameters(date.getField())).getPVCoordinates(frame);
+            return propagateOrbit(date, getParameters(date.getField(), date)).getPVCoordinates(frame);
         }
 
     }

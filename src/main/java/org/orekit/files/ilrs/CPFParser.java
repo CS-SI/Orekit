@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,9 +19,9 @@ package org.orekit.files.ilrs;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Optional;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -132,29 +132,36 @@ public class CPFParser implements EphemerisFileParser<CPF> {
             final ParseInfo pi = new ParseInfo();
 
             int lineNumber = 0;
-            Stream<LineParser> parsers = Stream.of(LineParser.H1);
-            for (String line = br.readLine(); line != null; line = br.readLine()) {
-                ++lineNumber;
-                final String l = line;
-                final Optional<LineParser> selected = parsers.filter(p -> p.canHandle(l)).findFirst();
-                if (selected.isPresent()) {
-                    try {
-                        selected.get().parse(line, pi);
-                    } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
-                        throw new OrekitException(e,
-                                                  OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, source.getName(), line);
+            Iterable<LineParser> candidateParsers = Collections.singleton(LineParser.H1);
+            nextLine:
+                for (String line = br.readLine(); line != null; line = br.readLine()) {
+                    ++lineNumber;
+                    for (final LineParser candidate : candidateParsers) {
+                        if (candidate.canHandle(line)) {
+                            try {
+
+                                candidate.parse(line, pi);
+
+                                if (pi.done) {
+                                    pi.file.setFilter(pi.hasVelocityEntries ?
+                                                      CartesianDerivativesFilter.USE_PV :
+                                                      CartesianDerivativesFilter.USE_P);
+                                    // Return file
+                                    return pi.file;
+                                }
+
+                                candidateParsers = candidate.allowedNext();
+                                continue nextLine;
+
+                            } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
+                                throw new OrekitException(e,
+                                                          OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                          lineNumber, source.getName(), line);
+                            }
+                        }
                     }
-                    parsers = selected.get().allowedNext();
+
                 }
-                if (pi.done) {
-                    pi.file.setFilter(pi.hasVelocityEntries ?
-                                                             CartesianDerivativesFilter.USE_PV :
-                                                                 CartesianDerivativesFilter.USE_P);
-                    // Return file
-                    return pi.file;
-                }
-            }
 
             // We never reached the EOF marker
             throw new OrekitException(OrekitMessages.CPF_UNEXPECTED_END_OF_FILE, lineNumber);
@@ -276,8 +283,8 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H2, ZERO);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H2, ZERO);
             }
 
         },
@@ -360,8 +367,8 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H3, H4, H5, H9, ZERO);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H3, H4, H5, H9, ZERO);
             }
 
         },
@@ -377,8 +384,8 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H4, H5, H9, ZERO);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H4, H5, H9, ZERO);
             }
 
         },
@@ -408,8 +415,8 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H5, H9, ZERO);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H5, H9, ZERO);
             }
 
         },
@@ -429,8 +436,8 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H9, ZERO);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H9, ZERO);
             }
 
         },
@@ -446,8 +453,8 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(TEN, ZERO);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(TEN, ZERO);
             }
 
         },
@@ -484,8 +491,8 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(TEN, TWENTY, THIRTY, FORTY, FIFTY, SIXTY, SEVENTY, ZERO, EOF);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(TEN, TWENTY, THIRTY, FORTY, FIFTY, SIXTY, SEVENTY, ZERO, EOF);
             }
 
         },
@@ -512,8 +519,8 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(TEN, TWENTY, THIRTY, FORTY, FIFTY, SIXTY, SEVENTY, ZERO, EOF);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(TEN, TWENTY, THIRTY, FORTY, FIFTY, SIXTY, SEVENTY, ZERO, EOF);
             }
 
         },
@@ -529,8 +536,8 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(TEN, TWENTY, THIRTY, FORTY, FIFTY, SIXTY, SEVENTY, ZERO, EOF);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(TEN, TWENTY, THIRTY, FORTY, FIFTY, SIXTY, SEVENTY, ZERO, EOF);
             }
 
         },
@@ -546,8 +553,8 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(TEN, TWENTY, THIRTY, FORTY, FIFTY, SIXTY, SEVENTY, ZERO, EOF);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(TEN, TWENTY, THIRTY, FORTY, FIFTY, SIXTY, SEVENTY, ZERO, EOF);
             }
 
         },
@@ -563,8 +570,8 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(TEN, TWENTY, THIRTY, FORTY, FIFTY, SIXTY, SEVENTY, ZERO, EOF);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(TEN, TWENTY, THIRTY, FORTY, FIFTY, SIXTY, SEVENTY, ZERO, EOF);
             }
 
         },
@@ -580,8 +587,8 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(TEN, TWENTY, THIRTY, FORTY, FIFTY, SIXTY, SEVENTY, ZERO, EOF);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(TEN, TWENTY, THIRTY, FORTY, FIFTY, SIXTY, SEVENTY, ZERO, EOF);
             }
 
         },
@@ -597,8 +604,8 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(TEN, TWENTY, THIRTY, FORTY, FIFTY, SIXTY, SEVENTY, ZERO, EOF);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(TEN, TWENTY, THIRTY, FORTY, FIFTY, SIXTY, SEVENTY, ZERO, EOF);
             }
 
         },
@@ -618,9 +625,9 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(H1, H2, H3, H4, H5, H9,
-                                 TEN, TWENTY, THIRTY, FORTY, FIFTY, SIXTY, SEVENTY, ZERO, EOF);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H1, H2, H3, H4, H5, H9,
+                                     TEN, TWENTY, THIRTY, FORTY, FIFTY, SIXTY, SEVENTY, ZERO, EOF);
             }
 
         },
@@ -635,8 +642,8 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(EOF);
+            public Iterable<LineParser> allowedNext() {
+                return Collections.singleton(EOF);
             }
 
         };
@@ -672,7 +679,7 @@ public class CPFParser implements EphemerisFileParser<CPF> {
         /** Get the allowed parsers for next line.
          * @return allowed parsers for next line
          */
-        public abstract Stream<LineParser> allowedNext();
+        public abstract Iterable<LineParser> allowedNext();
 
         /** Check if parser can handle line.
          * @param line line to parse

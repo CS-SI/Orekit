@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.frames.Transform;
@@ -53,7 +53,7 @@ public class OnBoardAntennaTurnAroundRangeModifier implements EstimationModifier
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<TurnAroundRange> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<TurnAroundRange> estimated) {
 
         // the participants are primary station at emission, spacecraft during leg 1,
         // secondary station at rebound, spacecraft during leg 2, primary station at reception

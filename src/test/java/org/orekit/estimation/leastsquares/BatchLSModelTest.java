@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,6 +34,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -77,8 +78,8 @@ public class BatchLSModelTest {
                 Assertions.assertEquals(1, newOrbits.length);
                 Assertions.assertEquals(0, context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()),
                         1.0e-15);
-                Assertions.assertEquals(0, Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(),
-                                  newOrbits[0].getPVCoordinates().getPosition()), 1.0e-15);
+                Assertions.assertEquals(0, Vector3D.distance(context.initialOrbit.getPosition(),
+                                  newOrbits[0].getPosition()), 1.0e-15);
                 Assertions.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
@@ -95,7 +96,7 @@ public class BatchLSModelTest {
         System.arraycopy(normalizedProp, 0, normalized, 0, normalizedProp.length);
         int i = normalizedProp.length;
         for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
-            normalized[i++] = driver.getNormalizedValue();
+            normalized[i++] = driver.getNormalizedValue(new AbsoluteDate());
         }
         Pair<RealVector, RealMatrix> value = model.value(new ArrayRealVector(normalized));
         int index = 0;

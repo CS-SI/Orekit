@@ -23,7 +23,7 @@ import java.util.TreeMap;
 
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -116,7 +116,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
         if (propagators.isEmpty()) {
             throw new OrekitException(OrekitMessages.NOT_ENOUGH_PROPAGATORS);
         }
-        return new InertialProvider(propagators.iterator().next().getFrame());
+        return new FrameAlignedProvider(propagators.iterator().next().getFrame());
     }
 
     @Override

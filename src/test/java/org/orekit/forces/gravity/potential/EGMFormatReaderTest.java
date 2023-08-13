@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -71,17 +71,6 @@ public class EGMFormatReaderTest {
 
         Assertions.assertEquals(1.0826266835531513e-3, -harmonics.getUnnormalizedCnm(2, 0), 1.0e-20);
 
-    }
-
-    @Test
-    @Deprecated
-    public void testDeprecated() throws OrekitException {
-        Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
-        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        Assertions.assertNull(provider.getReferenceDate());
-        Assertions.assertEquals(0, provider.getOffset(AbsoluteDate.J2000_EPOCH), Precision.SAFE_MIN);
-        Assertions.assertEquals(0, provider.getOffset(AbsoluteDate.MODIFIED_JULIAN_EPOCH), Precision.SAFE_MIN);
     }
 
     @Test

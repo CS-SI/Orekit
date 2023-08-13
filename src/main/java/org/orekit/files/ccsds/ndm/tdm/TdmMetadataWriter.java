@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -74,8 +74,8 @@ class TdmMetadataWriter extends AbstractWriter {
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(),                  metadata.getTimeSystem(), true);
-        generator.writeEntry(TdmMetadataKey.START_TIME.name(), timeConverter, metadata.getStartTime(),  false);
-        generator.writeEntry(TdmMetadataKey.STOP_TIME.name(),  timeConverter, metadata.getStopTime(),   false);
+        generator.writeEntry(TdmMetadataKey.START_TIME.name(), timeConverter, metadata.getStartTime(),  false, false);
+        generator.writeEntry(TdmMetadataKey.STOP_TIME.name(),  timeConverter, metadata.getStopTime(),   false, false);
 
         // participants
         generator.writeEntry(TdmMetadataKey.PARTICIPANT_1.name(), metadata.getParticipants().get(1), null, true);

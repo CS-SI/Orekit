@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,7 +54,7 @@ public class LongitudeExtremumDetectorTest {
                 new LongitudeExtremumDetector(earth).
                 withMaxCheck(60).
                 withThreshold(1.e-6).
-                withHandler(new ContinueOnEvent<LongitudeExtremumDetector>());
+                withHandler(new ContinueOnEvent());
 
         Assertions.assertEquals(60.0, d.getMaxCheckInterval(), 1.0e-15);
         Assertions.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
@@ -96,7 +96,7 @@ public class LongitudeExtremumDetectorTest {
 
         LongitudeExtremumDetector d =
                 new LongitudeExtremumDetector(600.0, 1.e-6, earth).
-                withHandler(new ContinueOnEvent<LongitudeExtremumDetector>());
+                withHandler(new ContinueOnEvent());
 
         Assertions.assertEquals(600.0, d.getMaxCheckInterval(), 1.0e-15);
         Assertions.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
@@ -125,7 +125,7 @@ public class LongitudeExtremumDetectorTest {
         Assertions.assertEquals(5, logger.getLoggedEvents().size());
         for (int i = 0; i < 5; ++i) {
             SpacecraftState state = logger.getLoggedEvents().get(i).getState();
-            GeodeticPoint gp = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
+            GeodeticPoint gp = earth.transform(state.getPosition(earth.getBodyFrame()),
                                                earth.getBodyFrame(), null);
             Assertions.assertEquals(expectedLongitudes[i], FastMath.toDegrees(gp.getLongitude()), 1.0e-10);
             Assertions.assertEquals(expectedLatitudes[i],  FastMath.toDegrees(gp.getLatitude()),  1.0e-10);

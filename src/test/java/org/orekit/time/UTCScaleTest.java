@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.time;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -401,7 +401,7 @@ public class UTCScaleTest {
     @Test
     public void testInfinityRegularDate() {
         TimeScale scale = TimeScalesFactory.getUTC();
-        Assertions.assertEquals(-36.0,
+        Assertions.assertEquals(-37.0,
                             scale.offsetFromTAI(AbsoluteDate.FUTURE_INFINITY),
                             1.0e-15);
         Assertions.assertEquals(0.0,
@@ -412,11 +412,11 @@ public class UTCScaleTest {
     @Test
     public void testInfinityFieldDate() {
         TimeScale scale = TimeScalesFactory.getUTC();
-        Assertions.assertEquals(-36.0,
-                            scale.offsetFromTAI(FieldAbsoluteDate.getFutureInfinity(Decimal64Field.getInstance())).getReal(),
+        Assertions.assertEquals(-37.0,
+                            scale.offsetFromTAI(FieldAbsoluteDate.getFutureInfinity(Binary64Field.getInstance())).getReal(),
                             1.0e-15);
         Assertions.assertEquals(0.0,
-                            scale.offsetFromTAI(FieldAbsoluteDate.getPastInfinity(Decimal64Field.getInstance())).getReal(),
+                            scale.offsetFromTAI(FieldAbsoluteDate.getPastInfinity(Binary64Field.getInstance())).getReal(),
                             1.0e-15);
     }
 
@@ -428,13 +428,13 @@ public class UTCScaleTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(utc);
 
-        Assertions.assertTrue(bos.size() > 50);
-        Assertions.assertTrue(bos.size() < 100);
+        Assertions.assertTrue(bos.size() > 1550);
+        Assertions.assertTrue(bos.size() < 1650);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         UTCScale deserialized  = (UTCScale) ois.readObject();
-        Assertions.assertTrue(utc == deserialized);
+        Assertions.assertEquals(utc.getBaseOffsets().size(), deserialized.getBaseOffsets().size());
 
     }
 
@@ -446,18 +446,18 @@ public class UTCScaleTest {
 
         // verify
         //AbsoluteDate d = new AbsoluteDate(1961, 1, 1, utc);
-        Assertions.assertEquals(new AbsoluteDate(2015, 6, 30, 23, 59, 60, utc), last);
+        Assertions.assertEquals(new AbsoluteDate(2016, 12, 31, 23, 59, 60, utc), last);
         Assertions.assertEquals(new AbsoluteDate(1960, 12, 31, 23, 59, 60, utc), first);
     }
 
     @Test
     public void testGetUTCTAIOffsets() {
         final List<UTCTAIOffset> offsets = utc.getUTCTAIOffsets();
-        Assertions.assertEquals(40, offsets.size());
+        Assertions.assertEquals(41, offsets.size());
         final UTCTAIOffset firstOffset = offsets.get(0);
         final UTCTAIOffset lastOffset = offsets.get(offsets.size() - 1);
         Assertions.assertEquals(37300, firstOffset.getMJD()); // 1961-01-01
-        Assertions.assertEquals(57204, lastOffset.getMJD()); // 2015-07-01
+        Assertions.assertEquals(57754, lastOffset.getMJD()); // 2017-01-01
     }
 
     @BeforeEach

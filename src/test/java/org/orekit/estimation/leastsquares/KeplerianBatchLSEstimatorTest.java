@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,10 +32,11 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
-import org.orekit.estimation.measurements.modifiers.OnBoardAntennaRangeModifier;
+import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
+import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -149,7 +150,7 @@ public class KeplerianBatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         KeplerianEstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
@@ -162,11 +163,11 @@ public class KeplerianBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 5,
+        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 4,
                                                    0.0, 8.4e-7,
                                                    0.0, 2.0e-6,
-                                                   0.0, 7.7e-9,
-                                                   0.0, 4.9e-12);
+                                                   0.0, 1.9e-8,
+                                                   0.0, 8.3e-12);
 
     }
 
@@ -188,13 +189,18 @@ public class KeplerianBatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         KeplerianEstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context, antennaPhaseCenter),
+                                                               new TwoWayRangeMeasurementCreator(context,
+                                                                                                 Vector3D.ZERO, null,
+                                                                                                 antennaPhaseCenter, null,
+                                                                                                 0),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 propagatorBuilder);
-        final OnBoardAntennaRangeModifier obaModifier = new OnBoardAntennaRangeModifier(antennaPhaseCenter);
+        final PhaseCentersRangeModifier obaModifier = new PhaseCentersRangeModifier(FrequencyPattern.ZERO_CORRECTION,
+                                                                                    new FrequencyPattern(antennaPhaseCenter,
+                                                                                                         null));
         for (final ObservedMeasurement<?> range : measurements) {
             ((Range) range).addModifier(obaModifier);
             estimator.addMeasurement(range);
@@ -203,11 +209,11 @@ public class KeplerianBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 11,
+        KeplerianEstimationTestUtils.checkFit(context, estimator, 1, 13,
                                                    0.0, 5.9e-5,
                                                    0.0, 1.5e-4,
-                                                   0.0, 7.2e-9,
-                                                   0.0, 7.8e-12);
+                                                   0.0, 2.5e-9,
+                                                   0.0, 2.8e-12);
 
     }
 
@@ -268,7 +274,7 @@ public class KeplerianBatchLSEstimatorTest {
                                                                                          propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         KeplerianEstimationTestUtils.createMeasurements(propagator,
-                                                                             new RangeMeasurementCreator(context),
+                                                                             new TwoWayRangeMeasurementCreator(context),
                                                                              1.0, 3.0, 300.0);
 
         // create orbit estimator

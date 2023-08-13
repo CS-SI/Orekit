@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,8 @@
  */
 package org.orekit.utils;
 
+import org.orekit.time.AbsoluteDate;
+
 /** Interface representing a scalar function depending on a {@link ParameterDriver}.
  * @see Differentiation#differentiate(ParameterFunction, int, double)
  * @author Luc Maisonobe
@@ -23,10 +25,12 @@ package org.orekit.utils;
  */
 public interface ParameterFunction {
 
+
     /** Evaluate the function.
      * @param parameterDriver driver for the parameter.
+     * @param date date at which the function wants to be known
      * @return scalar value of the function
      */
-    double value(ParameterDriver parameterDriver);
+    double value(ParameterDriver parameterDriver, AbsoluteDate date);
 
 }

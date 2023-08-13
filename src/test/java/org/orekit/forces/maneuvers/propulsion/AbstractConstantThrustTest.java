@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,7 +66,7 @@ public class AbstractConstantThrustTest {
             }
 
             @Override
-            public Vector3D getThrustVector() {
+            public Vector3D getThrustVector(AbsoluteDate date) {
                 return thrustVector;
             }
 
@@ -81,9 +81,19 @@ public class AbstractConstantThrustTest {
             }
 
             @Override
-            public double getFlowRate() {
+            public double getFlowRate(AbsoluteDate date) {
                 return flowRate;
             }
+
+			@Override
+			public Vector3D getThrustVector() {
+				return thrustVector;
+			}
+
+			@Override
+			public double getFlowRate() {
+				return flowRate;
+			}
         };
 
         // Test non-abstract methods

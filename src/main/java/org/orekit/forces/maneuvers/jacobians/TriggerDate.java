@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -182,7 +182,7 @@ public class TriggerDate
      * </p>
      */
     @Override
-    public boolean yield(final SpacecraftState state) {
+    public boolean yields(final SpacecraftState state) {
         return !(state.hasAdditionalState(stmName) && state.hasAdditionalState(massDepletionDelay.getName()));
     }
 
@@ -256,7 +256,7 @@ public class TriggerDate
 
         // get the acceleration near trigger time
         final SpacecraftState stateWhenFiring = state.shiftedBy((manageStart ? 2 : -2) * threshold);
-        final Vector3D        acceleration    = maneuver.acceleration(stateWhenFiring, maneuver.getParameters());
+        final Vector3D        acceleration    = maneuver.acceleration(stateWhenFiring, maneuver.getParameters(state.getDate()));
 
         // initialize derivatives computation
         final double     sign = (forward == manageStart) ? -1 : +1;

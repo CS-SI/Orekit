@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -209,14 +209,14 @@ public class TurnAroundRangeTest {
 
             // Values of the TAR & errors
             final double TARobserved  = measurement.getObservedValue()[0];
-            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
             final double TARestimated = estimated.getEstimatedValue()[0];
 
             final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
             Assertions.assertEquals(5, participants.length);
             Assertions.assertEquals(0.5 * Constants.SPEED_OF_LIGHT * participants[4].getDate().durationFrom(participants[0].getDate()),
                                 estimated.getEstimatedValue()[0],
-                                2.0e-8);
+                                2.3e-8);
 
             absoluteErrors[index] = TARestimated-TARobserved;
             relativeErrors[index] = FastMath.abs(absoluteErrors[index])/FastMath.abs(TARobserved);
@@ -255,10 +255,10 @@ public class TurnAroundRangeTest {
         }
 
         // Assert statistical errors
-        Assertions.assertEquals(0.0, absErrorsMedian, 1.4e-7);
+        Assertions.assertEquals(0.0, absErrorsMedian, 1.5e-7);
         Assertions.assertEquals(0.0, absErrorsMin, 5.0e-7);
         Assertions.assertEquals(0.0, absErrorsMax, 4.9e-7);
-        Assertions.assertEquals(0.0, relErrorsMedian, 8.9e-15);
+        Assertions.assertEquals(0.0, relErrorsMedian, 9.2e-15);
         Assertions.assertEquals(0.0, relErrorsMax , 2.9e-14);
         
         // Test measurement type
@@ -332,7 +332,9 @@ public class TurnAroundRangeTest {
             // Compute a reference value using finite differences
             jacobianRef = Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) {
-                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                    return measurement.
+                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                           getEstimatedValue();
                 }
             }, measurement.getDimension(), propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
@@ -492,7 +494,7 @@ public class TurnAroundRangeTest {
 
             // Loop on the parameters
             for (int i = 0; i < 6; ++i) {
-                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate());
                 Assertions.assertEquals(1, measurement.getDimension());
                 Assertions.assertEquals(1, gradient.length);
 
@@ -501,11 +503,13 @@ public class TurnAroundRangeTest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
-                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
+                                        return measurement.
+                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
 
                 // Deltas
                 double dGradient         = gradient[0] - ref;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,10 +56,10 @@ public class CR3BPForceModelTest {
 
     @Test
     public void testModel() {
-
-        final double mu = new CR3BPForceModel(syst).getParameters()[0];
+                
+        final double mu = new CR3BPForceModel(syst).getParameters(new AbsoluteDate())[0];
         Assertions.assertEquals(0.0121, mu, 1E-3);
-
+        
      // Time settings
         final AbsoluteDate initialDate =
             new AbsoluteDate(1996, 06, 25, 0, 0, 00.000,
@@ -115,7 +115,7 @@ public class CR3BPForceModelTest {
         propagator.clearStepHandlers();
         final SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(integrationTime));
 
-        Assertions.assertNotEquals(initialState.getPVCoordinates().getPosition().getX(), finalState.getPVCoordinates().getPosition().getX(), 1E-2);
+        Assertions.assertNotEquals(initialState.getPosition().getX(), finalState.getPosition().getX(), 1E-2);
     }
 
     /**Testing if the propagation between the FieldPropagation and the propagation

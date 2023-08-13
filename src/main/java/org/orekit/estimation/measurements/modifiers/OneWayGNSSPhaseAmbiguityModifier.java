@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.List;
 
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.utils.ParameterDriver;
@@ -48,6 +49,12 @@ public class OneWayGNSSPhaseAmbiguityModifier extends AbstractAmbiguityModifier 
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return getDrivers();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<OneWayGNSSPhase> estimated) {
+        doModifyWithoutDerivatives(estimated);
     }
 
     /** {@inheritDoc} */

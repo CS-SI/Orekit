@@ -18,7 +18,7 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
@@ -58,7 +58,7 @@ public class SaastamoinenModelTest {
 
     @Test
     public void testFieldFixedElevation() {
-        doTestFieldFixedElevation(Decimal64Field.getInstance());
+        doTestFieldFixedElevation(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldFixedElevation(final Field<T> field) {
@@ -89,7 +89,7 @@ public class SaastamoinenModelTest {
 
     @Test
     public void testFieldFixedHeight() {
-        doTestFieldFixedHeight(Decimal64Field.getInstance());
+        doTestFieldFixedHeight(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldFixedHeight(final Field<T> field) {
@@ -160,7 +160,7 @@ public class SaastamoinenModelTest {
 
     @Test
     public void testFieldNegativeHeight() {
-        doTestFieldNegativeHeight(Decimal64Field.getInstance());
+        doTestFieldNegativeHeight(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldNegativeHeight(final Field<T> field) {
@@ -193,7 +193,7 @@ public class SaastamoinenModelTest {
     }
 
     @Test
-    public void testIssue654FieldLowElevation() { doTestFieldLowElevation(Decimal64Field.getInstance()); }
+    public void testIssue654FieldLowElevation() { doTestFieldLowElevation(Binary64Field.getInstance()); }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldLowElevation(final Field<T> field) {
         final T zero = field.getZero();
@@ -227,7 +227,7 @@ public class SaastamoinenModelTest {
 
     @Test
     public void compareFieldExpectedValues() {
-        doCompareFieldExpectedValues(Decimal64Field.getInstance());
+        doCompareFieldExpectedValues(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doCompareFieldExpectedValues(final Field<T> field) {
@@ -259,7 +259,7 @@ public class SaastamoinenModelTest {
 
     @Test
     public void testFieldIssue572() {
-        doTestFieldIssue572(Decimal64Field.getInstance());
+        doTestFieldIssue572(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldIssue572(final Field<T> field) {

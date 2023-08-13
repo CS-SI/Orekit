@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,9 +27,6 @@ import org.orekit.utils.units.Unit;
  */
 public enum OcmMetadataKey {
 
-    /** Classification of this message. */
-    CLASSIFICATION((token, context, container) -> token.processAsNormalizedString(container::setClassification)),
-
     /** International designator for the object as assigned by the UN Committee
      * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
     INTERNATIONAL_DESIGNATOR((token, context, container) -> token.processAsNormalizedString(container::setInternationalDesignator)),
@@ -44,74 +41,74 @@ public enum OcmMetadataKey {
     ALTERNATE_NAMES((token, context, container) -> token.processAsNormalizedList(container::setAlternateNames)),
 
     /** Programmatic Point Of Contact at originator. */
-    ORIGINATOR_POC((token, context, container) -> token.processAsNormalizedString(container::setOriginatorPOC)),
+    ORIGINATOR_POC((token, context, container) -> token.processAsFreeTextString(container::setOriginatorPOC)),
 
     /** Position of Programmatic Point Of Contact at originator. */
-    ORIGINATOR_POSITION((token, context, container) -> token.processAsNormalizedString(container::setOriginatorPosition)),
+    ORIGINATOR_POSITION((token, context, container) -> token.processAsFreeTextString(container::setOriginatorPosition)),
 
     /** Phone number of Programmatic Point Of Contact at originator. */
-    ORIGINATOR_PHONE((token, context, container) -> token.processAsNormalizedString(container::setOriginatorPhone)),
+    ORIGINATOR_PHONE((token, context, container) -> token.processAsFreeTextString(container::setOriginatorPhone)),
 
     /** Email address of Programmatic Point Of Contact at originator.
      * @since 11.2
      */
-    ORIGINATOR_EMAIL((token, context, container) -> token.processAsNormalizedString(container::setOriginatorEmail)),
+    ORIGINATOR_EMAIL((token, context, container) -> token.processAsFreeTextString(container::setOriginatorEmail)),
 
     /** Address of Programmatic Point Of Contact at originator. */
-    ORIGINATOR_ADDRESS((token, context, container) -> token.processAsNormalizedString(container::setOriginatorAddress)),
+    ORIGINATOR_ADDRESS((token, context, container) -> token.processAsFreeTextString(container::setOriginatorAddress)),
 
     /** Creating agency or operator. */
-    TECH_ORG((token, context, container) -> token.processAsNormalizedString(container::setTechOrg)),
+    TECH_ORG((token, context, container) -> token.processAsFreeTextString(container::setTechOrg)),
 
     /** Technical Point Of Contact at originator. */
-    TECH_POC((token, context, container) -> token.processAsNormalizedString(container::setTechPOC)),
+    TECH_POC((token, context, container) -> token.processAsFreeTextString(container::setTechPOC)),
 
     /** Position of Technical Point Of Contact at originator. */
-    TECH_POSITION((token, context, container) -> token.processAsNormalizedString(container::setTechPosition)),
+    TECH_POSITION((token, context, container) -> token.processAsFreeTextString(container::setTechPosition)),
 
     /** Phone number of Technical Point Of Contact at originator. */
-    TECH_PHONE((token, context, container) -> token.processAsNormalizedString(container::setTechPhone)),
+    TECH_PHONE((token, context, container) -> token.processAsFreeTextString(container::setTechPhone)),
 
     /** Email address of Technical Point Of Contact at originator.
      * @since 11.2
      */
-    TECH_EMAIL((token, context, container) -> token.processAsNormalizedString(container::setTechEmail)),
+    TECH_EMAIL((token, context, container) -> token.processAsFreeTextString(container::setTechEmail)),
 
     /** Address of Technical Point Of Contact at originator. */
-    TECH_ADDRESS((token, context, container) -> token.processAsNormalizedString(container::setTechAddress)),
+    TECH_ADDRESS((token, context, container) -> token.processAsFreeTextString(container::setTechAddress)),
 
     /** Unique ID identifying previous message from a given originator. */
-    PREVIOUS_MESSAGE_ID((token, context, container) -> token.processAsNormalizedString(container::setPreviousMessageID)),
+    PREVIOUS_MESSAGE_ID((token, context, container) -> token.processAsFreeTextString(container::setPreviousMessageID)),
 
     /** Unique ID identifying next message from a given originator. */
-    NEXT_MESSAGE_ID((token, context, container) -> token.processAsNormalizedString(container::setNextMessageID)),
+    NEXT_MESSAGE_ID((token, context, container) -> token.processAsFreeTextString(container::setNextMessageID)),
 
     /** Unique identifier of Attitude Data Message linked to this Orbit Data Message. */
-    ADM_MSG_LINK((token, context, container) -> token.processAsNormalizedString(container::setAdmMessageLink)),
+    ADM_MSG_LINK((token, context, container) -> token.processAsFreeTextString(container::setAdmMessageLink)),
 
     /** Unique identifier of Conjunction Data Message linked to this Orbit Data Message. */
-    CDM_MSG_LINK((token, context, container) -> token.processAsNormalizedString(container::setCdmMessageLink)),
+    CDM_MSG_LINK((token, context, container) -> token.processAsFreeTextString(container::setCdmMessageLink)),
 
     /** Unique identifier of Pointing Request Message linked to this Orbit Data Message. */
-    PRM_MSG_LINK((token, context, container) -> token.processAsNormalizedString(container::setPrmMessageLink)),
+    PRM_MSG_LINK((token, context, container) -> token.processAsFreeTextString(container::setPrmMessageLink)),
 
     /** Unique identifier of Reentry Data Message linked to this Orbit Data Message. */
-    RDM_MSG_LINK((token, context, container) -> token.processAsNormalizedString(container::setRdmMessageLink)),
+    RDM_MSG_LINK((token, context, container) -> token.processAsFreeTextString(container::setRdmMessageLink)),
 
     /** Unique identifier of Tracking Data Message linked to this Orbit Data Message. */
-    TDM_MSG_LINK((token, context, container) -> token.processAsNormalizedString(container::setTdmMessageLink)),
+    TDM_MSG_LINK((token, context, container) -> token.processAsFreeTextString(container::setTdmMessageLink)),
 
     /** Operator of the space object. */
-    OPERATOR((token, context, container) -> token.processAsNormalizedString(container::setOperator)),
+    OPERATOR((token, context, container) -> token.processAsFreeTextString(container::setOperator)),
 
     /** Owner of the space object. */
-    OWNER((token, context, container) -> token.processAsNormalizedString(container::setOwner)),
+    OWNER((token, context, container) -> token.processAsFreeTextString(container::setOwner)),
 
     /** Name of the country where the space object owner is based. */
-    COUNTRY((token, context, container) -> token.processAsNormalizedString(container::setCountry)),
+    COUNTRY((token, context, container) -> token.processAsFreeTextString(container::setCountry)),
 
     /** Name of the constellation this space object belongs to. */
-    CONSTELLATION((token, context, container) -> token.processAsNormalizedString(container::setConstellation)),
+    CONSTELLATION((token, context, container) -> token.processAsFreeTextString(container::setConstellation)),
 
     /** Type of object.
      * @see ObjectType
@@ -132,9 +129,8 @@ public enum OcmMetadataKey {
      */
     ORBIT_CATEGORY((token, context, container) -> token.processAsEnum(OrbitCategory.class, container::setOrbitCategory)),
 
-
     /** List of elements of information data blocks included in this message. */
-    OCM_DATA_ELEMENTS((token, context, container) -> token.processAsUppercaseList(container::setOcmDataElements)),
+    OCM_DATA_ELEMENTS((token, context, container) -> token.processAsEnumsList(OcmElements.class, container::setOcmDataElements)),
 
     /** Spacecraft clock count at {@link #EPOCH_TZERO}. */
     SCLK_OFFSET_AT_EPOCH((token, context, container) -> token.processAsDouble(Unit.SECOND, context.getParsedUnitsBehavior(),
@@ -180,13 +176,13 @@ public enum OcmMetadataKey {
                                                                           container::setUt1mutcT0)),
 
     /** Source and version of Earth Orientation Parameters. */
-    EOP_SOURCE((token, context, container) -> token.processAsNormalizedString(container::setEopSource)),
+    EOP_SOURCE((token, context, container) -> token.processAsFreeTextString(container::setEopSource)),
 
     /** Interpolation method for Earth Orientation Parameters. */
     INTERP_METHOD_EOP((token, context, container) -> token.processAsNormalizedString(container::setInterpMethodEOP)),
 
     /** Source and version of celestial body (e.g. Sun/Earth/Planetary). */
-    CELESTIAL_SOURCE((token, context, container) -> token.processAsNormalizedString(container::setCelestialSource));
+    CELESTIAL_SOURCE((token, context, container) -> token.processAsFreeTextString(container::setCelestialSource));
 
     /** Processing method. */
     private final TokenProcessor processor;

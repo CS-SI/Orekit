@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import org.hipparchus.CalculusFieldElement;
  * @author Luc Maisonobe
  * @since 9.0
  */
-public interface FieldTimeShiftable<T extends FieldTimeInterpolable<T, KK>, KK extends CalculusFieldElement<KK>> {
+public interface FieldTimeShiftable<T extends FieldTimeShiftable<T, KK>, KK extends CalculusFieldElement<KK>> {
 
     /** Get a time-shifted instance.
      * @param dt time shift in seconds

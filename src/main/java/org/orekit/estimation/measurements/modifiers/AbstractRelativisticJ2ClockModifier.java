@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,14 +17,13 @@
 
 package org.orekit.estimation.measurements.modifiers;
 
-import org.orekit.utils.Constants;
-import org.orekit.utils.TimeStampedPVCoordinates;
-
 import org.hipparchus.util.FastMath;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.Constants;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Class modifying theoretical measurements with relativistic J2 clock correction.
@@ -73,7 +72,7 @@ public class AbstractRelativisticJ2ClockModifier {
      * @param estimated EstimatedMeasurements on which to calculate the correction
      * @return dt_relJ2clk Time delay due to the relativistic J2 clock effect in seconds
      */
-    protected double relativisticJ2Correction(final EstimatedMeasurement<?> estimated) {
+    protected double relativisticJ2Correction(final EstimatedMeasurementBase<?> estimated) {
 
         // Extracting the state of the receiver to determine the frame and mu
         /**

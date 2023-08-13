@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -154,9 +154,14 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
             generator.enterSection(XmlStructureKey.header.name());
         }
 
-        // comments are optional
         if (header != null) {
+
+            // comments are optional
             generator.writeComments(header.getComments());
+
+            // classification is optional
+            generator.writeEntry(HeaderKey.CLASSIFICATION.name(), header.getClassification(), null, false);
+
         }
 
         // creation date is informational only, but mandatory and always in UTC
@@ -214,7 +219,7 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
      * @param segment segment to write
      * @throws IOException if any buffer writing operations fails
      */
-    public abstract void writeSegmentContent(Generator generator, double formatVersion, S segment) throws IOException;
+    protected abstract void writeSegmentContent(Generator generator, double formatVersion, S segment) throws IOException;
 
     /** {@inheritDoc} */
     @Override
@@ -223,6 +228,24 @@ public abstract class AbstractMessageWriter<H extends Header, S extends Segment<
             generator.exitSection();
         }
         generator.endMessage(root);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getRoot() {
+        return root;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getFormatVersionKey() {
+        return formatVersionKey;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getVersion() {
+        return version;
     }
 
 }

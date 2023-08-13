@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -77,7 +77,7 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
     public GeographicZoneDetector(final double maxCheck, final double threshold,
                                   final BodyShape body,
                                   final SphericalPolygonsSet zone,  final double margin) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<GeographicZoneDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              body, zone, zone.getEnclosingCap(), margin);
     }
 
@@ -96,12 +96,12 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
      * @param cap spherical cap surrounding the zone
      * @param margin angular margin to apply to the zone
      */
-    private GeographicZoneDetector(final double maxCheck, final double threshold,
-                                   final int maxIter, final EventHandler<? super GeographicZoneDetector> handler,
-                                   final BodyShape body,
-                                   final SphericalPolygonsSet zone,
-                                   final EnclosingBall<Sphere2D, S2Point> cap,
-                                   final double margin) {
+    protected GeographicZoneDetector(final double maxCheck, final double threshold,
+                                     final int maxIter, final EventHandler handler,
+                                     final BodyShape body,
+                                     final SphericalPolygonsSet zone,
+                                     final EnclosingBall<Sphere2D, S2Point> cap,
+                                     final double margin) {
         super(maxCheck, threshold, maxIter, handler);
         this.body   = body;
         this.zone   = zone;
@@ -112,7 +112,7 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
     /** {@inheritDoc} */
     @Override
     protected GeographicZoneDetector create(final double newMaxCheck, final double newThreshold,
-                                            final int newMaxIter, final EventHandler<? super GeographicZoneDetector> newHandler) {
+                                            final int newMaxIter, final EventHandler newHandler) {
         return new GeographicZoneDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                           body, zone, cap, margin);
     }
@@ -159,7 +159,7 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
     public double g(final SpacecraftState s) {
 
         // convert state to geodetic coordinates
-        final GeodeticPoint gp = body.transform(s.getPVCoordinates().getPosition(),
+        final GeodeticPoint gp = body.transform(s.getPosition(),
                                                 s.getFrame(), s.getDate());
 
         // map the point to a sphere (geodetic coordinates have already taken care of ellipsoid flatness)

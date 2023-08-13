@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
@@ -44,7 +44,7 @@ public class FieldApsideDetectorTest {
 
     @Test
     public void testSimple() {
-        doTestSimple(Decimal64Field.getInstance());
+        doTestSimple(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestSimple(Field<T> field) {
@@ -70,7 +70,7 @@ public class FieldApsideDetectorTest {
         FieldEventDetector<T> detector = new FieldApsideDetector<>(propagator.getInitialState().getOrbit()).
                                  withMaxCheck(zero.add(600.0)).
                                  withThreshold(zero.add(1.0e-12)).
-                                 withHandler(new FieldContinueOnEvent<FieldApsideDetector<T>, T>());
+                                 withHandler(new FieldContinueOnEvent<T>());
 
         Assertions.assertEquals(600.0, detector.getMaxCheckInterval().getReal(), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);

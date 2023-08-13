@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -146,7 +146,7 @@ public class JacobianPropagatorConverterTest {
             for (final String name : names) {
                 if (name.equals(driver.getName())) {
                     found = true;
-                    normalized[index++] = driver.getNormalizedValue() + (2 * random.nextDouble() - 1);
+                    normalized[index++] = driver.getNormalizedValue(new AbsoluteDate()) + (2 * random.nextDouble() - 1);
                     selected.add(driver);
                 }
             }

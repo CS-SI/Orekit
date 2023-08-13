@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.orekit.estimation.measurements.AngularAzEl;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
@@ -64,7 +64,7 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
     private double angularErrorTroposphericModel(final GroundStation station,
                                                  final SpacecraftState state) {
         //
-        final Vector3D position = state.getPVCoordinates().getPosition();
+        final Vector3D position = state.getPosition();
 
         // elevation
         final double elevation = station.getBaseFrame().getElevation(position,
@@ -74,7 +74,7 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
         // only consider measures above the horizon
         if (elevation > 0.0) {
             // delay in meters
-            final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(), tropoModel.getParameters(), state.getDate());
+            final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(), tropoModel.getParameters(state.getDate()), state.getDate());
 
             // one-way measurement.
             return delay;
@@ -90,7 +90,7 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<AngularAzEl> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<AngularAzEl> estimated) {
         final AngularAzEl     measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
         final SpacecraftState state   = estimated.getStates()[0];
@@ -104,7 +104,7 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
 
         // Update measurement value taking into account the ionospheric delay.
         final AbsoluteDate date      = transitState.getDate();
-        final Vector3D     position  = transitState.getPVCoordinates().getPosition();
+        final Vector3D     position  = transitState.getPosition();
         final Frame        inertial  = transitState.getFrame();
 
         // Elevation and azimuth in radians
@@ -117,4 +117,5 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
         // Azimuth - elevation values
         estimated.setEstimatedValue(azimuth, elevation);
     }
+
 }

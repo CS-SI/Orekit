@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
@@ -31,7 +30,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.forces.AbstractLegacyForceModelTest;
@@ -41,7 +39,6 @@ import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
-import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -50,14 +47,11 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.TimeStampedFieldAngularCoordinates;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
 public class SolidTidesTest extends AbstractLegacyForceModelTest {
@@ -66,33 +60,13 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
 
     @Override
     protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
-                                                                         final AbsoluteDate date, final  Frame frame,
-                                                                         final FieldVector3D<DerivativeStructure> position,
-                                                                         final FieldVector3D<DerivativeStructure> velocity,
-                                                                         final FieldRotation<DerivativeStructure> rotation,
-                                                                         final DerivativeStructure mass)
-        {
+                                                                         final FieldSpacecraftState<DerivativeStructure> state) {
         try {
             java.lang.reflect.Field attractionModelField = SolidTides.class.getDeclaredField("attractionModel");
             attractionModelField.setAccessible(true);
             ForceModel attractionModel = (ForceModel) attractionModelField.get(forceModel);
-            double mu = GravityFieldFactory.getConstantNormalizedProvider(5, 5).getMu();
-            Field<DerivativeStructure> field = position.getX().getField();
-            FieldAbsoluteDate<DerivativeStructure> dsDate = new FieldAbsoluteDate<>(field, date);
-            FieldVector3D<DerivativeStructure> zero = FieldVector3D.getZero(field);
-            FieldSpacecraftState<DerivativeStructure> dState =
-                            new FieldSpacecraftState<>(new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(dsDate,
-                                                                                                                     position,
-                                                                                                                     velocity,
-                                                                                                                     zero),
-                                                                                 frame, field.getZero().add(mu)),
-                                                      new FieldAttitude<>(frame,
-                                                                      new TimeStampedFieldAngularCoordinates<>(dsDate,
-                                                                                                               rotation,
-                                                                                                               zero,
-                                                                                                               zero)),
-                                                      mass);
-            return attractionModel.acceleration(dState, attractionModel.getParameters(field));
+            Field<DerivativeStructure> field = state.getDate().getField();
+            return attractionModel.acceleration(state, attractionModel.getParameters(field, state.getDate()));
 
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
@@ -101,34 +75,15 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
 
     @Override
     protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel,
-                                                                      final AbsoluteDate date, final  Frame frame,
-                                                                      final FieldVector3D<Gradient> position,
-                                                                      final FieldVector3D<Gradient> velocity,
-                                                                      final FieldRotation<Gradient> rotation,
-                                                                      final Gradient mass)
-        {
+                                                                      final FieldSpacecraftState<Gradient> state) {
         try {
+            final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
             java.lang.reflect.Field attractionModelField = SolidTides.class.getDeclaredField("attractionModel");
             attractionModelField.setAccessible(true);
             ForceModel attractionModel = (ForceModel) attractionModelField.get(forceModel);
-            double mu = GravityFieldFactory.getConstantNormalizedProvider(5, 5).getMu();
             final int freeParameters = position.getX().getFreeParameters();
             Field<Gradient> field = GradientField.getField(freeParameters);
-            FieldAbsoluteDate<Gradient> dsDate = new FieldAbsoluteDate<>(field, date);
-            FieldVector3D<Gradient> zero = FieldVector3D.getZero(field);
-            FieldSpacecraftState<Gradient> dState =
-                            new FieldSpacecraftState<>(new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(dsDate,
-                                                                                                                     position,
-                                                                                                                     velocity,
-                                                                                                                     zero),
-                                                                                 frame, field.getZero().add(mu)),
-                                                      new FieldAttitude<>(frame,
-                                                                      new TimeStampedFieldAngularCoordinates<>(dsDate,
-                                                                                                               rotation,
-                                                                                                               zero,
-                                                                                                               zero)),
-                                                      mass);
-            return attractionModel.acceleration(dState, attractionModel.getParameters(field));
+            return attractionModel.acceleration(state, attractionModel.getParameters(field, state.getDate()));
 
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
@@ -168,8 +123,8 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                                 CelestialBodyFactory.getSun(),
                                                                 CelestialBodyFactory.getMoon()));
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(raw.getPVCoordinates().getPosition(),
-                                              interpolated.getPVCoordinates().getPosition()),
+                            Vector3D.distance(raw.getPosition(),
+                                              interpolated.getPosition()),
                             2.0e-5); // threshold would be 1.2e-3 for 30 days propagation
 
     }
@@ -483,12 +438,12 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                                       CelestialBodyFactory.getSun(),
                                                                       CelestialBodyFactory.getMoon()));
         Assertions.assertEquals(delta1,
-                            Vector3D.distance(noTides.getPVCoordinates().getPosition(),
-                                              solidTidesNoPoleTide.getPVCoordinates().getPosition()),
+                            Vector3D.distance(noTides.getPosition(),
+                                              solidTidesNoPoleTide.getPosition()),
                             0.01);
         Assertions.assertEquals(delta2,
-                            Vector3D.distance(solidTidesNoPoleTide.getPVCoordinates().getPosition(),
-                                              solidTidesPoleTide.getPVCoordinates().getPosition()),
+                            Vector3D.distance(solidTidesNoPoleTide.getPosition(),
+                                              solidTidesPoleTide.getPosition()),
                             0.01);
 
     }

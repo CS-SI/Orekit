@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Pair;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.orbits.Orbit;
@@ -84,7 +84,7 @@ public class AlongTrackAiming implements TileAiming {
         int    iSup = halfTrack.size() - 1;
         while (iSup - iInf > 1) {
             final int iMiddle = (iSup + iInf) / 2;
-            if ((lStart < lEnd) ^ (halfTrack.get(iMiddle).getFirst().getLatitude() > gp.getLatitude())) {
+            if (lStart < lEnd ^ halfTrack.get(iMiddle).getFirst().getLatitude() > gp.getLatitude()) {
                 // the specified latitude is in the second half
                 iInf = iMiddle;
             } else {
@@ -139,7 +139,7 @@ public class AlongTrackAiming implements TileAiming {
 
         // find the span of the next half track
         final Propagator propagator =
-                new KeplerianPropagator(orbit, new InertialProvider(orbit.getFrame()));
+                new KeplerianPropagator(orbit, new FrameAlignedProvider(orbit.getFrame()));
         final HalfTrackSpanHandler handler = new HalfTrackSpanHandler(isAscending);
         final LatitudeExtremumDetector detector =
                         new LatitudeExtremumDetector(0.25 * orbit.getKeplerianPeriod(), 1.0e-3, ellipsoid).

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,8 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,6 +45,9 @@ import org.orekit.utils.IERSConventions;
 
 public class CelestialBodyFrameTest {
 
+    /** Latest ITRF body frame to which the ITRF enum should correspond. */
+    private final CelestialBodyFrame LATEST_ITRF_FRAME = CelestialBodyFrame.ITRF2020;
+
     /**
      * Check mapping frames to CCSDS frames.
      */
@@ -64,7 +67,11 @@ public class CelestialBodyFrameTest {
                 // TDR (in ODM table 5-3 and section A2) names
                 // Orekit chose to use GTOD when guessing name from frame instance
                 MatcherAssert.assertThat(actual, CoreMatchers.is(CelestialBodyFrame.GTOD));
-            } else {
+            }
+            else if (ccsdsFrame == CelestialBodyFrame.ITRF) {
+                Assertions.assertEquals(LATEST_ITRF_FRAME, actual);
+            }
+            else {
                 MatcherAssert.assertThat(actual, CoreMatchers.is(ccsdsFrame));
             }
         }
@@ -111,7 +118,7 @@ public class CelestialBodyFrameTest {
                                                           CelestialBodyFactory.getMars(), "MARS");
         MatcherAssert.assertThat(CelestialBodyFrame.map(frame), CoreMatchers.is(CelestialBodyFrame.EME2000));
         Vector3D v = frame.getTransformProvider().getTransform(AbsoluteDate.J2000_EPOCH).getTranslation();
-        FieldVector3D<Decimal64> v64 = frame.getTransformProvider().getTransform(FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance())).getTranslation();
+        FieldVector3D<Binary64> v64 = frame.getTransformProvider().getTransform(FieldAbsoluteDate.getJ2000Epoch(Binary64Field.getInstance())).getTranslation();
         Assertions.assertEquals(0.0, FieldVector3D.distance(v64, v).getReal(), 1.0e-10);
 
         // check unknown frame
@@ -157,17 +164,12 @@ public class CelestialBodyFrameTest {
         Assertions.assertEquals(CelestialBodyFrame.EME2000, CelestialBodyFrame.parse("EME2000"));
         Assertions.assertEquals(CelestialBodyFrame.ITRF2014, CelestialBodyFrame.parse("ITRF2014"));
         Assertions.assertEquals(CelestialBodyFrame.ITRF1997, CelestialBodyFrame.parse("ITRF97"));
+        Assertions.assertEquals(CelestialBodyFrame.ITRF, CelestialBodyFrame.parse("ITRF"));
         try {
             Assertions.assertEquals(CelestialBodyFrame.EME2000, CelestialBodyFrame.parse("ITRF00"));
             Assertions.fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
             Assertions.assertTrue(iae.getMessage().contains("ITRF00"));
-        }
-        try {
-            CelestialBodyFrame.parse("ITRF");
-            Assertions.fail("an exception should have been thrown");
-        } catch (IllegalArgumentException iae) {
-            Assertions.assertTrue(iae.getMessage().contains("ITRF"));
         }
     }
 

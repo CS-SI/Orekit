@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -80,7 +80,7 @@ public class DSSTThirdBodyTest {
         final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), mu);
 
         // Force model parameters
-        final double[] parameters = moon.getParameters();
+        final double[] parameters = moon.getParameters(orbit.getDate());
 
         // Initialize force model
         moon.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
@@ -119,8 +119,8 @@ public class DSSTThirdBodyTest {
 
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(null);
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters()));
-            force.updateShortPeriodTerms(force.getParameters(), meanState);
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(meanState.getDate())));
+            force.updateShortPeriodTerms(force.getParametersAllValues(), meanState);
         }
 
         double[] y = new double[6];

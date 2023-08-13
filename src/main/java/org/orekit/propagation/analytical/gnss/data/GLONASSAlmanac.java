@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,12 +17,18 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
+import org.orekit.frames.Frame;
+import org.orekit.frames.Frames;
+import org.orekit.propagation.analytical.gnss.GLONASSAnalyticalPropagator;
+import org.orekit.propagation.analytical.gnss.GLONASSAnalyticalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.GLONASSDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.IERSConventions;
 
 /**
  * This class holds a GLONASS almanac as read from .agl files.
@@ -160,6 +166,75 @@ public class GLONASSAlmanac implements GLONASSOrbitalElements {
         this.tGPS2Glo = tGPS2Glo;
         this.tGlo = tGlo;
         this.glonass = glonass;
+    }
+
+    /**
+     * Get the propagator corresponding to the navigation message.
+     * <p>
+     * The attitude provider is set by default to be aligned with the EME2000 frame.<br>
+     * The mass is set by default to the
+     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     * The data context is by default to the
+     *  {@link DataContext#getDefault() default data context}.<br>
+     * The ECI frame is set by default to the
+     *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
+     *  context.<br>
+     * The ECEF frame is set by default to the
+     *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+     *  CIO/2010-based ITRF simple EOP} in the default data context.
+     * </p>
+     * @return the propagator corresponding to the navigation message
+     * @see #getPropagator(DataContext)
+     * @see #getPropagator(DataContext, AttitudeProvider, Frame, Frame, double)
+     * @since 12.0
+     */
+    @DefaultDataContext
+    public GLONASSAnalyticalPropagator getPropagator() {
+        return new GLONASSAnalyticalPropagatorBuilder(this).build();
+    }
+
+    /**
+     * Get the propagator corresponding to the navigation message.
+     * <p>
+     * The attitude provider is set by default to be aligned with the EME2000 frame.<br>
+     * The mass is set by default to the
+     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     * The ECI frame is set by default to the
+     *  {@link Frames#getEME2000() EME2000 frame}.<br>
+     * The ECEF frame is set by default to the
+     *  {@link Frames#getITRF(IERSConventions, boolean) CIO/2010-based ITRF simple
+     *  EOP}.
+     * </p>
+     * @param context the data context to use for frames and time scales.
+     * @return the propagator corresponding to the navigation message
+     * @see #getPropagator()
+     * @see #getPropagator(DataContext, AttitudeProvider, Frame, Frame, double)
+     * @since 12.0
+     */
+    public GLONASSAnalyticalPropagator getPropagator(final DataContext context) {
+        return new GLONASSAnalyticalPropagatorBuilder(this, context).build();
+    }
+
+    /**
+     * Get the propagator corresponding to the navigation message.
+     * @param context the data context to use for frames and time scales.
+     * @param provider attitude provider
+     * @param inertial inertial frame, use to provide the propagated orbit
+     * @param bodyFixed body fixed frame, corresponding to the navigation message
+     * @param mass spacecraft mass in kg
+     * @return the propagator corresponding to the navigation message
+     * @see #getPropagator()
+     * @see #getPropagator(DataContext)
+     * @since 12.0
+     */
+    public GLONASSAnalyticalPropagator getPropagator(final DataContext context, final AttitudeProvider provider,
+                                                     final Frame inertial, final Frame bodyFixed,
+                                                     final double mass) {
+        return new GLONASSAnalyticalPropagatorBuilder(this, context).attitudeProvider(provider)
+                                                                    .eci(inertial)
+                                                                    .ecef(bodyFixed)
+                                                                    .mass(mass)
+                                                                    .build();
     }
 
     @Override

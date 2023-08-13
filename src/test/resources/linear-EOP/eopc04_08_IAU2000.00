@@ -1,6 +1,8 @@
 
              THIS IS A FAKE EOP FILE, WITH LINEAR MODEL FOR POLE AND DUT1
                    THIS FILE IS INTENTED FOR TEST PURPOSES ONLY!
+                         EOP (IERS) 05 C04
+      Date      MJD      x          y        UT1-UTC       LOD         dPsi      dEps       x Err     y Err   UT1-UTC Err  LOD Err    dPsi Err   dEpsilon Err
 
 2000   2  10  51584   0.069150   0.000032   0.3233738   0.0011000   0.000000   0.000000   0.000000   0.000000  0.0000000  0.0000000    0.000000    0.000000
 2000   2  11  51585   0.069100   0.000034   0.3222738   0.0011000   0.000000   0.000000   0.000000   0.000000  0.0000000  0.0000000    0.000000    0.000000

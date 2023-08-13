@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -74,7 +74,7 @@ public class PositionTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the position value
-            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             for (int i = 0; i < 3; i++) {
@@ -126,7 +126,9 @@ public class PositionTest {
             final double[][] finiteDifferencesJacobian =
                 Differentiation.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) {
-                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                        return measurement.
+                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                               getEstimatedValue();
                     }
                                                   }, measurement.getDimension(),
                                                   propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
@@ -158,7 +160,7 @@ public class PositionTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Dummy P, T
-        final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = context.initialOrbit.getPosition();
         final AbsoluteDate date     = context.initialOrbit.getDate();
 
         // Initialize standard deviations and weight
@@ -224,7 +226,7 @@ public class PositionTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Dummy P, T
-        final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = context.initialOrbit.getPosition();
         final AbsoluteDate date     = context.initialOrbit.getDate();
 
         // Initialize standard deviations and weight
@@ -289,7 +291,7 @@ public class PositionTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Dummy P, T
-        final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = context.initialOrbit.getPosition();
         final AbsoluteDate date     = context.initialOrbit.getDate();
 
         // Initialize standard deviations and weight
@@ -367,7 +369,7 @@ public class PositionTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Dummy P, T
-        final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = context.initialOrbit.getPosition();
         final AbsoluteDate date     = context.initialOrbit.getDate();
         final double       weight   = 1.;
 

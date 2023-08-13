@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -57,12 +57,15 @@ public class NdmWriterTest {
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
         final NdmWriter writer = new WriterBuilder().buildNdmWriter();
         final CharArrayWriter caw = new CharArrayWriter();
-        try (Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true)) {
+        try (Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml",
+                                                    Constants.JULIAN_DAY, true,
+                                                    XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION)) {
             writer.writeMessage(generator, ndm);
         }
         final byte[]      bytes  = caw.toString().getBytes(StandardCharsets.UTF_8);
         final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
         NdmTestUtils.checkContainer(ndm, new ParserBuilder().buildNdmParser().parseMessage(source2));
+        Assertions.assertTrue(caw.toString().contains("<ndm xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"https://sanaregistry.org/r/ndmxml_unqualified/ndmxml-3.0.0-master-3.0.xsd\">"));
     }
 
     @Test
@@ -72,12 +75,14 @@ public class NdmWriterTest {
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
         final NdmWriter writer = new WriterBuilder().buildNdmWriter();
         final CharArrayWriter caw  = new CharArrayWriter();
-        try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true)) {
+        try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml",
+                                                          Constants.JULIAN_DAY, true, null)) {
             writer.writeMessage(generator, ndm);
         }
         final byte[]      bytes  = caw.toString().getBytes(StandardCharsets.UTF_8);
         final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
         NdmTestUtils.checkContainer(ndm, new ParserBuilder().buildNdmParser().parseMessage(source2));
+        Assertions.assertTrue(caw.toString().contains("<ndm>"));
     }
 
     @Test
@@ -87,7 +92,9 @@ public class NdmWriterTest {
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
         final NdmWriter writer = new WriterBuilder().buildNdmWriter();
         final CharArrayWriter caw  = new CharArrayWriter();
-        try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true)) {
+        try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml",
+                                                          Constants.JULIAN_DAY, true,
+                                                          XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION)) {
             for (final String comment : ndm.getComments()) {
                 writer.writeComment(generator, comment);
             }
@@ -136,7 +143,9 @@ public class NdmWriterTest {
 
             // write it
             final CharArrayWriter caw  = new CharArrayWriter();
-            try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml", true)) {
+            try (final Generator generator = new XmlGenerator(caw, XmlGenerator.DEFAULT_INDENT, "dummy.xml",
+                                                              Constants.JULIAN_DAY, true,
+                                                              XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION)) {
                 wb.buildNdmWriter().writeMessage(generator, original);
             }
 
@@ -166,18 +175,30 @@ public class NdmWriterTest {
                           "/ccsds/adm/aem/AEMExample03.xml", "/ccsds/adm/aem/AEMExample04.txt", "/ccsds/adm/aem/AEMExample05.txt",
                           "/ccsds/adm/aem/AEMExample07.txt", "/ccsds/adm/aem/AEMExample08.txt", "/ccsds/adm/aem/AEMExample09.txt",
                           "/ccsds/adm/aem/AEMExample10.txt", "/ccsds/adm/aem/AEMExample11.xml", "/ccsds/adm/aem/AEMExample12.txt",
-                          "/ccsds/adm/aem/AEMExample13.xml")) {
+                          "/ccsds/adm/aem/AEMExample13.xml", "/ccsds/adm/aem/AEMExample14.txt", "/ccsds/adm/aem/AEMExample15.txt",
+                          "/ccsds/adm/aem/AEMExample16.txt", "/ccsds/adm/aem/AEMExample17.txt")) {
             final DataSource source = new DataSource(name, () -> NdmWriterTest.class.getResourceAsStream(name));
             pool.add(builder.buildAemParser().parseMessage(source));
         }
 
         // APM files
         for (final String name :
-            Arrays.asList("/ccsds/adm/apm/APMExample1.txt",  "/ccsds/adm/apm/APMExample2.txt",  "/ccsds/adm/apm/APMExample2.xml",
-                          "/ccsds/adm/apm/APMExample3.txt",  "/ccsds/adm/apm/APMExample4.txt",  "/ccsds/adm/apm/APMExample5.txt",
-                          "/ccsds/adm/apm/APMExample6.txt")) {
+            Arrays.asList("/ccsds/adm/apm/APMExample01.txt",  "/ccsds/adm/apm/APMExample02.txt",  "/ccsds/adm/apm/APMExample02.xml",
+                          "/ccsds/adm/apm/APMExample03.txt",  "/ccsds/adm/apm/APMExample04.txt",  "/ccsds/adm/apm/APMExample05.txt",
+                          "/ccsds/adm/apm/APMExample06.txt",  "/ccsds/adm/apm/APMExample07.txt",  "/ccsds/adm/apm/APMExample08.txt",
+                          "/ccsds/adm/apm/APMExample09.txt",  "/ccsds/adm/apm/APMExample10.txt",  "/ccsds/adm/apm/APMExample11.txt",
+                          "/ccsds/adm/apm/APMExample12.txt")) {
             final DataSource source = new DataSource(name, () -> NdmWriterTest.class.getResourceAsStream(name));
             pool.add(builder.buildApmParser().parseMessage(source));
+        }
+
+        // ACM files
+        for (final String name :
+            Arrays.asList("/ccsds/adm/acm/ACMExample01.txt",  "/ccsds/adm/acm/ACMExample02.txt",  "/ccsds/adm/acm/ACMExample03.txt",
+                          "/ccsds/adm/acm/ACMExample04.txt",  "/ccsds/adm/acm/ACMExample05.txt",  "/ccsds/adm/acm/ACMExample06.txt",
+                          "/ccsds/adm/acm/ACMExample07.txt",  "/ccsds/adm/acm/ACMExample08.txt",  "/ccsds/adm/acm/ACMExample09.txt")) {
+            final DataSource source = new DataSource(name, () -> NdmWriterTest.class.getResourceAsStream(name));
+            pool.add(builder.buildAcmParser().parseMessage(source));
         }
 
         // OCM files

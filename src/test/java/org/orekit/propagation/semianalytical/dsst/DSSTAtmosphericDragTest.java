@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -111,12 +111,12 @@ public class DSSTAtmosphericDragTest {
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
         // Force model parameters
-        final double[] parameters = drag.getParameters();
+        final double[] parameters = drag.getParameters(orbit.getDate());
         // Initialize force model
         drag.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
 
         // Register the attitude provider to the force model
-        AttitudeProvider attitudeProvider = new InertialProvider(rotation);
+        AttitudeProvider attitudeProvider = new FrameAlignedProvider(rotation);
         drag.registerAttitudeProvider(attitudeProvider );
 
         // Compute the mean element rate
@@ -180,8 +180,8 @@ public class DSSTAtmosphericDragTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         drag.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, drag.getParameters()));
-        drag.updateShortPeriodTerms(drag.getParameters(), meanState);
+        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, drag.getParameters(meanState.getDate())));
+        drag.updateShortPeriodTerms(drag.getParametersAllValues(), meanState);
 
         double[] y = new double[6];
         for (final ShortPeriodTerms spt : shortPeriodTerms) {
@@ -194,8 +194,8 @@ public class DSSTAtmosphericDragTest {
         Assertions.assertEquals(0.03966657233280967,    y[0], 1.e-15);
         Assertions.assertEquals(-1.5294381443173415E-8, y[1], 1.e-23);
         Assertions.assertEquals(-2.3614929828516364E-8, y[2], 1.e-23);
-        Assertions.assertEquals(-5.901580336558653E-11, y[3], 1.e-26);
-        Assertions.assertEquals(1.0287639743124977E-11, y[4], 1.e-26);
+        Assertions.assertEquals(-5.90158033655866E-11,  y[3], 1.e-25);
+        Assertions.assertEquals(1.0287639743125E-11,    y[4], 1.e-24);
         Assertions.assertEquals(2.538427523777691E-8,   y[5], 1.e-23);
     }
 

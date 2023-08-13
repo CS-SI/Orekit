@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -90,7 +90,7 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
                                  final T threshold,
                                  final T altitude,
                                  final BodyShape bodyShape) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new FieldStopOnDecreasing<FieldAltitudeDetector<T>, T>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new FieldStopOnDecreasing<T>(),
              altitude, bodyShape);
     }
 
@@ -108,10 +108,10 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
      * @param bodyShape body shape with respect to which altitude should be evaluated
      * @since 6.1
      */
-    private FieldAltitudeDetector(final T maxCheck, final T threshold,
-                                  final int maxIter, final FieldEventHandler<? super FieldAltitudeDetector<T>, T> handler,
-                                  final T altitude,
-                                  final BodyShape bodyShape) {
+    protected FieldAltitudeDetector(final T maxCheck, final T threshold,
+                                    final int maxIter, final FieldEventHandler<T> handler,
+                                    final T altitude,
+                                    final BodyShape bodyShape) {
         super(maxCheck, threshold, maxIter, handler);
         this.altitude  = altitude;
         this.bodyShape = bodyShape;
@@ -121,7 +121,7 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
     @Override
     protected FieldAltitudeDetector<T> create(final T newMaxCheck, final T newThreshold,
                                               final int newMaxIter,
-                                              final FieldEventHandler<? super FieldAltitudeDetector<T>, T> newHandler) {
+                                              final FieldEventHandler<T> newHandler) {
         return new FieldAltitudeDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                            altitude, bodyShape);
     }

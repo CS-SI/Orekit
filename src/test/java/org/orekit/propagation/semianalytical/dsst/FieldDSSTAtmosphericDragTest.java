@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
@@ -34,7 +34,7 @@ import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -86,7 +86,7 @@ public class FieldDSSTAtmosphericDragTest {
 
     @Test
     public void testGetMeanElementRate() {
-        doTestGetMeanElementRate(Decimal64Field.getInstance());
+        doTestGetMeanElementRate(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestGetMeanElementRate(Field<T> field) {
@@ -127,7 +127,7 @@ public class FieldDSSTAtmosphericDragTest {
 
         // Register the attitude provider to the force model
         Rotation rotation =  new Rotation(1., 0., 0., 0., false);
-        AttitudeProvider attitudeProvider = new InertialProvider(rotation);
+        AttitudeProvider attitudeProvider = new FrameAlignedProvider(rotation);
         drag.registerAttitudeProvider(attitudeProvider);
 
         // Attitude of the satellite
@@ -142,7 +142,7 @@ public class FieldDSSTAtmosphericDragTest {
         final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(state.getOrbit(), 1);
 
         // Force model parameters
-        final T[] parameters = drag.getParameters(field);
+        final T[] parameters = drag.getParameters(field, state.getDate());
         // Initialize force model
         drag.initializeShortPeriodTerms(auxiliaryElements,
                         PropagationType.MEAN, parameters);
@@ -166,7 +166,7 @@ public class FieldDSSTAtmosphericDragTest {
 
     @Test
     public void testShortPeriodTerms() {
-        doTestShortPeriodTerms(Decimal64Field.getInstance());
+        doTestShortPeriodTerms(Binary64Field.getInstance());
     }
 
     @SuppressWarnings("unchecked")
@@ -214,8 +214,8 @@ public class FieldDSSTAtmosphericDragTest {
         final List<FieldShortPeriodTerms<T>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<T>>();
 
         drag.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, drag.getParameters(field)));
-        drag.updateShortPeriodTerms(drag.getParameters(field), meanState);
+        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, drag.getParameters(field, orbit.getDate())));
+        drag.updateShortPeriodTerms(drag.getParametersAllValues(field), meanState);
 
         T[] y = MathArrays.buildArray(field, 6);
         Arrays.fill(y, zero);
@@ -230,7 +230,7 @@ public class FieldDSSTAtmosphericDragTest {
         Assertions.assertEquals(0.03966657233280967,    y[0].getReal(), 1.0e-15);
         Assertions.assertEquals(-1.5294381443173415E-8, y[1].getReal(), 1.0e-23);
         Assertions.assertEquals(-2.3614929828516364E-8, y[2].getReal(), 1.4e-23);
-        Assertions.assertEquals(-5.901580336558653E-11, y[3].getReal(), 4.0e-25);
+        Assertions.assertEquals(-5.9015803365587E-11,   y[3].getReal(), 1.0e-24);
         Assertions.assertEquals(1.0287639743124977E-11, y[4].getReal(), 2.0e-24);
         Assertions.assertEquals(2.538427523777691E-8,   y[5].getReal(), 1.0e-22);
     }
@@ -278,8 +278,7 @@ public class FieldDSSTAtmosphericDragTest {
 
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(drag);
-        final Gradient[] dsParameters                = converter.getParameters(dsState, drag);
-
+        
         final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
 
         // Zero
@@ -287,8 +286,9 @@ public class FieldDSSTAtmosphericDragTest {
 
         // Compute state Jacobian using directly the method
         final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
-        drag.updateShortPeriodTerms(dsParameters, dsState);
+        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING,
+                                converter.getParametersAtStateDate(dsState, drag)));
+        drag.updateShortPeriodTerms(converter.getParameters(dsState, drag), dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
         for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
@@ -417,8 +417,7 @@ public class FieldDSSTAtmosphericDragTest {
 
         // Field parameters
         final FieldSpacecraftState<Gradient> dsState = converter.getState(drag);
-        final Gradient[] dsParameters                = converter.getParameters(dsState, drag);
-
+      
         final FieldAuxiliaryElements<Gradient> fieldAuxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), 1);
 
         // Zero
@@ -426,8 +425,8 @@ public class FieldDSSTAtmosphericDragTest {
 
         // Compute Jacobian using directly the method
         final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
-        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, dsParameters));
-        drag.updateShortPeriodTerms(dsParameters, dsState);
+        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(fieldAuxiliaryElements, PropagationType.OSCULATING, converter.getParametersAtStateDate(dsState, drag)));
+        drag.updateShortPeriodTerms(converter.getParameters(dsState, drag), dsState);
         final Gradient[] shortPeriod = new Gradient[6];
         Arrays.fill(shortPeriod, zero);
         for (final FieldShortPeriodTerms<Gradient> spt : shortPeriodTerms) {
@@ -474,28 +473,28 @@ public class FieldDSSTAtmosphericDragTest {
         ParameterDriver selected = bound.getDrivers().get(0);
         double p0 = selected.getReferenceValue();
         double h  = selected.getScale();
-
+      
         selected.setValue(p0 - 4 * h);
         final double[] shortPeriodM4 = computeShortPeriodTerms(meanState, drag);
-
+  
         selected.setValue(p0 - 3 * h);
         final double[] shortPeriodM3 = computeShortPeriodTerms(meanState, drag);
-
+      
         selected.setValue(p0 - 2 * h);
         final double[] shortPeriodM2 = computeShortPeriodTerms(meanState, drag);
-
+      
         selected.setValue(p0 - 1 * h);
         final double[] shortPeriodM1 = computeShortPeriodTerms(meanState, drag);
-
+      
         selected.setValue(p0 + 1 * h);
         final double[] shortPeriodP1 = computeShortPeriodTerms(meanState, drag);
-
+      
         selected.setValue(p0 + 2 * h);
         final double[] shortPeriodP2 = computeShortPeriodTerms(meanState, drag);
-
+      
         selected.setValue(p0 + 3 * h);
         final double[] shortPeriodP3 = computeShortPeriodTerms(meanState, drag);
-
+      
         selected.setValue(p0 + 4 * h);
         final double[] shortPeriodP4 = computeShortPeriodTerms(meanState, drag);
 
@@ -517,10 +516,9 @@ public class FieldDSSTAtmosphericDragTest {
         AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
         List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
-        double[] parameters = force.getParameters();
-        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, parameters));
-        force.updateShortPeriodTerms(parameters, state);
-
+        shortPeriodTerms.addAll(force.initializeShortPeriodTerms(auxiliaryElements, PropagationType.OSCULATING, force.getParameters(state.getDate())));
+        force.updateShortPeriodTerms(force.getParametersAllValues(), state);
+        
         double[] shortPeriod = new double[6];
         for (ShortPeriodTerms spt : shortPeriodTerms) {
             double[] spVariation = spt.value(state.getOrbit());

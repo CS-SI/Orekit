@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,8 +26,8 @@ import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFun
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
@@ -149,7 +149,7 @@ public class PredefinedIAUPolesTest {
         for (IAUPole iaupole : PredefinedIAUPoles.values(timeScales)) {
             for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
                 final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
-                final FieldAbsoluteDate<Decimal64> date64 = new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date);
+                final FieldAbsoluteDate<Binary64> date64 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), date);
                 Assertions.assertEquals(0, Vector3D.angle(iaupole.getPole(date), iaupole.getPole(date64).toVector3D()), 2.0e-15);
                 Assertions.assertEquals(iaupole.getPrimeMeridianAngle(date), iaupole.getPrimeMeridianAngle(date64).getReal(), 1.0e-12);
             }

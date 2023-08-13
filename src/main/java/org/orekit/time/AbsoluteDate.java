@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.time;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -415,6 +416,15 @@ public class AbsoluteDate
                                 (int) (location.getTime() / 86400000l)),
                                  millisToTimeComponents((int) (location.getTime() % 86400000l)),
              timeScale);
+    }
+
+    /** Build an instance from an {@link Instant instant} in a {@link TimeScale time scale}.
+     * @param instant instant in the time scale
+     * @param timeScale time scale
+     * @since 12.0
+     */
+    public AbsoluteDate(final Instant instant, final TimeScale timeScale) {
+        this(Date.from(instant), timeScale);
     }
 
     /** Build an instance from an elapsed duration since to another instant.
@@ -1214,11 +1224,17 @@ public class AbsoluteDate
         }
 
         if (date instanceof AbsoluteDate) {
-            return durationFrom((AbsoluteDate) date) == 0;
+
+            // Improve robustness against positive/negative infinity dates
+            if ( this.offset == Double.NEGATIVE_INFINITY && ((AbsoluteDate) date).offset == Double.NEGATIVE_INFINITY ||
+                    this.offset == Double.POSITIVE_INFINITY && ((AbsoluteDate) date).offset == Double.POSITIVE_INFINITY ) {
+                return true;
+            } else {
+                return durationFrom((AbsoluteDate) date) == 0;
+            }
         }
 
         return false;
-
     }
 
     /** Check if the instance represents the same time as another.

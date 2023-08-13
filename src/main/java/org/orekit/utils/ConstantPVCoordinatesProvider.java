@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 Joseph Reed
+/* Copyright 2002-2023 Joseph Reed
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -70,6 +70,11 @@ public class ConstantPVCoordinatesProvider implements PVCoordinatesProvider {
     public ConstantPVCoordinatesProvider(final PVCoordinates pva, final Frame frame) {
         this.pva = pva;
         this.sourceFrame = frame;
+    }
+
+    @Override
+    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+        return sourceFrame.getStaticTransformTo(frame, date).transformPosition(pva.getPosition());
     }
 
     @Override

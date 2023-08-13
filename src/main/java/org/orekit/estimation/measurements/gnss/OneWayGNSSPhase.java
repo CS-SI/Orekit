@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import java.util.Map;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -31,6 +32,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -121,6 +123,52 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
 
     /** {@inheritDoc} */
     @Override
+    protected EstimatedMeasurementBase<OneWayGNSSPhase> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                                final int evaluation,
+                                                                                                final SpacecraftState[] states) {
+
+        // Coordinates of both satellites
+        final SpacecraftState          localState = states[0];
+        final TimeStampedPVCoordinates pvaLocal   = localState.getPVCoordinates();
+        final TimeStampedPVCoordinates pvaRemote  = remote.getPVCoordinates(getDate(), localState.getFrame());
+
+        // Downlink delay
+        final double dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(localState.getDate());
+        final AbsoluteDate arrivalDate = getDate().shiftedBy(-dtLocal);
+
+        final TimeStampedPVCoordinates s1Downlink =
+                        pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
+        final double tauD = signalTimeOfFlight(pvaRemote, s1Downlink.getPosition(), arrivalDate);
+
+        // Transit state
+        final double delta      = getDate().durationFrom(pvaRemote.getDate());
+        final double deltaMTauD = delta - tauD;
+
+        // prepare the evaluation
+        final EstimatedMeasurementBase<OneWayGNSSPhase> estimatedPhase =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       new SpacecraftState[] {
+                                                           localState.shiftedBy(deltaMTauD)
+                                                       }, new TimeStampedPVCoordinates[] {
+                                                           pvaRemote.shiftedBy(delta - tauD),
+                                                           localState.shiftedBy(delta).getPVCoordinates()
+                                                       });
+
+        // Phase value
+        final double   cOverLambda      = Constants.SPEED_OF_LIGHT / wavelength;
+        final double   ambiguity        = ambiguityDriver.getValue(localState.getDate());
+        final double   phase            = (tauD + dtLocal - dtRemote) * cOverLambda + ambiguity;
+
+        // Set value of the estimated measurement
+        estimatedPhase.setEstimatedValue(phase);
+
+        // Return the estimated measurement
+        return estimatedPhase;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected EstimatedMeasurement<OneWayGNSSPhase> theoreticalEvaluation(final int iteration,
                                                                           final int evaluation,
                                                                           final SpacecraftState[] states) {
@@ -134,7 +182,9 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
         final Map<String, Integer> parameterIndicesPhase = new HashMap<>();
         for (ParameterDriver phaseMeasurementDriver : getParametersDrivers()) {
             if (phaseMeasurementDriver.isSelected()) {
-                parameterIndicesPhase.put(phaseMeasurementDriver.getName(), nbEstimatedParamsPhase++);
+                for (Span<String> span = phaseMeasurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    parameterIndicesPhase.put(span.getData(), nbEstimatedParamsPhase++);
+                }
             }
         }
 
@@ -144,7 +194,7 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
         final TimeStampedPVCoordinates                pvaRemote = remote.getPVCoordinates(getDate(), localState.getFrame());
 
         // Downlink delay
-        final Gradient dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(nbEstimatedParamsPhase, parameterIndicesPhase);
+        final Gradient dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(nbEstimatedParamsPhase, parameterIndicesPhase, localState.getDate());
         final FieldAbsoluteDate<Gradient> arrivalDate = new FieldAbsoluteDate<>(getDate(), dtLocal.negate());
 
         final TimeStampedFieldPVCoordinates<Gradient> s1Downlink =
@@ -168,7 +218,7 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
 
         // Phase value
         final double   cOverLambda      = Constants.SPEED_OF_LIGHT / wavelength;
-        final Gradient ambiguity        = ambiguityDriver.getValue(nbEstimatedParamsPhase, parameterIndicesPhase);
+        final Gradient ambiguity        = ambiguityDriver.getValue(nbEstimatedParamsPhase, parameterIndicesPhase, localState.getDate());
         final Gradient phase            = tauD.add(dtLocal).subtract(dtRemote).multiply(cOverLambda).add(ambiguity);
         final double[] phaseDerivatives = phase.getGradient();
 
@@ -178,9 +228,12 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
 
         // Set partial derivatives with respect to parameters
         for (final ParameterDriver phaseMeasurementDriver : getParametersDrivers()) {
-            final Integer index = parameterIndicesPhase.get(phaseMeasurementDriver.getName());
-            if (index != null) {
-                estimatedPhase.setParameterDerivatives(phaseMeasurementDriver, phaseDerivatives[index]);
+            for (Span<String> span = phaseMeasurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                final Integer index = parameterIndicesPhase.get(span.getData());
+                if (index != null) {
+                    estimatedPhase.setParameterDerivatives(phaseMeasurementDriver, span.getStart(), phaseDerivatives[index]);
+                }
             }
         }
 

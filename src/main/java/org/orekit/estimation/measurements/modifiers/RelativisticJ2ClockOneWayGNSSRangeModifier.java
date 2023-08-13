@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSRange;
 import org.orekit.utils.Constants;
@@ -66,7 +66,7 @@ public class RelativisticJ2ClockOneWayGNSSRangeModifier extends AbstractRelativi
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<OneWayGNSSRange> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<OneWayGNSSRange> estimated) {
         // Relativistic effect
         final double dtJ2 = relativisticJ2Correction(estimated);
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,12 +24,12 @@ import org.orekit.Utils;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1044Data;
-import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
+import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
-import org.orekit.propagation.analytical.gnss.data.QZSSNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.time.GNSSDate;
 
 import java.util.ArrayList;
@@ -79,7 +79,7 @@ public class Rtcm1044Test {
                         "000";                               // Reserved
 
 
-        final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        final EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
         message.start();
 
         ArrayList<Integer> messages = new ArrayList<>();
@@ -87,13 +87,13 @@ public class Rtcm1044Test {
 
         final Rtcm1044              rtcm1044      = (Rtcm1044) new RtcmMessagesParser(messages).parse(message, false);
         final Rtcm1044Data          ephemerisData = rtcm1044.getEphemerisData();
-        final QZSSNavigationMessage qzssMessage   = ephemerisData.getQzssNavigationMessage();
+        final QZSSLegacyNavigationMessage qzssMessage   = ephemerisData.getQzssNavigationMessage();
 
         // Verify propagator initialization
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(qzssMessage).build();
         Assertions.assertNotNull(propagator);
         Assertions.assertEquals(0.0, qzssMessage.getDate().
-                            durationFrom(new GNSSDate(qzssMessage.getWeek(), 1000.0 * qzssMessage.getTime(), SatelliteSystem.QZSS).getDate()), eps);
+                            durationFrom(new GNSSDate(qzssMessage.getWeek(), qzssMessage.getTime(), SatelliteSystem.QZSS).getDate()), eps);
 
         // Verify message number
         Assertions.assertEquals(1044,                   rtcm1044.getTypeCode());
@@ -110,7 +110,7 @@ public class Rtcm1044Test {
         Assertions.assertEquals(695,                    qzssMessage.getIODC());
         Assertions.assertEquals(0.0,                    qzssMessage.getCrs(),                eps);
         Assertions.assertEquals(1.4587496546628753E-4,  qzssMessage.getMeanMotion(),         eps);
-        Assertions.assertEquals(0.16717753824407455,    qzssMessage.getM0(),                 eps);
+        Assertions.assertEquals(0.1671775426328288,     qzssMessage.getM0(),                 eps);
         Assertions.assertEquals(0.0,                    qzssMessage.getCuc(),                eps);
         Assertions.assertEquals(0.0389980711042881,     qzssMessage.getE(),                  eps);
         Assertions.assertEquals(0.0,                    qzssMessage.getCus(),                eps);
@@ -118,11 +118,11 @@ public class Rtcm1044Test {
         Assertions.assertEquals(560688.0,               qzssMessage.getTime(),               eps);
         Assertions.assertEquals(0.0,                    qzssMessage.getCic(),                eps);
         Assertions.assertEquals(0.0,                    qzssMessage.getCis(),                eps);
-        Assertions.assertEquals(0.9877147247285952,     qzssMessage.getI0(),                 eps);
+        Assertions.assertEquals(0.987714701321906,      qzssMessage.getI0(),                 eps);
         Assertions.assertEquals(0.0,                    qzssMessage.getCrc(),                eps);
         Assertions.assertEquals(0.30049130834913723,    qzssMessage.getPa(),                 eps);
         Assertions.assertEquals(-5.855958209879004E-9,  qzssMessage.getOmegaDot(),           eps);
-        Assertions.assertEquals(0.6980085400002902,     qzssMessage.getOmega0(),             eps);
+        Assertions.assertEquals(0.6980085385373721,     qzssMessage.getOmega0(),             eps);
         Assertions.assertEquals(1.3969839E-9,           qzssMessage.getTGD(),                eps);
 
         // Verify other data
@@ -169,7 +169,7 @@ public class Rtcm1044Test {
                         "0" +                                // Fit Interval
                         "000";                               // Reserved
 
-       final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+       final EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
        message.start();
 
        ArrayList<Integer> messages = new ArrayList<>();

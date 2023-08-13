@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Ev
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.TLEContext;
@@ -31,7 +31,7 @@ import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
-import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.Orbit;
@@ -149,7 +149,7 @@ public class TLEBatchLSEstimatorTest {
         final TLEPropagatorBuilder propagatorBuilder =
                         context.createBuilder(1.0e-6, 60.0, 1.0);
         // this test based on range measurements seems to have an attitude dependence?
-        propagatorBuilder.setAttitudeProvider(new InertialProvider(FramesFactory.getEME2000()));
+        propagatorBuilder.setAttitudeProvider(new FrameAlignedProvider(FramesFactory.getEME2000()));
 
         // create perfect range measurements
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
@@ -157,7 +157,7 @@ public class TLEBatchLSEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
@@ -247,7 +247,7 @@ public class TLEBatchLSEstimatorTest {
                                                                                propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // create orbit estimator
@@ -310,7 +310,7 @@ public class TLEBatchLSEstimatorTest {
 
         final List<ObservedMeasurement<?>> measurementsRange =
                         TLEEstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         final double groundClockDrift =  4.8e-9;
         for (final GroundStation station : context.stations) {

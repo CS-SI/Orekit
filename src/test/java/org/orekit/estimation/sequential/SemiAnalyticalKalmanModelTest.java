@@ -149,9 +149,13 @@ public class SemiAnalyticalKalmanModelTest {
                                                   covMatrixProvider,
                                                   estimatedMeasurementsParameters,
                                                   null);
+        model.setObserver(modelLogger);
 
         // Evaluate at t0
         // --------------
+
+        // Observer
+        Assertions.assertNotNull(model.getObserver());
 
         // Time
         Assertions.assertEquals(0., model.getEstimate().getTime(), 0.);

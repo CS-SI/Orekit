@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +24,9 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.FieldTransform;
+import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -33,6 +34,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -57,13 +59,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * @since 9.0
  */
-public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
+public class TurnAroundRange extends GroundReceiverMeasurement<TurnAroundRange> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "TurnAroundRange";
-
-    /** Primary ground station from which measurement is performed. */
-    private final GroundStation primaryStation;
 
     /** Secondary ground station reflecting the signal. */
     private final GroundStation secondaryStation;
@@ -82,17 +81,8 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
                            final AbsoluteDate date, final double turnAroundRange,
                            final double sigma, final double baseWeight,
                            final ObservableSatellite satellite) {
-        super(date, turnAroundRange, sigma, baseWeight, Collections.singletonList(satellite));
-        addParameterDriver(primaryStation.getClockOffsetDriver());
-        addParameterDriver(primaryStation.getEastOffsetDriver());
-        addParameterDriver(primaryStation.getNorthOffsetDriver());
-        addParameterDriver(primaryStation.getZenithOffsetDriver());
-        addParameterDriver(primaryStation.getPrimeMeridianOffsetDriver());
-        addParameterDriver(primaryStation.getPrimeMeridianDriftDriver());
-        addParameterDriver(primaryStation.getPolarOffsetXDriver());
-        addParameterDriver(primaryStation.getPolarDriftXDriver());
-        addParameterDriver(primaryStation.getPolarOffsetYDriver());
-        addParameterDriver(primaryStation.getPolarDriftYDriver());
+        super(primaryStation, true, date, turnAroundRange, sigma, baseWeight, satellite);
+
         // the secondary station clock is not used at all, we ignore the corresponding parameter driver
         addParameterDriver(secondaryStation.getEastOffsetDriver());
         addParameterDriver(secondaryStation.getNorthOffsetDriver());
@@ -103,15 +93,15 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         addParameterDriver(secondaryStation.getPolarDriftXDriver());
         addParameterDriver(secondaryStation.getPolarOffsetYDriver());
         addParameterDriver(secondaryStation.getPolarDriftYDriver());
-        this.primaryStation   = primaryStation;
         this.secondaryStation = secondaryStation;
+
     }
 
     /** Get the primary ground station from which measurement is performed.
      * @return primary ground station from which measurement is performed
      */
     public GroundStation getPrimaryStation() {
-        return primaryStation;
+        return getStation();
     }
 
     /** Get the secondary ground station reflecting the signal.
@@ -119,6 +109,164 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
      */
     public GroundStation getSecondaryStation() {
         return secondaryStation;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EstimatedMeasurementBase<TurnAroundRange> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                                final int evaluation,
+                                                                                                final SpacecraftState[] states) {
+
+        final SpacecraftState state = states[0];
+
+        // Time-stamped PV
+        final TimeStampedPVCoordinates pva = state.getPVCoordinates();
+
+        // The path of the signal is divided in two legs.
+        // Leg1: Emission from primary station to satellite in primaryTauU seconds
+        //     + Reflection from satellite to secondary station in secondaryTauD seconds
+        // Leg2: Reflection from secondary station to satellite in secondaryTauU seconds
+        //     + Reflection from satellite to primary station in primaryTaudD seconds
+        // The measurement is considered to be time stamped at reception on ground
+        // by the primary station. All times are therefore computed as backward offsets
+        // with respect to this reception time.
+        //
+        // Two intermediate spacecraft states are defined:
+        //  - transitStateLeg2: State of the satellite when it bounced back the signal
+        //                      from secondary station to primary station during the 2nd leg
+        //  - transitStateLeg1: State of the satellite when it bounced back the signal
+        //                      from primary station to secondary station during the 1st leg
+
+        // Compute propagation time for the 2nd leg of the signal path
+        // --
+
+        // Time difference between t (date of the measurement) and t' (date tagged in spacecraft state)
+        // (if state has already been set up to pre-compensate propagation delay,
+        // we will have delta = primaryTauD + secondaryTauU)
+        final double delta = getDate().durationFrom(state.getDate());
+
+        // transform between primary station topocentric frame (east-north-zenith) and inertial frame expressed as gradients
+        final Transform primaryToInert =
+                        getStation().getOffsetToInertial(state.getFrame(), getDate(), false);
+        final AbsoluteDate measurementDate = primaryToInert.getDate();
+
+        // Primary station PV in inertial frame at measurement date
+        final TimeStampedPVCoordinates primaryArrival =
+                        primaryToInert.transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate,
+                                                                                           Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
+
+        // Compute propagation times
+        final double primaryTauD = signalTimeOfFlight(pva, primaryArrival.getPosition(), measurementDate);
+
+        // Elapsed time between state date t' and signal arrival to the transit state of the 2nd leg
+        final double dtLeg2 = delta - primaryTauD;
+
+        // Transit state where the satellite reflected the signal from secondary to primary station
+        final SpacecraftState transitStateLeg2 = state.shiftedBy(dtLeg2);
+
+        // Transit state pv of leg2 (re)computed with gradient
+        final TimeStampedPVCoordinates transitStateLeg2PV = pva.shiftedBy(dtLeg2);
+
+        // transform between secondary station topocentric frame (east-north-zenith) and inertial frame expressed as gradients
+        // The components of secondary station's position in offset frame are the 3 last derivative parameters
+        final AbsoluteDate approxReboundDate = measurementDate.shiftedBy(-delta);
+        final Transform secondaryToInertApprox =
+                        secondaryStation.getOffsetToInertial(state.getFrame(), approxReboundDate, true);
+
+        // Secondary station PV in inertial frame at approximate rebound date on secondary station
+        final TimeStampedPVCoordinates QSecondaryApprox =
+                        secondaryToInertApprox.transformPVCoordinates(new TimeStampedPVCoordinates(approxReboundDate,
+                                                                                                   Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
+
+        // Uplink time of flight from secondary station to transit state of leg2
+        final double secondaryTauU = signalTimeOfFlight(QSecondaryApprox,
+                                                          transitStateLeg2PV.getPosition(),
+                                                          transitStateLeg2PV.getDate());
+
+        // Total time of flight for leg 2
+        final double tauLeg2 = primaryTauD + secondaryTauU;
+
+        // Compute propagation time for the 1st leg of the signal path
+        // --
+
+        // Absolute date of rebound of the signal to secondary station
+        final AbsoluteDate reboundDate   = measurementDate.shiftedBy(-tauLeg2);
+        final Transform secondaryToInert = secondaryStation.getOffsetToInertial(state.getFrame(), reboundDate, true);
+
+        // Secondary station PV in inertial frame at rebound date on secondary station
+        final TimeStampedPVCoordinates secondaryRebound =
+                        secondaryToInert.transformPVCoordinates(new TimeStampedPVCoordinates(reboundDate,
+                                                                                             Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
+
+        // Downlink time of flight from transitStateLeg1 to secondary station at rebound date
+        final double secondaryTauD = signalTimeOfFlight(transitStateLeg2PV,
+                                                        secondaryRebound.getPosition(),
+                                                        reboundDate);
+
+
+        // Elapsed time between state date t' and signal arrival to the transit state of the 1st leg
+        final double dtLeg1 = dtLeg2 - secondaryTauU - secondaryTauD;
+
+        // Transit state pv of leg2 (re)computed
+        final TimeStampedPVCoordinates transitStateLeg1PV = pva.shiftedBy(dtLeg1);
+
+        // transform between primary station topocentric frame (east-north-zenith) and inertial frame
+        final AbsoluteDate approxEmissionDate = measurementDate.shiftedBy(-2 * (secondaryTauU + primaryTauD));
+        final Transform primaryToInertApprox  = getStation().getOffsetToInertial(state.getFrame(), approxEmissionDate, true);
+
+        // Primary station PV in inertial frame at approximate emission date
+        final TimeStampedPVCoordinates QPrimaryApprox =
+                        primaryToInertApprox.transformPVCoordinates(new TimeStampedPVCoordinates(approxEmissionDate,
+                                                                                                 Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
+
+        // Uplink time of flight from primary station to transit state of leg1
+        final double primaryTauU = signalTimeOfFlight(QPrimaryApprox,
+                                                      transitStateLeg1PV.getPosition(),
+                                                      transitStateLeg1PV.getDate());
+
+        // Primary station PV in inertial frame at exact emission date
+        final AbsoluteDate emissionDate = transitStateLeg1PV.getDate().shiftedBy(-primaryTauU);
+        final TimeStampedPVCoordinates primaryDeparture =
+                        primaryToInertApprox.shiftedBy(emissionDate.durationFrom(primaryToInertApprox.getDate())).
+                        transformPVCoordinates(new TimeStampedPVCoordinates(emissionDate, PVCoordinates.ZERO));
+
+        // Total time of flight for leg 1
+        final double tauLeg1 = secondaryTauD + primaryTauU;
+
+
+        // --
+        // Evaluate the turn-around range value and its derivatives
+        // --------------------------------------------------------
+
+        // The state we use to define the estimated measurement is a middle ground between the two transit states
+        // This is done to avoid calling "SpacecraftState.shiftedBy" function on long duration
+        // Thus we define the state at the date t" = date of rebound of the signal at the secondary station
+        // Or t" = t -primaryTauD -secondaryTauU
+        // The iterative process in the estimation ensures that, after several iterations, the date stamped in the
+        // state S in input of this function will be close to t"
+        // Therefore we will shift state S by:
+        //  - +secondaryTauU to get transitStateLeg2
+        //  - -secondaryTauD to get transitStateLeg1
+        final EstimatedMeasurementBase<TurnAroundRange> estimated =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                   new SpacecraftState[] {
+                                                       transitStateLeg2.shiftedBy(-secondaryTauU)
+                                                   },
+                                                   new TimeStampedPVCoordinates[] {
+                                                       primaryDeparture,
+                                                       transitStateLeg1PV,
+                                                       secondaryRebound,
+                                                       transitStateLeg2.getPVCoordinates(),
+                                                       primaryArrival
+                                                   });
+
+        // Turn-around range value = Total time of flight for the 2 legs divided by 2 and multiplied by c
+        final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
+        final double turnAroundRange = (tauLeg2 + tauLeg1) * cOver2;
+        estimated.setEstimatedValue(turnAroundRange);
+
+        return estimated;
+
     }
 
     /** {@inheritDoc} */
@@ -143,8 +291,13 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
             // we have to check for duplicate keys because primary and secondary station share
             // pole and prime meridian parameters names that must be considered
             // as one set only (they are combined together by the estimation engine)
-            if (driver.isSelected() && !indices.containsKey(driver.getName())) {
-                indices.put(driver.getName(), nbParams++);
+            if (driver.isSelected()) {
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    if (!indices.containsKey(span.getData())) {
+                        indices.put(span.getData(), nbParams++);
+                    }
+                }
             }
         }
         final Field<Gradient>         field   = GradientField.getField(nbParams);
@@ -178,7 +331,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
 
         // transform between primary station topocentric frame (east-north-zenith) and inertial frame expressed as gradients
         final FieldTransform<Gradient> primaryToInert =
-                        primaryStation.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
+                        getStation().getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
         final FieldAbsoluteDate<Gradient> measurementDateDS = primaryToInert.getFieldDate();
 
         // Primary station PV in inertial frame at measurement date
@@ -247,7 +400,7 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         final FieldAbsoluteDate<Gradient> approxEmissionDate =
                         measurementDateDS.shiftedBy(-2 * (secondaryTauU.getValue() + primaryTauD.getValue()));
         final FieldTransform<Gradient> primaryToInertApprox =
-                        primaryStation.getOffsetToInertial(state.getFrame(), approxEmissionDate, nbParams, indices);
+                        getStation().getOffsetToInertial(state.getFrame(), approxEmissionDate, nbParams, indices);
 
         // Primary station PV in inertial frame at approximate emission date
         final TimeStampedFieldPVCoordinates<Gradient> QPrimaryApprox =
@@ -308,9 +461,11 @@ public class TurnAroundRange extends AbstractMeasurement<TurnAroundRange> {
         // set partial derivatives with respect to parameters
         // (beware element at index 0 is the value, not a derivative)
         for (final ParameterDriver driver : getParametersDrivers()) {
-            final Integer index = indices.get(driver.getName());
-            if (index != null) {
-                estimated.setParameterDerivatives(driver, derivatives[index]);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
+                }
             }
         }
 

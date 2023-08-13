@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.cdm;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
@@ -60,11 +61,24 @@ public enum CdmMetadataKey {
     /** Email address of the contact position for the object. */
     OPERATOR_EMAIL((token, context, container) -> token.processAsNormalizedString(container::setOperatorEmail)),
 
+    /** Unique identifier of Orbit Data Message(s) that are linked (relevant) to this Conjunction Data Message. */
+    ODM_MSG_LINK((token, context, container) -> token.processAsFreeTextString(container::setOdmMsgLink)),
+
+    /** Unique identifier of Attitude Data Message(s) that are linked (relevant) to this Conjunction Data Message. */
+    ADM_MSG_LINK((token, context, container) -> token.processAsFreeTextString(container::setAdmMsgLink)),
+
     /** Unique name of the external ephemeris file used for the object or NONE. */
     EPHEMERIS_NAME((token, context, container) -> token.processAsNormalizedString(container::setEphemName)),
 
+    /** Flag indicating whether new tracking observations are anticipated prior to the issue of the next CDM associated with the event
+     * specified by CONJUNCTION_ID. */
+    OBS_BEFORE_NEXT_MESSAGE((token, context, container) -> token.processAsEnum(YesNoUnknown.class, container::setObsBeforeNextMessage)),
+
     /** Method used to calculate the covariance. */
     COVARIANCE_METHOD((token, context, container) -> token.processAsEnum(CovarianceMethod.class, container::setCovarianceMethod)),
+
+    /** The source from which the covariance data used in the report for both Object 1 and Object 2 originates. */
+    COVARIANCE_SOURCE((token, context, container) -> token.processAsNormalizedString(container::setCovarianceSource)),
 
     /** Manoeuver capacity. */
     MANEUVERABLE((token, context, container) -> token.processAsManeuvrableEnum(container::setManeuverable)),
@@ -75,6 +89,12 @@ public enum CdmMetadataKey {
 
     /** Name of the reference frame, in which state vector data are given. */
     REF_FRAME((token, context, container) -> token.processAsFrame(container::setRefFrame, context, true, true, true)),
+
+    /** Flag indicating the type of alternate covariance information provided. */
+    ALT_COV_TYPE((token, context, container) -> token.processAsEnum(AltCovarianceType.class, container::setAltCovType)),
+
+    /** Name of the reference frame in which the alternate covariance data are given. */
+    ALT_COV_REF_FRAME((token, context, container) -> token.processAsFrame(container::setAltCovRefFrame, context, true, false, false)),
 
     /** Gravity model. */
     GRAVITY_MODEL(new GravityProcessor()),
@@ -87,13 +107,13 @@ public enum CdmMetadataKey {
                                                                                   context.getDataContext().getCelestialBodies())),
 
     /** Is solar radiation pressure used for the OD of the object ? */
-    SOLAR_RAD_PRESSURE((token, context, container) -> token.processAsBoolean(container::setSolarRadiationPressure)),
+    SOLAR_RAD_PRESSURE((token, context, container) -> token.processAsEnum(YesNoUnknown.class, container::setSolarRadiationPressure)),
 
     /** Is solid Earth and ocean tides used for the OD of the object ? */
-    EARTH_TIDES((token, context, container) -> token.processAsBoolean(container::setEarthTides)),
+    EARTH_TIDES((token, context, container) -> token.processAsEnum(YesNoUnknown.class, container::setEarthTides)),
 
     /** Indication of whether in-track thrust modeling used for the object. */
-    INTRACK_THRUST((token, context, container) -> token.processAsBoolean(container::setIntrackThrust));
+    INTRACK_THRUST((token, context, container) -> token.processAsEnum(YesNoUnknown.class, container::setIntrackThrust));
 
     /** Processing method. */
     private final TokenProcessor processor;

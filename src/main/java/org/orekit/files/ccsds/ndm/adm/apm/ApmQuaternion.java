@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,33 +18,21 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 
 import java.util.Arrays;
 
-import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.complex.Quaternion;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
-import org.orekit.files.ccsds.section.Section;
-import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
+import org.orekit.files.ccsds.section.CommentsContainer;
 
 /**
  * Container for Attitude Parameter Message quaternion logical block.
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class ApmQuaternion implements Section {
-
-    /** Epoch of the data. */
-    private AbsoluteDate epoch;
+public class ApmQuaternion extends CommentsContainer {
 
     /** Endpoints (i.e. frames A, B and their relationship). */
-    private final AttitudeEndoints endpoints;
+    private final AttitudeEndpoints endpoints;
 
     /** Quaternion. */
     private double[] q;
@@ -55,7 +43,7 @@ public class ApmQuaternion implements Section {
     /** Simple constructor.
      */
     public ApmQuaternion() {
-        endpoints = new AttitudeEndoints();
+        endpoints = new AttitudeEndpoints();
         q         = new double[4];
         qDot      = new double[4];
         Arrays.fill(q,    Double.NaN);
@@ -65,35 +53,29 @@ public class ApmQuaternion implements Section {
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
-        endpoints.checkMandatoryEntriesExceptExternalFrame(ApmQuaternionKey.Q_FRAME_A,
-                                                           ApmQuaternionKey.Q_FRAME_B,
-                                                           ApmQuaternionKey.Q_DIR);
-        endpoints.checkExternalFrame(ApmQuaternionKey.Q_FRAME_A, ApmQuaternionKey.Q_FRAME_B);
+        super.validate(version);
+        if (version < 2.0) {
+            endpoints.checkMandatoryEntriesExceptExternalFrame(version,
+                                                               ApmQuaternionKey.Q_FRAME_A,
+                                                               ApmQuaternionKey.Q_FRAME_B,
+                                                               ApmQuaternionKey.Q_DIR);
+            endpoints.checkExternalFrame(ApmQuaternionKey.Q_FRAME_A, ApmQuaternionKey.Q_FRAME_B);
+        } else {
+            endpoints.checkMandatoryEntriesExceptExternalFrame(version,
+                                                               ApmQuaternionKey.REF_FRAME_A,
+                                                               ApmQuaternionKey.REF_FRAME_B,
+                                                               ApmQuaternionKey.Q_DIR);
+            endpoints.checkExternalFrame(ApmQuaternionKey.REF_FRAME_A, ApmQuaternionKey.REF_FRAME_B);
+        }
         if (Double.isNaN(q[0] + q[1] + q[2] + q[3])) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, "Q{C|1|2|3}");
         }
     }
 
-    /**
-     * Get the epoch of the data.
-     * @return epoch the epoch
-     */
-    public AbsoluteDate getEpoch() {
-        return epoch;
-    }
-
-    /**
-     * Set the epoch of the data.
-     * @param epoch the epoch to be set
-     */
-    public void setEpoch(final AbsoluteDate epoch) {
-        this.epoch = epoch;
-    }
-
     /** Get the endpoints (i.e. frames A, B and their relationship).
      * @return endpoints
      */
-    public AttitudeEndoints getEndpoints() {
+    public AttitudeEndpoints getEndpoints() {
         return endpoints;
     }
 
@@ -111,6 +93,7 @@ public class ApmQuaternion implements Section {
      * @param value quaternion component
      */
     public void setQ(final int index, final double value) {
+        refuseFurtherComments();
         this.q[index] = value;
     }
 
@@ -128,6 +111,7 @@ public class ApmQuaternion implements Section {
      * @param derivative quaternion derivative component
      */
     public void setQDot(final int index, final double derivative) {
+        refuseFurtherComments();
         this.qDot[index] = derivative;
     }
 
@@ -136,38 +120,6 @@ public class ApmQuaternion implements Section {
      */
     public boolean hasRates() {
         return !Double.isNaN(qDot[0] + qDot[1] + qDot[2] + qDot[3]);
-    }
-
-    /** Get the attitude.
-     * @param frame reference frame with respect to which attitude must be defined
-     * (may be null if attitude is <em>not</em> orbit-relative and one wants
-     * attitude in the same frame as used in the attitude message)
-     * @param pvProvider provider for spacecraft position and velocity
-     * (may be null if attitude is <em>not</em> orbit-relative)
-     * @return attitude
-     */
-    public Attitude getAttitude(final Frame frame, final PVCoordinatesProvider pvProvider) {
-
-        if (Double.isNaN(qDot[0])) {
-            // rotation as it is stored in the APM
-            final Rotation r = new Rotation(q[0], q[1], q[2], q[3], true);
-
-            // attitude without rotation rate
-            return endpoints.build(frame, pvProvider,
-                                   new TimeStampedAngularCoordinates(epoch, r, Vector3D.ZERO, Vector3D.ZERO));
-
-        } else {
-            // attitude as it is stored in the APM
-            final UnivariateDerivative1                q0 = new UnivariateDerivative1(q[0], qDot[0]);
-            final UnivariateDerivative1                q1 = new UnivariateDerivative1(q[1], qDot[1]);
-            final UnivariateDerivative1                q2 = new UnivariateDerivative1(q[2], qDot[2]);
-            final UnivariateDerivative1                q3 = new UnivariateDerivative1(q[3], qDot[3]);
-            final FieldRotation<UnivariateDerivative1> rd = new FieldRotation<>(q0, q1, q2, q3, true);
-
-            // attitude converted to Orekit conventions
-            return endpoints.build(frame, pvProvider, new TimeStampedAngularCoordinates(epoch, rd));
-        }
-
     }
 
 }

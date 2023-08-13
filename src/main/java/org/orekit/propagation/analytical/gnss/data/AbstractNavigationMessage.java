@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,13 +24,16 @@ import org.orekit.time.AbsoluteDate;
  * @author Bryan Cazabonne
  * @since 11.0
  *
- * @see GPSNavigationMessage
+ * @see GPSLegacyNavigationMessage
  * @see GalileoNavigationMessage
- * @see BeidouNavigationMessage
- * @see QZSSNavigationMessage
+ * @see BeidouLegacyNavigationMessage
+ * @see QZSSLegacyNavigationMessage
  * @see IRNSSNavigationMessage
  */
-public abstract class AbstractNavigationMessage extends CommonGnssData {
+public abstract class AbstractNavigationMessage extends CommonGnssData implements GNSSOrbitalElements {
+
+    /** Square root of a. */
+    private double sqrtA;
 
     /** Mean Motion Difference from Computed Value. */
     private double deltaN;
@@ -62,6 +65,11 @@ public abstract class AbstractNavigationMessage extends CommonGnssData {
     /** Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination. */
     private double cis;
 
+    /** Transmission time.
+     * @since 12.0
+     */
+    private double transmissionTime;
+
     /**
      * Constructor.
      * @param mu Earth's universal gravitational parameter
@@ -75,14 +83,23 @@ public abstract class AbstractNavigationMessage extends CommonGnssData {
     }
 
     /**
-     * Setter for the Square Root of Semi-Major Axis (m^1/2).
+     * Getter for Square Root of Semi-Major Axis (√m).
+     * @return Square Root of Semi-Major Axis (√m)
+     */
+    public double getSqrtA() {
+        return sqrtA;
+    }
+
+    /**
+     * Setter for the Square Root of Semi-Major Axis (√m).
      * <p>
      * In addition, this method set the value of the Semi-Major Axis.
      * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
+     * @param sqrtA the Square Root of Semi-Major Axis (√m)
      */
     public void setSqrtA(final double sqrtA) {
-        super.setSma(sqrtA * sqrtA);
+        this.sqrtA = sqrtA;
+        setSma(sqrtA * sqrtA);
     }
 
     /**
@@ -92,6 +109,14 @@ public abstract class AbstractNavigationMessage extends CommonGnssData {
     public double getMeanMotion() {
         final double absA = FastMath.abs(getSma());
         return FastMath.sqrt(getMu() / absA) / absA + deltaN;
+    }
+
+    /**
+     * Getter for the delta of satellite mean motion.
+     * @return delta of satellite mean motion
+     */
+    public double getDeltaN() {
+        return deltaN;
     }
 
     /**
@@ -244,6 +269,24 @@ public abstract class AbstractNavigationMessage extends CommonGnssData {
      */
     public void setCis(final double cis) {
         this.cis = cis;
+    }
+
+    /**
+     * Getter for transmission time.
+     * @return transmission time
+     * @since 12.0
+     */
+    public double getTransmissionTime() {
+        return transmissionTime;
+    }
+
+    /**
+     * Setter for transmission time.
+     * @param transmissionTime transmission time
+     * @since 12.0
+     */
+    public void setTransmissionTime(final double transmissionTime) {
+        this.transmissionTime = transmissionTime;
     }
 
 }

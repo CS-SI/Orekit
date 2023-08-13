@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,9 +51,9 @@ public class CommentsContainer implements Section {
      * @param field field to check
      * @param key key associated with the field
      */
-    public void checkNotNegative(final int field, final Enum<?> key) {
+    public void checkNotNegative(final int field, final String key) {
         if (field < 0) {
-            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, key.name());
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, key);
         }
     }
 
@@ -61,9 +61,9 @@ public class CommentsContainer implements Section {
      * @param field field to check
      * @param key key associated with the field
      */
-    public void checkNotNaN(final double field, final Enum<?> key) {
+    public void checkNotNaN(final double field, final String key) {
         if (Double.isNaN(field)) {
-            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, key.name());
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, key);
         }
     }
 
@@ -71,9 +71,9 @@ public class CommentsContainer implements Section {
      * @param field field to check
      * @param key key associated with the field
      */
-    public void checkNotNull(final Object field, final Enum<?> key) {
+    public void checkNotNull(final Object field, final String key) {
         if (field == null) {
-            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, key.name());
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, key);
         }
     }
 
@@ -84,11 +84,11 @@ public class CommentsContainer implements Section {
      * @param minVersion version at which key started to be allowed
      * @param maxVersion version at which key started to be forbidden
      */
-    public void checkAllowed(final double version, final Object field, final Enum<?> key,
+    public void checkAllowed(final double version, final Object field, final String key,
                              final double minVersion, final double maxVersion) {
         if (field != null && (version < minVersion || version >= maxVersion)) {
             throw new OrekitException(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION,
-                                      key.name(), version);
+                                      key, version);
         }
     }
 

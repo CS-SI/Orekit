@@ -1,0 +1,19 @@
+CCSDS_ACM_VERS = 2.0
+
+CREATION_DATE               = 1998-11-06T09:23:57
+ORIGINATOR                  = JAXA
+MESSAGE_ID                  = A7015Z6
+
+META_START
+OBJECT_NAME                 = TEST_SAT
+ORIGINATOR_POC              = Ms. Rodgers, (719)555-5555, email@email.XXX
+TIME_SYSTEM                 = TAI
+EPOCH_TZERO                 = 1998-12-18T14:28:15.1172
+TAIMUTC_AT_TZERO            = 36                 [s]
+META_STOP
+
+PHYS_START
+COMMENT                       Spacecraft Physical Parameters
+WET_MASS                    = 1916              [kg]
+CP_REF_FRAME                = SC_BODY_1
+PHYS_STOP

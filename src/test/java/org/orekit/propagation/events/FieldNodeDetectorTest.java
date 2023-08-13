@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,12 +41,12 @@ public class FieldNodeDetectorTest {
 
     @Test
     public void testIssue138() {
-        doTestIssue138(Decimal64Field.getInstance());
+        doTestIssue138(Binary64Field.getInstance());
     }
 
     @Test
     public void testIssue158() {
-        doTestIssue158(Decimal64Field.getInstance());
+        doTestIssue158(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>>void doTestIssue138(Field<T> field) {
@@ -67,7 +67,7 @@ public class FieldNodeDetectorTest {
         // Define 2 instances of NodeDetector:
         FieldEventDetector<T> rawDetector =
                 new FieldNodeDetector<>(zero.add(1e-6), initialState.getOrbit(), initialState.getFrame()).
-                withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>());
+                withHandler(new FieldContinueOnEvent<>());
 
         FieldEventsLogger<T> logger1 = new FieldEventsLogger<>();
         FieldEventDetector<T> node1 = logger1.monitorDetector(rawDetector);

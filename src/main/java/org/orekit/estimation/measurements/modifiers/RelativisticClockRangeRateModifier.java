@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.propagation.SpacecraftState;
@@ -58,14 +58,14 @@ public class RelativisticClockRangeRateModifier extends AbstractRelativisticCloc
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<RangeRate> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<RangeRate> estimated) {
         // Spacecraft state
         final SpacecraftState state = estimated.getStates()[0];
 
         // Relativistic frequency deviation
         final double factor = -gm * getScaleFactor();
         final double dfRel = factor *
-                        (reciprocal(state.getA()) - reciprocal(state.getPVCoordinates().getPosition().getNorm()));
+                        (reciprocal(state.getA()) - reciprocal(state.getPosition().getNorm()));
 
         // Update estimated value taking into account the relativistic effect.
         final double[] newValue = estimated.getEstimatedValue().clone();

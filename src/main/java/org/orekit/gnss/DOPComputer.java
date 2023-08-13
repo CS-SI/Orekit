@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -144,7 +144,7 @@ public class DOPComputer {
         final double[][] satDir = new double[gnss.size()][4];
         int satNb = 0;
         for (Propagator prop : gnss) {
-            final Vector3D pos = prop.getPVCoordinates(date, frame).getPosition();
+            final Vector3D pos = prop.getPosition(date, frame);
             final double elev  = frame.getElevation(pos, frame, date);
             final double elMin = (elevationMask != null) ?
                                  elevationMask.getElevation(frame.getAzimuth(pos, frame, date)) :

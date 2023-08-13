@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,9 +21,9 @@ import java.util.List;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
-import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
-import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -37,7 +37,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author sports
  * @since 6.1
  */
-public class Opm extends NdmConstituent<Header, Segment<CommonMetadata, OpmData>> implements TimeStamped {
+public class Opm extends NdmConstituent<OdmHeader, Segment<OdmCommonMetadata, OpmData>> implements TimeStamped {
 
     /** Root element for XML files. */
     public static final String ROOT = "opm";
@@ -55,7 +55,7 @@ public class Opm extends NdmConstituent<Header, Segment<CommonMetadata, OpmData>
      * @param dataContext used for creating frames, time scales, etc.
      * @param mu gravitational coefficient to use for building Cartesian/Keplerian orbits
      */
-    public Opm(final Header header, final List<Segment<CommonMetadata, OpmData>> segments,
+    public Opm(final OdmHeader header, final List<Segment<OdmCommonMetadata, OpmData>> segments,
                final IERSConventions conventions, final DataContext dataContext,
                final double mu) {
         super(header, segments, conventions, dataContext);
@@ -65,7 +65,7 @@ public class Opm extends NdmConstituent<Header, Segment<CommonMetadata, OpmData>
     /** Get the file metadata.
      * @return file metadata
      */
-    public CommonMetadata getMetadata() {
+    public OdmCommonMetadata getMetadata() {
         return getSegments().get(0).getMetadata();
     }
 
@@ -131,7 +131,7 @@ public class Opm extends NdmConstituent<Header, Segment<CommonMetadata, OpmData>
      * @return generated orbit
      */
     public KeplerianOrbit generateKeplerianOrbit() {
-        final CommonMetadata metadata = getMetadata();
+        final OdmCommonMetadata metadata = getMetadata();
         final OpmData        data     = getData();
         final KeplerianElements keplerianElements = data.getKeplerianElementsBlock();
         if (keplerianElements != null) {

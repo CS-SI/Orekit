@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -78,7 +78,7 @@ public class BistaticRangeRateMeasurementCreator extends MeasurementCreator {
 
         final AbsoluteDate  date     = currentState.getDate();
         final Frame         inertial = currentState.getFrame();
-        final Vector3D      position = currentState.getPVCoordinates().getPosition();
+        final Vector3D      position = currentState.getPosition();
         final Vector3D      velocity = currentState.getPVCoordinates().getVelocity();
 
         // Create a BRR measurement only if elevation for both stations is higher than 30°
@@ -90,14 +90,14 @@ public class BistaticRangeRateMeasurementCreator extends MeasurementCreator {
 
             final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
                 public double value(final double x) {
-                    final Transform t = receiver.getOffsetToInertial(inertial, date.shiftedBy(x));
+                    final Transform t = receiver.getOffsetToInertial(inertial, date.shiftedBy(x), false);
                     final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                     return d - x * Constants.SPEED_OF_LIGHT;
                 }
             }, -1.0, 1.0);
 
             final AbsoluteDate receptionDate = currentState.getDate().shiftedBy(downLinkDelay);
-            final PVCoordinates receiverPV   = receiver.getOffsetToInertial(inertial, receptionDate)
+            final PVCoordinates receiverPV   = receiver.getOffsetToInertial(inertial, receptionDate, false)
                                                        .transformPVCoordinates(PVCoordinates.ZERO);
 
             // line of sight at reception
@@ -108,14 +108,14 @@ public class BistaticRangeRateMeasurementCreator extends MeasurementCreator {
 
             final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
                 public double value(final double x) {
-                    final Transform t = emitter.getOffsetToInertial(inertial, date.shiftedBy(-x));
+                    final Transform t = emitter.getOffsetToInertial(inertial, date.shiftedBy(-x), false);
                     final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                     return d - x * Constants.SPEED_OF_LIGHT;
                 }
             }, -1.0, 1.0);
 
             final AbsoluteDate emissionDate = currentState.getDate().shiftedBy(-upLinkDelay);
-            final PVCoordinates emitterPV   = emitter.getOffsetToInertial(inertial, emissionDate)
+            final PVCoordinates emitterPV   = emitter.getOffsetToInertial(inertial, emissionDate, false)
                                                      .transformPVCoordinates(PVCoordinates.ZERO);
 
             // line of sight at emission

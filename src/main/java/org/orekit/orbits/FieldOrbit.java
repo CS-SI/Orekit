@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,10 +28,10 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldStaticTransform;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldTimeInterpolable;
 import org.orekit.time.FieldTimeShiftable;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.FieldPVCoordinates;
@@ -64,7 +64,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 9.0
  */
 public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
-    implements FieldPVCoordinatesProvider<T>, FieldTimeStamped<T>, FieldTimeShiftable<FieldOrbit<T>, T>, FieldTimeInterpolable<FieldOrbit<T>, T> {
+    implements FieldPVCoordinatesProvider<T>, FieldTimeStamped<T>, FieldTimeShiftable<FieldOrbit<T>, T> {
 
     /** Frame in which are defined the orbital parameters. */
     private final Frame frame;
@@ -74,6 +74,11 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
 
     /** Value of mu used to compute position and velocity (m³/s²). */
     private final T mu;
+
+    /** Computed position.
+     * @since 12.0
+     */
+    private transient FieldVector3D<T> position;
 
     /** Computed PVCoordinates. */
     private transient TimeStampedFieldPVCoordinates<T> pvCoordinates;
@@ -389,6 +394,13 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
         return absA.reciprocal().multiply(mu).sqrt().divide(absA);
     }
 
+    /** Get the derivative of the mean anomaly with respect to the semi major axis.
+     * @return derivative of the mean anomaly with respect to the semi major axis
+     */
+    public T getMeanAnomalyDotWrtA() {
+        return getKeplerianMeanMotion().divide(getA()).multiply(-1.5);
+    }
+
     /** Get the date of orbital parameters.
      * @return date of the orbital parameters
      */
@@ -413,7 +425,7 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
         }
 
         // Else, PV coordinates are transformed to output frame
-        final Transform t = frame.getTransformTo(outputFrame, date.toAbsoluteDate()); //TODO CHECK THIS
+        final FieldTransform<T> t = frame.getTransformTo(outputFrame, date);
         return t.transformPVCoordinates(pvCoordinates);
     }
 
@@ -422,6 +434,40 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
     }
 
+    /** Get the position in a specified frame.
+     * @param outputFrame frame in which the position coordinates shall be computed
+     * @return position in the specified output frame
+     * @see #getPosition()
+     * @since 12.0
+     */
+    public FieldVector3D<T> getPosition(final Frame outputFrame) {
+        if (position == null) {
+            position = initPosition();
+        }
+
+        // If output frame requested is the same as definition frame,
+        // PV coordinates are returned directly
+        if (outputFrame == frame) {
+            return position;
+        }
+
+        // Else, PV coordinates are transformed to output frame
+        final FieldStaticTransform<T> t = frame.getStaticTransformTo(outputFrame, date);
+        return t.transformPosition(position);
+
+    }
+
+    /** Get the position in definition frame.
+     * @return position in the definition frame
+     * @see #getPVCoordinates()
+     * @since 12.0
+     */
+    public FieldVector3D<T> getPosition() {
+        if (position == null) {
+            position = initPosition();
+        }
+        return position;
+    }
 
     /** Get the {@link TimeStampedPVCoordinates} in definition frame.
      * @return FieldPVCoordinates in the definition frame
@@ -430,10 +476,16 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates() {
         if (pvCoordinates == null) {
             pvCoordinates = initPVCoordinates();
-
+            position      = pvCoordinates.getPosition();
         }
         return pvCoordinates;
     }
+
+    /** Compute the position coordinates from the canonical parameters.
+     * @return computed position coordinates
+     * @since 12.0
+     */
+    protected abstract FieldVector3D<T> initPosition();
 
     /** Compute the position/velocity coordinates from the canonical parameters.
      * @return computed position/velocity coordinates

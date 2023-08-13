@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -394,40 +394,6 @@ public class CPFWriterTest {
         Assertions.assertEquals(0.0, firstPos.distance(coordReg.get(0).getPosition()), 1.0e-15);
         Assertions.assertEquals(0.0, coordReg.get(0).getVelocity().getNorm(), 1.0e-15);
         Assertions.assertEquals(0.0, firstEpoch.durationFrom(coordReg.get(0).getDate()), 1.0e-15);
-
-    }
-
-    @Test
-    @Deprecated
-    public void testDefaultId() throws IOException {
-
-        // Initialize
-        final CPF cpf = new CPF();
-
-        // Fast check
-        Assertions.assertEquals(0, cpf.getSatellites().size());
-
-        // Add coordinates
-        final int leap = 0;
-        cpf.addSatelliteCoordinate(new CPFCoordinate(AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, leap));
-
-        // Verify
-        Assertions.assertEquals(1, cpf.getSatellites().size());
-
-    }
-
-    @Test
-    @Deprecated
-    public void testOldConstructor() throws IOException {
-
-        // Initialize
-        // Create an empty CPF file
-        final CPF cpf = new CPF();
-        final CPFEphemeris ephemeris = cpf.new CPFEphemeris();
-
-        // Fast check
-        Assertions.assertEquals(0, ephemeris.getCoordinates().size());
-        Assertions.assertEquals(CPF.DEFAULT_ID, ephemeris.getId());
 
     }
 

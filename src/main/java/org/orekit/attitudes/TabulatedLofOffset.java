@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,10 +24,12 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.LOFType;
+import org.orekit.frames.LOF;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolator;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -35,7 +37,9 @@ import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedAngularCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinatesHermiteInterpolator;
 
 /**
  * This class handles an attitude provider interpolating from a predefined table
@@ -51,8 +55,8 @@ public class TabulatedLofOffset implements BoundedAttitudeProvider {
     /** Inertial frame with respect to which orbit should be computed. */
     private final Frame inertialFrame;
 
-    /** Type of Local Orbital Frame. */
-    private LOFType type;
+    /** Local Orbital Frame. */
+    private final LOF type;
 
     /** Cached attitude table. */
     private final transient ImmutableTimeStampedCache<? extends TimeStampedAngularCoordinates> table;
@@ -71,20 +75,20 @@ public class TabulatedLofOffset implements BoundedAttitudeProvider {
      * This constructor uses the first and last point samples as the min and max dates.
      * </p>
      * @param inertialFrame inertial frame with respect to which orbit should be computed
-     * @param type type of Local Orbital Frame
+     * @param lof local orbital frame
      * @param table tabulated attitudes
      * @param n number of attitude to use for interpolation
      * @param filter filter for derivatives from the sample to use in interpolation
      */
-    public TabulatedLofOffset(final Frame inertialFrame, final LOFType type,
+    public TabulatedLofOffset(final Frame inertialFrame, final LOF lof,
                               final List<? extends TimeStampedAngularCoordinates> table,
                               final int n, final AngularDerivativesFilter filter) {
-        this(inertialFrame, type, table, n, filter, table.get(0).getDate(), table.get(table.size() - 1).getDate());
+        this(inertialFrame, lof, table, n, filter, table.get(0).getDate(), table.get(table.size() - 1).getDate());
     }
 
     /** Creates new instance.
      * @param inertialFrame inertial frame with respect to which orbit should be computed
-     * @param type type of Local Orbital Frame
+     * @param lof local orbital frame
      * @param table tabulated attitudes
      * @param n number of attitude to use for interpolation
      * @param minDate min date to use
@@ -92,7 +96,7 @@ public class TabulatedLofOffset implements BoundedAttitudeProvider {
      * @param filter filter for derivatives from the sample to use in interpolation
      * @since 11.0
      */
-    public TabulatedLofOffset(final Frame inertialFrame, final LOFType type,
+    public TabulatedLofOffset(final Frame inertialFrame, final LOF lof,
                               final List<? extends TimeStampedAngularCoordinates> table,
                               final int n, final AngularDerivativesFilter filter,
                               final AbsoluteDate minDate, final AbsoluteDate maxDate) {
@@ -101,7 +105,7 @@ public class TabulatedLofOffset implements BoundedAttitudeProvider {
                                       inertialFrame.getName());
         }
         this.inertialFrame = inertialFrame;
-        this.type          = type;
+        this.type          = lof;
         this.table         = new ImmutableTimeStampedCache<TimeStampedAngularCoordinates>(n, table);
         this.filter        = filter;
         this.minDate       = minDate;
@@ -122,9 +126,12 @@ public class TabulatedLofOffset implements BoundedAttitudeProvider {
         // get attitudes sample on which interpolation will be performed
         final List<TimeStampedAngularCoordinates> sample = table.getNeighbors(date).collect(Collectors.toList());
 
+        // create interpolator
+        final TimeInterpolator<TimeStampedAngularCoordinates> interpolator =
+                new TimeStampedAngularCoordinatesHermiteInterpolator(sample.size(), filter);
+
         // interpolate
-        final TimeStampedAngularCoordinates interpolated =
-                TimeStampedAngularCoordinates.interpolate(date, filter, sample);
+        final TimeStampedAngularCoordinates interpolated = interpolator.interpolate(date, sample);
 
         // construction of the local orbital frame, using PV from inertial frame
         final PVCoordinates pv = pvProv.getPVCoordinates(date, inertialFrame);
@@ -151,9 +158,12 @@ public class TabulatedLofOffset implements BoundedAttitudeProvider {
                         map(ac -> new TimeStampedFieldAngularCoordinates<>(date.getField(), ac)).
                         collect(Collectors.toList());
 
+        // create interpolator
+        final FieldTimeInterpolator<TimeStampedFieldAngularCoordinates<T>, T> interpolator =
+                new TimeStampedFieldAngularCoordinatesHermiteInterpolator<>(sample.size(), filter);
+
         // interpolate
-        final TimeStampedFieldAngularCoordinates<T> interpolated =
-                TimeStampedFieldAngularCoordinates.interpolate(date, filter, sample);
+        final TimeStampedFieldAngularCoordinates<T> interpolated = interpolator.interpolate(date, sample);
 
         // construction of the local orbital frame, using PV from inertial frame
         final FieldPVCoordinates<T> pv = pvProv.getPVCoordinates(date, inertialFrame);

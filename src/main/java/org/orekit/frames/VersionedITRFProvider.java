@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -135,6 +135,26 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
             return rawTransform;
         } else {
             return new FieldTransform<>(date, rawTransform, converterForDate.getTransform(date));
+        }
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+
+        // get the transform from the current EOP
+        final FieldStaticTransform<T> rawTransform = rawProvider.getStaticTransform(date);
+
+        // add the conversion layer
+        final ITRFVersion.Converter converterForDate = getConverter(date.toAbsoluteDate());
+        if (converterForDate == null) {
+            return rawTransform;
+        } else {
+            return FieldStaticTransform.compose(
+                    date,
+                    rawTransform,
+                    converterForDate.getStaticTransform(date));
         }
 
     }

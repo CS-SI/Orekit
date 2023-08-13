@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,8 @@
  */
 package org.orekit.frames;
 
+import java.io.IOException;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
@@ -23,7 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -35,7 +37,6 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.PositionAngle;
@@ -52,8 +53,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-
-import java.io.IOException;
 
 
 public class TopocentricFrameTest {
@@ -149,8 +148,7 @@ public class TopocentricFrameTest {
   }
 
     @Test
-    public void testAntipodes()
-        {
+    public void testAntipodes() {
 
         // First point at latitude 45° and longitude 30
         final GeodeticPoint point1 = new GeodeticPoint(FastMath.toRadians(45.), FastMath.toRadians(30.), 0.);
@@ -176,8 +174,7 @@ public class TopocentricFrameTest {
     }
 
     @Test
-    public void testSiteAtZenith()
-        {
+    public void testSiteAtZenith() {
 
         // Surface point at latitude 45°
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.), FastMath.toRadians(30.), 0.);
@@ -197,11 +194,10 @@ public class TopocentricFrameTest {
 
     @Test
     public void testFieldSiteAtZenith() {
-        doTestFieldSiteAtZenith(Decimal64Field.getInstance());
+        doTestFieldSiteAtZenith(Binary64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestFieldSiteAtZenith(final Field<T> field)
-        {
+    private <T extends CalculusFieldElement<T>> void doTestFieldSiteAtZenith(final Field<T> field) {
 
         // zero
         final T zero = field.getZero();
@@ -227,8 +223,7 @@ public class TopocentricFrameTest {
   }
 
     @Test
-    public void testAzimuthEquatorial()
-        {
+    public void testAzimuthEquatorial() {
 
         // Surface point at latitude 0
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(0.), FastMath.toRadians(30.), 0.);
@@ -262,11 +257,10 @@ public class TopocentricFrameTest {
 
     @Test
     public void testFieldAzimuthEquatorial() {
-        doTestFieldAzimuthEquatorial(Decimal64Field.getInstance());
+        doTestFieldAzimuthEquatorial(Binary64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestFieldAzimuthEquatorial(final Field<T> field)
-        {
+    private <T extends CalculusFieldElement<T>> void doTestFieldAzimuthEquatorial(final Field<T> field) {
 
         // zero
         final T zero = field.getZero();
@@ -308,8 +302,7 @@ public class TopocentricFrameTest {
     }
 
     @Test
-    public void testAzimuthPole()
-        {
+    public void testAzimuthPole() {
 
         // Surface point at latitude 0
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(89.999), FastMath.toRadians(0.), 0.);
@@ -335,11 +328,10 @@ public class TopocentricFrameTest {
 
     @Test
     public void testFieldAzimuthPole() {
-        doTestFieldAzimuthPole(Decimal64Field.getInstance());
+        doTestFieldAzimuthPole(Binary64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestFieldAzimuthPole(final Field<T> field)
-        {
+    private <T extends CalculusFieldElement<T>> void doTestFieldAzimuthPole(final Field<T> field) {
 
         // zero
         final T zero = field.getZero();
@@ -372,8 +364,7 @@ public class TopocentricFrameTest {
     }
 
     @Test
-    public void testDoppler()
-        {
+    public void testDoppler() {
 
         // Surface point at latitude 45, longitude 5
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.), FastMath.toRadians(5.), 0.);
@@ -403,13 +394,13 @@ public class TopocentricFrameTest {
         AbsoluteDate dateP = date.shiftedBy(dt);
         Transform j2000ToItrfP = FramesFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), dateP);
         SpacecraftState orbitP = extrapolator.propagate(dateP);
-        Vector3D satPointGeoP = j2000ToItrfP.transformPVCoordinates(orbitP.getPVCoordinates()).getPosition();
+        Vector3D satPointGeoP = j2000ToItrfP.transformPosition(orbitP.getPosition());
 
         // Retropolate satellite position a short while before reference date
         AbsoluteDate dateM = date.shiftedBy(-dt);
         Transform j2000ToItrfM = FramesFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), dateM);
         SpacecraftState orbitM = extrapolator.propagate(dateM);
-        Vector3D satPointGeoM = j2000ToItrfM.transformPVCoordinates(orbitM.getPVCoordinates()).getPosition();
+        Vector3D satPointGeoM = j2000ToItrfM.transformPosition(orbitM.getPosition());
 
         // Compute ranges at both instants
         double rangeP = topoFrame.getRange(satPointGeoP, earthSpheric.getBodyFrame(), dateP);
@@ -421,11 +412,10 @@ public class TopocentricFrameTest {
 
     @Test
     public void testFieldDoppler() {
-        doTestFieldDoppler(Decimal64Field.getInstance());
+        doTestFieldDoppler(Binary64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestFieldDoppler(final Field<T> field)
-        {
+    private <T extends CalculusFieldElement<T>> void doTestFieldDoppler(final Field<T> field) {
 
         // zero
         final T zero = field.getZero();
@@ -462,13 +452,13 @@ public class TopocentricFrameTest {
         FieldAbsoluteDate<T> dateP = fieldDate.shiftedBy(dt);
         FieldTransform<T> j2000ToItrfP = FramesFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), dateP);
         FieldSpacecraftState<T> orbitP = extrapolator.propagate(dateP);
-        FieldVector3D<T> satPointGeoP = j2000ToItrfP.transformPVCoordinates(orbitP.getPVCoordinates()).getPosition();
+        FieldVector3D<T> satPointGeoP = j2000ToItrfP.transformPosition(orbitP.getPosition());
 
         // Retropolate satellite position a short while before reference date
         FieldAbsoluteDate<T> dateM = fieldDate.shiftedBy(-dt);
         FieldTransform<T> j2000ToItrfM = FramesFactory.getEME2000().getTransformTo(earthSpheric.getBodyFrame(), dateM);
         FieldSpacecraftState<T> orbitM = extrapolator.propagate(dateM);
-        FieldVector3D<T> satPointGeoM = j2000ToItrfM.transformPVCoordinates(orbitM.getPVCoordinates()).getPosition();
+        FieldVector3D<T> satPointGeoM = j2000ToItrfM.transformPosition(orbitM.getPosition());
 
         // Compute ranges at both instants
         T rangeP = topoFrame.getRange(satPointGeoP, earthSpheric.getBodyFrame(), dateP);
@@ -584,7 +574,7 @@ public class TopocentricFrameTest {
 
     @Test
     public void testFieldEllipticEarth() {
-        doTestFieldEllipticEarth(Decimal64Field.getInstance());
+        doTestFieldEllipticEarth(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldEllipticEarth(final Field<T> field)  {
@@ -750,31 +740,6 @@ public class TopocentricFrameTest {
 
     }
 
-    @BeforeEach
-    public void setUp() {
-        try {
-
-            Utils.setDataRoot("regular-data");
-
-            // Reference frame = ITRF
-            itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-
-            // Elliptic earth shape
-            earthSpheric = new OneAxisEllipsoid(6378136.460, 0., itrf);
-
-            // Reference date
-            date = new AbsoluteDate(new DateComponents(2008, 04, 07),
-                                    TimeComponents.H00,
-                                    TimeScalesFactory.getUTC());
-
-            // Body mu
-            mu = 3.9860047e14;
-
-        } catch (OrekitException oe) {
-            Assertions.fail(oe.getMessage());
-        }
-    }
-
     @Test
     public void testVisibilityCircle() throws IOException {
 
@@ -806,6 +771,27 @@ public class TopocentricFrameTest {
                 }
             }
         }
+
+    }
+
+    @BeforeEach
+    public void setUp() {
+
+        Utils.setDataRoot("regular-data");
+
+        // Reference frame = ITRF
+        itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+
+        // Elliptic earth shape
+        earthSpheric = new OneAxisEllipsoid(6378136.460, 0., itrf);
+
+        // Reference date
+        date = new AbsoluteDate(new DateComponents(2008, 04, 07),
+                                TimeComponents.H00,
+                                TimeScalesFactory.getUTC());
+
+        // Body mu
+        mu = 3.9860047e14;
 
     }
 

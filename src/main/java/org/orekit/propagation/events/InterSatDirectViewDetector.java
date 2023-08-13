@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -88,7 +88,7 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
      */
     public InterSatDirectViewDetector(final OneAxisEllipsoid body, final PVCoordinatesProvider secondary) {
         this(body, secondary, DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new ContinueOnEvent<>());
+             new ContinueOnEvent());
     }
 
     /** Private constructor.
@@ -99,12 +99,12 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
      */
-    private InterSatDirectViewDetector(final OneAxisEllipsoid body,
-                                       final PVCoordinatesProvider secondary,
-                                       final double maxCheck,
-                                       final double threshold,
-                                       final int maxIter,
-                                       final EventHandler<? super InterSatDirectViewDetector> handler) {
+    protected InterSatDirectViewDetector(final OneAxisEllipsoid body,
+                                         final PVCoordinatesProvider secondary,
+                                         final double maxCheck,
+                                         final double threshold,
+                                         final int maxIter,
+                                         final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
         this.body  = body;
         this.ae2   = body.getEquatorialRadius() * body.getEquatorialRadius();
@@ -131,7 +131,7 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
     protected InterSatDirectViewDetector create(final double newMaxCheck,
                                                 final double newThreshold,
                                                 final int newMaxIter,
-                                                final EventHandler<? super InterSatDirectViewDetector> newHandler) {
+                                                final EventHandler newHandler) {
         return new InterSatDirectViewDetector(body, secondary, newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 
@@ -148,8 +148,8 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
         // get the line between primary and secondary in body frame
         final AbsoluteDate date    = state.getDate();
         final Frame        frame   = body.getBodyFrame();
-        final Vector3D     pPrimary = state.getPVCoordinates(frame).getPosition();
-        final Vector3D     pSecondary  = secondary.getPVCoordinates(date, frame).getPosition();
+        final Vector3D     pPrimary = state.getPosition(frame);
+        final Vector3D     pSecondary  = secondary.getPosition(date, frame);
 
         // points along the primary/secondary lines are defined as
         // xk = x + k * dx, yk = y + k * dy, zk = z + k * dz

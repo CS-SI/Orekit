@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,9 +29,12 @@ import java.util.concurrent.TimeUnit;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.propagation.sampling.MultiSatFixedStepHandler;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
+import org.orekit.propagation.sampling.MultisatStepNormalizer;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
 
 /** This class provides a way to propagate simultaneously several orbits.
@@ -118,6 +121,20 @@ public class PropagatorsParallelizer {
                                    final MultiSatStepHandler globalHandler) {
         this.propagators = propagators;
         this.globalHandler = globalHandler;
+    }
+
+    /** Simple constructor.
+     * @param propagators list of propagators to use
+     * @param h fixed time step (sign is not used)
+     * @param globalHandler global handler for managing all spacecrafts
+     * simultaneously
+     * @since 12.0
+     */
+    public PropagatorsParallelizer(final List<Propagator> propagators,
+                                   final double h,
+                                   final MultiSatFixedStepHandler globalHandler) {
+        this.propagators   = propagators;
+        this.globalHandler = new MultisatStepNormalizer(h, globalHandler);
     }
 
     /** Get an unmodifiable list of the underlying mono-satellite propagators.
@@ -389,6 +406,11 @@ public class PropagatorsParallelizer {
             // the main thread will let underlying propagators go forward
             // by consuming the step handling parameters they will put at each step
             queue = new SynchronousQueue<>();
+
+            // Remove former instances of "MultiplePropagatorsHandler" from step handlers multiplexer
+            clearMultiplePropagatorsHandler(propagator);
+
+            // Add MultiplePropagatorsHandler step handler
             propagator.getMultiplexer().add(new MultiplePropagatorsHandler(queue));
 
             // start the propagator
@@ -453,6 +475,32 @@ public class PropagatorsParallelizer {
             }
         }
 
+        /** Clear existing instances of MultiplePropagatorsHandler in a monitored propagator.
+         * <p>
+         * Removes former instances of "MultiplePropagatorsHandler" from step handlers multiplexer.
+         * <p>
+         * This is done to avoid propagation getting stuck after several calls to PropagatorsParallelizer.propagate(...)
+         * <p>
+         * See issue <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1105">1105</a>.
+         * @param propagator monitored propagator whose MultiplePropagatorsHandlers must be cleared
+         */
+        private void clearMultiplePropagatorsHandler(final Propagator propagator) {
+
+            // First, list instances of MultiplePropagatorsHandler in the propagator multiplexer
+            final StepHandlerMultiplexer multiplexer = propagator.getMultiplexer();
+            final List<OrekitStepHandler> existingMultiplePropagatorsHandler = new ArrayList<>();
+            for (final OrekitStepHandler handler : multiplexer.getHandlers()) {
+                if (handler instanceof MultiplePropagatorsHandler) {
+                    existingMultiplePropagatorsHandler.add(handler);
+                }
+            }
+            // Then, clear all MultiplePropagatorsHandler instances from multiplexer.
+            // This is done in two steps because method "StepHandlerMultiplexer.remove(...)" already loops on the OrekitStepHandlers,
+            // leading to a ConcurrentModificationException if attempting to do everything in a single loop
+            for (final OrekitStepHandler handler : existingMultiplePropagatorsHandler) {
+                multiplexer.remove(handler);
+            }
+        }
     }
 
 }

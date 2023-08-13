@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import org.hipparchus.linear.QRDecomposer;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.conversion.EphemerisPropagatorBuilder;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
 
 /** Builder for a Kalman filter estimator.
@@ -38,7 +38,7 @@ public class KalmanEstimatorBuilder {
     private MatrixDecomposer decomposer;
 
     /** Builders for propagators. */
-    private List<OrbitDeterminationPropagatorBuilder> propagatorBuilders;
+    private List<PropagatorBuilder> propagatorBuilders;
 
     /** Estimated measurements parameters. */
     private ParameterDriversList estimatedMeasurementsParameters;
@@ -62,7 +62,7 @@ public class KalmanEstimatorBuilder {
 
     /** Construct a {@link KalmanEstimator} from the data in this builder.
      * <p>
-     * Before this method is called, {@link #addPropagationConfiguration(OrbitDeterminationPropagatorBuilder,
+     * Before this method is called, {@link #addPropagationConfiguration(PropagatorBuilder,
      * CovarianceMatrixProvider) addPropagationConfiguration()} must have been called
      * at least once, otherwise configuration is incomplete and an exception will be raised.
      * </p>
@@ -112,7 +112,7 @@ public class KalmanEstimatorBuilder {
      * @see CovarianceMatrixProvider#getProcessNoiseMatrix(org.orekit.propagation.SpacecraftState,
      * org.orekit.propagation.SpacecraftState) getProcessNoiseMatrix(previous, current)
      */
-    public KalmanEstimatorBuilder addPropagationConfiguration(final OrbitDeterminationPropagatorBuilder builder,
+    public KalmanEstimatorBuilder addPropagationConfiguration(final PropagatorBuilder builder,
                                                               final CovarianceMatrixProvider provider) {
         propagatorBuilders.add(builder);
         processNoiseMatricesProviders.add(provider);

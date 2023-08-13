@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -70,7 +70,7 @@ public class TDOATest {
             SpacecraftState state = propagator.propagate(measurement.getDate());
 
             // Estimate the measurement value
-            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -119,7 +119,9 @@ public class TDOATest {
             final double[][] finiteDifferencesJacobian =
                     Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) {
-                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                    return measurement.
+                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                           getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(), OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
 
@@ -136,7 +138,7 @@ public class TDOATest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 2.e-4);
+        Assertions.assertEquals(0, maxRelativeError, 4.7e-4);
 
     }
 
@@ -183,7 +185,9 @@ public class TDOATest {
             final double[][] finiteDifferencesJacobian =
                     Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) {
-                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                    return measurement.
+                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                           getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
@@ -266,7 +270,7 @@ public class TDOATest {
                 secondParameter.getZenithOffsetDriver(),
             };
             for (int i = 0; i < drivers.length; ++i) {
-                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate());
                 Assertions.assertEquals(1, measurement.getDimension());
                 Assertions.assertEquals(1, gradient.length);
 
@@ -274,11 +278,13 @@ public class TDOATest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
-                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
+                                        return measurement.
+                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
         }
@@ -353,7 +359,7 @@ public class TDOATest {
                 secondParameter.getZenithOffsetDriver(),
             };
             for (int i = 0; i < drivers.length; ++i) {
-                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate());
                 Assertions.assertEquals(1, measurement.getDimension());
                 Assertions.assertEquals(1, gradient.length);
 
@@ -361,11 +367,13 @@ public class TDOATest {
                                 Differentiation.differentiate(new ParameterFunction() {
                                     /** {@inheritDoc} */
                                     @Override
-                                    public double value(final ParameterDriver parameterDriver) {
-                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                    public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
+                                        return measurement.
+                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
-                final double ref = dMkdP.value(drivers[i]);
+                final double ref = dMkdP.value(drivers[i], date);
                 maxRelativeError = FastMath.max(maxRelativeError, FastMath.abs((ref - gradient[0]) / ref));
             }
         }

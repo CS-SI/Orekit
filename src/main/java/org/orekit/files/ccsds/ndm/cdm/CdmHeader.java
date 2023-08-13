@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.files.ccsds.ndm.cdm;
 
 import org.orekit.files.ccsds.section.Header;
-import org.orekit.files.ccsds.section.HeaderKey;
 
 /**
  * Header of a CCSDS Conjunction Data Message.
@@ -31,10 +30,9 @@ public class CdmHeader extends Header {
 
     /**
      * Constructor.
-     * @param minVersionMessageId minimum version for {@link HeaderKey#MESSAGE_ID}
      */
-    public CdmHeader(final double minVersionMessageId) {
-        super(minVersionMessageId);
+    public CdmHeader() {
+        super(1.0, 2.0);
     }
 
     /** {@inheritDoc} */

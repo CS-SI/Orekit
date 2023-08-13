@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -77,6 +77,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -85,6 +86,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -121,8 +123,8 @@ public class EcksteinHechlerPropagatorTest {
 
         // positions match perfectly
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
-                                              finalOrbit.getPVCoordinates().getPosition()),
+                            Vector3D.distance(initialOrbit.getPosition(),
+                                              finalOrbit.getPosition()),
                             1.0e-8);
 
         // velocity and circular parameters do *not* match, this is EXPECTED!
@@ -163,8 +165,8 @@ public class EcksteinHechlerPropagatorTest {
 
         // positions match perfectly
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
-                                              finalOrbit.getPVCoordinates().getPosition()),
+                            Vector3D.distance(initialOrbit.getPosition(),
+                                              finalOrbit.getPosition()),
                             3.0e-8);
 
         // velocity and circular parameters do *not* match, this is EXPECTED!
@@ -333,7 +335,7 @@ public class EcksteinHechlerPropagatorTest {
 
         Vector3D r = new Vector3D(finalOrbit.getA(), (new Vector3D(x3, U, y3, V)));
 
-        Assertions.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm(), r.getNorm(),
+        Assertions.assertEquals(finalOrbit.getPosition().getNorm(), r.getNorm(),
                      Utils.epsilonTest * r.getNorm());
 
     }
@@ -415,7 +417,7 @@ public class EcksteinHechlerPropagatorTest {
 
         Vector3D r = new Vector3D(finalOrbit.getA(), (new Vector3D(x3, U, y3, V)));
 
-        Assertions.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm(), r.getNorm(),
+        Assertions.assertEquals(finalOrbit.getPosition().getNorm(), r.getNorm(),
                      Utils.epsilonTest * r.getNorm());
 
     }
@@ -557,8 +559,12 @@ public class EcksteinHechlerPropagatorTest {
         for (double dt : Arrays.asList(-0.5, 0.0, 0.5)) {
             sample.add(propagator.propagate(target.shiftedBy(dt)).getPVCoordinates());
         }
-        TimeStampedPVCoordinates interpolated =
-                TimeStampedPVCoordinates.interpolate(target, CartesianDerivativesFilter.USE_P, sample);
+
+        // create interpolator
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_P);
+
+        TimeStampedPVCoordinates interpolated = interpolator.interpolate(target, sample);
         Vector3D computedP     = sample.get(1).getPosition();
         Vector3D computedV     = sample.get(1).getVelocity();
         Vector3D referenceP    = interpolated.getPosition();
@@ -576,7 +582,7 @@ public class EcksteinHechlerPropagatorTest {
                                   propagated.getFrame(),
                                   propagated.getDate(),
                                   propagated.getMu());
-        Vector3D keplerianP    = keplerian.getPVCoordinates().getPosition();
+        Vector3D keplerianP    = keplerian.getPosition();
         Vector3D keplerianV    = keplerian.getPVCoordinates().getVelocity();
         Vector3D keplerianA    = keplerian.getPVCoordinates().getAcceleration();
 
@@ -633,7 +639,7 @@ public class EcksteinHechlerPropagatorTest {
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
         Frame itrf =  FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        propagator.addEventDetector(new NodeDetector(orbit, itrf).withHandler(new ContinueOnEvent<NodeDetector>()));
+        propagator.addEventDetector(new NodeDetector(orbit, itrf).withHandler(new ContinueOnEvent()));
         AbsoluteDate farTarget = orbit.getDate().shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         Assertions.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate())), 1.0e-3);
@@ -707,7 +713,7 @@ public class EcksteinHechlerPropagatorTest {
         propagator.addEventDetector(detector);
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        final double elevation = topo.getElevation(propagated.getPVCoordinates().getPosition(),
+        final double elevation = topo.getElevation(propagated.getPosition(),
                                                    propagated.getFrame(),
                                                    propagated.getDate());
         final double zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ();
@@ -745,8 +751,8 @@ public class EcksteinHechlerPropagatorTest {
 
         // the position on the other hand match perfectly
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(defaultOrbit.getPVCoordinates().getPosition(),
-                                              initial.getPVCoordinates().getPosition()),
+                            Vector3D.distance(defaultOrbit.getPosition(),
+                                              initial.getPosition()),
                             1.0e-8);
 
         // set up a reference numerical propagator starting for the specified start orbit
@@ -778,8 +784,8 @@ public class EcksteinHechlerPropagatorTest {
         // because the fitted orbit minimizes the residuals over a complete time span,
         // not on a single point
         Assertions.assertEquals(58.0,
-                            Vector3D.distance(defaultOrbit.getPVCoordinates().getPosition(),
-                                              fittedOrbit.getPVCoordinates().getPosition()),
+                            Vector3D.distance(defaultOrbit.getPosition(),
+                                              fittedOrbit.getPosition()),
                             0.1);
 
     }
@@ -811,8 +817,8 @@ public class EcksteinHechlerPropagatorTest {
         Assertions.assertEquals(initialState.getHx(),            finalState.getHx(),            1.0e-6);
         Assertions.assertEquals(initialState.getHy(),            finalState.getHy(),            2.0e-6);
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(initialState.getPVCoordinates().getPosition(),
-                                              finalState.getPVCoordinates().getPosition()),
+                            Vector3D.distance(initialState.getPosition(),
+                                              finalState.getPosition()),
                             11.4);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialState.getPVCoordinates().getVelocity(),
@@ -847,8 +853,8 @@ public class EcksteinHechlerPropagatorTest {
         Assertions.assertEquals(initialState.getHx(),            finalState.getHx(),            1.0e-6);
         Assertions.assertEquals(initialState.getHy(),            finalState.getHy(),            2.0e-6);
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(initialState.getPVCoordinates().getPosition(),
-                                              finalState.getPVCoordinates().getPosition()),
+                            Vector3D.distance(initialState.getPosition(),
+                                              finalState.getPosition()),
                             11.4);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialState.getPVCoordinates().getVelocity(),

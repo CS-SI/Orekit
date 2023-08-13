@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -174,7 +174,7 @@ public class PolygonalFieldOfViewTest {
                                               state.toTransform().getInverse(),
                                               inertToBody);
         List<List<GeodeticPoint>> footprint = fov.getFootprint(fovToBody, earth, FastMath.toRadians(1.0));
-        Vector3D subSat = earth.projectToGround(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
+        Vector3D subSat = earth.projectToGround(state.getPosition(earth.getBodyFrame()),
                                                 state.getDate(), earth.getBodyFrame());
         Assertions.assertEquals(1, footprint.size());
         List<GeodeticPoint> loop = footprint.get(0);
@@ -186,7 +186,7 @@ public class PolygonalFieldOfViewTest {
         for (int i = 0; i < loop.size(); ++i) {
             Assertions.assertEquals(0.0, loop.get(i).getAltitude(), 3.0e-7);
             TopocentricFrame topo = new TopocentricFrame(earth, loop.get(i), "atLimb");
-            final double elevation = topo.getElevation(state.getPVCoordinates().getPosition(),
+            final double elevation = topo.getElevation(state.getPosition(),
                                                        state.getFrame(), state.getDate());
             minEl = FastMath.min(minEl, elevation);
             maxEl = FastMath.max(maxEl, elevation);
@@ -229,7 +229,7 @@ public class PolygonalFieldOfViewTest {
                                               state.toTransform().getInverse(),
                                               inertToBody);
         List<List<GeodeticPoint>> footprint = fov.getFootprint(fovToBody, earth, FastMath.toRadians(0.1));
-        Vector3D subSat = earth.projectToGround(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
+        Vector3D subSat = earth.projectToGround(state.getPosition(earth.getBodyFrame()),
                                                 state.getDate(), earth.getBodyFrame());
         Assertions.assertEquals(1, footprint.size());
         List<GeodeticPoint> loop = footprint.get(0);
@@ -243,7 +243,7 @@ public class PolygonalFieldOfViewTest {
             Assertions.assertEquals(0.0, loop.get(i).getAltitude(), 9.0e-9);
 
             TopocentricFrame topo = new TopocentricFrame(earth, loop.get(i), "onFootprint");
-            final double elevation = topo.getElevation(state.getPVCoordinates().getPosition(),
+            final double elevation = topo.getElevation(state.getPosition(),
                                                        state.getFrame(), state.getDate());
             if (elevation > 0.001) {
                 Vector3D los = fovToBody.getInverse().transformPosition(earth.transform(loop.get(i)));

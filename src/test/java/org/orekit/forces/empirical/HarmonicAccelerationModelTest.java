@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.CelestialBodyPointed;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
@@ -88,10 +88,10 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         final double duration    = 4000;
         final double f           = 400;
 
-        final AttitudeProvider maneuverLaw = new InertialProvider(new Rotation(direction, Vector3D.PLUS_I));
+        final AttitudeProvider maneuverLaw = new FrameAlignedProvider(new Rotation(direction, Vector3D.PLUS_I));
         ConstantThrustManeuver maneuver = new ConstantThrustManeuver(initialOrbit.getDate().shiftedBy(-10.0),
                                                                      duration, f, isp, Vector3D.PLUS_I);
-        final AttitudeProvider accelerationLaw = new InertialProvider(new Rotation(direction, Vector3D.PLUS_K));
+        final AttitudeProvider accelerationLaw = new FrameAlignedProvider(new Rotation(direction, Vector3D.PLUS_K));
         final AccelerationModel accelerationModel = new HarmonicAccelerationModel("", AbsoluteDate.J2000_EPOCH,
                                                                                           Double.POSITIVE_INFINITY, 1);
         final ParametricAcceleration inertialAcceleration = new ParametricAcceleration(direction, true, accelerationModel);
@@ -177,8 +177,8 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         propagator1.addForceModel(parametricAcceleration);
 
         MultiSatStepHandler handler = interpolators -> {
-            Vector3D p0 = interpolators.get(0).getCurrentState().getPVCoordinates().getPosition();
-            Vector3D p1 = interpolators.get(1).getCurrentState().getPVCoordinates().getPosition();
+            Vector3D p0 = interpolators.get(0).getCurrentState().getPosition();
+            Vector3D p1 = interpolators.get(1).getCurrentState().getPosition();
             Assertions.assertEquals(0.0, Vector3D.distance(p0, p1), positionTolerance);
         };
         PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(Arrays.asList(propagator0, propagator1),
@@ -198,16 +198,16 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         final double duration    = 4000;
         final double f           = 400;
 
-        final AttitudeProvider maneuverLaw = new InertialProvider(new Rotation(direction, Vector3D.PLUS_I));
+        final AttitudeProvider maneuverLaw = new FrameAlignedProvider(new Rotation(direction, Vector3D.PLUS_I));
         ConstantThrustManeuver maneuver = new ConstantThrustManeuver(initialOrbit.getDate().shiftedBy(-10.0),
                                                                      duration, f, isp, Vector3D.PLUS_I);
-        final AttitudeProvider accelerationLaw = new InertialProvider(new Rotation(direction, Vector3D.PLUS_K));
+        final AttitudeProvider accelerationLaw = new FrameAlignedProvider(new Rotation(direction, Vector3D.PLUS_K));
         final AccelerationModel accelerationModel = new HarmonicAccelerationModel("", AbsoluteDate.J2000_EPOCH,
                                                                                           Double.POSITIVE_INFINITY, 1);
         final ParametricAcceleration inertialAcceleration = new ParametricAcceleration(direction, true, accelerationModel);
         inertialAcceleration.getParametersDrivers().get(0).setValue(f / mass);
         inertialAcceleration.getParametersDrivers().get(1).setValue(0.5 * FastMath.PI);
-        doTestEquivalentManeuver(Decimal64Field.getInstance(),
+        doTestEquivalentManeuver(Binary64Field.getInstance(),
                                  mass, maneuverLaw, maneuver, accelerationLaw, inertialAcceleration, 3.0e-9);
     }
 
@@ -226,7 +226,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, false, accelerationModel);
         lofAcceleration.getParametersDrivers().get(0).setValue(f / mass);
         lofAcceleration.getParametersDrivers().get(1).setValue(0.5 * FastMath.PI);
-        doTestEquivalentManeuver(Decimal64Field.getInstance(),
+        doTestEquivalentManeuver(Binary64Field.getInstance(),
                                  mass, commonLaw, maneuver, commonLaw, lofAcceleration, 1.0e-15);
     }
 
@@ -248,7 +248,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, maneuverLaw, accelerationModel);
         lofAcceleration.getParametersDrivers().get(0).setValue(f / mass);
         lofAcceleration.getParametersDrivers().get(1).setValue(0.5 * FastMath.PI);
-        doTestEquivalentManeuver(Decimal64Field.getInstance(),
+        doTestEquivalentManeuver(Binary64Field.getInstance(),
                                  mass, maneuverLaw, maneuver, accelerationLaw, lofAcceleration, 1.0e-15);
     }
 
@@ -299,8 +299,8 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
 
         for (double dt = 1; dt < 999; dt += 10) {
             FieldAbsoluteDate<T> t = initialState.getDate().shiftedBy(dt);
-            FieldVector3D<T> p0 = ephemeris0.propagate(t).getPVCoordinates().getPosition();
-            FieldVector3D<T> p1 = ephemeris1.propagate(t).getPVCoordinates().getPosition();
+            FieldVector3D<T> p0 = ephemeris0.propagate(t).getPosition();
+            FieldVector3D<T> p1 = ephemeris1.propagate(t).getPosition();
             Assertions.assertEquals(0, FieldVector3D.distance(p0, p1).getReal(), positionTolerance);
         }
 
@@ -396,7 +396,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         propagator0.setStepHandler(10.0,
                                    state ->
                                    measurements.add(new PV(state.getDate(),
-                                                           state.getPVCoordinates().getPosition(), state.getPVCoordinates().getVelocity(),
+                                                           state.getPosition(), state.getPVCoordinates().getVelocity(),
                                                            1.0e-3, 1.0e-6, 1.0, sat0)));
         propagator0.propagate(orbit.getDate().shiftedBy(900));
 
@@ -456,15 +456,16 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         Assertions.fail("unknown parameter " + name);
     }
 
+    // if Pdriver has only 1 value driven
     private double getParameter(BatchLSEstimator estimator, String name)
-        {
-        for (final ParameterDriver driver : estimator.getPropagatorParametersDrivers(false).getDrivers()) {
-            if (driver.getName().equals(name)) {
-                return driver.getValue();
-            }
+    {
+    for (final ParameterDriver driver : estimator.getPropagatorParametersDrivers(false).getDrivers()) {
+        if (driver.getName().equals(name)) {
+            return driver.getValue();
         }
-        Assertions.fail("unknown parameter " + name);
-        return Double.NaN;
+    }
+    Assertions.fail("unknown parameter " + name);
+    return Double.NaN;
     }
 
     @BeforeEach

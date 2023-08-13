@@ -20,13 +20,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -157,63 +157,6 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                 .getITRF(IERSConventions.IERS_2010, false);
     }
 
-    @Override
-    public SP3 parse(final DataSource source) {
-
-        try (Reader reader = source.getOpener().openReaderOnce();
-             BufferedReader br = (reader == null) ? null : new BufferedReader(reader)) {
-
-            if (br == null) {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
-            }
-
-            // initialize internal data structures
-            final ParseInfo pi = new ParseInfo();
-
-            int lineNumber = 0;
-            Stream<LineParser> candidateParsers = Stream.of(LineParser.HEADER_VERSION);
-            for (String line = br.readLine(); line != null; line = br.readLine()) {
-                ++lineNumber;
-                final String l = line;
-                final Optional<LineParser> selected = candidateParsers.filter(p -> p.canHandle(l)).findFirst();
-                if (selected.isPresent()) {
-                    try {
-                        selected.get().parse(line, pi);
-                    } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
-                        throw new OrekitException(e,
-                                                  OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, source.getName(), line);
-                    }
-                    candidateParsers = selected.get().allowedNext();
-                } else {
-                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              lineNumber, source.getName(), line);
-                }
-                if (pi.done) {
-                    if (pi.nbEpochs != pi.file.getNumberOfEpochs()) {
-                        throw new OrekitException(OrekitMessages.SP3_NUMBER_OF_EPOCH_MISMATCH,
-                                                  pi.nbEpochs, source.getName(), pi.file.getNumberOfEpochs());
-                    }
-                    return pi.file;
-                }
-            }
-
-            // Sometimes, the "EOF" key is not available in the file
-            // If the expected number of entries has been read
-            // we can suppose that the file has been read properly
-            if (pi.nbEpochs == pi.file.getNumberOfEpochs()) {
-                return pi.file;
-            }
-
-            // we never reached the EOF marker or number of epochs doesn't correspond to the expected number
-            throw new OrekitException(OrekitMessages.SP3_UNEXPECTED_END_OF_FILE, lineNumber);
-
-        } catch (IOException ioe) {
-            throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
-        }
-
-    }
-
     /** Returns the {@link SP3FileType} that corresponds to a given string in a SP3 file.
      * @param fileType file type as string
      * @return file type as enum
@@ -240,6 +183,67 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
             type = SP3FileType.QZSS;
         }
         return type;
+    }
+
+    @Override
+    public SP3 parse(final DataSource source) {
+
+        try (Reader reader = source.getOpener().openReaderOnce();
+             BufferedReader br = (reader == null) ? null : new BufferedReader(reader)) {
+
+            if (br == null) {
+                throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, source.getName());
+            }
+
+            // initialize internal data structures
+            final ParseInfo pi = new ParseInfo();
+
+            int lineNumber = 0;
+            Iterable<LineParser> candidateParsers = Collections.singleton(LineParser.HEADER_VERSION);
+            nextLine:
+                for (String line = br.readLine(); line != null; line = br.readLine()) {
+                    ++lineNumber;
+                    for (final LineParser candidate : candidateParsers) {
+                        if (candidate.canHandle(line)) {
+                            try {
+                                candidate.parse(line, pi);
+                                if (pi.done) {
+                                    if (pi.nbEpochs != pi.file.getNumberOfEpochs()) {
+                                        throw new OrekitException(OrekitMessages.SP3_NUMBER_OF_EPOCH_MISMATCH,
+                                                                  pi.nbEpochs, source.getName(), pi.file.getNumberOfEpochs());
+                                    }
+                                    return pi.file;
+                                }
+                                candidateParsers = candidate.allowedNext();
+                                continue nextLine;
+                            } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
+                                throw new OrekitException(e,
+                                                          OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                          lineNumber, source.getName(), line);
+                            }
+                        }
+                    }
+
+                    // no parsers found for this line
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              lineNumber, source.getName(), line);
+
+                }
+
+            // Sometimes, the "EOF" key is not available in the file
+            // If the expected number of entries has been read
+            // we can suppose that the file has been read properly
+            if (pi.nbEpochs == pi.file.getNumberOfEpochs()) {
+                return pi.file;
+            }
+
+            // we never reached the EOF marker or number of epochs doesn't correspond to the expected number
+            throw new OrekitException(OrekitMessages.SP3_UNEXPECTED_END_OF_FILE, lineNumber);
+
+        } catch (IOException ioe) {
+            throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
+        }
+
     }
 
     /** Transient data used for parsing a sp3 file. The data is kept in a
@@ -359,8 +363,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_DATE_TIME_REFERENCE);
+            public Iterable<LineParser> allowedNext() {
+                return Collections.singleton(HEADER_DATE_TIME_REFERENCE);
             }
 
         },
@@ -391,8 +395,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_SAT_IDS);
+            public Iterable<LineParser> allowedNext() {
+                return Collections.singleton(HEADER_SAT_IDS);
             }
 
         },
@@ -423,8 +427,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_SAT_IDS, HEADER_ACCURACY);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(HEADER_SAT_IDS, HEADER_ACCURACY);
             }
 
         },
@@ -450,8 +454,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_ACCURACY, HEADER_TIME_SYSTEM);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(HEADER_ACCURACY, HEADER_TIME_SYSTEM);
             }
 
         },
@@ -486,8 +490,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_TIME_SYSTEM, HEADER_STANDARD_DEVIATIONS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(HEADER_TIME_SYSTEM, HEADER_STANDARD_DEVIATIONS);
             }
 
         },
@@ -513,8 +517,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_STANDARD_DEVIATIONS, HEADER_CUSTOM_PARAMETERS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(HEADER_STANDARD_DEVIATIONS, HEADER_CUSTOM_PARAMETERS);
             }
 
         },
@@ -530,8 +534,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_CUSTOM_PARAMETERS, HEADER_COMMENTS);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(HEADER_CUSTOM_PARAMETERS, HEADER_COMMENTS);
             }
 
         },
@@ -547,8 +551,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(HEADER_COMMENTS, DATA_EPOCH);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(HEADER_COMMENTS, DATA_EPOCH);
             }
 
         },
@@ -655,8 +659,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(DATA_POSITION);
+            public Iterable<LineParser> allowedNext() {
+                return Collections.singleton(DATA_POSITION);
             }
 
         },
@@ -724,8 +728,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(DATA_EPOCH, DATA_POSITION, DATA_POSITION_CORRELATION, DATA_VELOCITY, EOF);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(DATA_EPOCH, DATA_POSITION, DATA_POSITION_CORRELATION, DATA_VELOCITY, EOF);
             }
 
         },
@@ -741,8 +745,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(DATA_EPOCH, DATA_POSITION, DATA_VELOCITY, EOF);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(DATA_EPOCH, DATA_POSITION, DATA_VELOCITY, EOF);
             }
 
         },
@@ -797,8 +801,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(DATA_EPOCH, DATA_POSITION, DATA_VELOCITY_CORRELATION, EOF);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(DATA_EPOCH, DATA_POSITION, DATA_VELOCITY_CORRELATION, EOF);
             }
 
         },
@@ -814,8 +818,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(DATA_EPOCH, DATA_POSITION, EOF);
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(DATA_EPOCH, DATA_POSITION, EOF);
             }
 
         },
@@ -831,8 +835,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
             /** {@inheritDoc} */
             @Override
-            public Stream<LineParser> allowedNext() {
-                return Stream.of(EOF);
+            public Iterable<LineParser> allowedNext() {
+                return Collections.singleton(EOF);
             }
 
         };
@@ -856,7 +860,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
         /** Get the allowed parsers for next line.
          * @return allowed parsers for next line
          */
-        public abstract Stream<LineParser> allowedNext();
+        public abstract Iterable<LineParser> allowedNext();
 
         /** Check if parser can handle line.
          * @param line line to parse

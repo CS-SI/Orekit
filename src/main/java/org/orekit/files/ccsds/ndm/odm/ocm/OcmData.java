@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.section.Data;
 
 /** Data container for Orbit Comprehensive Messages.
- * @author LOuc Maisonobe
+ * @author Luc Maisonobe
  * @since 11.0
  */
 public class OcmData implements Data {
@@ -32,13 +32,13 @@ public class OcmData implements Data {
     private final List<TrajectoryStateHistory> trajectoryBlocks;
 
     /** Physical properties logical block. */
-    private final PhysicalProperties physicBlock;
+    private final OrbitPhysicalProperties physicBlock;
 
     /** Covariance logical blocks. */
-    private final List<CovarianceHistory> covarianceBlocks;
+    private final List<OrbitCovarianceHistory> covarianceBlocks;
 
     /** Maneuvers logical blocks. */
-    private final List<ManeuverHistory> maneuverBlocks;
+    private final List<OrbitManeuverHistory> maneuverBlocks;
 
     /** Perturbations logical block. */
     private final Perturbations perturbationsBlock;
@@ -59,9 +59,9 @@ public class OcmData implements Data {
      * @param userDefinedBlock user defined parameters logical block (may be null)
      */
     public OcmData(final List<TrajectoryStateHistory> trajectoryBlocks,
-                   final PhysicalProperties           physicBlock,
-                   final List<CovarianceHistory>      covarianceBlocks,
-                   final List<ManeuverHistory>        maneuverBlocks,
+                   final OrbitPhysicalProperties           physicBlock,
+                   final List<OrbitCovarianceHistory>      covarianceBlocks,
+                   final List<OrbitManeuverHistory>        maneuverBlocks,
                    final Perturbations                perturbationsBlock,
                    final OrbitDetermination           orbitDeterminationBlock,
                    final UserDefined                  userDefinedBlock) {
@@ -86,12 +86,12 @@ public class OcmData implements Data {
             physicBlock.validate(version);
         }
         if (covarianceBlocks != null) {
-            for (final CovarianceHistory ch : covarianceBlocks) {
+            for (final OrbitCovarianceHistory ch : covarianceBlocks) {
                 ch.getMetadata().validate(version);
             }
         }
         if (maneuverBlocks != null) {
-            for (final ManeuverHistory mh : maneuverBlocks) {
+            for (final OrbitManeuverHistory mh : maneuverBlocks) {
                 mh.getMetadata().validate(version);
             }
         }
@@ -108,29 +108,30 @@ public class OcmData implements Data {
 
     /** Get trajectory state histories logical blocks.
      * @return trajectory state histories logical blocks (may be null)
+     * @since 12.0
      */
-    public List<TrajectoryStateHistory> getOTrajectoryBlocks() {
+    public List<TrajectoryStateHistory> getTrajectoryBlocks() {
         return trajectoryBlocks;
     }
 
     /** Get physical properties logical block.
      * @return physical properties logical block (may be null)
      */
-    public PhysicalProperties getPhysicBlock() {
+    public OrbitPhysicalProperties getPhysicBlock() {
         return physicBlock;
     }
 
     /** Get covariance logical blocks.
      * @return covariance logical blocks (may be null)
      */
-    public List<CovarianceHistory> getCovarianceBlocks() {
+    public List<OrbitCovarianceHistory> getCovarianceBlocks() {
         return covarianceBlocks;
     }
 
     /** Get maneuvers logical blocks.
      * @return maneuvers logical block (may be null)
      */
-    public List<ManeuverHistory> getManeuverBlocks() {
+    public List<OrbitManeuverHistory> getManeuverBlocks() {
         return maneuverBlocks;
     }
 

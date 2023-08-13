@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,8 +46,8 @@ public class AdmMetadata extends Metadata {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(objectName, AdmMetadataKey.OBJECT_NAME);
-        checkNotNull(objectID,   AdmMetadataKey.OBJECT_ID);
+        checkNotNull(objectName, AdmMetadataKey.OBJECT_NAME.name());
+        checkNotNull(objectID,   AdmCommonMetadataKey.OBJECT_ID.name());
     }
 
     /**

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,9 +24,8 @@ import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.DSSTHarvester;
-import org.orekit.propagation.semianalytical.dsst.DSSTJacobiansMapper;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriversList;
 
@@ -35,7 +34,7 @@ import org.orekit.utils.ParameterDriversList;
  * least squares problems}.
  * <p>
  * This class is an adaption of the {@link BatchLSModel} class
- * but for the {@link DSSTPropagator DSST propagator}.
+ * for the {@link DSSTPropagator DSST propagator}.
  * </p>
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
@@ -50,50 +49,27 @@ public class DSSTBatchLSModel extends AbstractBatchLSModel {
     /** Type of the orbit used for the propagation.*/
     private PropagationType propagationType;
 
-    /** Type of the elements used to define the orbital state.*/
-    private PropagationType stateType;
-
     /** Simple constructor.
      * @param propagatorBuilders builders to use for propagation
      * @param measurements measurements
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
      * @param propagationType type of the orbit used for the propagation (mean or osculating)
-     * @param stateType type of the elements used to define the orbital state (mean or osculating)
      */
-    public DSSTBatchLSModel(final OrbitDeterminationPropagatorBuilder[] propagatorBuilders,
+    public DSSTBatchLSModel(final PropagatorBuilder[] propagatorBuilders,
                             final List<ObservedMeasurement<?>> measurements,
                             final ParameterDriversList estimatedMeasurementsParameters,
                             final ModelObserver observer,
-                            final PropagationType propagationType,
-                            final PropagationType stateType) {
+                            final PropagationType propagationType) {
         // call super constructor
         super(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
         this.propagationType = propagationType;
-        this.stateType       = stateType;
     }
 
     /** {@inheritDoc} */
     @Override
     protected MatricesHarvester configureHarvester(final Propagator propagator) {
         return propagator.setupMatricesComputation(STM_NAME, null, null);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    protected DSSTJacobiansMapper configureDerivatives(final Propagator propagator) {
-
-        final org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations partials =
-                        new org.orekit.propagation.semianalytical.dsst.DSSTPartialDerivativesEquations(STM_NAME, (DSSTPropagator) propagator, propagationType);
-
-        // add the derivatives to the initial state
-        final SpacecraftState rawState = propagator.getInitialState();
-        final SpacecraftState stateWithDerivatives = partials.setInitialJacobians(rawState);
-        ((DSSTPropagator) propagator).setInitialState(stateWithDerivatives, stateType);
-
-        return partials.getMapper();
-
     }
 
     /** {@inheritDoc} */

@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -107,7 +107,7 @@ public class ExceptionalDataContextTest {
         Orbit orbit = new KeplerianOrbit(
                 a, 0, 0, 0, 0, 0,
                 PositionAngle.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU);
-        AttitudeProvider attitude = new InertialProvider(eci);
+        AttitudeProvider attitude = new FrameAlignedProvider(eci);
         Propagator propagator = new KeplerianPropagator(orbit, attitude);
         SpacecraftState state = propagator.propagate(date.shiftedBy(86400));
         TimeStampedPVCoordinates pv = state.getPVCoordinates(ecef);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -217,7 +217,7 @@ public class RangeAnalyticTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
@@ -308,11 +308,11 @@ public class RangeAnalyticTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, absErrorsMedian, 3.8e-08);
+        Assertions.assertEquals(0.0, absErrorsMedian, 4.0e-08);
         Assertions.assertEquals(0.0, absErrorsMin,    2.0e-07);
         Assertions.assertEquals(0.0, absErrorsMax,    2.3e-07);
         Assertions.assertEquals(0.0, relErrorsMedian, 6.5e-15);
-        Assertions.assertEquals(0.0, relErrorsMax,    2.4e-14);
+        Assertions.assertEquals(0.0, relErrorsMax,    2.5e-14);
 
         // Test measurement type
         final RangeAnalytic rangeAnalytic = new RangeAnalytic((Range) measurements.get(0));
@@ -341,7 +341,7 @@ public class RangeAnalyticTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
@@ -391,7 +391,9 @@ public class RangeAnalyticTest {
                         // Compute a reference value using finite differences
                         jacobianRef = Differentiation.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) {
-                                return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                                return measurement.
+                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                       getEstimatedValue();
                             }
                         }, measurement.getDimension(), propagator.getAttitudeProvider(),
                            OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
@@ -516,7 +518,7 @@ public class RangeAnalyticTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // List to store the results

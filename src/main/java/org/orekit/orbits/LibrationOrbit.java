@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,11 +20,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CR3BPSystem;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.cr3bp.STMEquations;
-import org.orekit.time.TimeScale;
 import org.orekit.utils.PVCoordinates;
 
 /**
@@ -91,20 +89,6 @@ public abstract class LibrationOrbit {
         orbitalPeriod = diff.getOrbitalPeriod();
     }
 
-    /** Apply differential correction.
-     * <p>
-     * This will update {@link #initialPV} and
-     * {@link #orbitalPeriod} parameters.
-     * </p>
-     * @param attitudeProvider the attitude law for the numerocal propagator
-     * @param utc UTC time scale
-     * @deprecated as of 11.1, replaced by {@link #applyDifferentialCorrection()}
-     */
-    @Deprecated
-    public void applyDifferentialCorrection(final AttitudeProvider attitudeProvider, final TimeScale utc) {
-        applyDifferentialCorrection();
-    }
-
     /** Return a manifold direction from one position on a libration Orbit.
      * @param s SpacecraftState with additional equations
      * @param isStable true if the manifold is stable
@@ -129,7 +113,7 @@ public abstract class LibrationOrbit {
         final RealVector eigenVector = new EigenDecomposition(phi).getEigenvector(1).unitVector();
 
         // New PVCoordinates following the manifold
-        return new PVCoordinates(s.getPVCoordinates().getPosition()
+        return new PVCoordinates(s.getPosition()
                 .add(new Vector3D(eigenVector.getEntry(0), eigenVector
                         .getEntry(1), eigenVector.getEntry(2))
                             .scalarMultiply(epsilon)), s.getPVCoordinates()
@@ -156,7 +140,7 @@ public abstract class LibrationOrbit {
         final RealVector eigenVector = new EigenDecomposition(phi).getEigenvector(0).unitVector();
 
         // New PVCoordinates following the manifold
-        return new PVCoordinates(s.getPVCoordinates().getPosition()
+        return new PVCoordinates(s.getPosition()
                     .add(new Vector3D(eigenVector.getEntry(0), eigenVector
                         .getEntry(1), eigenVector.getEntry(2))
                             .scalarMultiply(epsilon)), s.getPVCoordinates()

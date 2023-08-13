@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -78,7 +78,7 @@ public enum XmlStructureKey {
          * @param parser file parser
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final AbstractConstituentParser<?, ?> parser) {
+    public boolean process(final ParseToken token, final AbstractConstituentParser<?, ?, ?> parser) {
         return processor.process(token, parser);
     }
 
@@ -89,7 +89,7 @@ public enum XmlStructureKey {
          * @param parser file parser
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, AbstractConstituentParser<?, ?> parser);
+        boolean process(ParseToken token, AbstractConstituentParser<?, ?, ?> parser);
     }
 
 }

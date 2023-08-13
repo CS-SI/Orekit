@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -109,7 +109,7 @@ public class FootprintOverlapDetectorTest {
                 new FootprintOverlapDetector(fov, earth, france, 50000.0).
                 withMaxCheck(1.0).
                 withThreshold(1.0e-6).
-                withHandler(new ContinueOnEvent<FootprintOverlapDetector>());
+                withHandler(new ContinueOnEvent());
         final EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(detector));
 
@@ -162,7 +162,7 @@ public class FootprintOverlapDetectorTest {
         SpacecraftState middle = start.getState().shiftedBy(0.5 * expectedDuration);
 
         // sub-satellite point
-        Vector3D p = middle.getPVCoordinates().getPosition();
+        Vector3D p = middle.getPosition();
         GeodeticPoint gpSat = earth.transform(p, middle.getFrame(), middle.getDate());
         Assertions.assertEquals(spacecraftLatitude,  FastMath.toDegrees(gpSat.getLatitude()),  0.001);
         Assertions.assertEquals(spacecraftLongitude, FastMath.toDegrees(gpSat.getLongitude()), 0.001);
@@ -171,7 +171,7 @@ public class FootprintOverlapDetectorTest {
         final Transform scToInert = middle.toTransform().getInverse();
         GeodeticPoint gpFOV =
                 earth.getIntersectionPoint(new Line(p, scToInert.transformPosition(Vector3D.PLUS_K), 1.0e-6),
-                                           middle.getPVCoordinates().getPosition(),
+                                           middle.getPosition(),
                                            middle.getFrame(), middle.getDate());
         Assertions.assertEquals(fovCenterLatitude,  FastMath.toDegrees(gpFOV.getLatitude()),  0.001);
         Assertions.assertEquals(fovCenterLongitude, FastMath.toDegrees(gpFOV.getLongitude()), 0.001);

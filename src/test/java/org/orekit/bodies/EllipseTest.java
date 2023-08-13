@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,10 +25,12 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,9 +88,12 @@ public class EllipseTest {
         for (double dt = -0.25; dt <= 0.25; dt += 0.125) {
             sample.add(e.projectToEllipse(linearMotion.shiftedBy(dt)));
         }
-        TimeStampedPVCoordinates ref = TimeStampedPVCoordinates.interpolate(g0.getDate(),
-                                                                            CartesianDerivativesFilter.USE_P,
-                                                                            sample);
+
+        // create interpolator
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_P);
+
+        TimeStampedPVCoordinates ref = interpolator.interpolate(g0.getDate(), sample);
         Assertions.assertEquals(0,
                             Vector3D.distance(g0.getPosition(), ref.getPosition()) / ref.getPosition().getNorm(),
                             1.0e-15);

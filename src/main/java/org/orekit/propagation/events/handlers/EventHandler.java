@@ -31,10 +31,9 @@ import org.orekit.time.AbsoluteDate;
  *
  * @author Hank Grabowski
  *
- * @param <T> object type that the handler is called from
  * @since 6.1
  */
-public interface EventHandler<T extends EventDetector> {
+public interface EventHandler {
 
     /** Initialize event handler at the start of a propagation.
      * <p>
@@ -50,7 +49,7 @@ public interface EventHandler<T extends EventDetector> {
      * @param detector event detector related to the event handler
      *
      */
-    default void init(SpacecraftState initialState, AbsoluteDate target, final T detector) {
+    default void init(SpacecraftState initialState, AbsoluteDate target, final EventDetector detector) {
         // nothing by default
     }
 
@@ -67,7 +66,7 @@ public interface EventHandler<T extends EventDetector> {
      * @return the Action that the calling detector should pass back to the evaluation system
      *
      */
-    Action eventOccurred(SpacecraftState s, T detector, boolean increasing);
+    Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing);
 
     /** Reset the state prior to continue propagation.
      * <p>This method is called after the step handler has returned and
@@ -84,7 +83,7 @@ public interface EventHandler<T extends EventDetector> {
      * @param oldState old state
      * @return new state
      */
-    default SpacecraftState resetState(T detector, SpacecraftState oldState) {
+    default SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
         return oldState;
     }
 

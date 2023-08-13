@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.io.IOException;
 
 import org.orekit.files.ccsds.definitions.TimeConverter;
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.utils.units.Unit;
@@ -68,7 +69,7 @@ class OrbitDeterminationWriter extends AbstractWriter {
         }
 
         // time
-        generator.writeEntry(OrbitDeterminationKey.OD_EPOCH.name(),             timeConverter, od.getEpoch(),                false);
+        generator.writeEntry(OrbitDeterminationKey.OD_EPOCH.name(),             timeConverter, od.getEpoch(),                false, false);
         generator.writeEntry(OrbitDeterminationKey.DAYS_SINCE_FIRST_OBS.name(), od.getTimeSinceFirstObservation(), Unit.DAY, false);
         generator.writeEntry(OrbitDeterminationKey.DAYS_SINCE_LAST_OBS.name(),  od.getTimeSinceLastObservation(), Unit.DAY,  false);
         generator.writeEntry(OrbitDeterminationKey.RECOMMENDED_OD_SPAN.name(),  od.getRecommendedOdSpan(), Unit.DAY,         false);
@@ -91,12 +92,13 @@ class OrbitDeterminationWriter extends AbstractWriter {
         generator.writeEntry(OrbitDeterminationKey.GDOP.name(),               od.getGdop(), Unit.ONE,                   false);
 
         // parameters
-        generator.writeEntry(OrbitDeterminationKey.SOLVE_N.name(),         od.getSolveN(),             false);
-        generator.writeEntry(OrbitDeterminationKey.SOLVE_STATES.name(),    od.getSolveStates(),        false);
-        generator.writeEntry(OrbitDeterminationKey.CONSIDER_N.name(),      od.getConsiderN(),          false);
-        generator.writeEntry(OrbitDeterminationKey.CONSIDER_PARAMS.name(), od.getConsiderParameters(), false);
-        generator.writeEntry(OrbitDeterminationKey.SENSORS_N.name(),       od.getSensorsN(),           false);
-        generator.writeEntry(OrbitDeterminationKey.SENSORS.name(),         od.getSensors(),            false);
+        generator.writeEntry(OrbitDeterminationKey.SOLVE_N.name(),         od.getSolveN(),               false);
+        generator.writeEntry(OrbitDeterminationKey.SOLVE_STATES.name(),    od.getSolveStates(),          false);
+        generator.writeEntry(OrbitDeterminationKey.CONSIDER_N.name(),      od.getConsiderN(),            false);
+        generator.writeEntry(OrbitDeterminationKey.CONSIDER_PARAMS.name(), od.getConsiderParameters(),   false);
+        generator.writeEntry(OrbitDeterminationKey.SEDR.name(),            od.getSedr(), Units.W_PER_KG, false);
+        generator.writeEntry(OrbitDeterminationKey.SENSORS_N.name(),       od.getSensorsN(),             false);
+        generator.writeEntry(OrbitDeterminationKey.SENSORS.name(),         od.getSensors(),              false);
 
         // observations
         generator.writeEntry(OrbitDeterminationKey.WEIGHTED_RMS.name(),  od.getWeightedRms(), Unit.ONE, false);
