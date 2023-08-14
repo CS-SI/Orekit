@@ -332,7 +332,7 @@ public class SinexLoader implements EOPHistoryLoader {
      * @return the DCB data for the satellite
      * @since 12.0
      */
-    public DcbSatellite getDCBSatellite(final String prn) {
+    public DcbSatellite getDcbSatellite(final String prn) {
         return dcbSatellites.get(prn);
     }
 
@@ -677,7 +677,7 @@ public class SinexLoader implements EOPHistoryLoader {
                                     // Verifying if present
                                     if (siteCode.equals("")) {
                                         final String id = satellitePrn;
-                                        DcbSatellite dcbSatellite = getDCBSatellite(id);
+                                        DcbSatellite dcbSatellite = getDcbSatellite(id);
                                         if (dcbSatellite == null) {
                                             dcbSatellite = new DcbSatellite(id);
                                             dcbSatellite.setDescription(dcbDescription);

@@ -57,7 +57,7 @@ public class SinexLoaderDcbTest {
     public void testDCBDescriptionSat() {
         SinexLoader loader = new SinexLoader("DLR0MGXFIN_20212740000_03L_01D_DCB_trunc_sat.BSX");
         // DCB Description test
-        DcbSatellite dcbSat = loader.getDCBSatellite("G01");
+        DcbSatellite dcbSat = loader.getDcbSatellite("G01");
         DcbDescription dcbDesc = dcbSat.getDescription();
         TimeSystem timeSystem = dcbDesc.getTimeSystem();
         String biasMode = dcbDesc.getBiasMode();
@@ -92,7 +92,7 @@ public class SinexLoaderDcbTest {
     @Test
     public void testDCBfile() {
         SinexLoader loader = new SinexLoader("DLR0MGXFIN_20212740000_03L_01D_DCB_trunc_sat.BSX");
-        DcbSatellite DCBSat = loader.getDCBSatellite("G01");
+        DcbSatellite DCBSat = loader.getDcbSatellite("G01");
         Dcb DCBTest = DCBSat.getDcbData();
         
         // Observation Pair test
