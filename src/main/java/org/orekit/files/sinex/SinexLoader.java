@@ -281,6 +281,24 @@ public class SinexLoader implements EOPHistoryLoader {
     }
 
     /**
+     * Get the file epoch start time.
+     * @return the file epoch start time
+     * @since 12.0
+     */
+    public AbsoluteDate getFileEpochStartTime() {
+        return startDate;
+    }
+
+    /**
+     * Get the file epoch end time.
+     * @return the file epoch end time
+     * @since 12.0
+     */
+    public AbsoluteDate getFileEpochEndTime() {
+        return endDate;
+    }
+
+    /**
      * Get the parsed station data.
      * @return unmodifiable view of parsed station data
      */
@@ -391,11 +409,11 @@ public class SinexLoader implements EOPHistoryLoader {
                         creationDateString = splitFirstLine[3];
                         startDateString    = splitFirstLine[5];
                         endDateString      = splitFirstLine[6];
-                        final AbsoluteDate fileStartDate = stringEpochToAbsoluteDate(startDateString, scale);
-                        final AbsoluteDate fileEndDate   = stringEpochToAbsoluteDate(endDateString, scale);
+                        final AbsoluteDate fileStartDate = stringEpochToAbsoluteDate(startDateString, true, scale);
+                        final AbsoluteDate fileEndDate   = stringEpochToAbsoluteDate(endDateString, false, scale);
 
                         // Update creation date
-                        creationDate = stringEpochToAbsoluteDate(creationDateString, scale);
+                        creationDate = stringEpochToAbsoluteDate(creationDateString, false, scale);
 
                         if (startDate == null) {
                             // First data loading, needs to initialize the start and end dates for EOP history
@@ -480,8 +498,8 @@ public class SinexLoader implements EOPHistoryLoader {
                                     // read antenna type data
                                     final Station station = getStation(parseString(line, 1, 4));
 
-                                    final AbsoluteDate start = stringEpochToAbsoluteDate(parseString(line, 16, 12), scale);
-                                    final AbsoluteDate end   = stringEpochToAbsoluteDate(parseString(line, 29, 12), scale);
+                                    final AbsoluteDate start = stringEpochToAbsoluteDate(parseString(line, 16, 12), true, scale);
+                                    final AbsoluteDate end   = stringEpochToAbsoluteDate(parseString(line, 29, 12), false, scale);
 
                                     // antenna type
                                     final String type = parseString(line, 42, 20);
@@ -500,8 +518,8 @@ public class SinexLoader implements EOPHistoryLoader {
                                     // read antenna eccentricities data
                                     final Station station = getStation(parseString(line, 1, 4));
 
-                                    final AbsoluteDate start = stringEpochToAbsoluteDate(parseString(line, 16, 12), scale);
-                                    final AbsoluteDate end   = stringEpochToAbsoluteDate(parseString(line, 29, 12), scale);
+                                    final AbsoluteDate start = stringEpochToAbsoluteDate(parseString(line, 16, 12), true, scale);
+                                    final AbsoluteDate end   = stringEpochToAbsoluteDate(parseString(line, 29, 12), false, scale);
 
                                     // reference system UNE or XYZ
                                     station.setEccRefSystem(ReferenceSystem.getEccRefSystem(parseString(line, 42, 3)));
@@ -523,11 +541,11 @@ public class SinexLoader implements EOPHistoryLoader {
                                 } else if (inEpoch) {
                                     // read epoch data
                                     final Station station = getStation(parseString(line, 1, 4));
-                                    station.setValidFrom(stringEpochToAbsoluteDate(parseString(line, 16, 12), scale));
-                                    station.setValidUntil(stringEpochToAbsoluteDate(parseString(line, 29, 12), scale));
+                                    station.setValidFrom(stringEpochToAbsoluteDate(parseString(line, 16, 12), true, scale));
+                                    station.setValidUntil(stringEpochToAbsoluteDate(parseString(line, 29, 12), false, scale));
                                 } else if (inEstimate) {
                                     final Station       station     = getStation(parseString(line, 14, 4));
-                                    final AbsoluteDate  currentDate = stringEpochToAbsoluteDate(parseString(line, 27, 12), scale);
+                                    final AbsoluteDate  currentDate = stringEpochToAbsoluteDate(parseString(line, 27, 12), false, scale);
                                     final String        dataType    = parseString(line, 7, 6);
                                     // check if this station exists or if we are parsing EOP
                                     if (station != null || EOP_TYPES.contains(dataType)) {
@@ -649,9 +667,9 @@ public class SinexLoader implements EOPHistoryLoader {
                                             scale = dcbDescription.getTimeSystem().getTimeScale(scales);
                                             // A time scale has been parsed, update start, end, and creation dates
                                             // to take into account the time scale
-                                            startDate    = stringEpochToAbsoluteDate(startDateString, scale);
-                                            endDate      = stringEpochToAbsoluteDate(endDateString, scale);
-                                            creationDate = stringEpochToAbsoluteDate(creationDateString, scale);
+                                            startDate    = stringEpochToAbsoluteDate(startDateString, true, scale);
+                                            endDate      = stringEpochToAbsoluteDate(endDateString, false, scale);
+                                            creationDate = stringEpochToAbsoluteDate(creationDateString, false, scale);
                                             break;
                                         default:
                                             break;
@@ -669,8 +687,8 @@ public class SinexLoader implements EOPHistoryLoader {
                                     // Parsing the line data.
                                     final String obs1 = parseString(line, 25, 4);
                                     final String obs2 = parseString(line, 30, 4);
-                                    final AbsoluteDate beginDate = stringEpochToAbsoluteDate(parseString(line, 35, 14), scale);
-                                    final AbsoluteDate finalDate = stringEpochToAbsoluteDate(parseString(line, 50, 14), scale);
+                                    final AbsoluteDate beginDate = stringEpochToAbsoluteDate(parseString(line, 35, 14), true, scale);
+                                    final AbsoluteDate finalDate = stringEpochToAbsoluteDate(parseString(line, 50, 14), false, scale);
                                     final Unit unitDcb = Unit.parse(parseString(line, 65, 4));
                                     final double valueDcb = unitDcb.toSI(Double.parseDouble(parseString(line, 70, 21)));
 
@@ -759,17 +777,17 @@ public class SinexLoader implements EOPHistoryLoader {
     /**
      * Transform a String epoch to an AbsoluteDate.
      * @param stringDate string epoch
+     * @param isStart true if epoch is a start validity epoch
      * @param scale TimeScale for the computation of the dates
      * @return the corresponding AbsoluteDate
      */
-    private AbsoluteDate stringEpochToAbsoluteDate(final String stringDate, final TimeScale scale) {
+    private AbsoluteDate stringEpochToAbsoluteDate(final String stringDate, final boolean isStart, final TimeScale scale) {
 
         // Deal with 00:000:00000 epochs
         if (DEFAULT_EPOCH_TWO_DIGITS.equals(stringDate) || DEFAULT_EPOCH_FOUR_DIGITS.equals(stringDate)) {
-            // Data is still available, return a dummy date at infinity in the future direction
-            // FIXME : For Release 12.0 switch to return creationDate in order to follow Sinex
-            // convention.
-            return AbsoluteDate.FUTURE_INFINITY;
+            // If its a start validity epoch, the file start date shall be used.
+            // For end validity epoch, future infinity is acceptable.
+            return isStart ? startDate : AbsoluteDate.FUTURE_INFINITY;
         }
 
         // Date components

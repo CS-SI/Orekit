@@ -71,9 +71,9 @@ public class SinexLoaderTest {
 
         // Test date computation using format description
         try {
-            Method method = SinexLoader.class.getDeclaredMethod("stringEpochToAbsoluteDate", String.class, TimeScale.class);
+            Method method = SinexLoader.class.getDeclaredMethod("stringEpochToAbsoluteDate", String.class, boolean.class, TimeScale.class);
             method.setAccessible(true);
-            final AbsoluteDate date    = (AbsoluteDate) method.invoke(loader, "95:120:86399", utc);
+            final AbsoluteDate date    = (AbsoluteDate) method.invoke(loader, "95:120:86399", false, utc);
             final AbsoluteDate refDate = new AbsoluteDate("1995-04-30T23:59:59.000", TimeScalesFactory.getUTC());
             Assertions.assertEquals(0., refDate.durationFrom(date), 0.);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
@@ -168,11 +168,9 @@ public class SinexLoaderTest {
         final Station station7237 = loader.getStation("7237");
         final Vector3D refStation7237 = Vector3D.ZERO;
         Assertions.assertEquals(0.0, refStation7237.distance(station7237.getEccentricities(new AbsoluteDate("1995-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
-        // FIXME for Release 12.0 : When applying modification for stringEpochToAbsoluteDate, delete the next two tests
         Assertions.assertEquals(0.0, refStation7237.distance(station7237.getEccentricities(new AbsoluteDate("2021-12-06T17:30:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         Assertions.assertEquals(0.0, refStation7237.distance(station7237.getEccentricities(new AbsoluteDate("2999-12-06T17:30:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         Assertions.assertEquals(0.0, station7237.getEccentricitiesTimeSpanMap().getFirstTransition().getDate().durationFrom(new AbsoluteDate("1988-01-01T00:00:00.000", TimeScalesFactory.getUTC())), 1.0e-15);
-        // FIXME for Release 12.0 : When applying modification for stringEpochToAbsoluteDate : Assert.assertTrue(station7237.getValidUntil() == creationDate);
         Assertions.assertTrue(station7237.getEccentricitiesTimeSpanMap().getLastTransition().getDate() == AbsoluteDate.FUTURE_INFINITY);
 
         // Verify station 7090
@@ -203,12 +201,10 @@ public class SinexLoaderTest {
         refStation7090 = new Vector3D(-1.2073, 2.5034, -1.5509);
         Assertions.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2015-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
 
-        // FIXME for Release 12.0 : When applying modification for stringEpochToAbsoluteDate, delete the next two tests
         Assertions.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2021-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         Assertions.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2999-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         Assertions.assertEquals(0.0, station7090.getEccentricitiesTimeSpanMap().getFirstTransition().getDate().durationFrom(new AbsoluteDate("1979-07-01T00:00:00.000", TimeScalesFactory.getUTC())), 1.0e-15);
 
-        // FIXME for Release 12.0 : When applying modification for stringEpochToAbsoluteDate : Assert.assertTrue(station7237.getValidUntil() == creationDate);
         Assertions.assertTrue(station7090.getEccentricitiesTimeSpanMap().getLastTransition().getDate() == AbsoluteDate.FUTURE_INFINITY);
 
         // Verify station 7092
@@ -247,6 +243,27 @@ public class SinexLoaderTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.MISSING_STATION_DATA_FOR_EPOCH, oe.getSpecifier());
         }
+
+    }
+
+    @Test
+    public void testIssue1150() {
+
+        // Load file
+        SinexLoader loader = new SinexLoader("issue1150.snx");
+
+        // Verify start epoch for station "1148" is equal to the file start epoch
+        final Station station1148 = loader.getStation("1148");
+        Assertions.assertEquals(0.0, loader.getFileEpochStartTime().durationFrom(station1148.getEccentricitiesTimeSpanMap().getFirstTransition().getDate()));
+
+        // Verify end epoch for station "7035" is equal future infinity
+        final Station station7035 = loader.getStation("7035");
+        Assertions.assertTrue(station7035.getEccentricitiesTimeSpanMap().getLastTransition().getDate() == AbsoluteDate.FUTURE_INFINITY);
+
+        // Verify start epoch for station "7120" is equal to the file start epoch
+        final Station station7120 = loader.getStation("7120");
+        Assertions.assertEquals(0.0, loader.getFileEpochStartTime().durationFrom(station7120.getEccentricitiesTimeSpanMap().getFirstTransition().getDate()));
+        Assertions.assertTrue(station7120.getEccentricitiesTimeSpanMap().getLastTransition().getDate() == AbsoluteDate.FUTURE_INFINITY);
 
     }
 
