@@ -70,7 +70,7 @@ public class Dcb {
          * Getter for the TimeSpanMap of DCB values.
          *
          * @return a time span map containing DCB values, for the observation code pair
-         * corresponding to this DCBCode object.
+         * corresponding to this DCBCode object
          */
         public TimeSpanMap<Double> getDcbTimeMap() {
             return dcbMap;
@@ -84,11 +84,11 @@ public class Dcb {
      * The method check the presence of a Code pair in a map, and add
      * values to the corresponding TimeSpanMap.
      * </p>
-     * @param obs1 String corresponding to the first code used for the DCB computation.
-     * @param obs2 String corresponding to the second code used for the DCB computation.
+     * @param obs1 String corresponding to the first code used for the DCB computation
+     * @param obs2 String corresponding to the second code used for the DCB computation
      * @param spanBegin Absolute Date corresponding to the beginning of the validity span for this bias value
      * @param spanEnd Absolute Date corresponding to the end of the validity span for this bias value
-     * @param biasValue DCB bias value expressed in S.I. units.
+     * @param biasValue DCB bias value expressed in S.I. units
      */
     public void addDcbLine(final String obs1, final String obs2,
                            final AbsoluteDate spanBegin, final AbsoluteDate spanEnd,
@@ -106,17 +106,29 @@ public class Dcb {
         dcbCodeMap.get(observationPair).getDcbTimeMap().addValidBetween(biasValue, spanBegin, spanEnd);
     }
 
-
     /**
-     * Return the value of the Differential Code Bias for a given observation pair,
-     * at a given date, for the satellite this object has been created for.
+     * Get the value of the Differential Code Bias for a given observation pair
+     * and a at a given date.
      *
-     * @param obs1 String corresponding to the first code used for the DCB computation.
-     * @param obs2 String corresponding to the second code used for the DCB computation.
-     * @param date Date at which to obtain the DCB.
-     * @return The value of the DCB in S.I. units.
+     * @param obs1 string corresponding to the first code used for the DCB computation
+     * @param obs2 string corresponding to the second code used for the DCB computation
+     * @param date date at which to obtain the DCB
+     * @return the value of the DCB in S.I. units
      */
     public double getDcb(final String obs1, final String obs2, final AbsoluteDate date) {
+        return getDcb(ObservationType.valueOf(obs1), ObservationType.valueOf(obs2), date);
+    }
+
+    /**
+     * Get the value of the Differential Code Bias for a given observation pair
+     * and a at a given date.
+     *
+     * @param obs1 first observation type
+     * @param obs2 second observation type
+     * @param date date at which to obtain the DCB
+     * @return the value of the DCB in S.I. units
+     */
+    public double getDcb(final ObservationType obs1, final ObservationType obs2, final AbsoluteDate date) {
         return getTimeSpanMap(obs1, obs2).get(date);
     }
 
@@ -132,36 +144,57 @@ public class Dcb {
     /**
      * Get the minimum valid date for a given observation pair.
      *
-     * @param obs1 String : String corresponding to the first code used for the DCB computation.
-     * @param obs2 String : String corresponding to the second code used for the DCB computation.
-     * @return Minimum valid date for the observation pair
+     * @param obs1 sString corresponding to the first code used for the DCB computation
+     * @param obs2 string corresponding to the second code used for the DCB computation
+     * @return minimum valid date for the observation pair
      */
     public AbsoluteDate getMinimumValidDateForObservationPair(final String obs1, final String obs2) {
-        return this.getTimeSpanMap(obs1, obs2).getFirstTransition().getDate();
+        return getMinimumValidDateForObservationPair(ObservationType.valueOf(obs1), ObservationType.valueOf(obs2));
+    }
+
+    /**
+     * Get the minimum valid date for a given observation pair.
+     *
+     * @param obs1 first observation type
+     * @param obs2 second observation type
+     * @return minimum valid date for the observation pair
+     */
+    public AbsoluteDate getMinimumValidDateForObservationPair(final ObservationType obs1, final ObservationType obs2) {
+        return getTimeSpanMap(obs1, obs2).getFirstTransition().getDate();
     }
 
     /**
      * Get the maximum valid date for a given observation pair.
      *
-     * @param obs1 String : String corresponding to the first code used for the DCB computation.
-     * @param obs2 String : String corresponding to the second code used for the DCB computation.
-     * @return Maximum valid date for the observation pair
+     * @param obs1 string corresponding to the first code used for the DCB computation
+     * @param obs2 string corresponding to the second code used for the DCB computation
+     * @return maximum valid date for the observation pair
      */
     public AbsoluteDate getMaximumValidDateForObservationPair(final String obs1, final String obs2) {
-        return this.getTimeSpanMap(obs1, obs2).getLastTransition().getDate();
+        return getMaximumValidDateForObservationPair(ObservationType.valueOf(obs1), ObservationType.valueOf(obs2));
     }
 
     /**
-     * Return the TimeSpanMap object for a given Observation Code pair,
+     * Get the maximum valid date for a given observation pair.
+     *
+     * @param obs1 first observation type
+     * @param obs2 second observation type
+     * @return maximum valid date for the observation pair
+     */
+    public AbsoluteDate getMaximumValidDateForObservationPair(final ObservationType obs1, final ObservationType obs2) {
+        return getTimeSpanMap(obs1, obs2).getLastTransition().getDate();
+    }
+
+    /**
+     * Return the TimeSpanMap object for a given observation code pair,
      * for further operation on the object directly.
      *
-     * @param obs1 String corresponding to the first code used for the DCB computation.
-     * @param obs2 String corresponding to the second code used for the DCB computation.
-     * @return The TimeSpanMap for a given Observation Code pair.
+     * @param obs1 first observation type
+     * @param obs2 second observation type
+     * @return the time span map for a given observation code pair
      */
-    private TimeSpanMap<Double> getTimeSpanMap(final String obs1, final String obs2) {
-        // Setting a pair of observation type, independent of their order.
-        return dcbCodeMap.get(new Pair<>(ObservationType.valueOf(obs1), ObservationType.valueOf(obs2))).getDcbTimeMap();
+    private TimeSpanMap<Double> getTimeSpanMap(final ObservationType obs1, final ObservationType obs2) {
+        return dcbCodeMap.get(new Pair<>(obs1, obs2)).getDcbTimeMap();
     }
 
 }
