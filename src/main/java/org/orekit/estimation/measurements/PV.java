@@ -225,6 +225,30 @@ public class PV extends AbstractMeasurement<PV> {
 
     /** {@inheritDoc} */
     @Override
+    protected EstimatedMeasurementBase<PV> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
+                                                                                   final SpacecraftState[] states) {
+
+        // PV value
+        final TimeStampedPVCoordinates pv = states[0].getPVCoordinates();
+
+        // prepare the evaluation
+        final EstimatedMeasurementBase<PV> estimated =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation, states,
+                                                       new TimeStampedPVCoordinates[] {
+                                                           pv
+                                                       });
+
+        estimated.setEstimatedValue(new double[] {
+            pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ(),
+            pv.getVelocity().getX(), pv.getVelocity().getY(), pv.getVelocity().getZ()
+        });
+
+        return estimated;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected EstimatedMeasurement<PV> theoreticalEvaluation(final int iteration, final int evaluation,
                                                              final SpacecraftState[] states) {
 

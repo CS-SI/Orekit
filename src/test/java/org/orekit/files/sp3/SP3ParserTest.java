@@ -16,6 +16,11 @@
  */
 package org.orekit.files.sp3;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,10 +46,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.List;
 
 public class SP3ParserTest {
 
@@ -760,6 +761,223 @@ public class SP3ParserTest {
                                        new Vector3D(-1772.0521773, -5572.0482742, -1444.1695083)),
                      coord);
 
+    }
+
+    @Test
+    public void testSpliceWrongType() {
+        try {
+            splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_type.sp3");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.SP3_INCOMPATIBLE_FILE_METADATA, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testSpliceWrongTimeSystem() {
+        try {
+            splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_time_system.sp3");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.SP3_INCOMPATIBLE_FILE_METADATA, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testSpliceWrongSatelliteCount() {
+        final SP3 spliced = splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_satellite_count.sp3");
+        Assertions.assertEquals(86, spliced.getSatelliteCount());
+    }
+
+    @Test
+    public void testSpliceWrongOrbitType() {
+        try {
+            splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_orbit_type.sp3");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.SP3_INCOMPATIBLE_FILE_METADATA, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testSpliceWrongCoordinateSystem() {
+        try {
+            splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_coordinate_system.sp3");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.SP3_INCOMPATIBLE_FILE_METADATA, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testSpliceWrongDataUsed() {
+        try {
+            splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_data_used.sp3");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.SP3_INCOMPATIBLE_FILE_METADATA, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testSpliceWrongAgency() {
+        try {
+            splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_agency.sp3");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.SP3_INCOMPATIBLE_FILE_METADATA, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testSpliceWrongSatelliteList() {
+        final SP3 spliced = splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_satellite_list.sp3");
+        Assertions.assertEquals(86, spliced.getSatelliteCount());
+    }
+
+    @Test
+    public void testSpliceWrongDerivatives() {
+        try {
+            splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_derivatives.sp3");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.SP3_INCOMPATIBLE_SATELLITE_MEDATADA, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testSpliceWrongFrame() {
+        try {
+            final String     name1 = "/sp3/gbm19500_truncated.sp3";
+            final DataSource source1 = new DataSource(name1, () -> getClass().getResourceAsStream(name1));
+            final SP3        file1   = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 7,
+                                                     s -> FramesFactory.getITRF(IERSConventions.IERS_2010, false)).
+                                       parse(source1);
+            final String     name2 = "/sp3/gbm19500_after_no_drop.sp3";
+            final DataSource source2 = new DataSource(name2, () -> getClass().getResourceAsStream(name2));
+            final SP3        file2   = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 7,
+                                                     s -> FramesFactory.getITRF(IERSConventions.IERS_1996, false)).
+                                       parse(source2);
+            SP3.splice(Arrays.asList(file1, file2));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.SP3_INCOMPATIBLE_SATELLITE_MEDATADA, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testSpliceWrongInterpolationSamples() {
+        try {
+            final String     name1 = "/sp3/gbm19500_truncated.sp3";
+            final DataSource source1 = new DataSource(name1, () -> getClass().getResourceAsStream(name1));
+            final SP3        file1   = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 7,
+                                                     s -> FramesFactory.getITRF(IERSConventions.IERS_2010, false)).
+                                       parse(source1);
+            final String     name2 = "/sp3/gbm19500_after_no_drop.sp3";
+            final DataSource source2 = new DataSource(name2, () -> getClass().getResourceAsStream(name2));
+            final SP3        file2   = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 4,
+                                                     s -> FramesFactory.getITRF(IERSConventions.IERS_2010, false)).
+                                       parse(source2);
+            SP3.splice(Arrays.asList(file1, file2));
+             Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.SP3_INCOMPATIBLE_SATELLITE_MEDATADA, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testSpliceWrongMu() {
+        try {
+            final String     name1 = "/sp3/gbm19500_truncated.sp3";
+            final DataSource source1 = new DataSource(name1, () -> getClass().getResourceAsStream(name1));
+            final SP3        file1   = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 7,
+                                                     s -> FramesFactory.getITRF(IERSConventions.IERS_2010, false)).
+                                       parse(source1);
+            final String     name2 = "/sp3/gbm19500_after_no_drop.sp3";
+            final DataSource source2 = new DataSource(name2, () -> getClass().getResourceAsStream(name2));
+            final SP3        file2   = new SP3Parser(1.00001 * Constants.EIGEN5C_EARTH_MU, 7,
+                                                     s -> FramesFactory.getITRF(IERSConventions.IERS_2010, false)).
+                                       parse(source2);
+            SP3.splice(Arrays.asList(file1, file2));
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.SP3_INCOMPATIBLE_SATELLITE_MEDATADA, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testSpliceWrongGap() {
+        try {
+            splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_gap.sp3");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.SP3_TOO_LARGE_GAP_FOR_SPLICING, oe.getSpecifier());
+            Assertions.assertEquals(900.0, ((Double) oe.getParts()[1]).doubleValue(), 1.0e-10);
+        }
+    }
+
+    @Test
+    public void testSpliceDrop() {
+
+        final SP3 spliced = splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_after_drop.sp3");
+
+        Assertions.assertEquals(SP3OrbitType.FIT, spliced.getOrbitType());
+        Assertions.assertEquals(TimeSystem.GPS, spliced.getTimeSystem());
+
+        Assertions.assertEquals(87, spliced.getSatelliteCount());
+
+        final List<SP3Coordinate> coords = spliced.getSatellites().get("R23").getCoordinates();
+        Assertions.assertEquals(3, coords.size());
+
+        final SP3Coordinate coord = coords.get(0);
+
+        Assertions.assertEquals(new AbsoluteDate(2017, 5, 21, 0, 0, 0, TimeScalesFactory.getGPS()),
+                                coord.getDate());
+
+        // PG01 -11044.805800 -10475.672350  21929.418200    189.163300 18 18 18 219
+        // PR23  24552.470459   -242.899447   6925.437998     86.875825
+        checkPVEntry(new PVCoordinates(new Vector3D(24552470.459, -242899.447, 6925437.998), Vector3D.ZERO),
+                     coord);
+        Assertions.assertEquals(0.000086875825, coord.getClockCorrection(), 1.0e-15);
+
+        Assertions.assertEquals(new AbsoluteDate(2017, 5, 21, 0, 10, 0, TimeScalesFactory.getGPS()),
+                                coords.get(coords.size() - 1).getDate());
+    }
+
+    @Test
+    public void testSpliceNoDrop() {
+
+        final SP3 spliced = splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_after_no_drop.sp3");
+
+        Assertions.assertEquals(SP3OrbitType.FIT, spliced.getOrbitType());
+        Assertions.assertEquals(TimeSystem.GPS, spliced.getTimeSystem());
+
+        Assertions.assertEquals(87, spliced.getSatelliteCount());
+
+        final List<SP3Coordinate> coords = spliced.getSatellites().get("R23").getCoordinates();
+        Assertions.assertEquals(4, coords.size());
+
+        final SP3Coordinate coord = coords.get(0);
+
+        Assertions.assertEquals(new AbsoluteDate(2017, 5, 21, 0, 0, 0, TimeScalesFactory.getGPS()),
+                                coord.getDate());
+
+        // PG01 -11044.805800 -10475.672350  21929.418200    189.163300 18 18 18 219
+        // PR23  24552.470459   -242.899447   6925.437998     86.875825
+        checkPVEntry(new PVCoordinates(new Vector3D(24552470.459, -242899.447, 6925437.998), Vector3D.ZERO),
+                     coord);
+        Assertions.assertEquals(0.000086875825, coord.getClockCorrection(), 1.0e-15);
+
+        Assertions.assertEquals(new AbsoluteDate(2017, 5, 21, 0, 15, 0, TimeScalesFactory.getGPS()),
+                                coords.get(coords.size() - 1).getDate());
+    }
+
+    private SP3 splice(final String name1, final String name2) {
+        final DataSource source1 = new DataSource(name1, () -> getClass().getResourceAsStream(name1));
+        final SP3        file1   = new SP3Parser().parse(source1);
+        final DataSource source2 = new DataSource(name2, () -> getClass().getResourceAsStream(name2));
+        final SP3        file2   = new SP3Parser().parse(source2);
+        return SP3.splice(Arrays.asList(file1, file2));
     }
 
     @BeforeEach

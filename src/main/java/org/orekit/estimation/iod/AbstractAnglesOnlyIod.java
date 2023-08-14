@@ -37,7 +37,7 @@ import org.orekit.utils.PVCoordinates;
  * Students
  *
  * @author Julien Asquier
- * @since 11.3.3
+ * @since 12.0
  */
 public abstract class AbstractAnglesOnlyIod {
 

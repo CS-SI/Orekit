@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
 import org.orekit.utils.ParameterDriver;
@@ -49,7 +49,7 @@ public class ShapiroInterSatellitePhaseModifier extends AbstractShapiroBaseModif
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<InterSatellitesPhase> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<InterSatellitesPhase> estimated) {
         // Compute correction
         final TimeStampedPVCoordinates[] pv = estimated.getParticipants();
         final double correction = shapiroCorrection(pv[0], pv[1]);

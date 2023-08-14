@@ -110,6 +110,83 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
 
     /** {@inheritDoc} */
     @Override
+    protected EstimatedMeasurementBase<InterSatellitesRange> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                                     final int evaluation,
+                                                                                                     final SpacecraftState[] states) {
+
+        // coordinates of both satellites
+        final SpacecraftState local = states[0];
+        final TimeStampedPVCoordinates pvaL = local.getPVCoordinates();
+        final SpacecraftState remote = states[1];
+        final TimeStampedPVCoordinates pvaR = remote.getPVCoordinates();
+
+        // compute propagation times
+        // (if state has already been set up to pre-compensate propagation delay,
+        //  we will have delta == tauD and transitState will be the same as state)
+
+        // downlink delay
+        final double dtl = getSatellites().get(0).getClockOffsetDriver().getValue(local.getDate());
+        final AbsoluteDate arrivalDate = getDate().shiftedBy(-dtl);
+
+        final TimeStampedPVCoordinates s1Downlink =
+                        pvaL.shiftedBy(arrivalDate.durationFrom(pvaL.getDate()));
+        final double tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate);
+
+        // Transit state
+        final double delta      = getDate().durationFrom(remote.getDate());
+        final double deltaMTauD = delta - tauD;
+
+        // prepare the evaluation
+        final EstimatedMeasurementBase<InterSatellitesRange> estimated;
+
+        final double range;
+        if (twoway) {
+            // Transit state (re)computed with derivative structures
+            final TimeStampedPVCoordinates transitState = pvaR.shiftedBy(deltaMTauD);
+
+            // uplink delay
+            final double tauU = signalTimeOfFlight(pvaL,
+                                                   transitState.getPosition(),
+                                                   transitState.getDate());
+            estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       new SpacecraftState[] {
+                                                           local.shiftedBy(deltaMTauD),
+                                                           remote.shiftedBy(deltaMTauD)
+                                                       }, new TimeStampedPVCoordinates[] {
+                                                           local.shiftedBy(delta - tauD - tauU).getPVCoordinates(),
+                                                           remote.shiftedBy(delta - tauD).getPVCoordinates(),
+                                                           local.shiftedBy(delta).getPVCoordinates()
+                                                       });
+
+            // Range value
+            range  = (tauD + tauU) * (0.5 * Constants.SPEED_OF_LIGHT);
+
+        } else {
+
+            estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       new SpacecraftState[] {
+                                                           local.shiftedBy(deltaMTauD),
+                                                           remote.shiftedBy(deltaMTauD)
+                                                       }, new TimeStampedPVCoordinates[] {
+                                                           remote.shiftedBy(delta - tauD).getPVCoordinates(),
+                                                           local.shiftedBy(delta).getPVCoordinates()
+                                                       });
+
+            // Clock offsets
+            final double dtr = getSatellites().get(1).getClockOffsetDriver().getValue(remote.getDate());
+
+            // Range value
+            range  = (tauD + dtl - dtr) * Constants.SPEED_OF_LIGHT;
+
+        }
+        estimated.setEstimatedValue(range);
+
+        return estimated;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected EstimatedMeasurement<InterSatellitesRange> theoreticalEvaluation(final int iteration,
                                                                                final int evaluation,
                                                                                final SpacecraftState[] states) {

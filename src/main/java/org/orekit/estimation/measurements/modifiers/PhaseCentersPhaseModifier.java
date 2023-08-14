@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Collections;
 import java.util.List;
 
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.gnss.antenna.FrequencyPattern;
@@ -51,7 +51,7 @@ public class PhaseCentersPhaseModifier implements EstimationModifier<Phase> {
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<Phase> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Phase> estimated) {
         estimated.setEstimatedValue(estimated.getEstimatedValue()[0] +
                                     modifier.oneWayDistanceModification(estimated) /
                                     estimated.getObservedMeasurement().getWavelength());

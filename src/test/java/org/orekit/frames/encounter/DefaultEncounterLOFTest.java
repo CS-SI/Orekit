@@ -37,15 +37,18 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.TestUtils;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 class DefaultEncounterLOFTest {
 
     @Test
-    @DisplayName("Test rotationFromInertial method")
+    @DisplayName("Test rotationFromInertial default method")
     void testReturnExpectedRotation() {
         // Given
+        final AbsoluteDate arbritraryEpoch = AbsoluteDate.ARBITRARY_EPOCH;
         final PVCoordinates originPV = new PVCoordinates(new Vector3D(6378000. + 400000., 0., 0.),
                                                          new Vector3D(0., 7668.63, 0.));
 
@@ -55,7 +58,7 @@ class DefaultEncounterLOFTest {
         final EncounterLOF encounterFrame = new DefaultEncounterLOF(otherPV);
 
         // When
-        final Rotation   computedRotation       = encounterFrame.rotationFromInertial(originPV);
+        final Rotation   computedRotation       = encounterFrame.rotationFromInertial(arbritraryEpoch, originPV);
         final RealMatrix computedRotationMatrix = new BlockRealMatrix(computedRotation.getMatrix());
 
         // Then
@@ -71,10 +74,11 @@ class DefaultEncounterLOFTest {
     }
 
     @Test
-    @DisplayName("Test rotationFromInertial (field version) method")
+    @DisplayName("Test rotationFromInertial (field version) default method")
     void testReturnExpectedFieldRotation() {
         // Given
-        final Binary64Field field = Binary64Field.getInstance();
+        final Binary64Field     field           = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> arbritraryEpoch = new FieldAbsoluteDate<>(field, AbsoluteDate.ARBITRARY_EPOCH);
         final FieldPVCoordinates<Binary64> originPV = new FieldPVCoordinates<>(field, new PVCoordinates(
                 new Vector3D(6378000. + 400000., 0., 0.), new Vector3D(0., 7668.63, 0.)));
 
@@ -84,7 +88,7 @@ class DefaultEncounterLOFTest {
         final EncounterLOF encounterFrame = new DefaultEncounterLOF(otherPV);
 
         // When
-        final FieldRotation<Binary64> computedRotation       = encounterFrame.rotationFromInertial(field, originPV);
+        final FieldRotation<Binary64> computedRotation       = encounterFrame.rotationFromInertial(field, arbritraryEpoch, originPV);
         final FieldMatrix<Binary64>   computedRotationMatrix = new BlockFieldMatrix<>(computedRotation.getMatrix());
 
         // Then

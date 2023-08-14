@@ -92,4 +92,25 @@ public class ObservableSatellite {
         return clockDriftDriver;
     }
 
+    /** {@inheritDoc}
+     * @since 12.0
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other instanceof ObservableSatellite) {
+            return propagatorIndex == ((ObservableSatellite) other).propagatorIndex;
+        } else {
+            return false;
+
+        }
+    }
+
+    /** {@inheritDoc}
+     * @since 12.0
+     */
+    @Override
+    public int hashCode() {
+        return propagatorIndex;
+    }
+
 }

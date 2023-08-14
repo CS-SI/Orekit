@@ -16,6 +16,11 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
@@ -23,11 +28,13 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.FieldTransform;
@@ -39,11 +46,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -64,6 +66,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
      * @param frame        the frame of the measurement
      * @return the "proper" direction (station-relative coordinates)
      */
+    @DefaultDataContext
     public static double[] naturalToProper(final double[] naturalRaDec, final GroundStation station,
                                            final AbsoluteDate date, final Frame frame) {
 
@@ -93,6 +96,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
      * @param frame       the frame of the measurement
      * @return the "natural" direction (in barycentric coordinates)
      */
+    @DefaultDataContext
     public static double[] properToNatural(final double[] properRaDec, final GroundStation station,
                                            final AbsoluteDate date, final Frame frame) {
 
@@ -144,6 +148,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
      * @param frame             the frame of the measurement
      * @return the "proper" direction (station-relative coordinates)
      */
+    @DefaultDataContext
     public static Gradient[] fieldNaturalToProper(final Gradient[] naturalRaDec,
                                                   final FieldTransform<Gradient> stationToInertial,
                                                   final Frame frame) {
@@ -183,6 +188,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
      * @param frame             the frame of the measurement
      * @return the "natural" direction (in barycentric coordinates)
      */
+    @DefaultDataContext
     public static Gradient[] fieldProperToNatural(final Gradient[] properRaDec,
                                                   final FieldTransform<Gradient> stationToInertial,
                                                   final Frame frame) {
@@ -249,6 +255,35 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
 
 
     @Override
+    @DefaultDataContext
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<AngularRaDec> estimated) {
+
+        // Observation date
+        final AbsoluteDate date = estimated.getDate();
+
+        // Observation station
+        final GroundStation station = estimated.getObservedMeasurement().getStation();
+
+        // Observation frame
+        final Frame frame = estimated.getObservedMeasurement().getReferenceFrame();
+
+        // Convert measurement to natural direction
+        final double[] estimatedRaDec = estimated.getEstimatedValue();
+        final double[] naturalRaDec = properToNatural(estimatedRaDec, station, date, frame);
+
+        // Normalise RA
+        final double[] observed           = estimated.getObservedValue();
+        final double   baseRightAscension = naturalRaDec[0];
+        final double   twoPiWrap          = MathUtils.normalizeAngle(baseRightAscension, observed[0]) - baseRightAscension;
+        final double   rightAscension     = baseRightAscension + twoPiWrap;
+
+        // New estimated values
+        estimated.setEstimatedValue(rightAscension, naturalRaDec[1]);
+
+    }
+
+    @Override
+    @DefaultDataContext
     public void modify(final EstimatedMeasurement<AngularRaDec> estimated) {
 
         // Observation date
@@ -309,4 +344,5 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
             }
         }
     }
+
 }

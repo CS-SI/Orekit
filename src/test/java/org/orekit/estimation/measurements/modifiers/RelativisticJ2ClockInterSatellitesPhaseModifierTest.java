@@ -22,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
@@ -67,7 +68,7 @@ public class RelativisticJ2ClockInterSatellitesPhaseModifierTest {
                                                                     wavelength, 1.0, 1.0);
 
         // Inter-satellites phase before applying the modifier
-        final EstimatedMeasurement<InterSatellitesPhase> estimatedBefore = phase.estimate(0, 0, states);
+        final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(0, 0, states);
 
         // Inter-satellites phase after applying the modifier
         final EstimationModifier<InterSatellitesPhase> modifier = new RelativisticJ2ClockInterSatellitesPhaseModifier(Constants.WGS84_EARTH_MU,

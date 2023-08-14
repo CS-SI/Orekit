@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -31,8 +32,15 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ilrs.CRD.AnglesMeasurement;
 import org.orekit.files.ilrs.CRD.CRDDataBlock;
+import org.orekit.files.ilrs.CRD.Calibration;
+import org.orekit.files.ilrs.CRD.CalibrationDetail;
+import org.orekit.files.ilrs.CRD.FrRangeMeasurement;
 import org.orekit.files.ilrs.CRD.MeteorologicalMeasurement;
+import org.orekit.files.ilrs.CRD.NptRangeMeasurement;
 import org.orekit.files.ilrs.CRD.RangeMeasurement;
+import org.orekit.files.ilrs.CRD.RangeSupplement;
+import org.orekit.files.ilrs.CRD.SessionStatistics;
+import org.orekit.files.ilrs.CRDConfiguration.CalibrationTargetConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.DetectorConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.LaserConfiguration;
 import org.orekit.files.ilrs.CRDConfiguration.MeteorologicalConfiguration;
@@ -56,8 +64,9 @@ import org.orekit.utils.units.UnitsConverter;
  * <b>Note</b>: Not all the records are read by the parser. Only the most significants are parsed.
  * Contributions are welcome to support more fields in the format.
  * @see <a href="https://ilrs.gsfc.nasa.gov/docs/2009/crd_v1.01.pdf">1.0 file format</a>
- * @see <a href="https://ilrs.gsfc.nasa.gov/docs/2019/crd_v2.01.pdf">2.0 file format</a>
+ * @see <a href="https://ilrs.gsfc.nasa.gov/docs/2021/crd_v2.01e2.pdf">2.0 file format</a>
  * @author Bryan Cazabonne
+ * @author Rongwang Li
  * @since 10.3
  */
 public class CRDParser {
@@ -74,6 +83,12 @@ public class CRDParser {
     /** Microseconds units. */
     private static final Unit US = Unit.parse("µs");
 
+    /** Nanoseconds units. */
+    private static final Unit NS = Unit.parse("ns");
+
+    /** Picoseconds units. */
+    private static final Unit PS = Unit.parse("ps");
+
     /** mbar to bar converter. */
     private static final UnitsConverter MBAR_TO_BAR = new UnitsConverter(Unit.parse("mbar"), Unit.parse("bar"));
 
@@ -85,6 +100,12 @@ public class CRDParser {
 
     /** Pattern for delimiting expressions with comma. */
     private static final Pattern COMMA = Pattern.compile(",");
+
+    /** Identifier of comment record. */
+    private static final String COMMENTS_IDENTIFIER = "00";
+
+    /** Pattern of " [-]?(na)". */
+    private static final Pattern PATTERN_NA = Pattern.compile(" [-]?(na)");
 
     /** Time scale used to define epochs in CPF file. */
     private final TimeScale timeScale;
@@ -132,9 +153,22 @@ public class CRDParser {
             nextLine:
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                     ++lineNumber;
+
+                    if (line.startsWith(COMMENTS_IDENTIFIER)) {
+                        // Comment is in the beginning of the file.
+                        crdParsers = Arrays.asList(LineParser.COMMENTS);
+                    }
+
                     for (final LineParser candidate : crdParsers) {
                         if (candidate.canHandle(line)) {
                             try {
+
+                                // Note: since crd v2.01.
+                                // The literal “na” is used instead of “-1” for fields that are not applicable or not avaiable.
+                                // And there may be "-na".
+                                // note: "analog" --> "aNaNlog"
+                                line = PATTERN_NA.matcher(line).replaceAll(" " + CRD.STR_NAN);
+
                                 candidate.parse(line, pi);
                                 if (pi.done) {
                                     // Return file
@@ -161,15 +195,17 @@ public class CRDParser {
     }
 
     /**
-     * Computes if a day shift has happened comparing the current and past epoch, described by seconds in the day.
-     * This is useful as the data is sorted in the chronological order inside the file.
-     *
-     * @param lastSecOfDay past number of seconds per day
-     * @param secOfDay current number of seconds per day
-     * @return Boolean true if change in day.
+     * Make sure the epoch is 'right' by doing a day shift if it is required by comparing the current and session start epoch.
+     * According to the CRD document, the duration of a session must be less than one day.
+     * @param epoch current epoch
+     * @param startEpoch start epoch of session
+     * @return epoch with rollover is handled.
      */
-    private static int checkRollover(final double lastSecOfDay, final double secOfDay) {
-        return (secOfDay > lastSecOfDay) ? 0 : 1;
+    private static AbsoluteDate checkRollover(final AbsoluteDate epoch, final AbsoluteDate startEpoch) {
+        // If the current epoch is before the start epoch of a session, the epoch should be shifted by 1 day.
+        // For METEO(20) data, the epoch may be a 'little' (10 hours?) before the session start epoch.
+        // And also for CALIB(40) and CALIB_DETAILS(41)
+        return epoch.durationFrom(startEpoch) < -36000 ? epoch.shiftedBy(Constants.JULIAN_DAY) : epoch;
     }
 
     /** Transient data used for parsing a CRD file. The data is kept in a
@@ -197,14 +233,11 @@ public class CRDParser {
         /** Time scale. */
         private TimeScale timeScale;
 
-        /** Current data block start epoch. */
-        private DateComponents startEpoch;
+        /** Current data block start epoch, DateComponents only. */
+        private DateComponents startEpochDateComponents;
 
         /** End Of File reached indicator. */
         private boolean done;
-
-        /** Last parsed range measurement. */
-        private RangeMeasurement lastRange;
 
         /**
          * Constructor.
@@ -214,8 +247,7 @@ public class CRDParser {
             // Initialise default values
             this.done       = false;
             this.version    = 1;
-            this.startEpoch = DateComponents.J2000_EPOCH;
-            this.lastRange  = null;
+            this.startEpochDateComponents = DateComponents.J2000_EPOCH;
 
             // Initialise empty object
             this.file                 = new CRD();
@@ -275,7 +307,7 @@ public class CRDParser {
 
         },
 
-        /** Format header. */
+        /** Station header. */
         H2("H2", "h2") {
 
             /** {@inheritDoc} */
@@ -299,6 +331,8 @@ public class CRDParser {
                 // Station network
                 if (pi.version == 2) {
                     pi.header.setStationNetword(values[6]);
+                } else {
+                    pi.header.setStationNetword(CRD.STR_VALUE_NOT_AVAILABLE);
                 }
 
             }
@@ -306,12 +340,12 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(H3, COMMENTS);
+                return Arrays.asList(H3, C0, C1, C2, C3, C4, C5, C6, C7, COMMENTS);
             }
 
         },
 
-        /** Format header. */
+        /** Target header. */
         H3("H3", "h3") {
 
             /** {@inheritDoc} */
@@ -335,7 +369,9 @@ public class CRDParser {
                 // Target class and location (if needed)
                 pi.header.setTargetClass(Integer.parseInt(values[6]));
                 if (pi.version == 2) {
-                    pi.header.setTargetLocation(Integer.parseInt(values[7]));
+                    // na=unknown (for use when tracking a transponder using a Version 1 CPF)
+                    // treated it as -1
+                    pi.header.setTargetLocation(readIntegerWithNaN(values[7], -1));
                 }
 
             }
@@ -343,12 +379,12 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(H4, COMMENTS);
+                return Arrays.asList(H4, C0, C1, C2, C3, C4, C5, C6, C7, COMMENTS);
             }
 
         },
 
-        /** Format header. */
+        /** Session (Pass/Pass segment) header. */
         H4("H4", "h4") {
 
             /** {@inheritDoc} */
@@ -369,23 +405,33 @@ public class CRDParser {
                 final int    minuteS = Integer.parseInt(values[6]);
                 final double secondS = Integer.parseInt(values[7]);
 
-                pi.startEpoch = new DateComponents(yearS, monthS, dayS);
+                pi.startEpochDateComponents = new DateComponents(yearS, monthS, dayS);
 
                 pi.header.setStartEpoch(new AbsoluteDate(yearS, monthS, dayS,
                         hourS, minuteS, secondS,
                         pi.timeScale));
 
                 // End epoch
-                final int    yearE   = Integer.parseInt(values[8]);
-                final int    monthE  = Integer.parseInt(values[9]);
-                final int    dayE    = Integer.parseInt(values[10]);
-                final int    hourE   = Integer.parseInt(values[11]);
-                final int    minuteE = Integer.parseInt(values[12]);
-                final double secondE = Integer.parseInt(values[13]);
+                // since crd v2.01
+                // Set the ending date and time fields to “na” if not available.
+                if (pi.version == 2 && values[8].equalsIgnoreCase("")) {
+                    pi.header.setEndEpoch(null);
+                } else {
+                    final int yearE = Integer.parseInt(values[8]);
+                    final int monthE = Integer.parseInt(values[9]);
+                    final int dayE = Integer.parseInt(values[10]);
+                    final int hourE = Integer.parseInt(values[11]);
+                    final int minuteE = Integer.parseInt(values[12]);
+                    final double secondE = Integer.parseInt(values[13]);
 
-                pi.header.setEndEpoch(new AbsoluteDate(yearE, monthE, dayE,
-                        hourE, minuteE, secondE,
-                        pi.timeScale));
+                    // fixed 2022-12-12
+                    // if yearE or monthE is -1.
+                    if (monthE == -1) {
+                        pi.header.setEndEpoch(null);
+                    } else {
+                        pi.header.setEndEpoch(new AbsoluteDate(yearE, monthE, dayE, hourE, minuteE, secondE, pi.timeScale));
+                    }
+                }
 
                 // Data release
                 pi.header.setDataReleaseFlag(Integer.parseInt(values[14]));
@@ -408,12 +454,13 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(H5, C0, COMMENTS);
+                return Arrays.asList(H5, C0, C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP, ANGLES,
+                                     CALIB, CALIB_DETAILS, CALIB_SHOT, STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
 
-        /** Format header. */
+        /** Prediction header. */
         H5("H5", "h5") {
 
             /** {@inheritDoc} */
@@ -435,7 +482,8 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(C0, COMMENTS);
+                return Arrays.asList(C0, C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP, ANGLES, CALIB,
+                                     CALIB_DETAILS, CALIB_SHOT, STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
@@ -459,15 +507,19 @@ public class CRDParser {
                 // System ID
                 systemRecord.setSystemId(values[3]);
 
-                // Set the system configuration record
-                pi.configurationRecords.setSystemRecord(systemRecord);
+                // Components, A B C D E F G
+                systemRecord.setComponents(Arrays.copyOfRange(values, 4, values.length));
+
+                // Add the system configuration record
+                pi.configurationRecords.addConfigurationRecord(systemRecord);
 
             }
 
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+                return Arrays.asList(H3, H4, H5, C0, C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP,
+                                     ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT, STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
@@ -494,10 +546,10 @@ public class CRDParser {
                 laserRecord.setPulseEnergy(Double.parseDouble(values[6]));
                 laserRecord.setPulseWidth(Double.parseDouble(values[7]));
                 laserRecord.setBeamDivergence(Double.parseDouble(values[8]));
-                laserRecord.setPulseInOutgoingSemiTrain(Integer.parseInt(values[9]));
+                laserRecord.setPulseInOutgoingSemiTrain(readIntegerWithNaN(values[9], 1));
 
-                // Set the laser configuration record
-                pi.configurationRecords.setLaserRecord(laserRecord);
+                // Add the laser configuration record
+                pi.configurationRecords.addConfigurationRecord(laserRecord);
 
             }
 
@@ -541,17 +593,22 @@ public class CRDParser {
                     detectorRecord.setAmplifierGain(Double.parseDouble(values[14]));
                     detectorRecord.setAmplifierBandwidth(KHZ.toSI(Double.parseDouble(values[15])));
                     detectorRecord.setAmplifierInUse(values[16]);
+                } else {
+                    detectorRecord.setAmplifierGain(Double.NaN);
+                    detectorRecord.setAmplifierBandwidth(Double.NaN);
+                    detectorRecord.setAmplifierInUse(CRD.STR_VALUE_NOT_AVAILABLE);
                 }
 
-                // Set the detector configuration record
-                pi.configurationRecords.setDetectorRecord(detectorRecord);
+                // Add the detector configuration record
+                pi.configurationRecords.addConfigurationRecord(detectorRecord);
 
             }
 
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(C3, C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+                return Arrays.asList(H3, H4, H5, C0, C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP,
+                                     ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT, STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
@@ -574,18 +631,25 @@ public class CRDParser {
                 timingRecord.setTimeSource(values[3]);
                 timingRecord.setFrequencySource(values[4]);
                 timingRecord.setTimer(values[5]);
-                timingRecord.setTimerSerialNumber(values[6]);
+                final String timerSerialNumber = values[6];
+                if (CRD.STR_NAN.equalsIgnoreCase(timerSerialNumber)) {
+                    // The timer serial number may be "na"
+                    timingRecord.setTimerSerialNumber(CRD.STR_VALUE_NOT_AVAILABLE);
+                } else {
+                    timingRecord.setTimerSerialNumber(timerSerialNumber);
+                }
                 timingRecord.setEpochDelayCorrection(US.toSI(Double.parseDouble(values[7])));
 
-                // Set the timing system configuration record
-                pi.configurationRecords.setTimingRecord(timingRecord);
+                // Add the timing system configuration record
+                pi.configurationRecords.addConfigurationRecord(timingRecord);
 
             }
 
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(C4, C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+                return Arrays.asList(H3, H4, H5, C0, C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP,
+                                     ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT, STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
@@ -605,9 +669,9 @@ public class CRDParser {
 
                 // Estimated offsets and drifts
                 transponderRecord.setTransponderId(values[2]);
-                transponderRecord.setStationUTCOffset(NM.toSI(Double.parseDouble(values[3])));
+                transponderRecord.setStationUTCOffset(NS.toSI(Double.parseDouble(values[3])));
                 transponderRecord.setStationOscDrift(Double.parseDouble(values[4]));
-                transponderRecord.setTranspUTCOffset(NM.toSI(Double.parseDouble(values[5])));
+                transponderRecord.setTranspUTCOffset(NS.toSI(Double.parseDouble(values[5])));
                 transponderRecord.setTranspOscDrift(Double.parseDouble(values[6]));
 
                 // Transponder clock reference time
@@ -620,15 +684,16 @@ public class CRDParser {
                 // Spacecraft time simplified
                 transponderRecord.setIsSpacecraftTimeSimplified(readBoolean(values[10]));
 
-                // Set the transponder configuration record
-                pi.configurationRecords.setTransponderRecord(transponderRecord);
+                // Add the transponder configuration record
+                pi.configurationRecords.addConfigurationRecord(transponderRecord);
 
             }
 
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(C5, C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+                return Arrays.asList(H3, H4, H5, C0, C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP,
+                                     ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT, STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
@@ -653,15 +718,16 @@ public class CRDParser {
                 softwareRecord.setProcessingSoftwares(COMMA.split(values[5]));
                 softwareRecord.setProcessingSoftwareVersions(COMMA.split(values[6]));
 
-                // Set the software configuration record
-                pi.configurationRecords.setSoftwareRecord(softwareRecord);
+                // Add the software configuration record
+                pi.configurationRecords.addConfigurationRecord(softwareRecord);
 
             }
 
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(C6, C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+                return Arrays.asList(H3, H4, H5, C0, C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP,
+                                     ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT, STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
@@ -691,15 +757,16 @@ public class CRDParser {
                 meteoRecord.setHumiSensorModel(values[10]);
                 meteoRecord.setHumiSensorSerialNumber(values[11]);
 
-                // Set the meteorological configuration record
-                pi.configurationRecords.setMeteorologicalRecord(meteoRecord);
+                // Add the meteorological configuration record
+                pi.configurationRecords.addConfigurationRecord(meteoRecord);
 
             }
 
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(C7, TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+                return Arrays.asList(H3, H4, H5, C0, C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP,
+                                     ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT, STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
@@ -710,13 +777,32 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                // Not implemented yet
+
+                // Initialise an empty calibration target configuration record
+                final CalibrationTargetConfiguration calibRecord = new CalibrationTargetConfiguration();
+
+                // Data contained in the line
+                final String[] values = SEPARATOR.split(line);
+
+                // Fill values
+                calibRecord.setConfigurationId(values[2]);
+                calibRecord.setTargetName(values[3]);
+                calibRecord.setSurveyedTargetDistance(Double.parseDouble(values[4]));
+                calibRecord.setSurveyError(Double.parseDouble(values[5]) * 1e-3);  // mm --> m
+                calibRecord.setSumOfAllConstantDelays(Double.parseDouble(values[6]));
+                calibRecord.setPulseEnergy(Double.parseDouble(values[7]));
+                calibRecord.setProcessingSoftwareName(values[8]);
+                calibRecord.setProcessingSoftwareVersion(values[9]);
+
+                // Add the calibration target configuration record
+                pi.configurationRecords.addConfigurationRecord(calibRecord);
             }
 
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(TEN, ELEVEN, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+                return Arrays.asList(H3, H4, H5, C0, C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP,
+                                     ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT, STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
@@ -724,12 +810,6 @@ public class CRDParser {
         /** Range Record (Full rate, Sampled Engineering/Quicklook). */
         TEN("10") {
 
-            /** Storage for the last epoch parsed to compare with the current.*/
-            private double lastSecOfDay = 0;
-
-            /** Shift in days due to the rollover.*/
-            private int dayShift = 0;
-
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
@@ -738,32 +818,35 @@ public class CRDParser {
                 final String[] values = SEPARATOR.split(line);
 
                 // Read data
-                final double secOfDay     = Double.parseDouble(values[1]);
-                final double timeOfFlight = Double.parseDouble(values[2]);
-                final int    epochEvent   = Integer.parseInt(values[4]);
+                final double secOfDay         = Double.parseDouble(values[1]);
+                final double timeOfFlight     = Double.parseDouble(values[2]);
+                final String systemConfigId   = values[3];
+                final int    epochEvent       = Integer.parseInt(values[4]);
+                final int    filterFlag       = Integer.parseInt(values[5]);
+                final int    detectorChannel  = Integer.parseInt(values[6]);
+                final int    stopNumber       = Integer.parseInt(values[7]);
+                final int    receiveAmplitude = readIntegerWithNaN(values[8], -1);
 
-                // Check secOfDay for rollover
-                dayShift = dayShift + checkRollover(lastSecOfDay, secOfDay);
-                // Initialise a new Range measurement
-                AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale);
-                if (pi.lastRange != null) {
-                    final double duration = epoch.durationFrom(pi.lastRange.getDate());
-                    if (duration < 0) {
-                        epoch = epoch.shiftedBy(Constants.JULIAN_DAY);
-                    }
+                int transmitAmplitude = -1;
+                if (pi.version == 2) {
+                    transmitAmplitude = readIntegerWithNaN(values[9], -1);
                 }
-                final RangeMeasurement range = new RangeMeasurement(epoch, timeOfFlight, epochEvent);
-                pi.dataBlock.addRangeData(range);
 
-                lastSecOfDay = secOfDay;
-                pi.lastRange = range;
+                // Initialise a new Range measurement
+                AbsoluteDate epoch = new AbsoluteDate(pi.startEpochDateComponents, new TimeComponents(secOfDay), pi.timeScale);
+                // Check rollover
+                epoch = checkRollover(epoch, pi.header.getStartEpoch());
+                final RangeMeasurement range = new FrRangeMeasurement(epoch, timeOfFlight, epochEvent, systemConfigId,
+                        filterFlag, detectorChannel, stopNumber, receiveAmplitude, transmitAmplitude);
+                pi.dataBlock.addRangeData(range);
 
             }
 
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(H8, TEN, TWELVE, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+                return Arrays.asList(H8, TEN, TWELVE, METEO, METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT, STAT,
+                                     COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
@@ -771,12 +854,6 @@ public class CRDParser {
         /** Range Record (Normal point). */
         ELEVEN("11") {
 
-            /** Storage for the last epoch parsed to compare with the current.*/
-            private double lastSecOfDay = 0;
-
-            /** Shift in days due to the rollover.*/
-            private int dayShift = 0;
-
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
@@ -785,33 +862,40 @@ public class CRDParser {
                 final String[] values = SEPARATOR.split(line);
 
                 // Read data
-                final double secOfDay     = Double.parseDouble(values[1]);
-                final double timeOfFlight = Double.parseDouble(values[2]);
-                final int    epochEvent   = Integer.parseInt(values[4]);
-                final double snr          = (pi.version == 2) ? Double.parseDouble(values[13]) : Double.NaN;
+                final double   secOfDay          = Double.parseDouble(values[1]);
+                final double   timeOfFlight      = Double.parseDouble(values[2]);
+                final String   systemConfigId    = values[3];
+                final int      epochEvent        = Integer.parseInt(values[4]);
+                final double   windowLength      = Double.parseDouble(values[5]);
+                final int      numberOfRawRanges = Integer.parseInt(values[6]);
+                final double   binRms            = PS.toSI(Double.parseDouble(values[7]));
+                final double   binSkew           = Double.parseDouble(values[8]);
+                final double   binKurtosis       = Double.parseDouble(values[9]);
+                final double   binPeakMinusMean  = PS.toSI(Double.parseDouble(values[10]));
+                final double   returnRate        = Double.parseDouble(values[11]);
+                final int      detectorChannel   = Integer.parseInt(values[12]);
 
-                // Check secOfDay for rollover
-                dayShift = dayShift + checkRollover(lastSecOfDay, secOfDay);
-                // Initialise a new Range measurement
-                AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale);
-                if (pi.lastRange != null) {
-                    final double duration = epoch.durationFrom(pi.lastRange.getDate());
-                    if (duration < 0) {
-                        epoch = epoch.shiftedBy(Constants.JULIAN_DAY);
-                    }
+                double snr = Double.NaN;
+                if (pi.version == 2) {
+                    snr    = Double.parseDouble(values[13]);
                 }
-                final RangeMeasurement range = new RangeMeasurement(epoch, timeOfFlight, epochEvent, snr);
-                pi.dataBlock.addRangeData(range);
 
-                lastSecOfDay = secOfDay;
-                pi.lastRange = range;
+                // Initialise a new Range measurement
+                AbsoluteDate epoch = new AbsoluteDate(pi.startEpochDateComponents, new TimeComponents(secOfDay), pi.timeScale);
+                // Check rollover
+                epoch = checkRollover(epoch, pi.header.getStartEpoch());
+                final RangeMeasurement range = new NptRangeMeasurement(epoch, timeOfFlight, epochEvent, snr,
+                        systemConfigId, windowLength, numberOfRawRanges, binRms, binSkew, binKurtosis, binPeakMinusMean,
+                        returnRate, detectorChannel);
+                pi.dataBlock.addRangeData(range);
 
             }
 
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(H8, ELEVEN, TWELVE, METEO, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+                return Arrays.asList(H8, ELEVEN, TWELVE, METEO, METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT, STAT,
+                                     COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
@@ -822,7 +906,31 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                // Not implemented yet
+
+                // Data contained in the line
+                final String[] values = SEPARATOR.split(line);
+
+                // Read data
+                final double   secOfDay                   = Double.parseDouble(values[1]);
+                final String   systemConfigId             = values[2];
+                final double   troposphericRefractionCorr = PS.toSI(Double.parseDouble(values[3]));
+                final double   centerOfMassCorr           = Double.parseDouble(values[4]);
+                final double   ndFilterValue              = Double.parseDouble(values[5]);
+                final double   timeBiasApplied            = Double.parseDouble(values[6]);
+
+                double rangeRate = Double.NaN;
+                if (pi.version == 2) {
+                    rangeRate    = Double.parseDouble(values[7]);
+                }
+
+                // Initialise a new Range measurement
+                AbsoluteDate epoch = new AbsoluteDate(pi.startEpochDateComponents, new TimeComponents(secOfDay), pi.timeScale);
+                // Check rollover
+                epoch = checkRollover(epoch, pi.header.getStartEpoch());
+                final RangeSupplement rangeSup = new RangeSupplement(epoch, systemConfigId, troposphericRefractionCorr,
+                        centerOfMassCorr, ndFilterValue, timeBiasApplied, rangeRate);
+                pi.dataBlock.addRangeSupplementData(rangeSup);
+
             }
 
             /** {@inheritDoc} */
@@ -836,12 +944,6 @@ public class CRDParser {
         /** Meteorological record. */
         METEO("20") {
 
-            /** Storage for the last epoch parsed to compare with the current.*/
-            private double lastSecOfDay = 0;
-
-            /** Shift in days due to the rollover.*/
-            private int dayShift = 0;
-
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
@@ -850,17 +952,18 @@ public class CRDParser {
                 final String[] values = SEPARATOR.split(line);
 
                 // Read data
-                final double secOfDay    = Double.parseDouble(values[1]);
-                final double pressure    = MBAR_TO_BAR.convert(Double.parseDouble(values[2]));
-                final double temperature = Double.parseDouble(values[3]);
-                final double humidity    = Double.parseDouble(values[4]);
+                final double   secOfDay       = Double.parseDouble(values[1]);
+                final double   pressure       = MBAR_TO_BAR.convert(Double.parseDouble(values[2]));
+                final double   temperature    = Double.parseDouble(values[3]);
+                final double   humidity       = Double.parseDouble(values[4]);
+                final int      originOfValues = Integer.parseInt(values[5]);
 
-                // Check secOfDay for rollover
-                dayShift = dayShift + checkRollover(lastSecOfDay, secOfDay);
                 // Initialise a new Range measurement
-                final AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale).shiftedBy(dayShift * 86400);
-                final MeteorologicalMeasurement meteo = new MeteorologicalMeasurement(epoch, pressure,
-                        temperature, humidity);
+                AbsoluteDate epoch = new AbsoluteDate(pi.startEpochDateComponents, new TimeComponents(secOfDay), pi.timeScale);
+                // Check rollover
+                epoch = checkRollover(epoch, pi.header.getStartEpoch());
+                final MeteorologicalMeasurement meteo = new MeteorologicalMeasurement(epoch, pressure, temperature,
+                        humidity, originOfValues);
                 pi.dataBlock.addMeteoData(meteo);
 
             }
@@ -868,7 +971,8 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(H8, METEO, METEO_SUPP, TEN, ELEVEN, TWELVE, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+                return Arrays.asList(H8, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT,
+                                     STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
@@ -885,19 +989,14 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(H8, METEO, METEO_SUPP, TEN, ELEVEN, TWELVE, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+                return Arrays.asList(H8, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT,
+                                     STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
 
         /** Pointing Angle Record. */
         ANGLES("30") {
-
-            /** Storage for the last epoch parsed to compare with the current.*/
-            private double lastSecOfDay = 0;
-
-            /** Shift in days due to the rollover.*/
-            private int dayShift = 0;
 
             /** {@inheritDoc} */
             @Override
@@ -919,14 +1018,15 @@ public class CRDParser {
                 double azimuthRate   = Double.NaN;
                 double elevationRate = Double.NaN;
                 if (pi.version == 2) {
-                    azimuthRate   = readDoubleWithNaN(values[7]);
-                    elevationRate = readDoubleWithNaN(values[8]);
+                    // degrees/second ==> rad/s
+                    azimuthRate   = FastMath.toRadians(Double.parseDouble(values[7]));
+                    elevationRate = FastMath.toRadians(Double.parseDouble(values[8]));
                 }
 
-                // Check secOfDay for rollover
-                dayShift = dayShift + checkRollover(lastSecOfDay, secOfDay);
                 // Initialise a new angles measurement
-                final AbsoluteDate epoch = new AbsoluteDate(pi.startEpoch, new TimeComponents(secOfDay), pi.timeScale);
+                AbsoluteDate epoch = new AbsoluteDate(pi.startEpochDateComponents, new TimeComponents(secOfDay), pi.timeScale);
+                // Check rollover
+                epoch = checkRollover(epoch, pi.header.getStartEpoch());
                 final AnglesMeasurement angles = new AnglesMeasurement(epoch, azmiuth, elevation,
                         directionFlag, orginFlag,
                         isRefractionCorrected,
@@ -938,7 +1038,8 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(H8, METEO, TEN, ELEVEN, ANGLES, CALIB, STAT, COMPATIBILITY, COMMENTS);
+                return Arrays.asList(H8, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT,
+                                     STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
@@ -949,13 +1050,53 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                // Not implemented yet
+
+                // Data contained in the line
+                final String[] values = SEPARATOR.split(line);
+
+                // Read data
+                final double   secOfDay               = Double.parseDouble(values[1]);
+                final int      typeOfData             = Integer.parseInt(values[2]);
+                final String   systemConfigId         = values[3];
+                final int      numberOfPointsRecorded = readIntegerWithNaN(values[4], -1);
+                final int      numberOfPointsUsed     = readIntegerWithNaN(values[5], -1);
+                final double   oneWayDistance         = Double.parseDouble(values[6]);
+                final double   systemDelay            = PS.toSI(Double.parseDouble(values[7]));
+                final double   delayShift             = PS.toSI(Double.parseDouble(values[8]));
+                final double   rms                    = PS.toSI(Double.parseDouble(values[9]));
+                final double   skew                   = Double.parseDouble(values[10]);
+                final double   kurtosis               = Double.parseDouble(values[11]);
+                final double   peakMinusMean          = PS.toSI(Double.parseDouble(values[12]));
+                final int      typeIndicator          = Integer.parseInt(values[13]);
+                final int      shiftTypeIndicator     = Integer.parseInt(values[14]);
+                final int      detectorChannel        = Integer.parseInt(values[15]);
+
+                // Check file version for additional data
+                int    span       = 0;
+                double returnRate = Double.NaN;
+                if (pi.version == 2) {
+                    // fixed 20230321
+                    // the span may be "na"
+                    span       = readIntegerWithNaN(values[16], -1);
+                    returnRate = Double.parseDouble(values[17]);
+                }
+
+                // Initialise a new angles measurement
+                AbsoluteDate epoch = new AbsoluteDate(pi.startEpochDateComponents, new TimeComponents(secOfDay), pi.timeScale);
+                // Check rollover
+                epoch = checkRollover(epoch, pi.header.getStartEpoch());
+                final Calibration cal = new Calibration(epoch, typeOfData, systemConfigId, numberOfPointsRecorded,
+                        numberOfPointsUsed, oneWayDistance, systemDelay, delayShift, rms, skew, kurtosis, peakMinusMean,
+                        typeIndicator, shiftTypeIndicator, detectorChannel, span, returnRate);
+                pi.dataBlock.addCalibrationData(cal);
+
             }
 
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, COMMENTS);
+                return Arrays.asList(H8, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT,
+                                     STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
@@ -966,13 +1107,51 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                // Not implemented yet
+
+                // Data contained in the line
+                final String[] values = SEPARATOR.split(line);
+
+                // Read data
+                final double   secOfDay               = Double.parseDouble(values[1]);
+                final int      typeOfData             = Integer.parseInt(values[2]);
+                final String   systemConfigId         = values[3];
+                final int      numberOfPointsRecorded = readIntegerWithNaN(values[4], -1);
+                final int      numberOfPointsUsed     = readIntegerWithNaN(values[5], -1);
+                final double   oneWayDistance         = Double.parseDouble(values[6]);
+                final double   systemDelay            = PS.toSI(Double.parseDouble(values[7]));
+                final double   delayShift             = PS.toSI(Double.parseDouble(values[8]));
+                final double   rms                    = PS.toSI(Double.parseDouble(values[9]));
+                final double   skew                   = Double.parseDouble(values[10]);
+                final double   kurtosis               = Double.parseDouble(values[11]);
+                final double   peakMinusMean          = PS.toSI(Double.parseDouble(values[12]));
+                final int      typeIndicator          = Integer.parseInt(values[13]);
+                final int      shiftTypeIndicator     = Integer.parseInt(values[14]);
+                final int      detectorChannel        = Integer.parseInt(values[15]);
+
+                // Check file version for additional data
+                int    span       = 0;
+                double returnRate = Double.NaN;
+                if (pi.version == 2) {
+                    span       = Integer.parseInt(values[16]);
+                    returnRate = Double.parseDouble(values[17]);
+                }
+
+                // Initialise a new angles measurement
+                AbsoluteDate epoch = new AbsoluteDate(pi.startEpochDateComponents, new TimeComponents(secOfDay), pi.timeScale);
+                // Check rollover
+                epoch = checkRollover(epoch, pi.header.getStartEpoch());
+                final CalibrationDetail cal = new CalibrationDetail(epoch, typeOfData, systemConfigId,
+                        numberOfPointsRecorded, numberOfPointsUsed, oneWayDistance, systemDelay, delayShift, rms, skew,
+                        kurtosis, peakMinusMean, typeIndicator, shiftTypeIndicator, detectorChannel, span, returnRate);
+                pi.dataBlock.addCalibrationDetailData(cal);
+
             }
 
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, COMMENTS);
+                return Arrays.asList(H8, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT,
+                                     STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
@@ -989,7 +1168,8 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, COMMENTS);
+                return Arrays.asList(H8, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT,
+                                     STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
@@ -1000,13 +1180,33 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                // Not implemented yet
+
+                // Data contained in the line
+                final String[] values = SEPARATOR.split(line);
+
+                // Read data
+                final String systemConfigId    = values[1];
+                final double rms               = PS.toSI(Double.parseDouble(values[2]));
+                final double skewness          = Double.parseDouble(values[3]);
+                final double kurtosis          = Double.parseDouble(values[4]);
+                //
+                // The peak minus mean may be "*"
+                // 50 shao     35.0  -0.509   2.221 ****** 0
+                final double peakMinusMean = values[5].contains("*") ? Double.NaN : PS.toSI(Double.parseDouble(values[5]));
+
+                final int dataQualityIndicator = Integer.parseInt(values[6]);
+
+                final SessionStatistics stat = new SessionStatistics(systemConfigId, rms, skewness, kurtosis, peakMinusMean,
+                        dataQualityIndicator);
+                pi.dataBlock.addSessionStatisticsData(stat);
+
             }
 
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, H8, COMMENTS);
+                return Arrays.asList(H8, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT,
+                                     STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
@@ -1023,20 +1223,21 @@ public class CRDParser {
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(H8, METEO, CALIB, CALIB_DETAILS, CALIB_SHOT, TEN, ELEVEN, TWELVE, ANGLES, STAT, COMPATIBILITY, COMMENTS);
+                return Arrays.asList(H8, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT,
+                                     STAT, COMPATIBILITY, COMMENTS, CUSTOM);
             }
 
         },
 
         /** Comments. */
-        COMMENTS("00") {
+        COMMENTS(COMMENTS_IDENTIFIER) {
 
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
 
                 // Comment
-                final String comment = line.split(getFirstIdentifier())[1].trim();
+                final String comment = line.substring(2).trim();
                 pi.file.getComments().add(comment);
 
             }
@@ -1045,7 +1246,25 @@ public class CRDParser {
             @Override
             public Iterable<LineParser> allowedNext() {
                 return Arrays.asList(H1, H2, H3, H4, H5, H8, H9, C0, C1, C2, C3, C4, C5, C6, C7, TEN, ELEVEN, TWELVE, METEO,
-                                     METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT, STAT, COMPATIBILITY, COMMENTS);
+                        METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT, STAT, COMPATIBILITY, COMMENTS, CUSTOM);
+
+            }
+
+        },
+
+        /** Custom. */
+        CUSTOM("9\\d") {
+
+            /** {@inheritDoc} */
+            @Override
+            public void parse(final String line, final ParseInfo pi) {
+                // Not implemented yet
+            }
+
+            /** {@inheritDoc} */
+            public Iterable<LineParser> allowedNext() {
+                return Arrays.asList(H8, TEN, ELEVEN, TWELVE, METEO, METEO_SUPP, ANGLES, CALIB, CALIB_DETAILS, CALIB_SHOT,
+                                     STAT, COMPATIBILITY, COMMENTS, CUSTOM);
 
             }
 
@@ -1058,6 +1277,14 @@ public class CRDParser {
             @Override
             public void parse(final String line, final ParseInfo pi) {
 
+                // fixed 2022-12-12
+                // For the case of monthE is -1.
+                // Use the date of the last range data as the end epoch.
+                if (pi.header.getEndEpoch() == null) {
+                    final List<RangeMeasurement> rangeData =  pi.dataBlock.getRangeData();
+                    pi.header.setEndEpoch(rangeData.get(rangeData.size() - 1).getDate());
+                }
+
                 // Fill data block
                 pi.dataBlock.setHeader(pi.header);
                 pi.dataBlock.setConfigurationRecords(pi.configurationRecords);
@@ -1066,18 +1293,40 @@ public class CRDParser {
                 pi.file.addDataBlock(pi.dataBlock);
 
                 // Initialize a new empty containers
-                pi.startEpoch           = DateComponents.J2000_EPOCH;
+                pi.startEpochDateComponents           = DateComponents.J2000_EPOCH;
+                final CRDHeader lastHeader  = pi.header;
                 pi.header               = new CRDHeader();
                 pi.configurationRecords = new CRDConfiguration();
                 pi.dataBlock            = new CRDDataBlock();
-                pi.lastRange            = null;
+
+                // fill header with H1 H2 H3 if the file is for many targets, single system
+                // configuration (see P31 in crd201)
+                pi.header.setFormat(lastHeader.getFormat());
+                pi.header.setVersion(lastHeader.getVersion());
+                pi.header.setProductionEpoch(lastHeader.getProductionEpoch());
+                pi.header.setProductionHour(lastHeader.getProductionHour());
+
+                pi.header.setStationName(lastHeader.getStationName());
+                pi.header.setSystemIdentifier(lastHeader.getSystemIdentifier());
+                pi.header.setSystemNumber(lastHeader.getSystemNumber());
+                pi.header.setSystemOccupancy(lastHeader.getSystemOccupancy());
+                pi.header.setEpochIdentifier(lastHeader.getEpochIdentifier());
+                pi.header.setStationNetword(lastHeader.getStationNetword());
+
+                pi.header.setName(lastHeader.getName());
+                pi.header.setIlrsSatelliteId(lastHeader.getIlrsSatelliteId());
+                pi.header.setSic(lastHeader.getSic());
+                pi.header.setNoradId(lastHeader.getNoradId());
+                pi.header.setSpacecraftEpochTimeScale(lastHeader.getSpacecraftEpochTimeScale());
+                pi.header.setTargetClass(lastHeader.getTargetClass());
+                pi.header.setTargetLocation(lastHeader.getTargetLocation());
 
             }
 
             /** {@inheritDoc} */
             @Override
             public Iterable<LineParser> allowedNext() {
-                return Arrays.asList(H1, H9, COMMENTS);
+                return Arrays.asList(H1, H4, H9, COMMENTS);
             }
 
         },
@@ -1115,14 +1364,6 @@ public class CRDParser {
             for (int index = 0; index < patterns.length; index++) {
                 patterns[index] = Pattern.compile(identifiers[index]);
             }
-        }
-
-        /**
-         * Get the regular expression for identifying line.
-         * @return the regular expression for identifying line
-         */
-        public String getFirstIdentifier() {
-            return identifiers[0];
         }
 
         /** Parse a line.
@@ -1163,14 +1404,15 @@ public class CRDParser {
         }
 
         /**
-         * Read a double value taking into consideration a possible "na".
+         * Read an integer value taking into consideration a possible "NaN".
+         * If the value is "NaN", the defaultValue is returned.
          * @param value input string
-         * @return the corresponding double value
+         * @param defaultValue the default value
+         * @return the corresponding integer value
          */
-        private static double readDoubleWithNaN(final String value) {
-            return "na".equals(value) ? Double.NaN : Double.parseDouble(value);
+        private static int readIntegerWithNaN(final String value, final int defaultValue) {
+            return CRD.STR_NAN.equalsIgnoreCase(value) ? defaultValue : Integer.parseInt(value);
         }
-
     }
 
 }

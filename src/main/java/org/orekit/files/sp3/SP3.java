@@ -17,20 +17,27 @@
 package org.orekit.files.sp3;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.Function;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Precision;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -177,13 +184,179 @@ public class SP3
      * @param frameBuilder         for constructing a reference frame from the identifier
      */
     public SP3(final double mu,
-                   final int interpolationSamples,
-                   final Function<? super String, ? extends Frame> frameBuilder) {
+               final int interpolationSamples,
+               final Function<? super String, ? extends Frame> frameBuilder) {
         this.mu = mu;
         this.interpolationSamples = interpolationSamples;
         this.frameBuilder = frameBuilder;
-        // must be linked has map to preserve order of satellites in the file.
+        // must be linked hash map to preserve order of satellites in the file.
         satellites = new LinkedHashMap<>();
+    }
+
+    /** Splice several SP3 files together.
+     * <p>
+     * Splicing SP3 files is intended to be used when continuous computation
+     * covering more than one file is needed. The files should all have the exact same
+     * metadata: {@link #getType() type}, {@link #getTimeSystem() time system},
+     * {@link #getCoordinateSystem() coordinate system}, except for satellite accuracy
+     * which can be different from one file to the next one, and some satellites may
+     * be missing in some files… Once sorted (which is done internally), the gap between
+     * each file should not exceed the {@link #getEpochInterval() epoch interval}.
+     * </p>
+     * <p>
+     * The spliced file only contains the satellites that were present in all files.
+     * Satellites present in some files and absent from other files are silently
+     * dropped.
+     * </p>
+     * <p>
+     * Depending on producer, successive SP3 files either have a gap between the last
+     * entry of one file and the first entry of the next file (for example files with
+     * a 5 minutes epoch interval may end at 23:55 and the next file start at 00:00),
+     * or both files have one point exactly at the splicing date (i.e. 24:00 one day
+     * and 00:00 next day). In the later case, the last point of the early file is dropped
+     * and the first point of the late file takes precedence, hence only one point remains
+     * in the spliced file ; this design choice is made to enforce continuity and
+     * regular interpolation.
+     * </p>
+     * @param sp3 SP3 files to merge
+     * @return merged SP3
+     * @since 12.0
+     */
+    public static SP3 splice(final Collection<SP3> sp3) {
+
+        // sort the files
+        final ChronologicalComparator comparator = new ChronologicalComparator();
+        final SortedSet<SP3> sorted = new TreeSet<>((s1, s2) -> comparator.compare(s1.getEpoch(), s2.getEpoch()));
+        sorted.addAll(sp3);
+
+        // prepare spliced file
+        final SP3 first   = sorted.first();
+        final SP3 spliced = new SP3(first.mu, first.interpolationSamples, first.frameBuilder);
+        spliced.setFilter(first.filter);
+        spliced.setType(first.getType());
+        spliced.setTimeSystem(first.getTimeSystem());
+        spliced.setDataUsed(first.getDataUsed());
+        spliced.setEpoch(first.getEpoch());
+        spliced.setGpsWeek(first.getGpsWeek());
+        spliced.setSecondsOfWeek(first.getSecondsOfWeek());
+        spliced.setJulianDay(first.getJulianDay());
+        spliced.setDayFraction(first.getDayFraction());
+        spliced.setEpochInterval(first.getEpochInterval());
+        spliced.setCoordinateSystem(first.getCoordinateSystem());
+        spliced.setOrbitTypeKey(first.getOrbitTypeKey());
+        spliced.setAgency(first.getAgency());
+
+        // identify the satellites that are present in all files
+        final List<String> firstSats  = new ArrayList<>();
+        final List<String> commonSats = new ArrayList<>();
+        for (final Map.Entry<String, SP3Ephemeris> entry : first.satellites.entrySet()) {
+            firstSats.add(entry.getKey());
+            commonSats.add(entry.getKey());
+        }
+        for (final SP3 current : sorted) {
+            for (final String sat : commonSats) {
+                if (!current.containsSatellite(sat)) {
+                    commonSats.remove(sat);
+                    break;
+                }
+            }
+        }
+        for (int i = 0; i < commonSats.size(); ++i) {
+            final String sat = commonSats.get(i);
+            spliced.addSatellite(sat);
+            for (int j = 0; j < firstSats.size(); ++j) {
+                if (sat.equals(firstSats.get(j))) {
+                    spliced.setAccuracy(i, first.getAccuracy(j));
+                }
+            }
+        }
+
+        // splice files
+        SP3 previous = null;
+        int epochCount = 0;
+        for (final SP3 current : sorted) {
+
+            epochCount += current.getNumberOfEpochs();
+            if (previous != null) {
+
+                // check metadata and check if we should drop the last entry of previous file
+                final boolean dropLast = current.checkSplice(previous);
+                if (dropLast) {
+                    --epochCount;
+                }
+
+                // append the pending data from previous file
+                for (final Map.Entry<String, SP3Ephemeris> entry : previous.satellites.entrySet()) {
+                    if (commonSats.contains(entry.getKey())) {
+                        final List<SP3Coordinate> coordinates = entry.getValue().getCoordinates();
+                        for (int i = 0; i < coordinates.size() - (dropLast ? 1 : 0); ++i) {
+                            spliced.addSatelliteCoordinate(entry.getKey(), coordinates.get(i));
+                        }
+                    }
+                }
+
+            }
+
+            previous = current;
+
+        }
+        spliced.setNumberOfEpochs(epochCount);
+
+        // append the pending data from last file
+        for (final Map.Entry<String, SP3Ephemeris> entry : previous.satellites.entrySet()) {
+            if (commonSats.contains(entry.getKey())) {
+                for (final SP3Coordinate coordinate : entry.getValue().getCoordinates()) {
+                    spliced.addSatelliteCoordinate(entry.getKey(), coordinate);
+                }
+            }
+        }
+        return spliced;
+
+    }
+
+    /** Check if instance can be spliced after previous one.
+     * @param previous SP3 file (should already be sorted to be before current instance), can be null
+     * @return true if last entry of previous file should be dropped as first entry of current file
+     * is at very close date and will take precedence
+     * @exception OrekitException if metadata are incompatible
+     * @since 12.0
+     */
+    private boolean checkSplice(final SP3 previous) throws OrekitException {
+
+        if (!(previous.getType()             == getType()                  &&
+              previous.getTimeSystem()       == getTimeSystem()            &&
+              previous.getOrbitType()        == getOrbitType()             &&
+              previous.getCoordinateSystem().equals(getCoordinateSystem()) &&
+              previous.getDataUsed().equals(getDataUsed())                 &&
+              previous.getAgency().equals(getAgency()))) {
+            throw new OrekitException(OrekitMessages.SP3_INCOMPATIBLE_FILE_METADATA);
+        }
+
+        boolean dropLast = false;
+        for (final Map.Entry<String, SP3Ephemeris> entry : previous.satellites.entrySet()) {
+            final SP3Ephemeris previousEphem = entry.getValue();
+            final SP3Ephemeris currentEphem  = satellites.get(entry.getKey());
+            if (currentEphem != null) {
+                if (!(previousEphem.getAvailableDerivatives()    == currentEphem.getAvailableDerivatives() &&
+                      previousEphem.getFrame()                   == currentEphem.getFrame()                &&
+                      previousEphem.getInterpolationSamples()    == currentEphem.getInterpolationSamples() &&
+                      Precision.equals(previousEphem.getMu(),       currentEphem.getMu(), 2))) {
+                    throw new OrekitException(OrekitMessages.SP3_INCOMPATIBLE_SATELLITE_MEDATADA,
+                                              entry.getKey());
+                } else {
+                    final double dt = currentEphem.getStart().durationFrom(previousEphem.getStop());
+                    if (dt > getEpochInterval()) {
+                        throw new OrekitException(OrekitMessages.SP3_TOO_LARGE_GAP_FOR_SPLICING,
+                                                  entry.getKey(),
+                                                  currentEphem.getStart().durationFrom(previousEphem.getStop()));
+                    }
+                    dropLast = dt < 0.001 * getEpochInterval();
+                }
+            }
+        }
+
+        return dropLast;
+
     }
 
     /**

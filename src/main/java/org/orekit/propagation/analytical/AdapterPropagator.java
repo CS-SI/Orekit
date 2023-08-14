@@ -84,6 +84,8 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
         super(reference.getAttitudeProvider());
         this.reference = reference;
         this.effects = new ArrayList<DifferentialEffect>();
+        // Sets initial state
+        super.resetInitialState(getInitialState());
     }
 
     /** Add a differential effect.

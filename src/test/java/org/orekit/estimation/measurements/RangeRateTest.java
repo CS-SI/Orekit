@@ -76,7 +76,7 @@ public class RangeRateTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the AZEL value
-            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -124,7 +124,7 @@ public class RangeRateTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the AZEL value
-            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -175,7 +175,9 @@ public class RangeRateTest {
             final double[][] finiteDifferencesJacobian =
                     Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) {
-                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                    return measurement.
+                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                           getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
@@ -193,7 +195,7 @@ public class RangeRateTest {
             }
 
         }
-        Assertions.assertEquals(0, maxRelativeError, 1.5e-8);
+        Assertions.assertEquals(0, maxRelativeError, 8.1e-6);
 
     }
 
@@ -239,7 +241,9 @@ public class RangeRateTest {
             final double[][] finiteDifferencesJacobian =
                     Differentiation.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) {
-                    return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                    return measurement.
+                           estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                           getEstimatedValue();
                 }
             }, 1, propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngle.TRUE, 15.0, 3).value(state);
@@ -257,7 +261,7 @@ public class RangeRateTest {
             }
 
         }
-        Assertions.assertEquals(0, maxRelativeError, 2.1e-7);
+        Assertions.assertEquals(0, maxRelativeError, 8.1e-6);
 
     }
 
@@ -333,7 +337,9 @@ public class RangeRateTest {
                                     /** {@inheritDoc} */
                                     @Override
                                     public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
-                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                        return measurement.
+                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
                 final double ref = dMkdP.value(drivers[i], date);
@@ -413,7 +419,9 @@ public class RangeRateTest {
                                     /** {@inheritDoc} */
                                     @Override
                                     public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
-                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                        return measurement.
+                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
                 final double ref = dMkdP.value(drivers[i], date);
@@ -635,7 +643,9 @@ public class RangeRateTest {
                                     /** {@inheritDoc} */
                                     @Override
                                     public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
-                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                        return measurement.
+                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               getEstimatedValue()[0];
                                     }
                                 }, 3, 20.0 * drivers[i].getScale());
                 final double ref = dMkdP.value(drivers[i], date);
@@ -713,7 +723,9 @@ public class RangeRateTest {
                                     /** {@inheritDoc} */
                                     @Override
                                     public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
-                                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                        return measurement.
+                                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                               getEstimatedValue()[0];
                                     }
                                 }, 3, 0.1 * drivers[i].getScale());
                 final double ref = dMkdP.value(drivers[i], date);

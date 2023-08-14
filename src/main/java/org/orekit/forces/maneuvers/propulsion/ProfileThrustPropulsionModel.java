@@ -17,6 +17,7 @@
 
 package org.orekit.forces.maneuvers.propulsion;
 
+import java.lang.reflect.Array;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
@@ -32,6 +33,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeSpanMap;
 
@@ -148,8 +150,10 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
      * </p>
      */
     public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        @SuppressWarnings("unchecked")
         final FieldDateDetector<T> detector = new FieldDateDetector<>(field.getZero().newInstance(0.5 * shortestSegmentDuration()),
-                                                                      field.getZero().newInstance(DATATION_ACCURACY)).
+                                                                      field.getZero().newInstance(DATATION_ACCURACY),
+                                                                      (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 0)).
                                               withHandler((state, det, increasing) -> Action.RESET_DERIVATIVES);
         for (TimeSpanMap.Transition<PolynomialThrustSegment> transition = profile.getFirstTransition();
              transition != null;

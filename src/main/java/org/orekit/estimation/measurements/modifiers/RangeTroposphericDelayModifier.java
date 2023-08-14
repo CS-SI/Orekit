@@ -18,6 +18,7 @@ package org.orekit.estimation.measurements.modifiers;
 
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.Range;
@@ -43,6 +44,18 @@ public class RangeTroposphericDelayModifier extends BaseRangeTroposphericDelayMo
      */
     public RangeTroposphericDelayModifier(final DiscreteTroposphericModel model) {
         super(model);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Range> estimated) {
+
+        final Range         measurement = estimated.getObservedMeasurement();
+        final GroundStation station     = measurement.getStation();
+
+        RangeModifierUtil.modifyWithoutDerivatives(estimated,  station, this::rangeErrorTroposphericModel);
+
+
     }
 
     /** {@inheritDoc} */

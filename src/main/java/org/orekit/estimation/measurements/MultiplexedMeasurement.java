@@ -47,6 +47,10 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
     /** Multiplexed measurements. */
     private final List<ObservedMeasurement<?>> observedMeasurements;
 
+    /** Multiplexed measurements without derivatives.
+     */
+    private final List<EstimatedMeasurementBase<?>> estimatedMeasurementsWithoutDerivatives;
+
     /** Multiplexed measurements. */
     private final List<EstimatedMeasurement<?>> estimatedMeasurements;
 
@@ -73,9 +77,10 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
               multiplex(measurements, m -> m.getBaseWeight()),
               multiplex(measurements));
 
-        this.observedMeasurements  = measurements;
-        this.estimatedMeasurements = new ArrayList<>();
-        this.parametersDrivers     = new ParameterDriversList();
+        this.observedMeasurements                    = measurements;
+        this.estimatedMeasurementsWithoutDerivatives = new ArrayList<>();
+        this.estimatedMeasurements                   = new ArrayList<>();
+        this.parametersDrivers                       = new ParameterDriversList();
 
         // gather parameters drivers
         int dim = 0;
@@ -118,11 +123,70 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
         return observedMeasurements;
     }
 
+    /** Get the underlying estimated measurements without derivatives.
+     * @return underlying estimated measurements without derivatives
+     * @since 12.0
+     */
+    public List<EstimatedMeasurementBase<?>> getEstimatedMeasurementsWithoutDerivatives() {
+        return estimatedMeasurementsWithoutDerivatives;
+    }
+
     /** Get the underlying estimated measurements.
      * @return underlying estimated measurements
      */
     public List<EstimatedMeasurement<?>> getEstimatedMeasurements() {
         return estimatedMeasurements;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EstimatedMeasurementBase<MultiplexedMeasurement> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                                       final int evaluation,
+                                                                                                       final SpacecraftState[] states) {
+
+        final SpacecraftState[]              evaluationStates = new SpacecraftState[nbSat];
+        final List<TimeStampedPVCoordinates> participants     = new ArrayList<>();
+        final double[]                       value            = new double[dimension];
+
+        // loop over all multiplexed measurements
+        estimatedMeasurementsWithoutDerivatives.clear();
+        int index = 0;
+        for (int i = 0; i < observedMeasurements.size(); ++i) {
+
+            // filter states involved in the current measurement
+            final SpacecraftState[] filteredStates = new SpacecraftState[mapping[i].length];
+            for (int j = 0; j < mapping[i].length; ++j) {
+                filteredStates[j] = states[mapping[i][j]];
+            }
+
+            // perform evaluation
+            final EstimatedMeasurementBase<?> eI = observedMeasurements.get(i).estimateWithoutDerivatives(iteration, evaluation, filteredStates);
+            estimatedMeasurementsWithoutDerivatives.add(eI);
+
+            // extract results
+            final double[] valueI = eI.getEstimatedValue();
+            System.arraycopy(valueI, 0, value, index, valueI.length);
+            index += valueI.length;
+
+            // extract states
+            final SpacecraftState[] statesI = eI.getStates();
+            for (int j = 0; j < mapping[i].length; ++j) {
+                evaluationStates[mapping[i][j]] = statesI[j];
+            }
+
+        }
+
+        // create multiplexed estimation
+        final EstimatedMeasurementBase<MultiplexedMeasurement> multiplexed =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       evaluationStates,
+                                                       participants.toArray(new TimeStampedPVCoordinates[0]));
+
+        // copy multiplexed value
+        multiplexed.setEstimatedValue(value);
+
+        return multiplexed;
+
     }
 
     /** {@inheritDoc} */

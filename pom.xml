@@ -472,6 +472,7 @@
           <showWarnings>true</showWarnings>
           <compilerArgs>
             <arg>-Xlint:deprecation</arg>
+            <arg>-Xlint:unchecked</arg>
             <arg>-Xplugin:dataContextPlugin</arg>
           </compilerArgs>
         </configuration>

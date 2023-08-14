@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.utils.ParameterDriver;
@@ -77,7 +78,7 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<T> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated) {
 
         // apply the bias to the measurement value
         final double[] value = estimated.getEstimatedValue();
@@ -85,16 +86,30 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
         for (int i = 0; i < drivers.size(); ++i) {
             final ParameterDriver driver = drivers.get(i);
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
-                value[nb] += driver.getValue(span.getStart());
-                if (driver.isSelected()) {
-                // add the partial derivatives
-                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[nb++]);
-                }
+                value[nb++] += driver.getValue(span.getStart());
             }
         }
         estimated.setEstimatedValue(value);
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void modify(final EstimatedMeasurement<T> estimated) {
+
+        // apply the bias to the measurement value
+        int nb = 0;
+        for (int i = 0; i < drivers.size(); ++i) {
+            final ParameterDriver driver = drivers.get(i);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                if (driver.isSelected()) {
+                    // add the partial derivatives
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[nb++]);
+                }
+            }
+        }
+
+        modifyWithoutDerivatives(estimated);
 
     }
 
