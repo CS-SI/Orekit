@@ -52,7 +52,18 @@ public class SinexLoaderDcbTest {
                 shiftedBy(58414);
         Assertions.assertEquals(creationDate, refCreationDate);
     }
-    
+
+    @Test
+    public void testFirstLineDCBInUtc() {
+        // Verify the parsing of the first line for the Sinex loader in the DCB file case.
+        SinexLoader loader = new SinexLoader("DLR0MGXFIN_20212740000_03L_01D_DCB_UTC.BSX");
+        AbsoluteDate creationDate = loader.getCreationDate();
+        AbsoluteDate refCreationDate = new AbsoluteDate(new DateComponents(2022, 1, 1), TimeScalesFactory.getUTC()).
+                shiftedBy(Constants.JULIAN_DAY * (11 - 1)).
+                shiftedBy(58414);
+        Assertions.assertEquals(creationDate, refCreationDate);
+    }
+
     @Test
     public void testDCBDescriptionSat() {
         SinexLoader loader = new SinexLoader("DLR0MGXFIN_20212740000_03L_01D_DCB_trunc_sat.BSX");
