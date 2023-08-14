@@ -22,56 +22,48 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
-import org.orekit.utils.Constants;
-import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 
 
-public class SinexLoaderDCBTest {
-    
-    private TimeScale utc;
+public class SinexLoaderDcbTest {
 
     @BeforeAll
     public static void setUpData() {
         // Sets the root of data to read
         Utils.setDataRoot("gnss:sinex");
     }
-    
-    @BeforeEach
-    public void setUpTimeScale() {
-        utc = TimeScalesFactory.getUTC();
-    }
-    
+
     @Test
     public void testFirstLineDCB() {
         // Verify the parsing of the first line for the Sinex loader in the DCB file case.
         SinexLoader loader = new SinexLoader("DLR0MGXFIN_20212740000_03L_01D_DCB_default_description.BSX");
-        AbsoluteDate creaDate = loader.getCreationDate();
-        AbsoluteDate refCreaDate = new AbsoluteDate(new DateComponents(2022, 1, 1), utc).
+        AbsoluteDate creationDate = loader.getCreationDate();
+        AbsoluteDate refCreationDate = new AbsoluteDate(new DateComponents(2022, 1, 1), TimeScalesFactory.getGPS()).
                 shiftedBy(Constants.JULIAN_DAY * (11 - 1)).
                 shiftedBy(58414);
-        Assertions.assertEquals(creaDate, refCreaDate);
+        Assertions.assertEquals(creationDate, refCreationDate);
     }
     
     @Test
     public void testDCBDescriptionSat() {
         SinexLoader loader = new SinexLoader("DLR0MGXFIN_20212740000_03L_01D_DCB_trunc_sat.BSX");
         // DCB Description test
-        DCBSatellite dcbSat = loader.getDCBSatellite("G01");
-        DCBDescription dcbDesc = dcbSat.getDcbDescription();
-        SatelliteSystem timeSystem = dcbDesc.getTimeSystem();
+        DcbSatellite dcbSat = loader.getDCBSatellite("G01");
+        DcbDescription dcbDesc = dcbSat.getDescription();
+        TimeSystem timeSystem = dcbDesc.getTimeSystem();
         String biasMode = dcbDesc.getBiasMode();
         String determinationMethod = dcbDesc.getDeterminationMethod();
         int observationSampling = dcbDesc.getObservationSampling();
         int parameterSpacing = dcbDesc.getParameterSpacing();
-        Assertions.assertEquals(timeSystem, SatelliteSystem.GPS);
+        Assertions.assertEquals(timeSystem, TimeSystem.GPS);
         Assertions.assertEquals(biasMode, "RELATIVE");
         Assertions.assertEquals(determinationMethod, "INTER-FREQUENCY_BIAS_ESTIMATION");
         Assertions.assertEquals(parameterSpacing, 86400);
@@ -82,14 +74,14 @@ public class SinexLoaderDCBTest {
     public void testDCBDescriptionStation() {
         SinexLoader loader = new SinexLoader("DLR0MGXFIN_20212740000_03L_01D_DCB_trunc_sat.BSX");
         // DCB Description test
-        DCBStation dcbStation = loader.getDCBStation("AGGO");
-        DCBDescription dcbDesc = dcbStation.getDcbDescription();
-        SatelliteSystem timeSystem = dcbDesc.getTimeSystem();
+        DcbStation dcbStation = loader.getDcbStation("AGGO");
+        DcbDescription dcbDesc = dcbStation.getDescription();
+        TimeSystem timeSystem = dcbDesc.getTimeSystem();
         String biasMode = dcbDesc.getBiasMode();
         String determinationMethod = dcbDesc.getDeterminationMethod();
         int observationSampling = dcbDesc.getObservationSampling();
         int parameterSpacing = dcbDesc.getParameterSpacing();
-        Assertions.assertEquals(timeSystem, SatelliteSystem.GPS);
+        Assertions.assertEquals(timeSystem, TimeSystem.GPS);
         Assertions.assertEquals(biasMode, "RELATIVE");
         Assertions.assertEquals(determinationMethod, "INTER-FREQUENCY_BIAS_ESTIMATION");
         Assertions.assertEquals(parameterSpacing, 86400);
@@ -99,8 +91,8 @@ public class SinexLoaderDCBTest {
     @Test
     public void testDCBfile() {
         SinexLoader loader = new SinexLoader("DLR0MGXFIN_20212740000_03L_01D_DCB_trunc_sat.BSX");
-        DCBSatellite DCBSat = loader.getDCBSatellite("G01");
-        DCB DCBTest = DCBSat.getDcbObject();
+        DcbSatellite DCBSat = loader.getDCBSatellite("G01");
+        Dcb DCBTest = DCBSat.getDcbData();
         
 
         // Observation Pair test
@@ -146,10 +138,10 @@ public class SinexLoaderDCBTest {
         int day = 274;
         int secInDay = 0;
         
-        AbsoluteDate refFirstDate = new AbsoluteDate(new DateComponents(year, 1, 1), utc).
+        AbsoluteDate refFirstDate = new AbsoluteDate(new DateComponents(year, 1, 1), TimeScalesFactory.getGPS()).
                 shiftedBy(Constants.JULIAN_DAY * (day - 1)).
                 shiftedBy(secInDay);
-        AbsoluteDate firstDate =  DCBTest.getMinDateObservationPair(Obs1, Obs2);
+        AbsoluteDate firstDate =  DCBTest.getMinimumValidDateForObservationPair(Obs1, Obs2);
         
         Assertions.assertEquals(firstDate, refFirstDate);
         
@@ -158,10 +150,10 @@ public class SinexLoaderDCBTest {
         day = 283;
         secInDay = 0;
         
-        AbsoluteDate refLastDate = new AbsoluteDate(new DateComponents(year, 1, 1), utc).
+        AbsoluteDate refLastDate = new AbsoluteDate(new DateComponents(year, 1, 1), TimeScalesFactory.getGPS()).
                 shiftedBy(Constants.JULIAN_DAY * (day - 1)).
                 shiftedBy(secInDay);
-        AbsoluteDate lastDate =  DCBTest.getMaxDateObservationPair(Obs1, Obs2);
+        AbsoluteDate lastDate =  DCBTest.getMaximumValidDateForObservationPair(Obs1, Obs2);
         
         Assertions.assertEquals(lastDate, refLastDate);
         
@@ -170,32 +162,28 @@ public class SinexLoaderDCBTest {
         day = 280;
         secInDay = 43200;
         
-        AbsoluteDate refDate = new AbsoluteDate(new DateComponents(year, 1, 1), utc).
+        AbsoluteDate refDate = new AbsoluteDate(new DateComponents(year, 1, 1), TimeScalesFactory.getGPS()).
                 shiftedBy(Constants.JULIAN_DAY * (day - 1)).
                 shiftedBy(secInDay);
         
-        double valueDcb = DCBTest.getDCB(Obs1, Obs2, refDate);
+        double valueDcb = DCBTest.getDcb(Obs1, Obs2, refDate);
         double valueDcbReal = -1.0697e-9;
         
         Assertions.assertEquals(valueDcbReal, valueDcb, 1e-13);
         
         // Value Test for a Station
-        DCBStation DCBStation = loader.getDCBStation("ALIC");
-        DCB DCBTestStation = DCBStation.getDcbObject(SatelliteSystem.parseSatelliteSystem("R"));
-        HashSet<ObservationType> OPStation = new HashSet<>();
-        ObservationType Ob7 = ObservationType.valueOf("C1P");
-        OPStation.add(Ob1);
-        OPStation.add(Ob7);
-        
+        DcbStation DCBStation = loader.getDcbStation("ALIC");
+        Dcb DCBTestStation = DCBStation.getDcbData(SatelliteSystem.parseSatelliteSystem("R"));
+
         year = 2021;
         day = 300;
         secInDay = 43200;
         
-        AbsoluteDate refDateStation = new AbsoluteDate(new DateComponents(year, 1, 1), utc).
+        AbsoluteDate refDateStation = new AbsoluteDate(new DateComponents(year, 1, 1), TimeScalesFactory.getGPS()).
                 shiftedBy(Constants.JULIAN_DAY * (day - 1)).
                 shiftedBy(secInDay);
         
-        double valueDcbStation = DCBTestStation.getDCB("C1C", "C1P", refDateStation);
+        double valueDcbStation = DCBTestStation.getDcb("C1C", "C1P", refDateStation);
         double valueDcbRealStation = -0.6458e-9;
         
         Assertions.assertEquals(valueDcbRealStation, valueDcbStation, 1e-13);
@@ -213,20 +201,19 @@ public class SinexLoaderDCBTest {
     public void testDCBFileStation() {
         SinexLoader loader = new SinexLoader("DLR0MGXFIN_20212740000_03L_01D_DCB_trunc_sat.BSX");
         String stationIdRef = "AGGO";
-        String stationSystemRef = "G";
-        DCBStation DCBTest = loader.getDCBStation(stationIdRef);
+        DcbStation DCBTest = loader.getDcbStation(stationIdRef);
          
-         // Test getStationId : Station Case
-         Assertions.assertEquals(stationIdRef, DCBTest.getStationId());
+        // Test getStationId : Station Case
+        Assertions.assertEquals(stationIdRef, DCBTest.getSiteCode());
          
-         //Test getAvailableSystems
-         final SatelliteSystem sat1 = SatelliteSystem.parseSatelliteSystem("G");
-         final SatelliteSystem sat2 = SatelliteSystem.parseSatelliteSystem("E");
-         final Set<SatelliteSystem> setSystemRef = new HashSet<>();
-         setSystemRef.add(sat1);
-         setSystemRef.add(sat2);
-         
-         final Set<SatelliteSystem> setSystem = DCBTest.getAvailableSatelliteSystems();
-         Assertions.assertEquals(setSystemRef, setSystem);
+        //Test getAvailableSystems
+        final SatelliteSystem sat1 = SatelliteSystem.parseSatelliteSystem("G");
+        final SatelliteSystem sat2 = SatelliteSystem.parseSatelliteSystem("E");
+        final Set<SatelliteSystem> setSystemRef = new HashSet<>();
+        setSystemRef.add(sat1);
+        setSystemRef.add(sat2);
+        
+        final Iterable<SatelliteSystem> setSystem = DCBTest.getAvailableSatelliteSystems();
+        Assertions.assertEquals(setSystemRef, setSystem);
     }
 }

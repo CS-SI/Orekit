@@ -1,0 +1,172 @@
+/* Copyright 2002-2023 CS GROUP
+ * Licensed to CS GROUP (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.orekit.files.sinex;
+
+import java.util.HashSet;
+import java.util.HashMap;
+import org.orekit.utils.TimeSpanMap;
+import org.orekit.gnss.ObservationType;
+import org.orekit.time.AbsoluteDate;
+
+/**
+ * Class to store DCB Solution data parsed in the SinexLoader.
+ * <p>
+ * This class is made to handle both station and satellite DCB data.
+ * Bias values are stored in TimeSpanMaps associated with a given pair
+ * of observation codes. Those TimeSpanMaps are stored in a Map, which
+ * associate a pair of observation code (as a HashSet of ObservationType)
+ * to a TimeSpanMap,  encapsulated in a DCBCode object.
+ * </p>
+ * @author Louis Aucouturier
+ * @since 12.0
+ */
+public class Dcb {
+
+    /** Ensemble of Observation Code pairs present for the satellite. */
+    private HashSet<HashSet<ObservationType>> observationSets;
+
+    /**
+     * Ensemble of DCBCode object, identifiable by observation code pairs,
+     * each containing the corresponding TimeSpanMap of biases (DCB).
+     */
+    private HashMap<HashSet<ObservationType>, DcbCode> dcbCodeMap;
+
+    /** Simple constructor. */
+    public Dcb() {
+        this.observationSets = new HashSet<>();
+        this.dcbCodeMap      = new HashMap<>();
+    }
+
+    // Class to store the TimeSpanMap per DCB Observation Code set
+    private static class DcbCode {
+
+        /** TimeSpanMap containing the DCB bias values. */
+        private TimeSpanMap<Double> dcbMap;
+
+        /**
+         * Simple constructor.
+         */
+        DcbCode() {
+            this.dcbMap = new TimeSpanMap<>(null);
+        }
+
+        /**
+         * Getter for the TimeSpanMap of DCB values.
+         *
+         * @return a time span map containing DCB values, for the observation code pair
+         * corresponding to this DCBCode object.
+         */
+        public TimeSpanMap<Double> getDcbTimeMap() {
+            return dcbMap;
+        }
+
+    }
+
+    /**
+     * Add the content of a DCB line to the DCBSatellite object.
+     * <p>
+     * The method check the presence of a Code pair in a map, and add
+     * values to the corresponding TimeSpanMap.
+     * </p>
+     * @param obs1 String corresponding to the first code used for the DCB computation.
+     * @param obs2 String corresponding to the second code used for the DCB computation.
+     * @param spanBegin Absolute Date corresponding to the beginning of the validity span for this bias value
+     * @param spanEnd Absolute Date corresponding to the end of the validity span for this bias value
+     * @param biasValue DCB bias value expressed in S.I. units.
+     */
+    public void addDcbLine(final String obs1, final String obs2,
+                           final AbsoluteDate spanBegin, final AbsoluteDate spanEnd,
+                           final double biasValue) {
+
+        // Setting a HashSet of ObservationType codes to form an Observation Pair, independent of their order.
+        final HashSet<ObservationType> singleObservationPair = new HashSet<>();
+        singleObservationPair.add(ObservationType.valueOf(obs1));
+        singleObservationPair.add(ObservationType.valueOf(obs2));
+
+        // If not present add a new DCBCode to the DCBCodeMap, identified by the Observation Pair.
+        // Then add the bias value and validity period.
+        if (observationSets.add(singleObservationPair)) {
+            dcbCodeMap.put(singleObservationPair, new DcbCode());
+        }
+
+        dcbCodeMap.get(singleObservationPair).getDcbTimeMap().addValidBetween(biasValue, spanBegin, spanEnd);
+    }
+
+
+    /**
+     * Return the value of the Differential Code Bias for a given observation pair,
+     * at a given date, for the satellite this object has been created for.
+     *
+     * @param obs1 String corresponding to the first code used for the DCB computation.
+     * @param obs2 String corresponding to the second code used for the DCB computation.
+     * @param date Date at which to obtain the DCB.
+     * @return The value of the DCB in S.I. units.
+     */
+    public double getDcb(final String obs1, final String obs2, final AbsoluteDate date) {
+        return getTimeSpanMap(obs1, obs2).get(date);
+    }
+
+    /**
+     * Get all available observation code pairs for the satellite.
+     *
+     * @return HashSet(HashSet(ObservationType)) Observation code pairs obtained.
+     */
+    public HashSet<HashSet<ObservationType>> getAvailableObservationPairs() {
+        return observationSets;
+    }
+
+    /**
+     * Get the minimum valid date for a given observation pair.
+     *
+     * @param obs1 String : String corresponding to the first code used for the DCB computation.
+     * @param obs2 String : String corresponding to the second code used for the DCB computation.
+     * @return Minimum valid date for the observation pair
+     */
+    public AbsoluteDate getMinimumValidDateForObservationPair(final String obs1, final String obs2) {
+        return this.getTimeSpanMap(obs1, obs2).getFirstTransition().getDate();
+    }
+
+    /**
+     * Get the maximum valid date for a given observation pair.
+     *
+     * @param obs1 String : String corresponding to the first code used for the DCB computation.
+     * @param obs2 String : String corresponding to the second code used for the DCB computation.
+     * @return Maximum valid date for the observation pair
+     */
+    public AbsoluteDate getMaximumValidDateForObservationPair(final String obs1, final String obs2) {
+        return this.getTimeSpanMap(obs1, obs2).getLastTransition().getDate();
+    }
+
+    /**
+     * Return the TimeSpanMap object for a given Observation Code pair,
+     * for further operation on the object directly.
+     *
+     * @param obs1 String corresponding to the first code used for the DCB computation.
+     * @param obs2 String corresponding to the second code used for the DCB computation.
+     * @return The TimeSpanMap for a given Observation Code pair.
+     */
+    private TimeSpanMap<Double> getTimeSpanMap(final String obs1, final String obs2) {
+        // Setting a HashSet of ObservationType codes to form an Observation Pair, independent of their order.
+        final HashSet<ObservationType> observationPair = new HashSet<>();
+        observationPair.add(ObservationType.valueOf(obs1));
+        observationPair.add(ObservationType.valueOf(obs2));
+        return dcbCodeMap.get(observationPair).getDcbTimeMap();
+    }
+
+}
+
