@@ -20,6 +20,7 @@ package org.orekit.files.sinex;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hipparchus.util.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -94,38 +95,21 @@ public class SinexLoaderDcbTest {
         DcbSatellite DCBSat = loader.getDCBSatellite("G01");
         Dcb DCBTest = DCBSat.getDcbData();
         
-
         // Observation Pair test
-        HashSet< HashSet<ObservationType> > ObsPairs = DCBTest.getAvailableObservationPairs();
+        HashSet<Pair<ObservationType, ObservationType>> ObsPairs = DCBTest.getAvailableObservationPairs();
         
         // Defining the observation pair present in the truncated file.
-        HashSet<ObservationType> OP1 = new HashSet<>();
-        HashSet<ObservationType> OP2 = new HashSet<>();
-        HashSet<ObservationType> OP3 = new HashSet<>();
-        HashSet<ObservationType> OP4 = new HashSet<>();
-
-        ObservationType Ob1 = ObservationType.valueOf("C1C");
-        ObservationType Ob2 = ObservationType.valueOf("C1W");
-        ObservationType Ob3 = ObservationType.valueOf("C2W");
-        ObservationType Ob4 = ObservationType.valueOf("C5Q");
-        ObservationType Ob5 = ObservationType.valueOf("C2W");
-        ObservationType Ob6 = ObservationType.valueOf("C2L");
+        Pair<ObservationType, ObservationType> OP1 = new Pair<>(ObservationType.valueOf("C1C"), ObservationType.valueOf("C1W"));
+        Pair<ObservationType, ObservationType> OP2 = new Pair<>(ObservationType.valueOf("C1C"), ObservationType.valueOf("C2W"));
+        Pair<ObservationType, ObservationType> OP3 = new Pair<>(ObservationType.valueOf("C1C"), ObservationType.valueOf("C5Q"));
+        Pair<ObservationType, ObservationType> OP4 = new Pair<>(ObservationType.valueOf("C2W"), ObservationType.valueOf("C2L"));
         
-        OP1.add(Ob1);
-        OP1.add(Ob2);
-        OP2.add(Ob1);
-        OP2.add(Ob3);
-        OP3.add(Ob1);
-        OP3.add(Ob4);
-        OP4.add(Ob5);
-        OP4.add(Ob6);
-        
-        HashSet< HashSet<ObservationType> > observationSetsRef = new HashSet<>();
+        HashSet<Pair<ObservationType, ObservationType>> observationSetsRef = new HashSet<>();
         observationSetsRef.add(OP1);
         observationSetsRef.add(OP2);
         observationSetsRef.add(OP3);
         observationSetsRef.add(OP4);
-        
+
         // Check
         Assertions.assertEquals(ObsPairs, observationSetsRef);
         

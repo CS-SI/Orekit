@@ -20,6 +20,7 @@ package org.orekit.files.sinex;
 import java.util.HashSet;
 import java.util.HashMap;
 import org.orekit.utils.TimeSpanMap;
+import org.hipparchus.util.Pair;
 import org.orekit.gnss.ObservationType;
 import org.orekit.time.AbsoluteDate;
 
@@ -37,14 +38,14 @@ import org.orekit.time.AbsoluteDate;
  */
 public class Dcb {
 
-    /** Ensemble of Observation Code pairs present for the satellite. */
-    private HashSet<HashSet<ObservationType>> observationSets;
+    /** Ensemble of observation code pairs available for the satellite. */
+    private HashSet<Pair<ObservationType, ObservationType>> observationSets;
 
     /**
      * Ensemble of DCBCode object, identifiable by observation code pairs,
      * each containing the corresponding TimeSpanMap of biases (DCB).
      */
-    private HashMap<HashSet<ObservationType>, DcbCode> dcbCodeMap;
+    private HashMap<Pair<ObservationType, ObservationType>, DcbCode> dcbCodeMap;
 
     /** Simple constructor. */
     public Dcb() {
@@ -93,18 +94,16 @@ public class Dcb {
                            final AbsoluteDate spanBegin, final AbsoluteDate spanEnd,
                            final double biasValue) {
 
-        // Setting a HashSet of ObservationType codes to form an Observation Pair, independent of their order.
-        final HashSet<ObservationType> singleObservationPair = new HashSet<>();
-        singleObservationPair.add(ObservationType.valueOf(obs1));
-        singleObservationPair.add(ObservationType.valueOf(obs2));
+        // Setting a pair of observation type.
+        final Pair<ObservationType, ObservationType> observationPair = new Pair<>(ObservationType.valueOf(obs1), ObservationType.valueOf(obs2));
 
-        // If not present add a new DCBCode to the DCBCodeMap, identified by the Observation Pair.
+        // If not present add a new DCBCode to the map, identified by the Observation Pair.
         // Then add the bias value and validity period.
-        if (observationSets.add(singleObservationPair)) {
-            dcbCodeMap.put(singleObservationPair, new DcbCode());
+        if (observationSets.add(observationPair)) {
+            dcbCodeMap.put(observationPair, new DcbCode());
         }
 
-        dcbCodeMap.get(singleObservationPair).getDcbTimeMap().addValidBetween(biasValue, spanBegin, spanEnd);
+        dcbCodeMap.get(observationPair).getDcbTimeMap().addValidBetween(biasValue, spanBegin, spanEnd);
     }
 
 
@@ -126,7 +125,7 @@ public class Dcb {
      *
      * @return HashSet(HashSet(ObservationType)) Observation code pairs obtained.
      */
-    public HashSet<HashSet<ObservationType>> getAvailableObservationPairs() {
+    public HashSet<Pair<ObservationType, ObservationType>> getAvailableObservationPairs() {
         return observationSets;
     }
 
@@ -161,11 +160,8 @@ public class Dcb {
      * @return The TimeSpanMap for a given Observation Code pair.
      */
     private TimeSpanMap<Double> getTimeSpanMap(final String obs1, final String obs2) {
-        // Setting a HashSet of ObservationType codes to form an Observation Pair, independent of their order.
-        final HashSet<ObservationType> observationPair = new HashSet<>();
-        observationPair.add(ObservationType.valueOf(obs1));
-        observationPair.add(ObservationType.valueOf(obs2));
-        return dcbCodeMap.get(observationPair).getDcbTimeMap();
+        // Setting a pair of observation type, independent of their order.
+        return dcbCodeMap.get(new Pair<>(ObservationType.valueOf(obs1), ObservationType.valueOf(obs2))).getDcbTimeMap();
     }
 
 }
