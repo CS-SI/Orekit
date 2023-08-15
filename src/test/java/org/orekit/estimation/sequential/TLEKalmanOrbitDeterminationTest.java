@@ -57,6 +57,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEConstants;
+import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -100,10 +101,10 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
     /** {@inheritDoc} */
     @Override
     protected TLEPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
-                                                            final ODEIntegratorBuilder builder,
-                                                            final double positionScale) {
-        return new TLEPropagatorBuilder(templateTLE, PositionAngle.MEAN,
-                                         positionScale);
+                                                           final ODEIntegratorBuilder builder,
+                                                           final double positionScale) {
+        return new TLEPropagatorBuilder(templateTLE, PositionAngle.MEAN, positionScale,
+                                        new FixedPointTleGenerationAlgorithm());
     }
 
     /** {@inheritDoc} */

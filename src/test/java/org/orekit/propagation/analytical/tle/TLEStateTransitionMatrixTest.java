@@ -14,6 +14,8 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 
@@ -70,26 +72,29 @@ public class TLEStateTransitionMatrixTest {
         final SpacecraftState finalState = propagator.propagate(target);
         dYdY0 = harvester.getStateTransitionMatrix(finalState);
 
+        // TLE generation algorithm
+        TleGenerationAlgorithm algorithm = new FixedPointTleGenerationAlgorithm();
+
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
         TLEPropagator propagator2;
         double[] steps = NumericalPropagator.tolerances(10, initialState.getOrbit(), OrbitType.CARTESIAN)[0];
         for (int i = 0; i < 6; ++i) {
-            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.CARTESIAN, -4 * steps[i], i), tle));
+            propagator2 = TLEPropagator.selectExtrapolator(algorithm.generate(shiftState(initialState, OrbitType.CARTESIAN, -4 * steps[i], i), tle));
             SpacecraftState sM4h = propagator2.propagate(target);
-            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.CARTESIAN, -3 * steps[i], i), tle));
+            propagator2 = TLEPropagator.selectExtrapolator(algorithm.generate(shiftState(initialState, OrbitType.CARTESIAN, -3 * steps[i], i), tle));
             SpacecraftState sM3h = propagator2.propagate(target);
-            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.CARTESIAN, -2 * steps[i], i), tle));
+            propagator2 = TLEPropagator.selectExtrapolator(algorithm.generate(shiftState(initialState, OrbitType.CARTESIAN, -2 * steps[i], i), tle));
             SpacecraftState sM2h = propagator2.propagate(target);
-            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.CARTESIAN, -1 * steps[i], i), tle));
+            propagator2 = TLEPropagator.selectExtrapolator(algorithm.generate(shiftState(initialState, OrbitType.CARTESIAN, -1 * steps[i], i), tle));
             SpacecraftState sM1h = propagator2.propagate(target);
-            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.CARTESIAN, +1 * steps[i], i), tle));
+            propagator2 = TLEPropagator.selectExtrapolator(algorithm.generate(shiftState(initialState, OrbitType.CARTESIAN, +1 * steps[i], i), tle));
             SpacecraftState sP1h = propagator2.propagate(target);
-            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.CARTESIAN, +2 * steps[i], i), tle));
+            propagator2 = TLEPropagator.selectExtrapolator(algorithm.generate(shiftState(initialState, OrbitType.CARTESIAN, +2 * steps[i], i), tle));
             SpacecraftState sP2h = propagator2.propagate(target);
-            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.CARTESIAN, +3 * steps[i], i), tle));
+            propagator2 = TLEPropagator.selectExtrapolator(algorithm.generate(shiftState(initialState, OrbitType.CARTESIAN, +3 * steps[i], i), tle));
             SpacecraftState sP3h = propagator2.propagate(target);
-            propagator2 = TLEPropagator.selectExtrapolator(TLE.stateToTLE(shiftState(initialState, OrbitType.CARTESIAN, +4 * steps[i], i), tle));
+            propagator2 = TLEPropagator.selectExtrapolator(algorithm.generate(shiftState(initialState, OrbitType.CARTESIAN, +4 * steps[i], i), tle));
             SpacecraftState sP4h = propagator2.propagate(target);
             fillJacobianColumn(dYdY0Ref, i, OrbitType.CARTESIAN, steps[i],
                                sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);

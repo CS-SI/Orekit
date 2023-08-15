@@ -36,6 +36,7 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldPVCoordinates;
@@ -586,7 +587,8 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
     public void resetInitialState(final FieldSpacecraftState<T> state) {
         super.resetInitialState(state);
         super.setStartDate(state.getDate());
-        final FieldTLE<T> newTLE = FieldTLE.stateToTLE(state, tle, utc, teme);
+        final TleGenerationAlgorithm algorithm = TLEPropagator.getDefaultTleGenerationAlgorithm(utc, teme);
+        final FieldTLE<T> newTLE = algorithm.generate(state, tle);
         this.tle = newTLE;
         initializeCommons(tle.getParameters(state.getDate().getField()));
         sxpInitialize(tle.getParameters(state.getDate().getField()));

@@ -40,6 +40,8 @@ import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
+import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.DoubleArrayDictionary;
@@ -558,7 +560,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     public void resetInitialState(final SpacecraftState state) {
         super.resetInitialState(state);
         super.setStartDate(state.getDate());
-        final TLE newTLE = TLE.stateToTLE(state, tle, utc, teme);
+        final TleGenerationAlgorithm algorithm = getDefaultTleGenerationAlgorithm(utc, teme);
+        final TLE newTLE = algorithm.generate(state, tle);
         this.tle = newTLE;
         initializeCommons();
         sxpInitialize();
@@ -621,6 +624,19 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         }
         Collections.sort(columnsNames);
         return columnsNames;
+    }
+
+    /**
+     * Get the default TLE generation algorithm.
+     * @param utc UTC time scale
+     * @param teme TEME frame
+     * @return a TLE generation algorithm
+     * @since 12.0
+     */
+    public static TleGenerationAlgorithm getDefaultTleGenerationAlgorithm(final TimeScale utc, final Frame teme) {
+        return new FixedPointTleGenerationAlgorithm(FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,
+                                                    FixedPointTleGenerationAlgorithm.MAX_ITERATIONS_DEFAULT,
+                                                    FixedPointTleGenerationAlgorithm.SCALE_DEFAULT, utc, teme);
     }
 
 }
