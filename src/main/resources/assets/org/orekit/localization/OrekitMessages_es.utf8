@@ -92,7 +92,7 @@ UNEXPECTED_DATA_AT_LINE_IN_FILE = datos imprevistos en la línea {0} del fichero
 NON_CHRONOLOGICAL_DATES_IN_FILE = fechas no cronológicas en el fichero {0} en la línea {1}
 
 # inconsistent sampling date: expected {0} but got {1}
-INCONSISTENT_SAMPLING_DATE = <MISSING TRANSLATION>
+INCONSISTENT_SAMPLING_DATE = fechas de las muestras incoherentes: se esperaba {0} , pero se ha dado {1}
 
 # no IERS UTC-TAI history data loaded
 NO_IERS_UTC_TAI_HISTORY_DATA_LOADED = los datos históricos IERSD UTC-TAI no están cargados
@@ -353,7 +353,7 @@ CCSDS_UNKNOWN_CONVENTIONS = no se ha inicializado ninguna convención IERS antes
 CCSDS_INVALID_FRAME = el sistema de referencia {0} no es válido en este contexto de fichero CCSDS
 
 # this LVLH local orbital frame uses a different definition, please use LVLH_CCSDS instead
-CCSDS_DIFFERENT_LVLH_DEFINITION = <MISSING TRANSLATION>
+CCSDS_DIFFERENT_LVLH_DEFINITION = este punto de referencia local LVLH utiliza una definición diferente, utilice el punto de referencia LVLH_CCSDS en su lugar
 
 # inconsistent time systems: {0} ≠ {1}
 CCSDS_INCONSISTENT_TIME_SYSTEMS = sistemas temporales inconsistentes: {0} ≠ {1}
@@ -368,7 +368,7 @@ CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = no se ha encontrado ningún convertido
 CCSDS_TIME_SYSTEM_NOT_READ_YET = el sistema temporal tendría que haber sido inicializado antes de la línea {0} del fichero {1}
 
 # cannot estimate precession without proper derivatives
-CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES = <MISSING TRANSLATION>
+CANNOT_ESTIMATE_PRECESSION_WITHOUT_PROPER_DERIVATIVES = imposible estimar la precisión sin las derivadas correctas
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE =  el nombre "{0}" ya se está utilizando para un estado adicional
@@ -398,19 +398,19 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = se han encontrado {0} épocas en el fichero {1} e
 SP3_UNEXPECTED_END_OF_FILE = final inesperado de un fichero sp3 (después de la línea {0})
 
 # cannot splice sp3 files with incompatible metadata
-SP3_INCOMPATIBLE_FILE_METADATA = <MISSING TRANSLATION>
+SP3_INCOMPATIBLE_FILE_METADATA = imposible de adjuntar los ficheros sp3 teniendo metadata diferente
 
 # cannot splice sp3 files with incompatible satellite metadata for satellite {0}
-SP3_INCOMPATIBLE_SATELLITE_MEDATADA = <MISSING TRANSLATION>
+SP3_INCOMPATIBLE_SATELLITE_MEDATADA = imposible de adjuntar los ficheros sp3 teniendo metadata del satéllite {0} diferente 
 
 # cannot splice sp3 files with large gap for satellite {0} ({1} s)
-SP3_TOO_LARGE_GAP_FOR_SPLICING = <MISSING TRANSLATION>
+SP3_TOO_LARGE_GAP_FOR_SPLICING = imposible de adjuntar los ficheros sp3 separados de {1} s para el satéllite {0} 
 
 # STK coordinate system "{0}" is invalid or not yet supported
-STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
+STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = el sistema de coordenadas "{0}" de STK es inválido o no aún implementado
 
 # STK coordinate system "{0}" has not been mapped to an Orekit frame
-STK_UNMAPPED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
+STK_UNMAPPED_COORDINATE_SYSTEM = el sistema de coordenadas "{0}" de STK aún no ha sido mapeado a una estructura Orekit
 
 # unexpected end of STK file (after line {0})
 STK_UNEXPECTED_END_OF_FILE = final inesperado de un fichero STK (después de la línea {0})
@@ -419,7 +419,7 @@ STK_UNEXPECTED_END_OF_FILE = final inesperado de un fichero STK (después de la 
 CLOCK_FILE_UNSUPPORTED_VERSION = versión de archivo de reloj {0} no reconocida
 
 # version {0} from file {1} is not supported, supported version: {2}
-UNSUPPORTED_FILE_FORMAT_VERSION = <MISSING TRANSLATION>
+UNSUPPORTED_FILE_FORMAT_VERSION = verion {0} del fichero {1} no se ha tenido en cuenta, versiones tenidas en cuenta : {2}
 
 # non-existent geomagnetic model {0} for year {1}
 NON_EXISTENT_GEOMAGNETIC_MODEL = no existe el fichero de modelo geomagnético {0} para el año {1}
@@ -500,10 +500,10 @@ NOT_ENOUGH_GNSS_FOR_DOP = sólo se han especificado {0} órbitas GNSS y se neces
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = para utilizar el sistema temporal {0} en los ficheros CCSDS se requiere un ICD adicional y no está disponible en Orekit
 
 # unknown attitude type {0}
-CCSDS_UNKNOWN_ATTITUDE_TYPE = <MISSING TRANSLATION>
+CCSDS_UNKNOWN_ATTITUDE_TYPE = tipo de orientación {0} desconocida
 
 # incomplete data
-CCSDS_INCOMPLETE_DATA = <MISSING TRANSLATION>
+CCSDS_INCOMPLETE_DATA = datos incompletos
 
 # invalid rotation sequence {0} at line {1} of file {2}
 CCSDS_INVALID_ROTATION_SEQUENCE = secuencia de rotación {0} inválida en la línea {1} del fichero {2}
@@ -521,19 +521,19 @@ CCSDS_MANEUVER_UNITS_WRONG_NB_COMPONENTS = número incorrecto de unidades para l
 CCSDS_MANEUVER_MISSING_TIME = falta campo temporal para la maniobra {0}
 
 # attitude type {0} and rate type {1} calls for {2} states, got {3}
-CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES = <MISSING TRANSLATION>
+CCSDS_INCONSISTENT_NUMBER_OF_ATTITUDE_STATES = el tipo de orientación {0} y el tipo de velocidad {1} necesitan {2} estados, pero {3} se han dado 
 
 # incompatible keys {0} and {1} should not both be used
-CCSDS_INCOMPATIBLE_KEYS_BOTH_USED = <MISSING TRANSLATION>
+CCSDS_INCOMPATIBLE_KEYS_BOTH_USED = las claves incompatibles {0} y {1}  no deberían utilizarse juntas
 
 # sensor index {0} is already used
-CCSDS_SENSOR_INDEX_ALREADY_USED = <MISSING TRANSLATION>
+CCSDS_SENSOR_INDEX_ALREADY_USED = índice de captor {0} ya utilizado 
 
 # missing sensor index {0}
-CCSDS_MISSING_SENSOR_INDEX = <MISSING TRANSLATION>
+CCSDS_MISSING_SENSOR_INDEX = falta el indice de captor {0}
 
 # inconsistent number of elements: expected {0}, got {1}
-INCONSISTENT_NUMBER_OF_ELEMENTS = <MISSING TRANSLATION>
+INCONSISTENT_NUMBER_OF_ELEMENTS = número de elementos incoherentes: esperados {0}, dados {1}
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = para crear un propagador combinado se necesita al menos un propagador, pero no se ha especificado ninguno
@@ -569,7 +569,7 @@ UNKNOWN_SATELLITE_SYSTEM = sistema de satélites desconocido {0}
 UNKNOWN_TIME_SYSTEM = sistema de tiempo desconocido {0}
 
 # unknown UTC Id {0}
-UNKNOWN_UTC_ID = <MISSING TRANSLATION>
+UNKNOWN_UTC_ID = identificador UTC {0} desconocido
 
 # unknown clock data type {0}
 UNKNOWN_CLOCK_DATA_TYPE = tipo de datos de reloj desconocido {0}
@@ -590,7 +590,7 @@ UNKNOWN_RINEX_FREQUENCY = frecuencia RINEX desconocida en el fichero {1}, línea
 MISMATCHED_FREQUENCIES = frecuencias incoherentes en el fichero {0}, línea {1} (se esperaba {2} y se encontró {3})
 
 # wrong parsing type for file {0}
-WRONG_PARSING_TYPE = <MISSING TRANSLATION>
+WRONG_PARSING_TYPE = tipo de análisis incorrecto para el fichero {0}
 
 # wrong number of columns in file {0}, line {1} (expected {2} columns, got {3} columns)
 WRONG_COLUMNS_NUMBER = número de columnas erróneo en el fichero {0}, línea {1} (se esperaban {2} columnas y se encontraron {3})
@@ -760,10 +760,10 @@ UNEXPECTED_CONTENT_TYPE = tipo de contenido {0} inesperado
 CANNOT_PARSE_GNSS_DATA = no se pueden analizar los datos GNSS de {0}
 
 # invalid GNSS data: {0}
-INVALID_GNSS_DATA = <MISSING TRANSLATION>
+INVALID_GNSS_DATA = datos GNSS inválido: {0}
 
 # GNSS parity error on word {0}
-GNSS_PARITY_ERROR = <MISSING TRANSLATION>
+GNSS_PARITY_ERROR = error de paridad GNSS en la palabra {0}
 
 # unknown host {0}
 UNKNOWN_HOST = anfitrión {0} desconocido
@@ -802,58 +802,58 @@ ATTEMPT_TO_GENERATE_MALFORMED_FILE = tentativa de generar el fichero {0} con un 
 FIND_ROOT = {0} ha fallado buscando una solución entre {1} (g={2,number,0.0##############E0}) y {3} (g={4,number,0.0##############E0})\nÚltima iteración en {5} (g={6,number,0.0##############E0})
 
 # missing station data for epoch {0}
-MISSING_STATION_DATA_FOR_EPOCH = <MISSING TRANSLATION>
+MISSING_STATION_DATA_FOR_EPOCH = Faltan datos de la estación para la época {0}
 
 # inconsistent parameters selection between pairs {0}/{1} and {2}/{3}
 INCONSISTENT_SELECTION = selección de parámetros inconsistente entre los pares {0}/{1} y {2}/{3}
 
 # no unscented transform configured
-NO_UNSCENTED_TRANSFORM_CONFIGURED = <MISSING TRANSLATION>
+NO_UNSCENTED_TRANSFORM_CONFIGURED = ninguna transformación unscented configurada
 
 # value is not strictly positive: {0}
-NOT_STRICTLY_POSITIVE = <MISSING TRANSLATION>
+NOT_STRICTLY_POSITIVE = el valor {0} no es estrictamente positivo
 
 # transform from {0} to {1} is not implemented
-UNSUPPORTED_TRANSFORM = <MISSING TRANSLATION>
+UNSUPPORTED_TRANSFORM = la transformación de {0} a {1} no se ha implementado
 
 # orbital parameters type: {0} is different from expected orbital type : {1}
-WRONG_ORBIT_PARAMETERS_TYPE = <MISSING TRANSLATION>
+WRONG_ORBIT_PARAMETERS_TYPE = parámetro orbital de tipo: {0} es diferente del parámetro orbital esperado de tipo: {1}
 
 # {0} expects {1} elements, got {2}
-WRONG_NB_COMPONENTS = <MISSING TRANSLATION>
+WRONG_NB_COMPONENTS = {0} necesita {1} elementos, tiene {2}
 
 # cannot change covariance type if defined in a local orbital frame
-CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = <MISSING TRANSLATION>
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_LOF = no puede cambiar el tipo de covarianza si se define en el el marco de referencia de la orbita local
 
 # cannot change covariance type if defined in a non pseudo-inertial reference frame
-CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = <MISSING TRANSLATION>
+CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = no puede cambiar el tipo de covarianza si se define en un marco de referencia no pseudo-inercial
 
 # primary collision object time of closest approach is different from the secondary collision object's one
-DIFFERENT_TIME_OF_CLOSEST_APPROACH = <MISSING TRANSLATION>
+DIFFERENT_TIME_OF_CLOSEST_APPROACH = el tiempo del mayor acercamiento del primer objecto de colision  es diferente del segundo objecto de colision
 
 # first date {0} does not match second date {1}
-DATES_MISMATCH = <MISSING TRANSLATION>
+DATES_MISMATCH = la primera fecha {0} no coincide con la segunda fecha {1}
 
 # first orbit mu {0} does not match second orbit mu {1}
-ORBITS_MUS_MISMATCH = <MISSING TRANSLATION>
+ORBITS_MUS_MISMATCH = la mu {0} de la primera orbita no coincide con la mu de la segunda orbita {1}
 
 # one state is defined using an orbit while the other is defined using an absolute position-velocity-acceleration
-DIFFERENT_STATE_DEFINITION = <MISSING TRANSLATION>
+DIFFERENT_STATE_DEFINITION = un estado está definido utilizando una orbita mientras que el otro estado está definido utilizando una posición-velocidad-acceleración´absolutas
 
 # state date {0} does not match its covariance date {1}
-STATE_AND_COVARIANCE_DATES_MISMATCH = <MISSING TRANSLATION>
+STATE_AND_COVARIANCE_DATES_MISMATCH = la fecha {0} del estado no coincide la fecha {1} de su covarianza
 
 # creating a spacecraft state interpolator requires at least one orbit interpolator or an absolute position-velocity-acceleration interpolator
-NO_INTERPOLATOR_FOR_STATE_DEFINITION = <MISSING TRANSLATION>
+NO_INTERPOLATOR_FOR_STATE_DEFINITION = crear un interpolador para el vehiculo espacial requiere al menos un in interpolador de orbita o un interpolador absoluto de posición-velocidad-acceleración
 
 # wrong interpolator defined for this spacecraft state type (orbit or absolute PV)
-WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION = <MISSING TRANSLATION>
+WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION = interpolador mal definido por este tipo de definición del vehiculo espacial (orbita or PV absolutos)
 
 # multiple interpolators are used so they may use different numbers of interpolation points
-MULTIPLE_INTERPOLATOR_USED = <MISSING TRANSLATION>
+MULTIPLE_INTERPOLATOR_USED = mala interpolación definida por este tipo de definición del vehículo espacial (orbita ou PV)
 
 # header for file {0} has not been written yet
-HEADER_NOT_WRITTEN = <MISSING TRANSLATION>
+HEADER_NOT_WRITTEN = la cabezera del fichero {0} aún no se ha escrito
 
 # header for file {0} has already been written
-HEADER_ALREADY_WRITTEN = <MISSING TRANSLATION>
+HEADER_ALREADY_WRITTEN = la cabezera del fichero {0} ya se ha escrito
