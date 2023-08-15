@@ -139,6 +139,7 @@ public class CssiSpaceWeatherData
      * Simple constructor. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
      * @param source source for the data
+     * @since 12.0
      */
     @DefaultDataContext
     public CssiSpaceWeatherData(final DataSource source) {
@@ -149,6 +150,7 @@ public class CssiSpaceWeatherData
      * Simple constructor.
      * @param source source for the data
      * @param utc    UTC time scale
+     * @since 12.0
      */
     public CssiSpaceWeatherData(final DataSource source, final TimeScale utc) {
         try {
