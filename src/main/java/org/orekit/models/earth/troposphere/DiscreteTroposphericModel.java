@@ -16,16 +16,11 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParametersDriversProvider;
 
 /** Defines a tropospheric model, used to calculate the path delay imposed to
@@ -66,66 +61,6 @@ public interface DiscreteTroposphericModel extends ParametersDriversProvider {
      * @param date current date
      * @return the path delay due to the troposphere in m
      */
-    <T extends CalculusFieldElement<T>> T pathDelay(T elevation, FieldGeodeticPoint<T> point, T[] parameters, FieldAbsoluteDate<T> date);
-
-    /** Get tropospheric model parameters.
-     * @return tropospheric model parameters
-     */
-    default double[] getParameters() {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.size()];
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = drivers.get(i).getValue();
-        }
-        return parameters;
-    }
-
-    /** Get tropospheric model parameters.
-     * @param date date at which the parameters want to be known, can
-     * be new AbsoluteDate() if all the parameters have no validity period
-     * that is to say that they have only 1 estimated value over the all
-     * interval.
-     * @return tropospheric model parameters
-     */
-    default double[] getParameters(AbsoluteDate date) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.size()];
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = drivers.get(i).getValue(date);
-        }
-        return parameters;
-    }
-
-    /** Get tropospheric model parameters.
-     * @param field field to which the elements belong
-     * @param <T> type of the elements
-     * @return tropospheric model parameters
-     */
-    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.size());
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = field.getZero().add(drivers.get(i).getValue());
-        }
-        return parameters;
-    }
-
-    /** Get tropospheric model parameters.
-     * @param field field to which the elements belong
-     * @param <T> type of the elements
-     * @param date date at which the parameters want to be known, can
-     * be new AbsoluteDate() if all the parameters have no validity period
-     * that is to say that they have only 1 estimated value over the all
-     * interval.
-     * @return tropospheric model parameters
-     */
-    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field, FieldAbsoluteDate<T> date) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.size());
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = field.getZero().add(drivers.get(i).getValue(date.toAbsoluteDate()));
-        }
-        return parameters;
-    }
-
+    <T extends CalculusFieldElement<T>> T pathDelay(T elevation, FieldGeodeticPoint<T> point, T[] parameters,
+                                                    FieldAbsoluteDate<T> date);
 }

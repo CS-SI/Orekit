@@ -16,13 +16,9 @@
  */
 package org.orekit.forces;
 
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.MathArrays;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
@@ -30,7 +26,6 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** This interface represents a force modifying spacecraft motion.
  *
@@ -117,130 +112,6 @@ public interface ForceModel extends EventDetectorsProvider {
         adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate().getField(), s.getDate())));
     }
 
-
-    /** Get total number of spans for all the parameters driver.
-     * @return total number of span to be estimated
-     * @since 12.0
-     */
-    default int getNbParametersDriversValue() {
-        int totalSpan = 0;
-        final List<ParameterDriver> allParameters = getParametersDrivers();
-        for (ParameterDriver dragDriver : allParameters) {
-            totalSpan += dragDriver.getNbOfValues();
-        }
-        return totalSpan;
-    }
-
-    /** Get force model parameters.
-     * @return force model parameters, will throw an
-     * exception if one PDriver of the force has several values driven. If
-     * it's the case (if at least 1 PDriver of the force model has several values
-     * driven) the method {@link #getParameters(AbsoluteDate)} must be used.
-     * @since 12.0
-     */
-    default double[] getParameters() {
-
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.size()];
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = drivers.get(i).getValue();
-        }
-        return parameters;
-    }
-
-    /** Get force model parameters.
-     * @param date date at which the parameters want to be known, can
-     * be new AbsoluteDate() if all the parameters have no validity period
-     * that is to say that they have only 1 estimated value over the all
-     * interval
-     * @return force model parameters
-     * @since 12.0
-     */
-    default double[] getParameters(AbsoluteDate date) {
-
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.size()];
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = drivers.get(i).getValue(date);
-        }
-        return parameters;
-    }
-
-    /** Get force model parameters, return a list a all span values
-     * of all force parameters.
-     * @return force model parameters
-     * @since 12.0
-     */
-    default double[] getParametersAllValues() {
-
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final int nbParametersValues = getNbParametersDriversValue();
-        final double[] parameters = new double[nbParametersValues];
-        int paramIndex = 0;
-        for (int i = 0; i < drivers.size(); ++i) {
-            for (Span<Double> span = drivers.get(i).getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                parameters[paramIndex++] = span.getData();
-            }
-
-        }
-        return parameters;
-    }
-
-    /** Get force model parameters.
-     * @param field field to which the elements belong
-     * @param <T> type of the elements
-     * @return force model parameters
-     * @since 9.0
-     */
-    default <T extends CalculusFieldElement<T>> T[] getParametersAllValues(final Field<T> field) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final int nbParametersValues = getNbParametersDriversValue();
-        final T[] parameters = MathArrays.buildArray(field, nbParametersValues);
-        int paramIndex = 0;
-        for (int i = 0; i < drivers.size(); ++i) {
-            for (Span<Double> span = drivers.get(i).getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                parameters[paramIndex++] = field.getZero().add(span.getData());
-            }
-        }
-        return parameters;
-    }
-
-
-    /** Get force model parameters.
-     * @param field field to which the elements belong
-     * @param <T> type of the elements
-     * @return force model parameters, will throw an
-     * exception if one PDriver of the force has several values driven. If
-     * it's the case (if at least 1 PDriver of the force model has several values
-     * driven) the method {@link #getParameters(Field, FieldAbsoluteDate)} must be used.
-     * @since 9.0
-     */
-    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.size());
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = field.getZero().add(drivers.get(i).getValue());
-        }
-        return parameters;
-    }
-
-    /** Get force model parameters.
-     * @param field field to which the elements belong
-     * @param <T> type of the elements
-     * @param date field date at which the parameters want to be known, can
-     * be new AbsoluteDate() if all the parameters have no validity period.
-     * @return force model parameters
-     * @since 9.0
-     */
-    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field, final FieldAbsoluteDate<T> date) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.size());
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = field.getZero().add(drivers.get(i).getValue(date.toAbsoluteDate()));
-        }
-        return parameters;
-    }
-
     /** Check if force models depends on position only.
      * @return true if force model depends on position only, false
      * if it depends on velocity, either directly or due to a dependency
@@ -282,5 +153,4 @@ public interface ForceModel extends EventDetectorsProvider {
      * @see #getParametersDrivers()
      */
     boolean isSupported(String name);
-
 }
