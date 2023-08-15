@@ -21,6 +21,27 @@
   </properties>
   <body>
   <release version="12.0" date="TBD" description="TBD">
+     <action dev="bryan" type="add" issue="1118">
+        Verified that MSAFE data can be loaded from a DataSource.
+     </action>
+     <action dev="bryan" type="add" issue="1116">
+        Allowed loading JB2008 space wheater data from a DataSource.
+      </action>
+      <action dev="bryan" type="add" issue="1117">
+        Allowed loading CSSI space wheater data from a DataSource.
+      </action>
+      <action dev="bryan" type="fix" issue="1150">
+        Fixed wrong validity interval in Sinex files.
+      </action>
+      <action dev="louis" type="add" issue="893">
+        Added support for loading DCB data from Sinex files.
+      </action>
+      <action dev="vincent" type="fix" issue="1164">
+        Classes extending AbstractTimeInterpolator and AbstractFieldTimeInterpolator are now thread safe.
+      </action>
+      <action dev="vincent" type="update" issue="1144">
+        Changed methods computing rotation in LOF to expect date as argument in addition to the PVCoordinates.
+      </action>
       <action dev="luc" type="update" issue="1157">
         Improved parallelism in measurements generation.
       </action>
@@ -349,6 +370,9 @@
       </action>
       <action dev="luc" type="fix" issue="997">
         Fixed longitude crossing detection in stepless propagators.
+      </action>
+      <action dev="alfe" type="add" issue="995">
+        Added attitude provider: BdotPointing.
       </action>
       <action dev="luc" type="fix" issue="994">
         Fixed typo in method name OcmData.getTrajectoryBlocks().

@@ -24,6 +24,8 @@ import static org.orekit.OrekitMatchers.closeTo;
 import static org.orekit.OrekitMatchers.pvCloseTo;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.ParseException;
 import java.util.SortedSet;
 
@@ -39,6 +41,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.DragForce;
@@ -80,6 +83,14 @@ public class CssiSpaceWeatherLoaderTest {
     private CssiSpaceWeatherData loadCswl() {
         CssiSpaceWeatherData cswl = new CssiSpaceWeatherData(CssiSpaceWeatherData.DEFAULT_SUPPORTED_NAMES);
         return cswl;
+    }
+
+    @Test
+    public void testIssue1117() throws URISyntaxException {
+        final URL url = CssiSpaceWeatherLoaderTest.class.getClassLoader().getResource("atmosphere/SpaceWeather-All-v1.2_reduced.txt");
+        CssiSpaceWeatherData cswl = new CssiSpaceWeatherData(new DataSource(url.toURI()));
+        Assertions.assertEquals(new AbsoluteDate("2020-02-19", utc), cswl.getMinDate());
+        Assertions.assertEquals(new AbsoluteDate("2020-02-22", utc), cswl.getMaxDate());
     }
 
     @Test

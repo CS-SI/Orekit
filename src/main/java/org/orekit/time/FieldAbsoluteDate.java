@@ -335,7 +335,10 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @since 12.0
      */
     public FieldAbsoluteDate(final Field<T> field, final Instant instant, final TimeScale timeScale) {
-        this(field, Date.from(instant), timeScale);
+        this(field, new DateComponents(DateComponents.JAVA_EPOCH,
+                                       (int) (instant.getEpochSecond() / 86400l)),
+             instantToTimeComponents(instant),
+             timeScale);
     }
 
     /** Build an instance from an elapsed duration since to another instant.
@@ -411,6 +414,15 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
                 this.epoch  = epoch + dl - 1;
             }
         }
+    }
+
+    /** Extract time components from an instant within the day.
+     * @param instant instant to extract the number of seconds within the day
+     * @return time components
+     */
+    private static TimeComponents instantToTimeComponents(final Instant instant) {
+        final int secInDay = (int) (instant.getEpochSecond() % 86400l);
+        return new TimeComponents(secInDay, 1.0e-9 * instant.getNano());
     }
 
     /** Build an instance from a CCSDS Unsegmented Time Code (CUC).

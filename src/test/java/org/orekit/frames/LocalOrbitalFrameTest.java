@@ -251,6 +251,174 @@ public class LocalOrbitalFrameTest {
     }
 
     @Test
+    @DisplayName("Test all rotation methods using default method of the interface")
+    void should_return_initial_value_after_multiple_rotations_default_method() {
+        // Given
+        final AbsoluteDate arbitraryEpoch = AbsoluteDate.ARBITRARY_EPOCH;
+        final PVCoordinates pv = new PVCoordinates(new Vector3D(6378000 + 400000, 0, 0),
+                                                   new Vector3D(0, 5422.8, 5422.8));
+
+        // When
+        final Rotation rotationFromTNWToTNWInertial =
+                LOFType.TNW_INERTIAL.rotationFromLOF(LOFType.TNW, arbitraryEpoch, pv);
+
+        final Rotation rotationFromTNWInertialToQSW =
+                LOFType.QSW.rotationFromLOF(LOFType.TNW_INERTIAL, arbitraryEpoch, pv);
+
+        final Rotation rotationFromQSWToQSWInertial =
+                LOFType.QSW_INERTIAL.rotationFromLOF(LOFType.QSW, arbitraryEpoch, pv);
+
+        final Rotation rotationFromQSWInertialToLVLH =
+                LOFType.LVLH.rotationFromLOF(LOFType.QSW_INERTIAL, arbitraryEpoch, pv);
+
+        final Rotation rotationFromLVLHToLVLHInertial =
+                LOFType.LVLH_INERTIAL.rotationFromLOF(LOFType.LVLH, arbitraryEpoch, pv);
+
+        final Rotation rotationFromLVLHInertialToLVLH_CCSDS =
+                LOFType.LVLH_CCSDS.rotationFromLOF(LOFType.LVLH_INERTIAL, arbitraryEpoch, pv);
+
+        final Rotation rotationFromLVLH_CCSDSToLVLH_CCSDSInertial =
+                LOFType.LVLH_CCSDS_INERTIAL.rotationFromLOF(LOFType.LVLH_CCSDS, arbitraryEpoch, pv);
+
+        final Rotation rotationFromLVLH_CCSDSInertialToVVLH =
+                LOFType.VVLH.rotationFromLOF(LOFType.LVLH_CCSDS_INERTIAL, arbitraryEpoch, pv);
+
+        final Rotation rotationFromVVLHToVVLHInertial =
+                LOFType.VVLH_INERTIAL.rotationFromLOF(LOFType.VVLH, arbitraryEpoch, pv);
+
+        final Rotation rotationFromVVLHInertialToVNC =
+                LOFType.VNC.rotationFromLOF(LOFType.VVLH_INERTIAL, arbitraryEpoch, pv);
+
+        final Rotation rotationFromVNCToVNCInertial =
+                LOFType.VNC_INERTIAL.rotationFromLOF(LOFType.VNC, arbitraryEpoch, pv);
+
+        final Rotation rotationFromVNCInertialToNTW =
+                LOFType.NTW.rotationFromLOF(LOFType.VNC_INERTIAL, arbitraryEpoch, pv);
+
+        final Rotation rotationFromNTWToNTWInertial =
+                LOFType.NTW_INERTIAL.rotationFromLOF(LOFType.NTW, arbitraryEpoch, pv);
+
+        final Rotation rotationFromNTWInertialToEQW =
+                LOFType.EQW.rotationFromLOF(LOFType.NTW_INERTIAL, arbitraryEpoch, pv);
+
+        final Rotation rotationFromEQWToTNW =
+                LOF.rotationFromLOFInToLOFOut(LOFType.EQW, LOFType.TNW, arbitraryEpoch, pv);
+
+        final Rotation rotationFromTNWToTNW =
+                composeRotations(rotationFromTNWToTNWInertial,
+                                 rotationFromTNWInertialToQSW,
+                                 rotationFromQSWToQSWInertial,
+                                 rotationFromQSWInertialToLVLH,
+                                 rotationFromLVLHToLVLHInertial,
+                                 rotationFromLVLHInertialToLVLH_CCSDS,
+                                 rotationFromLVLH_CCSDSToLVLH_CCSDSInertial,
+                                 rotationFromLVLH_CCSDSInertialToVVLH,
+                                 rotationFromVVLHToVVLHInertial,
+                                 rotationFromVVLHInertialToVNC,
+                                 rotationFromVNCToVNCInertial,
+                                 rotationFromVNCInertialToNTW,
+                                 rotationFromNTWToNTWInertial,
+                                 rotationFromNTWInertialToEQW,
+                                 rotationFromEQWToTNW);
+
+        final RealMatrix rotationMatrixFromTNWToTNW =
+                new BlockRealMatrix(rotationFromTNWToTNW.getMatrix());
+
+        // Then
+        final RealMatrix identityMatrix = MatrixUtils.createRealIdentityMatrix(3);
+
+        TestUtils.validateRealMatrix(identityMatrix, rotationMatrixFromTNWToTNW, 1e-15);
+
+    }
+
+    @Test
+    @DisplayName("Test all rotation methods (field version) using default method of the interface")
+    void should_return_initial_value_after_multiple_field_rotations_default_method() {
+        // Given
+        final Binary64Field               field          = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> arbitraryEpoch = new FieldAbsoluteDate<>(field, AbsoluteDate.ARBITRARY_EPOCH);
+        final FieldPVCoordinates<Binary64> pv =
+                new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(6378000 + 400000),
+                                                             new Binary64(0),
+                                                             new Binary64(0)),
+                                         new FieldVector3D<>(new Binary64(0),
+                                                             new Binary64(5422.8),
+                                                             new Binary64(5422.8)));
+
+        // When
+        final FieldRotation<Binary64> rotationFromTNWToTNWInertial =
+                LOFType.TNW_INERTIAL.rotationFromLOF(field, LOFType.TNW, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromTNWInertialToQSW =
+                LOFType.QSW.rotationFromLOF(field, LOFType.TNW_INERTIAL, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromQSWToQSWInertial =
+                LOFType.QSW_INERTIAL.rotationFromLOF(field, LOFType.QSW, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromQSWInertialToLVLH =
+                LOFType.LVLH.rotationFromLOF(field, LOFType.QSW_INERTIAL, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromLVLHToLVLHInertial =
+                LOFType.LVLH_INERTIAL.rotationFromLOF(field, LOFType.LVLH, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromLVLHInertialToLVLH_CCSDS =
+                LOFType.LVLH_CCSDS.rotationFromLOF(field, LOFType.LVLH_INERTIAL, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromLVLH_CCSDSToLVLH_CCSDSInertial =
+                LOFType.LVLH_CCSDS_INERTIAL.rotationFromLOF(field, LOFType.LVLH_CCSDS, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromLVLH_CCSDSInertialToVVLH =
+                LOFType.VVLH.rotationFromLOF(field, LOFType.LVLH_CCSDS_INERTIAL, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromVVLHToVVLHInertial =
+                LOFType.VVLH_INERTIAL.rotationFromLOF(field, LOFType.VVLH, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromVVLHInertialToVNC =
+                LOFType.VNC.rotationFromLOF(field, LOFType.VVLH_INERTIAL, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromVNCToVNCInertial =
+                LOFType.VNC_INERTIAL.rotationFromLOF(field, LOFType.VNC, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromVNCInertialToNTW =
+                LOFType.NTW.rotationFromLOF(field, LOFType.VNC_INERTIAL, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromNTWToNTWInertial =
+                LOFType.NTW_INERTIAL.rotationFromLOF(field, LOFType.NTW, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromNTWInertialToEQW =
+                LOFType.EQW.rotationFromLOF(field, LOFType.NTW_INERTIAL, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromEQWToTNW =
+                LOF.rotationFromLOFInToLOFOut(field, LOFType.EQW, LOFType.TNW, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromTNWToTNW =
+                composeFieldRotations(rotationFromTNWToTNWInertial,
+                                      rotationFromTNWInertialToQSW,
+                                      rotationFromQSWToQSWInertial,
+                                      rotationFromQSWInertialToLVLH,
+                                      rotationFromLVLHToLVLHInertial,
+                                      rotationFromLVLHInertialToLVLH_CCSDS,
+                                      rotationFromLVLH_CCSDSToLVLH_CCSDSInertial,
+                                      rotationFromLVLH_CCSDSInertialToVVLH,
+                                      rotationFromVVLHToVVLHInertial,
+                                      rotationFromVVLHInertialToVNC,
+                                      rotationFromVNCToVNCInertial,
+                                      rotationFromVNCInertialToNTW,
+                                      rotationFromNTWToNTWInertial,
+                                      rotationFromNTWInertialToEQW,
+                                      rotationFromEQWToTNW);
+
+        final FieldMatrix<Binary64> rotationMatrixFromTNWToTNW =
+                new BlockFieldMatrix<>(rotationFromTNWToTNW.getMatrix());
+
+        // Then
+        final RealMatrix identityMatrix = MatrixUtils.createRealIdentityMatrix(3);
+
+        TestUtils.validateFieldMatrix(identityMatrix, rotationMatrixFromTNWToTNW, 1e-15);
+
+    }
+
+    @Test
     @DisplayName("Test all rotation methods")
     void should_return_initial_value_after_multiple_rotations() {
         // Given
@@ -301,7 +469,7 @@ public class LocalOrbitalFrameTest {
                 LOFType.EQW.rotationFromLOF(LOFType.NTW_INERTIAL, pv);
 
         final Rotation rotationFromEQWToTNW =
-                LOF.rotationFromLOFInToLOFOut(LOFType.EQW, LOFType.TNW, pv);
+                LOFType.rotationFromLOFInToLOFOut(LOFType.EQW, LOFType.TNW, pv);
 
         final Rotation rotationFromTNWToTNW =
                 composeRotations(rotationFromTNWToTNWInertial,
@@ -387,7 +555,7 @@ public class LocalOrbitalFrameTest {
                 LOFType.EQW.rotationFromLOF(field, LOFType.NTW_INERTIAL, pv);
 
         final FieldRotation<Binary64> rotationFromEQWToTNW =
-                LOF.rotationFromLOFInToLOFOut(field, LOFType.EQW, LOFType.TNW, pv);
+                LOFType.rotationFromLOFInToLOFOut(field, LOFType.EQW, LOFType.TNW, pv);
 
         final FieldRotation<Binary64> rotationFromTNWToTNW =
                 composeFieldRotations(rotationFromTNWToTNWInertial,

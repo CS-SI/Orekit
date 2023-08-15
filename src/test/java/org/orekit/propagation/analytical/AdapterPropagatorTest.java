@@ -23,6 +23,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
@@ -54,6 +55,8 @@ import org.orekit.utils.PVCoordinates;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdapterPropagatorTest {
 
@@ -257,6 +260,31 @@ public class AdapterPropagatorTest {
         }
         Assertions.assertTrue(maxDelta   < 120);
         Assertions.assertTrue(maxNominal > 2800);
+
+    }
+
+    /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
+    @Test
+    public void testIssue949() {
+        // GIVEN
+        final AbsoluteDate initialDate  = new AbsoluteDate();
+        final Orbit        initialOrbit = TestUtils.getDefaultOrbit(initialDate);
+
+        // Setup propagator
+        final Orbit                 finalOrbit = initialOrbit.shiftedBy(1);
+        final List<SpacecraftState> states     = new ArrayList<>();
+        states.add(new SpacecraftState(initialOrbit));
+        states.add(new SpacecraftState(finalOrbit));
+
+        final Ephemeris ephemeris = new Ephemeris(states, 2);
+        final AdapterPropagator adapterPropagator = new AdapterPropagator(ephemeris);
+
+        // Setup additional state provider which use the initial state in its init method
+        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
+        adapterPropagator.addAdditionalStateProvider(additionalStateProvider);
+
+        // WHEN & THEN
+        Assertions.assertDoesNotThrow(() -> adapterPropagator.propagate(finalOrbit.getDate()), "No error should have been thrown");
 
     }
 

@@ -37,7 +37,7 @@ import org.orekit.utils.PVCoordinates;
  * of Astrodynamics and Applications Curtis, Orbital Mechanics for Engineering Students
  *
  * @author Julien Asquier
- * @since 11.3.1
+ * @since 12.0
  */
 public class IodGauss extends AbstractAnglesOnlyIod {
 
