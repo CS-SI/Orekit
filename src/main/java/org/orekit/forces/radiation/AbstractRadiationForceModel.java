@@ -90,7 +90,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
+    public Stream<EventDetector> getEventDetectors() {
         final EventDetector[] detectors = new EventDetector[2 * occultingBodies.size()];
         for (int i = 0; i < occultingBodies.size(); ++i) {
             final OccultationEngine occulting = occultingBodies.get(i);
@@ -109,12 +109,12 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
         }
         // Fusion between Date detector for parameter driver span change and
         // Detector for umbra / penumbra events
-        return Stream.concat(Stream.of(detectors), super.getEventsDetectors());
+        return Stream.concat(Stream.of(detectors), super.getEventDetectors());
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getEventDetectors(final Field<T> field) {
         final T zero = field.getZero();
         @SuppressWarnings("unchecked")
         final FieldEventDetector<T>[] detectors = (FieldEventDetector<T>[]) Array.newInstance(FieldEventDetector.class,
@@ -134,7 +134,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
                                    withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
                                    withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
         }
-        return Stream.concat(Stream.of(detectors), super.getFieldEventsDetectors(field));
+        return Stream.concat(Stream.of(detectors), super.getEventDetectors(field));
     }
 
     /**

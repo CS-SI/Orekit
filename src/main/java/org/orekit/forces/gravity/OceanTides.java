@@ -187,16 +187,16 @@ public class OceanTides extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
+    public Stream<EventDetector> getEventDetectors() {
         // delegate to underlying attraction model
-        return attractionModel.getEventsDetectors();
+        return attractionModel.getEventDetectors();
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getEventDetectors(final Field<T> field) {
         // delegate to underlying attraction model
-        return attractionModel.getFieldEventsDetectors(field);
+        return attractionModel.getEventDetectors(field);
     }
 
     /** {@inheritDoc} */

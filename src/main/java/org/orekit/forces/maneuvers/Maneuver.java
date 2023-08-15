@@ -236,7 +236,7 @@ public class Maneuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
+    public Stream<EventDetector> getEventDetectors() {
         // Event detectors are extracted from both the maneuver triggers and the propulsion model
         return Stream.concat(maneuverTriggers.getEventsDetectors(),
                              propulsionModel.getEventsDetectors());
@@ -244,7 +244,7 @@ public class Maneuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getEventDetectors(final Field<T> field) {
         // Event detectors are extracted from both the maneuver triggers and the propulsion model
         return Stream.concat(maneuverTriggers.getFieldEventsDetectors(field),
                              propulsionModel.getFieldEventsDetectors(field));

@@ -20,6 +20,8 @@ import java.util.List;
 
 /** Provider for {@link ParameterDriver parameters drivers}.
  * @author Luc Maisonobe
+ * @author Melina Vanel
+ * @author Maxime Journot
  * @since 11.2
  */
 public interface ParametersDriversProvider {

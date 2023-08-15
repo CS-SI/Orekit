@@ -44,7 +44,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CjSjCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
@@ -576,12 +575,6 @@ public class DSSTZonal implements DSSTForceModel {
 
         return computeMeanElementRates(spacecraftState.getDate(), context, udu);
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
-        return null;
     }
 
     /** Compute the mean element rates.

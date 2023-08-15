@@ -16,28 +16,20 @@
  */
 package org.orekit.forces;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.MathArrays;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldDateDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParametersDriversProvider;
 import org.orekit.utils.TimeSpanMap.Span;
 
 /** This interface represents a force modifying spacecraft motion.
@@ -60,7 +52,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * Force models which create discontinuous acceleration patterns (typically for maneuvers
  * start/stop or solar eclipses entry/exit) must provide one or more {@link
  * org.orekit.propagation.events.EventDetector events detectors} to the
- * propagator thanks to their {@link #getEventsDetectors()} method. This method
+ * propagator thanks to their {@link #getEventDetectors()} method. This method
  * is called once just before propagation starts. The events states will be checked by
  * the propagator to ensure accurate propagation and proper events handling.
  * </p>
@@ -70,7 +62,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Melina Vanel
  */
-public interface ForceModel extends ParametersDriversProvider {
+public interface ForceModel extends EventDetectorsProvider {
 
     /**
      * Initialize the force model at the start of propagation. This method will be called
@@ -275,78 +267,6 @@ public interface ForceModel extends ParametersDriversProvider {
      * @since 9.0
      */
     <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters);
-
-    /** Get the discrete events related to the model.
-     * A date detector is used to cleanly stop the propagator and reset
-     * the state derivatives at transition dates, useful when force parameter
-     * drivers contains several values.
-     * @return stream of events detectors
-     */
-    default Stream<EventDetector> getEventsDetectors() {
-        // If force model does not have parameter Driver, an empty stream is given as results
-        final ArrayList<AbsoluteDate> transitionDates = new ArrayList<>();
-        for (ParameterDriver driver : getParametersDrivers()) {
-            // Get the transitions' dates from the TimeSpanMap
-            for (AbsoluteDate date : driver.getTransitionDates()) {
-                transitionDates.add(date);
-            }
-        }
-        // Either force model does not have any parameter driver or only contains parameter driver with only 1 span
-        if (transitionDates.size() == 0) {
-            return Stream.empty();
-
-        } else {
-            transitionDates.sort(null);
-            // Initialize the date detector
-            final DateDetector datesDetector = new DateDetector(transitionDates.get(0)).
-                    withMaxCheck(60.).
-                    withHandler(( state, d, increasing) -> {
-                        return Action.RESET_DERIVATIVES;
-                    });
-            // Add all transitions' dates to the date detector
-            for (int i = 1; i < transitionDates.size(); i++) {
-                datesDetector.addEventDate(transitionDates.get(i));
-            }
-            // Return the detector
-            return Stream.of(datesDetector);
-        }
-    }
-
-    /** Get the discrete events related to the model.
-     * @param field field to which the state belongs
-     * @param <T> extends CalculusFieldElement&lt;T&gt;
-     * @return stream of events detectors
-     */
-    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(Field<T> field) {
-        // If force model does not have parameter Driver, an empty stream is given as results
-        final ArrayList<AbsoluteDate> transitionDates = new ArrayList<>();
-        for (ParameterDriver driver : getParametersDrivers()) {
-        // Get the transitions' dates from the TimeSpanMap
-            for (AbsoluteDate date : driver.getTransitionDates()) {
-                transitionDates.add(date);
-            }
-        }
-        // Either force model does not have any parameter driver or only contains parameter driver with only 1 span
-        if (transitionDates.size() == 0) {
-            return Stream.empty();
-
-        } else {
-            transitionDates.sort(null);
-            // Initialize the date detector
-            final FieldDateDetector<T> datesDetector =
-                    new FieldDateDetector<>(new FieldAbsoluteDate<>(field, transitionDates.get(0))).
-                    withMaxCheck(field.getZero().add(60.)).
-                    withHandler(( state, d, increasing) -> {
-                        return Action.RESET_DERIVATIVES;
-                    });
-            // Add all transitions' dates to the date detector
-            for (int i = 1; i < transitionDates.size(); i++) {
-                datesDetector.addEventDate(new FieldAbsoluteDate<>(field, transitionDates.get(i)));
-            }
-            // Return the detector
-            return Stream.of(datesDetector);
-        }
-    }
 
     /** Get parameter value from its name.
      * @param name parameter name

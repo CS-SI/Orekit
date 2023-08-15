@@ -1255,12 +1255,6 @@ public class DSSTPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
-            return null;
-        }
-
-        /** {@inheritDoc} */
-        @Override
         protected List<ParameterDriver> getParametersDriversWithoutMu() {
             return Collections.emptyList();
         }
@@ -1325,13 +1319,13 @@ public class DSSTPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public Stream<EventDetector> getEventsDetectors() {
+        public Stream<EventDetector> getEventDetectors() {
             return Stream.empty();
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getEventDetectors(final Field<T> field) {
             return Stream.empty();
         }
 

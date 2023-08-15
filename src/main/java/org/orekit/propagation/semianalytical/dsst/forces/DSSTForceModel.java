@@ -16,21 +16,16 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.hipparchus.Field;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.forces.EventDetectorsProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.AbstractGradientConverter;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
@@ -66,7 +61,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Romain Di Constanzo
  * @author Pascal Parraud
  */
-public interface DSSTForceModel extends ParametersDriversProvider {
+public interface DSSTForceModel extends EventDetectorsProvider {
 
     /**
      * Initialize the force model at the start of propagation.
@@ -351,49 +346,6 @@ public interface DSSTForceModel extends ParametersDriversProvider {
      */
     <T extends CalculusFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
                                                            FieldAuxiliaryElements<T> auxiliaryElements, T[] parameters);
-
-
-    /** Get the discrete events related to the model.
-     * @return array of events detectors or null if the model is not
-     * related to any discrete events
-     */
-    default EventDetector[] getEventsDetectors() {
-        // If force model does not have parameter Driver, an empty stream is given as results
-        final ArrayList<AbsoluteDate> transitionDates = new ArrayList<>();
-        for (ParameterDriver driver : getParametersDrivers()) {
-            // Get the transitions' dates from the TimeSpanMap
-            for (AbsoluteDate date : driver.getTransitionDates()) {
-                transitionDates.add(date);
-            }
-        }
-        // Either force model does not have any parameter driver or only contains parameter driver with only 1 span
-        if (transitionDates.size() == 0) {
-            return null;
-
-        } else {
-            transitionDates.sort(null);
-            // Initialize the date detector
-            final DateDetector datesDetector = new DateDetector(transitionDates.get(0)).
-                    withMaxCheck(60.).
-                    withHandler(( state, d, increasing) -> {
-                        return Action.RESET_DERIVATIVES;
-                    });
-            // Add all transitions' dates to the date detector
-            for (int i = 1; i < transitionDates.size(); i++) {
-                datesDetector.addEventDate(transitionDates.get(i));
-            }
-            // Return the detector
-            return (EventDetector[]) Stream.of(datesDetector).toArray();
-        }
-    }
-
-    /** Get the discrete events related to the model.
-     * @param <T> type of the elements
-     * @param field field used by default
-     * @return array of events detectors or null if the model is not
-     * related to any discrete events
-     */
-    <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(Field<T> field);
 
     /** Register an attitude provider.
      * <p>

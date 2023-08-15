@@ -17,9 +17,10 @@
 package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.util.List;
+import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
@@ -111,23 +112,14 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    public EventDetector[] getEventsDetectors() {
-        if (drag.getEventsDetectors().count() == 0) {
-            return null;
-        } else {
-            return (EventDetector[]) drag.getEventsDetectors().toArray();
-        }
+    public Stream<EventDetector> getEventDetectors() {
+        return drag.getEventDetectors();
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
     @Override
-    public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
-        if (drag.getEventsDetectors().count() == 0) {
-            return null;
-        } else {
-            return (FieldEventDetector<T>[]) drag.getFieldEventsDetectors(field).toArray();
-        }
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getEventDetectors(final Field<T> field) {
+        return drag.getEventDetectors(field);
     }
 
     /** {@inheritDoc} */

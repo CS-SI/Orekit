@@ -49,7 +49,6 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -1012,14 +1011,9 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         Main(final FieldODEIntegrator<T> integrator) {
             yDot = MathArrays.buildArray(field, 7);
 
-            for (final DSSTForceModel forceModel : forceModels) {
-                final FieldEventDetector<T>[] modelDetectors = forceModel.getFieldEventsDetectors(field);
-                if (modelDetectors != null) {
-                    for (final FieldEventDetector<T> detector : modelDetectors) {
-                        setUpEventDetector(integrator, detector);
-                    }
-                }
-            }
+            // Setup event detectors for each force model
+            forceModels.forEach(dsstForceModel ->dsstForceModel.getEventDetectors(field).
+                                forEach(eventDetector -> setUpEventDetector(integrator, eventDetector)));
 
         }
 

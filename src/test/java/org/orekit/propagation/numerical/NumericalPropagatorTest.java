@@ -134,7 +134,7 @@ public class NumericalPropagatorTest {
                                              });
         ForceModel force = new ForceModelAdapter() {
             @Override
-            public Stream<EventDetector> getEventsDetectors() {
+            public Stream<EventDetector> getEventDetectors() {
                 return Stream.of(singleDetector);
             }
         };
@@ -1802,12 +1802,12 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public Stream<EventDetector> getEventsDetectors() {
+        public Stream<EventDetector> getEventDetectors() {
             return Stream.empty();
         }
 
         @Override
-        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getEventDetectors(final Field<T> field) {
             return Stream.empty();
         }
 
