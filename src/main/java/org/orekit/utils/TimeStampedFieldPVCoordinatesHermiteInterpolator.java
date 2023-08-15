@@ -130,10 +130,13 @@ public class TimeStampedFieldPVCoordinatesHermiteInterpolator<KK extends Calculu
      * positions.
      */
     @Override
-    protected TimeStampedFieldPVCoordinates<KK> interpolate(final FieldAbsoluteDate<KK> date) {
+    protected TimeStampedFieldPVCoordinates<KK> interpolate(final InterpolationData interpolationData) {
+
+        // Get interpolation date
+        final FieldAbsoluteDate<KK> interpolationDate = interpolationData.getInterpolationDate();
 
         // Convert sample to stream
-        final Stream<TimeStampedFieldPVCoordinates<KK>> sample = neighborList.stream();
+        final Stream<TimeStampedFieldPVCoordinates<KK>> sample = interpolationData.getNeighborList().stream();
 
         // Set up an interpolator taking derivatives into account
         final FieldHermiteInterpolator<KK> interpolator = new FieldHermiteInterpolator<>();
@@ -144,7 +147,7 @@ public class TimeStampedFieldPVCoordinatesHermiteInterpolator<KK extends Calculu
                 // populate sample with position data, ignoring velocity
                 sample.forEach(pv -> {
                     final FieldVector3D<KK> position = pv.getPosition();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
+                    interpolator.addSamplePoint(pv.getDate().durationFrom(interpolationDate),
                                                 position.toArray());
                 });
                 break;
@@ -153,7 +156,7 @@ public class TimeStampedFieldPVCoordinatesHermiteInterpolator<KK extends Calculu
                 sample.forEach(pv -> {
                     final FieldVector3D<KK> position = pv.getPosition();
                     final FieldVector3D<KK> velocity = pv.getVelocity();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
+                    interpolator.addSamplePoint(pv.getDate().durationFrom(interpolationDate),
                                                 position.toArray(), velocity.toArray());
                 });
                 break;
@@ -163,7 +166,7 @@ public class TimeStampedFieldPVCoordinatesHermiteInterpolator<KK extends Calculu
                     final FieldVector3D<KK> position     = pv.getPosition();
                     final FieldVector3D<KK> velocity     = pv.getVelocity();
                     final FieldVector3D<KK> acceleration = pv.getAcceleration();
-                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
+                    interpolator.addSamplePoint(pv.getDate().durationFrom(interpolationDate),
                                                 position.toArray(), velocity.toArray(), acceleration.toArray());
                 });
                 break;
@@ -173,10 +176,10 @@ public class TimeStampedFieldPVCoordinatesHermiteInterpolator<KK extends Calculu
         }
 
         // Interpolate
-        final KK[][] pva = interpolator.derivatives(date.getField().getZero(), 2);
+        final KK[][] pva = interpolator.derivatives(interpolationDate.getField().getZero(), 2);
 
         // Build a new interpolated instance
-        return new TimeStampedFieldPVCoordinates<>(date, new FieldVector3D<>(pva[0]), new FieldVector3D<>(pva[1]),
+        return new TimeStampedFieldPVCoordinates<>(interpolationDate, new FieldVector3D<>(pva[0]), new FieldVector3D<>(pva[1]),
                                                    new FieldVector3D<>(pva[2]));
     }
 }

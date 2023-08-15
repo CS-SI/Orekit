@@ -27,6 +27,9 @@
       <action dev="louis" type="add" issue="893">
         Added support for loading DCB data from Sinex files.
       </action>
+      <action dev="vincent" type="fix" issue="1164">
+        Classes extending AbstractTimeInterpolator and AbstractFieldTimeInterpolator are now thread safe.
+      </action>
       <action dev="vincent" type="update" issue="1144">
         Changed methods computing rotation in LOF to expect date as argument in addition to the PVCoordinates.
       </action>

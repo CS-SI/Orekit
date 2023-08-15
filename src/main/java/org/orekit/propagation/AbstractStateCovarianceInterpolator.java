@@ -120,19 +120,20 @@ public abstract class AbstractStateCovarianceInterpolator
     /**
      * Interpolate orbit and associated covariance.
      *
-     * @param interpolationDate interpolation date
+     * @param interpolationData interpolation data
      *
      * @return interpolated orbit and associated covariance
      */
     @Override
-    public TimeStampedPair<Orbit, StateCovariance> interpolate(final AbsoluteDate interpolationDate) {
+    public TimeStampedPair<Orbit, StateCovariance> interpolate(final InterpolationData interpolationData) {
 
         // Interpolate orbit at interpolation date
-        final Orbit interpolatedOrbit = interpolateOrbit(interpolationDate);
+        final Orbit interpolatedOrbit = interpolateOrbit(interpolationData.getInterpolationDate(),
+                                                         interpolationData.getNeighborList());
 
         // Rebuild state covariance
         final StateCovariance covarianceInOrbitFrame =
-                computeInterpolatedCovarianceInOrbitFrame(neighborList, interpolatedOrbit);
+                computeInterpolatedCovarianceInOrbitFrame(interpolationData.getNeighborList(), interpolatedOrbit);
 
         // Output new blended StateCovariance instance in desired output
         return expressCovarianceInDesiredOutput(interpolatedOrbit, covarianceInOrbitFrame);
@@ -167,13 +168,15 @@ public abstract class AbstractStateCovarianceInterpolator
      * Interpolate orbit at given interpolation date.
      *
      * @param interpolationDate interpolation date
+     * @param neighborList neighbor list
      *
      * @return interpolated orbit
      */
-    protected Orbit interpolateOrbit(final AbsoluteDate interpolationDate) {
+    protected Orbit interpolateOrbit(final AbsoluteDate interpolationDate,
+                                     final List<TimeStampedPair<Orbit, StateCovariance>> neighborList) {
 
         // Build orbit list from uncertain orbits
-        final List<Orbit> orbits = buildOrbitList();
+        final List<Orbit> orbits = buildOrbitList(neighborList);
 
         return orbitInterpolator.interpolate(interpolationDate, orbits);
     }
@@ -231,9 +234,11 @@ public abstract class AbstractStateCovarianceInterpolator
     /**
      * Build an orbit list from cached samples.
      *
+     * @param neighborList neighbor list
+     *
      * @return orbit list
      */
-    private List<Orbit> buildOrbitList() {
+    private List<Orbit> buildOrbitList(final List<TimeStampedPair<Orbit, StateCovariance>> neighborList) {
 
         // Get samples stream
         final Stream<TimeStampedPair<Orbit, StateCovariance>> uncertainStateStream = neighborList.stream();

@@ -19,7 +19,6 @@ package org.orekit.attitudes;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbstractFieldTimeInterpolator;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
@@ -72,10 +71,10 @@ public class FieldAttitudeInterpolator<KK extends CalculusFieldElement<KK>>
 
     /** {@inheritDoc} */
     @Override
-    protected FieldAttitude<KK> interpolate(final FieldAbsoluteDate<KK> interpolationDate) {
+    protected FieldAttitude<KK> interpolate(final InterpolationData interpolationData) {
 
         // Convert sample to stream
-        final Stream<FieldAttitude<KK>> sample = neighborList.stream();
+        final Stream<FieldAttitude<KK>> sample = interpolationData.getNeighborList().stream();
 
         // Express all attitudes in the same reference frame
         final Stream<FieldAttitude<KK>> consistentSample =
@@ -87,7 +86,7 @@ public class FieldAttitudeInterpolator<KK extends CalculusFieldElement<KK>>
 
         // Interpolate
         final TimeStampedFieldAngularCoordinates<KK> interpolated =
-                interpolator.interpolate(interpolationDate, angularSample);
+                interpolator.interpolate(interpolationData.getInterpolationDate(), angularSample);
 
         return new FieldAttitude<>(referenceFrame, interpolated);
     }

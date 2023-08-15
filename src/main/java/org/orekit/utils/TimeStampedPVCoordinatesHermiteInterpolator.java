@@ -126,10 +126,13 @@ public class TimeStampedPVCoordinatesHermiteInterpolator extends AbstractTimeInt
      * positions.
      */
     @Override
-    protected TimeStampedPVCoordinates interpolate(final AbsoluteDate date) {
+    protected TimeStampedPVCoordinates interpolate(final InterpolationData interpolationData) {
+
+        // Get date
+        final AbsoluteDate date = interpolationData.getInterpolationDate();
 
         // Convert sample to stream
-        final Stream<TimeStampedPVCoordinates> sample = neighborList.stream();
+        final Stream<TimeStampedPVCoordinates> sample = interpolationData.getNeighborList().stream();
 
         // Set up an interpolator taking derivatives into account
         final HermiteInterpolator interpolator = new HermiteInterpolator();

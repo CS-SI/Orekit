@@ -53,22 +53,6 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
 
     /** Neighbor size. */
     protected final int interpolationPoints;
-
-    /** Immutable time stamped cached samples. */
-    protected ImmutableFieldTimeStampedCache<T, KK> cachedSamples;
-
-    /** Unmodifiable list of neighbors. */
-    protected List<T> neighborList;
-
-    /** Field of the element. */
-    protected Field<KK> field;
-
-    /** Fielded zero. */
-    protected KK zero;
-
-    /** Fielded one. */
-    protected KK one;
-
     // CHECKSTYLE: resume VisibilityModifier check
 
     /**
@@ -112,33 +96,8 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
     /** {@inheritDoc}. */
     @Override
     public T interpolate(final FieldAbsoluteDate<KK> interpolationDate, final Collection<T> sample) {
-
-        try {
-            // Handle specific case that is not handled by the immutable time stamped cache constructor
-            if (sample.size() < 2) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, sample.size());
-            }
-
-            // Create immutable time stamped cache
-            cachedSamples = new ImmutableFieldTimeStampedCache<>(interpolationPoints, sample);
-
-            // Find neighbors
-            final FieldAbsoluteDate<KK> central         = getCentralDate(interpolationDate);
-            final Stream<T>             neighborsStream = cachedSamples.getNeighbors(central);
-
-            // Extract field and useful terms
-            this.field = cachedSamples.getEarliest().getDate().getField();
-            this.zero  = field.getZero();
-            this.one   = field.getOne();
-
-            // Convert to unmodifiable list
-            neighborList = Collections.unmodifiableList(neighborsStream.collect(Collectors.toList()));
-
-            return interpolate(interpolationDate);
-        }
-        catch (OrekitIllegalArgumentException exception) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, sample.size());
-        }
+        final InterpolationData interpolationData = new InterpolationData(interpolationDate, sample);
+        return interpolate(interpolationData);
     }
 
     /** {@inheritDoc} */
@@ -176,42 +135,13 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
     }
 
     /**
-     * Get the central date to use to find neighbors while taking into account extrapolation threshold.
+     * Interpolate instance from given interpolation data.
      *
-     * @param interpolationDate interpolation date
+     * @param interpolationData interpolation data
      *
-     * @return central date to use to find neighbors
+     * @return interpolated instance from given interpolation data.
      */
-    protected FieldAbsoluteDate<KK> getCentralDate(final FieldAbsoluteDate<KK> interpolationDate) {
-        final FieldAbsoluteDate<KK> central;
-        final FieldAbsoluteDate<KK> minDate = cachedSamples.getEarliest().getDate();
-        final FieldAbsoluteDate<KK> maxDate = cachedSamples.getLatest().getDate();
-
-        if (interpolationDate.compareTo(minDate) < 0 &&
-                FastMath.abs(interpolationDate.durationFrom(minDate)).getReal() <= extrapolationThreshold) {
-            // avoid TimeStampedCacheException as we are still within the tolerance before minDate
-            central = minDate;
-        }
-        else if (interpolationDate.compareTo(maxDate) > 0 &&
-                FastMath.abs(interpolationDate.durationFrom(maxDate)).getReal() <= extrapolationThreshold) {
-            // avoid TimeStampedCacheException as we are still within the tolerance after maxDate
-            central = maxDate;
-        }
-        else {
-            central = interpolationDate;
-        }
-
-        return central;
-    }
-
-    /**
-     * Interpolate instance at given date.
-     *
-     * @param date interpolation date
-     *
-     * @return interpolated instance at given date
-     */
-    protected abstract T interpolate(FieldAbsoluteDate<KK> date);
+    protected abstract T interpolate(InterpolationData interpolationData);
 
     /**
      * Get the time parameter which lies between [0:1] by normalizing the difference between interpolating time and previous
@@ -228,5 +158,125 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
                                   final FieldAbsoluteDate<KK> nextDate) {
 
         return interpolatingTime.durationFrom(previousDate).divide(nextDate.getDate().durationFrom(previousDate));
+    }
+
+    /**
+     * Nested class used to store interpolation data.
+     * <p>
+     * It makes the interpolator thread safe.
+     */
+    protected class InterpolationData {
+
+        /** Interpolation date. */
+        private final FieldAbsoluteDate<KK> interpolationDate;
+
+        /** Immutable time stamped cached samples. */
+        private final ImmutableFieldTimeStampedCache<T, KK> cachedSamples;
+
+        /** Unmodifiable list of neighbors. */
+        private final List<T> neighborList;
+
+        /** Field of the element. */
+        private final Field<KK> field;
+
+        /** Fielded zero. */
+        private final KK zero;
+
+        /** Fielded one. */
+        private final KK one;
+
+        /**
+         * Constructor.
+         *
+         * @param interpolationDate interpolation date
+         * @param sample time stamped sample
+         */
+        protected InterpolationData(final FieldAbsoluteDate<KK> interpolationDate, final Collection<T> sample) {
+            try {
+                // Handle specific case that is not handled by the immutable time stamped cache constructor
+                if (sample.size() < 2) {
+                    throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION,
+                                                             sample.size());
+                }
+
+                // Create immutable time stamped cache
+                cachedSamples = new ImmutableFieldTimeStampedCache<>(interpolationPoints, sample);
+
+                // Find neighbors
+                final FieldAbsoluteDate<KK> central         = getCentralDate(interpolationDate);
+                final Stream<T>             neighborsStream = cachedSamples.getNeighbors(central);
+
+                // Extract field and useful terms
+                this.field = interpolationDate.getField();
+                this.zero  = field.getZero();
+                this.one   = field.getOne();
+
+                // Convert to unmodifiable list
+                neighborList = Collections.unmodifiableList(neighborsStream.collect(Collectors.toList()));
+
+                // Store interpolation date
+                this.interpolationDate = interpolationDate;
+            }
+            catch (OrekitIllegalArgumentException exception) {
+                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, sample.size());
+            }
+        }
+
+        /**
+         * Get the central date to use to find neighbors while taking into account extrapolation threshold.
+         *
+         * @param date interpolation date
+         *
+         * @return central date to use to find neighbors
+         */
+        protected FieldAbsoluteDate<KK> getCentralDate(final FieldAbsoluteDate<KK> date) {
+            final FieldAbsoluteDate<KK> central;
+            final FieldAbsoluteDate<KK> minDate = cachedSamples.getEarliest().getDate();
+            final FieldAbsoluteDate<KK> maxDate = cachedSamples.getLatest().getDate();
+
+            if (date.compareTo(minDate) < 0 &&
+                    FastMath.abs(date.durationFrom(minDate)).getReal() <= extrapolationThreshold) {
+                // avoid TimeStampedCacheException as we are still within the tolerance before minDate
+                central = minDate;
+            } else if (date.compareTo(maxDate) > 0 &&
+                    FastMath.abs(date.durationFrom(maxDate)).getReal() <= extrapolationThreshold) {
+                // avoid TimeStampedCacheException as we are still within the tolerance after maxDate
+                central = maxDate;
+            } else {
+                central = date;
+            }
+
+            return central;
+        }
+
+        /** @return interpolation date */
+        public FieldAbsoluteDate<KK> getInterpolationDate() {
+            return interpolationDate;
+        }
+
+        /** @return cached samples */
+        public ImmutableFieldTimeStampedCache<T, KK> getCachedSamples() {
+            return cachedSamples;
+        }
+
+        /** @return neighbor list */
+        public List<T> getNeighborList() {
+            return neighborList;
+        }
+
+        /** @return field */
+        public Field<KK> getField() {
+            return field;
+        }
+
+        /** @return zero */
+        public KK getZero() {
+            return zero;
+        }
+
+        /** @return one */
+        public KK getOne() {
+            return one;
+        }
     }
 }
