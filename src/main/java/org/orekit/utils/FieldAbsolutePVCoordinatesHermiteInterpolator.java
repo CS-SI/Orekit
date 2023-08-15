@@ -141,10 +141,13 @@ public class FieldAbsolutePVCoordinatesHermiteInterpolator<KK extends CalculusFi
      * positions.
      */
     @Override
-    protected FieldAbsolutePVCoordinates<KK> interpolate(final FieldAbsoluteDate<KK> date) {
+    protected FieldAbsolutePVCoordinates<KK> interpolate(final InterpolationData interpolationData) {
+
+        // Get interpolation date
+        final FieldAbsoluteDate<KK> date = interpolationData.getInterpolationDate();
 
         // Get sample
-        final List<FieldAbsolutePVCoordinates<KK>> sample = neighborList;
+        final List<FieldAbsolutePVCoordinates<KK>> sample = interpolationData.getNeighborList();
 
         // Set up an interpolator taking derivatives into account
         final FieldHermiteInterpolator<KK> interpolator = new FieldHermiteInterpolator<>();
@@ -184,7 +187,8 @@ public class FieldAbsolutePVCoordinatesHermiteInterpolator<KK extends CalculusFi
         }
 
         // interpolate
-        final KK[][] p = interpolator.derivatives(zero, 2);
+        final KK     zero = interpolationData.getZero();
+        final KK[][] p    = interpolator.derivatives(zero, 2);
 
         // build a new interpolated instance
         return new FieldAbsolutePVCoordinates<>(outputFrame, date, new FieldVector3D<>(p[0]), new FieldVector3D<>(p[1]),

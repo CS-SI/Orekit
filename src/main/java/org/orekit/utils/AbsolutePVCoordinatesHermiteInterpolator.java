@@ -138,10 +138,13 @@ public class AbsolutePVCoordinatesHermiteInterpolator extends AbstractTimeInterp
      * positions.
      */
     @Override
-    protected AbsolutePVCoordinates interpolate(final AbsoluteDate date) {
+    protected AbsolutePVCoordinates interpolate(final InterpolationData interpolationData) {
+
+        // Get date
+        final AbsoluteDate date = interpolationData.getInterpolationDate();
 
         // Get sample
-        final List<AbsolutePVCoordinates> sample = neighborList;
+        final List<AbsolutePVCoordinates> sample = interpolationData.getNeighborList();
 
         // Set up an interpolator taking derivatives into account
         final HermiteInterpolator interpolator = new HermiteInterpolator();

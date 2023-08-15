@@ -24,6 +24,8 @@ import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
+import java.util.List;
+
 /**
  * Orbit blender.
  * <p>
@@ -71,13 +73,15 @@ public class OrbitBlender extends AbstractOrbitInterpolator {
 
     /** {@inheritDoc} */
     @Override
-    protected Orbit interpolate(final AbsoluteDate interpolationDate) {
+    protected Orbit interpolate(final InterpolationData interpolationData) {
 
         // Get first and last entry
-        final Orbit previousOrbit = neighborList.get(0);
-        final Orbit nextOrbit     = neighborList.get(1);
+        final List<Orbit> neighborList  = interpolationData.getNeighborList();
+        final Orbit       previousOrbit = neighborList.get(0);
+        final Orbit       nextOrbit     = neighborList.get(1);
 
         // Propagate orbits
+        final AbsoluteDate interpolationDate = interpolationData.getInterpolationDate();
         final Orbit forwardedOrbit  = propagateOrbitAnalytically(previousOrbit, interpolationDate);
         final Orbit backwardedOrbit = propagateOrbitAnalytically(nextOrbit, interpolationDate);
 
@@ -105,9 +109,7 @@ public class OrbitBlender extends AbstractOrbitInterpolator {
      */
     private Orbit propagateOrbitAnalytically(final Orbit tabulatedOrbit,
                                              final AbsoluteDate propagationDate) {
-
         analyticalPropagator.resetInitialState(new SpacecraftState(tabulatedOrbit));
-
         return analyticalPropagator.propagate(propagationDate).getOrbit();
     }
 }

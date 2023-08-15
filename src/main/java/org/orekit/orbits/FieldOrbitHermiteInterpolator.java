@@ -159,17 +159,21 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
      * a neighboring sub-sample with a predefined number of point from a large global sample
      * in a thread-safe way.
      *
-     * @param interpolationDate interpolation date
+     * @param interpolationData interpolation data
      *
-     * @return interpolated instance at given date
+     * @return interpolated instance for given interpolation data
      */
     @Override
-    protected FieldOrbit<KK> interpolate(final FieldAbsoluteDate<KK> interpolationDate) {
+    protected FieldOrbit<KK> interpolate(final InterpolationData interpolationData) {
+
+        // Get interpolation date
+        final FieldAbsoluteDate<KK> interpolationDate = interpolationData.getInterpolationDate();
+
         // Get orbit sample
-        final List<FieldOrbit<KK>> sample = neighborList;
+        final List<FieldOrbit<KK>> sample = interpolationData.getNeighborList();
 
         // Get first entry
-        final FieldOrbit<KK> firstEntry = neighborList.get(0);
+        final FieldOrbit<KK> firstEntry = sample.get(0);
 
         // Get orbit type for interpolation
         final OrbitType orbitType = firstEntry.getType();

@@ -17,6 +17,7 @@
 package org.orekit.utils;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -143,16 +144,20 @@ public class TimeStampedFieldAngularCoordinatesHermiteInterpolator<KK extends Ca
      * derivatives consistent with the rotations.
      */
     @Override
-    protected TimeStampedFieldAngularCoordinates<KK> interpolate(final FieldAbsoluteDate<KK> date) {
+    protected TimeStampedFieldAngularCoordinates<KK> interpolate(final InterpolationData interpolationData) {
+
+        // Get interpolation date
+        final FieldAbsoluteDate<KK> interpolationDate = interpolationData.getInterpolationDate();
 
         // Get sample
-        final List<TimeStampedFieldAngularCoordinates<KK>> sample = neighborList;
+        final List<TimeStampedFieldAngularCoordinates<KK>> sample = interpolationData.getNeighborList();
 
         // set up safety elements for 2π singularity avoidance
         final double epsilon   = 2 * FastMath.PI / sample.size();
         final double threshold = FastMath.min(-(1.0 - 1.0e-4), -FastMath.cos(epsilon / 4));
 
         // set up a linear model canceling mean rotation rate
+        final Field<KK> field = interpolationData.getField();
         final FieldVector3D<KK> meanRate;
         FieldVector3D<KK>       sum = FieldVector3D.getZero(field);
         if (filter != AngularDerivativesFilter.USE_R) {
@@ -175,7 +180,7 @@ public class TimeStampedFieldAngularCoordinatesHermiteInterpolator<KK extends Ca
             meanRate = new FieldVector3D<>(1.0 / (sample.size() - 1), sum);
         }
         TimeStampedFieldAngularCoordinates<KK> offset =
-                new TimeStampedFieldAngularCoordinates<>(date, FieldRotation.getIdentity(field),
+                new TimeStampedFieldAngularCoordinates<>(interpolationDate, FieldRotation.getIdentity(field),
                                                          meanRate, FieldVector3D.getZero(field));
 
         boolean restart = true;
@@ -188,13 +193,14 @@ public class TimeStampedFieldAngularCoordinatesHermiteInterpolator<KK extends Ca
             final FieldHermiteInterpolator<KK> interpolator = new FieldHermiteInterpolator<>();
 
             // add sample points
+            final KK          one      = interpolationData.getOne();
             double            sign     = 1.0;
             FieldRotation<KK> previous = FieldRotation.getIdentity(field);
 
             for (final TimeStampedFieldAngularCoordinates<KK> ac : sample) {
 
                 // remove linear offset from the current coordinates
-                final KK                                     dt    = ac.getDate().durationFrom(date);
+                final KK                                     dt    = ac.getDate().durationFrom(interpolationDate);
                 final TimeStampedFieldAngularCoordinates<KK> fixed = ac.subtractOffset(offset.shiftedBy(dt));
 
                 // make sure all interpolated points will be on the same branch
@@ -241,11 +247,11 @@ public class TimeStampedFieldAngularCoordinatesHermiteInterpolator<KK extends Ca
                                                                           one.multiply(epsilon),
                                                                           RotationConvention.VECTOR_OPERATOR),
                                                       FieldVector3D.getZero(field), FieldVector3D.getZero(field)));
-            }
-            else {
+            } else {
                 // interpolation succeeded with the current offset
-                final KK[][]                      p  = interpolator.derivatives(zero, 2);
-                final FieldAngularCoordinates<KK> ac = FieldAngularCoordinates.createFromModifiedRodrigues(p);
+                final KK                          zero = interpolationData.getZero();
+                final KK[][]                      p    = interpolator.derivatives(zero, 2);
+                final FieldAngularCoordinates<KK> ac   = FieldAngularCoordinates.createFromModifiedRodrigues(p);
                 return new TimeStampedFieldAngularCoordinates<>(offset.getDate(),
                                                                 ac.getRotation(),
                                                                 ac.getRotationRate(),

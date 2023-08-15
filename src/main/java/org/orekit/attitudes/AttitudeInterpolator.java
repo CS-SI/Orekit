@@ -17,7 +17,6 @@
 package org.orekit.attitudes;
 
 import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -68,10 +67,10 @@ public class AttitudeInterpolator extends AbstractTimeInterpolator<Attitude> {
 
     /** {@inheritDoc} */
     @Override
-    protected Attitude interpolate(final AbsoluteDate interpolationDate) {
+    protected Attitude interpolate(final InterpolationData interpolationData) {
 
         // Convert sample to stream
-        final Stream<Attitude> sample = neighborList.stream();
+        final Stream<Attitude> sample = interpolationData.getNeighborList().stream();
 
         // Express all attitudes in the same reference frame
         final Stream<Attitude> consistentSample =
@@ -82,7 +81,8 @@ public class AttitudeInterpolator extends AbstractTimeInterpolator<Attitude> {
                 consistentSample.map(Attitude::getOrientation).collect(Collectors.toList());
 
         // Interpolate
-        final TimeStampedAngularCoordinates interpolated = interpolator.interpolate(interpolationDate, angularSample);
+        final TimeStampedAngularCoordinates interpolated = interpolator.interpolate(interpolationData.getInterpolationDate(),
+                                                                                    angularSample);
 
         return new Attitude(referenceFrame, interpolated);
     }
