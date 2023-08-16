@@ -29,7 +29,6 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -44,7 +43,6 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -53,6 +51,7 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
 /** This class is a container for a single set of TLE data.
  *
@@ -72,7 +71,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Thomas Paulet (field translation)
  * @since 11.0
  */
-public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T>, Serializable {
+public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T>, Serializable, ParameterDriversProvider {
 
     /** Identifier for default type of ephemeris (SGP4/SDP4). */
     public static final int DEFAULT = 0;
@@ -580,48 +579,13 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
 
     }
 
-    /** Get the drivers for TLE propagation SGP4 and SDP4.
+    /** {@inheritDoc}.
+     * <p>Get the drivers for TLE propagation SGP4 and SDP4.
      * @return drivers for SGP4 and SDP4 model parameters
      */
+    @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.singletonList(bStarParameterDriver);
-    }
-
-    /** Get model parameters.
-     * @param field field to which the elements belong
-     * @return model parameters
-     */
-    public T[] getParameters(final Field<T> field) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.size());
-        int i = 0;
-        for (ParameterDriver driver : drivers) {
-            parameters[i++] = field.getZero().add(driver.getValue());
-        }
-        return parameters;
-    }
-
-    /** Get model parameters for a certain date.
-     * @param field field to which the elements belong
-     * @param date date for which the value wants to be known. Only if
-     * parameter driver has 1 value estimated over the all orbit determination
-     * period (not validity period intervals for estimation), the date value can
-     * be <em>{@code null}</em> and then the only estimated value will be
-     * returned
-     * @return model parameters
-     */
-    public T[] getParameters(final Field<T> field, final FieldAbsoluteDate<T> date) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.size());
-        int i = 0;
-        for (ParameterDriver driver : drivers) {
-            if (driver.getNbOfValues() == 1) {
-                parameters[i++] = field.getZero().add(driver.getValue(AbsoluteDate.ARBITRARY_EPOCH));
-            } else {
-                parameters[i++] = field.getZero().add(driver.getValue(date.toAbsoluteDate()));
-            }
-        }
-        return parameters;
     }
 
     /** Get the satellite id.

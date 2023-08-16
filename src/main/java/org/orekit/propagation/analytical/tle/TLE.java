@@ -49,6 +49,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
 /** This class is a container for a single set of TLE data.
  *
@@ -66,7 +67,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */
-public class TLE implements TimeStamped, Serializable {
+public class TLE implements TimeStamped, Serializable, ParameterDriversProvider {
 
     /** Identifier for SGP type of ephemeris. */
     public static final int SGP = 1;
