@@ -32,6 +32,7 @@ import org.orekit.propagation.integration.AbstractGradientConverter;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
@@ -41,7 +42,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public abstract class AbstractAnalyticalGradientConverter extends AbstractGradientConverter {
+public abstract class AbstractAnalyticalGradientConverter extends AbstractGradientConverter implements ParameterDriversProvider {
 
     /** Attitude provider. */
     private final AttitudeProvider provider;
@@ -171,12 +172,6 @@ public abstract class AbstractAnalyticalGradientConverter extends AbstractGradie
         }
         return parameters;
     }
-
-    /**
-     * Get the parameter drivers related to the analytical propagation model.
-     * @return a list of parameter drivers
-     */
-    public abstract List<ParameterDriver> getParametersDrivers();
 
     /**
      * Get the converted analytical orbit propagator.
