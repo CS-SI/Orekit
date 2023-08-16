@@ -30,7 +30,7 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParametersDriversProvider;
+import org.orekit.utils.ParameterDriversProvider;
 
 /** Interface for building event detectords for force models.
  *
@@ -42,7 +42,7 @@ import org.orekit.utils.ParametersDriversProvider;
  * @author Maxime Journot
  * @since 12.0
  */
-public interface EventDetectorsProvider extends ParametersDriversProvider {
+public interface EventDetectorsProvider extends ParameterDriversProvider {
 
     /** Default maximum checking interval for event detectors (s). */
     double DEFAULT_EVENT_DETECTORS_MAXCHECK = 60;

@@ -31,7 +31,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Maxime Journot
  * @since 11.2
  */
-public interface ParametersDriversProvider {
+public interface ParameterDriversProvider {
 
     /** Get the drivers for parameters.
      * @return drivers for parameters

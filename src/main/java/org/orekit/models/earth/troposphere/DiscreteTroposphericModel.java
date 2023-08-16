@@ -21,7 +21,7 @@ import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParametersDriversProvider;
+import org.orekit.utils.ParameterDriversProvider;
 
 /** Defines a tropospheric model, used to calculate the path delay imposed to
  * electro-magnetic signals between an orbital satellite and a ground station.
@@ -38,7 +38,7 @@ import org.orekit.utils.ParametersDriversProvider;
  * </ul>
  * @author Bryan Cazabonne
  */
-public interface DiscreteTroposphericModel extends ParametersDriversProvider {
+public interface DiscreteTroposphericModel extends ParameterDriversProvider {
 
     /** Calculates the tropospheric path delay for the signal path from a ground
      * station to a satellite.

@@ -32,7 +32,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParametersDriversProvider;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap.Span;
 
 /** This interface represents a force modifying spacecraft motion for a {@link
@@ -112,7 +112,7 @@ public interface DSSTForceModel extends EventDetectorsProvider {
      *  @param parameters values of the force model parameters for specific date
      *  (1 value only per parameter driver) obtained for example by calling
      *  {@link #getParameters(AbsoluteDate)} on force model or
-     *  {@link AbstractGradientConverter#getParametersAtStateDate(FieldSpacecraftState, ParametersDriversProvider)}
+     *  {@link AbstractGradientConverter#getParametersAtStateDate(FieldSpacecraftState, ParameterDriversProvider)}
      *  on gradient converter.
      *  @return a list of objects that will hold short period terms (the objects
      *  are also retained by the force model, which will update them during propagation)
@@ -203,7 +203,7 @@ public interface DSSTForceModel extends EventDetectorsProvider {
      *  @param parameters values of the force model parameters at state date (only 1 span for
      *  each parameter driver) obtained for example by calling {@link #getParameters(Field, FieldAbsoluteDate)}
      *  on force model  or
-     *  {@link AbstractGradientConverter#getParametersAtStateDate(FieldSpacecraftState, ParametersDriversProvider)}
+     *  {@link AbstractGradientConverter#getParametersAtStateDate(FieldSpacecraftState, ParameterDriversProvider)}
      *  on gradient converter.
      *  @return the mean element rates dai/dt
      */
@@ -242,7 +242,7 @@ public interface DSSTForceModel extends EventDetectorsProvider {
      * @param <T> type of the elements
      * @param parameters values of the force model parameters (all span values for each parameters)
      * obtained for example by calling {@link #getParametersAllValues(Field)} on force model or
-     *  {@link AbstractGradientConverter#getParameters(FieldSpacecraftState, ParametersDriversProvider)}
+     *  {@link AbstractGradientConverter#getParameters(FieldSpacecraftState, ParameterDriversProvider)}
      *  on gradient converter. The extract parameter method
      *  {@link #extractParameters(CalculusFieldElement[], FieldAbsoluteDate)} is called in
      * the method to select the right parameter.
