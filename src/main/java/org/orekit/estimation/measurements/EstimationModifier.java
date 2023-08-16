@@ -16,9 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.List;
-
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
 
 /** Interface for estimated measurements modifiers used for orbit determination.
@@ -40,12 +38,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public interface EstimationModifier<T extends ObservedMeasurement<T>> {
-
-    /** Get the drivers for this modifier parameters.
-     * @return drivers for this modifier parameters
-     */
-    List<ParameterDriver> getParametersDrivers();
+public interface EstimationModifier<T extends ObservedMeasurement<T>> extends ParameterDriversProvider {
 
     /** Apply a modifier to an estimated measurement without derivatives.
      * @param estimated estimated measurement to modify
