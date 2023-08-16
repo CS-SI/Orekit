@@ -17,7 +17,7 @@
 
 package org.orekit.forces.maneuvers.propulsion;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -126,11 +126,9 @@ public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustP
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        final List<ParameterDriver> drivers = new ArrayList<>(3);
-        drivers.add(scaleFactorThrustXDriver);
-        drivers.add(scaleFactorThrustYDriver);
-        drivers.add(scaleFactorThrustZDriver);
-        return Collections.unmodifiableList(drivers);
+        return Collections.unmodifiableList(Arrays.asList(scaleFactorThrustXDriver,
+                                                          scaleFactorThrustYDriver,
+                                                          scaleFactorThrustZDriver));
     }
 
     /** {@inheritDoc} */
