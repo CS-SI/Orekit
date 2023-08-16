@@ -510,7 +510,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                     // code should really be done for all ManeuverTriggers and not only AbstractManeuverTriggers
                     final AbstractManeuverTriggers amt = (AbstractManeuverTriggers) maneuverTriggers;
 
-                    amt.getEventsDetectors().
+                    amt.getEventDetectors().
                         filter(d -> d instanceof ParameterDrivenDateIntervalDetector).
                         map (d -> (ParameterDrivenDateIntervalDetector) d).
                         forEach(d -> {

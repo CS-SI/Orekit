@@ -495,7 +495,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
             this.yDot     = MathArrays.buildArray(getField(),  7);
             this.jacobian = MathArrays.buildArray(getField(),  6, 6);
             for (final ForceModel forceModel : forceModels) {
-                forceModel.getEventDetectors(getField()).forEach(detector -> setUpEventDetector(integrator, detector));
+                forceModel.getFieldEventDetectors(getField()).forEach(detector -> setUpEventDetector(integrator, detector));
             }
 
             if (superGetOrbitType() == null) {

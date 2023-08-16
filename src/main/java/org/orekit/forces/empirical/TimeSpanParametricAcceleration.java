@@ -305,7 +305,7 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getEventDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
         return Stream.empty();
     }
 

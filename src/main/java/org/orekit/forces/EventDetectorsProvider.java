@@ -49,8 +49,7 @@ public interface EventDetectorsProvider extends ParameterDriversProvider {
 
     /** Get the discrete events related to the model.
      * A date detector is used to cleanly stop the propagator and reset
-     * the state derivatives at transition dates, useful when force parameter
-     * drivers contains several values.
+     * the state derivatives at transition dates.
      * @return stream of events detectors
      */
     default Stream<EventDetector> getEventDetectors() {
@@ -88,7 +87,7 @@ public interface EventDetectorsProvider extends ParameterDriversProvider {
      * @param <T> extends CalculusFieldElement&lt;T&gt;
      * @return stream of events detectors
      */
-    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getEventDetectors(Field<T> field) {
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
         // If force model does not have parameter Driver, an empty stream is given as results
         final ArrayList<AbsoluteDate> transitionDates = new ArrayList<>();
         for (ParameterDriver driver : getParametersDrivers()) {

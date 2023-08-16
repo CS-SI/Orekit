@@ -114,7 +114,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getEventDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
         final T zero = field.getZero();
         @SuppressWarnings("unchecked")
         final FieldEventDetector<T>[] detectors = (FieldEventDetector<T>[]) Array.newInstance(FieldEventDetector.class,
@@ -134,7 +134,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
                                    withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
                                    withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
         }
-        return Stream.concat(Stream.of(detectors), super.getEventDetectors(field));
+        return Stream.concat(Stream.of(detectors), super.getFieldEventDetectors(field));
     }
 
     /**

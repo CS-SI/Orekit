@@ -118,8 +118,8 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getEventDetectors(final Field<T> field) {
-        return drag.getEventDetectors(field);
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
+        return drag.getFieldEventDetectors(field);
     }
 
     /** {@inheritDoc} */
