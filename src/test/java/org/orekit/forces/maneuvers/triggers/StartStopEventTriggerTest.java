@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.maneuvers.triggers;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
@@ -31,6 +32,7 @@ import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.ParameterDriver;
 
 public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<StartStopEventsTrigger<DateDetector, DateDetector>> {
 
@@ -61,6 +63,11 @@ public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<Star
             return converted;
         }
 
+        @Override
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.emptyList();
+        }
+
     }
 
     protected StartStopEventsTrigger<DateDetector, DateDetector> createTrigger(final AbsoluteDate start, final AbsoluteDate stop) {
@@ -73,8 +80,8 @@ public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<Star
                                                                                    AbsoluteDate.J2000_EPOCH.shiftedBy(100.0));
         final List<TimeStamped>    startDates = trigger.getStartDetector().getDates();
         final List<TimeStamped>    stopDates  = trigger.getStopDetector().getDates();
-        Assertions.assertEquals(2,     trigger.getEventsDetectors().count());
-        Assertions.assertEquals(2,     trigger.getFieldEventsDetectors(Binary64Field.getInstance()).count());
+        Assertions.assertEquals(2,     trigger.getEventDetectors().count());
+        Assertions.assertEquals(2,     trigger.getFieldEventDetectors(Binary64Field.getInstance()).count());
         Assertions.assertEquals(2,     startDates.size());
         Assertions.assertEquals(  0.0, startDates.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
         Assertions.assertEquals(110.0, startDates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);

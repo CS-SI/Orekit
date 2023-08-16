@@ -110,12 +110,12 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
+    public Stream<EventDetector> getEventDetectors() {
         return Stream.of(firingIntervalDetector);
     }
 
     /** {@inheritDoc} */
-    public <S extends CalculusFieldElement<S>> Stream<FieldEventDetector<S>> getFieldEventsDetectors(final Field<S> field) {
+    public <S extends CalculusFieldElement<S>> Stream<FieldEventDetector<S>> getFieldEventDetectors(final Field<S> field) {
 
         @SuppressWarnings("unchecked")
         FieldEventDetector<S> fd = (FieldEventDetector<S>) cached.get(field);
@@ -130,7 +130,7 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
 
     /** Convert a detector and set up check interval, threshold and new handler.
      * <p>
-     * This method is not inlined in {@link #getFieldEventsDetectors(Field)} because the
+     * This method is not inlined in {@link #getFieldEventDetectors(Field)} because the
      * parameterized types confuses the Java compiler.
      * </p>
      * @param field field to which the state belongs

@@ -17,6 +17,7 @@
 package org.orekit.forces.maneuvers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
@@ -73,6 +74,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.ParameterDriver;
 
 public class ConfigurableLowThrustManeuverTest {
     /** */
@@ -349,6 +351,11 @@ public class ConfigurableLowThrustManeuverTest {
             return converted;
         }
 
+        @Override
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.emptyList();
+        }
+
     }
 
     private static class StartStopNoField<A extends AbstractDetector<A>>
@@ -370,6 +377,11 @@ public class ConfigurableLowThrustManeuverTest {
             FieldAbstractDetector<D, S> convertStopDetector(Field<S> field, NegateDetector detector) {
             throw new OrekitException(OrekitMessages.FUNCTION_NOT_IMPLEMENTED,
                                       "StartStopNoField with CalculusFieldElement");
+        }
+
+        @Override
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.emptyList();
         }
 
     }

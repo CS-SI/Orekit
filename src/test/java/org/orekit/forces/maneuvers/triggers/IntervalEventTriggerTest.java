@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.maneuvers.triggers;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
@@ -31,6 +32,7 @@ import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.ParameterDriver;
 
 public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<IntervalEventTrigger<DateDetector>> {
 
@@ -53,6 +55,11 @@ public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<Inter
             return converted;
         }
 
+        @Override
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.emptyList();
+        }
+
     }
 
     protected IntervalDates createTrigger(final AbsoluteDate start, final AbsoluteDate stop) {
@@ -64,8 +71,8 @@ public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<Inter
         IntervalDates trigger = createTrigger(AbsoluteDate.J2000_EPOCH,
                                               AbsoluteDate.J2000_EPOCH.shiftedBy(100.0));
         final List<TimeStamped>    dates = trigger.getFiringIntervalDetector().getDates();
-        Assertions.assertEquals(1,     trigger.getEventsDetectors().count());
-        Assertions.assertEquals(1,     trigger.getFieldEventsDetectors(Binary64Field.getInstance()).count());
+        Assertions.assertEquals(1,     trigger.getEventDetectors().count());
+        Assertions.assertEquals(1,     trigger.getFieldEventDetectors(Binary64Field.getInstance()).count());
         Assertions.assertEquals(2,     dates.size());
         Assertions.assertEquals(  0.0, dates.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
         Assertions.assertEquals(100.0, dates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);

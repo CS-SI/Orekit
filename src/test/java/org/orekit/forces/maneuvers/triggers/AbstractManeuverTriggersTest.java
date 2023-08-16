@@ -144,8 +144,8 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         Assertions.assertEquals(2.6872, FastMath.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), FastMath.PI)), 1e-4);
         Assertions.assertEquals(28970, finalorb.getA()/1000, 1);
 
-        final List<EventDetector> list1 = maneuver.getManeuverTriggers().getEventsDetectors().collect(Collectors.toList());
-        final List<EventDetector> list2 = maneuver.getManeuverTriggers().getEventsDetectors().collect(Collectors.toList());
+        final List<EventDetector> list1 = maneuver.getManeuverTriggers().getEventDetectors().collect(Collectors.toList());
+        final List<EventDetector> list2 = maneuver.getManeuverTriggers().getEventDetectors().collect(Collectors.toList());
         Assertions.assertEquals(list1.size(), list2.size());
         for (int i = 0; i < list1.size(); ++i ) {
             Assertions.assertSame(list1.get(i), list2.get(i));
@@ -217,8 +217,8 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         Assertions.assertEquals(2.6872, FastMath.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), field.getZero().newInstance(FastMath.PI))).getReal(), 1e-4);
         Assertions.assertEquals(28970, finalorb.getA().divide(1000).getReal(), 1);
 
-        final List<FieldEventDetector<?>> list1 = maneuver.getManeuverTriggers().getFieldEventsDetectors(field).collect(Collectors.toList());
-        final List<FieldEventDetector<?>> list2 = maneuver.getManeuverTriggers().getFieldEventsDetectors(field).collect(Collectors.toList());
+        final List<FieldEventDetector<?>> list1 = maneuver.getManeuverTriggers().getFieldEventDetectors(field).collect(Collectors.toList());
+        final List<FieldEventDetector<?>> list2 = maneuver.getManeuverTriggers().getFieldEventDetectors(field).collect(Collectors.toList());
         Assertions.assertEquals(list1.size(), list2.size());
         for (int i = 0; i < list1.size(); ++i ) {
             Assertions.assertSame(list1.get(i), list2.get(i));
