@@ -42,14 +42,16 @@ import org.orekit.propagation.analytical.tle.FieldTLEPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
 
 /**
  * Fixed Point method to reverse SGP4 and SDP4 propagation algorithm
  * and generate a usable TLE from a spacecraft state.
- *
+ * <p>
+ * Using this algorithm, the B* value is not computed. In other words,
+ * the B* value from the template TLE is set to the generated one.
+ * </p>
  * @author Thomas Paulet
  * @author Bryan Cazabonne
  * @since 12.0
@@ -132,6 +134,9 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
     @Override
     public TLE generate(final SpacecraftState state, final TLE templateTLE) {
 
+        // Generation epoch
+        final AbsoluteDate epoch = state.getDate();
+
         // gets equinoctial parameters in TEME frame from state
         final EquinoctialOrbit equinoctialOrbit = convert(state.getOrbit());
         double sma = equinoctialOrbit.getA();
@@ -143,7 +148,7 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
 
         // rough initialization of the TLE
         final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(equinoctialOrbit);
-        TLE current = newTLE(keplerianOrbit, templateTLE);
+        TLE current = TleGenerationUtil.newTLE(keplerianOrbit, templateTLE, templateTLE.getBStar(epoch), utc);
 
         // threshold for each parameter
         final double thrA = epsilon * (1 + sma);
@@ -202,7 +207,7 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
             final KeplerianOrbit newKeplerianOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(newEquinoctialOrbit);
 
             // update TLE
-            current = newTLE(newKeplerianOrbit, templateTLE);
+            current = TleGenerationUtil.newTLE(newKeplerianOrbit, templateTLE, templateTLE.getBStar(epoch), utc);
 
         }
 
@@ -217,17 +222,18 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
                                                                     final FieldTLE<T> templateTLE) {
 
         // gets equinoctial parameters in TEME frame from state
-        final FieldEquinoctialOrbit<T> equiOrbit = convert(state.getOrbit());
-        T sma = equiOrbit.getA();
-        T ex  = equiOrbit.getEquinoctialEx();
-        T ey  = equiOrbit.getEquinoctialEy();
-        T hx  = equiOrbit.getHx();
-        T hy  = equiOrbit.getHy();
-        T lv  = equiOrbit.getLv();
+        final FieldEquinoctialOrbit<T> equinoctialOrbit = convert(state.getOrbit());
+        T sma = equinoctialOrbit.getA();
+        T ex  = equinoctialOrbit.getEquinoctialEx();
+        T ey  = equinoctialOrbit.getEquinoctialEy();
+        T hx  = equinoctialOrbit.getHx();
+        T hy  = equinoctialOrbit.getHy();
+        T lv  = equinoctialOrbit.getLv();
 
         // rough initialization of the TLE
-        final FieldKeplerianOrbit<T> keplerianOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(equiOrbit);
-        FieldTLE<T> current = newTLE(keplerianOrbit, templateTLE);
+        final T bStar = state.getA().getField().getZero().add(templateTLE.getBStar());
+        final FieldKeplerianOrbit<T> keplerianOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(equinoctialOrbit);
+        FieldTLE<T> current = TleGenerationUtil.newTLE(keplerianOrbit, templateTLE, bStar, utc);
 
         // field
         final Field<T> field = state.getDate().getField();
@@ -244,16 +250,16 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
             // recompute the state from the current TLE
             final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(current, new FrameAlignedProvider(Rotation.IDENTITY, teme),
                                                                                            state.getMass(), teme, templateTLE.getParameters(field));
-            final FieldOrbit<T> recovOrbit = propagator.getInitialState().getOrbit();
-            final FieldEquinoctialOrbit<T> recovEquiOrbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(recovOrbit);
+            final FieldOrbit<T> recoveredOrbit = propagator.getInitialState().getOrbit();
+            final FieldEquinoctialOrbit<T> recoveredEquinoctialOrbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(recoveredOrbit);
 
             // adapted parameters residuals
-            final T deltaSma = equiOrbit.getA().subtract(recovEquiOrbit.getA());
-            final T deltaEx  = equiOrbit.getEquinoctialEx().subtract(recovEquiOrbit.getEquinoctialEx());
-            final T deltaEy  = equiOrbit.getEquinoctialEy().subtract(recovEquiOrbit.getEquinoctialEy());
-            final T deltaHx  = equiOrbit.getHx().subtract(recovEquiOrbit.getHx());
-            final T deltaHy  = equiOrbit.getHy().subtract(recovEquiOrbit.getHy());
-            final T deltaLv  = MathUtils.normalizeAngle(equiOrbit.getLv().subtract(recovEquiOrbit.getLv()), field.getZero());
+            final T deltaSma = equinoctialOrbit.getA().subtract(recoveredEquinoctialOrbit.getA());
+            final T deltaEx  = equinoctialOrbit.getEquinoctialEx().subtract(recoveredEquinoctialOrbit.getEquinoctialEx());
+            final T deltaEy  = equinoctialOrbit.getEquinoctialEy().subtract(recoveredEquinoctialOrbit.getEquinoctialEy());
+            final T deltaHx  = equinoctialOrbit.getHx().subtract(recoveredEquinoctialOrbit.getHx());
+            final T deltaHy  = equinoctialOrbit.getHy().subtract(recoveredEquinoctialOrbit.getHy());
+            final T deltaLv  = MathUtils.normalizeAngle(equinoctialOrbit.getLv().subtract(recoveredEquinoctialOrbit.getLv()), field.getZero());
 
             // check convergence
             if (FastMath.abs(deltaSma.getReal()) < thrA.getReal() &&
@@ -275,13 +281,13 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
             hx  = hx.add(deltaHx.multiply(scale));
             hy  = hy.add(deltaHy.multiply(scale));
             lv  = lv.add(deltaLv.multiply(scale));
-            final FieldEquinoctialOrbit<T> newEquiOrbit =
+            final FieldEquinoctialOrbit<T> newEquinoctialOrbit =
                                     new FieldEquinoctialOrbit<>(sma, ex, ey, hx, hy, lv, PositionAngle.TRUE,
-                                    equiOrbit.getFrame(), equiOrbit.getDate(), equiOrbit.getMu());
-            final FieldKeplerianOrbit<T> newKeplOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(newEquiOrbit);
+                                    equinoctialOrbit.getFrame(), equinoctialOrbit.getDate(), equinoctialOrbit.getMu());
+            final FieldKeplerianOrbit<T> newKeplerianOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(newEquinoctialOrbit);
 
             // update TLE
-            current = newTLE(newKeplOrbit, templateTLE);
+            current = TleGenerationUtil.newTLE(newKeplerianOrbit, templateTLE, bStar, utc);
 
         }
 
@@ -306,102 +312,6 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
      */
     private <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> convert(final FieldOrbit<T> orbitIn) {
         return new FieldEquinoctialOrbit<T>(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu());
-    }
-
-    /**
-     * Builds a new TLE from Keplerian parameters and a template for TLE data.
-     * @param keplerianOrbit the Keplerian parameters to build the TLE from
-     * @param templateTLE TLE used to get object identification
-     * @return TLE with template identification and new orbital parameters
-     */
-    private TLE newTLE(final KeplerianOrbit keplerianOrbit, final TLE templateTLE) {
-
-        // Keplerian parameters
-        final double meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
-        final double e           = keplerianOrbit.getE();
-        final double i           = keplerianOrbit.getI();
-        final double raan        = keplerianOrbit.getRightAscensionOfAscendingNode();
-        final double pa          = keplerianOrbit.getPerigeeArgument();
-        final double meanAnomaly = keplerianOrbit.getMeanAnomaly();
-
-        // TLE epoch is state epoch
-        final AbsoluteDate epoch = keplerianOrbit.getDate();
-
-        // Identification
-        final int satelliteNumber = templateTLE.getSatelliteNumber();
-        final char classification = templateTLE.getClassification();
-        final int launchYear      = templateTLE.getLaunchYear();
-        final int launchNumber    = templateTLE.getLaunchNumber();
-        final String launchPiece  = templateTLE.getLaunchPiece();
-        final int ephemerisType   = templateTLE.getEphemerisType();
-        final int elementNumber   = templateTLE.getElementNumber();
-
-        // Updates revolutionNumberAtEpoch
-        final int revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
-        final double dt = epoch.durationFrom(templateTLE.getDate());
-        final int newRevolutionNumberAtEpoch = (int) (revolutionNumberAtEpoch + FastMath.floor((MathUtils.normalizeAngle(meanAnomaly, FastMath.PI) + dt * meanMotion) / (MathUtils.TWO_PI)));
-
-        // Gets B*
-        final double bStar = templateTLE.getBStar(epoch);
-
-        // Gets Mean Motion derivatives
-        final double meanMotionFirstDerivative  = templateTLE.getMeanMotionFirstDerivative();
-        final double meanMotionSecondDerivative = templateTLE.getMeanMotionSecondDerivative();
-
-        // Returns the new TLE
-        return new TLE(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
-                       elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
-                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar, utc);
-
-    }
-
-    /**
-     * Builds a new TLE from Keplerian parameters and a template for TLE data.
-     * @param keplerianOrbit the Keplerian parameters to build the TLE from
-     * @param templateTLE TLE used to get object identification
-     * @param <T> type of the element
-     * @return TLE with template identification and new orbital parameters
-     */
-    private <T extends CalculusFieldElement<T>> FieldTLE<T> newTLE(final FieldKeplerianOrbit<T> keplerianOrbit,
-                                                                   final FieldTLE<T> templateTLE) {
-
-        // Keplerian parameters
-        final T meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
-        final T e           = keplerianOrbit.getE();
-        final T i           = keplerianOrbit.getI();
-        final T raan        = keplerianOrbit.getRightAscensionOfAscendingNode();
-        final T pa          = keplerianOrbit.getPerigeeArgument();
-        final T meanAnomaly = keplerianOrbit.getMeanAnomaly();
-
-        // TLE epoch is state epoch
-        final FieldAbsoluteDate<T> epoch = keplerianOrbit.getDate();
-
-        // Identification
-        final int satelliteNumber = templateTLE.getSatelliteNumber();
-        final char classification = templateTLE.getClassification();
-        final int launchYear      = templateTLE.getLaunchYear();
-        final int launchNumber    = templateTLE.getLaunchNumber();
-        final String launchPiece  = templateTLE.getLaunchPiece();
-        final int ephemerisType   = templateTLE.getEphemerisType();
-        final int elementNumber   = templateTLE.getElementNumber();
-
-        // Updates revolutionNumberAtEpoch
-        final int revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
-        final T dt = epoch.durationFrom(templateTLE.getDate());
-        final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch + FastMath.floor(MathUtils.normalizeAngle(meanAnomaly, e.getPi()).add(dt.multiply(meanMotion)).divide(e.getPi().multiply(2.0))).getReal());
-
-        // Gets B*
-        final double bStar = templateTLE.getBStar();
-
-        // Gets Mean Motion derivatives
-        final T meanMotionFirstDerivative  = templateTLE.getMeanMotionFirstDerivative();
-        final T meanMotionSecondDerivative = templateTLE.getMeanMotionSecondDerivative();
-
-        // Returns the new TLE
-        return new FieldTLE<>(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
-                              elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
-                              e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar, utc);
-
     }
 
 }
