@@ -23,6 +23,8 @@ import java.util.List;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
@@ -351,6 +353,18 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
         for (int i = 0; i < 6; i++) {
             shortPeriodDerivativesStm[index][i] += derivatives[i];
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OrbitType getOrbitType() {
+        return propagator.getOrbitType();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PositionAngle getPositionAngle() {
+        return propagator.getPositionAngleType();
     }
 
 }

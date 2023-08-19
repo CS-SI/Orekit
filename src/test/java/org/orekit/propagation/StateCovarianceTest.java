@@ -949,8 +949,7 @@ public class StateCovarianceTest {
 
         // Initialize covariance provider
         final StateCovarianceMatrixProvider provider =
-                new StateCovarianceMatrixProvider("covariance", stmAdditionalName, harvester,
-                                                  stmOrbitType, stmPositionAngle, initialCovariance);
+                new StateCovarianceMatrixProvider("covariance", stmAdditionalName, harvester, initialCovariance);
 
         propagator.addAdditionalStateProvider(provider);
 

@@ -19,6 +19,8 @@ package org.orekit.propagation;
 import java.util.List;
 
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 
 /** Interface for extracting State Transition Matrices and Jacobians matrices from {@link SpacecraftState spacecraft state}.
  * <p>
@@ -74,5 +76,20 @@ public interface MatricesHarvester {
      * @return names of the parameters (i.e. columns) of the Jacobian matrix
      */
     List<String> getJacobiansColumnsNames();
+
+    /**
+     * Get the orbit type used for the matrix computation.
+     * @return the orbit type used for the matrix computation
+     */
+    OrbitType getOrbitType();
+
+    /**
+     * Get the position angle used for the matrix computation.
+     * <p>
+     * Irrelevant if {@link #getOrbitType()} returns {@link OrbitType#CARTESIAN}.
+     * </p>
+     * @return the position angle used for the matrix computation
+     */
+    PositionAngle getPositionAngle();
 
 }
