@@ -23,12 +23,14 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.dfp.Dfp;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.SphericalCoordinates;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -40,8 +42,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractLegacyForceModelTest;
@@ -1221,6 +1225,34 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         Assertions.assertEquals(mu / pos.getNorm(), hfModel11.value(date, pos, mu));
         Assertions.assertArrayEquals(zeroGradient, hfModel11.gradient(date, pos, mu));
 
+    }
+
+
+    @Test
+    public void testAccelerationWithGradientFieldAbsoluteDate() {
+        // Issue 1170
+        // Given
+        final int freeParameters = 1;
+        final GradientField field = GradientField.getField(freeParameters);
+        final Gradient zero = field.getZero();
+        final Gradient variable = Gradient.variable(freeParameters, 0, 0.);
+        final FieldAbsoluteDate<Gradient> fieldAbsoluteDate = new FieldAbsoluteDate<>(field, AbsoluteDate.ARBITRARY_EPOCH).
+                shiftedBy(variable);
+        @SuppressWarnings("unchecked")
+        final FieldSpacecraftState<Gradient> stateMock = Mockito.mock(FieldSpacecraftState.class);
+        Mockito.when(stateMock.getDate()).thenReturn(fieldAbsoluteDate);
+        Mockito.when(stateMock.getPosition()).thenReturn(new FieldVector3D<>(zero, zero));
+        Mockito.when(stateMock.getFrame()).thenReturn(FramesFactory.getGCRF());
+        Mockito.when(stateMock.getMass()).thenReturn(zero);
+        final int max = 2;
+        final NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
+        final HolmesFeatherstoneAttractionModel model = new HolmesFeatherstoneAttractionModel(itrf, provider);
+        // When
+        final Gradient dummyGm = zero.add(1.);
+        final FieldVector3D<Gradient> accelerationVector = model.acceleration(stateMock, new Gradient[] { dummyGm });
+        // Then
+        final double[] derivatives = accelerationVector.getNormSq().getGradient();
+        Assertions.assertNotEquals(0., MatrixUtils.createRealVector(derivatives).getNorm());
     }
 
     @BeforeEach
