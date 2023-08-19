@@ -167,15 +167,15 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
         final StreamingStatistics statX      = observer.getXStatistics();
         final StreamingStatistics statY      = observer.getYStatistics();
         final StreamingStatistics statZ      = observer.getZStatistics();
-        Assertions.assertEquals(0.0, statX.getMean(), 7.85e-5);
-        Assertions.assertEquals(0.0, statY.getMean(), 3.34e-5);
-        Assertions.assertEquals(0.0, statZ.getMean(), 2.07e-4);
-        Assertions.assertEquals(0.0, statX.getMin(),  0.0016); // Value is negative
-        Assertions.assertEquals(0.0, statY.getMin(),  0.0021); // Value is negative
-        Assertions.assertEquals(0.0, statZ.getMin(),  0.0709); // Value is negative
-        Assertions.assertEquals(0.0, statX.getMax(),  0.0103);
-        Assertions.assertEquals(0.0, statY.getMax(),  0.0073);
-        Assertions.assertEquals(0.0, statZ.getMax(),  0.0082);
+        Assertions.assertEquals(0.0, statX.getMean(), 1.37e-4);
+        Assertions.assertEquals(0.0, statY.getMean(), 4.93e-4);
+        Assertions.assertEquals(0.0, statZ.getMean(), 3.80e-4);
+        Assertions.assertEquals(0.0, statX.getMin(),  0.027); // Value is negative
+        Assertions.assertEquals(0.0, statY.getMin(),  0.028); // Value is negative
+        Assertions.assertEquals(0.0, statZ.getMin(),  0.026); // Value is negative
+        Assertions.assertEquals(0.0, statX.getMax(),  0.029);
+        Assertions.assertEquals(0.0, statY.getMax(),  0.027);
+        Assertions.assertEquals(0.0, statZ.getMax(),  0.026);
 
         // Check that "physical" matrices are not null
         Assertions.assertNotNull(estimation.getPhysicalInnovationCovarianceMatrix());

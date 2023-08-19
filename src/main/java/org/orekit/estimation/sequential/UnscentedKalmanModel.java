@@ -325,10 +325,6 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
 
         // Initialize arrays of predicted states and measurements
         final RealVector[] predictedStates       = new RealVector[sigmaPoints.length];
-        final RealVector[] predictedMeasurements = new RealVector[sigmaPoints.length];
-
-        // Initialize the relevant states used for measurement estimation
-        final SpacecraftState[][] statesForMeasurementEstimation = new SpacecraftState[sigmaPoints.length][builders.size()];
 
         // Loop on builders
         for (int k = 0; k < builders.size(); k++ ) {
@@ -353,18 +349,8 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
                 final double[] predictedArray = new double[currentSigmaPoints[i].getDimension()];
                 orbitTypes[k].mapOrbitToArray(predicted.getOrbit(), angleTypes[k], predictedArray, null);
                 predictedStates[i].setSubVector(orbitsStartColumns[k], new ArrayRealVector(predictedArray));
-                // One has the same information in predictedStates
-                // and statesForMeasurementEstimation but differently arranged
-                statesForMeasurementEstimation[i][k] = predicted;
             }
-        }
 
-        // Loop on sigma points to predict measurements
-        for (int i = 0; i < sigmaPoints.length; i++) {
-            final EstimatedMeasurement<?> estimated = observedMeasurement.estimate(currentMeasurementNumber, currentMeasurementNumber,
-                                                                                   KalmanEstimatorUtil.filterRelevant(observedMeasurement,
-                                                                                                                      statesForMeasurementEstimation[i]));
-            predictedMeasurements[i] = new ArrayRealVector(estimated.getEstimatedValue());
         }
 
         // compute process noise matrix
@@ -414,7 +400,46 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         previousDate = currentDate;
 
         // Return
-        return new UnscentedEvolution(measurement.getTime(), predictedStates, predictedMeasurements, processNoise);
+        return new UnscentedEvolution(measurement.getTime(), predictedStates, processNoise);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealVector[] getPredictedMeasurements(final RealVector[] predictedSigmaPoints, final MeasurementDecorator measurement) {
+
+        // Observed measurement
+        final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
+
+        // Initialize arrays of predicted states and measurements
+        final RealVector[] predictedMeasurements = new RealVector[predictedSigmaPoints.length];
+
+        // Initialize the relevant states used for measurement estimation
+        final SpacecraftState[][] statesForMeasurementEstimation = new SpacecraftState[predictedSigmaPoints.length][builders.size()];
+
+        // Convert sigma points to spacecraft states
+        for (int k = 0; k < builders.size(); k++ ) {
+
+            // Loop on sigma points
+            for (int i = 0; i < predictedSigmaPoints.length; i++) {
+                final SpacecraftState state = new SpacecraftState(orbitTypes[k].mapArrayToOrbit(predictedSigmaPoints[i].toArray(), null,
+                                                                                                angleTypes[k], currentDate, builders.get(k).getMu(),
+                                                                                                builders.get(k).getFrame()));
+                statesForMeasurementEstimation[i][k] = state;
+            }
+
+        }
+
+        // Loop on sigma points to predict measurements
+        for (int i = 0; i < predictedSigmaPoints.length; i++) {
+            final EstimatedMeasurement<?> estimated = observedMeasurement.estimate(currentMeasurementNumber, currentMeasurementNumber,
+                                                                                   KalmanEstimatorUtil.filterRelevant(observedMeasurement,
+                                                                                                                      statesForMeasurementEstimation[i]));
+            predictedMeasurements[i] = new ArrayRealVector(estimated.getEstimatedValue());
+        }
+
+        // Return the predicted measurements
+        return predictedMeasurements;
+
     }
 
     /** {@inheritDoc} */
