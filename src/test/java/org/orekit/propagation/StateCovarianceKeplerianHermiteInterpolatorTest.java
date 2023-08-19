@@ -136,8 +136,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
                                     OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         final StateCovarianceMatrixProvider stateCovarianceMatrixProvider =
-                new StateCovarianceMatrixProvider("covariance", "harvester", harvester, propagator.getOrbitType(),
-                                                  propagator.getPositionAngleType(), sergeiCovariance);
+                new StateCovarianceMatrixProvider("covariance", "harvester", harvester, sergeiCovariance);
 
         // Configuring propagator
         propagator.setInitialState(sergeiState);
@@ -234,8 +233,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
                                     OrbitType.CARTESIAN, PositionAngle.MEAN);
 
         final StateCovarianceMatrixProvider stateCovarianceMatrixProvider =
-                new StateCovarianceMatrixProvider("covariance", "harvester", harvester, propagator.getOrbitType(),
-                                                  propagator.getPositionAngleType(), sergeiCovariance);
+                new StateCovarianceMatrixProvider("covariance", "harvester", harvester, sergeiCovariance);
 
         // Configuring propagator
         propagator.setInitialState(sergeiState);

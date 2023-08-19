@@ -69,6 +69,8 @@ public class EcksteinHechlerStateTransitionMatrixTest {
         MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, null);
         final SpacecraftState finalState = propagator.propagate(target);
         RealMatrix dYdY0 = harvester.getStateTransitionMatrix(finalState);
+        Assertions.assertEquals(OrbitType.CARTESIAN, harvester.getOrbitType());
+        Assertions.assertEquals(PositionAngle.MEAN, harvester.getPositionAngle());
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
