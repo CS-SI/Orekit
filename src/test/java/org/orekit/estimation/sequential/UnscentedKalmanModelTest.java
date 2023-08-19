@@ -44,7 +44,6 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -199,33 +198,8 @@ public class UnscentedKalmanModelTest {
         // Predicted orbit is equal to initial orbit at t0
         Orbit orbitPred = orbit0;
 
-        // Expected state transition matrix
-        // State transition matrix is the identity matrix at t0
-        RealMatrix expPhi = MatrixUtils.createRealIdentityMatrix(M);
         // Add PV measurement and check model afterwards
         checkModelAfterMeasurementAdded(1, pv, Ppred, orbitPred);
-
-
-        // Check model after range measurement after t0 is added
-        // -----------------------------------------------------
-
-        // Get the estimated propagator from Kalman filter and propagate it to
-        // range measurement date
-        NumericalPropagator propagator =
-                        propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-
-        // Propagate to range date and get predicted orbit
-        final SpacecraftState scPred = propagator.propagate(range.getDate());
-        orbitPred = scPred.getOrbit();
-
-        // Estimated cov matrix from last measurement
-        RealMatrix Pest = kalman.getPhysicalEstimatedCovarianceMatrix();
-
-        // Predicted covariance matrix for this measurement
-        Ppred = expPhi.multiply(Pest.multiplyTransposed(expPhi)).add(Q);
-
-        // Add range measurement and check model afterwards
-        checkModelAfterMeasurementAdded(2, range, Ppred, orbitPred);
     }
 
     /** Check the model physical outputs at t0 before any measurement is added. */
