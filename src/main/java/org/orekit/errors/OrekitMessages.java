@@ -146,7 +146,7 @@ public enum OrekitMessages implements Localizable {
             "file {0} is not a Marshall Solar Activity Future Estimation (MSAFE) file"),
     NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND("no JPL ephemerides binary files found"),
     OUT_OF_RANGE_BODY_EPHEMERIDES_DATE("out of range date for {0} ephemerides: {1}"),
-    OUT_OF_RANGE_EPHEMERIDES_DATE("out of range date for ephemerides: {0}, [{1}, {2}]"),
+    OUT_OF_RANGE_DATE("out of range date: {0}, [{1}, {2}]"),
     OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE("out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]"),
     OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER("out of range date for ephemerides: {0} is {3,number,0.0##############E0} s after [{1}, {2}]"),
     UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH(
@@ -308,6 +308,7 @@ public enum OrekitMessages implements Localizable {
     INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS(
             "frequencies {0} and {1} are incompatibles for the {2} combination"),
     NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS("observations are not in chronological order: {0} is {2,number,0.0##############E0} s after {1}"),
+    INCONSISTENT_SAMPLING_DATE("inconsistent sampling date: expected {0} but got {1}"),
     EXCEPTIONAL_DATA_CONTEXT(
             "Use of the ExceptionalDataContext detected. This is typically used to detect developer errors."),
     NON_DIFFERENT_DATES_FOR_OBSERVATIONS(
@@ -365,7 +366,9 @@ public enum OrekitMessages implements Localizable {
     STATE_AND_COVARIANCE_DATES_MISMATCH("state date {0} does not match its covariance date {1}"),
     NO_INTERPOLATOR_FOR_STATE_DEFINITION("creating a spacecraft state interpolator requires at least one orbit interpolator or an absolute position-velocity-acceleration interpolator"),
     WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION("wrong interpolator defined for this spacecraft state type (orbit or absolute PV)"),
-    MULTIPLE_INTERPOLATOR_USED("multiple interpolators are used so they may use different numbers of interpolation points");
+    MULTIPLE_INTERPOLATOR_USED("multiple interpolators are used so they may use different numbers of interpolation points"),
+    HEADER_NOT_WRITTEN("header for file {0} has not been written yet"),
+    HEADER_ALREADY_WRITTEN("header for file {0} has already been written");
     // CHECKSTYLE: resume JavadocVariable check
 
     /** Base name of the resource bundle in classpath. */

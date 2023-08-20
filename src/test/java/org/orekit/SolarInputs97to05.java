@@ -178,7 +178,7 @@ public class SolarInputs97to05 implements DTM2000InputParameters {
     private void findClosestLine(AbsoluteDate date) {
 
         if ((date.durationFrom(firstDate) < 0) || (date.durationFrom(lastDate) > Constants.JULIAN_DAY)) {
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, date, firstDate, lastDate);
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DATE, date, firstDate, lastDate);
         }
 
         // don't search if the cached selection is fine

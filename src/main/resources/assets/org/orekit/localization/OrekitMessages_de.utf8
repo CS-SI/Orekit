@@ -91,6 +91,9 @@ UNEXPECTED_DATA_AT_LINE_IN_FILE = <MISSING TRANSLATION>
 # non-chronological dates in file {0}, line {1}
 NON_CHRONOLOGICAL_DATES_IN_FILE = nicht chronologische Daten, abgelegt unter Datei {0}, Zeile {1}
 
+# inconsistent sampling date: expected {0} but got {1}
+INCONSISTENT_SAMPLING_DATE = <MISSING TRANSLATION>
+
 # no IERS UTC-TAI history data loaded
 NO_IERS_UTC_TAI_HISTORY_DATA_LOADED = keine IERS UTC-TAI historische Daten geladen
 
@@ -265,8 +268,8 @@ NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = keine JPL-Ephemerides Binärdateien gefu
 # out of range date for {0} ephemerides: {1}
 OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = Datum nicht im zulässigen Bereich für {0} ephemerides: {1}
 
-# out of range date for ephemerides: {0}, [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE = Datum nicht im zulässigen Bereich für ephemerides: {0}, [{1}, {2}]
+# out of range date: {0}, [{1}, {2}]
+OUT_OF_RANGE_DATE = Datum nicht im zulässigen Bereich: {0}, [{1}, {2}]
 
 # out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]
 OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = <MISSING TRANSLATION>
@@ -848,3 +851,9 @@ WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION = <MISSING TRANSLATION>
 
 # multiple interpolators are used so they may use different numbers of interpolation points
 MULTIPLE_INTERPOLATOR_USED = <MISSING TRANSLATION>
+
+# header for file {0} has not been written yet
+HEADER_NOT_WRITTEN = <MISSING TRANSLATION>
+
+# header for file {0} has already been written
+HEADER_ALREADY_WRITTEN = <MISSING TRANSLATION>

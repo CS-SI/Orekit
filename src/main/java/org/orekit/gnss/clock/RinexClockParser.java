@@ -40,12 +40,12 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.AppliedDCBS;
 import org.orekit.gnss.AppliedPCVS;
-import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.gnss.clock.RinexClock.ClockDataType;
 import org.orekit.gnss.clock.RinexClock.Receiver;
 import org.orekit.gnss.clock.RinexClock.ReferenceClock;
+import org.orekit.gnss.observation.ObservationType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -324,7 +324,7 @@ public class RinexClockParser {
                         // Record satellite system and default time system in clock file object
                         final SatelliteSystem satelliteSystem = SatelliteSystem.parseSatelliteSystem(satelliteSystemString);
                         pi.file.setSatelliteSystem(satelliteSystem);
-                        pi.file.setTimeScale(satelliteSystem.getDefaultTimeSystem(pi.timeScales));
+                        pi.file.setTimeScale(satelliteSystem.getObservationTimeScale().getTimeScale(pi.timeScales));
                     }
                     // Set time scale to UTC by default
                     if (pi.file.getTimeScale() == null) {

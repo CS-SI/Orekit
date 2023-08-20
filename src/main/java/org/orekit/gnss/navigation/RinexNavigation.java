@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.orekit.gnss.RinexFile;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.models.earth.ionosphere.NeQuickModel;
@@ -42,10 +43,7 @@ import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class RinexNavigation {
-
-    /** Header. */
-    private RinexNavigationHeader header;
+public class RinexNavigation extends RinexFile<RinexNavigationHeader> {
 
     /** The 4 Klobuchar coefficients of a cubic equation representing the amplitude of the vertical delay. */
     private double[] klobucharAlpha;
@@ -113,7 +111,7 @@ public class RinexNavigation {
 
     /** Constructor. */
     public RinexNavigation() {
-        this.header             = new RinexNavigationHeader();
+        super(new RinexNavigationHeader());
         this.gpsLegacyData      = new HashMap<>();
         this.gpsCivilianData    = new HashMap<>();
         this.galileoData        = new HashMap<>();
@@ -129,14 +127,6 @@ public class RinexNavigation {
         this.klobucharMessages  = new ArrayList<>();
         this.nequickGMessages   = new ArrayList<>();
         this.bdgimMessages      = new ArrayList<>();
-    }
-
-    /**
-     * Getter for the header.
-     * @return header
-     */
-    public RinexNavigationHeader getHeader() {
-        return header;
     }
 
     /**

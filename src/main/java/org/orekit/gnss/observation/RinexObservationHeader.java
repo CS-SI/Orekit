@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.gnss.observation;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +24,12 @@ import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
+import org.orekit.gnss.AppliedDCBS;
+import org.orekit.gnss.AppliedPCVS;
+import org.orekit.gnss.RinexBaseHeader;
+import org.orekit.gnss.RinexFileType;
+import org.orekit.gnss.SatInSystem;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 
 /** Container for Rinex observation file header.
@@ -73,6 +79,11 @@ public class RinexObservationHeader extends RinexBaseHeader {
     /** Position of antenna reference point for antenna on vehicle. */
     private Vector3D antRefPoint;
 
+    /** Satellite system for average phasecenter position.
+     * @since 12.0
+     */
+    private SatelliteSystem phaseCenterSystem;
+
     /** Observation code of the average phasecenter position w/r to antenna reference point. */
     private String observationCode;
 
@@ -105,7 +116,7 @@ public class RinexObservationHeader extends RinexBaseHeader {
     /** Time of last observation record. */
     private AbsoluteDate tLastObs;
 
-    /** Realtime-derived receiver clock offset. */
+    /** Real time-derived receiver clock offset. */
     private int clkOffset;
 
     /** List of applied differential code bias corrections. */
@@ -125,10 +136,20 @@ public class RinexObservationHeader extends RinexBaseHeader {
      */
     private final List<GlonassSatelliteChannel> glonassChannels;
 
+    /** Number of satellites.
+     * @since 12.0
+     */
+    private int nbSat;
+
     /** Number of observations per satellite.
      * @since 12.0
      */
     private final Map<SatInSystem, Map<ObservationType, Integer>> nbObsPerSat;
+
+    /** Observation types for each satellite systems.
+     * @since 12.0
+     */
+    private final Map<SatelliteSystem, List<ObservationType>> mapTypeObs;
 
     /** Number of leap seconds since 6-Jan-1980. */
     private int leapSeconds;
@@ -175,6 +196,7 @@ public class RinexObservationHeader extends RinexBaseHeader {
         antennaHeight          = Double.NaN;
         eccentricities         = Vector2D.ZERO;
         clkOffset              = -1;
+        nbSat                  = -1;
         interval               = Double.NaN;
         leapSeconds            = 0;
         listAppliedDCBS        = new ArrayList<>();
@@ -183,7 +205,12 @@ public class RinexObservationHeader extends RinexBaseHeader {
         scaleFactorCorrections = new HashMap<>();
         glonassChannels        = new ArrayList<>();
         nbObsPerSat            = new HashMap<>();
+        mapTypeObs             = new HashMap<>();
         tLastObs               = AbsoluteDate.FUTURE_INFINITY;
+        c1cCodePhaseBias       = Double.NaN;
+        c1pCodePhaseBias       = Double.NaN;
+        c2cCodePhaseBias       = Double.NaN;
+        c2pCodePhaseBias       = Double.NaN;
     }
 
     /** Set name of the antenna marker.
@@ -453,6 +480,22 @@ public class RinexObservationHeader extends RinexBaseHeader {
         return antRefPoint;
     }
 
+    /** Set satellite system for average phase center.
+     * @param phaseCenterSystem satellite system for average phase center
+     * @since 12.0
+     */
+    public void setPhaseCenterSystem(final SatelliteSystem phaseCenterSystem) {
+        this.phaseCenterSystem = phaseCenterSystem;
+    }
+
+    /** Get satellite system for average phase center.
+     * @return satellite system for average phase center
+     * @since 12.0
+     */
+    public SatelliteSystem getPhaseCenterSystem() {
+        return phaseCenterSystem;
+    }
+
     /** Set the observation code of the average phasecenter position w/r to antenna reference point.
      * @param observationCode Observation code of the average phasecenter position w/r to antenna reference point
      */
@@ -673,6 +716,22 @@ public class RinexObservationHeader extends RinexBaseHeader {
         return Collections.unmodifiableList(glonassChannels);
     }
 
+    /** Set number of satellites.
+     * @param nbSat number of satellites
+     * @since 12.0
+     */
+    public void setNbSat(final int nbSat) {
+        this.nbSat = nbSat;
+    }
+
+    /** Get number of satellites.
+     * @return number of satellites
+     * @since 12.0
+     */
+    public int getNbSat() {
+        return nbSat;
+    }
+
     /** Set number of observations for a satellite.
      * @param sat satellite
      * @param type observation type
@@ -694,6 +753,23 @@ public class RinexObservationHeader extends RinexBaseHeader {
      */
     public Map<SatInSystem, Map<ObservationType, Integer>> getNbObsPerSat() {
         return Collections.unmodifiableMap(nbObsPerSat);
+    }
+
+    /** Set number of observations for a satellite.
+     * @param system satellite system
+     * @param types observation types
+     * @since 12.0
+     */
+    public void setTypeObs(final SatelliteSystem system, final List<ObservationType> types) {
+        mapTypeObs.put(system, new ArrayList<>(types));
+    }
+
+    /** Get an unmodifiable view of the map of observation types.
+     * @return unmodifiable view of the map of observation types
+     * @since 12.0
+     */
+    public Map<SatelliteSystem, List<ObservationType>> getTypeObs() {
+        return Collections.unmodifiableMap(mapTypeObs);
     }
 
     /** Set the code phase bias correction for GLONASS {@link ObservationType#C1C} signal.

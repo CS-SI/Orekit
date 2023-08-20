@@ -23,12 +23,12 @@ import java.util.Map;
 import org.hipparchus.fitting.PolynomialCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoint;
 import org.hipparchus.util.FastMath;
-import org.orekit.gnss.CombinedObservationData;
-import org.orekit.gnss.CombinedObservationDataSet;
 import org.orekit.gnss.Frequency;
-import org.orekit.gnss.MeasurementType;
-import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.observation.CombinedObservationData;
+import org.orekit.gnss.observation.CombinedObservationDataSet;
+import org.orekit.gnss.observation.MeasurementType;
+import org.orekit.gnss.observation.ObservationDataSet;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -73,9 +73,9 @@ public class GeometryFreeCycleSlipDetector extends AbstractCycleSlipDetector {
     protected void manageData(final ObservationDataSet observation) {
 
         // Extract observation data
-        final int             prn    = observation.getPrnNumber();
+        final int             prn    = observation.getSatellite().getPRN();
         final AbsoluteDate    date   = observation.getDate();
-        final SatelliteSystem system = observation.getSatelliteSystem();
+        final SatelliteSystem system = observation.getSatellite().getSystem();
 
         // Geometry-free combination of measurements
         final GeometryFreeCombination geometryFree = MeasurementCombinationFactory.getGeometryFreeCombination(system);
@@ -93,7 +93,7 @@ public class GeometryFreeCycleSlipDetector extends AbstractCycleSlipDetector {
 
         // Loop on Geometry-free phase measurements
         for (CombinedObservationData cod : phasesGF) {
-            final String nameSat = setName(prn, observation.getSatelliteSystem());
+            final String nameSat = setName(prn, observation.getSatellite().getSystem());
             // Check for cycle-slip detection
             final Frequency frequency = cod.getUsedObservationData().get(0).getObservationType().getFrequency(system);
             final boolean slip = cycleSlipDetection(nameSat, date, cod.getValue(), frequency);

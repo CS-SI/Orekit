@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.hipparchus.exception.DummyLocalizable;
@@ -116,7 +117,10 @@ public class SinexLoader implements EOPHistoryLoader {
     private static final Pattern PATTERN_SPACE = Pattern.compile("\\s+");
 
     /** Pattern to check beginning of SINEX files.*/
-    private static final Pattern PATTERN_BEGIN = Pattern.compile("(%=).*");
+    private static final Pattern PATTERN_BEGIN = Pattern.compile("%=(?:SNX|BIA) \\d\\.\\d\\d ..." +
+                                                                 " (\\d{2,4}:\\d{3}:\\d{5}) ..." +
+                                                                 " (\\d{2,4}:\\d{3}:\\d{5}) (\\d{2,4}:\\d{3}:\\d{5})" +
+                                                                 " . .*");
 
     /** List of all EOP parameter types. */
     private static final List<String> EOP_TYPES = Arrays.asList(LOD, UT, XPO, YPO, NUT_LN, NUT_OB, NUT_X, NUT_Y);
@@ -387,6 +391,7 @@ public class SinexLoader implements EOPHistoryLoader {
             String startDateString    = "";
             String endDateString      = "";
             String creationDateString = "";
+
             // According to Sinex standard, the epochs are given in UTC scale.
             // Except for DCB files for which a TIME_SYSTEM key is present.
             TimeScale scale    = scales.getUTC();
@@ -403,331 +408,330 @@ public class SinexLoader implements EOPHistoryLoader {
                     // The first line is parsed in order to get the creation date of the file, which might be used
                     // in the case of an absent date as the final date of the data.
                     // Its position is fixed in the file, at the first line, in the 4th column.
-                    if (lineNumber == 1 && PATTERN_BEGIN.matcher(line).matches()) {
+                    if (lineNumber == 1) {
+                        final Matcher matcher = PATTERN_BEGIN.matcher(line);
+                        if (matcher.matches()) {
 
-                        final String[] splitFirstLine = PATTERN_SPACE.split(line);
-                        creationDateString = splitFirstLine[3];
-                        startDateString    = splitFirstLine[5];
-                        endDateString      = splitFirstLine[6];
-                        final AbsoluteDate fileStartDate = stringEpochToAbsoluteDate(startDateString, true, scale);
-                        final AbsoluteDate fileEndDate   = stringEpochToAbsoluteDate(endDateString, false, scale);
+                            creationDateString = matcher.group(1);
+                            startDateString    = matcher.group(2);
+                            endDateString      = matcher.group(3);
+                            creationDate       = stringEpochToAbsoluteDate(creationDateString, false, scale);
 
-                        // Update creation date
-                        creationDate = stringEpochToAbsoluteDate(creationDateString, false, scale);
-
-                        if (startDate == null) {
-                            // First data loading, needs to initialize the start and end dates for EOP history
-                            startDate = fileStartDate;
-                            endDate   = fileEndDate;
+                            if (startDate == null) {
+                                // First data loading, needs to initialize the start and end dates for EOP history
+                                startDate = stringEpochToAbsoluteDate(startDateString, true,  scale);
+                                endDate   = stringEpochToAbsoluteDate(endDateString,   false, scale);
+                            }
+                        } else {
+                            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                      lineNumber, name, line);
                         }
-                        // In case of multiple files used for EOP history, the start and end dates can be updated
-                        startDate = fileStartDate.isBefore(startDate) ? fileStartDate : startDate;
-                        endDate   = fileEndDate.isAfter(endDate) ? fileEndDate : endDate;
-                    }
-                    switch (line.trim()) {
-                        case "+SITE/ID" :
-                            // Start of site id. data
-                            inId = true;
-                            break;
-                        case "-SITE/ID" :
-                            // End of site id. data
-                            inId = false;
-                            break;
-                        case "+SITE/ANTENNA" :
-                            // Start of site antenna data
-                            inAntenna = true;
-                            break;
-                        case "-SITE/ANTENNA" :
-                            // End of site antenna data
-                            inAntenna = false;
-                            break;
-                        case "+SITE/ECCENTRICITY" :
-                            // Start of antenna eccentricities data
-                            inEcc = true;
-                            break;
-                        case "-SITE/ECCENTRICITY" :
-                            // End of antenna eccentricities data
-                            inEcc = false;
-                            break;
-                        case "+SOLUTION/EPOCHS" :
-                            // Start of epoch data
-                            inEpoch = true;
-                            break;
-                        case "-SOLUTION/EPOCHS" :
-                            // End of epoch data
-                            inEpoch = false;
-                            break;
-                        case "+SOLUTION/ESTIMATE" :
-                            // Start of coordinates data
-                            inEstimate = true;
-                            break;
-                        case "-SOLUTION/ESTIMATE" :
-                            // Start of coordinates data
-                            inEstimate = false;
-                            break;
-                        case "+BIAS/DESCRIPTION" :
-                            // Start of Bias description block data
-                            inDcbDesc = true;
-                            break;
-                        case "-BIAS/DESCRIPTION" :
-                            // End of Bias description block data
-                            inDcbDesc = false;
-                            break;
-                        case "+BIAS/SOLUTION" :
-                            // Start of Bias solution block data
-                            inDcbSol = true;
-                            break;
-                        case "-BIAS/SOLUTION" :
-                            // End of Bias solution block data
-                            inDcbSol = false;
-                            break;
-                        default:
-                            if (line.startsWith(COMMENT)) {
-                                // ignore that line
-                            } else {
-                                // parsing data
-                                if (inId) {
-                                    // read site id. data
-                                    final Station station = new Station();
-                                    station.setSiteCode(parseString(line, 1, 4));
-                                    station.setDomes(parseString(line, 9, 9));
-                                    // add the station to the map
-                                    addStation(station);
-                                } else if (inAntenna) {
+                    } else {
+                        switch (line.trim()) {
+                            case "+SITE/ID" :
+                                // Start of site id. data
+                                inId = true;
+                                break;
+                            case "-SITE/ID" :
+                                // End of site id. data
+                                inId = false;
+                                break;
+                            case "+SITE/ANTENNA" :
+                                // Start of site antenna data
+                                inAntenna = true;
+                                break;
+                            case "-SITE/ANTENNA" :
+                                // End of site antenna data
+                                inAntenna = false;
+                                break;
+                            case "+SITE/ECCENTRICITY" :
+                                // Start of antenna eccentricities data
+                                inEcc = true;
+                                break;
+                            case "-SITE/ECCENTRICITY" :
+                                // End of antenna eccentricities data
+                                inEcc = false;
+                                break;
+                            case "+SOLUTION/EPOCHS" :
+                                // Start of epoch data
+                                inEpoch = true;
+                                break;
+                            case "-SOLUTION/EPOCHS" :
+                                // End of epoch data
+                                inEpoch = false;
+                                break;
+                            case "+SOLUTION/ESTIMATE" :
+                                // Start of coordinates data
+                                inEstimate = true;
+                                break;
+                            case "-SOLUTION/ESTIMATE" :
+                                // Start of coordinates data
+                                inEstimate = false;
+                                break;
+                            case "+BIAS/DESCRIPTION" :
+                                // Start of Bias description block data
+                                inDcbDesc = true;
+                                break;
+                            case "-BIAS/DESCRIPTION" :
+                                // End of Bias description block data
+                                inDcbDesc = false;
+                                break;
+                            case "+BIAS/SOLUTION" :
+                                // Start of Bias solution block data
+                                inDcbSol = true;
+                                break;
+                            case "-BIAS/SOLUTION" :
+                                // End of Bias solution block data
+                                inDcbSol = false;
+                                break;
+                            default:
+                                if (line.startsWith(COMMENT)) {
+                                    // ignore that line
+                                } else {
+                                    // parsing data
+                                    if (inId) {
+                                        // read site id. data
+                                        final Station station = new Station();
+                                        station.setSiteCode(parseString(line, 1, 4));
+                                        station.setDomes(parseString(line, 9, 9));
+                                        // add the station to the map
+                                        addStation(station);
+                                    } else if (inAntenna) {
 
-                                    // read antenna type data
-                                    final Station station = getStation(parseString(line, 1, 4));
+                                        // read antenna type data
+                                        final Station station = getStation(parseString(line, 1, 4));
 
-                                    final AbsoluteDate start = stringEpochToAbsoluteDate(parseString(line, 16, 12), true, scale);
-                                    final AbsoluteDate end   = stringEpochToAbsoluteDate(parseString(line, 29, 12), false, scale);
+                                        final AbsoluteDate start = stringEpochToAbsoluteDate(parseString(line, 16, 12), true, scale);
+                                        final AbsoluteDate end   = stringEpochToAbsoluteDate(parseString(line, 29, 12), false, scale);
 
-                                    // antenna type
-                                    final String type = parseString(line, 42, 20);
+                                        // antenna type
+                                        final String type = parseString(line, 42, 20);
 
-                                    // special implementation for the first entry
-                                    if (station.getAntennaTypeTimeSpanMap().getSpansNumber() == 1) {
-                                        // we want null values outside validity limits of the station
-                                        station.addAntennaTypeValidBefore(type, end);
-                                        station.addAntennaTypeValidBefore(null, start);
-                                    } else {
-                                        station.addAntennaTypeValidBefore(type, end);
-                                    }
+                                        // special implementation for the first entry
+                                        if (station.getAntennaTypeTimeSpanMap().getSpansNumber() == 1) {
+                                            // we want null values outside validity limits of the station
+                                            station.addAntennaTypeValidBefore(type, end);
+                                            station.addAntennaTypeValidBefore(null, start);
+                                        } else {
+                                            station.addAntennaTypeValidBefore(type, end);
+                                        }
 
-                                } else if (inEcc) {
+                                    } else if (inEcc) {
 
-                                    // read antenna eccentricities data
-                                    final Station station = getStation(parseString(line, 1, 4));
+                                        // read antenna eccentricities data
+                                        final Station station = getStation(parseString(line, 1, 4));
 
-                                    final AbsoluteDate start = stringEpochToAbsoluteDate(parseString(line, 16, 12), true, scale);
-                                    final AbsoluteDate end   = stringEpochToAbsoluteDate(parseString(line, 29, 12), false, scale);
+                                        final AbsoluteDate start = stringEpochToAbsoluteDate(parseString(line, 16, 12), true, scale);
+                                        final AbsoluteDate end   = stringEpochToAbsoluteDate(parseString(line, 29, 12), false, scale);
 
-                                    // reference system UNE or XYZ
-                                    station.setEccRefSystem(ReferenceSystem.getEccRefSystem(parseString(line, 42, 3)));
+                                        // reference system UNE or XYZ
+                                        station.setEccRefSystem(ReferenceSystem.getEccRefSystem(parseString(line, 42, 3)));
 
-                                    // eccentricity vector
-                                    final Vector3D eccStation = new Vector3D(parseDouble(line, 46, 8),
-                                                                             parseDouble(line, 55, 8),
-                                                                             parseDouble(line, 64, 8));
+                                        // eccentricity vector
+                                        final Vector3D eccStation = new Vector3D(parseDouble(line, 46, 8),
+                                                                                 parseDouble(line, 55, 8),
+                                                                                 parseDouble(line, 64, 8));
 
-                                    // special implementation for the first entry
-                                    if (station.getEccentricitiesTimeSpanMap().getSpansNumber() == 1) {
-                                        // we want null values outside validity limits of the station
-                                        station.addStationEccentricitiesValidBefore(eccStation, end);
-                                        station.addStationEccentricitiesValidBefore(null,       start);
-                                    } else {
-                                        station.addStationEccentricitiesValidBefore(eccStation, end);
-                                    }
+                                        // special implementation for the first entry
+                                        if (station.getEccentricitiesTimeSpanMap().getSpansNumber() == 1) {
+                                            // we want null values outside validity limits of the station
+                                            station.addStationEccentricitiesValidBefore(eccStation, end);
+                                            station.addStationEccentricitiesValidBefore(null,       start);
+                                        } else {
+                                            station.addStationEccentricitiesValidBefore(eccStation, end);
+                                        }
 
-                                } else if (inEpoch) {
-                                    // read epoch data
-                                    final Station station = getStation(parseString(line, 1, 4));
-                                    station.setValidFrom(stringEpochToAbsoluteDate(parseString(line, 16, 12), true, scale));
-                                    station.setValidUntil(stringEpochToAbsoluteDate(parseString(line, 29, 12), false, scale));
-                                } else if (inEstimate) {
-                                    final Station       station     = getStation(parseString(line, 14, 4));
-                                    final AbsoluteDate  currentDate = stringEpochToAbsoluteDate(parseString(line, 27, 12), false, scale);
-                                    final String        dataType    = parseString(line, 7, 6);
-                                    // check if this station exists or if we are parsing EOP
-                                    if (station != null || EOP_TYPES.contains(dataType)) {
-                                        // switch on coordinates data
+                                    } else if (inEpoch) {
+                                        // read epoch data
+                                        final Station station = getStation(parseString(line, 1, 4));
+                                        station.setValidFrom(stringEpochToAbsoluteDate(parseString(line, 16, 12), true, scale));
+                                        station.setValidUntil(stringEpochToAbsoluteDate(parseString(line, 29, 12), false, scale));
+                                    } else if (inEstimate) {
+                                        final Station       station     = getStation(parseString(line, 14, 4));
+                                        final AbsoluteDate  currentDate = stringEpochToAbsoluteDate(parseString(line, 27, 12), false, scale);
+                                        final String        dataType    = parseString(line, 7, 6);
+                                        // check if this station exists or if we are parsing EOP
+                                        if (station != null || EOP_TYPES.contains(dataType)) {
+                                            // switch on coordinates data
+                                            switch (dataType) {
+                                                case "STAX":
+                                                    // station X coordinate
+                                                    final double x = parseDouble(line, 47, 22);
+                                                    position = new Vector3D(x, position.getY(), position.getZ());
+                                                    station.setPosition(position);
+                                                    break;
+                                                case "STAY":
+                                                    // station Y coordinate
+                                                    final double y = parseDouble(line, 47, 22);
+                                                    position = new Vector3D(position.getX(), y, position.getZ());
+                                                    station.setPosition(position);
+                                                    break;
+                                                case "STAZ":
+                                                    // station Z coordinate
+                                                    final double z = parseDouble(line, 47, 22);
+                                                    position = new Vector3D(position.getX(), position.getY(), z);
+                                                    station.setPosition(position);
+                                                    // set the reference epoch (identical for all coordinates)
+                                                    station.setEpoch(currentDate);
+                                                    // reset position vector
+                                                    position = Vector3D.ZERO;
+                                                    break;
+                                                case "VELX":
+                                                    // station X velocity (value is in m/y)
+                                                    final double vx = parseDouble(line, 47, 22) / Constants.JULIAN_YEAR;
+                                                    velocity = new Vector3D(vx, velocity.getY(), velocity.getZ());
+                                                    station.setVelocity(velocity);
+                                                    break;
+                                                case "VELY":
+                                                    // station Y velocity (value is in m/y)
+                                                    final double vy = parseDouble(line, 47, 22) / Constants.JULIAN_YEAR;
+                                                    velocity = new Vector3D(velocity.getX(), vy, velocity.getZ());
+                                                    station.setVelocity(velocity);
+                                                    break;
+                                                case "VELZ":
+                                                    // station Z velocity (value is in m/y)
+                                                    final double vz = parseDouble(line, 47, 22) / Constants.JULIAN_YEAR;
+                                                    velocity = new Vector3D(velocity.getX(), velocity.getY(), vz);
+                                                    station.setVelocity(velocity);
+                                                    // reset position vector
+                                                    velocity = Vector3D.ZERO;
+                                                    break;
+                                                case XPO:
+                                                    // X polar motion
+                                                    final double xPo = parseDoubleWithUnit(line, 40, 4, 47, 21);
+                                                    getSinexEopEntry(currentDate).setxPo(xPo);
+                                                    break;
+                                                case YPO:
+                                                    // Y polar motion
+                                                    final double yPo = parseDoubleWithUnit(line, 40, 4, 47, 21);
+                                                    getSinexEopEntry(currentDate).setyPo(yPo);
+                                                    break;
+                                                case LOD:
+                                                    // length of day
+                                                    final double lod = parseDoubleWithUnit(line, 40, 4, 47, 21);
+                                                    getSinexEopEntry(currentDate).setLod(lod);
+                                                    break;
+                                                case UT:
+                                                    // delta time UT1-UTC
+                                                    final double dt = parseDoubleWithUnit(line, 40, 4, 47, 21);
+                                                    getSinexEopEntry(currentDate).setUt1MinusUtc(dt);
+                                                    break;
+                                                case NUT_LN:
+                                                    // nutation correction in longitude
+                                                    final double nutLn = parseDoubleWithUnit(line, 40, 4, 47, 21);
+                                                    getSinexEopEntry(currentDate).setNutLn(nutLn);
+                                                    break;
+                                                case NUT_OB:
+                                                    // nutation correction in obliquity
+                                                    final double nutOb = parseDoubleWithUnit(line, 40, 4, 47, 21);
+                                                    getSinexEopEntry(currentDate).setNutOb(nutOb);
+                                                    break;
+                                                case NUT_X:
+                                                    // nutation correction X
+                                                    final double nutX = parseDoubleWithUnit(line, 40, 4, 47, 21);
+                                                    getSinexEopEntry(currentDate).setNutX(nutX);
+                                                    break;
+                                                case NUT_Y:
+                                                    // nutation correction Y
+                                                    final double nutY = parseDoubleWithUnit(line, 40, 4, 47, 21);
+                                                    getSinexEopEntry(currentDate).setNutY(nutY);
+                                                    break;
+                                                default:
+                                                    // ignore that field
+                                                    break;
+                                            }
+                                        }
+                                    } else if (inDcbDesc) {
+                                        // Determining the data type for the DCBDescription object
+                                        final String[] splitLine = PATTERN_SPACE.split(line.trim());
+                                        final String dataType = splitLine[0];
+                                        final String data = splitLine[1];
                                         switch (dataType) {
-                                            case "STAX":
-                                                // station X coordinate
-                                                final double x = parseDouble(line, 47, 22);
-                                                position = new Vector3D(x, position.getY(), position.getZ());
-                                                station.setPosition(position);
+                                            case "OBSERVATION_SAMPLING":
+                                                dcbDescription.setObservationSampling(Integer.parseInt(data));
                                                 break;
-                                            case "STAY":
-                                                // station Y coordinate
-                                                final double y = parseDouble(line, 47, 22);
-                                                position = new Vector3D(position.getX(), y, position.getZ());
-                                                station.setPosition(position);
+                                            case "PARAMETER_SPACING":
+                                                dcbDescription.setParameterSpacing(Integer.parseInt(data));
                                                 break;
-                                            case "STAZ":
-                                                // station Z coordinate
-                                                final double z = parseDouble(line, 47, 22);
-                                                position = new Vector3D(position.getX(), position.getY(), z);
-                                                station.setPosition(position);
-                                                // set the reference epoch (identical for all coordinates)
-                                                station.setEpoch(currentDate);
-                                                // reset position vector
-                                                position = Vector3D.ZERO;
+                                            case "DETERMINATION_METHOD":
+                                                dcbDescription.setDeterminationMethod(data);
                                                 break;
-                                            case "VELX":
-                                                // station X velocity (value is in m/y)
-                                                final double vx = parseDouble(line, 47, 22) / Constants.JULIAN_YEAR;
-                                                velocity = new Vector3D(vx, velocity.getY(), velocity.getZ());
-                                                station.setVelocity(velocity);
+                                            case "BIAS_MODE":
+                                                dcbDescription.setBiasMode(data);
                                                 break;
-                                            case "VELY":
-                                                // station Y velocity (value is in m/y)
-                                                final double vy = parseDouble(line, 47, 22) / Constants.JULIAN_YEAR;
-                                                velocity = new Vector3D(velocity.getX(), vy, velocity.getZ());
-                                                station.setVelocity(velocity);
-                                                break;
-                                            case "VELZ":
-                                                // station Z velocity (value is in m/y)
-                                                final double vz = parseDouble(line, 47, 22) / Constants.JULIAN_YEAR;
-                                                velocity = new Vector3D(velocity.getX(), velocity.getY(), vz);
-                                                station.setVelocity(velocity);
-                                                // reset position vector
-                                                velocity = Vector3D.ZERO;
-                                                break;
-                                            case XPO:
-                                                // X polar motion
-                                                final double xPo = parseDoubleWithUnit(line, 40, 4, 47, 21);
-                                                getSinexEopEntry(currentDate).setxPo(xPo);
-                                                break;
-                                            case YPO:
-                                                // Y polar motion
-                                                final double yPo = parseDoubleWithUnit(line, 40, 4, 47, 21);
-                                                getSinexEopEntry(currentDate).setyPo(yPo);
-                                                break;
-                                            case LOD:
-                                                // length of day
-                                                final double lod = parseDoubleWithUnit(line, 40, 4, 47, 21);
-                                                getSinexEopEntry(currentDate).setLod(lod);
-                                                break;
-                                            case UT:
-                                                // delta time UT1-UTC
-                                                final double dt = parseDoubleWithUnit(line, 40, 4, 47, 21);
-                                                getSinexEopEntry(currentDate).setUt1MinusUtc(dt);
-                                                break;
-                                            case NUT_LN:
-                                                // nutation correction in longitude
-                                                final double nutLn = parseDoubleWithUnit(line, 40, 4, 47, 21);
-                                                getSinexEopEntry(currentDate).setNutLn(nutLn);
-                                                break;
-                                            case NUT_OB:
-                                                // nutation correction in obliquity
-                                                final double nutOb = parseDoubleWithUnit(line, 40, 4, 47, 21);
-                                                getSinexEopEntry(currentDate).setNutOb(nutOb);
-                                                break;
-                                            case NUT_X:
-                                                // nutation correction X
-                                                final double nutX = parseDoubleWithUnit(line, 40, 4, 47, 21);
-                                                getSinexEopEntry(currentDate).setNutX(nutX);
-                                                break;
-                                            case NUT_Y:
-                                                // nutation correction Y
-                                                final double nutY = parseDoubleWithUnit(line, 40, 4, 47, 21);
-                                                getSinexEopEntry(currentDate).setNutY(nutY);
+                                            case "TIME_SYSTEM":
+                                                if ("UTC".equals(data)) {
+                                                    dcbDescription.setTimeSystem(TimeSystem.UTC);
+                                                } else if ("TAI".equals(data)) {
+                                                    dcbDescription.setTimeSystem(TimeSystem.TAI);
+                                                } else {
+                                                    dcbDescription.setTimeSystem(TimeSystem.parseOneLetterCode(data));
+                                                }
+                                                scale = dcbDescription.getTimeSystem().getTimeScale(scales);
+                                                // A time scale has been parsed, update start, end, and creation dates
+                                                // to take into account the time scale
+                                                startDate    = stringEpochToAbsoluteDate(startDateString,    true,  scale);
+                                                endDate      = stringEpochToAbsoluteDate(endDateString,      false, scale);
+                                                creationDate = stringEpochToAbsoluteDate(creationDateString, false, scale);
                                                 break;
                                             default:
-                                                // ignore that field
                                                 break;
                                         }
-                                    }
-                                } else if (inDcbDesc) {
-                                    // Determining the data type for the DCBDescription object
-                                    final String[] splitLine = PATTERN_SPACE.split(line.trim());
-                                    final String dataType = splitLine[0];
-                                    final String data = splitLine[1];
-                                    switch (dataType) {
-                                        case "OBSERVATION_SAMPLING":
-                                            dcbDescription.setObservationSampling(Integer.parseInt(data));
-                                            break;
-                                        case "PARAMETER_SPACING":
-                                            dcbDescription.setParameterSpacing(Integer.parseInt(data));
-                                            break;
-                                        case "DETERMINATION_METHOD":
-                                            dcbDescription.setDeterminationMethod(data);
-                                            break;
-                                        case "BIAS_MODE":
-                                            dcbDescription.setBiasMode(data);
-                                            break;
-                                        case "TIME_SYSTEM":
-                                            if ("UTC".equals(data)) {
-                                                dcbDescription.setTimeSystem(TimeSystem.UTC);
-                                            } else if ("TAI".equals(data)) {
-                                                dcbDescription.setTimeSystem(TimeSystem.TAI);
-                                            } else {
-                                                dcbDescription.setTimeSystem(TimeSystem.parseOneLetterCode(data));
+                                    } else if (inDcbSol) {
+
+                                        // Parsing the data present in a DCB file solution line.
+                                        // Most fields are used in the files provided by CDDIS.
+                                        // Station is empty for satellite measurements.
+                                        // The separator between columns is composed of spaces.
+
+                                        final String satellitePrn = parseString(line, 11, 3);
+                                        final String siteCode     = parseString(line, 15, 9);
+
+                                        // Parsing the line data.
+                                        final String obs1 = parseString(line, 25, 4);
+                                        final String obs2 = parseString(line, 30, 4);
+                                        final AbsoluteDate beginDate = stringEpochToAbsoluteDate(parseString(line, 35, 14), true, scale);
+                                        final AbsoluteDate finalDate = stringEpochToAbsoluteDate(parseString(line, 50, 14), false, scale);
+                                        final Unit unitDcb = Unit.parse(parseString(line, 65, 4));
+                                        final double valueDcb = unitDcb.toSI(Double.parseDouble(parseString(line, 70, 21)));
+
+                                        // Verifying if present
+                                        if (siteCode.equals("")) {
+                                            final String id = satellitePrn;
+                                            DcbSatellite dcbSatellite = getDcbSatellite(id);
+                                            if (dcbSatellite == null) {
+                                                dcbSatellite = new DcbSatellite(id);
+                                                dcbSatellite.setDescription(dcbDescription);
                                             }
-                                            scale = dcbDescription.getTimeSystem().getTimeScale(scales);
-                                            // A time scale has been parsed, update start, end, and creation dates
-                                            // to take into account the time scale
-                                            startDate    = stringEpochToAbsoluteDate(startDateString, true, scale);
-                                            endDate      = stringEpochToAbsoluteDate(endDateString, false, scale);
-                                            creationDate = stringEpochToAbsoluteDate(creationDateString, false, scale);
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                } else if (inDcbSol) {
-
-                                    // Parsing the data present in a DCB file solution line.
-                                    // Most fields are used in the files provided by CDDIS.
-                                    // Station is empty for satellite measurements.
-                                    // The separator between columns is composed of spaces.
-
-                                    final String satellitePrn = parseString(line, 11, 3);
-                                    final String siteCode     = parseString(line, 15, 9);
-
-                                    // Parsing the line data.
-                                    final String obs1 = parseString(line, 25, 4);
-                                    final String obs2 = parseString(line, 30, 4);
-                                    final AbsoluteDate beginDate = stringEpochToAbsoluteDate(parseString(line, 35, 14), true, scale);
-                                    final AbsoluteDate finalDate = stringEpochToAbsoluteDate(parseString(line, 50, 14), false, scale);
-                                    final Unit unitDcb = Unit.parse(parseString(line, 65, 4));
-                                    final double valueDcb = unitDcb.toSI(Double.parseDouble(parseString(line, 70, 21)));
-
-                                    // Verifying if present
-                                    if (siteCode.equals("")) {
-                                        final String id = satellitePrn;
-                                        DcbSatellite dcbSatellite = getDcbSatellite(id);
-                                        if (dcbSatellite == null) {
-                                            dcbSatellite = new DcbSatellite(id);
-                                            dcbSatellite.setDescription(dcbDescription);
+                                            final Dcb dcb = dcbSatellite.getDcbData();
+                                            // Add the data to the DCB object.
+                                            dcb.addDcbLine(obs1, obs2, beginDate, finalDate, valueDcb);
+                                            // Adding the object to the HashMap if not present.
+                                            addDcbSatellite(dcbSatellite, id);
+                                        } else {
+                                            final String id = siteCode;
+                                            DcbStation dcbStation = getDcbStation(id);
+                                            if (dcbStation == null) {
+                                                dcbStation = new DcbStation(id);
+                                                dcbStation.setDescription(dcbDescription);
+                                            }
+                                            final SatelliteSystem satSystem = SatelliteSystem.parseSatelliteSystem(satellitePrn);
+                                            // Add the data to the DCB object.
+                                            final Dcb dcb = dcbStation.getDcbData(satSystem);
+                                            if (dcb == null) {
+                                                dcbStation.addDcb(satSystem, new Dcb());
+                                            }
+                                            dcbStation.getDcbData(satSystem).addDcbLine(obs1, obs2, beginDate, finalDate, valueDcb);
+                                            // Adding the object to the HashMap if not present.
+                                            addDcbStation(dcbStation, id);
                                         }
-                                        final Dcb dcb = dcbSatellite.getDcbData();
-                                        // Add the data to the DCB object.
-                                        dcb.addDcbLine(obs1, obs2, beginDate, finalDate, valueDcb);
-                                        // Adding the object to the HashMap if not present.
-                                        addDcbSatellite(dcbSatellite, id);
+
                                     } else {
-                                        final String id = siteCode;
-                                        DcbStation dcbStation = getDcbStation(id);
-                                        if (dcbStation == null) {
-                                            dcbStation = new DcbStation(id);
-                                            dcbStation.setDescription(dcbDescription);
-                                        }
-                                        final SatelliteSystem satSystem = SatelliteSystem.parseSatelliteSystem(satellitePrn);
-                                        // Add the data to the DCB object.
-                                        final Dcb dcb = dcbStation.getDcbData(satSystem);
-                                        if (dcb == null) {
-                                            dcbStation.addDcb(satSystem, new Dcb());
-                                        }
-                                        dcbStation.getDcbData(satSystem).addDcbLine(obs1, obs2, beginDate, finalDate, valueDcb);
-                                        // Adding the object to the HashMap if not present.
-                                        addDcbStation(dcbStation, id);
+                                        // not supported line, ignore it
                                     }
-
-                                } else {
-                                 // not supported line, ignore it
                                 }
-                            }
-                            break;
+                                break;
+                        }
                     }
                 }
 

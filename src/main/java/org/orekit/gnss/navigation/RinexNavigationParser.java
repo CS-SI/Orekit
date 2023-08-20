@@ -33,7 +33,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.Frequency;
-import org.orekit.gnss.RegionCode;
 import org.orekit.gnss.RinexUtils;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.SbasId;
@@ -310,7 +309,7 @@ public class RinexNavigationParser {
 
         /** Parser for comments. */
         HEADER_COMMENT(line -> RinexUtils.matchesLabel(line, "COMMENT"),
-                       (line, pi) -> RinexUtils.parseComment(line, pi.file.getHeader()),
+                       (line, pi) -> RinexUtils.parseComment(pi.lineNumber, line, pi.file),
                        LineParser::headerNext),
 
         /** Parser for ionospheric correction parameters. */
@@ -424,7 +423,7 @@ public class RinexNavigationParser {
 
                              // convert date
                              final SatelliteSystem satSystem = pi.file.getHeader().getSatelliteSystem();
-                             final TimeScale       timeScale = satSystem.getDefaultTimeSystem(pi.timeScales);
+                             final TimeScale       timeScale = satSystem.getObservationTimeScale().getTimeScale(pi.timeScales);
                              final AbsoluteDate    date      = new AbsoluteDate(year, month, day, timeScale);
 
                              // Add to the list
@@ -672,7 +671,7 @@ public class RinexNavigationParser {
                                final int min   = RinexUtils.parseInt(line, 18, 2);
                                final int sec   = RinexUtils.parseInt(line, 21, 2);
                                pi.eop.setReferenceEpoch(new AbsoluteDate(year, month, day, hours, min, sec,
-                                                                         pi.eop.getSystem().getDefaultTimeSystem(pi.timeScales)));
+                                                                         pi.eop.getSystem().getObservationTimeScale().getTimeScale(pi.timeScales)));
                                pi.eop.setXp(Unit.ARC_SECOND.toSI(RinexUtils.parseDouble(line, 23, 19)));
                                pi.eop.setXpDot(AS_PER_DAY.toSI(RinexUtils.parseDouble(line, 42, 19)));
                                pi.eop.setXpDotDot(AS_PER_DAY2.toSI(RinexUtils.parseDouble(line, 61, 19)));
@@ -720,7 +719,7 @@ public class RinexNavigationParser {
                              final int min   = RinexUtils.parseInt(line, 18, 2);
                              final int sec   = RinexUtils.parseInt(line, 21, 2);
                              pi.klobuchar.setTransmitTime(new AbsoluteDate(year, month, day, hours, min, sec,
-                                                                           pi.klobuchar.getSystem().getDefaultTimeSystem(pi.timeScales)));
+                                                                           pi.klobuchar.getSystem().getObservationTimeScale().getTimeScale(pi.timeScales)));
                              pi.klobuchar.setAlphaI(0, IonosphereKlobucharMessage.S_PER_SC_N[0].toSI(RinexUtils.parseDouble(line, 23, 19)));
                              pi.klobuchar.setAlphaI(1, IonosphereKlobucharMessage.S_PER_SC_N[1].toSI(RinexUtils.parseDouble(line, 42, 19)));
                              pi.klobuchar.setAlphaI(2, IonosphereKlobucharMessage.S_PER_SC_N[2].toSI(RinexUtils.parseDouble(line, 61, 19)));
@@ -746,7 +745,7 @@ public class RinexNavigationParser {
                            final int min   = RinexUtils.parseInt(line, 18, 2);
                            final int sec   = RinexUtils.parseInt(line, 21, 2);
                            pi.nequickG.setTransmitTime(new AbsoluteDate(year, month, day, hours, min, sec,
-                                                                        pi.nequickG.getSystem().getDefaultTimeSystem(pi.timeScales)));
+                                                                        pi.nequickG.getSystem().getObservationTimeScale().getTimeScale(pi.timeScales)));
                            pi.nequickG.setAi0(IonosphereNequickGMessage.SFU.toSI(RinexUtils.parseDouble(line, 23, 19)));
                            pi.nequickG.setAi1(IonosphereNequickGMessage.SFU_PER_DEG.toSI(RinexUtils.parseDouble(line, 42, 19)));
                            pi.nequickG.setAi2(IonosphereNequickGMessage.SFU_PER_DEG2.toSI(RinexUtils.parseDouble(line, 61, 19)));
@@ -783,7 +782,7 @@ public class RinexNavigationParser {
                          final int min   = RinexUtils.parseInt(line, 18, 2);
                          final int sec   = RinexUtils.parseInt(line, 21, 2);
                          pi.bdgim.setTransmitTime(new AbsoluteDate(year, month, day, hours, min, sec,
-                                                                   pi.bdgim.getSystem().getDefaultTimeSystem(pi.timeScales)));
+                                                                   pi.bdgim.getSystem().getObservationTimeScale().getTimeScale(pi.timeScales)));
                          pi.bdgim.setAlphaI(0, Unit.TOTAL_ELECTRON_CONTENT_UNIT.toSI(RinexUtils.parseDouble(line, 23, 19)));
                          pi.bdgim.setAlphaI(1, Unit.TOTAL_ELECTRON_CONTENT_UNIT.toSI(RinexUtils.parseDouble(line, 42, 19)));
                          pi.bdgim.setAlphaI(2, Unit.TOTAL_ELECTRON_CONTENT_UNIT.toSI(RinexUtils.parseDouble(line, 61, 19)));

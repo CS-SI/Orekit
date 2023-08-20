@@ -1,4 +1,4 @@
-/* Copyright 2023 Luc Maisonobe
+/* Copyright 2023 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,40 @@
  */
 package org.orekit.gnss;
 
-import org.orekit.gnss.navigation.IonosphereKlobucharMessage;
-
-/** Enumerate for region code.
- * @see IonosphereKlobucharMessage
+/** Container for comment in RINEX file.
  * @author Luc Maisonobe
  * @since 12.0
+ *
  */
-public enum RegionCode {
+public class RinexComment {
 
-    /** Wide Area. */
-    WIDE_AREA,
+    /** Line number. */
+    private final int lineNumber;
 
-    /** Japan area (for QZSS only). */
-    JAPAN;
+    /** Text. */
+    private final String text;
+
+    /** Simple constructor.
+     * @param lineNumber line number
+     * @param text text
+     */
+    public RinexComment(final int lineNumber, final String text) {
+        this.lineNumber = lineNumber;
+        this.text       = text;
+    }
+
+    /** Get the line number.
+     * @return line number
+     */
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    /** Get the text.
+     * @return text
+     */
+    public String getText() {
+        return text;
+    }
 
 }

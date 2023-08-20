@@ -51,6 +51,21 @@
       <action dev="luc" type="update" issue="1156">
         Moved getBuilder from AbstractScheduler base class to Scheduler interface.
       </action>
+      <action dev="luc" type="fix" issue="1152">
+        Fixed ArrayIndexOutOfBoundException in {Field}NeQuickParameters.
+      </action>
+      <action dev="luc" type="fix" issue="1134">
+        Fixed missing enumerate entries needed for recent antex files.
+      </action>
+      <action dev="luc" type="update" issue="1150">
+        Fixed default validity intervals in Sinex files.
+      </action>
+      <action dev="luc" type="update" issue="1149">
+        Fixed parsing of Sinex files without agency codes.
+      </action>
+      <action dev="luc" type="update" issue="1147">
+        Allow custom satellite systems in GNSS.
+      </action>
       <action dev="sebastien" type="update" issue="1154">
         Moved orekit-performance project to official forge and updated CI.
       </action>
