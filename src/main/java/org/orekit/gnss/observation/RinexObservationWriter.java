@@ -142,8 +142,7 @@ public class RinexObservationWriter implements AutoCloseable {
      * @param output destination of generated output
      * @param outputName output name for error messages
      */
-    public RinexObservationWriter(final Appendable output, final String outputName)
-        throws IOException {
+    public RinexObservationWriter(final Appendable output, final String outputName) {
         this.output        = output;
         this.outputName    = outputName;
         this.savedHeader   = null;
@@ -161,7 +160,7 @@ public class RinexObservationWriter implements AutoCloseable {
 
     /** Write a complete observation file.
      * <p>
-     * This method calls {@link #prepareComments(List<RinexComment>)} and
+     * This method calls {@link #prepareComments(List)} and
      * {@link #writeHeader(RinexObservationHeader)} once and then loops on
      * calling {@link #writeObservationDataSet(ObservationDataSet)}
      * for all observation data sets in the file
