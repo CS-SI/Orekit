@@ -23,7 +23,8 @@ import java.util.TimeZone;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.FieldElement;
-import org.hipparchus.util.Binary64;
+import org.hipparchus.analysis.differentiation.Derivative;
+import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.MathUtils.FieldSumAndResidual;
@@ -1656,7 +1657,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>> implements Fie
      * @since 12.0
      */
     public boolean hasZeroField() {
-        return !(offset instanceof Binary64) && offset.subtract(offset.getReal()).isZero();
+        return (offset instanceof Derivative<?> || offset instanceof Complex) && offset.subtract(offset.getReal()).isZero();
     }
 }
 
