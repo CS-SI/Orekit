@@ -184,7 +184,7 @@ public class DSSTZonal implements DSSTForceModel {
                                                 0.0, Double.POSITIVE_INFINITY);
 
         // Vns coefficients
-        this.Vns = CoefficientsFactory.computeVnsCoefficients(provider.getMaxDegree() + 1);
+        this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
 
         this.provider  = provider;
         this.maxDegree = provider.getMaxDegree();

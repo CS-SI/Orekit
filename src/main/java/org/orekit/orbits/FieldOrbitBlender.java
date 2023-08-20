@@ -26,6 +26,8 @@ import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 
+import java.util.List;
+
 /**
  * Orbit blender.
  * <p>
@@ -74,11 +76,15 @@ public class FieldOrbitBlender<KK extends CalculusFieldElement<KK>> extends Abst
 
     /** {@inheritDoc} */
     @Override
-    public FieldOrbit<KK> interpolate(final FieldAbsoluteDate<KK> interpolationDate) {
+    public FieldOrbit<KK> interpolate(final InterpolationData interpolationData) {
+
+        // Get interpolation date
+        final FieldAbsoluteDate<KK> interpolationDate = interpolationData.getInterpolationDate();
 
         // Get first and last entry
-        final FieldOrbit<KK> previousOrbit = neighborList.get(0);
-        final FieldOrbit<KK> nextOrbit     = neighborList.get(1);
+        final List<FieldOrbit<KK>> neighborList  = interpolationData.getNeighborList();
+        final FieldOrbit<KK>       previousOrbit = neighborList.get(0);
+        final FieldOrbit<KK>       nextOrbit     = neighborList.get(1);
 
         // Propagate orbits
         final FieldOrbit<KK> forwardedOrbit  = propagateOrbitAnalytically(previousOrbit, interpolationDate);

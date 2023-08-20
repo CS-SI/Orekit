@@ -141,10 +141,13 @@ public class TimeStampedAngularCoordinatesHermiteInterpolator
      * derivatives consistent with the rotations.
      */
     @Override
-    protected TimeStampedAngularCoordinates interpolate(final AbsoluteDate date) {
+    protected TimeStampedAngularCoordinates interpolate(final InterpolationData interpolationData) {
+
+        // Get date
+        final AbsoluteDate date = interpolationData.getInterpolationDate();
 
         // Get sample
-        final List<TimeStampedAngularCoordinates> sample = neighborList;
+        final List<TimeStampedAngularCoordinates> sample = interpolationData.getNeighborList();
 
         // set up safety elements for 2π singularity avoidance
         final double epsilon   = 2 * FastMath.PI / sample.size();

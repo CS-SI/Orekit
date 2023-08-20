@@ -222,6 +222,9 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         this.covarianceInterpolator = Optional.ofNullable(covarianceInterpolator);
 
         this.statesAreOrbitDefined = s0.isOrbitDefined();
+
+        // Initialize initial state
+        super.resetInitialState(getInitialState());
     }
 
     /**

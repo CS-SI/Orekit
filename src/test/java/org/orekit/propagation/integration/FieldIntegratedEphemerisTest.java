@@ -31,6 +31,7 @@ import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -78,6 +79,13 @@ public class FieldIntegratedEphemerisTest {
     public void testAdditionalDerivatives() {
         doTestAdditionalDerivatives(Binary64Field.getInstance());
     }
+
+    /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
+    @Test
+    public void testIssue949() {
+        doTestIssue949(Binary64Field.getInstance());
+    }
+
 
     private <T extends CalculusFieldElement<T>> void doTestNormalKeplerIntegration(Field<T> field) {
         FieldOrbit<T> initialOrbit = createOrbit(field);
@@ -244,6 +252,29 @@ public class FieldIntegratedEphemerisTest {
             checkState(dt, state, provider1);
             checkState(dt, state, provider2);
         }
+
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestIssue949(Field<T> field) {
+        // GIVEN
+        final FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field);
+        final FieldOrbit<T> initialOrbit = createOrbit(field);
+        FieldNumericalPropagator<T> numericalPropagator = createPropagator(field);
+        numericalPropagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
+        numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
+
+        // Setup additional state provider which use the initial state in its init method
+        final FieldAdditionalStateProvider<T> additionalStateProvider = TestUtils.getFieldAdditionalProviderWithInit();
+        numericalPropagator.addAdditionalStateProvider(additionalStateProvider);
+
+        // Setup integrated ephemeris
+        final FieldEphemerisGenerator<T> generator = numericalPropagator.getEphemerisGenerator();
+        numericalPropagator.propagate(initialDate.shiftedBy(1));
+
+        final FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
+
+        // WHEN & THEN
+        Assertions.assertDoesNotThrow(() -> ephemeris.propagate(ephemeris.getMaxDate()), "No error should have been thrown");
 
     }
 

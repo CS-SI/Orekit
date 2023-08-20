@@ -18,6 +18,8 @@ package org.orekit.time;
 
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 
+import java.util.List;
+
 /**
  * Hermite interpolator of time stamped double value.
  *
@@ -70,10 +72,12 @@ public class TimeStampedDoubleHermiteInterpolator extends AbstractTimeInterpolat
 
     /** {@inheritDoc} */
     @Override
-    protected TimeStampedDouble interpolate(final AbsoluteDate interpolationDate) {
+    protected TimeStampedDouble interpolate(final InterpolationData interpolationData) {
         final HermiteInterpolator interpolator = new HermiteInterpolator();
 
         // Fill interpolator with sample
+        final AbsoluteDate            interpolationDate = interpolationData.getInterpolationDate();
+        final List<TimeStampedDouble> neighborList      = interpolationData.getNeighborList();
         for (TimeStampedDouble value : neighborList) {
             final double deltaT = value.getDate().durationFrom(interpolationDate);
             interpolator.addSamplePoint(deltaT, new double[] { value.getValue() });

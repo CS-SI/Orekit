@@ -146,6 +146,9 @@ public class IntegratedEphemeris
         this.equations  = equations.clone();
         this.dimensions = dimensions.clone();
 
+        // set up initial state
+        super.resetInitialState(getInitialState());
+
     }
 
     /** Interpolate the model at some date.

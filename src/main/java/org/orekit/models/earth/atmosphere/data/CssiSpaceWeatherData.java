@@ -17,13 +17,18 @@
 
 package org.orekit.models.earth.atmosphere.data;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.models.earth.atmosphere.DTM2000InputParameters;
@@ -50,7 +55,7 @@ import org.orekit.utils.ImmutableTimeStampedCache;
  * @author Clément Jonglez
  * @since 10.2
  */
-public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
+public class CssiSpaceWeatherData
         implements DTM2000InputParameters, NRLMSISE00InputParameters {
 
     /** Default regular expression for supported names that works with all officially published files. */
@@ -64,6 +69,9 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
 
     /** Data set. */
     private final transient ImmutableTimeStampedCache<LineParameters> data;
+
+    /** Supported names. */
+    private final String supportedNames;
 
     /** UTC time scale. */
     private final TimeScale utc;
@@ -114,18 +122,58 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
     public CssiSpaceWeatherData(final String supportedNames,
                                 final DataProvidersManager dataProvidersManager,
                                 final TimeScale utc) {
-        super(supportedNames, dataProvidersManager);
-
+        this.supportedNames = supportedNames;
         this.utc = utc;
         final CssiSpaceWeatherDataLoader loader =
             new CssiSpaceWeatherDataLoader(utc);
-        this.feed(loader);
+        dataProvidersManager.feed(supportedNames, loader);
         data =
             new ImmutableTimeStampedCache<>(N_NEIGHBORS, loader.getDataSet());
         firstDate = loader.getMinDate();
         lastDate = loader.getMaxDate();
         lastObservedDate = loader.getLastObservedDate();
         lastDailyPredictedDate = loader.getLastDailyPredictedDate();
+    }
+
+    /**
+     * Simple constructor. This constructor uses the {@link DataContext#getDefault()
+     * default data context}.
+     * @param source source for the data
+     * @since 12.0
+     */
+    @DefaultDataContext
+    public CssiSpaceWeatherData(final DataSource source) {
+        this(source, DataContext.getDefault().getTimeScales().getUTC());
+    }
+
+    /**
+     * Simple constructor.
+     * @param source source for the data
+     * @param utc    UTC time scale
+     * @since 12.0
+     */
+    public CssiSpaceWeatherData(final DataSource source, final TimeScale utc) {
+        try {
+            this.supportedNames = source.getName();
+            this.utc = utc;
+            final CssiSpaceWeatherDataLoader loader =
+                            new CssiSpaceWeatherDataLoader(utc);
+
+            // Load file
+            try (InputStream is = source.getOpener().openStreamOnce();
+                 BufferedInputStream bis = new BufferedInputStream(is)) {
+                loader.loadData(bis, source.getName());
+            }
+
+            // Initialise fields
+            data = new ImmutableTimeStampedCache<>(N_NEIGHBORS, loader.getDataSet());
+            firstDate = loader.getMinDate();
+            lastDate = loader.getMaxDate();
+            lastObservedDate = loader.getLastObservedDate();
+            lastDailyPredictedDate = loader.getLastDailyPredictedDate();
+        } catch (IOException | ParseException ioe) {
+            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
+        }
     }
 
     /** {@inheritDoc} */
@@ -371,8 +419,13 @@ public class CssiSpaceWeatherData extends AbstractSelfFeedingLoader
         }
     }
 
-    /** {@inheritDoc}. */
+    /**
+     * Get the supported names regular expression.
+     *
+     * @return the supported names.
+     */
     public String getSupportedNames() {
-        return super.getSupportedNames();
+        return supportedNames;
     }
+
 }

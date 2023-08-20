@@ -49,12 +49,6 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
 
     /** Neighbor size. */
     protected final int interpolationPoints;
-
-    /** Immutable time stamped cached samples. */
-    protected ImmutableTimeStampedCache<T> cachedSamples;
-
-    /** Unmodifiable list of neighbors. */
-    protected List<T> neighborList;
     // CHECKSTYLE: resume VisibilityModifier check
 
     /**
@@ -96,29 +90,8 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
     /** {@inheritDoc}. */
     @Override
     public T interpolate(final AbsoluteDate interpolationDate, final Collection<T> sample) {
-
-        try {
-
-            // Handle specific case that is not handled by the immutable time stamped cache constructor
-            if (sample.size() < 2) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, sample.size());
-            }
-
-            // Create immutable time stamped cache
-            cachedSamples = new ImmutableTimeStampedCache<>(interpolationPoints, sample);
-
-            // Find neighbors
-            final AbsoluteDate central         = getCentralDate(interpolationDate);
-            final Stream<T>    neighborsStream = cachedSamples.getNeighbors(central);
-
-            // Convert to unmodifiable list
-            neighborList = Collections.unmodifiableList(neighborsStream.collect(Collectors.toList()));
-
-            return interpolate(interpolationDate);
-        }
-        catch (OrekitIllegalArgumentException exception) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, sample.size());
-        }
+        final InterpolationData interpolationData = new InterpolationData(interpolationDate, sample);
+        return interpolate(interpolationData);
     }
 
     /** {@inheritDoc} */
@@ -155,42 +128,13 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
     }
 
     /**
-     * Get the central date to use to find neighbors while taking into account extrapolation threshold.
+     * Interpolate instance from given interpolation data.
      *
-     * @param interpolationDate interpolation date
+     * @param interpolationData interpolation data
      *
-     * @return central date to use to find neighbors
+     * @return interpolated instance from given interpolation data.
      */
-    protected AbsoluteDate getCentralDate(final AbsoluteDate interpolationDate) {
-        final AbsoluteDate central;
-        final AbsoluteDate minDate = cachedSamples.getEarliest().getDate();
-        final AbsoluteDate maxDate = cachedSamples.getLatest().getDate();
-
-        if (interpolationDate.compareTo(minDate) < 0 &&
-                FastMath.abs(interpolationDate.durationFrom(minDate)) <= extrapolationThreshold) {
-            // avoid TimeStampedCacheException as we are still within the tolerance before minDate
-            central = minDate;
-        }
-        else if (interpolationDate.compareTo(maxDate) > 0 &&
-                FastMath.abs(interpolationDate.durationFrom(maxDate)) <= extrapolationThreshold) {
-            // avoid TimeStampedCacheException as we are still within the tolerance after maxDate
-            central = maxDate;
-        }
-        else {
-            central = interpolationDate;
-        }
-
-        return central;
-    }
-
-    /**
-     * Interpolate instance at given date.
-     *
-     * @param date interpolation date
-     *
-     * @return interpolated instance at given date
-     */
-    protected abstract T interpolate(AbsoluteDate date);
+    protected abstract T interpolate(InterpolationData interpolationData);
 
     /**
      * Get the time parameter which lies between [0:1] by normalizing the difference between interpolating time and previous
@@ -206,5 +150,95 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
                                       final AbsoluteDate previousDate,
                                       final AbsoluteDate nextDate) {
         return interpolatingTime.durationFrom(previousDate) / nextDate.getDate().durationFrom(previousDate);
+    }
+
+    /**
+     * Nested class used to store interpolation data.
+     * <p>
+     * It makes the interpolator thread safe.
+     */
+    protected class InterpolationData {
+
+        /** Interpolation date. */
+        private final AbsoluteDate interpolationDate;
+
+        /** Cached samples. */
+        private final ImmutableTimeStampedCache<T> cachedSamples;
+
+        /** Neighbor list around interpolation date. */
+        private final List<T> neighborList;
+
+        /**
+         * Constructor.
+         *
+         * @param interpolationDate interpolation date
+         * @param sample time stamped sample
+         */
+        protected InterpolationData(final AbsoluteDate interpolationDate, final Collection<T> sample) {
+            try {
+                // Handle specific case that is not handled by the immutable time stamped cache constructor
+                if (sample.size() < 2) {
+                    throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, sample.size());
+                }
+
+                // Create immutable time stamped cache
+                this.cachedSamples = new ImmutableTimeStampedCache<>(interpolationPoints, sample);
+
+                // Find neighbors
+                final AbsoluteDate central         = getCentralDate(interpolationDate);
+                final Stream<T>    neighborsStream = cachedSamples.getNeighbors(central);
+
+                // Convert to unmodifiable list
+                this.neighborList = Collections.unmodifiableList(neighborsStream.collect(Collectors.toList()));
+
+                // Store interpolation date
+                this.interpolationDate = interpolationDate;
+            }
+            catch (OrekitIllegalArgumentException exception) {
+                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, sample.size());
+            }
+        }
+
+        /**
+         * Get the central date to use to find neighbors while taking into account extrapolation threshold.
+         *
+         * @param date interpolation date
+         *
+         * @return central date to use to find neighbors
+         */
+        protected AbsoluteDate getCentralDate(final AbsoluteDate date) {
+            final AbsoluteDate central;
+            final AbsoluteDate minDate = cachedSamples.getEarliest().getDate();
+            final AbsoluteDate maxDate = cachedSamples.getLatest().getDate();
+
+            if (date.compareTo(minDate) < 0 &&
+                    FastMath.abs(date.durationFrom(minDate)) <= extrapolationThreshold) {
+                // avoid TimeStampedCacheException as we are still within the tolerance before minDate
+                central = minDate;
+            } else if (date.compareTo(maxDate) > 0 &&
+                    FastMath.abs(date.durationFrom(maxDate)) <= extrapolationThreshold) {
+                // avoid TimeStampedCacheException as we are still within the tolerance after maxDate
+                central = maxDate;
+            } else {
+                central = date;
+            }
+
+            return central;
+        }
+
+        /** @return interpolation date */
+        public AbsoluteDate getInterpolationDate() {
+            return interpolationDate;
+        }
+
+        /** @return cached samples */
+        public ImmutableTimeStampedCache<T> getCachedSamples() {
+            return cachedSamples;
+        }
+
+        /** @return neighbor list */
+        public List<T> getNeighborList() {
+            return neighborList;
+        }
     }
 }

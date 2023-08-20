@@ -139,6 +139,11 @@ public class FieldAbsoluteDateTest {
     }
 
     @Test
+    public void testInstantAccuracy() {
+        doTestInstantAccuracy(Binary64Field.getInstance());
+    }
+
+    @Test
     public void testUtcGpsOffset() {
         doTestUtcGpsOffset(Binary64Field.getInstance());
     }
@@ -552,6 +557,11 @@ public class FieldAbsoluteDateTest {
     private <T extends CalculusFieldElement<T>> void doTest1970Instant(final Field<T> field) {
         Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.EPOCH, utc).toString());
         Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.ofEpochMilli(0l), utc).toString());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestInstantAccuracy(final Field<T> field) {
+        Assertions.assertEquals("1970-01-02T00:16:40.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(87400, 123456789), utc).toString());
+        Assertions.assertEquals("1970-01-07T00:10:00.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(519000, 123456789), utc).toString());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestUtcGpsOffset(final Field<T> field) {

@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeInterpolator;
 import org.orekit.attitudes.AttitudeProvider;
@@ -72,7 +73,6 @@ import org.orekit.utils.AbsolutePVCoordinatesTest;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
-import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -94,21 +94,10 @@ public class EphemerisTest {
     @DisplayName("test default Ephemeris constructor")
     void testDefaultEphemerisConstructor() {
         // Given
-        final Frame inertialFrameMock = Mockito.mock(Frame.class);
-        Mockito.when(inertialFrameMock.isPseudoInertial()).thenReturn(true);
-
-        // Mock additional state values
-        final DoubleArrayDictionary additionalStateValuesMock = Mockito.mock(DoubleArrayDictionary.class);
-        Mockito.when(additionalStateValuesMock.getData()).thenReturn(new ArrayList<>());
-
-        final SpacecraftState firstState  = Mockito.mock(SpacecraftState.class);
-        final SpacecraftState secondState = Mockito.mock(SpacecraftState.class);
-
-        Mockito.when(firstState.isOrbitDefined()).thenReturn(true);
-        Mockito.when(secondState.isOrbitDefined()).thenReturn(true);
-
-        Mockito.when(firstState.getFrame()).thenReturn(inertialFrameMock);
-        Mockito.when(firstState.getAdditionalStatesValues()).thenReturn(additionalStateValuesMock);
+        // Create spacecraft state sample
+        final Orbit           defaultOrbit = TestUtils.getDefaultOrbit(new AbsoluteDate());
+        final SpacecraftState firstState   = new SpacecraftState(defaultOrbit);
+        final SpacecraftState secondState  = firstState.shiftedBy(1);
 
         final List<SpacecraftState> states = new ArrayList<>();
         states.add(firstState);
@@ -121,7 +110,8 @@ public class EphemerisTest {
                 (SpacecraftStateInterpolator) defaultEphemeris.getStateInterpolator();
 
         // Then
-        final SpacecraftStateInterpolator referenceStateInterpolator = new SpacecraftStateInterpolator(inertialFrameMock);
+        final Frame                       inertialFrame              = defaultOrbit.getFrame();
+        final SpacecraftStateInterpolator referenceStateInterpolator = new SpacecraftStateInterpolator(inertialFrame);
 
         Assertions.assertEquals(referenceStateInterpolator.getExtrapolationThreshold(),
                                 defaultStateInterpolator.getExtrapolationThreshold());
@@ -272,36 +262,27 @@ public class EphemerisTest {
     @DisplayName("test error thrown when trying to reset intermediate state ")
     void testErrorThrownWhenTryingToResetIntermediateState() {
         // Given
-
         // Create spacecraft state sample
-        final SpacecraftState firstState  = Mockito.mock(SpacecraftState.class);
-        final SpacecraftState secondState = Mockito.mock(SpacecraftState.class);
-
-        Mockito.when(firstState.isOrbitDefined()).thenReturn(true);
-        Mockito.when(secondState.isOrbitDefined()).thenReturn(true);
-
-        final DoubleArrayDictionary dictionary = new DoubleArrayDictionary(0);
-        Mockito.when(firstState.getAdditionalStatesValues()).thenReturn(dictionary);
-        Mockito.when(secondState.getAdditionalStatesValues()).thenReturn(dictionary);
+        final Orbit           defaultOrbit = TestUtils.getDefaultOrbit(new AbsoluteDate());
+        final SpacecraftState firstState   = new SpacecraftState(defaultOrbit);
+        final SpacecraftState secondState  = firstState.shiftedBy(1);
 
         final List<SpacecraftState> states = new ArrayList<>();
         states.add(firstState);
         states.add(secondState);
 
         // Create state interpolator
-        final Frame inertialFrameMock = Mockito.mock(Frame.class);
-        Mockito.when(inertialFrameMock.isPseudoInertial()).thenReturn(true);
+        final Frame inertialFrame = FramesFactory.getEME2000();
 
-        final TimeInterpolator<SpacecraftState> stateInterpolator = new SpacecraftStateInterpolator(inertialFrameMock);
+        final TimeInterpolator<SpacecraftState> stateInterpolator = new SpacecraftStateInterpolator(inertialFrame);
 
         final Ephemeris ephemeris = new Ephemeris(states, stateInterpolator);
 
         // When & Then
-        Exception thrown = Assertions.assertThrows(OrekitException.class,
-                                                   () -> ephemeris.resetIntermediateState(firstState, true));
+        Exception thrown =
+                Assertions.assertThrows(OrekitException.class, () -> ephemeris.resetIntermediateState(firstState, true));
 
-        Assertions.assertEquals(
-                "reset state not allowed", thrown.getMessage());
+        Assertions.assertEquals("reset state not allowed", thrown.getMessage());
     }
 
     @Test
@@ -812,6 +793,30 @@ public class EphemerisTest {
                                 1.0e-10);
         Assertions.assertEquals(0.0, Vector3D.distance(withAttitudeProvider.getAbsPVA().getVelocity(), initPV.getVelocity()),
                                 1.0e-10);
+
+    }
+
+    /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
+    @Test
+    public void testIssue949() {
+        // GIVEN
+        final AbsoluteDate initialDate  = new AbsoluteDate();
+        final Orbit        initialOrbit = TestUtils.getDefaultOrbit(initialDate);
+
+        // Setup propagator
+        final Orbit                 finalOrbit = initialOrbit.shiftedBy(1);
+        final List<SpacecraftState> states     = new ArrayList<>();
+        states.add(new SpacecraftState(initialOrbit));
+        states.add(new SpacecraftState(finalOrbit));
+
+        final Ephemeris ephemeris = new Ephemeris(states, 2);
+
+        // Setup additional state provider which use the initial state in its init method
+        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
+        ephemeris.addAdditionalStateProvider(additionalStateProvider);
+
+        // WHEN & THEN
+        Assertions.assertDoesNotThrow(() -> ephemeris.propagate(ephemeris.getMaxDate()), "No error should have been thrown");
 
     }
 

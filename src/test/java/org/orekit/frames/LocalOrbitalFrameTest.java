@@ -336,7 +336,7 @@ public class LocalOrbitalFrameTest {
     void should_return_initial_value_after_multiple_field_rotations_default_method() {
         // Given
         final Binary64Field               field          = Binary64Field.getInstance();
-        final FieldAbsoluteDate<Binary64> arbitraryEpoch = new FieldAbsoluteDate(field, AbsoluteDate.ARBITRARY_EPOCH);
+        final FieldAbsoluteDate<Binary64> arbitraryEpoch = new FieldAbsoluteDate<>(field, AbsoluteDate.ARBITRARY_EPOCH);
         final FieldPVCoordinates<Binary64> pv =
                 new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(6378000 + 400000),
                                                              new Binary64(0),

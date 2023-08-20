@@ -27,6 +27,7 @@ import org.orekit.files.sinex.Station.ReferenceSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
@@ -35,10 +36,13 @@ import java.lang.reflect.Method;
 
 public class SinexLoaderTest {
 
+    private TimeScale utc;
+
     @BeforeEach
     public void setUp() {
         // Sets the root of data to read
         Utils.setDataRoot("gnss:sinex");
+        utc = TimeScalesFactory.getUTC();
     }
 
     @Test
@@ -67,9 +71,9 @@ public class SinexLoaderTest {
 
         // Test date computation using format description
         try {
-            Method method = SinexLoader.class.getDeclaredMethod("stringEpochToAbsoluteDate", String.class);
+            Method method = SinexLoader.class.getDeclaredMethod("stringEpochToAbsoluteDate", String.class, boolean.class, TimeScale.class);
             method.setAccessible(true);
-            final AbsoluteDate date = (AbsoluteDate) method.invoke(loader, "95:120:86399");
+            final AbsoluteDate date    = (AbsoluteDate) method.invoke(loader, "95:120:86399", false, utc);
             final AbsoluteDate refDate = new AbsoluteDate("1995-04-30T23:59:59.000", TimeScalesFactory.getUTC());
             Assertions.assertEquals(0., refDate.durationFrom(date), 0.);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
@@ -196,9 +200,11 @@ public class SinexLoaderTest {
         Assertions.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2012-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         refStation7090 = new Vector3D(-1.2073, 2.5034, -1.5509);
         Assertions.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2015-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
+
         Assertions.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2021-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         Assertions.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2999-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         Assertions.assertEquals(0.0, station7090.getEccentricitiesTimeSpanMap().getFirstTransition().getDate().durationFrom(new AbsoluteDate("1979-07-01T00:00:00.000", TimeScalesFactory.getUTC())), 1.0e-15);
+
         Assertions.assertTrue(station7090.getEccentricitiesTimeSpanMap().getLastTransition().getDate() == AbsoluteDate.FUTURE_INFINITY);
 
         // Verify station 7092
@@ -237,6 +243,27 @@ public class SinexLoaderTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.MISSING_STATION_DATA_FOR_EPOCH, oe.getSpecifier());
         }
+
+    }
+
+    @Test
+    public void testIssue1150() {
+
+        // Load file
+        SinexLoader loader = new SinexLoader("issue1150.snx");
+
+        // Verify start epoch for station "1148" is equal to the file start epoch
+        final Station station1148 = loader.getStation("1148");
+        Assertions.assertEquals(0.0, loader.getFileEpochStartTime().durationFrom(station1148.getEccentricitiesTimeSpanMap().getFirstTransition().getDate()));
+
+        // Verify end epoch for station "7035" is equal future infinity
+        final Station station7035 = loader.getStation("7035");
+        Assertions.assertTrue(station7035.getEccentricitiesTimeSpanMap().getLastTransition().getDate() == AbsoluteDate.FUTURE_INFINITY);
+
+        // Verify start epoch for station "7120" is equal to the file start epoch
+        final Station station7120 = loader.getStation("7120");
+        Assertions.assertEquals(0.0, loader.getFileEpochStartTime().durationFrom(station7120.getEccentricitiesTimeSpanMap().getFirstTransition().getDate()));
+        Assertions.assertTrue(station7120.getEccentricitiesTimeSpanMap().getLastTransition().getDate() == AbsoluteDate.FUTURE_INFINITY);
 
     }
 

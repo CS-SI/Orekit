@@ -128,10 +128,11 @@ public class NumericalPropagationHarvesterTest {
     }
 
     private void doTestInitialStm(OrbitType type, double deltaId) {
+        PositionAngle angle = PositionAngle.TRUE;
         NumericalPropagationHarvester harvester =
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm", null, null);
         propagator.setOrbitType(type);
-        propagator.setPositionAngleType(PositionAngle.TRUE);
+        propagator.setPositionAngleType(angle);
         double[] p = new double[36];
         for (int i = 0; i < p.length; i += 7) {
             p[i] = 1.0;
@@ -139,6 +140,8 @@ public class NumericalPropagationHarvesterTest {
         SpacecraftState s = propagator.getInitialState().addAdditionalState(harvester.getStmName(), p);
         RealMatrix stm = harvester.getStateTransitionMatrix(s);
         Assertions.assertEquals(deltaId, stm.subtract(MatrixUtils.createRealIdentityMatrix(6)).getNorm1(), 1.0e-3);
+        Assertions.assertEquals(type, harvester.getOrbitType());
+        Assertions.assertEquals(angle, harvester.getPositionAngle());
     }
 
     @BeforeEach

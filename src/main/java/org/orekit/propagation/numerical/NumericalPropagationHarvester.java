@@ -20,6 +20,8 @@ import java.util.List;
 
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.DoubleArrayDictionary;
@@ -90,6 +92,18 @@ class NumericalPropagationHarvester extends AbstractMatricesHarvester {
     @Override
     public List<String> getJacobiansColumnsNames() {
         return columnsNames == null ? propagator.getJacobiansColumnsNames() : columnsNames;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OrbitType getOrbitType() {
+        return propagator.getOrbitType();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PositionAngle getPositionAngle() {
+        return propagator.getPositionAngleType();
     }
 
 }
