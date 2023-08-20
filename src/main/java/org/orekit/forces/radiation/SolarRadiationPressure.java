@@ -125,11 +125,12 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         final AbsoluteDate date         = s.getDate();
         final Frame        frame        = s.getFrame();
         final Vector3D     position     = s.getPosition();
-        final Vector3D     sunSatVector = position.subtract(sun.getPosition(date, frame));
+        final Vector3D     sunPosition  = sun.getPosition(date, frame);
+        final Vector3D     sunSatVector = position.subtract(sunPosition);
         final double       r2           = sunSatVector.getNormSq();
 
         // compute flux
-        final double   ratio = getLightingRatio(s);
+        final double   ratio = getLightingRatio(s, sunPosition);
         final double   rawP  = ratio  * kRef / r2;
         final Vector3D flux  = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
 
@@ -145,11 +146,12 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         final FieldAbsoluteDate<T> date         = s.getDate();
         final Frame                frame        = s.getFrame();
         final FieldVector3D<T>     position     = s.getPosition();
-        final FieldVector3D<T>     sunSatVector = position.subtract(sun.getPosition(date, frame));
+        final FieldVector3D<T>     sunPosition  = sun.getPosition(date, frame);
+        final FieldVector3D<T>     sunSatVector = position.subtract(sunPosition);
         final T                    r2           = sunSatVector.getNormSq();
 
         // compute flux
-        final T                ratio = getLightingRatio(s);
+        final T                ratio = getLightingRatio(s, sunPosition);
         final T                rawP  = ratio.multiply(kRef).divide(r2);
         final FieldVector3D<T> flux  = new FieldVector3D<>(rawP.divide(r2.sqrt()), sunSatVector);
 
@@ -157,29 +159,29 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
 
     }
 
-    /** Check whether the S/C frame is Sun-centered.
+    /** Check whether the frame is considerer Sun-centered.
      *
-     * @param state spacecraft state
-     * @return true if S/C frame is Sun-centered
+     * @param sunPositionInFrame Sun position in frame to test
+     * @return true if frame is considered Sun-centered
      * @since 12.0
      */
-    private boolean isSunCenteredFrame(final SpacecraftState state) {
-        // S/C frame is considered Sun-centered if Sun (or Solar System barycenter) position
+    private boolean isSunCenteredFrame(final Vector3D sunPositionInFrame) {
+        // Frame is considered Sun-centered if Sun (or Solar System barycenter) position
         // in that frame is smaller than SUN_CENTERED_FRAME_THRESHOLD
-        return sun.getPosition(state.getDate(), state.getFrame()).
-                        getNorm() < SUN_CENTERED_FRAME_THRESHOLD;
+        return sunPositionInFrame.getNorm() < SUN_CENTERED_FRAME_THRESHOLD;
     }
 
 
     /** Get the lighting ratio ([0-1]).
      * @param state spacecraft state
+     * @param sunPosition Sun position in S/C frame at S/C date
      * @return lighting ratio
-     * @since 7.1
+     * @since 12.0 added to avoid numerous call to sun.getPosition(...)
      */
-    public double getLightingRatio(final SpacecraftState state) {
+    public double getLightingRatio(final SpacecraftState state, final Vector3D sunPosition) {
 
         // Check if S/C frame is Sun-centered
-        if (isSunCenteredFrame(state)) {
+        if (isSunCenteredFrame(sunPosition)) {
             // We are in fact computing a trajectory around Sun (or solar system barycenter),
             // not around a planet, we consider lighting ratio will always be 1
             return 1.0;
@@ -238,6 +240,15 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         return result;
     }
 
+    /** Get the lighting ratio ([0-1]).
+     * @param state spacecraft state
+     * @return lighting ratio
+     * @since 7.1
+     */
+    public double getLightingRatio(final SpacecraftState state) {
+        return getLightingRatio(state, sun.getPosition(state.getDate(), state.getFrame()));
+    }
+
     /** Get the masking ratio ([0-1]) considering one pair of bodies.
      * @param angles occultation angles
      * @return masking ratio: 0.0 body fully masked, 1.0 body fully visible
@@ -288,14 +299,15 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
 
     /** Get the lighting ratio ([0-1]).
      * @param state spacecraft state
+     * @param sunPosition Sun position in S/C frame at S/C date
      * @param <T> extends CalculusFieldElement
      * @return lighting ratio
-     * @since 7.1
+     * @since 12.0 added to avoid numerous call to sun.getPosition(...)
      */
-    public <T extends CalculusFieldElement<T>> T getLightingRatio(final FieldSpacecraftState<T> state) {
+    public <T extends CalculusFieldElement<T>> T getLightingRatio(final FieldSpacecraftState<T> state, final FieldVector3D<T> sunPosition) {
 
         final T one  = state.getDate().getField().getOne();
-        if (isSunCenteredFrame(state.toSpacecraftState())) {
+        if (isSunCenteredFrame(sunPosition.toVector3D())) {
             // We are in fact computing a trajectory around Sun (or solar system barycenter),
             // not around a planet, we consider lighting ratio will always be 1
             return one;
@@ -356,6 +368,15 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         return result;
     }
 
+    /** Get the lighting ratio ([0-1]).
+     * @param state spacecraft state
+     * @param <T> extends CalculusFieldElement
+     * @return lighting ratio
+     * @since 7.1
+     */
+    public <T extends CalculusFieldElement<T>> T getLightingRatio(final FieldSpacecraftState<T> state) {
+        return getLightingRatio(state, sun.getPosition(state.getDate(), state.getFrame()));
+    }
 
     /** Get the masking ratio ([0-1]) considering one pair of bodies.
      * @param angles occultation angles

@@ -19,6 +19,8 @@ package org.orekit.forces.radiation;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -170,35 +172,90 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                        new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
         Assertions.assertFalse(srp.dependsOnPositionOnly());
 
+        // Test both lighting ratio methods with double
         Assertions.assertEquals(1.0,
-                            srp.getLightingRatio(new SpacecraftState(orbit)),
-                            1.0e-15);
+                                srp.getLightingRatio(new SpacecraftState(orbit)),
+                                1.0e-15);
+        Assertions.assertEquals(1.0,
+                                srp.getLightingRatio(new SpacecraftState(orbit), sun.getPosition(orbit.getDate(), orbit.getFrame())),
+                                1.0e-15);
 
+        // Test both lighting ratio methods with field
+        final FieldSpacecraftState<Binary64> fieldSc = new FieldSpacecraftState<>(Binary64Field.getInstance(),
+                        new SpacecraftState(orbit));
         Assertions.assertEquals(1.0,
-                            srp.getLightingRatio(new FieldSpacecraftState<>(Binary64Field.getInstance(),
-                                                                            new SpacecraftState(orbit))).getReal(),
-                            1.0e-15);
+                                srp.getLightingRatio(fieldSc).getReal(),
+                                1.0e-15);
+        Assertions.assertEquals(1.0,
+                                srp.getLightingRatio(fieldSc, sun.getPosition(fieldSc.getDate(), fieldSc.getFrame())).getReal(),
+                                1.0e-15);
     }
 
     @Test
     public void testLighting() throws ParseException {
-            // Initialization
-            AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
-                                                 new TimeComponents(13, 59, 27.816),
-                                                 TimeScalesFactory.getUTC());
-            Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
-                                               FastMath.tan(0.001745329)*FastMath.cos(2*FastMath.PI/3), FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
-                                               0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
-            ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-            OneAxisEllipsoid earth =
-                new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
-                                     FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-            SolarRadiationPressure SRP =
-                new SolarRadiationPressure(sun, earth,
-                                           new IsotropicRadiationCNES95Convention(50.0, 0.5, 0.5));
+        
+        // Test with double
+        TriFunction<SolarRadiationPressure, SpacecraftState, CelestialBody, Double> getLightingRatio =
+                        new TriFunction<SolarRadiationPressure, SpacecraftState, CelestialBody, Double>() {
+            @Override
+            public Double apply(SolarRadiationPressure srp, SpacecraftState s, CelestialBody sun) {
+                return srp.getLightingRatio(s);
+            }
+        };
+        doTestLighting(getLightingRatio);
+        
+        // Test with double and Sun position in input
+        getLightingRatio =  new TriFunction<SolarRadiationPressure, SpacecraftState, CelestialBody, Double>() {
+            @Override
+            public Double apply(SolarRadiationPressure srp, SpacecraftState s, CelestialBody sun) {
+                return srp.getLightingRatio(s, sun.getPosition(s.getDate(), s.getFrame()));
+            }
+        };
+        doTestLighting(getLightingRatio);
+        
+        // Test with Binary64
+        final Field<Binary64> bs64 = Binary64Field.getInstance(); 
+        getLightingRatio = new TriFunction<SolarRadiationPressure, SpacecraftState, CelestialBody, Double>() {
+            @Override
+            public Double apply(SolarRadiationPressure srp, SpacecraftState s, CelestialBody sun) {
+                FieldSpacecraftState<Binary64> fieldS = new FieldSpacecraftState<>(bs64, s);
+                return srp.getLightingRatio(fieldS).getReal();
+            }
+        };
+        doTestLighting(getLightingRatio);
+        
+        // Test with Binary64 and Sun position in input
+        getLightingRatio = new TriFunction<SolarRadiationPressure, SpacecraftState, CelestialBody, Double>() {
+            @Override
+            public Double apply(SolarRadiationPressure srp, SpacecraftState s, CelestialBody sun) {
+                FieldSpacecraftState<Binary64> fieldS = new FieldSpacecraftState<>(bs64, s);
+                FieldVector3D<Binary64> fieldSunP = sun.getPosition(fieldS.getDate(), fieldS.getFrame());
+                return srp.getLightingRatio(fieldS, fieldSunP).getReal();
+            }
+        };
+        doTestLighting(getLightingRatio); 
+    }
+    
+    @Test
+    private void doTestLighting(TriFunction<SolarRadiationPressure, SpacecraftState, CelestialBody, Double> getLightingRatio) throws ParseException {
 
-            double period = 2*FastMath.PI*FastMath.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
-            Assertions.assertEquals(86164, period, 1);
+        // Given
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
+                                           FastMath.tan(0.001745329)*FastMath.cos(2*FastMath.PI/3), FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
+                                           0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        OneAxisEllipsoid earth =
+                        new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
+                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        SolarRadiationPressure SRP =
+                        new SolarRadiationPressure(sun, earth,
+                                                   new IsotropicRadiationCNES95Convention(50.0, 0.5, 0.5));
+
+        double period = 2*FastMath.PI*FastMath.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
+        Assertions.assertEquals(86164, period, 1);
 
         // creation of the propagator
         KeplerianPropagator k = new KeplerianPropagator(orbit);
@@ -208,11 +265,12 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         double changed = 1;
         int count=0;
 
+        // When: Test first lighting ration method
         for (int t=1;t<3*period;t+=1000) {
             currentDate = date.shiftedBy(t);
             try {
 
-                double ratio = SRP.getLightingRatio(k.propagate(currentDate));
+                double ratio = getLightingRatio.apply(SRP, k.propagate(currentDate), sun);
 
                 if (FastMath.floor(ratio)!=changed) {
                     changed = FastMath.floor(ratio);
@@ -1232,6 +1290,18 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data:potential");
+    }
+    
+    @FunctionalInterface
+    interface TriFunction<A,B,C,R> {
+
+        R apply(A a, B b, C c);
+
+        default <V> TriFunction<A, B, C, V> andThen(
+                                    Function<? super R, ? extends V> after) {
+            Objects.requireNonNull(after);
+            return (A a, B b, C c) -> after.apply(apply(a, b, c));
+        }
     }
 
 }
