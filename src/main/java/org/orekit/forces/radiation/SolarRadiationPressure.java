@@ -178,7 +178,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
      * @return lighting ratio
      * @since 12.0 added to avoid numerous call to sun.getPosition(...)
      */
-    public double getLightingRatio(final SpacecraftState state, final Vector3D sunPosition) {
+    private double getLightingRatio(final SpacecraftState state, final Vector3D sunPosition) {
 
         // Check if S/C frame is Sun-centered
         if (isSunCenteredFrame(sunPosition)) {
@@ -304,7 +304,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
      * @return lighting ratio
      * @since 12.0 added to avoid numerous call to sun.getPosition(...)
      */
-    public <T extends CalculusFieldElement<T>> T getLightingRatio(final FieldSpacecraftState<T> state, final FieldVector3D<T> sunPosition) {
+    private <T extends CalculusFieldElement<T>> T getLightingRatio(final FieldSpacecraftState<T> state, final FieldVector3D<T> sunPosition) {
 
         final T one  = state.getDate().getField().getOne();
         if (isSunCenteredFrame(sunPosition.toVector3D())) {
