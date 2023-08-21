@@ -30,7 +30,7 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.EventDetector;
@@ -47,7 +47,7 @@ import org.orekit.utils.OccultationEngine;
  * @see ECOM2
  * @since 10.2
  */
-public abstract class AbstractRadiationForceModel extends AbstractForceModel {
+public abstract class AbstractRadiationForceModel implements ForceModel {
 
     /** Margin to force recompute lighting ratio derivatives when we are really inside penumbra. */
     private static final double ANGULAR_MARGIN = 1.0e-10;
@@ -109,7 +109,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
         }
         // Fusion between Date detector for parameter driver span change and
         // Detector for umbra / penumbra events
-        return Stream.concat(Stream.of(detectors), super.getEventDetectors());
+        return Stream.concat(Stream.of(detectors), getEventDetectors());
     }
 
     /** {@inheritDoc} */
@@ -134,7 +134,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
                                    withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
                                    withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
         }
-        return Stream.concat(Stream.of(detectors), super.getFieldEventDetectors(field));
+        return Stream.concat(Stream.of(detectors), getFieldEventDetectors(field));
     }
 
     /**

@@ -27,7 +27,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -62,7 +62,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Guillaume Obrecht
  * @author Luc Maisonobe
  */
-public class InertialForces extends AbstractForceModel  {
+public class InertialForces implements ForceModel {
 
     /** Reference inertial frame to use to compute inertial forces. */
     private Frame referenceInertialFrame;

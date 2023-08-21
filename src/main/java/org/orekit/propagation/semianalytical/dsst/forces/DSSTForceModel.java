@@ -17,6 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -26,6 +27,8 @@ import org.orekit.forces.EventDetectorsProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.AbstractGradientConverter;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
@@ -61,7 +64,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Romain Di Constanzo
  * @author Pascal Parraud
  */
-public interface DSSTForceModel extends EventDetectorsProvider {
+public interface DSSTForceModel extends ParameterDriversProvider, EventDetectorsProvider {
 
     /**
      * Initialize the force model at the start of propagation.
@@ -85,6 +88,18 @@ public interface DSSTForceModel extends EventDetectorsProvider {
      */
     default <T extends CalculusFieldElement<T>> void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
         init(initialState.toSpacecraftState(), target.toAbsoluteDate());
+    }
+
+    /** {@inheritDoc}.*/
+    @Override
+    default Stream<EventDetector> getEventDetectors() {
+        return getEventDetectors(getParametersDrivers());
+    }
+
+    /** {@inheritDoc}.*/
+    @Override
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
+        return getFieldEventDetectors(field, getParametersDrivers());
     }
 
     /** Performs initialization prior to propagation for the current force model.
@@ -118,7 +133,7 @@ public interface DSSTForceModel extends EventDetectorsProvider {
      *  are also retained by the force model, which will update them during propagation)
      */
     <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                              PropagationType type, T[] parameters);
+                                                                                                  PropagationType type, T[] parameters);
 
     /** Extract the proper parameter drivers' values from the array in input of the
      * {@link #updateShortPeriodTerms(double[], SpacecraftState...) updateShortPeriodTerms} method.
@@ -208,7 +223,7 @@ public interface DSSTForceModel extends EventDetectorsProvider {
      *  @return the mean element rates dai/dt
      */
     <T extends CalculusFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
-                                                           FieldAuxiliaryElements<T> auxiliaryElements, T[] parameters);
+                                                               FieldAuxiliaryElements<T> auxiliaryElements, T[] parameters);
 
     /** Register an attitude provider.
      * <p>

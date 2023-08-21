@@ -16,16 +16,21 @@
  */
 package org.orekit.forces;
 
+import java.util.stream.Stream;
+
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
 /** This interface represents a force modifying spacecraft motion.
  *
@@ -57,7 +62,7 @@ import org.orekit.utils.ParameterDriver;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Melina Vanel
  */
-public interface ForceModel extends EventDetectorsProvider {
+public interface ForceModel extends ParameterDriversProvider, EventDetectorsProvider {
 
     /**
      * Initialize the force model at the start of propagation. This method will be called
@@ -87,6 +92,18 @@ public interface ForceModel extends EventDetectorsProvider {
      */
     default <T extends CalculusFieldElement<T>> void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
         init(initialState.toSpacecraftState(), target.toAbsoluteDate());
+    }
+
+    /** {@inheritDoc}.*/
+    @Override
+    default Stream<EventDetector> getEventDetectors() {
+        return getEventDetectors(getParametersDrivers());
+    }
+
+    /** {@inheritDoc}.*/
+    @Override
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
+        return getFieldEventDetectors(field, getParametersDrivers());
     }
 
     /** Compute the contribution of the force model to the perturbing
@@ -139,18 +156,13 @@ public interface ForceModel extends EventDetectorsProvider {
      */
     <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters);
 
-    /** Get parameter value from its name.
-     * @param name parameter name
-     * @return parameter value
+    /** Complain if a parameter is not supported.
+     * @param name name of the parameter
      * @since 8.0
      */
-    ParameterDriver getParameterDriver(String name);
-
-    /** Check if a parameter is supported.
-     * <p>Supported parameters are those listed by {@link #getParametersDrivers()}.</p>
-     * @param name parameter name to check
-     * @return true if the parameter is supported
-     * @see #getParametersDrivers()
-     */
-    boolean isSupported(String name);
+    default void complainIfNotSupported(String name) {
+        if (!isSupported(name)) {
+            throw notSupportedException(name);
+        }
+    }
 }

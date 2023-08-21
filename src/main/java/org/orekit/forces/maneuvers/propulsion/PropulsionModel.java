@@ -17,7 +17,10 @@
 
 package org.orekit.forces.maneuvers.propulsion;
 
+import java.util.stream.Stream;
+
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
@@ -26,14 +29,17 @@ import org.orekit.forces.EventDetectorsProvider;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriversProvider;
 
 /** Generic interface for a propulsion model used in a {@link Maneuver}.
  * @author Maxime Journot
  * @since 10.2
  */
-public interface PropulsionModel extends EventDetectorsProvider {
+public interface PropulsionModel extends ParameterDriversProvider, EventDetectorsProvider {
 
     /** Initialization method.
      *  Called in when Maneuver.init(...) is called (from ForceModel.init(...))
@@ -54,6 +60,18 @@ public interface PropulsionModel extends EventDetectorsProvider {
         init(initialState.toSpacecraftState(), target.toAbsoluteDate());
     }
 
+    /** {@inheritDoc}.*/
+    @Override
+    default Stream<EventDetector> getEventDetectors() {
+        return getEventDetectors(getParametersDrivers());
+    }
+
+    /** {@inheritDoc}.*/
+    @Override
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
+        return getFieldEventDetectors(field, getParametersDrivers());
+    }
+
     /** Get the acceleration of the spacecraft during maneuver and in maneuver frame.
      * @param s current spacecraft state
      * @param maneuverAttitude current attitude in maneuver
@@ -70,8 +88,8 @@ public interface PropulsionModel extends EventDetectorsProvider {
      * @return acceleration
      */
     <T extends CalculusFieldElement<T>> FieldVector3D<T> getAcceleration(FieldSpacecraftState<T> s,
-                                                                     FieldAttitude<T> maneuverAttitude,
-                                                                     T[] parameters);
+                                                                         FieldAttitude<T> maneuverAttitude,
+                                                                         T[] parameters);
 
     /** Get the mass derivative (i.e. flow rate in kg/s) during maneuver.
      * @param s current spacecraft state
@@ -87,7 +105,7 @@ public interface PropulsionModel extends EventDetectorsProvider {
      * @return mass derivative in kg/s
      */
     <T extends CalculusFieldElement<T>> T getMassDerivatives(FieldSpacecraftState<T> s,
-                                                         T[] parameters);
+                                                             T[] parameters);
     /** Get the maneuver name.
      * @return the maneuver name
      */

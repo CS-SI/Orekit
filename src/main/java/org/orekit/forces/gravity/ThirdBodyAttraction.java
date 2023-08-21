@@ -25,7 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
@@ -35,7 +35,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public class ThirdBodyAttraction extends AbstractForceModel {
+public class ThirdBodyAttraction implements ForceModel {
 
     /** Suffix for parameter name for attraction coefficient enabling Jacobian processing. */
     public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";

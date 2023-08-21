@@ -54,7 +54,6 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
@@ -1282,7 +1281,7 @@ public class DSSTPropagatorTest {
     }
 
     /** This class is based on the example given by Orekit user kris06 in https://gitlab.orekit.org/orekit/orekit/-/issues/670. */
-    private class NumericalForce extends AbstractForceModel {
+    private class NumericalForce implements ForceModel {
 
         private boolean initialized;
         private boolean accComputed;

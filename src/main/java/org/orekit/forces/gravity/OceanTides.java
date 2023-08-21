@@ -19,13 +19,12 @@ package org.orekit.forces.gravity;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.CachedNormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.GravityFields;
@@ -47,7 +46,7 @@ import org.orekit.utils.ParameterDriver;
  * @since 6.1
  * @author Luc Maisonobe
  */
-public class OceanTides extends AbstractForceModel {
+public class OceanTides implements ForceModel {
 
     /** Default step for tides field sampling (seconds). */
     public static final double DEFAULT_STEP = 600.0;

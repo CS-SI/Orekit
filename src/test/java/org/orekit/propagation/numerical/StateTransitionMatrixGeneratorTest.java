@@ -16,6 +16,13 @@
  */
 package org.orekit.propagation.numerical;
 
+import static org.hamcrest.CoreMatchers.is;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -39,7 +46,6 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
@@ -76,13 +82,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
-
-import static org.hamcrest.CoreMatchers.is;
 
 /** Unit tests for {@link StateTransitionMatrixGenerator}. */
 public class StateTransitionMatrixGeneratorTest {
@@ -677,7 +676,7 @@ public class StateTransitionMatrixGeneratorTest {
     }
 
     /** Mock {@link ForceModel}. */
-    private static class MockForceModel extends AbstractForceModel {
+    private static class MockForceModel implements ForceModel {
 
         /**
          * argument for {@link #accelerationDerivatives(AbsoluteDate, Frame,
