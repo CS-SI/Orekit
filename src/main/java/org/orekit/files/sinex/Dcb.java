@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.HashMap;
 import org.orekit.utils.TimeSpanMap;
 import org.hipparchus.util.Pair;
-import org.orekit.gnss.ObservationType;
+import org.orekit.gnss.observation.ObservationType;
 import org.orekit.time.AbsoluteDate;
 
 /**

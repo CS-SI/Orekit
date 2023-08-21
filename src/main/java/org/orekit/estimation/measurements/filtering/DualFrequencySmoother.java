@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.orekit.gnss.MeasurementType;
-import org.orekit.gnss.ObservationData;
-import org.orekit.gnss.ObservationDataSet;
-import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.observation.MeasurementType;
+import org.orekit.gnss.observation.ObservationData;
+import org.orekit.gnss.observation.ObservationDataSet;
+import org.orekit.gnss.observation.ObservationType;
 import org.orekit.time.ChronologicalComparator;
 
 /**
@@ -135,7 +135,7 @@ public class DualFrequencySmoother {
 
         // For each data set, work on those corresping to the PRN and Satellite system.
         for (final ObservationDataSet obsSet : sortedListODS) {
-            if (obsSet.getSatelliteSystem() == satSystem && obsSet.getPrnNumber() == prnNumber) {
+            if (obsSet.getSatellite().getSystem() == satSystem && obsSet.getSatellite().getPRN() == prnNumber) {
                 // Get all observation data
                 final List<ObservationData> listObsData = obsSet.getObservationData();
                 // For each ObservationData check if usable (SNR and !(isNaN))

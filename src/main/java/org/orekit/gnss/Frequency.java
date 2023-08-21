@@ -72,11 +72,21 @@ public enum Frequency {
     /** In the ANTEX files, both C01 and C02 refer to Beidou B1 signal (1561.098 MHz). */
     C02(SatelliteSystem.BEIDOU, "B1", 152.6),
 
+    /** In the ANTEX files, C05 appears without much reference
+     * for consistency with Rinex 4 tables, we assume it is B2a (1176.45 MHz).
+     */
+    C05(SatelliteSystem.BEIDOU, "B2a", 115),
+
     /** In the ANTEX files, C06 appears without much reference, we assume it is B2 (1207.14 MHz). */
     C06(SatelliteSystem.BEIDOU, "B2", 118),
 
     /** In the ANTEX files, C07 seems to refer to a signal close to E06, probably B3... (1268.52 MHz). */
     C07(SatelliteSystem.BEIDOU, "B3", 124),
+
+    /** In the ANTEX files, C08 appears without much reference
+     * for consistency with Rinex 4 tables, we assume it is B2 (B2a+B2b) (1191.795 MHz).
+     */
+    C08(SatelliteSystem.BEIDOU, "B2 (B2a+B2b)", 116.5),
 
     /** Beidou B1 (1561.098 MHz). */
     B01(SatelliteSystem.BEIDOU,  "B1", 152.6),

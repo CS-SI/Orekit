@@ -251,11 +251,12 @@ public class RinexUtils {
     }
 
     /** Parse a comment.
+     * @param lineNumber line number
      * @param line line to parse
-     * @param header header to fill with parsed data
+     * @param rinexFile rinex file
      */
-    public static void parseComment(final String line, final RinexBaseHeader header) {
-        header.addComment(parseString(line, 0, 60));
+    public static void parseComment(final int lineNumber, final String line, final RinexFile<?> rinexFile) {
+        rinexFile.addComment(new RinexComment(lineNumber, parseString(line, 0, 60)));
     }
 
     /**

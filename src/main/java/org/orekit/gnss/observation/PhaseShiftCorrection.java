@@ -14,9 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.gnss.observation;
 
 import java.util.List;
+
+import org.orekit.gnss.SatInSystem;
+import org.orekit.gnss.SatelliteSystem;
 
 /** Phase Shift corrections.
  * Contains the phase shift corrections used to
@@ -27,10 +30,13 @@ public class PhaseShiftCorrection {
 
     /** Satellite System. */
     private final SatelliteSystem satSystemPhaseShift;
+
     /** Carrier Phase Observation Code (may be null). */
     private final ObservationType typeObsPhaseShift;
+
     /** Phase Shift Corrections (cycles). */
     private final double phaseShiftCorrection;
+
     /** List of satellites involved. */
     private final List<SatInSystem> satsPhaseShift;
 
@@ -56,6 +62,7 @@ public class PhaseShiftCorrection {
     public SatelliteSystem getSatelliteSystem() {
         return satSystemPhaseShift;
     }
+
     /** Get the Carrier Phase Observation Code.
      * <p>
      * The observation code may be null for the uncorrected reference
@@ -66,12 +73,14 @@ public class PhaseShiftCorrection {
     public ObservationType getTypeObs() {
         return typeObsPhaseShift;
     }
+
     /** Get the Phase Shift Corrections.
      * @return Phase Shift Corrections (cycles)
      */
     public double getCorrection() {
         return phaseShiftCorrection;
     }
+
     /** Get the list of satellites involved.
      * @return List of satellites involved (if empty, all the sats are involved)
      */
