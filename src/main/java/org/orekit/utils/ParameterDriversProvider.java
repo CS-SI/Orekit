@@ -21,8 +21,7 @@ import java.util.List;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.MathArrays;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
+import org.orekit.errors.UnsupportedParameterException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.TimeSpanMap.Span;
@@ -175,7 +174,7 @@ public interface ParameterDriversProvider {
                 return driver;
             }
         }
-        throw notSupportedException(name);
+        throw new UnsupportedParameterException(name, getParametersDrivers());
     }
 
     /** Check if a parameter is supported.
@@ -196,24 +195,11 @@ public interface ParameterDriversProvider {
         return false;
     }
 
-    /** Generate an exception for unsupported parameter.
-     * @param name unsupported parameter name
-     * @return exception with appropriate message
+    /** Complain if a parameter is not supported.
+     * @param name name of the parameter
+     * @since 8.0
      */
-    default OrekitException notSupportedException(String name) {
-
-        final StringBuilder builder = new StringBuilder();
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            if (builder.length() > 0) {
-                builder.append(", ");
-            }
-            builder.append(driver.getName());
-        }
-        if (builder.length() == 0) {
-            builder.append("<none>");
-        }
-
-        return new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                   name, builder.toString());
+    default void complainIfNotSupported(String name) {
+        throw new UnsupportedParameterException(name, getParametersDrivers());
     }
 }

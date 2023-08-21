@@ -155,14 +155,4 @@ public interface ForceModel extends ParameterDriversProvider, EventDetectorsProv
      * @since 9.0
      */
     <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters);
-
-    /** Complain if a parameter is not supported.
-     * @param name name of the parameter
-     * @since 8.0
-     */
-    default void complainIfNotSupported(String name) {
-        if (!isSupported(name)) {
-            throw notSupportedException(name);
-        }
-    }
 }
