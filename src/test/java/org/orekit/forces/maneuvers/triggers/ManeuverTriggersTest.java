@@ -18,6 +18,7 @@ package org.orekit.forces.maneuvers.triggers;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -32,6 +33,8 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -56,6 +59,14 @@ public class ManeuverTriggersTest {
             @Override
             public List<ParameterDriver> getParametersDrivers() {
                 return Collections.emptyList();
+            }
+            @Override
+            public Stream<EventDetector> getEventDetectors() {
+                return Stream.empty();
+            }
+            @Override
+            public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
+                return Stream.empty();
             }
         };
 

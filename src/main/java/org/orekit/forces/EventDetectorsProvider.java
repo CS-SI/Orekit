@@ -23,6 +23,8 @@ import java.util.stream.Stream;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
+import org.hipparchus.util.FastMath;
+import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldDateDetector;
@@ -30,6 +32,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
 
 /** Interface for building event detectors for force models and maneuver parameters.
@@ -44,8 +47,8 @@ import org.orekit.utils.ParameterDriver;
  */
 public interface EventDetectorsProvider {
 
-    /** Default maximum checking interval for event detectors (s). */
-    double DEFAULT_EVENT_DETECTORS_MAXCHECK = 60.;
+    /** Accuracy of switching events dates (s). */
+    double DATATION_ACCURACY = 1.0e-10;
 
     /** Get the discrete events related to the model.
      *
@@ -80,7 +83,7 @@ public interface EventDetectorsProvider {
      */
     default Stream<EventDetector> getEventDetectors(List<ParameterDriver> parameterDrivers) {
         // If force model does not have parameter Driver, an empty stream is given as results
-        final ArrayList<AbsoluteDate> transitionDates = new ArrayList<>();
+        final ArrayList<TimeStamped> transitionDates = new ArrayList<>();
         for (final ParameterDriver driver : parameterDrivers) {
             // Get the transitions' dates from the TimeSpanMap
             for (AbsoluteDate date : driver.getTransitionDates()) {
@@ -95,18 +98,22 @@ public interface EventDetectorsProvider {
             // Sort transition dates chronologically
             transitionDates.sort(null);
 
-            // Initialize the date detector
-            final DateDetector datesDetector = new DateDetector(transitionDates.get(0)).
-                            withMaxCheck(DEFAULT_EVENT_DETECTORS_MAXCHECK).
+            // Find shortest duration between 2 consecutive dates
+            double shortestDuration = AbstractDetector.DEFAULT_MAXCHECK;
+            for (int i = 1; i < transitionDates.size(); i++) {
+                // Duration from current to previous date
+                shortestDuration = FastMath.min(shortestDuration,
+                                                transitionDates.get(i).durationFrom(transitionDates.get(i - 1)));
+            }
+
+            // Create the date detector containing all transition dates and return it
+            // Max check set to half the shortest duration between 2 consecutive dates
+            final DateDetector datesDetector = new DateDetector(0.5 * shortestDuration,
+                                                                DATATION_ACCURACY,
+                                                                transitionDates.toArray(new TimeStamped[0])).
                             withHandler((state, d, increasing) -> {
                                 return Action.RESET_DERIVATIVES;
                             });
-
-            // Add all transitions' dates to the date detector
-            for (int i = 1; i < transitionDates.size(); i++) {
-                datesDetector.addEventDate(transitionDates.get(i));
-            }
-            // Return the detectors
             return Stream.of(datesDetector);
         }
     }
@@ -141,10 +148,20 @@ public interface EventDetectorsProvider {
             // Sort transition dates chronologically
             transitionDates.sort(null);
 
+            // Find shortest duration between 2 consecutive dates
+            double shortestDuration = AbstractDetector.DEFAULT_MAXCHECK;
+            for (int i = 1; i < transitionDates.size(); i++) {
+                // Duration from current to previous date
+                shortestDuration = FastMath.min(shortestDuration,
+                                                transitionDates.get(i).durationFrom(transitionDates.get(i - 1)));
+            }
+
             // Initialize the date detector
+            // Max check set to half the shortest duration between 2 consecutive dates
             final FieldDateDetector<T> datesDetector =
                             new FieldDateDetector<>(new FieldAbsoluteDate<>(field, transitionDates.get(0))).
-                            withMaxCheck(field.getZero().add(DEFAULT_EVENT_DETECTORS_MAXCHECK)).
+                            withMaxCheck(field.getZero().newInstance(0.5 * shortestDuration)).
+                            withThreshold(field.getZero().newInstance(DATATION_ACCURACY)).
                             withHandler(( state, d, increasing) -> {
                                 return Action.RESET_DERIVATIVES;
                             });

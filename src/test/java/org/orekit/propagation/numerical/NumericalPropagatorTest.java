@@ -16,6 +16,18 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
@@ -98,18 +110,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class NumericalPropagatorTest {
 
@@ -1815,19 +1815,6 @@ public class NumericalPropagatorTest {
         public List<ParameterDriver> getParametersDrivers() {
             return Collections.emptyList();
         }
-
-        @Override
-        public ParameterDriver getParameterDriver(String name)
-            {
-            final List<ParameterDriver> drivers =  getParametersDrivers();
-            final String[] names = new String[drivers.size()];
-            for (int i = 0; i < names.length; ++i) {
-                names[i] = drivers.get(i).getName();
-            }
-            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                      name, names);
-        }
-
     }
 
 }

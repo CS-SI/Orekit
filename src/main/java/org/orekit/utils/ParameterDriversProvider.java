@@ -194,12 +194,4 @@ public interface ParameterDriversProvider {
         // the parameter is not supported
         return false;
     }
-
-    /** Complain if a parameter is not supported.
-     * @param name name of the parameter
-     * @since 8.0
-     */
-    default void complainIfNotSupported(String name) {
-        throw new UnsupportedParameterException(name, getParametersDrivers());
-    }
 }

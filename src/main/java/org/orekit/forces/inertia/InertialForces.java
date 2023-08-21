@@ -24,7 +24,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
@@ -139,11 +138,4 @@ public class InertialForces implements ForceModel {
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.emptyList();
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public ParameterDriver getParameterDriver(final String name) {
-        throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, "<none>");
-    }
-
 }

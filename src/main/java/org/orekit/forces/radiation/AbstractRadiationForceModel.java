@@ -109,7 +109,7 @@ public abstract class AbstractRadiationForceModel implements ForceModel {
         }
         // Fusion between Date detector for parameter driver span change and
         // Detector for umbra / penumbra events
-        return Stream.concat(Stream.of(detectors), getEventDetectors());
+        return Stream.concat(Stream.of(detectors), ForceModel.super.getEventDetectors());
     }
 
     /** {@inheritDoc} */
@@ -134,7 +134,7 @@ public abstract class AbstractRadiationForceModel implements ForceModel {
                                    withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
                                    withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
         }
-        return Stream.concat(Stream.of(detectors), getFieldEventDetectors(field));
+        return Stream.concat(Stream.of(detectors), ForceModel.super.getFieldEventDetectors(field));
     }
 
     /**

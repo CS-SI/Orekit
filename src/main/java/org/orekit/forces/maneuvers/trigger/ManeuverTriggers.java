@@ -17,15 +17,11 @@
 
 package org.orekit.forces.maneuvers.trigger;
 
-import java.util.stream.Stream;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.forces.EventDetectorsProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriversProvider;
@@ -58,18 +54,6 @@ public interface ManeuverTriggers extends ParameterDriversProvider, EventDetecto
      */
     default <T extends CalculusFieldElement<T>> void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
         init(initialState.toSpacecraftState(), target.toAbsoluteDate());
-    }
-
-    /** {@inheritDoc}.*/
-    @Override
-    default Stream<EventDetector> getEventDetectors() {
-        return getEventDetectors(getParametersDrivers());
-    }
-
-    /** {@inheritDoc}.*/
-    @Override
-    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
-        return getFieldEventDetectors(field, getParametersDrivers());
     }
 
     /** Find out if the maneuver is firing or not.

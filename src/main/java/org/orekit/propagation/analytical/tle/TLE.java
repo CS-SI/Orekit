@@ -1040,33 +1040,6 @@ public class TLE implements TimeStamped, Serializable, ParameterDriversProvider 
         return Collections.singletonList(bStarParameterDriver);
     }
 
-    /** Get parameter driver from its name.
-     * @param name parameter name
-     * @return parameter driver
-     * @since 11.1
-     */
-    public ParameterDriver getParameterDriver(final String name) {
-        // Loop on known drivers
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            if (name.equals(driver.getName())) {
-                // we have found a parameter with that name
-                return driver;
-            }
-        }
-
-        // build the list of supported parameters
-        final StringBuilder sBuilder = new StringBuilder();
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            if (sBuilder.length() > 0) {
-                sBuilder.append(", ");
-            }
-            sBuilder.append(driver.getName());
-        }
-        throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                  name, sBuilder.toString());
-
-    }
-
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */

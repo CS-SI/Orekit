@@ -41,7 +41,6 @@ import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
 
 
 /** This class provides elements to propagate TLE's.
@@ -71,8 +70,7 @@ import org.orekit.utils.ParameterDriversProvider;
  * @since 11.0
  * @see FieldTLE
  */
-public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T>
-                                                                            implements ParameterDriversProvider {
+public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
     // CHECKSTYLE: stop VisibilityModifier check
 

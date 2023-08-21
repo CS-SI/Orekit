@@ -155,7 +155,7 @@ public abstract class AbstractAnalyticalGradientConverter extends AbstractGradie
 
     }
 
-    /** Get the model parameters.
+    /** Get the model parameters as an array of {@link Gradient} objects.
      * @param state state as returned by {@link #getState()}
      * @return the model parameters
      */
