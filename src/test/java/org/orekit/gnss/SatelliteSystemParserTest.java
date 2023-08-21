@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2023 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,28 +19,13 @@ package org.orekit.gnss;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class RinexFrequencyTest {
+
+public class SatelliteSystemParserTest {
 
     @Test
-    public void testMeasurementType() {
-        for (final ObservationType rf : ObservationType.values()) {
-            final char c = rf.toString().charAt(0);
-            switch (rf.getMeasurementType()) {
-                case PSEUDO_RANGE :
-                    Assertions.assertTrue(c == 'C' || c == 'P');
-                    break;
-                case CARRIER_PHASE :
-                    Assertions.assertTrue(c == 'L');
-                    break;
-                case DOPPLER :
-                    Assertions.assertTrue(c == 'D');
-                    break;
-                case SIGNAL_STRENGTH :
-                    Assertions.assertTrue(c == 'S');
-                    break;
-                default :
-                    Assertions.fail("unknown " + rf.getMeasurementType());
-            }
+    public void testAllLetters() {
+        for (char c = 'A'; c <= 'Z'; ++c) {
+            Assertions.assertNotNull(SatelliteSystem.parseSatelliteSystem(Character.toString(c)));
         }
     }
 

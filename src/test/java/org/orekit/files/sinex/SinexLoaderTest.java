@@ -217,6 +217,23 @@ public class SinexLoaderTest {
     }
 
     @Test
+    public void testIssue1149() {
+        SinexLoader loader = new SinexLoader("JAX0MGXFIN_20202440000_01D_000_SOL.SNX");
+        Assertions.assertEquals(133, loader.getStations().size());
+    }
+
+    @Test
+    public void testCorruptedHeader() {
+        try {
+            new SinexLoader("corrupted-header.snx");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
+        }
+    }
+
+    @Test
     public void testNoDataForEpoch() {
 
         // Load file (it corresponds to a small version of the real complete file)
@@ -247,7 +264,17 @@ public class SinexLoaderTest {
     }
 
     @Test
-    public void testIssue1150() {
+    public void testIssue1150A() {
+        SinexLoader        loader = new SinexLoader("JAX0MGXFIN_20202440000_01D_000_SOL.SNX");
+        final AbsoluteDate date   = new AbsoluteDate(2020, 8, 31, 12, 0, 0.0, TimeScalesFactory.getGPS());
+        final Vector3D     ecc    = loader.getStation("ABPO").getEccentricities(date);
+        Assertions.assertEquals(0.0083, ecc.getX(), 1.0e-10);
+        Assertions.assertEquals(0.0000, ecc.getY(), 1.0e-10);
+        Assertions.assertEquals(0.0000, ecc.getZ(), 1.0e-10);
+    }
+
+    @Test
+    public void testIssue1150B() {
 
         // Load file
         SinexLoader loader = new SinexLoader("issue1150.snx");

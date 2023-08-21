@@ -26,8 +26,8 @@ import org.orekit.data.GzipFilter;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.HatanakaCompressFilter;
-import org.orekit.gnss.ObservationDataSet;
-import org.orekit.gnss.RinexObservationParser;
+import org.orekit.gnss.observation.ObservationDataSet;
+import org.orekit.gnss.observation.RinexObservationParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
@@ -60,7 +60,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
             nd = filter.filter(nd);
         }
         final RinexObservationParser parser = new RinexObservationParser();
-        final List<ObservationDataSet> obserDataSets = parser.parse(nd);
+        final List<ObservationDataSet> obserDataSets = parser.parse(nd).getObservationDataSets();
         PhaseMinusCodeCycleSlipDetector slipDetectors =
             new PhaseMinusCodeCycleSlipDetector(90, 10, 20, 3);
         final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
@@ -134,7 +134,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
             nd = filter.filter(nd);
         }
         final RinexObservationParser parser = new RinexObservationParser();
-        final List<ObservationDataSet> obserDataSets = parser.parse(nd);
+        final List<ObservationDataSet> obserDataSets = parser.parse(nd).getObservationDataSets();
         PhaseMinusCodeCycleSlipDetector slipDetectors =
             new PhaseMinusCodeCycleSlipDetector(90, 1e15, 20, 3);
         final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
@@ -183,7 +183,7 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
             nd = filter.filter(nd);
         }
         final RinexObservationParser parser = new RinexObservationParser();
-        final List<ObservationDataSet> obserDataSets = parser.parse(nd);
+        final List<ObservationDataSet> obserDataSets = parser.parse(nd).getObservationDataSets();
         final double dt = 31; //great time gap threshold to don't detect cycle-slip because of time gap
         final int N = 25;
         final int m = 2;

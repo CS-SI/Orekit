@@ -111,12 +111,13 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.HatanakaCompressFilter;
-import org.orekit.gnss.MeasurementType;
-import org.orekit.gnss.ObservationData;
-import org.orekit.gnss.ObservationDataSet;
-import org.orekit.gnss.RinexObservationParser;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.antenna.FrequencyPattern;
+import org.orekit.gnss.observation.MeasurementType;
+import org.orekit.gnss.observation.ObservationData;
+import org.orekit.gnss.observation.ObservationDataSet;
+import org.orekit.gnss.observation.RinexObservation;
+import org.orekit.gnss.observation.RinexObservationParser;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.models.earth.atmosphere.Atmosphere;
@@ -2124,16 +2125,16 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             default:
                 prnNumber = -1;
         }
-        final RinexObservationParser parser = new RinexObservationParser();
-        for (final ObservationDataSet observationDataSet : parser.parse(source)) {
-            if (observationDataSet.getSatelliteSystem() == system    &&
-                observationDataSet.getPrnNumber()       == prnNumber) {
+        final RinexObservation rinexObs = new RinexObservationParser().parse(source);
+        for (final ObservationDataSet observationDataSet : rinexObs.getObservationDataSets()) {
+            if (observationDataSet.getSatellite().getSystem() == system    &&
+                observationDataSet.getSatellite().getPRN()    == prnNumber) {
                 for (final ObservationData od : observationDataSet.getObservationData()) {
                     final double snr = od.getSignalStrength();
                     if (!Double.isNaN(od.getValue()) && (snr == 0 || snr >= 4)) {
                         if (od.getObservationType().getMeasurementType() == MeasurementType.PSEUDO_RANGE && useRangeMeasurements) {
                             // this is a measurement we want
-                            final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();
+                            final String stationName = rinexObs.getHeader().getMarkerName() + "/" + od.getObservationType();
                             final StationData stationData = stations.get(stationName);
                             if (stationData == null) {
                                 throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -2166,7 +2167,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
                         } else if (od.getObservationType().getMeasurementType() == MeasurementType.DOPPLER && useRangeRateMeasurements) {
                             // this is a measurement we want
-                            final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();
+                            final String stationName = rinexObs.getHeader().getMarkerName() + "/" + od.getObservationType();
                             final StationData stationData = stations.get(stationName);
                             if (stationData == null) {
                                 throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,

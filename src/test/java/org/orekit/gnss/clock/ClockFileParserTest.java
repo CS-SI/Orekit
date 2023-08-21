@@ -14,7 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.gnss.clock;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,25 +34,18 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.gnss.clock.RinexClock;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.TimeSystem;
 import org.orekit.gnss.clock.RinexClock.ClockDataLine;
 import org.orekit.gnss.clock.RinexClock.ClockDataType;
 import org.orekit.gnss.clock.RinexClock.Receiver;
 import org.orekit.gnss.clock.RinexClock.ReferenceClock;
-import org.orekit.gnss.clock.RinexClockParser;
+import org.orekit.gnss.observation.ObservationType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeSpanMap;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /** This class aims at validating the correct IGS clock file parsing and error handling. */
 public class ClockFileParserTest {

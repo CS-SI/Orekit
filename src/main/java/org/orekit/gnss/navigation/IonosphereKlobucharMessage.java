@@ -16,7 +16,6 @@
  */
 package org.orekit.gnss.navigation;
 
-import org.orekit.gnss.RegionCode;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.utils.units.Unit;

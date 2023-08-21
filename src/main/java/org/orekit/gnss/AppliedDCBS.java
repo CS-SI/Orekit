@@ -37,7 +37,7 @@ public class AppliedDCBS {
      * @param sourceDCBS Source of corrections (URL)
      */
     public AppliedDCBS(final SatelliteSystem satelliteSystem,
-                        final String progDCBS, final String sourceDCBS) {
+                       final String progDCBS, final String sourceDCBS) {
         this.satelliteSystem = satelliteSystem;
         this.progDCBS        = progDCBS;
         this.sourceDCBS      = sourceDCBS;

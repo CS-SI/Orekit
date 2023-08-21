@@ -311,6 +311,12 @@ public class AbsoluteDateTest {
     }
 
     @Test
+    public void testInstantAccuracy() {
+        Assertions.assertEquals("1970-01-02T00:16:40.123456789Z", new AbsoluteDate(Instant.ofEpochSecond(87400, 123456789), utc).toString());
+        Assertions.assertEquals("1970-01-07T00:10:00.123456789Z", new AbsoluteDate(Instant.ofEpochSecond(519000, 123456789), utc).toString());
+    }
+
+    @Test
     public void testUtcGpsOffset() {
         AbsoluteDate date1   = new AbsoluteDate(new DateComponents(2005, 8, 9),
                                                 new TimeComponents(16, 31, 17),

@@ -23,6 +23,8 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -266,6 +268,20 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
             }
         }
         return array;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OrbitType getOrbitType() {
+        // Set to CARTESIAN because analytical gradient converter uses cartesian representation
+        return OrbitType.CARTESIAN;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PositionAngle getPositionAngle() {
+        // Irrelevant: set a default value
+        return PositionAngle.MEAN;
     }
 
     /**

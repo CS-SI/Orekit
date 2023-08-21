@@ -1,0 +1,11 @@
+%=SNX 2.02     20:246:43???     20:244:00000 20:244:86100 P   405 2 S E
+*-------------------------------------------------------------------------------
++FILE/REFERENCE
+ DESCRIPTION        POSITION SOLUTION                                           
+ OUTPUT                                                                         
+ CONTACT                                                                        
+ SOFTWARE           MADOCA v.0.9.3                                              
+ INPUT              STATION RINEX DATA                                          
+-FILE/REFERENCE
+*-------------------------------------------------------------------------------
+%ENDSNX

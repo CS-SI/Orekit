@@ -16,9 +16,6 @@
  */
 package org.orekit.gnss;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 
@@ -35,9 +32,6 @@ public class RinexBaseHeader {
 
     /** Satellite System of the Rinex file (G/R/S/E/M). */
     private SatelliteSystem satelliteSystem;
-
-    /** Comments. */
-    private final List<String> comments;
 
     /** Name of the program creating current file. */
     private String programName;
@@ -75,7 +69,6 @@ public class RinexBaseHeader {
     protected RinexBaseHeader(final RinexFileType fileType) {
         this.fileType      = fileType;
         this.formatVersion = Double.NaN;
-        this.comments      = new ArrayList<>();
     }
 
     /**
@@ -119,22 +112,6 @@ public class RinexBaseHeader {
      */
     public void setSatelliteSystem(final SatelliteSystem satelliteSystem) {
         this.satelliteSystem = satelliteSystem;
-    }
-
-    /**
-     * Getter for the comments.
-     * @return the comments
-     */
-    public List<String> getComments() {
-        return comments;
-    }
-
-    /**
-     * Add a comment line.
-     * @param comment the comment line to add
-     */
-    public void addComment(final String comment) {
-        comments.add(comment);
     }
 
     /**
