@@ -21,7 +21,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
+import org.hipparchus.FieldElement;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -258,13 +258,12 @@ public class Frame implements Serializable {
      * @return transform from the instance to the destination frame
      */
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date) {
-        final Field<T> field = date.getField();
-        return getTransformTo(
-                destination,
-                FieldTransform.getIdentity(field),
-                frame -> frame.getTransformProvider().getTransform(date),
-                (t1, t2) -> new FieldTransform<>(date, t1, t2),
-                FieldTransform::getInverse);
+
+        return getTransformTo(destination,
+                              FieldTransform.getIdentity(date.getField()),
+                              frame -> frame.getTransformProvider().getTransform(date),
+                              (t1, t2) -> new FieldTransform<>(date, t1, t2),
+                              FieldTransform::getInverse);
     }
 
     /**
@@ -300,6 +299,10 @@ public class Frame implements Serializable {
      * <p>This method is often more performant than {@link
      * #getTransformTo(Frame, FieldAbsoluteDate)} when rates are not needed.
      *
+     * <p>A first check is made on the FieldAbsoluteDate because "fielded" transforms have low-performance.<br>
+     * The date field is checked with {@link FieldElement#isZero()}.<br>
+     * If true, the un-fielded version of the transform computation is used.
+     *
      * @param <T>         type of the elements
      * @param destination destination frame to which we want to transform
      *                    vectors
@@ -310,12 +313,18 @@ public class Frame implements Serializable {
      */
     public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransformTo(final Frame destination,
                                                 final FieldAbsoluteDate<T> date) {
-        return getTransformTo(
-                destination,
-                FieldStaticTransform.getIdentity(date.getField()),
-                frame -> frame.getTransformProvider().getStaticTransform(date),
-                (t1, t2) -> FieldStaticTransform.compose(date, t1, t2),
-                FieldStaticTransform::getInverse);
+        if (date.hasZeroField()) {
+            // If date field is Zero, then use the un-fielded version for performances
+            return FieldStaticTransform.of(date, getStaticTransformTo(destination, date.toAbsoluteDate()));
+
+        } else {
+            // Use classic fielded function
+            return getTransformTo(destination,
+                                  FieldStaticTransform.getIdentity(date.getField()),
+                                  frame -> frame.getTransformProvider().getStaticTransform(date),
+                                  (t1, t2) -> FieldStaticTransform.compose(date, t1, t2),
+                                  FieldStaticTransform::getInverse);
+        }
     }
 
     /**
