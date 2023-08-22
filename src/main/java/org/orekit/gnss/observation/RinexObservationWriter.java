@@ -320,7 +320,7 @@ public class RinexObservationWriter implements AutoCloseable {
                         outputField(SIX_DIGITS_INTEGER, (int) FastMath.round(sfc.getCorrection()), 6);
                         outputField(SIX_DIGITS_INTEGER, sfc.getTypesObsScaled().size(), 12);
                         for (int i = 0; i < sfc.getTypesObsScaled().size(); ++i) {
-                            outputField(sfc.getTypesObsScaled().get(i).name(), 18 + 6 * i, true);
+                            outputField(sfc.getTypesObsScaled().get(i).name(), 18 + 6 * i, false);
                         }
                         finishHeaderLine(RinexLabels.OBS_SCALE_FACTOR);
                     }
@@ -407,7 +407,8 @@ public class RinexObservationWriter implements AutoCloseable {
         // SYS / DCBS APPLIED
         for (final AppliedDCBS appliedDCBS : header.getListAppliedDCBS()) {
             outputField(appliedDCBS.getSatelliteSystem().getKey(),  1);
-            outputField(appliedDCBS.getProgDCBS(),                 19, true);
+            outputField("",                                         2, true);
+            outputField(appliedDCBS.getProgDCBS(),                 20, true);
             outputField(appliedDCBS.getSourceDCBS(),               60, true);
             finishHeaderLine(RinexLabels.SYS_DCBS_APPLIED);
         }
@@ -415,7 +416,8 @@ public class RinexObservationWriter implements AutoCloseable {
         // SYS / PCVS APPLIED
         for (final AppliedPCVS appliedPCVS : header.getListAppliedPCVS()) {
             outputField(appliedPCVS.getSatelliteSystem().getKey(),  1);
-            outputField(appliedPCVS.getProgPCVS(),                 19, true);
+            outputField("",                                         2, true);
+            outputField(appliedPCVS.getProgPCVS(),                 20, true);
             outputField(appliedPCVS.getSourcePCVS(),               60, true);
             finishHeaderLine(RinexLabels.SYS_PCVS_APPLIED);
         }

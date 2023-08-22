@@ -75,57 +75,48 @@ public class RinexObservationWriterTest {
     }
 
     @Test
-    public void testRoundTripRinex2() throws IOException {
+    public void testRoundTripRinex2A() throws IOException {
+        doTestRoundTrip("rinex/aiub0000.00o");
+    }
 
-        final RinexObservation robs = load("rinex/cccc0000.07o");
-        final CharArrayWriter  caw  = new CharArrayWriter();
-        try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
-            writer.writeCompleteFile(robs);
-        }
-
-        // reparse the written file
-        final byte[]           bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
-        final DataSource       source  = new DataSource("", () -> new ByteArrayInputStream(bytes));
-        final RinexObservation rebuilt = new RinexObservationParser().parse(source);
-
-        checkRinexFile(robs, rebuilt);
-
+    @Test
+    public void testRoundTripRinex2B() throws IOException {
+        doTestRoundTrip("rinex/cccc0000.07o");
     }
 
     @Test
     public void testRoundTripRinex3A() throws IOException {
-
-        final RinexObservation robs = load("rinex/bbbb0000.00o");
-        final CharArrayWriter  caw  = new CharArrayWriter();
-        try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
-            writer.writeCompleteFile(robs);
-        }
-
-        // reparse the written file
-        final byte[]           bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
-        final DataSource       source  = new DataSource("", () -> new ByteArrayInputStream(bytes));
-        final RinexObservation rebuilt = new RinexObservationParser().parse(source);
-
-        checkRinexFile(robs, rebuilt);
-
+        doTestRoundTrip("rinex/bbbb0000.00o");
     }
 
     @Test
     public void testRoundTripRinex3B() throws IOException {
+        doTestRoundTrip("rinex/dddd0000.01o");
+    }
 
-        final RinexObservation robs = load("rinex/dddd0000.01o");
-        final CharArrayWriter  caw  = new CharArrayWriter();
-        try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
-            writer.writeCompleteFile(robs);
-        }
+    @Test
+    public void testRoundTripDcbs() throws IOException {
+        doTestRoundTrip("rinex/dcbs.00o");
+    }
 
-        // reparse the written file
-        final byte[]           bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
-        final DataSource       source  = new DataSource("", () -> new ByteArrayInputStream(bytes));
-        final RinexObservation rebuilt = new RinexObservationParser().parse(source);
+    @Test
+    public void testRoundTripPcvs() throws IOException {
+        doTestRoundTrip("rinex/pcvs.00o");
+    }
 
-        checkRinexFile(robs, rebuilt);
+    @Test
+    public void testRoundTripScaleFactor() throws IOException {
+        doTestRoundTrip("rinex/bbbb0000.00o");
+    }
 
+    @Test
+    public void testRoundTripObsScaleFactor() throws IOException {
+        doTestRoundTrip("rinex/ice12720-scaled.07o");
+    }
+
+    @Test
+    public void testRoundTripLeapSecond() throws IOException {
+        doTestRoundTrip("rinex/jnu10110.17o");
     }
 
     private RinexObservation load(final String name) {
@@ -133,10 +124,28 @@ public class RinexObservationWriterTest {
         return new RinexObservationParser().parse(dataSource);
      }
 
+    private void doTestRoundTrip(final String resourceName) throws IOException {
+
+        final RinexObservation robs = load(resourceName);
+        final CharArrayWriter  caw  = new CharArrayWriter();
+        try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
+            writer.writeCompleteFile(robs);
+        }
+
+        // reparse the written file
+        final byte[]           bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
+        final DataSource       source  = new DataSource("", () -> new ByteArrayInputStream(bytes));
+        final RinexObservation rebuilt = new RinexObservationParser().parse(source);
+
+        checkRinexFile(robs, rebuilt);
+
+    }
+
     private void checkRinexFile(final RinexObservation first, final RinexObservation second) {
         checkRinexHeader(first.getHeader(), second.getHeader());
-        Assertions.assertEquals(first.getComments().size(), second.getComments().size());
-        for (int i = 0; i < first.getComments().size(); ++i) {
+        // we may have lost comments in events observations
+        Assertions.assertTrue(first.getComments().size() >= second.getComments().size());
+        for (int i = 0; i < second.getComments().size(); ++i) {
             checkRinexComments(first.getComments().get(i), second.getComments().get(i));
         }
         Assertions.assertEquals(first.getObservationDataSets().size(), second.getObservationDataSets().size());
