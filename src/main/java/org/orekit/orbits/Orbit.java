@@ -644,6 +644,9 @@ public abstract class Orbit
      * respect to Cartesian coordinate j. This means each row correspond to one orbital parameter
      * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
      * </p>
+     * <p>
+     * The array returned by this method will not be modified.
+     * </p>
      * @return 6x6 Jacobian matrix
      * @see #computeJacobianEccentricWrtCartesian()
      * @see #computeJacobianTrueWrtCartesian()
@@ -656,6 +659,9 @@ public abstract class Orbit
      * respect to Cartesian coordinate j. This means each row correspond to one orbital parameter
      * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
      * </p>
+     * <p>
+     * The array returned by this method will not be modified.
+     * </p>
      * @return 6x6 Jacobian matrix
      * @see #computeJacobianMeanWrtCartesian()
      * @see #computeJacobianTrueWrtCartesian()
@@ -667,6 +673,9 @@ public abstract class Orbit
      * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
      * respect to Cartesian coordinate j. This means each row correspond to one orbital parameter
      * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
+     * </p>
+     * <p>
+     * The array returned by this method will not be modified.
      * </p>
      * @return 6x6 Jacobian matrix
      * @see #computeJacobianMeanWrtCartesian()

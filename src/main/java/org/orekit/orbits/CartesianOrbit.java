@@ -23,6 +23,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
@@ -73,6 +74,9 @@ public class CartesianOrbit extends Orbit {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20170414L;
+
+    /** 6x6 identity matrix. */
+    private static final double[][] SIX_BY_SIX_IDENTITY = MatrixUtils.createRealIdentityMatrix(6).getData();
 
     /** Indicator for non-Keplerian derivatives. */
     private final transient boolean hasNonKeplerianAcceleration;
@@ -546,31 +550,19 @@ public class CartesianOrbit extends Orbit {
 
     }
 
-    /** Create a 6x6 identity matrix.
-     * @return 6x6 identity matrix
-     */
-    private double[][] create6x6Identity() {
-        // this is the fastest way to set the 6x6 identity matrix
-        final double[][] identity = new double[6][6];
-        for (int i = 0; i < 6; i++) {
-            identity[i][i] = 1.0;
-        }
-        return identity;
-    }
-
     @Override
     protected double[][] computeJacobianMeanWrtCartesian() {
-        return create6x6Identity();
+        return SIX_BY_SIX_IDENTITY;
     }
 
     @Override
     protected double[][] computeJacobianEccentricWrtCartesian() {
-        return create6x6Identity();
+        return SIX_BY_SIX_IDENTITY;
     }
 
     @Override
     protected double[][] computeJacobianTrueWrtCartesian() {
-        return create6x6Identity();
+        return SIX_BY_SIX_IDENTITY;
     }
 
     /** {@inheritDoc} */
