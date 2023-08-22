@@ -38,8 +38,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -53,7 +52,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<MeasurementDecorator> {
 
     /** Builders for propagators. */
-    private final List<NumericalPropagatorBuilder> builders;
+    private final List<PropagatorBuilder> builders;
 
     /** Estimated orbital parameters. */
     private final ParameterDriversList allEstimatedOrbitalParameters;
@@ -127,7 +126,7 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      */
-    protected UnscentedKalmanModel(final List<NumericalPropagatorBuilder> propagatorBuilders,
+    protected UnscentedKalmanModel(final List<PropagatorBuilder> propagatorBuilders,
                                    final List<CovarianceMatrixProvider> covarianceMatrixProviders,
                                    final ParameterDriversList estimatedMeasurementParameters,
                                    final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
@@ -512,13 +511,13 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
      */
     private Propagator createPropagator(final double[] point, final int index) {
         // Create a new instance of the current propagator builder
-        final NumericalPropagatorBuilder copy = builders.get(index).copy();
+        final PropagatorBuilder copy = builders.get(index).copy();
         // Convert the given sigma point to an orbit
         final Orbit orbit = orbitTypes[index].mapArrayToOrbit(point, null, angleTypes[index], copy.getInitialOrbitDate(),
                                                       copy.getMu(), copy.getFrame());
         copy.resetOrbit(orbit);
         // Create the propagator
-        final NumericalPropagator propagator = copy.buildPropagator(copy.getSelectedNormalizedParameters());
+        final Propagator propagator = copy.buildPropagator(copy.getSelectedNormalizedParameters());
         return propagator;
     }
 
