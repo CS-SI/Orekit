@@ -333,6 +333,69 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
 
     }
 
+    /** Compute propagation delay on a link leg (typically downlink or uplink).
+     * @param adjustableReceiver position/velocity of receiver that may be adjusted
+     * @param emitterPosition fixed position of emitter at {@code signalArrivalDate},
+     * in the same frame as {@code adjustableReceiver}
+     * @param signalEmissionDate date at which the signal is emitted to receiver
+     * @return <em>positive</em> delay between signal emission and signal reception dates
+     */
+    public static double signalTimeOfFlightFixedEmission(final TimeStampedPVCoordinates adjustableReceiver,
+                                                         final Vector3D emitterPosition,
+                                                         final AbsoluteDate signalEmissionDate) {
+
+        // initialize reception date date search loop assuming the state is already correct
+        // this will be true for all but the first orbit determination iteration,
+        // and even for the first iteration the loop will converge very fast
+        final double offset = signalEmissionDate.durationFrom(adjustableReceiver.getDate());
+        double delay = -offset;
+
+        // search signal transit date, computing the signal travel in inertial frame
+        final double cReciprocal = 1.0 / Constants.SPEED_OF_LIGHT;
+        double delta;
+        int count = 0;
+        do {
+            final double previous   = delay;
+            final Vector3D transitP = adjustableReceiver.shiftedBy(offset + delay).getPosition();
+            delay                   = emitterPosition.distance(transitP) * cReciprocal;
+            delta                   = FastMath.abs(delay - previous);
+        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay));
+
+        return delay;
+    }
+
+    /** Compute propagation delay on a link leg (typically downlink or uplink).
+     * @param adjustableReceiver position/velocity of receiver that may be adjusted
+     * @param emitterPosition fixed position of emitter at {@code signalArrivalDate},
+     * in the same frame as {@code adjustableReceiver}
+     * @param signalEmissionDate date at which the signal is emitted to receiver
+     * @return <em>positive</em> delay between signal emission and signal reception dates
+     * @param <T> the type of the components
+     */
+    public static <T extends CalculusFieldElement<T>> T signalTimeOfFlightFixedEmission(final TimeStampedFieldPVCoordinates<T> adjustableReceiver,
+                                                                                        final FieldVector3D<T> emitterPosition,
+                                                                                        final FieldAbsoluteDate<T> signalEmissionDate) {
+
+        // initialize reception date date search loop assuming the state is already correct
+        // this will be true for all but the first orbit determination iteration,
+        // and even for the first iteration the loop will converge very fast
+        final T offset = signalEmissionDate.getDate().durationFrom(adjustableReceiver.getDate());
+        T delay = offset.negate();
+
+        // search signal transit date, computing the signal travel in inertial frame
+        final double cReciprocal = 1.0 / Constants.SPEED_OF_LIGHT;
+        double delta;
+        int count = 0;
+        do {
+            final double previous   = delay.getReal();
+            final FieldVector3D<T> transitP = adjustableReceiver.shiftedBy(offset.add(delay)).getPosition();
+            delay                   = emitterPosition.distance(transitP).multiply(cReciprocal);
+            delta                   = FastMath.abs(delay.getReal() - previous);
+        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay.getReal()));
+
+        return delay;
+    }
+
     /** Get Cartesian coordinates as derivatives.
      * <p>
      * The position will correspond to variables {@code firstDerivative},
@@ -378,39 +441,4 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
         return new TimeStampedFieldPVCoordinates<>(state.getDate(), pDS, vDS, aDS);
 
     }
-
-
-    /** Compute propagation delay on a link leg (typically downlink or uplink).
-     * @param adjustableReceiver position/velocity of receiver that may be adjusted
-     * @param emitterPosition fixed position of emitter at {@code signalArrivalDate},
-     * in the same frame as {@code adjustableReceiver}
-     * @param signalEmissionDate date at which the signal is emitted to receiver
-     * @return <em>positive</em> delay between signal emission and signal reception dates
-     * @param <T> the type of the components
-     */
-    public static <T extends CalculusFieldElement<T>> T signalTimeOfFlightFixedEmission(final TimeStampedFieldPVCoordinates<T> adjustableReceiver,
-                                                                                        final FieldVector3D<T> emitterPosition,
-                                                                                        final FieldAbsoluteDate<T> signalEmissionDate) {
-
-        // initialize reception date date search loop assuming the state is already correct
-        // this will be true for all but the first orbit determination iteration,
-        // and even for the first iteration the loop will converge very fast
-        final T offset = signalEmissionDate.getDate().durationFrom(adjustableReceiver.getDate());
-        T delay = offset.negate();
-
-        // search signal transit date, computing the signal travel in inertial frame
-        final double cReciprocal = 1.0 / Constants.SPEED_OF_LIGHT;
-        double delta;
-        int count = 0;
-        do {
-            final double previous   = delay.getReal();
-            final FieldVector3D<T> transitP = adjustableReceiver.shiftedBy(offset.add(delay)).getPosition();
-            delay                   = emitterPosition.distance(transitP).multiply(cReciprocal);
-            delta                   = FastMath.abs(delay.getReal() - previous);
-        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay.getReal()));
-
-        return delay;
-
-    }
-
 }
