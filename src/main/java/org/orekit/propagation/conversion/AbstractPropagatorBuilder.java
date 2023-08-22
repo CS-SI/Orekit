@@ -245,10 +245,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         return positionScale;
     }
 
-    /** Get the central attraction coefficient (µ - m³/s²) value.
-     * @return the central attraction coefficient (µ - m³/s²) value
-     * @since 9.2
-     */
+    /** {@inheritDoc} */
+    @Override
     public double getMu() {
         return mu;
     }
