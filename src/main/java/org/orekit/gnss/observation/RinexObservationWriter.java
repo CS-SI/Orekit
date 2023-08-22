@@ -592,6 +592,7 @@ public class RinexObservationWriter implements AutoCloseable {
     }
 
     /** Process all pending measurements.
+     * @exception IOException if an I/O error occurs.
      */
     private void processPending() throws IOException {
 
