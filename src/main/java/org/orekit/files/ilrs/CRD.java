@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
@@ -648,11 +649,13 @@ public class CRD {
 
         /** {@inheritDoc} */
         @Override
+        @DefaultDataContext
         public String toCrdString() {
             return String.format("10 %s", toString());
         }
 
         @Override
+        @DefaultDataContext
         public String toString() {
             // CRD suggested format, excluding the record type
             // 'local' is already utc.
@@ -825,11 +828,13 @@ public class CRD {
 
         /** {@inheritDoc} */
         @Override
+        @DefaultDataContext
         public String toCrdString() {
             return String.format("11 %s", toString());
         }
 
         @Override
+        @DefaultDataContext
         public String toString() {
             // CRD suggested format, excluding the record type
             // binRms, binPeakMinusMean: s --> ps
@@ -961,11 +966,13 @@ public class CRD {
          * Get a string representation of the instance in the CRD format.
          * @return a string representation of the instance, in the CRD format.
          */
+        @DefaultDataContext
         public String toCrdString() {
             return String.format("12 %s", toString());
         }
 
         @Override
+        @DefaultDataContext
         public String toString() {
             // CRD suggested format, excluding the record type
             // troposphericRefractionCorrection: s --> ps
@@ -1081,11 +1088,13 @@ public class CRD {
          * @return a string representation of the instance, in the CRD format.
          * @since 12.0
          */
+        @DefaultDataContext
         public String toCrdString() {
             return String.format("20 %s", toString());
         }
 
         @Override
+        @DefaultDataContext
         public String toString() {
             // CRD suggested format, excluding the record type
             // pressure: bar --> mbar
@@ -1238,11 +1247,13 @@ public class CRD {
          * @return a string representation of the instance, in the CRD format.
          * @since 12.0
          */
+        @DefaultDataContext
         public String toCrdString() {
             return String.format("30 %s", toString());
         }
 
         @Override
+        @DefaultDataContext
         public String toString() {
             // CRD suggested format, excluding the record type
             // azimuth, elevation: rad --> deg
@@ -1732,11 +1743,13 @@ public class CRD {
          * Get a string representation of the instance in the CRD format.
          * @return a string representation of the instance, in the CRD format.
          */
+        @DefaultDataContext
         public String toCrdString() {
             return String.format("40 %s", toString());
         }
 
         @Override
+        @DefaultDataContext
         public String toString() {
             // CRD suggested format, excluding the record type
             // systemDelay, delayShift: s --> ps
