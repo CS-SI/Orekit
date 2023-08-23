@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.gnss.observation;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,8 +30,11 @@ import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.AppliedDCBS;
+import org.orekit.gnss.AppliedPCVS;
+import org.orekit.gnss.HatanakaCompressFilter;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -46,13 +49,13 @@ public class RinexObservationParserTest {
 
     @Test
     public void testDefaultLoadRinex2() {
-        Assertions.assertEquals(24, load("rinex/aiub0000.00o").size());
+        Assertions.assertEquals(24, load("rinex/aiub0000.00o").getObservationDataSets().size());
     }
 
     @Test
     public void testDefaultLoadRinex3() {
         Utils.setDataRoot("regular-data:rinex");
-        Assertions.assertEquals(5, load("rinex/brca083.06o").size());
+        Assertions.assertEquals(5, load("rinex/brca083.06o").getObservationDataSets().size());
     }
 
     @Test
@@ -116,8 +119,8 @@ public class RinexObservationParserTest {
 
     @Test
     public void testRinex2OptionalRecords() {
-        final List<ObservationDataSet> loaded = load("rinex/cccc0000.07o");
-        final RinexObservationHeader   header = loaded.get(0).getHeader();
+        final RinexObservation loaded = load("rinex/cccc0000.07o");
+        final RinexObservationHeader   header = loaded.getHeader();
         Assertions.assertEquals(0.0,
                             Vector3D.distance(new Vector3D(1.1111, 2.2222,  3.3333),
                                               header.getAntennaReferencePoint()),
@@ -142,8 +145,8 @@ public class RinexObservationParserTest {
 
     @Test
     public void testRinex3OptionalRecords() {
-        final List<ObservationDataSet> loaded = load("rinex/dddd0000.01o");
-        final RinexObservationHeader   header = loaded.get(0).getHeader();
+        final RinexObservation loaded = load("rinex/dddd0000.01o");
+        final RinexObservationHeader   header = loaded.getHeader();
         Assertions.assertEquals(0.0,
                             Vector3D.distance(new Vector3D(1.1111, 2.2222,  3.3333),
                                               header.getAntennaReferencePoint()),
@@ -161,7 +164,7 @@ public class RinexObservationParserTest {
                                               header.getAntennaZeroDirection()),
                             1.0e-15);
         Assertions.assertEquals(0.1010,
-                            header.getAntennaAzimuth(),
+                            FastMath.toDegrees(header.getAntennaAzimuth()),
                             1.0e-15);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(new Vector3D(0.1455, -0.3421, 0.0024),
@@ -181,99 +184,96 @@ public class RinexObservationParserTest {
     public void testRinex2Header() {
 
         //Tests Rinex 2 with only GPS Constellation
-        final List<ObservationDataSet> loaded = load("rinex/jnu10110.17o");
-        Assertions.assertEquals(44, loaded.size());
-        for (ObservationDataSet dataSet : loaded) {
-            RinexObservationHeader header = dataSet.getHeader();
+        final RinexObservation loaded = load("rinex/jnu10110.17o");
+        Assertions.assertEquals(44, loaded.getObservationDataSets().size());
+        final RinexObservationHeader header = loaded.getHeader();
 
-            Assertions.assertEquals(2.11, header.getFormatVersion(), 1.0e-15);
-            Assertions.assertEquals(SatelliteSystem.GPS,    header.getSatelliteSystem());
-            Assertions.assertEquals("JNU1",                 header.getMarkerName());
-            Assertions.assertNull(header.getMarkerNumber());
-            Assertions.assertEquals("Nathan Vary",          header.getObserverName());
-            Assertions.assertEquals("FAA",                  header.getAgencyName());
-            Assertions.assertEquals("82C1",                 header.getReceiverNumber());
-            Assertions.assertEquals("NOV WAASGII",          header.getReceiverType());
-            Assertions.assertEquals("",                     header.getReceiverVersion());
-            Assertions.assertEquals("",                     header.getAntennaNumber());
-            Assertions.assertEquals("MPL_WAAS_2225NW NONE", header.getAntennaType());
-            Assertions.assertEquals(-2354253.7610,          header.getApproxPos().getX(),      1.0e-4);
-            Assertions.assertEquals(-2388550.5590,          header.getApproxPos().getY(),      1.0e-4);
-            Assertions.assertEquals(5407042.5010,           header.getApproxPos().getZ(),      1.0e-4);
-            Assertions.assertEquals(0.0,                    header.getAntennaHeight(),         1.0e-4);
-            Assertions.assertEquals(0.0,                    header.getEccentricities().getX(), 1.0e-4);
-            Assertions.assertEquals(0.0,                    header.getEccentricities().getY(), 1.0e-4);
-            Assertions.assertEquals(30.0,                   header.getInterval(), 1.0e-15);
-            Assertions.assertEquals(-1,                     header.getClkOffset());
-            Assertions.assertEquals(18,                     header.getLeapSeconds());
-            Assertions.assertEquals(0.0, new AbsoluteDate(2017, 1, 11, TimeScalesFactory.getGPS()).durationFrom(header.getTFirstObs()), 1.0e-15);
-            Assertions.assertTrue(Double.isInfinite(header.getTLastObs().durationFrom(header.getTFirstObs())));
+        Assertions.assertEquals(2.11, header.getFormatVersion(), 1.0e-15);
+        Assertions.assertEquals(SatelliteSystem.GPS,    header.getSatelliteSystem());
+        Assertions.assertEquals("JNU1",                 header.getMarkerName());
+        Assertions.assertNull(header.getMarkerNumber());
+        Assertions.assertEquals("Nathan Vary",          header.getObserverName());
+        Assertions.assertEquals("FAA",                  header.getAgencyName());
+        Assertions.assertEquals("82C1",                 header.getReceiverNumber());
+        Assertions.assertEquals("NOV WAASGII",          header.getReceiverType());
+        Assertions.assertEquals("",                     header.getReceiverVersion());
+        Assertions.assertEquals("",                     header.getAntennaNumber());
+        Assertions.assertEquals("MPL_WAAS_2225NW NONE", header.getAntennaType());
+        Assertions.assertEquals(-2354253.7610,          header.getApproxPos().getX(),      1.0e-4);
+        Assertions.assertEquals(-2388550.5590,          header.getApproxPos().getY(),      1.0e-4);
+        Assertions.assertEquals(5407042.5010,           header.getApproxPos().getZ(),      1.0e-4);
+        Assertions.assertEquals(0.0,                    header.getAntennaHeight(),         1.0e-4);
+        Assertions.assertEquals(0.0,                    header.getEccentricities().getX(), 1.0e-4);
+        Assertions.assertEquals(0.0,                    header.getEccentricities().getY(), 1.0e-4);
+        Assertions.assertEquals(30.0,                   header.getInterval(), 1.0e-15);
+        Assertions.assertEquals(-1,                     header.getClkOffset());
+        Assertions.assertEquals(18,                     header.getLeapSeconds());
+        Assertions.assertEquals(0.0, new AbsoluteDate(2017, 1, 11, TimeScalesFactory.getGPS()).durationFrom(header.getTFirstObs()), 1.0e-15);
+        Assertions.assertTrue(Double.isInfinite(header.getTLastObs().durationFrom(header.getTFirstObs())));
 
-        }
     }
 
     @Test
     public void testRinex3Header() {
 
         //Tests Rinex 3 with Multiple Constellations
-        final List<ObservationDataSet> loaded = load("rinex/aaaa0000.00o");
-        for (ObservationDataSet dataSet : loaded) {
-            RinexObservationHeader header = dataSet.getHeader();
+        final RinexObservation loaded = load("rinex/aaaa0000.00o");
+        final RinexObservationHeader header = loaded.getHeader();
 
-            Assertions.assertEquals(3.02, header.getFormatVersion(), 1.0e-15);
-            Assertions.assertEquals(SatelliteSystem.MIXED,  header.getSatelliteSystem());
-            Assertions.assertEquals("RDLT",                 header.getMarkerName());
-            Assertions.assertEquals("RDLT",                 header.getMarkerNumber());
-            Assertions.assertEquals("OBS",                  header.getObserverName());
-            Assertions.assertEquals("AGENCY",               header.getAgencyName());
-            Assertions.assertEquals("5035K69749",           header.getReceiverNumber());
-            Assertions.assertEquals("Trimble NetR9",        header.getReceiverType());
-            Assertions.assertEquals("5.03",                 header.getReceiverVersion());
-            Assertions.assertEquals("1912118081",           header.getAntennaNumber());
-            Assertions.assertEquals("TRM57971.00     NONE", header.getAntennaType());
-            Assertions.assertEquals(2104228.6921,           header.getApproxPos().getX(),      1.0e-4);
-            Assertions.assertEquals(-5642017.3992,          header.getApproxPos().getY(),      1.0e-4);
-            Assertions.assertEquals(2095406.0835,           header.getApproxPos().getZ(),      1.0e-4);
-            Assertions.assertEquals(0.0,                    header.getAntennaHeight(),         1.0e-4);
-            Assertions.assertEquals(0.0,                    header.getEccentricities().getX(), 1.0e-4);
-            Assertions.assertEquals(0.0,                    header.getEccentricities().getY(), 1.0e-4);
-            Assertions.assertNull(header.getAntennaReferencePoint());
-            Assertions.assertNull(header.getObservationCode());
-            Assertions.assertNull(header.getAntennaPhaseCenter());
-            Assertions.assertNull(header.getAntennaBSight());
-            Assertions.assertTrue(Double.isNaN(header.getAntennaAzimuth()));
-            Assertions.assertNull(header.getAntennaZeroDirection());
-            Assertions.assertNull(header.getCenterMass());
-            Assertions.assertEquals("DBHZ",                  header.getSignalStrengthUnit());
-            Assertions.assertEquals(15.0,                    header.getInterval(), 1.0e-15);
-            Assertions.assertEquals(-1,                      header.getClkOffset());
-            Assertions.assertEquals(0,                       header.getListAppliedDCBS().size());
-            Assertions.assertEquals(0,                       header.getListAppliedPCVS().size());
-            Assertions.assertEquals(3,                       header.getPhaseShiftCorrections().size());
-            Assertions.assertEquals(SatelliteSystem.GPS,     header.getPhaseShiftCorrections().get(0).getSatelliteSystem());
-            Assertions.assertEquals(ObservationType.L2X,      header.getPhaseShiftCorrections().get(0).getTypeObs());
-            Assertions.assertTrue(header.getPhaseShiftCorrections().get(0).getSatsCorrected().isEmpty());
-            Assertions.assertEquals(-0.25000,                header.getPhaseShiftCorrections().get(0).getCorrection(), 1.0e-5);
-            Assertions.assertEquals(SatelliteSystem.GLONASS, header.getPhaseShiftCorrections().get(1).getSatelliteSystem());
-            Assertions.assertEquals(ObservationType.L1P,      header.getPhaseShiftCorrections().get(1).getTypeObs());
-            Assertions.assertEquals(+0.25000,                header.getPhaseShiftCorrections().get(1).getCorrection(), 1.0e-5);
-            Assertions.assertEquals(SatelliteSystem.GLONASS, header.getPhaseShiftCorrections().get(2).getSatelliteSystem());
-            Assertions.assertEquals(ObservationType.L2C,      header.getPhaseShiftCorrections().get(2).getTypeObs());
-            Assertions.assertEquals(-0.25000,                header.getPhaseShiftCorrections().get(2).getCorrection(), 1.0e-5);
-            Assertions.assertEquals( 0,                      header.getLeapSeconds());
-            Assertions.assertEquals( 0,                      header.getLeapSecondsFuture());
-            Assertions.assertEquals( 0,                      header.getLeapSecondsWeekNum());
-            Assertions.assertEquals( 0,                      header.getLeapSecondsDayNum());
-            Assertions.assertEquals(0.0, new AbsoluteDate(2016, 1, 11, TimeScalesFactory.getGPS()).durationFrom(header.getTFirstObs()), 1.0e-15);
-            Assertions.assertTrue(Double.isInfinite(header.getTLastObs().durationFrom(header.getTFirstObs())));
-        }
+        Assertions.assertEquals(3.02, header.getFormatVersion(), 1.0e-15);
+        Assertions.assertEquals(SatelliteSystem.MIXED,  header.getSatelliteSystem());
+        Assertions.assertEquals("RDLT",                 header.getMarkerName());
+        Assertions.assertEquals("RDLT",                 header.getMarkerNumber());
+        Assertions.assertEquals("OBS",                  header.getObserverName());
+        Assertions.assertEquals("AGENCY",               header.getAgencyName());
+        Assertions.assertEquals("5035K69749",           header.getReceiverNumber());
+        Assertions.assertEquals("Trimble NetR9",        header.getReceiverType());
+        Assertions.assertEquals("5.03",                 header.getReceiverVersion());
+        Assertions.assertEquals("1912118081",           header.getAntennaNumber());
+        Assertions.assertEquals("TRM57971.00     NONE", header.getAntennaType());
+        Assertions.assertEquals(2104228.6921,           header.getApproxPos().getX(),      1.0e-4);
+        Assertions.assertEquals(-5642017.3992,          header.getApproxPos().getY(),      1.0e-4);
+        Assertions.assertEquals(2095406.0835,           header.getApproxPos().getZ(),      1.0e-4);
+        Assertions.assertEquals(0.0,                    header.getAntennaHeight(),         1.0e-4);
+        Assertions.assertEquals(0.0,                    header.getEccentricities().getX(), 1.0e-4);
+        Assertions.assertEquals(0.0,                    header.getEccentricities().getY(), 1.0e-4);
+        Assertions.assertNull(header.getAntennaReferencePoint());
+        Assertions.assertNull(header.getObservationCode());
+        Assertions.assertNull(header.getAntennaPhaseCenter());
+        Assertions.assertNull(header.getAntennaBSight());
+        Assertions.assertTrue(Double.isNaN(header.getAntennaAzimuth()));
+        Assertions.assertNull(header.getAntennaZeroDirection());
+        Assertions.assertNull(header.getCenterMass());
+        Assertions.assertEquals("DBHZ",                  header.getSignalStrengthUnit());
+        Assertions.assertEquals(15.0,                    header.getInterval(), 1.0e-15);
+        Assertions.assertEquals(-1,                      header.getClkOffset());
+        Assertions.assertEquals(0,                       header.getListAppliedDCBS().size());
+        Assertions.assertEquals(0,                       header.getListAppliedPCVS().size());
+        Assertions.assertEquals(3,                       header.getPhaseShiftCorrections().size());
+        Assertions.assertEquals(SatelliteSystem.GPS,     header.getPhaseShiftCorrections().get(0).getSatelliteSystem());
+        Assertions.assertEquals(ObservationType.L2X,      header.getPhaseShiftCorrections().get(0).getTypeObs());
+        Assertions.assertTrue(header.getPhaseShiftCorrections().get(0).getSatsCorrected().isEmpty());
+        Assertions.assertEquals(-0.25000,                header.getPhaseShiftCorrections().get(0).getCorrection(), 1.0e-5);
+        Assertions.assertEquals(SatelliteSystem.GLONASS, header.getPhaseShiftCorrections().get(1).getSatelliteSystem());
+        Assertions.assertEquals(ObservationType.L1P,      header.getPhaseShiftCorrections().get(1).getTypeObs());
+        Assertions.assertEquals(+0.25000,                header.getPhaseShiftCorrections().get(1).getCorrection(), 1.0e-5);
+        Assertions.assertEquals(SatelliteSystem.GLONASS, header.getPhaseShiftCorrections().get(2).getSatelliteSystem());
+        Assertions.assertEquals(ObservationType.L2C,      header.getPhaseShiftCorrections().get(2).getTypeObs());
+        Assertions.assertEquals(-0.25000,                header.getPhaseShiftCorrections().get(2).getCorrection(), 1.0e-5);
+        Assertions.assertEquals( 0,                      header.getLeapSeconds());
+        Assertions.assertEquals( 0,                      header.getLeapSecondsFuture());
+        Assertions.assertEquals( 0,                      header.getLeapSecondsWeekNum());
+        Assertions.assertEquals( 0,                      header.getLeapSecondsDayNum());
+        Assertions.assertEquals(0.0, new AbsoluteDate(2016, 1, 11, TimeScalesFactory.getGPS()).durationFrom(header.getTFirstObs()), 1.0e-15);
+        Assertions.assertTrue(Double.isInfinite(header.getTLastObs().durationFrom(header.getTFirstObs())));
+
     }
 
     @Test
     public void testGPSFile() {
 
         //Tests Rinex 2 with only GPS Constellation
-        final List<ObservationDataSet> list = load("rinex/jnu10110.17o");
+        final List<ObservationDataSet> list = load("rinex/jnu10110.17o").getObservationDataSets();
         String[] typesobs = {"L1","L2","P1","P2","C1","S1","S2"};
 
         Assertions.assertEquals(44, list.size());
@@ -311,7 +311,7 @@ public class RinexObservationParserTest {
 
     @Test
     public void testMoreThan12Sats() {
-        final List<ObservationDataSet> ods = loadCompressed("rinex/bogi1210.09d.Z");
+        final List<ObservationDataSet> ods = loadCompressed("rinex/bogi1210.09d.Z").getObservationDataSets();
         Assertions.assertEquals(135, ods.size());
         AbsoluteDate lastEpoch = null;
         int[] satsPerEpoch = { 16, 15, 15, 15, 15, 15, 15, 14, 15 };
@@ -333,7 +333,7 @@ public class RinexObservationParserTest {
     @Test
     public void testGPSGlonassFile() {
         //Tests Rinex 2 with GPS and GLONASS Constellations
-        List<ObservationDataSet> list = load("rinex/aiub0000.00o");
+        List<ObservationDataSet> list = load("rinex/aiub0000.00o").getObservationDataSets();
         String[] typesobs2 = {"P1","L1","L2","P2"};
 
         Assertions.assertEquals(24, list.size());
@@ -372,7 +372,7 @@ public class RinexObservationParserTest {
     @Test
     public void testMultipleConstellationsFile() {
         //Tests Rinex 3 with Multiple Constellations
-        List<ObservationDataSet> list = load("rinex/aaaa0000.00o");
+        List<ObservationDataSet> list = load("rinex/aaaa0000.00o").getObservationDataSets();
 
         String[] typesobsG = {"C1C","L1C","S1C","C2W","L2W","S2W","C2X","L2X","S2X","C5X","L5X","S5X"};
         String[] typesobsR = {"C1C","L1C","S1C","C1P","L1P","S1P","C2C","L2C","S2C","C2P","L2P","S2P"};
@@ -412,7 +412,10 @@ public class RinexObservationParserTest {
     @Test
     public void testMultipleConstellationsGlonassScaleFactorFile() {
         //Tests Rinex 3 with Multiple Constellations and Scale Factor for some GLONASS Observations
-        List<ObservationDataSet> list = load("rinex/bbbb0000.00o");
+        final RinexObservation obs = load("rinex/bbbb0000.00o");
+        Assertions.assertEquals(87, obs.getHeader().getNbSat());
+
+        List<ObservationDataSet> list = obs.getObservationDataSets();
         String[] typesobsG2 = {"C1C","L1C","S1C","C1W","S1W","C2W","L2W","S2W","C2L","L2L","S2L","C5Q","L5Q","S5Q"};
         String[] typesobsR2 = {"C1C","L1C","S1C","C2C","L2C","S2C"};
         String[] typesobsE2 = {"C1C","L1C","S1C","C6C","L6C","S6C","C5Q","L5Q","S5Q","C7Q","L7Q","S7Q","C8Q","L8Q","S8Q"};
@@ -461,12 +464,13 @@ public class RinexObservationParserTest {
                          2018, 1, 29, 0, 0, 0, TimeScalesFactory.getGPS(),
                          SatelliteSystem.GLONASS, 2, 0.0,
                          typesobsR2, ObservationType.S1C, 0.0445, 0, 0);
+
     }
 
     @Test
     public void testMultipleConstellationsGalileoScaleFactorFile() {
         //Tests Rinex 3 with Multiple Constellations and Scale Factor for all GALILEO Observations
-        List<ObservationDataSet> list = load("rinex/bbbb0000.01o");
+        List<ObservationDataSet> list = load("rinex/bbbb0000.01o").getObservationDataSets();
         String[] typesobsG4 = {"C1C","L1C","S1C","C1W","S1W","C2W","L2W","S2W","C2L","L2L","S2L","C5Q","L5Q","S5Q"};
         String[] typesobsR4 = {"C1C","L1C","S1C","C2C","L2C","S2C"};
         String[] typesobsE4 = {"C1C","L1C","S1C","C6C","L6C","S6C","C5Q","L5Q","S5Q","C7Q","L7Q","S7Q","C8Q","L8Q","S8Q"};
@@ -499,6 +503,52 @@ public class RinexObservationParserTest {
 
     }
 
+
+    @Test
+    public void testContinuationPhaseShift() {
+        List<PhaseShiftCorrection> shifts = load("rinex/continuation-phase-shift.23o").getHeader().getPhaseShiftCorrections();
+        Assertions.assertEquals(4, shifts.size());
+        Assertions.assertEquals(SatelliteSystem.GPS,  shifts.get(0).getSatelliteSystem());
+        Assertions.assertEquals(ObservationType.L1C,  shifts.get(0).getTypeObs());
+        Assertions.assertEquals(                0.0,  shifts.get(0).getCorrection(), 1.0e-15);
+        Assertions.assertEquals(                 30,  shifts.get(0).getSatsCorrected().size());
+        Assertions.assertEquals(                 19,  shifts.get(0).getSatsCorrected().get( 0).getPRN());
+        Assertions.assertEquals(                 14,  shifts.get(0).getSatsCorrected().get( 9).getPRN());
+        Assertions.assertEquals(                  2,  shifts.get(0).getSatsCorrected().get(10).getPRN());
+        Assertions.assertEquals(                 26,  shifts.get(0).getSatsCorrected().get(19).getPRN());
+        Assertions.assertEquals(                 27,  shifts.get(0).getSatsCorrected().get(20).getPRN());
+        Assertions.assertEquals(                 29,  shifts.get(0).getSatsCorrected().get(29).getPRN());
+        Assertions.assertEquals(SatelliteSystem.GPS,  shifts.get(1).getSatelliteSystem());
+        Assertions.assertEquals(ObservationType.L2W,  shifts.get(1).getTypeObs());
+        Assertions.assertEquals(                0.0,  shifts.get(1).getCorrection(), 1.0e-15);
+        Assertions.assertEquals(                 30,  shifts.get(1).getSatsCorrected().size());
+        Assertions.assertEquals(                 19,  shifts.get(1).getSatsCorrected().get( 0).getPRN());
+        Assertions.assertEquals(                 12,  shifts.get(1).getSatsCorrected().get( 9).getPRN());
+        Assertions.assertEquals(                 28,  shifts.get(1).getSatsCorrected().get(10).getPRN());
+        Assertions.assertEquals(                 26,  shifts.get(1).getSatsCorrected().get(19).getPRN());
+        Assertions.assertEquals(                  9,  shifts.get(1).getSatsCorrected().get(20).getPRN());
+        Assertions.assertEquals(                 29,  shifts.get(1).getSatsCorrected().get(29).getPRN());
+        Assertions.assertEquals(SatelliteSystem.QZSS, shifts.get(2).getSatelliteSystem());
+        Assertions.assertEquals(ObservationType.L1C,  shifts.get(2).getTypeObs());
+        Assertions.assertEquals(                0.0,  shifts.get(2).getCorrection(), 1.0e-15);
+        Assertions.assertEquals(                  3,  shifts.get(2).getSatsCorrected().size());
+        Assertions.assertEquals(                  3,  shifts.get(2).getSatsCorrected().get( 0).getTwoDigitsRinexPRN());
+        Assertions.assertEquals(                  2,  shifts.get(2).getSatsCorrected().get( 1).getTwoDigitsRinexPRN());
+        Assertions.assertEquals(                  4,  shifts.get(2).getSatsCorrected().get( 2).getTwoDigitsRinexPRN());
+        Assertions.assertEquals(                195,  shifts.get(2).getSatsCorrected().get( 0).getPRN());
+        Assertions.assertEquals(                194,  shifts.get(2).getSatsCorrected().get( 1).getPRN());
+        Assertions.assertEquals(                196,  shifts.get(2).getSatsCorrected().get( 2).getPRN());
+        Assertions.assertEquals(SatelliteSystem.QZSS, shifts.get(3).getSatelliteSystem());
+        Assertions.assertEquals(ObservationType.L2S,  shifts.get(3).getTypeObs());
+        Assertions.assertEquals(                0.0,  shifts.get(3).getCorrection(), 1.0e-15);
+        Assertions.assertEquals(                  3,  shifts.get(3).getSatsCorrected().size());
+        Assertions.assertEquals(                  3,  shifts.get(3).getSatsCorrected().get( 0).getTwoDigitsRinexPRN());
+        Assertions.assertEquals(                  2,  shifts.get(3).getSatsCorrected().get( 1).getTwoDigitsRinexPRN());
+        Assertions.assertEquals(                  4,  shifts.get(3).getSatsCorrected().get( 2).getTwoDigitsRinexPRN());
+        Assertions.assertEquals(                195,  shifts.get(3).getSatsCorrected().get( 0).getPRN());
+        Assertions.assertEquals(                194,  shifts.get(3).getSatsCorrected().get( 1).getPRN());
+        Assertions.assertEquals(                196,  shifts.get(3).getSatsCorrected().get( 2).getPRN());
+    }
 
     @Test
     public void testWrongLabel() {
@@ -728,14 +778,9 @@ public class RinexObservationParserTest {
 
     @Test
     public void testUnknownSatelliteSystemHeader() {
-        try {
-            //Test with RinexV3 Unknown Satellite System inside Header
-            load("rinex/unknown-satsystem.00o");
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitIllegalArgumentException oe) {
-            Assertions.assertEquals(OrekitMessages.UNKNOWN_SATELLITE_SYSTEM, oe.getSpecifier());
-            Assertions.assertEquals('Z', oe.getParts()[0]);
-        }
+        //Test with RinexV3 Unknown Satellite System inside Header
+        final RinexObservation robs = load("rinex/unknown-satsystem.00o");
+        Assertions.assertEquals(9, robs.getHeader().getTypeObs().get(SatelliteSystem.USER_DEFINED_Z).size());
     }
 
     @Test
@@ -800,84 +845,92 @@ public class RinexObservationParserTest {
 
     @Test
     public void testDCBSApplied() {
-        List<ObservationDataSet> l = load("rinex/dcbs.00o");
-        Assertions.assertEquals(51, l.size());
-        for (ObservationDataSet dataSet : l) {
-            RinexObservationHeader header = dataSet.getHeader();
-            List<AppliedDCBS> list = header.getListAppliedDCBS();
-            Assertions.assertEquals(2, list.size());
-            Assertions.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
-            Assertions.assertEquals("dcbs-program-name", list.get(0).getProgDCBS());
-            Assertions.assertEquals("http://example.com/GPS", list.get(0).getSourceDCBS());
-            Assertions.assertEquals(SatelliteSystem.GLONASS, list.get(1).getSatelliteSystem());
-            Assertions.assertEquals("dcbs-program-name", list.get(1).getProgDCBS());
-            Assertions.assertEquals("http://example.com/GLONASS", list.get(1).getSourceDCBS());
-        }
+        RinexObservation l = load("rinex/dcbs.00o");
+        Assertions.assertEquals(51, l.getObservationDataSets().size());
+        RinexObservationHeader header = l.getHeader();
+        List<AppliedDCBS> list = header.getListAppliedDCBS();
+        Assertions.assertEquals(2, list.size());
+        Assertions.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
+        Assertions.assertEquals("dcbs-program-name", list.get(0).getProgDCBS());
+        Assertions.assertEquals("http://example.com/GPS", list.get(0).getSourceDCBS());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, list.get(1).getSatelliteSystem());
+        Assertions.assertEquals("dcbs-program-name", list.get(1).getProgDCBS());
+        Assertions.assertEquals("http://example.com/GLONASS", list.get(1).getSourceDCBS());
+        Assertions.assertEquals( 4, header.getTypeObs().size());
+        Assertions.assertEquals(12, header.getTypeObs().get(SatelliteSystem.GPS).size());
+        Assertions.assertEquals(12, header.getTypeObs().get(SatelliteSystem.GLONASS).size());
+        Assertions.assertEquals(12, header.getTypeObs().get(SatelliteSystem.GALILEO).size());
+        Assertions.assertEquals( 9, header.getTypeObs().get(SatelliteSystem.BEIDOU).size());
+        Assertions.assertEquals(ObservationType.C1I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(0));
+        Assertions.assertEquals(ObservationType.L1I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(1));
+        Assertions.assertEquals(ObservationType.S1I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(2));
+        Assertions.assertEquals(ObservationType.C7I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(3));
+        Assertions.assertEquals(ObservationType.L7I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(4));
+        Assertions.assertEquals(ObservationType.S7I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(5));
+        Assertions.assertEquals(ObservationType.C6I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(6));
+        Assertions.assertEquals(ObservationType.L6I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(7));
+        Assertions.assertEquals(ObservationType.S6I, header.getTypeObs().get(SatelliteSystem.BEIDOU).get(8));
     }
 
     @Test
     public void testPCVSApplied() {
-        List<ObservationDataSet> l = load("rinex/pcvs.00o");
-        Assertions.assertEquals(51, l.size());
-        for (ObservationDataSet dataSet : l) {
-            RinexObservationHeader header = dataSet.getHeader();
-            List<AppliedPCVS> list = header.getListAppliedPCVS();
-            Assertions.assertEquals(2, list.size());
-            Assertions.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
-            Assertions.assertEquals("pcvs-program-name", list.get(0).getProgPCVS());
-            Assertions.assertEquals("http://example.com/GPS", list.get(0).getSourcePCVS());
-            Assertions.assertEquals(SatelliteSystem.GLONASS, list.get(1).getSatelliteSystem());
-            Assertions.assertEquals("pcvs-program-name", list.get(1).getProgPCVS());
-            Assertions.assertEquals("http://example.com/GLONASS", list.get(1).getSourcePCVS());
-        }
+        RinexObservation l = load("rinex/pcvs.00o");
+        Assertions.assertEquals(51, l.getObservationDataSets().size());
+        RinexObservationHeader header = l.getHeader();
+        List<AppliedPCVS> list = header.getListAppliedPCVS();
+        Assertions.assertEquals(2, list.size());
+        Assertions.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
+        Assertions.assertEquals("pcvs-program-name", list.get(0).getProgPCVS());
+        Assertions.assertEquals("http://example.com/GPS", list.get(0).getSourcePCVS());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, list.get(1).getSatelliteSystem());
+        Assertions.assertEquals("pcvs-program-name", list.get(1).getProgPCVS());
+        Assertions.assertEquals("http://example.com/GLONASS", list.get(1).getSourcePCVS());
     }
 
     @Test
     public void testCycleSlip() {
-        List<ObservationDataSet> l = load("rinex/cycle-slip.00o");
-        Assertions.assertEquals(51, l.size());
-        for (ObservationDataSet dataSet : l) {
-            RinexObservationHeader header = dataSet.getHeader();
-            List<AppliedPCVS> list = header.getListAppliedPCVS();
-            Assertions.assertEquals(2, list.size());
-            Assertions.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
-            Assertions.assertEquals("pcvs-program-name", list.get(0).getProgPCVS());
-            Assertions.assertEquals("http://example.com/GPS", list.get(0).getSourcePCVS());
-            Assertions.assertEquals(SatelliteSystem.GLONASS, list.get(1).getSatelliteSystem());
-            Assertions.assertEquals("pcvs-program-name", list.get(1).getProgPCVS());
-            Assertions.assertEquals("http://example.com/GLONASS", list.get(1).getSourcePCVS());
-        }
+        RinexObservation l = load("rinex/cycle-slip.00o");
+        Assertions.assertEquals(51, l.getObservationDataSets().size());
+        RinexObservationHeader header = l.getHeader();
+        List<AppliedPCVS> list = header.getListAppliedPCVS();
+        Assertions.assertEquals(2, list.size());
+        Assertions.assertEquals(SatelliteSystem.GPS, list.get(0).getSatelliteSystem());
+        Assertions.assertEquals("pcvs-program-name", list.get(0).getProgPCVS());
+        Assertions.assertEquals("http://example.com/GPS", list.get(0).getSourcePCVS());
+        Assertions.assertEquals(SatelliteSystem.GLONASS, list.get(1).getSatelliteSystem());
+        Assertions.assertEquals("pcvs-program-name", list.get(1).getProgPCVS());
+        Assertions.assertEquals("http://example.com/GLONASS", list.get(1).getSourcePCVS());
     }
 
     @Test
     public void testRinex220Spaceborne() {
-        List<ObservationDataSet> l = load("rinex/ice12720.07o");
-        Assertions.assertEquals(4 * 7, l.size());
-        for (int i = 0; i < l.size(); ++i) {
-            ObservationDataSet dataSet = l.get(i);
-            Assertions.assertEquals("SPACEBORNE", dataSet.getHeader().getMarkerType());
-            Assertions.assertEquals(SatelliteSystem.GPS, dataSet.getHeader().getSatelliteSystem());
+        RinexObservation l = load("rinex/ice12720.07o");
+        Assertions.assertEquals("SPACEBORNE", l.getHeader().getMarkerType());
+        Assertions.assertEquals(SatelliteSystem.GPS, l.getHeader().getSatelliteSystem());
+        Assertions.assertEquals(4 * 7, l.getObservationDataSets().size());
+        for (int i = 0; i < l.getObservationDataSets().size(); ++i) {
+            ObservationDataSet dataSet = l.getObservationDataSets().get(i);
             switch (i % 7) {
                 case 0 :
-                    Assertions.assertEquals( 1, dataSet.getPrnNumber());
+                    Assertions.assertEquals( 1, dataSet.getSatellite().getPRN());
                     break;
                 case 1 :
-                    Assertions.assertEquals( 5, dataSet.getPrnNumber());
+                    Assertions.assertEquals( 5, dataSet.getSatellite().getPRN());
                     break;
                 case 2 :
-                    Assertions.assertEquals( 9, dataSet.getPrnNumber());
+                    Assertions.assertEquals( 9, dataSet.getSatellite().getPRN());
                     break;
                 case 3 :
-                    Assertions.assertEquals(12, dataSet.getPrnNumber());
+                    Assertions.assertEquals(12, dataSet.getSatellite().getPRN());
                     break;
                 case 4 :
-                    Assertions.assertEquals(14, dataSet.getPrnNumber());
+                    Assertions.assertEquals(14, dataSet.getSatellite().getPRN());
                     break;
                 case 5 :
-                    Assertions.assertEquals(22, dataSet.getPrnNumber());
+                    Assertions.assertEquals(22, dataSet.getSatellite().getPRN());
                     break;
                 case 6 :
-                    Assertions.assertEquals(30, dataSet.getPrnNumber());
+                    Assertions.assertEquals(30, dataSet.getSatellite().getPRN());
                     break;
             }
             List<ObservationData> list = dataSet.getObservationData();
@@ -896,19 +949,19 @@ public class RinexObservationParserTest {
 
     @Test
     public void testRinex220SpaceborneScaled() {
-        List<ObservationDataSet> raw   = load("rinex/ice12720.07o");
-        List<ObservationDataSet> scaled = load("rinex/ice12720-scaled.07o");
-        Assertions.assertEquals(4 * 7, raw.size());
-        Assertions.assertEquals(4 * 7, scaled.size());
-        for (int i = 0; i < raw.size(); ++i) {
+        RinexObservation raw   = load("rinex/ice12720.07o");
+        RinexObservation scaled = load("rinex/ice12720-scaled.07o");
+        Assertions.assertEquals(4 * 7, raw.getObservationDataSets().size());
+        Assertions.assertEquals(4 * 7, scaled.getObservationDataSets().size());
+        for (int i = 0; i < raw.getObservationDataSets().size(); ++i) {
 
-            ObservationDataSet rawDataSet    = raw.get(i);
-            Assertions.assertEquals("SPACEBORNE", rawDataSet.getHeader().getMarkerType());
-            Assertions.assertEquals(SatelliteSystem.GPS, rawDataSet.getHeader().getSatelliteSystem());
+            ObservationDataSet rawDataSet    = raw.getObservationDataSets().get(i);
+            Assertions.assertEquals("SPACEBORNE", raw.getHeader().getMarkerType());
+            Assertions.assertEquals(SatelliteSystem.GPS, raw.getHeader().getSatelliteSystem());
 
-            ObservationDataSet scaledDataSet = scaled.get(i);
-            Assertions.assertEquals("SPACEBORNE", scaledDataSet.getHeader().getMarkerType());
-            Assertions.assertEquals(SatelliteSystem.GPS, scaledDataSet.getHeader().getSatelliteSystem());
+            ObservationDataSet scaledDataSet = scaled.getObservationDataSets().get(i);
+            Assertions.assertEquals("SPACEBORNE", scaled.getHeader().getMarkerType());
+            Assertions.assertEquals(SatelliteSystem.GPS, scaled.getHeader().getSatelliteSystem());
 
             List<ObservationData> rawList    = rawDataSet.getObservationData();
             List<ObservationData> scaledList = scaledDataSet.getObservationData();
@@ -926,62 +979,62 @@ public class RinexObservationParserTest {
     @Test
     public void testIssue608() {
         //Tests Rinex 3.04 with GPS, GLONASS, Galileo and SBAS Constellations
-        List<ObservationDataSet> ods = load("rinex/brca083.06o");
+        RinexObservation ods = load("rinex/brca083.06o");
         AbsoluteDate t0 = new AbsoluteDate(2016, 3, 24, 13, 10, 36.0, TimeScalesFactory.getGPS());
-        Assertions.assertEquals(5, ods.size());
+        Assertions.assertEquals(5, ods.getObservationDataSets().size());
 
-        Assertions.assertEquals("A 9080",                     ods.get(2).getHeader().getMarkerName());
+        Assertions.assertEquals("A 9080",                     ods.getHeader().getMarkerName());
 
         // Test GPS
-        Assertions.assertEquals(SatelliteSystem.GPS,    ods.get(1).getSatelliteSystem());
-        Assertions.assertEquals(9,                      ods.get(1).getPrnNumber());
-        Assertions.assertEquals(0.0,                    ods.get(1).getDate().durationFrom(t0), 1.0e-15);
-        Assertions.assertEquals(ObservationType.C1C,    ods.get(1).getObservationData().get(0).getObservationType());
-        Assertions.assertEquals(20891534.648,           ods.get(1).getObservationData().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(SatelliteSystem.GPS,    ods.getObservationDataSets().get(1).getSatellite().getSystem());
+        Assertions.assertEquals(9,                      ods.getObservationDataSets().get(1).getSatellite().getPRN());
+        Assertions.assertEquals(0.0,                    ods.getObservationDataSets().get(1).getDate().durationFrom(t0), 1.0e-15);
+        Assertions.assertEquals(ObservationType.C1C,    ods.getObservationDataSets().get(1).getObservationData().get(0).getObservationType());
+        Assertions.assertEquals(20891534.648,           ods.getObservationDataSets().get(1).getObservationData().get(0).getValue(), 1.0e-15);
 
         // Test SBAS
-        Assertions.assertEquals(SatelliteSystem.SBAS,   ods.get(4).getSatelliteSystem());
-        Assertions.assertEquals(120,                    ods.get(4).getPrnNumber());
-        Assertions.assertEquals(0.0,                    ods.get(4).getDate().durationFrom(t0), 1.0e-15);
-        Assertions.assertEquals(ObservationType.L1C,    ods.get(4).getObservationData().get(1).getObservationType());
-        Assertions.assertEquals(335849.135,           ods.get(4).getObservationData().get(1).getValue(), 1.0e-15);
+        Assertions.assertEquals(SatelliteSystem.SBAS,   ods.getObservationDataSets().get(4).getSatellite().getSystem());
+        Assertions.assertEquals(120,                    ods.getObservationDataSets().get(4).getSatellite().getPRN());
+        Assertions.assertEquals(0.0,                    ods.getObservationDataSets().get(4).getDate().durationFrom(t0), 1.0e-15);
+        Assertions.assertEquals(ObservationType.L1C,    ods.getObservationDataSets().get(4).getObservationData().get(1).getObservationType());
+        Assertions.assertEquals(335849.135,             ods.getObservationDataSets().get(4).getObservationData().get(1).getValue(), 1.0e-15);
     }
 
     @Test
     public void testIssue605() {
         // Test observation type C0, L0, S0 and D0
-        List<ObservationDataSet> ods = load("rinex/embe083.06o");
+        RinexObservation ods = load("rinex/embe083.06o");
         AbsoluteDate t0 = new AbsoluteDate(2016, 3, 24, 13, 10, 36.0, TimeScalesFactory.getGPS());
-        Assertions.assertEquals(5, ods.size());
+        Assertions.assertEquals(5, ods.getObservationDataSets().size());
 
         // Test Glonass
-        Assertions.assertEquals(SatelliteSystem.GLONASS, ods.get(3).getSatelliteSystem());
-        Assertions.assertEquals(12,                      ods.get(3).getPrnNumber());
-        Assertions.assertEquals(0.0,                     ods.get(3).getDate().durationFrom(t0), 1.0e-15);
-        Assertions.assertEquals(20427680.259,            ods.get(3).getObservationData().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(-885349.430,             ods.get(3).getObservationData().get(1).getValue(), 1.0e-15);
-        Assertions.assertEquals(22397545.647,            ods.get(3).getObservationData().get(3).getValue(), 1.0e-15);
-        Assertions.assertEquals(37.594,                  ods.get(3).getObservationData().get(4).getValue(), 1.0e-15);
+        Assertions.assertEquals(SatelliteSystem.GLONASS, ods.getObservationDataSets().get(3).getSatellite().getSystem());
+        Assertions.assertEquals(12,                      ods.getObservationDataSets().get(3).getSatellite().getPRN());
+        Assertions.assertEquals(0.0,                     ods.getObservationDataSets().get(3).getDate().durationFrom(t0), 1.0e-15);
+        Assertions.assertEquals(20427680.259,            ods.getObservationDataSets().get(3).getObservationData().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(-885349.430,             ods.getObservationDataSets().get(3).getObservationData().get(1).getValue(), 1.0e-15);
+        Assertions.assertEquals(22397545.647,            ods.getObservationDataSets().get(3).getObservationData().get(3).getValue(), 1.0e-15);
+        Assertions.assertEquals(37.594,                  ods.getObservationDataSets().get(3).getObservationData().get(4).getValue(), 1.0e-15);
     }
 
     @Test
     public void testIssue698() {
         // Test missing Beidou observation type for Rinex 3.04
-        List<ObservationDataSet> ods = load("rinex/abcd083.06o");
+        RinexObservation ods = load("rinex/abcd083.06o");
         AbsoluteDate t0 = new AbsoluteDate(2016, 3, 24, 13, 10, 36.0, TimeScalesFactory.getGPS());
-        Assertions.assertEquals(2, ods.size());
+        Assertions.assertEquals(2, ods.getObservationDataSets().size());
 
         // Test Beidou
-        Assertions.assertEquals(SatelliteSystem.BEIDOU, ods.get(1).getSatelliteSystem());
-        Assertions.assertEquals(6,                      ods.get(1).getPrnNumber());
-        Assertions.assertEquals(0.0,                    ods.get(1).getDate().durationFrom(t0), 1.0e-15);
-        Assertions.assertEquals(41,                     ods.get(1).getObservationData().size());
+        Assertions.assertEquals(SatelliteSystem.BEIDOU, ods.getObservationDataSets().get(1).getSatellite().getSystem());
+        Assertions.assertEquals(6,                      ods.getObservationDataSets().get(1).getSatellite().getPRN());
+        Assertions.assertEquals(0.0,                    ods.getObservationDataSets().get(1).getDate().durationFrom(t0), 1.0e-15);
+        Assertions.assertEquals(41,                     ods.getObservationDataSets().get(1).getObservationData().size());
 
     }
 
     @Test
     public void testGlonass() {
-        RinexObservationHeader header = load("rinex/abcd083.06o").get(0).getHeader();
+        RinexObservationHeader header = load("rinex/abcd083.06o").getHeader();
         List<GlonassSatelliteChannel> channels = header.getGlonassChannels();
         Assertions.assertEquals(18, channels.size());
         Assertions.assertEquals(SatelliteSystem.GLONASS, channels.get( 0).getSatellite().getSystem());
@@ -1052,8 +1105,8 @@ public class RinexObservationParserTest {
         final AbsoluteDate date = new AbsoluteDate(year, month, day, hour, minute, second,
                                                    timescale);
 
-        Assertions.assertEquals(system,         obser.getSatelliteSystem());
-        Assertions.assertEquals(prnNumber,      obser.getPrnNumber());
+        Assertions.assertEquals(system,         obser.getSatellite().getSystem());
+        Assertions.assertEquals(prnNumber,      obser.getSatellite().getPRN());
         Assertions.assertEquals(date,           obser.getDate());
         Assertions.assertEquals(rcvrClkOffset,  obser.getRcvrClkOffset(), 1.E-17);
         for (int i = 0; i < typesObs.length; i++) {
@@ -1072,12 +1125,12 @@ public class RinexObservationParserTest {
 
     }
 
-    private List<ObservationDataSet> load(final String name) {
+    private RinexObservation load(final String name) {
         final DataSource dataSource = new DataSource(name, () -> Utils.class.getClassLoader().getResourceAsStream(name));
         return new RinexObservationParser().parse(dataSource);
      }
 
-    private List<ObservationDataSet> loadCompressed(final String name) {
+    private RinexObservation loadCompressed(final String name) {
         final DataSource raw = new DataSource(name.substring(name.indexOf('/') + 1),
                                               () -> Utils.class.getClassLoader().getResourceAsStream(name));
         DataSource filtered = new HatanakaCompressFilter().filter(new UnixCompressFilter().filter(raw));

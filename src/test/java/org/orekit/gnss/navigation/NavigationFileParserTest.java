@@ -140,7 +140,7 @@ public class NavigationFileParserTest {
         GNSSDate date = new GNSSDate(file.getHeader().getTimeSystemCorrections().get(0).getReferenceDate(), SatelliteSystem.GPS);
         Assertions.assertEquals(552960,                        date.getSecondsInWeek());
         Assertions.assertEquals(1025,                          date.getWeekNumber());
-        Assertions.assertEquals("EXAMPLE OF VERSION 3.00 FORMAT", file.getHeader().getComments().get(0));
+        Assertions.assertEquals("EXAMPLE OF VERSION 3.00 FORMAT", file.getComments().get(0).getText());
         Assertions.assertEquals(13, file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
@@ -509,7 +509,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(313200,                        date.getSecondsInWeek());
         Assertions.assertEquals(1920,                          date.getWeekNumber());
 
-        Assertions.assertTrue(file.getHeader().getComments().isEmpty());
+        Assertions.assertTrue(file.getComments().isEmpty());
         Assertions.assertEquals(17, file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
@@ -634,7 +634,7 @@ public class NavigationFileParserTest {
         GNSSDate date = new GNSSDate(file.getHeader().getTimeSystemCorrections().get(0).getReferenceDate(), SatelliteSystem.GPS);
         Assertions.assertEquals(356352,                        date.getSecondsInWeek());
         Assertions.assertEquals(2109,                          date.getWeekNumber());
-        Assertions.assertEquals(0,                             file.getHeader().getComments().size());
+        Assertions.assertEquals(0,                             file.getComments().size());
         Assertions.assertEquals(18,                            file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
@@ -766,7 +766,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(6.0535967350e-09,        file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionA0(), Double.MIN_VALUE);
         Assertions.assertEquals(0.000000000e+00,         file.getHeader().getTimeSystemCorrections().get(0).getTimeSystemCorrectionA1(), Double.MIN_VALUE);
         Assertions.assertNull(file.getHeader().getTimeSystemCorrections().get(0).getReferenceDate());
-        Assertions.assertEquals(0,                       file.getHeader().getComments().size());
+        Assertions.assertEquals(0,                       file.getComments().size());
         Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
@@ -1289,7 +1289,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("sbf2rin-13.4.5",        file.getHeader().getProgramName());
         Assertions.assertEquals("RIGTC, GO PECNY",       file.getHeader().getRunByName());
         Assertions.assertEquals("2021-02-19T00:26:27.0", file.getHeader().getCreationDateComponents().toStringWithoutUtcOffset(60, 1));
-        Assertions.assertEquals("SBAS NAVIGATION DATA FROM STATION GOP6 (RIGTC, GO PECNY)", file.getHeader().getComments().get(0));
+        Assertions.assertEquals("SBAS NAVIGATION DATA FROM STATION GOP6 (RIGTC, GO PECNY)", file.getComments().get(0).getText());
         Assertions.assertEquals("UTC",                   file.getHeader().getCreationTimeZone());
 
         // Verify data
@@ -1956,7 +1956,7 @@ public class NavigationFileParserTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oe) {
             Assertions.assertEquals(OrekitMessages.UNKNOWN_SATELLITE_SYSTEM, oe.getSpecifier());
-            Assertions.assertEquals('X',  oe.getParts()[0]);
+            Assertions.assertEquals('Ω',  oe.getParts()[0]);
         }
     }
 

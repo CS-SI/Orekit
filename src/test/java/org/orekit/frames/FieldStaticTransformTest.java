@@ -29,22 +29,46 @@ public class FieldStaticTransformTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestSimpleComposition(Field<T> field) {
+        
         // setup
-        final T zero = field.getZero();
-        final T one  = field.getOne();
-        FieldRotation<T> rotation = new FieldRotation<>(
-                FieldVector3D.getPlusK(field), zero.newInstance(0.5 * FastMath.PI),
+        
+        // Rotation of π/2 around Z axis
+        FieldRotation<T> fieldRotation = new FieldRotation<>(
+                FieldVector3D.getPlusK(field), field.getZero().newInstance(0.5 * FastMath.PI),
                 RotationConvention.VECTOR_OPERATOR);
         FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field);
 
         // action
-        FieldStaticTransform<T> transform = FieldStaticTransform.compose(
+        
+        // Compose rotation and a translation of one along X axis with using two different constructors
+        FieldStaticTransform<T> fieldTransform = FieldStaticTransform.compose(
                 date,
-                FieldStaticTransform.of(date, rotation),
+                FieldStaticTransform.of(date, fieldRotation),
                 FieldStaticTransform.of(date, FieldVector3D.getPlusI(field)));
-        FieldStaticTransform<T> identity = FieldStaticTransform
-                .compose(date, transform, transform.getInverse());
+        
+        // From unfielded static transform
+        StaticTransform transform = StaticTransform.compose(date.toAbsoluteDate(),
+                                                            StaticTransform.of(date.toAbsoluteDate(), fieldRotation.toRotation()),
+                                                            StaticTransform.of(date.toAbsoluteDate(), Vector3D.PLUS_I));
+        FieldStaticTransform<T> fieldTransform2 = FieldStaticTransform.of(date, transform);
 
+        // verify
+        verifyTransform(field, fieldRotation, fieldTransform);
+        verifyTransform(field, fieldRotation, fieldTransform2);
+    }
+    
+    /** Verify the transform built. */
+    private <T extends CalculusFieldElement<T>> void verifyTransform(final Field<T> field,
+                                                                     final FieldRotation<T> rotation,
+                                                                     final FieldStaticTransform<T> transform) {
+        
+        final T zero = field.getZero();
+        final T one  = field.getOne();
+        
+        // identity transform
+        FieldStaticTransform<T> identity = FieldStaticTransform
+                        .compose(new FieldAbsoluteDate<>(field, transform.getDate()), transform, transform.getInverse());
+        
         // verify
         double tol = 1e-15;
         FieldVector3D<T> u = transform.transformPosition(new FieldVector3D<>(one, one, one));

@@ -24,6 +24,27 @@
       <action dev="bryan" type="fix" issue="859">
         Created a new API for TLE generation allowing user defined setting.
       </action>
+      <action dev="luc" type="add" issue="1177">
+        Fixed writing of Rinex observation files with empty GLONASS SLOT / FRQ #.
+      </action>
+      <action dev="luc" type="add" issue="1176">
+        Fixed parsing of Rinex observation files with QZSS satellites in SYS / PHASE SHIFT.
+      </action>
+      <action dev="luc" type="add" issue="1175">
+        Fixed parsing of Rinex observation files with continuation lines in SYS / PHASE SHIFT.
+      </action>
+      <action dev="luc" type="add" issue="1174">
+        Added getPropagators to AggregateBoundedPropagator.
+      </action>
+      <action dev="bryan" type="update" issue="1123">
+        Generalized unscented Kalman filter to work with any PropagatorBuilder.
+      </action>
+      <action dev="maxime" type="update" issue="1151">
+        Increased performance of orbit determination when using solar radiation pressure.
+      </action>
+      <action dev="bryan" type="add" issue="950">
+        Added getOrbitType() and getPositionAngle in MatricesHarvester.
+      </action>
       <action dev="bryan" type="add" issue="1118">
         Verified that MSAFE data can be loaded from a DataSource.
       </action>
@@ -50,6 +71,21 @@
       </action>
       <action dev="luc" type="update" issue="1156">
         Moved getBuilder from AbstractScheduler base class to Scheduler interface.
+      </action>
+      <action dev="luc" type="fix" issue="1152">
+        Fixed ArrayIndexOutOfBoundException in {Field}NeQuickParameters.
+      </action>
+      <action dev="luc" type="fix" issue="1134">
+        Fixed missing enumerate entries needed for recent antex files.
+      </action>
+      <action dev="luc" type="update" issue="1150">
+        Fixed default validity intervals in Sinex files.
+      </action>
+      <action dev="luc" type="update" issue="1149">
+        Fixed parsing of Sinex files without agency codes.
+      </action>
+      <action dev="luc" type="update" issue="1147">
+        Allow custom satellite systems in GNSS.
       </action>
       <action dev="sebastien" type="update" issue="1154">
         Moved orekit-performance project to official forge and updated CI.

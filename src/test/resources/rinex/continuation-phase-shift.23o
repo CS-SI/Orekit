@@ -1,0 +1,32 @@
+     3.02           OBSERVATION DATA    M (MIXED)           RINEX VERSION / TYPE
+Convert 2.6.3       NovAtel             20230801 163928 UTC PGM / RUN BY / DATE 
+RINEX Version 3.02 Observation File                         COMMENT             
+                                                            MARKER NAME         
+800                                                         MARKER NUMBER       
+                                                            MARKER TYPE         
+                                                            OBSERVER / AGENCY   
+                    NovAtel GPSCard                         REC # / TYPE / VERS 
+                                                            ANT # / TYPE        
+        0.0000        0.0000        0.0000                  APPROX POSITION XYZ 
+        0.0000        0.0000        0.0000                  ANTENNA: DELTA H/E/N
+G    8 C1C L1C D1C S1C C2W L2W D2W S2W                      SYS / # / OBS TYPES 
+J    8 C1C L1C D1C S1C C2S L2S D2S S2S                      SYS / # / OBS TYPES 
+DBHZ                                                        SIGNAL STRENGTH UNIT
+    30.000                                                  INTERVAL            
+  2023     7    31    23    43    0.0000000     GPS         TIME OF FIRST OBS   
+  2023     8     1     0    42    0.0000000     GPS         TIME OF LAST OBS    
+G L1C  0.00000  30 G19 G17 G06 G11 G25 G24 G32 G03 G15 G14  SYS / PHASE SHIFT   
+                   G02 G10 G21 G12 G28 G23 G31 G04 G08 G26  SYS / PHASE SHIFT   
+                   G27 G09 G16 G07 G18 G30 G05 G20 G13 G29  SYS / PHASE SHIFT   
+G L2W  0.00000  30 G19 G17 G06 G32 G03 G15 G14 G02 G21 G12  SYS / PHASE SHIFT   
+                   G28 G11 G25 G24 G10 G23 G31 G04 G08 G26  SYS / PHASE SHIFT   
+                   G09 G27 G16 G07 G18 G30 G05 G20 G13 G29  SYS / PHASE SHIFT   
+J L1C  0.00000  03 J03 J02 J04                              SYS / PHASE SHIFT   
+J L2S  0.00000  03 J03 J02 J04                              SYS / PHASE SHIFT   
+                                                            GLONASS SLOT / FRQ #
+ C1C  -71.950 C2C  -71.950 C2P  -71.950                     GLONASS COD/PHS/BIS 
+Leap Seconds Unknown                                        COMMENT             
+                                                            END OF HEADER       
+> 2023 07 31 23 43  0.0000000  0  2      -0.000000000000
+G17  20414955.500 7 107649171.699 7     -6355.480          42.000    20484958.734 6  83882479.008 6     -4952.344          38.000  
+G09  22017506.930 6 115703297.859 6      4579.813          41.000    22017611.406 6  90158433.855 6      3568.652          41.000  

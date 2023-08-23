@@ -215,7 +215,7 @@ public class CssiSpaceWeatherData
              * Throwing exception if neighbors are unbalanced because we are at the
              * beginning of the data set
              */
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, date, firstDate, lastDate);
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DATE, date, firstDate, lastDate);
         }
     }
 

@@ -170,7 +170,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final StreamingStatistics statY      = observer.getYStatistics();
         final StreamingStatistics statZ      = observer.getZStatistics();
         Assertions.assertEquals(0.0, statX.getMean(), 1.39e-3);
-        Assertions.assertEquals(0.0, statY.getMean(), 1.87e-4);
+        Assertions.assertEquals(0.0, statY.getMean(), 1.85e-4);
         Assertions.assertEquals(0.0, statZ.getMean(), 2.85e-4);
         Assertions.assertEquals(0.0, statX.getMin(),  0.031); // Value is negative
         Assertions.assertEquals(0.0, statY.getMin(),  0.028); // Value is negative
@@ -185,7 +185,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final Vector3D estimated = new Vector3D(estimatedState.getEntry(0),
                                                 estimatedState.getEntry(1),
                                                 estimatedState.getEntry(2));
-        final double dP = 0.046;
+        final double dP = 0.029;
         Assertions.assertEquals(0.0, Vector3D.distance(ref, estimated), dP);
 
         // Check that "physical" matrices are not null

@@ -170,35 +170,39 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                        new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
         Assertions.assertFalse(srp.dependsOnPositionOnly());
 
+        // Test lighting ratio method with double
         Assertions.assertEquals(1.0,
-                            srp.getLightingRatio(new SpacecraftState(orbit)),
-                            1.0e-15);
+                                srp.getLightingRatio(new SpacecraftState(orbit)),
+                                1.0e-15);
 
+        // Test lighting ratio method with field
+        final FieldSpacecraftState<Binary64> fieldSc = new FieldSpacecraftState<>(Binary64Field.getInstance(),
+                        new SpacecraftState(orbit));
         Assertions.assertEquals(1.0,
-                            srp.getLightingRatio(new FieldSpacecraftState<>(Binary64Field.getInstance(),
-                                                                            new SpacecraftState(orbit))).getReal(),
-                            1.0e-15);
+                                srp.getLightingRatio(fieldSc).getReal(),
+                                1.0e-15);
     }
 
     @Test
     public void testLighting() throws ParseException {
-            // Initialization
-            AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
-                                                 new TimeComponents(13, 59, 27.816),
-                                                 TimeScalesFactory.getUTC());
-            Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
-                                               FastMath.tan(0.001745329)*FastMath.cos(2*FastMath.PI/3), FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
-                                               0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
-            ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-            OneAxisEllipsoid earth =
-                new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
-                                     FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-            SolarRadiationPressure SRP =
-                new SolarRadiationPressure(sun, earth,
-                                           new IsotropicRadiationCNES95Convention(50.0, 0.5, 0.5));
 
-            double period = 2*FastMath.PI*FastMath.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
-            Assertions.assertEquals(86164, period, 1);
+        // Given
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
+                                           FastMath.tan(0.001745329)*FastMath.cos(2*FastMath.PI/3), FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
+                                           0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        OneAxisEllipsoid earth =
+                        new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
+                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        SolarRadiationPressure SRP =
+                        new SolarRadiationPressure(sun, earth,
+                                                   new IsotropicRadiationCNES95Convention(50.0, 0.5, 0.5));
+
+        double period = 2*FastMath.PI*FastMath.sqrt(orbit.getA()*orbit.getA()*orbit.getA()/orbit.getMu());
+        Assertions.assertEquals(86164, period, 1);
 
         // creation of the propagator
         KeplerianPropagator k = new KeplerianPropagator(orbit);
@@ -208,6 +212,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         double changed = 1;
         int count=0;
 
+        // When: Test first lighting ration method
         for (int t=1;t<3*period;t+=1000) {
             currentDate = date.shiftedBy(t);
             try {
@@ -1233,5 +1238,4 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     public void setUp() {
         Utils.setDataRoot("regular-data:potential");
     }
-
 }

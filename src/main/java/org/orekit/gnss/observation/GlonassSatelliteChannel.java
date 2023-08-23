@@ -14,7 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.gnss.observation;
+
+import org.orekit.gnss.SatInSystem;
 
 /** Container for association between GLONASS satellites and frequency channels (f = f₀ + k Δf with k ranging-7 to +6).
  * @author Luc Maisonobe
