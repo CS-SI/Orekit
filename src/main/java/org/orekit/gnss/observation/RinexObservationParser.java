@@ -596,12 +596,15 @@ public class RinexObservationParser {
                                 parseInfo.phaseShiftNbSat   = RinexUtils.parseInt(line, 16, 2);
                             }
 
-                            for (int i = 19; i < RinexUtils.LABEL_INDEX && parseInfo.satPhaseShift.size() < parseInfo.phaseShiftNbSat; i += 4) {
+                            for (int i = 19; i + 3 < RinexUtils.LABEL_INDEX && parseInfo.satPhaseShift.size() < parseInfo.phaseShiftNbSat; i += 4) {
                                 final SatelliteSystem system = line.charAt(i) == ' ' ?
                                                                parseInfo.currentSystem :
                                                                SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, i, 1));
                                 final int             prn    = RinexUtils.parseInt(line, i + 1, 2);
-                                parseInfo.satPhaseShift.add(new SatInSystem(system, prn));
+                                parseInfo.satPhaseShift.add(new SatInSystem(system,
+                                                                            system == SatelliteSystem.SBAS ?
+                                                                            prn + 100 :
+                                                                            (system == SatelliteSystem.QZSS ? prn + 192 : prn)));
                             }
 
                             if (parseInfo.satPhaseShift.size() == parseInfo.phaseShiftNbSat) {
