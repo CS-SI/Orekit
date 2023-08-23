@@ -119,6 +119,11 @@ public class RinexObservationWriterTest {
         doTestRoundTrip("rinex/jnu10110.17o");
     }
 
+    @Test
+    public void testContinuationPhaseShift() throws IOException {
+        doTestRoundTrip("rinex/continuation-phase-shift.23o");
+    }
+
     private RinexObservation load(final String name) {
         final DataSource dataSource = new DataSource(name, () -> Utils.class.getClassLoader().getResourceAsStream(name));
         return new RinexObservationParser().parse(dataSource);
@@ -133,6 +138,7 @@ public class RinexObservationWriterTest {
         }
 
         // reparse the written file
+        System.out.println(caw.toString());
         final byte[]           bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
         final DataSource       source  = new DataSource("", () -> new ByteArrayInputStream(bytes));
         final RinexObservation rebuilt = new RinexObservationParser().parse(source);

@@ -473,22 +473,24 @@ public class RinexObservationWriter implements AutoCloseable {
             finishHeaderLine(RinexLabels.SYS_PHASE_SHIFT);
         }
 
-        if (!header.getGlonassChannels().isEmpty()) {
-            // GLONASS SLOT / FRQ #
-            outputField(THREE_DIGITS_INTEGER, header.getGlonassChannels().size(), 3);
-            outputField("", 4, true);
-            for (final GlonassSatelliteChannel channel : header.getGlonassChannels()) {
-                int next = column + 7;
-                if (next > LABEL_INDEX) {
-                    // we need to set up a continuation line
-                    finishHeaderLine(RinexLabels.GLONASS_SLOT_FRQ_NB);
-                    outputField("", 4, true);
-                    next = column + 7;
+        if (header.getFormatVersion() >= 3.01) {
+            if (!header.getGlonassChannels().isEmpty()) {
+                // GLONASS SLOT / FRQ #
+                outputField(THREE_DIGITS_INTEGER, header.getGlonassChannels().size(), 3);
+                outputField("", 4, true);
+                for (final GlonassSatelliteChannel channel : header.getGlonassChannels()) {
+                    int next = column + 7;
+                    if (next > LABEL_INDEX) {
+                        // we need to set up a continuation line
+                        finishHeaderLine(RinexLabels.GLONASS_SLOT_FRQ_NB);
+                        outputField("", 4, true);
+                        next = column + 7;
+                    }
+                    outputField(channel.getSatellite().getSystem().getKey(), next - 6);
+                    outputField(PADDED_TWO_DIGITS_INTEGER, channel.getSatellite().getPRN(), next - 4);
+                    outputField(TWO_DIGITS_INTEGER, channel.getK(), next - 1);
+                    outputField("", next, true);
                 }
-                outputField(channel.getSatellite().getSystem().getKey(), next - 6);
-                outputField(PADDED_TWO_DIGITS_INTEGER, channel.getSatellite().getPRN(), next - 4);
-                outputField(TWO_DIGITS_INTEGER, channel.getK(), next - 1);
-                outputField("", next, true);
             }
             finishHeaderLine(RinexLabels.GLONASS_SLOT_FRQ_NB);
         }
