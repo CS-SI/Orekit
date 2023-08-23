@@ -505,6 +505,46 @@ public class RinexObservationParserTest {
 
 
     @Test
+    public void testContinuationPhaseShift() {
+        List<PhaseShiftCorrection> shifts = load("rinex/continuation-phase-shift.23o").getHeader().getPhaseShiftCorrections();
+        Assertions.assertEquals(4, shifts.size());
+        Assertions.assertEquals(SatelliteSystem.GPS,  shifts.get(0).getSatelliteSystem());
+        Assertions.assertEquals(ObservationType.L1C,  shifts.get(0).getTypeObs());
+        Assertions.assertEquals(                0.0,  shifts.get(0).getCorrection(), 1.0e-15);
+        Assertions.assertEquals(                 30,  shifts.get(0).getSatsCorrected().size());
+        Assertions.assertEquals(                 19,  shifts.get(0).getSatsCorrected().get( 0).getPRN());
+        Assertions.assertEquals(                 14,  shifts.get(0).getSatsCorrected().get( 9).getPRN());
+        Assertions.assertEquals(                  2,  shifts.get(0).getSatsCorrected().get(10).getPRN());
+        Assertions.assertEquals(                 26,  shifts.get(0).getSatsCorrected().get(19).getPRN());
+        Assertions.assertEquals(                 27,  shifts.get(0).getSatsCorrected().get(20).getPRN());
+        Assertions.assertEquals(                 29,  shifts.get(0).getSatsCorrected().get(29).getPRN());
+        Assertions.assertEquals(SatelliteSystem.GPS,  shifts.get(1).getSatelliteSystem());
+        Assertions.assertEquals(ObservationType.L2W,  shifts.get(1).getTypeObs());
+        Assertions.assertEquals(                0.0,  shifts.get(1).getCorrection(), 1.0e-15);
+        Assertions.assertEquals(                 30,  shifts.get(1).getSatsCorrected().size());
+        Assertions.assertEquals(                 19,  shifts.get(1).getSatsCorrected().get( 0).getPRN());
+        Assertions.assertEquals(                 12,  shifts.get(1).getSatsCorrected().get( 9).getPRN());
+        Assertions.assertEquals(                 28,  shifts.get(1).getSatsCorrected().get(10).getPRN());
+        Assertions.assertEquals(                 26,  shifts.get(1).getSatsCorrected().get(19).getPRN());
+        Assertions.assertEquals(                  9,  shifts.get(1).getSatsCorrected().get(20).getPRN());
+        Assertions.assertEquals(                 29,  shifts.get(1).getSatsCorrected().get(29).getPRN());
+        Assertions.assertEquals(SatelliteSystem.QZSS, shifts.get(2).getSatelliteSystem());
+        Assertions.assertEquals(ObservationType.L1C,  shifts.get(2).getTypeObs());
+        Assertions.assertEquals(                0.0,  shifts.get(2).getCorrection(), 1.0e-15);
+        Assertions.assertEquals(                  3,  shifts.get(2).getSatsCorrected().size());
+        Assertions.assertEquals(                  3,  shifts.get(2).getSatsCorrected().get( 0).getPRN());
+        Assertions.assertEquals(                  2,  shifts.get(2).getSatsCorrected().get( 1).getPRN());
+        Assertions.assertEquals(                  4,  shifts.get(2).getSatsCorrected().get( 2).getPRN());
+        Assertions.assertEquals(SatelliteSystem.QZSS, shifts.get(3).getSatelliteSystem());
+        Assertions.assertEquals(ObservationType.L2S,  shifts.get(3).getTypeObs());
+        Assertions.assertEquals(                0.0,  shifts.get(3).getCorrection(), 1.0e-15);
+        Assertions.assertEquals(                  3,  shifts.get(3).getSatsCorrected().size());
+        Assertions.assertEquals(                  3,  shifts.get(3).getSatsCorrected().get( 0).getPRN());
+        Assertions.assertEquals(                  2,  shifts.get(3).getSatsCorrected().get( 1).getPRN());
+        Assertions.assertEquals(                  4,  shifts.get(3).getSatsCorrected().get( 2).getPRN());
+    }
+
+    @Test
     public void testWrongLabel() {
         try {
             load("rinex/unknown-label.00o");
