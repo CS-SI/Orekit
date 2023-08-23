@@ -17,12 +17,17 @@
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.section.XmlStructureKey;
+import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
@@ -30,6 +35,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.units.Unit;
 
 /**
  * A writer for OCM files.
@@ -86,7 +92,7 @@ public class StreamingOcmWriter implements AutoCloseable {
     private TrajectoryStateHistoryWriter trajectoryWriter;
 
     /** Header. */
-    private final Header header;
+    private final OdmHeader header;
 
     /** Current metadata. */
     private final OcmMetadata metadata;
@@ -96,9 +102,6 @@ public class StreamingOcmWriter implements AutoCloseable {
 
     /** If the propagator's frame should be used. */
     private final boolean useAttitudeFrame;
-
-    /** If acceleration should be included in the output. */
-    private final boolean includeAcceleration;
 
     /** Indicator for writing header. */
     private boolean headerWritePending;
@@ -115,32 +118,9 @@ public class StreamingOcmWriter implements AutoCloseable {
      * @see #StreamingOcmWriter(Generator, OcmWriter, Header, OcmMetadata, boolean)
      */
     public StreamingOcmWriter(final Generator generator, final OcmWriter writer,
-                              final Header header, final OcmMetadata metadata,
+                              final OdmHeader header, final OcmMetadata metadata,
                               final TrajectoryStateHistoryMetadata template) {
         this(generator, writer, header, metadata, template, true);
-    }
-
-    /**
-     * Construct a writer that writes position, velocity, and acceleration at
-     * each time step.
-     *
-     * @param generator        generator for OCM output
-     * @param writer           writer for the OCM message format
-     * @param header           file header (may be null)
-     * @param metadata         file metadata
-     * @param template         template for trajectory metadata
-     * @param useAttitudeFrame if {@code true} then the reference frame for each
-     *                         segment is taken from the first state's attitude.
-     *                         Otherwise the {@code template}'s reference frame
-     *                         is used, {@link TrajectoryStateHistoryMetadata#getTrajReferenceFrame()}.
-     * @see #StreamingOcmWriter(Generator, OcmWriter, Header, OcmMetadata,
-     * boolean, boolean)
-     */
-    public StreamingOcmWriter(final Generator generator, final OcmWriter writer,
-                              final Header header, final OcmMetadata metadata,
-                              final TrajectoryStateHistoryMetadata template,
-                              final boolean useAttitudeFrame) {
-        this(generator, writer, header, metadata, template, useAttitudeFrame, true);
     }
 
     /**
@@ -156,33 +136,28 @@ public class StreamingOcmWriter implements AutoCloseable {
      *                            attitude. Otherwise the {@code template}'s
      *                            reference frame is used, {@link
      *                            TrajectoryStateHistoryMetadata#getTrajReferenceFrame()()}.
-     * @param includeAcceleration if {@code true} then acceleration is included
-     *                            in the OCM file produced. Otherwise only
-     *                            position and velocity is included.
      */
     public StreamingOcmWriter(final Generator generator, final OcmWriter writer,
-                              final Header header, final OcmMetadata metadata,
+                              final OdmHeader header, final OcmMetadata metadata,
                               final TrajectoryStateHistoryMetadata template,
-                              final boolean useAttitudeFrame,
-                              final boolean includeAcceleration) {
+                              final boolean useAttitudeFrame) {
         this.generator           = generator;
         this.writer              = writer;
         this.header              = header;
         this.metadata            = metadata;
         this.trajectoryMetadata  = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
         this.useAttitudeFrame    = useAttitudeFrame;
-        this.includeAcceleration = includeAcceleration;
         this.headerWritePending  = true;
     }
 
     /**
-     * Create a writer for a new OCM ephemeris segment.
-     * <p> The returned writer can only write a single ephemeris segment in an OCM.
-     * This method must be called to create a writer for each ephemeris segment.
-     * @return a new OEM segment writer, ready for use.
+     * Create a writer for a new OCM trajectory state history block.
+     * <p> The returned writer can only write a single trajectory state history block in an OCM.
+     * This method must be called to create a writer for each trajectory state history block.
+     * @return a new OCM trajectory state history block writer, ready for use.
      */
-    public SegmentWriter newSegment() {
-        return new SegmentWriter();
+    public BlockWriter newBlock() {
+        return new BlockWriter();
     }
 
     /** {@inheritDoc} */
@@ -191,19 +166,30 @@ public class StreamingOcmWriter implements AutoCloseable {
         writer.writeFooter(generator);
     }
 
-    /** A writer for a segment of an OEM. */
-    public class SegmentWriter implements OrekitFixedStepHandler {
+    /** A writer for a trajectory state history block of an OCM. */
+    public class BlockWriter implements OrekitFixedStepHandler {
 
         /** Reference frame of this segment. */
         private Frame frame;
+
+        /** Elements type. */
+        private OrbitElementsType type;
+
+        /** Units. */
+        private List<Unit> units;
+
+        /** Last Z coordinate seen. */
+        private double lastZ;
+
+        /** Number of ascending nodes crossings. */
+        private int crossings;
 
         /**
          * {@inheritDoc}
          *
          * <p> Sets the {@link OcmMetadataKey#START_TIME} and {@link OcmMetadataKey#STOP_TIME} in this
-         * segment's metadata if not already set by the user. Then calls {@link OcmWriter#writeHeader(Generator, Header)
-         * writeHeader} if it is the first segment) and {@link OcmWriter#writeMetadata(Generator, OcmMetadata)}
-         * to start the segment.
+         * block metadata if not already set by the user. Then calls {@link OcmWriter#writeHeader(Generator, OdmHeader)
+         * writeHeader} and {@link OcmMetadataWriter#write(Generator)} if it is the first segment.
          */
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
@@ -217,14 +203,17 @@ public class StreamingOcmWriter implements AutoCloseable {
                 if (headerWritePending) {
                     // we write the header and metadata only for the first segment
                     writer.writeHeader(generator, header);
-                    writer.writeMetadata(generator, metadata);
+                    if (generator.getFormat() == FileFormat.XML) {
+                        generator.enterSection(XmlStructureKey.segment.name());
+                    }
+                    new OcmMetadataWriter(metadata, writer.getTimeConverter()).write(generator);
+                    if (generator.getFormat() == FileFormat.XML) {
+                        generator.enterSection(XmlStructureKey.data.name());
+                    }
                     headerWritePending = false;
                 }
 
-                trajectoryWriter = TrajectoryStateHistoryWriter(history, getTimeConverter()).write(generator);
-
-                // TODO: set up TRAJ_ID/TRAJ_PREV_ID/TRAJ_NEXT_ID
-
+                trajectoryMetadata.setTrajNextID(incrementTrajectoryId(trajectoryMetadata.getTrajID()));
                 trajectoryMetadata.setUseableStartTime(date);
                 trajectoryMetadata.setUseableStopTime(t);
                 if (useAttitudeFrame) {
@@ -234,10 +223,17 @@ public class StreamingOcmWriter implements AutoCloseable {
                     frame = trajectoryMetadata.getTrajReferenceFrame().asFrame();
                 }
 
-                // TODO: set up ORB_REVNUM
+                lastZ     = Double.NaN;
+                crossings = 0;
+                type      = trajectoryMetadata.getTrajType();
+                units     = trajectoryMetadata.getTrajUnits();
 
-                trajectoryWriter.writeMetadata(generator, trajectoryMetadata);
-                writer.startData(generator);
+                trajectoryWriter = new TrajectoryStateHistoryWriter(new TrajectoryStateHistory(trajectoryMetadata,
+                                                                                               Collections.emptyList(),
+                                                                                               s0.getMu()),
+                                                                    writer.getTimeConverter());
+                trajectoryWriter.writeMetadata(generator);
+
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
             }
@@ -249,7 +245,13 @@ public class StreamingOcmWriter implements AutoCloseable {
             try {
                 final TimeStampedPVCoordinates pv =
                         currentState.getPVCoordinates(frame);
-                writer.writeOrbitEphemerisLine(generator, metadata, pv, includeAcceleration);
+                if (lastZ < 0.0 && pv.getPosition().getZ() >= 0.0) {
+                    // we crossed ascending node
+                    ++crossings;
+                }
+                lastZ = pv.getPosition().getZ();
+                final TrajectoryState state = new TrajectoryState(type, pv.getDate(), type.toRawElements(pv, frame, currentState.getMu()));
+                trajectoryWriter.writeState(generator, state, units);
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
             }
@@ -259,11 +261,51 @@ public class StreamingOcmWriter implements AutoCloseable {
         @Override
         public void finish(final SpacecraftState finalState) {
             try {
-                writer.endData(generator);
+                if (generator.getFormat() == FileFormat.XML) {
+                    generator.exitSection(); // data
+                    generator.exitSection(); // segment
+                }
+
+                // update the trajectory IDs
+                trajectoryMetadata.setTrajPrevID(trajectoryMetadata.getTrajID());
+                trajectoryMetadata.setTrajID(incrementTrajectoryId(trajectoryMetadata.getTrajID()));
+
+                if (trajectoryMetadata.getOrbRevNum() >= 0) {
+                    // update the orbits revolution number
+                    trajectoryMetadata.setOrbRevNum(trajectoryMetadata.getOrbRevNum() + crossings);
+                }
+
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
             }
         }
+
+    }
+
+    /** Increment a trajectory ID.
+     * @param original original ID (may be null)
+     * @return changed ID, or null if original was null
+     */
+    private String incrementTrajectoryId(final String original) {
+
+        if (original == null) {
+            // no trajectory ID at all
+            return null;
+        }
+
+        // split the ID into prefix and numerical index
+        int end = original.length();
+        while (end > 0 && Character.isDigit(original.charAt(end - 1))) {
+            --end;
+        }
+        final String prefix   = original.substring(0, end);
+        final int    index    = end < original.length() ? 0 : Integer.parseInt(original.substring(end));
+
+        // build offset index, taking care to use at least the same number of digits
+        final String newIndex = String.format(String.format("%%0%dd", original.length() - end),
+                                              index + 1);
+
+        return prefix + newIndex;
 
     }
 

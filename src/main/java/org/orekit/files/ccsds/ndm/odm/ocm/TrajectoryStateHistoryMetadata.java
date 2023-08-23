@@ -104,6 +104,11 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     /** Units of trajectory element set. */
     private List<Unit> trajUnits;
 
+    /** Data context.
+     * @since 12.0
+     */
+    private final DataContext dataContext;
+
     /** Simple constructor.
      * @param epochT0 T0 epoch from file metadata
      * @param dataContext data context
@@ -124,11 +129,28 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         trajType            = OrbitElementsType.CARTPV;
         orbRevNum           = -1;
         orbRevNumBasis      = -1;
+
+        this.dataContext    = dataContext;
+
     }
 
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
+        checkMandatoryEntriesExceptOrbitsCounter(version);
+        if (orbRevNum >= 0 && orbRevNumBasis < 0) {
+            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
+                                      TrajectoryStateHistoryMetadataKey.ORB_REVNUM_BASIS.name());
+        }
+    }
+
+    /** Check is mandatory entries EXCEPT orbites counters have been initialized.
+     * <p>
+     * This method should throw an exception if some mandatory entry is missing
+     * </p>
+     * @param version format version
+     */
+    private void checkMandatoryEntriesExceptOrbitsCounter(final double version) {
         super.validate(version);
         if (trajType != OrbitElementsType.CARTP   &&
             trajType != OrbitElementsType.CARTPV  &&
@@ -137,10 +159,6 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         }
         if (trajUnits != null) {
             Unit.ensureCompatible(trajType.toString(), trajType.getUnits(), false, trajUnits);
-        }
-        if (orbRevNum >= 0 && orbRevNumBasis < 0) {
-            throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
-                                      TrajectoryStateHistoryMetadataKey.ORB_REVNUM_BASIS.name());
         }
     }
 
@@ -422,6 +440,41 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     public void setTrajUnits(final List<Unit> trajUnits) {
         refuseFurtherComments();
         this.trajUnits = trajUnits;
+    }
+
+    /** Copy the instance, making sure mandatory fields have been initialized.
+     * <p>
+     * Dates and orbit counter are not copied.
+     * </p>
+     * @param version format version
+     * @return a new copy
+     * @since 12.0
+     */
+    public TrajectoryStateHistoryMetadata copy(final double version) {
+
+        checkMandatoryEntriesExceptOrbitsCounter(version);
+
+        // allocate new instance
+        final TrajectoryStateHistoryMetadata copy = new TrajectoryStateHistoryMetadata(trajFrameEpoch, dataContext);
+
+        // copy comments
+        for (String comment : getComments()) {
+            copy.addComment(comment);
+        }
+
+        // copy metadata
+        copy.setTrajBasis(getTrajBasis());
+        copy.setTrajBasisID(getTrajBasisID());
+        copy.setInterpolationMethod(getInterpolationMethod());
+        copy.setInterpolationDegree(getInterpolationDegree());
+        copy.setPropagator(getPropagator());
+        copy.setCenter(getCenter());
+        copy.setTrajReferenceFrame(getTrajReferenceFrame());
+        copy.setTrajFrameEpoch(getTrajFrameEpoch());
+        copy.setOrbRevNumBasis(getOrbRevNumBasis());
+
+        return copy;
+
     }
 
 }

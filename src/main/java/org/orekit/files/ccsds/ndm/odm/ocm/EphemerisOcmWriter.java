@@ -17,13 +17,14 @@
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
+import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
@@ -31,29 +32,28 @@ import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.files.general.EphemerisFile.SatelliteEphemeris;
 import org.orekit.files.general.EphemerisFileWriter;
+import org.orekit.frames.Frame;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** An {@link EphemerisFileWriter} generating {@link Oem OEM} files.
- * @author Hank Grabowski
- * @author Evan Ward
- * @since 9.0
- * @see <a href="https://public.ccsds.org/Pubs/502x0b2c1.pdf">CCSDS 502.0-B-2 Orbit Data
- *      Messages</a>
- * @see <a href="https://public.ccsds.org/Pubs/500x0g4.pdf">CCSDS 500.0-G-4 Navigation
- *      Data Definitions and Conventions</a>
+/** An {@link EphemerisFileWriter} generating {@link Ocm OCM} files.
+ * @author Luc Maisonobe
+ * @since 12.0
  * @see StreamingOcmWriter
  */
 public class EphemerisOcmWriter implements EphemerisFileWriter {
 
     /** Underlying writer. */
-    private final OemWriter writer;
+    private final OcmWriter writer;
 
     /** Header. */
-    private final Header header;
+    private final OdmHeader header;
 
-    /** Current metadata. */
-    private final OemMetadata metadata;
+    /** File metadata. */
+    private final OcmMetadata metadata;
+
+    /** Current trajectory metadata. */
+    private final TrajectoryStateHistoryMetadata trajectoryMetadata;
 
     /** File format to use. */
     private final FileFormat fileFormat;
@@ -64,8 +64,11 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
     /** Column number for aligning units. */
     private final int unitsColumn;
 
+    /** Maximum offset for relative dates. */
+    private final double maxRelativeOffset;
+
     /**
-     * Constructor used to create a new OEM writer configured with the necessary parameters
+     * Constructor used to create a new OCM writer configured with the necessary parameters
      * to successfully fill in all required fields that aren't part of a standard object.
      * <p>
      * If the mandatory header entries are not present (or if header is null),
@@ -80,32 +83,38 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
      * </p>
      * @param writer underlying writer
      * @param header file header (may be null)
-     * @param template template for metadata
+     * @param metadata  file metadata
+     * @param template  template for trajectory metadata
      * @param fileFormat file format to use
      * @param outputName output name for error messages
+     * @param maxRelativeOffset maximum offset in seconds to use relative dates
+     * (if a date is too far from reference, it will be displayed as calendar elements)
      * @param unitsColumn columns number for aligning units (if negative or zero, units are not output)
-     * @since 11.0
      */
-    public EphemerisOcmWriter(final OemWriter writer,
-                           final Header header, final OemMetadata template,
-                           final FileFormat fileFormat, final String outputName,
-                           final int unitsColumn) {
-        this.writer      = writer;
-        this.header      = header;
-        this.metadata    = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
-        this.fileFormat  = fileFormat;
-        this.outputName  = outputName;
-        this.unitsColumn = unitsColumn;
+    public EphemerisOcmWriter(final OcmWriter writer,
+                              final OdmHeader header, final OcmMetadata metadata,
+                              final TrajectoryStateHistoryMetadata template,
+                              final FileFormat fileFormat, final String outputName,
+                              final double maxRelativeOffset, final int unitsColumn) {
+        this.writer             = writer;
+        this.header             = header;
+        this.metadata           = metadata.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
+        this.trajectoryMetadata = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
+        this.fileFormat         = fileFormat;
+        this.outputName         = outputName;
+        this.maxRelativeOffset  = maxRelativeOffset;
+        this.unitsColumn        = unitsColumn;
     }
 
     /** {@inheritDoc}
      * <p>
      * As {@code EphemerisFile.SatelliteEphemeris} does not have all the entries
-     * from {@link OemMetadata}, the only values that will be extracted from the
+     * from {@link OcmMetadata}, the only values that will be extracted from the
      * {@code ephemerisFile} will be the start time, stop time, reference frame, interpolation
      * method and interpolation degree. The missing values (like object name, local spacecraft
      * body frame...) will be inherited from the template  metadata set at writer
-     * {@link #EphemerisWriter(OemWriter, Header, OemMetadata, FileFormat, String, int) construction}.
+     * {@link #EphemerisOcmWriter(OcmWriter, OdmHeader, OcmMetadata, TrajectoryStateHistoryMetadata,
+     * FileFormat, String, double, int) construction}.
      * </p>
      */
     @Override
@@ -121,83 +130,88 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
             return;
         }
 
-        final SatelliteEphemeris<C, S> satEphem = ephemerisFile.getSatellites().get(metadata.getObjectID());
+        final String name;
+        if (metadata.getObjectName() != null) {
+            name = metadata.getObjectName();
+        } else if (metadata.getInternationalDesignator() != null) {
+            name = metadata.getInternationalDesignator();
+        } else if (metadata.getObjectDesignator() != null) {
+            name = metadata.getObjectDesignator();
+        } else {
+            name = Ocm.UNKNOWN_OBJECT;
+        }
+        final SatelliteEphemeris<C, S> satEphem = ephemerisFile.getSatellites().get(name);
         if (satEphem == null) {
             throw new OrekitIllegalArgumentException(OrekitMessages.VALUE_NOT_FOUND,
-                                                     metadata.getObjectID(), "ephemerisFile");
+                                                     metadata.getObjectDesignator(), "ephemerisFile");
         }
 
-        // Get attitude ephemeris segments to output.
-        final List<S> segments = satEphem.getSegments();
-        if (segments.isEmpty()) {
+        // Get trajectory blocks to output.
+        final List<S> blocks = satEphem.getSegments();
+        if (blocks.isEmpty()) {
             // No data -> No output
             return;
         }
 
         try (Generator generator = fileFormat == FileFormat.KVN ?
-                                   new KvnGenerator(appendable, OemWriter.KVN_PADDING_WIDTH, outputName, unitsColumn) :
-                                   new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName, unitsColumn > 0)) {
+                                   new KvnGenerator(appendable, OcmWriter.KVN_PADDING_WIDTH, outputName,
+                                                    maxRelativeOffset, unitsColumn) :
+                                   new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName,
+                                                    maxRelativeOffset, unitsColumn > 0, null)) {
 
             writer.writeHeader(generator, header);
 
-            // Loop on segments
-            for (final S segment : segments) {
-                writeSegment(generator, segment);
+            if (generator.getFormat() == FileFormat.XML) {
+                generator.enterSection(XmlStructureKey.segment.name());
+            }
+
+            // write single segment metadata
+            metadata.setStartTime(blocks.get(0).getStart());
+            metadata.setStopTime(blocks.get(blocks.size() - 1).getStop());
+            new OcmMetadataWriter(metadata, writer.getTimeConverter()).write(generator);
+
+            if (generator.getFormat() == FileFormat.XML) {
+                generator.enterSection(XmlStructureKey.data.name());
+            }
+
+            // Loop on trajectory blocks
+            double lastZ = Double.NaN;
+            for (final S block : blocks) {
+                final CartesianDerivativesFilter filter = block.getAvailableDerivatives();
+                if (filter == CartesianDerivativesFilter.USE_P) {
+                    throw new OrekitException(OrekitMessages.MISSING_VELOCITY);
+                }
+                trajectoryMetadata.setUseableStartTime(block.getStart());
+                trajectoryMetadata.setUseableStopTime(block.getStop());
+                trajectoryMetadata.setInterpolationDegree(block.getInterpolationSamples() - 1);
+                final OrbitElementsType type      = trajectoryMetadata.getTrajType();
+                final Frame             frame     = trajectoryMetadata.getTrajReferenceFrame().asFrame();
+                int                     crossings = 0;
+                final List<TrajectoryState> states = new ArrayList<>(block.getCoordinates().size());
+                for (final C pv : block.getCoordinates()) {
+                    if (lastZ < 0.0 && pv.getPosition().getZ() >= 0.0) {
+                        // we crossed ascending node
+                        ++crossings;
+                    }
+                    lastZ = pv.getPosition().getZ();
+                    states.add(new TrajectoryState(type, pv.getDate(), type.toRawElements(pv, frame, block.getMu())));
+                }
+                final TrajectoryStateHistory history = new TrajectoryStateHistory(trajectoryMetadata, states, block.getMu());
+                new TrajectoryStateHistoryWriter(history, writer.getTimeConverter()).writeContent(generator);
+                if (trajectoryMetadata.getOrbRevNum() >= 0) {
+                    // update the orbits revolution number
+                    trajectoryMetadata.setOrbRevNum(trajectoryMetadata.getOrbRevNum() + crossings);
+                }
+            }
+
+            if (generator.getFormat() == FileFormat.XML) {
+                generator.exitSection(); // exit data
+                generator.exitSection(); // exit segment
             }
 
             writer.writeFooter(generator);
 
         }
-
-    }
-
-    /** Write one segment.
-     * @param generator generator to use for producing output
-     * @param segment segment to write
-     * @param <C> type of the Cartesian coordinates
-     * @param <S> type of the segment
-     * @throws IOException if any buffer writing operations fails
-     */
-    public <C extends TimeStampedPVCoordinates, S extends EphemerisFile.EphemerisSegment<C>>
-        void writeSegment(final Generator generator, final S segment) throws IOException {
-
-        // override template metadata with segment values
-        if (segment instanceof OemSegment) {
-            final OemSegment oemSegment = (OemSegment) segment;
-            metadata.setReferenceFrame(oemSegment.getMetadata().getReferenceFrame());
-        } else {
-            metadata.setReferenceFrame(FrameFacade.map(segment.getFrame()));
-        }
-        metadata.setStartTime(segment.getStart());
-        metadata.setStopTime(segment.getStop());
-        metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
-        writer.writeMetadata(generator, metadata);
-
-        // we enter data section
-        writer.startData(generator);
-
-        if (segment instanceof OemSegment) {
-            // write data comments
-            generator.writeComments(((OemSegment) segment).getData().getComments());
-        }
-
-        // Loop on orbit data
-        final CartesianDerivativesFilter filter = segment.getAvailableDerivatives();
-        if (filter == CartesianDerivativesFilter.USE_P) {
-            throw new OrekitException(OrekitMessages.MISSING_VELOCITY);
-        }
-        final boolean useAcceleration = filter.equals(CartesianDerivativesFilter.USE_PVA);
-        for (final TimeStampedPVCoordinates coordinates : segment.getCoordinates()) {
-            writer.writeOrbitEphemerisLine(generator, metadata, coordinates, useAcceleration);
-        }
-
-        if (segment instanceof OemSegment) {
-            // output covariance data
-            writer.writeCovariances(generator, metadata, ((OemSegment) segment).getCovarianceMatrices());
-        }
-
-        // we exit data section
-        writer.endData(generator);
 
     }
 

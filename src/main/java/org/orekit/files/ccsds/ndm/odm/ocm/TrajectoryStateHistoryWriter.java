@@ -54,9 +54,25 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
     @Override
     protected void writeContent(final Generator generator) throws IOException {
 
-        // trajectory state history block
+        // metadata
+        writeMetadata(generator);
+
+        // data
+        final List<Unit> units = history.getMetadata().getTrajType().getUnits();
+        for (final TrajectoryState state : history.getTrajectoryStates()) {
+            writeState(generator, state, units);
+        }
+
+    }
+
+    /** Write trajectory state history metadata.
+     * @param generator generator to use for producing output
+     * @throws IOException if any buffer writing operations fails
+     * @since 12.0
+     */
+    protected void writeMetadata(final Generator generator) throws IOException {
+
         final TrajectoryStateHistoryMetadata metadata = history.getMetadata();
-        generator.writeComments(metadata.getComments());
 
         // identifiers
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_ID.name(),       metadata.getTrajID(),      null, false);
@@ -100,23 +116,30 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
             generator.writeEntry(TrajectoryStateHistoryMetadataKey.ORB_AVERAGING.name(), metadata.getOrbAveraging(), null,  true);
         }
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_UNITS.name(), generator.unitsListToString(metadata.getTrajUnits()), null, false);
+    }
 
-        // data
-        final List<Unit> units = metadata.getTrajType().getUnits();
-        for (final TrajectoryState state : history.getTrajectoryStates()) {
-            final double[]      elements = state.getElements();
-            final StringBuilder line     = new StringBuilder();
-            line.append(generator.dateToString(timeConverter, state.getDate()));
-            for (int i = 0; i < units.size(); ++i) {
-                line.append(' ');
-                line.append(AccurateFormatter.format(units.get(i).fromSI(elements[i])));
-            }
-            if (generator.getFormat() == FileFormat.XML) {
-                generator.writeEntry(Ocm.TRAJ_LINE, line.toString(), null, true);
-            } else {
-                generator.writeRawData(line);
-                generator.newLine();
-            }
+    /** Write one trajectory state.
+     * @param generator generator to use for producing output
+     * @param state state to write
+     * @param units elements units
+     * @throws IOException if any buffer writing operations fails
+     * @since 12.0
+     */
+    protected void writeState(final Generator generator, final TrajectoryState state, final List<Unit> units)
+        throws IOException {
+
+        final double[]      elements = state.getElements();
+        final StringBuilder line     = new StringBuilder();
+        line.append(generator.dateToString(timeConverter, state.getDate()));
+        for (int i = 0; i < units.size(); ++i) {
+            line.append(' ');
+            line.append(AccurateFormatter.format(units.get(i).fromSI(elements[i])));
+        }
+        if (generator.getFormat() == FileFormat.XML) {
+            generator.writeEntry(Ocm.TRAJ_LINE, line.toString(), null, true);
+        } else {
+            generator.writeRawData(line);
+            generator.newLine();
         }
 
     }
