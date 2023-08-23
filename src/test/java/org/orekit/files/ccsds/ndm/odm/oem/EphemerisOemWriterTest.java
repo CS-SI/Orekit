@@ -57,7 +57,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class EphemerisWriterTest {
+public class EphemerisOemWriterTest {
 
     // As the default format for position is 3 digits after decimal point in km the max precision in m is 1
     private static final double POSITION_PRECISION = 1; // in m
@@ -119,7 +119,7 @@ public class EphemerisWriterTest {
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
         final Oem oem = parser.parseMessage(source);
 
-        EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
+        EphemerisOemWriter writer = new EphemerisOemWriter(new WriterBuilder().buildOemWriter(),
                                                      oem.getHeader(), dummyMetadata(), FileFormat.KVN, "",
                                                      Constants.JULIAN_DAY, 0);
         try {
@@ -138,7 +138,7 @@ public class EphemerisWriterTest {
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
         final Oem oem = parser.parseMessage(source);
-        EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
+        EphemerisOemWriter writer = new EphemerisOemWriter(new WriterBuilder().buildOemWriter(),
                                                      oem.getHeader(),
                                                      oem.getSegments().get(0).getMetadata(),
                                                      FileFormat.KVN, "dummy",
@@ -154,7 +154,7 @@ public class EphemerisWriterTest {
 
     @Test
     public void testNullEphemeris() throws IOException {
-        EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
+        EphemerisOemWriter writer = new EphemerisOemWriter(new WriterBuilder().buildOemWriter(),
                                                      null, dummyMetadata(), FileFormat.KVN, "nullEphemeris",
                                                      Constants.JULIAN_DAY, 60);
         CharArrayWriter caw = new CharArrayWriter();
@@ -189,7 +189,7 @@ public class EphemerisWriterTest {
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
         final Oem oem = parser.parseMessage(source);
 
-        EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
+        EphemerisOemWriter writer = new EphemerisOemWriter(new WriterBuilder().buildOemWriter(),
                                                      oem.getHeader(),
                                                      oem.getSegments().get(0).getMetadata(),
                                                      FileFormat.KVN, "TestOEMIssue723.aem",
@@ -250,7 +250,7 @@ public class EphemerisWriterTest {
 
         OemMetadata metadata = dummyMetadata();
         metadata.setObjectID(id2);
-        EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().withDataContext(context).buildOemWriter(),
+        EphemerisOemWriter writer = new EphemerisOemWriter(new WriterBuilder().withDataContext(context).buildOemWriter(),
                                                      null, metadata, FileFormat.KVN, "",
                                                      Constants.JULIAN_DAY, -1);
         final CharArrayWriter caw = new CharArrayWriter();

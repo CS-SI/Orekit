@@ -34,7 +34,7 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
-import org.orekit.files.ccsds.ndm.odm.oem.EphemerisWriter;
+import org.orekit.files.ccsds.ndm.odm.oem.EphemerisOemWriter;
 import org.orekit.files.ccsds.ndm.odm.oem.OemMetadata;
 import org.orekit.files.ccsds.ndm.odm.oem.OemParser;
 import org.orekit.files.ccsds.ndm.odm.oem.OemSegment;
@@ -151,9 +151,9 @@ public class OrekitEphemerisFileTest {
         template.setObjectName(satId);
         template.setCenter(new BodyFacade("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth()));
         template.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000()));
-        EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
-                                                     null, template, fileFormat, "dummy",
-                                                     Constants.JULIAN_DAY, 60);
+        EphemerisOemWriter writer = new EphemerisOemWriter(new WriterBuilder().buildOemWriter(),
+                                                           null, template, fileFormat, "dummy",
+                                                           Constants.JULIAN_DAY, 60);
         writer.write(tempOem, ephemerisFile);
 
         OemParser parser = new ParserBuilder().withMu(body.getGM()).withDefaultInterpolationDegree(2).buildOemParser();

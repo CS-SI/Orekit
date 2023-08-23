@@ -23,7 +23,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
@@ -184,7 +183,7 @@ public class StreamingOemWriter implements AutoCloseable {
          * {@inheritDoc}
          *
          * <p> Sets the {@link OemMetadataKey#START_TIME} and {@link OemMetadataKey#STOP_TIME} in this
-         * segment's metadata if not already set by the user. Then calls {@link OemWriter#writeHeader(Generator, Header)
+         * segment's metadata if not already set by the user. Then calls {@link OemWriter#writeHeader(Generator, OdmHeader)
          * writeHeader} if it is the first segment) and {@link OemWriter#writeMetadata(Generator, OemMetadata)}
          * to start the segment.
          */
