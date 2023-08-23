@@ -171,7 +171,7 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
         final Vector3D velocityEstimated  = new Vector3D(optimum.getPoint().getSubVector(3, 3).toArray());
         final PVCoordinates pvCoordinates = new PVCoordinates(positionEstimated, velocityEstimated);
         final KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, teme, epoch, state.getMu());
-        final TLE generated = TleGenerationUtil.newTLE(orbit, templateTLE, optimum.getPoint().getEntry(6), utc);
+        final TLE generated = TleGenerationUtil.newTLE(orbit, templateTLE, templateTLE.getBStar(), utc);
 
         // Verify if parameters are estimated
         for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
