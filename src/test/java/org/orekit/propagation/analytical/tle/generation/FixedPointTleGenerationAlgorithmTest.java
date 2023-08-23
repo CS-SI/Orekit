@@ -276,7 +276,6 @@ public class FixedPointTleGenerationAlgorithmTest {
         Assertions.assertEquals(tle.getPerigeeArgument(), converted.getPerigeeArgument(), threshold * tle.getPerigeeArgument());
         Assertions.assertEquals(tle.getRaan(), converted.getRaan(), threshold * tle.getRaan());
         Assertions.assertEquals(tle.getMeanAnomaly(), converted.getMeanAnomaly(), threshold * tle.getMeanAnomaly());
-        Assertions.assertEquals(tle.getMeanAnomaly(), converted.getMeanAnomaly(), threshold * tle.getMeanAnomaly());
         Assertions.assertEquals(tle.getBStar(), converted.getBStar(), threshold * tle.getBStar());
 
     }
@@ -322,7 +321,6 @@ public class FixedPointTleGenerationAlgorithmTest {
         Assertions.assertEquals(tle.getI().getReal(), converted.getI().getReal(), threshold * tle.getI().getReal());
         Assertions.assertEquals(tle.getPerigeeArgument().getReal(), converted.getPerigeeArgument().getReal(), threshold * tle.getPerigeeArgument().getReal());
         Assertions.assertEquals(tle.getRaan().getReal(), converted.getRaan().getReal(), threshold * tle.getRaan().getReal());
-        Assertions.assertEquals(tle.getMeanAnomaly().getReal(), converted.getMeanAnomaly().getReal(), threshold * tle.getMeanAnomaly().getReal());
         Assertions.assertEquals(tle.getMeanAnomaly().getReal(), converted.getMeanAnomaly().getReal(), threshold * tle.getMeanAnomaly().getReal());
         Assertions.assertEquals(tle.getBStar(), converted.getBStar(), threshold * tle.getBStar());
     }
