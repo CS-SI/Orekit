@@ -532,16 +532,22 @@ public class RinexObservationParserTest {
         Assertions.assertEquals(ObservationType.L1C,  shifts.get(2).getTypeObs());
         Assertions.assertEquals(                0.0,  shifts.get(2).getCorrection(), 1.0e-15);
         Assertions.assertEquals(                  3,  shifts.get(2).getSatsCorrected().size());
-        Assertions.assertEquals(                  3,  shifts.get(2).getSatsCorrected().get( 0).getPRN());
-        Assertions.assertEquals(                  2,  shifts.get(2).getSatsCorrected().get( 1).getPRN());
-        Assertions.assertEquals(                  4,  shifts.get(2).getSatsCorrected().get( 2).getPRN());
+        Assertions.assertEquals(                  3,  shifts.get(2).getSatsCorrected().get( 0).getTwoDigitsRinexPRN());
+        Assertions.assertEquals(                  2,  shifts.get(2).getSatsCorrected().get( 1).getTwoDigitsRinexPRN());
+        Assertions.assertEquals(                  4,  shifts.get(2).getSatsCorrected().get( 2).getTwoDigitsRinexPRN());
+        Assertions.assertEquals(                195,  shifts.get(2).getSatsCorrected().get( 0).getPRN());
+        Assertions.assertEquals(                194,  shifts.get(2).getSatsCorrected().get( 1).getPRN());
+        Assertions.assertEquals(                196,  shifts.get(2).getSatsCorrected().get( 2).getPRN());
         Assertions.assertEquals(SatelliteSystem.QZSS, shifts.get(3).getSatelliteSystem());
         Assertions.assertEquals(ObservationType.L2S,  shifts.get(3).getTypeObs());
         Assertions.assertEquals(                0.0,  shifts.get(3).getCorrection(), 1.0e-15);
         Assertions.assertEquals(                  3,  shifts.get(3).getSatsCorrected().size());
-        Assertions.assertEquals(                  3,  shifts.get(3).getSatsCorrected().get( 0).getPRN());
-        Assertions.assertEquals(                  2,  shifts.get(3).getSatsCorrected().get( 1).getPRN());
-        Assertions.assertEquals(                  4,  shifts.get(3).getSatsCorrected().get( 2).getPRN());
+        Assertions.assertEquals(                  3,  shifts.get(3).getSatsCorrected().get( 0).getTwoDigitsRinexPRN());
+        Assertions.assertEquals(                  2,  shifts.get(3).getSatsCorrected().get( 1).getTwoDigitsRinexPRN());
+        Assertions.assertEquals(                  4,  shifts.get(3).getSatsCorrected().get( 2).getTwoDigitsRinexPRN());
+        Assertions.assertEquals(                195,  shifts.get(3).getSatsCorrected().get( 0).getPRN());
+        Assertions.assertEquals(                194,  shifts.get(3).getSatsCorrected().get( 1).getPRN());
+        Assertions.assertEquals(                196,  shifts.get(3).getSatsCorrected().get( 2).getPRN());
     }
 
     @Test

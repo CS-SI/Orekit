@@ -601,7 +601,10 @@ public class RinexObservationParser {
                                                                parseInfo.currentSystem :
                                                                SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, i, 1));
                                 final int             prn    = RinexUtils.parseInt(line, i + 1, 2);
-                                parseInfo.satPhaseShift.add(new SatInSystem(system, prn));
+                                parseInfo.satPhaseShift.add(new SatInSystem(system,
+                                                                            system == SatelliteSystem.SBAS ?
+                                                                            prn + 100 :
+                                                                            (system == SatelliteSystem.QZSS ? prn + 192 : prn)));
                             }
 
                             if (parseInfo.satPhaseShift.size() == parseInfo.phaseShiftNbSat) {
