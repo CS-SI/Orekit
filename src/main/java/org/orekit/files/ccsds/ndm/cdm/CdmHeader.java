@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.files.ccsds.ndm.cdm;
 
 import org.orekit.files.ccsds.section.Header;
-import org.orekit.files.ccsds.section.HeaderKey;
 
 /**
  * Header of a CCSDS Conjunction Data Message.
@@ -29,15 +28,11 @@ public class CdmHeader extends Header {
     /** ID that uniquely identifies a message from a given originator. */
     private String messageFor;
 
-    /** User-defined free-text message classification or caveats of this CDM. */
-    private String classification;
-
     /**
      * Constructor.
-     * @param minVersionMessageId minimum version for {@link HeaderKey#MESSAGE_ID}
      */
-    public CdmHeader(final double minVersionMessageId) {
-        super(minVersionMessageId);
+    public CdmHeader() {
+        super(1.0, 2.0);
     }
 
     /** {@inheritDoc} */
@@ -61,20 +56,6 @@ public class CdmHeader extends Header {
     public void setMessageFor(final String spacecraftNames) {
         refuseFurtherComments();
         this.messageFor = spacecraftNames;
-    }
-
-    /** Get the classification or caveats text message of this CDM.
-     * @return the classification
-     */
-    public String getClassification() {
-        return classification;
-    }
-
-    /** Set the classification or caveats text message of this CDM.
-     * @param classification the classification to set
-     */
-    public void setClassification(final String classification) {
-        this.classification = classification;
     }
 
 }

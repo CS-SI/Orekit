@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,11 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.util.TreeMap;
+import java.util.SortedMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -34,7 +35,7 @@ import org.orekit.errors.OrekitMessages;
 public class CoefficientsFactory {
 
     /** Internal storage of the polynomial values. Reused for further computation. */
-    private static TreeMap<NSKey, Double> VNS = new TreeMap<NSKey, Double>();
+    private static SortedMap<NSKey, Double> VNS = new ConcurrentSkipListMap<NSKey, Double>();
 
     /** Last computed order for V<sub>ns</sub> coefficients. */
     private static int         LAST_VNS_ORDER = 2;
@@ -205,8 +206,9 @@ public class CoefficientsFactory {
     /** Compute the V<sub>n,s</sub> coefficients from 2.8.2-(1)(2).
      * @param order Order of the computation. Computation will be done from 0 to order -1
      * @return Map of the V<sub>n, s</sub> coefficients
+     * @since 11.3.3
      */
-    public static TreeMap<NSKey, Double> computeVns(final int order) {
+    public static SortedMap<NSKey, Double> computeVns(final int order) {
 
         if (order > LAST_VNS_ORDER) {
             // Compute coefficient
@@ -230,7 +232,7 @@ public class CoefficientsFactory {
             }
             LAST_VNS_ORDER = order;
         }
-        return VNS;
+        return new ConcurrentSkipListMap<>(VNS);
     }
 
     /** Get the V<sub>n,s</sub><sup>m</sup> coefficient from V<sub>n,s</sub>.

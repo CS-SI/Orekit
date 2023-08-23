@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,13 +32,18 @@ public enum SpinStabilizedKey {
     COMMENT((token, context, container) ->
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
-    /** First reference frame entry. */
+    /** First reference frame entry (only for ADM V1). */
     SPIN_FRAME_A((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameA, context, true, true, true)),
 
-    /** Second reference frame entry. */
+    /** First reference frame entry.
+     * @since 12.0
+     */
+    REF_FRAME_A((token, context, container) -> token.processAsFrame(container.getEndpoints()::setFrameA, context, true, true, true)),
+
+    /** Second reference frame entry (only for ADM V1). */
     SPIN_FRAME_B((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            container.checkNotNull(container.getEndpoints().getFrameA(), SPIN_FRAME_A);
+            container.checkNotNull(container.getEndpoints().getFrameA(), SPIN_FRAME_A.name());
             final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
             return token.processAsFrame(container.getEndpoints()::setFrameB, context,
                                         aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
@@ -46,7 +51,20 @@ public enum SpinStabilizedKey {
         return true;
     }),
 
-    /** Rotation direction entry. */
+    /** Second reference frame entry.
+     * @since 12.0
+     */
+    REF_FRAME_B((token, context, container) -> {
+        if (token.getType() == TokenType.ENTRY) {
+            container.checkNotNull(container.getEndpoints().getFrameA(), REF_FRAME_A.name());
+            final boolean aIsSpaceraftBody = container.getEndpoints().getFrameA().asSpacecraftBodyFrame() != null;
+            return token.processAsFrame(container.getEndpoints()::setFrameB, context,
+                                        aIsSpaceraftBody, aIsSpaceraftBody, !aIsSpaceraftBody);
+        }
+        return true;
+    }),
+
+    /** Rotation direction entry (only for ADM V1). */
     SPIN_DIR((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
             container.getEndpoints().setA2b(token.getContentAsUppercaseCharacter() == 'A');
@@ -80,7 +98,25 @@ public enum SpinStabilizedKey {
 
     /** Nutation phase entry. */
     NUTATION_PHASE((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
-                                                                        container::setNutationPhase));
+                                                                        container::setNutationPhase)),
+
+    /** Momentum right ascension entry.
+     * @since 12.0
+     */
+    MOMENTUM_ALPHA((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                        container::setMomentumAlpha)),
+
+    /** Momentum declination entry.
+     * @since 12.0
+     */
+    MOMENTUM_DELTA((token, context, container) -> token.processAsDouble(Unit.DEGREE, context.getParsedUnitsBehavior(),
+                                                                        container::setMomentumDelta)),
+
+    /** Nutation velocity entry.
+     * @since 12.0
+     */
+    NUTATION_VEL((token, context, container) -> token.processAsDouble(Units.DEG_PER_S, context.getParsedUnitsBehavior(),
+                                                                      container::setNutationVel));
 
     /** Processing method. */
     private final TokenProcessor processor;

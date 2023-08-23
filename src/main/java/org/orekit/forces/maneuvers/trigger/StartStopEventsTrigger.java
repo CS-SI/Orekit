@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -104,6 +104,14 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      */
     public O getStopDetector() {
         return stopDetector;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        startDetector.init(initialState, target);
+        stopDetector.init(initialState, target);
+        super.init(initialState, target);
     }
 
     /** {@inheritDoc} */
@@ -228,7 +236,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      * considering these detectors are created from a date and a number parameter is:
      * </p>
      * <pre>{@code
-     *     protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
+     *     protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
      *         FieldAbstractDetector<D, S> convertStartDetector(final Field<S> field, final XyzDetector detector) {
      *
      *         final FieldAbsoluteDate<S> date  = new FieldAbsoluteDate<>(field, detector.getDate());
@@ -246,7 +254,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      * @param <S> type of the field elements
      * @return converted firing start detector
      */
-    protected abstract <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>> FieldAbstractDetector<D, S>
+    protected abstract <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> FieldAbstractDetector<D, S>
         convertStartDetector(Field<S> field, A detector);
 
     /** Convert a primitive firing stop detector into a field firing stop detector.
@@ -261,7 +269,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      * considering these detectors are created from a date and a number parameter is:
      * </p>
      * <pre>{@code
-     *     protected <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
+     *     protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
      *         FieldAbstractDetector<D, S> convertStopDetector(final Field<S> field, final XyzDetector detector) {
      *
      *         final FieldAbsoluteDate<S> date  = new FieldAbsoluteDate<>(field, detector.getDate());
@@ -279,25 +287,25 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      * @param <S> type of the field elements
      * @return converted firing stop detector
      */
-    protected abstract <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>> FieldAbstractDetector<D, S>
+    protected abstract <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> FieldAbstractDetector<D, S>
         convertStopDetector(Field<S> field, O detector);
 
     /** Local handler for start triggers. */
-    private class StartHandler implements EventHandler<A> {
+    private class StartHandler implements EventHandler {
 
         /** Propagation direction. */
         private boolean forward;
 
         /** {@inheritDoc} */
         @Override
-        public void init(final SpacecraftState initialState, final AbsoluteDate target, final A detector) {
+        public void init(final SpacecraftState initialState, final AbsoluteDate target, final EventDetector detector) {
             forward = target.isAfterOrEqualTo(initialState);
             initializeResetters(initialState, target);
         }
 
         /** {@inheritDoc} */
         @Override
-        public Action eventOccurred(final SpacecraftState s, final A detector, final boolean increasing) {
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
             if (increasing) {
                 // the event is meaningful for maneuver firing
                 if (forward) {
@@ -315,28 +323,28 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final A detector, final SpacecraftState oldState) {
+        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
             return applyResetters(oldState);
         }
 
     }
 
     /** Local handler for stop triggers. */
-    private class StopHandler implements EventHandler<O> {
+    private class StopHandler implements EventHandler {
 
         /** Propagation direction. */
         private boolean forward;
 
         /** {@inheritDoc} */
         @Override
-        public void init(final SpacecraftState initialState, final AbsoluteDate target, final O detector) {
+        public void init(final SpacecraftState initialState, final AbsoluteDate target, final EventDetector detector) {
             forward = target.isAfterOrEqualTo(initialState);
             initializeResetters(initialState, target);
         }
 
         /** {@inheritDoc} */
         @Override
-        public Action eventOccurred(final SpacecraftState s, final O detector, final boolean increasing) {
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
             if (increasing) {
                 // the event is meaningful for maneuver firing
                 if (forward) {
@@ -354,7 +362,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final O detector, final SpacecraftState oldState) {
+        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
             return applyResetters(oldState);
         }
 
@@ -363,7 +371,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
     /** Local handler for start triggers.
      * @param <S> type of the field elements
      */
-    private class FieldStartHandler<D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>> implements FieldEventHandler<D, S> {
+    private class FieldStartHandler<S extends CalculusFieldElement<S>> implements FieldEventHandler<S> {
 
         /** Propagation direction. */
         private boolean forward;
@@ -372,14 +380,14 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
         @Override
         public void init(final FieldSpacecraftState<S> initialState,
                          final FieldAbsoluteDate<S> target,
-                         final D detector) {
+                         final FieldEventDetector<S> detector) {
             forward = target.isAfterOrEqualTo(initialState);
             initializeResetters(initialState, target);
         }
 
         /** {@inheritDoc} */
         @Override
-        public Action eventOccurred(final FieldSpacecraftState<S> s, final D detector, final boolean increasing) {
+        public Action eventOccurred(final FieldSpacecraftState<S> s, final FieldEventDetector<S> detector, final boolean increasing) {
             if (increasing) {
                 // the event is meaningful for maneuver firing
                 if (forward) {
@@ -397,7 +405,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
 
         /** {@inheritDoc} */
         @Override
-        public FieldSpacecraftState<S> resetState(final D detector, final FieldSpacecraftState<S> oldState) {
+        public FieldSpacecraftState<S> resetState(final FieldEventDetector<S> detector, final FieldSpacecraftState<S> oldState) {
             return applyResetters(oldState);
         }
 
@@ -406,7 +414,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
     /** Local handler for stop triggers.
      * @param <S> type of the field elements
      */
-    private class FieldStopHandler<D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>> implements FieldEventHandler<D, S> {
+    private class FieldStopHandler<S extends CalculusFieldElement<S>> implements FieldEventHandler<S> {
 
         /** Propagation direction. */
         private boolean forward;
@@ -415,14 +423,14 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
         @Override
         public void init(final FieldSpacecraftState<S> initialState,
                          final FieldAbsoluteDate<S> target,
-                         final D detector) {
+                         final FieldEventDetector<S> detector) {
             forward = target.isAfterOrEqualTo(initialState);
             initializeResetters(initialState, target);
         }
 
         /** {@inheritDoc} */
         @Override
-        public Action eventOccurred(final FieldSpacecraftState<S> s, final D detector, final boolean increasing) {
+        public Action eventOccurred(final FieldSpacecraftState<S> s, final FieldEventDetector<S> detector, final boolean increasing) {
             if (increasing) {
                 // the event is meaningful for maneuver firing
                 if (forward) {
@@ -440,7 +448,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
 
         /** {@inheritDoc} */
         @Override
-        public FieldSpacecraftState<S> resetState(final D detector, final FieldSpacecraftState<S> oldState) {
+        public FieldSpacecraftState<S> resetState(final FieldEventDetector<S> detector, final FieldSpacecraftState<S> oldState) {
             return applyResetters(oldState);
         }
 

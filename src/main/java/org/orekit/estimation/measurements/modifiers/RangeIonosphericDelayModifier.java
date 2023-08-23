@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,9 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.Range;
@@ -52,6 +53,17 @@ public class RangeIonosphericDelayModifier extends BaseRangeIonosphericDelayModi
 
     /** {@inheritDoc} */
     @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Range> estimated) {
+
+        final Range         measurement = estimated.getObservedMeasurement();
+        final GroundStation station     = measurement.getStation();
+
+        RangeModifierUtil.modifyWithoutDerivatives(estimated, station, this::rangeErrorIonosphericModel);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void modify(final EstimatedMeasurement<Range> estimated) {
 
         final Range           measurement = estimated.getObservedMeasurement();
@@ -59,7 +71,7 @@ public class RangeIonosphericDelayModifier extends BaseRangeIonosphericDelayModi
         final SpacecraftState state       = estimated.getStates()[0];
 
         RangeModifierUtil.modify(estimated, getIonoModel(),
-                                 new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame())),
+                                 new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                  station,
                                  this::rangeErrorIonosphericModel,
                                  this::rangeErrorIonosphericModel);

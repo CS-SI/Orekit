@@ -1,4 +1,4 @@
-' Copyright 2002-2022 CS GROUP
+' Copyright 2002-2023 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -60,6 +60,13 @@
           class RtcmEphemerisMessage
         }
 
+        package correction #DDEBD8 {
+          class Rtcm1060
+          class Rtcm1066
+          class RtcmYYYY
+          class RtcmCorrectionMessage
+        }
+
         class RtcmMessage {
           + List<RtcmData> getData()
         }
@@ -78,9 +85,13 @@
       SsrIm201 --|> SsrMessage
       RtcmMessage --|> ParsedMessage
       RtcmEphemerisMessage --|> RtcmMessage
+      RtcmCorrectionMessage --|> RtcmMessage
       Rtcm1019 --|> RtcmEphemerisMessage
       Rtcm1020 --|> RtcmEphemerisMessage
       RtcmXXXX --|> RtcmEphemerisMessage
+      Rtcm1060 --|> RtcmCorrectionMessage
+      Rtcm1066 --|> RtcmCorrectionMessage
+      RtcmYYYY --|> RtcmCorrectionMessage
 
     }
 
@@ -105,6 +116,8 @@
         +RTCM_1042
         +RTCM_1044
         +RTCM_1045
+        +...
+        +RTCM_1243
         {static} +MessageType getMessageType(String messageNumber)
       }
 

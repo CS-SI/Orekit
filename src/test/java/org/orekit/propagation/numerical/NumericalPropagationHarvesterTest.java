@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -122,16 +122,17 @@ public class NumericalPropagationHarvesterTest {
         propulsion.getParametersDrivers().get(0).setSelected(true);
         List<String> columnsNames = harvester.getJacobiansColumnsNames();
         Assertions.assertEquals(2, columnsNames.size());
-        Assertions.assertEquals("ABM-" + BasicConstantThrustPropulsionModel.THRUST, columnsNames.get(0));
-        Assertions.assertEquals("apogee_boost_STOP", columnsNames.get(1));
+        Assertions.assertEquals("SpanABM-" + BasicConstantThrustPropulsionModel.THRUST + Integer.toString(0), columnsNames.get(0));
+        Assertions.assertEquals("Spanapogee_boost_STOP" + Integer.toString(0), columnsNames.get(1));
 
     }
 
     private void doTestInitialStm(OrbitType type, double deltaId) {
+        PositionAngle angle = PositionAngle.TRUE;
         NumericalPropagationHarvester harvester =
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm", null, null);
         propagator.setOrbitType(type);
-        propagator.setPositionAngleType(PositionAngle.TRUE);
+        propagator.setPositionAngleType(angle);
         double[] p = new double[36];
         for (int i = 0; i < p.length; i += 7) {
             p[i] = 1.0;
@@ -139,6 +140,8 @@ public class NumericalPropagationHarvesterTest {
         SpacecraftState s = propagator.getInitialState().addAdditionalState(harvester.getStmName(), p);
         RealMatrix stm = harvester.getStateTransitionMatrix(s);
         Assertions.assertEquals(deltaId, stm.subtract(MatrixUtils.createRealIdentityMatrix(6)).getNorm1(), 1.0e-3);
+        Assertions.assertEquals(type, harvester.getOrbitType());
+        Assertions.assertEquals(angle, harvester.getPositionAngle());
     }
 
     @BeforeEach

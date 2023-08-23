@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,7 +55,7 @@ public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingD
      */
     public LatitudeCrossingDetector(final double maxCheck, final double threshold,
                                     final OneAxisEllipsoid body, final double latitude) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<LatitudeCrossingDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              body, latitude);
     }
 
@@ -72,9 +72,9 @@ public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingD
      * @param body body on which the latitude is defined
      * @param latitude latitude to be crossed
      */
-    private LatitudeCrossingDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<? super LatitudeCrossingDetector> handler,
-                                     final OneAxisEllipsoid body, final double latitude) {
+    protected LatitudeCrossingDetector(final double maxCheck, final double threshold,
+                                       final int maxIter, final EventHandler handler,
+                                       final OneAxisEllipsoid body, final double latitude) {
         super(maxCheck, threshold, maxIter, handler);
         this.body     = body;
         this.latitude = latitude;
@@ -84,7 +84,7 @@ public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingD
     @Override
     protected LatitudeCrossingDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<? super LatitudeCrossingDetector> newHandler) {
+                                              final EventHandler newHandler) {
         return new LatitudeCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                           body, latitude);
     }
@@ -115,7 +115,7 @@ public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingD
     public double g(final SpacecraftState s) {
 
         // convert state to geodetic coordinates
-        final GeodeticPoint gp = body.transform(s.getPVCoordinates().getPosition(),
+        final GeodeticPoint gp = body.transform(s.getPosition(),
                                                 s.getFrame(), s.getDate());
 
         // latitude difference

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.odm.oem;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataContext;
@@ -28,13 +29,13 @@ import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
-import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
-import org.orekit.files.ccsds.ndm.odm.OdmParser;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
+import org.orekit.files.ccsds.ndm.odm.OdmParser;
 import org.orekit.files.ccsds.ndm.odm.StateVector;
 import org.orekit.files.ccsds.ndm.odm.StateVectorKey;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
@@ -72,7 +73,7 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
     private static final Pattern SPLIT_AT_BLANKS = Pattern.compile("\\s+");
 
     /** File header. */
-    private Header header;
+    private OdmHeader header;
 
     /** File segments. */
     private List<OemSegment> segments;
@@ -119,13 +120,16 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
      * @param mu gravitational coefficient
      * @param defaultInterpolationDegree default interpolation degree
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
     public OemParser(final IERSConventions conventions, final boolean simpleEOP,
                      final DataContext dataContext,
                      final AbsoluteDate missionReferenceDate, final double mu,
-                     final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior) {
+                     final int defaultInterpolationDegree, final ParsedUnitsBehavior parsedUnitsBehavior,
+                     final Function<ParseToken, List<ParseToken>>[] filters) {
         super(Oem.ROOT, Oem.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext,
-              missionReferenceDate, mu, parsedUnitsBehavior);
+              missionReferenceDate, mu, parsedUnitsBehavior, filters);
         this.defaultInterpolationDegree  = defaultInterpolationDegree;
     }
 
@@ -137,14 +141,14 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
 
     /** {@inheritDoc} */
     @Override
-    public Header getHeader() {
+    public OdmHeader getHeader() {
         return header;
     }
 
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header            = new Header(3.0);
+        header            = new OdmHeader();
         segments          = new ArrayList<>();
         metadata          = null;
         context           = null;
@@ -285,7 +289,7 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
     boolean manageCovarianceSection(final boolean starting) {
         if (starting) {
             // save the current metadata for later retrieval of reference frame
-            final CommonMetadata savedMetadata = metadata;
+            final OdmCommonMetadata savedMetadata = metadata;
             currentCovariance = new CartesianCovariance(() -> savedMetadata.getReferenceFrame());
             anticipateNext(getFileFormat() == FileFormat.XML ?
                         this::processXmlCovarianceToken :
@@ -428,7 +432,7 @@ public class OemParser extends OdmParser<Oem, OemParser> implements EphemerisFil
 
                 if (currentCovariance == null) {
                     // save the current metadata for later retrieval of reference frame
-                    final CommonMetadata savedMetadata = metadata;
+                    final OdmCommonMetadata savedMetadata = metadata;
                     currentCovariance = new CartesianCovariance(() -> savedMetadata.getReferenceFrame());
                     currentRow        = 0;
                 }

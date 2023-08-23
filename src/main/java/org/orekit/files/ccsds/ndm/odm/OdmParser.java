@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,15 @@
  */
 package org.orekit.files.ccsds.ndm.odm;
 
+import java.util.List;
+import java.util.function.Function;
+
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.parsing.AbstractConstituentParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -40,7 +44,8 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class OdmParser<T extends NdmConstituent<?, ?>, P extends OdmParser<T, ?>> extends AbstractConstituentParser<T, P> {
+public abstract class OdmParser<T extends NdmConstituent<OdmHeader, ?>, P extends OdmParser<T, ?>>
+    extends AbstractConstituentParser<OdmHeader, T, P> {
 
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
@@ -63,12 +68,15 @@ public abstract class OdmParser<T extends NdmConstituent<?, ?>, P extends OdmPar
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
     protected OdmParser(final String root, final String formatVersionKey,
                         final IERSConventions conventions, final boolean simpleEOP,
                         final DataContext dataContext, final AbsoluteDate missionReferenceDate,
-                        final double mu, final ParsedUnitsBehavior parsedUnitsBehavior) {
-        super(root, formatVersionKey, conventions, simpleEOP, dataContext, parsedUnitsBehavior);
+                        final double mu, final ParsedUnitsBehavior parsedUnitsBehavior,
+                        final Function<ParseToken, List<ParseToken>>[] filters) {
+        super(root, formatVersionKey, conventions, simpleEOP, dataContext, parsedUnitsBehavior, filters);
         this.missionReferenceDate = missionReferenceDate;
         this.muSet                = mu;
         this.muParsed             = Double.NaN;

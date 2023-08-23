@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -69,7 +69,9 @@ public class DSSTPVTest {
             final double[][] finiteDifferencesJacobian =
                 Differentiation.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) {
-                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                        return measurement.
+                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                               getEstimatedValue();
                     }
                                                   }, measurement.getDimension(),
                                                   propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
@@ -106,7 +108,7 @@ public class DSSTPVTest {
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Dummy P, V, T
-        final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = context.initialOrbit.getPosition();
         final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = context.initialOrbit.getDate();
 
@@ -176,7 +178,7 @@ public class DSSTPVTest {
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Dummy P, V, T
-        final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = context.initialOrbit.getPosition();
         final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = context.initialOrbit.getDate();
 
@@ -250,7 +252,7 @@ public class DSSTPVTest {
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Dummy P, V, T
-        final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = context.initialOrbit.getPosition();
         final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = context.initialOrbit.getDate();
 
@@ -337,7 +339,7 @@ public class DSSTPVTest {
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Dummy P, V, T
-        final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = context.initialOrbit.getPosition();
         final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = context.initialOrbit.getDate();
 
@@ -414,7 +416,7 @@ public class DSSTPVTest {
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Dummy P, V, T
-        final Vector3D     position = context.initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = context.initialOrbit.getPosition();
         final Vector3D     velocity = context.initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = context.initialOrbit.getDate();
         final double       weight   = 1.;

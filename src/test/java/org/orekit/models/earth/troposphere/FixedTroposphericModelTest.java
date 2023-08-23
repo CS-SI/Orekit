@@ -18,7 +18,7 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
@@ -58,7 +58,7 @@ public class FixedTroposphericModelTest {
 
     @Test
     public void testFieldModel() {
-        doTestFieldModel(Decimal64Field.getInstance());
+        doTestFieldModel(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldModel(final Field<T> field) {
@@ -92,7 +92,7 @@ public class FixedTroposphericModelTest {
 
     @Test
     public void testFieldSymmetry() {
-        doTestFieldSymmetry(Decimal64Field.getInstance());
+        doTestFieldSymmetry(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldSymmetry(final Field<T> field) {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -86,6 +86,46 @@ public class KalmanEstimatorUtil {
             // For other measurements we do not have a covariance matrix.
             // Thus the correlation coefficients matrix is an identity matrix.
             covariance = MatrixUtils.createRealIdentityMatrix(observedMeasurement.getDimension());
+        }
+
+        return new MeasurementDecorator(observedMeasurement, covariance, referenceDate);
+
+    }
+
+    /** Decorate an observed measurement for an Unscented Kalman Filter.
+     * <p>
+     * This method uses directly the measurement's covariance matrix, without any normalization.
+     * </p>
+     * @param observedMeasurement the measurement
+     * @param referenceDate reference date
+     * @return decorated measurement
+     * @since 11.3.2
+     */
+    public static MeasurementDecorator decorateUnscented(final ObservedMeasurement<?> observedMeasurement,
+                                                         final AbsoluteDate referenceDate) {
+
+        // Normalized measurement noise matrix contains 1 on its diagonal and correlation coefficients
+        // of the measurement on its non-diagonal elements.
+        // Indeed, the "physical" measurement noise matrix is the covariance matrix of the measurement
+
+        final RealMatrix covariance;
+        if (observedMeasurement.getMeasurementType().equals(PV.MEASUREMENT_TYPE)) {
+            // For PV measurements we do have a covariance matrix and thus a correlation coefficients matrix
+            final PV pv = (PV) observedMeasurement;
+            covariance = MatrixUtils.createRealMatrix(pv.getCovarianceMatrix());
+        } else if (observedMeasurement.getMeasurementType().equals(Position.MEASUREMENT_TYPE)) {
+            // For Position measurements we do have a covariance matrix and thus a correlation coefficients matrix
+            final Position position = (Position) observedMeasurement;
+            covariance = MatrixUtils.createRealMatrix(position.getCovarianceMatrix());
+        } else {
+            // For other measurements we do not have a covariance matrix.
+            // Thus the correlation coefficients matrix is an identity matrix.
+            covariance = MatrixUtils.createRealIdentityMatrix(observedMeasurement.getDimension());
+            final double[] sigma = observedMeasurement.getTheoreticalStandardDeviation();
+            for (int i = 0; i < sigma.length; i++) {
+                covariance.setEntry(i, i, sigma[i] * sigma[i]);
+            }
+
         }
 
         return new MeasurementDecorator(observedMeasurement, covariance, referenceDate);
@@ -250,6 +290,140 @@ public class KalmanEstimatorUtil {
             return MatrixUtils.createRealVector(residuals);
         }
 
+    }
+
+    /**
+     * Normalize a covariance matrix.
+     * @param physicalP "physical" covariance matrix in input
+     * @param parameterScales scale factor of estimated parameters
+     * @return the normalized covariance matrix
+     */
+    public static RealMatrix normalizeCovarianceMatrix(final RealMatrix physicalP,
+                                                       final double[] parameterScales) {
+
+        // Initialize output matrix
+        final int nbParams = physicalP.getRowDimension();
+        final RealMatrix normalizedP = MatrixUtils.createRealMatrix(nbParams, nbParams);
+
+        // Normalize the state matrix
+        for (int i = 0; i < nbParams; ++i) {
+            for (int j = 0; j < nbParams; ++j) {
+                normalizedP.setEntry(i, j, physicalP.getEntry(i, j) / (parameterScales[i] * parameterScales[j]));
+            }
+        }
+        return normalizedP;
+    }
+
+    /**
+     * Un-nomalized the covariance matrix.
+     * @param normalizedP normalized covariance matrix
+     * @param parameterScales scale factor of estimated parameters
+     * @return the un-normalized covariance matrix
+     */
+    public static RealMatrix unnormalizeCovarianceMatrix(final RealMatrix normalizedP,
+                                                         final double[] parameterScales) {
+        // Initialize physical covariance matrix
+        final int nbParams = normalizedP.getRowDimension();
+        final RealMatrix physicalP = MatrixUtils.createRealMatrix(nbParams, nbParams);
+
+        // Un-normalize the covairance matrix
+        for (int i = 0; i < nbParams; ++i) {
+            for (int j = 0; j < nbParams; ++j) {
+                physicalP.setEntry(i, j, normalizedP.getEntry(i, j) * parameterScales[i] * parameterScales[j]);
+            }
+        }
+        return physicalP;
+    }
+
+    /**
+     * Un-nomalized the state transition matrix.
+     * @param normalizedSTM normalized state transition matrix
+     * @param parameterScales scale factor of estimated parameters
+     * @return the un-normalized state transition matrix
+     */
+    public static RealMatrix unnormalizeStateTransitionMatrix(final RealMatrix normalizedSTM,
+                                                              final double[] parameterScales) {
+        // Initialize physical matrix
+        final int nbParams = normalizedSTM.getRowDimension();
+        final RealMatrix physicalSTM = MatrixUtils.createRealMatrix(nbParams, nbParams);
+
+        // Un-normalize the matrix
+        for (int i = 0; i < nbParams; ++i) {
+            for (int j = 0; j < nbParams; ++j) {
+                physicalSTM.setEntry(i, j,
+                        normalizedSTM.getEntry(i, j) * parameterScales[i] / parameterScales[j]);
+            }
+        }
+        return physicalSTM;
+    }
+
+    /**
+     * Un-normalize the measurement matrix.
+     * @param normalizedH normalized measurement matrix
+     * @param parameterScales scale factor of estimated parameters
+     * @param sigmas measurement theoretical standard deviation
+     * @return the un-normalized measurement matrix
+     */
+    public static RealMatrix unnormalizeMeasurementJacobian(final RealMatrix normalizedH,
+                                                            final double[] parameterScales,
+                                                            final double[] sigmas) {
+        // Initialize physical matrix
+        final int nbLine = normalizedH.getRowDimension();
+        final int nbCol  = normalizedH.getColumnDimension();
+        final RealMatrix physicalH = MatrixUtils.createRealMatrix(nbLine, nbCol);
+
+        // Un-normalize the matrix
+        for (int i = 0; i < nbLine; ++i) {
+            for (int j = 0; j < nbCol; ++j) {
+                physicalH.setEntry(i, j, normalizedH.getEntry(i, j) * sigmas[i] / parameterScales[j]);
+            }
+        }
+        return physicalH;
+    }
+
+    /**
+     * Un-normalize the innovation covariance matrix.
+     * @param normalizedS normalized innovation covariance matrix
+     * @param sigmas measurement theoretical standard deviation
+     * @return the un-normalized innovation covariance matrix
+     */
+    public static RealMatrix unnormalizeInnovationCovarianceMatrix(final RealMatrix normalizedS,
+                                                                   final double[] sigmas) {
+        // Initialize physical matrix
+        final int nbMeas = sigmas.length;
+        final RealMatrix physicalS = MatrixUtils.createRealMatrix(nbMeas, nbMeas);
+
+        // Un-normalize the matrix
+        for (int i = 0; i < nbMeas; ++i) {
+            for (int j = 0; j < nbMeas; ++j) {
+                physicalS.setEntry(i, j, normalizedS.getEntry(i, j) * sigmas[i] *   sigmas[j]);
+            }
+        }
+        return physicalS;
+    }
+
+    /**
+     * Un-normalize the Kalman gain matrix.
+     * @param normalizedK normalized Kalman gain matrix
+     * @param parameterScales scale factor of estimated parameters
+     * @param sigmas measurement theoretical standard deviation
+     * @return the un-normalized Kalman gain matrix
+     */
+    public static RealMatrix unnormalizeKalmanGainMatrix(final RealMatrix normalizedK,
+                                                         final double[] parameterScales,
+                                                         final double[] sigmas) {
+        // Initialize physical matrix
+        final int nbLine = normalizedK.getRowDimension();
+        final int nbCol  = normalizedK.getColumnDimension();
+        final RealMatrix physicalK = MatrixUtils.createRealMatrix(nbLine, nbCol);
+
+        // Un-normalize the matrix
+        for (int i = 0; i < nbLine; ++i) {
+            for (int j = 0; j < nbCol; ++j) {
+                physicalK.setEntry(i, j, normalizedK.getEntry(i, j) * parameterScales[i] / sigmas[j]);
+            }
+        }
+        return physicalK;
     }
 
 }

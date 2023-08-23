@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,6 +34,7 @@ import org.hipparchus.util.MerweUnscentedTransform;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -146,7 +147,7 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
                                                                       useSun, useMoon);
 
         // Measurements
-        final double sigma = 2.0;
+        final double sigma = 1.0;
         final List<ObservedMeasurement<?>> measurements = initializeMeasurements(observations, initialOrbit, sigma);
 
         // Covariance
@@ -166,15 +167,15 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
         final StreamingStatistics statX      = observer.getXStatistics();
         final StreamingStatistics statY      = observer.getYStatistics();
         final StreamingStatistics statZ      = observer.getZStatistics();
-        Assertions.assertEquals(0.0, statX.getMean(), 7.85e-5);
-        Assertions.assertEquals(0.0, statY.getMean(), 3.34e-5);
-        Assertions.assertEquals(0.0, statZ.getMean(), 2.07e-4);
-        Assertions.assertEquals(0.0, statX.getMin(),  0.0016); // Value is negative
-        Assertions.assertEquals(0.0, statY.getMin(),  0.0021); // Value is negative
-        Assertions.assertEquals(0.0, statZ.getMin(),  0.0709); // Value is negative
-        Assertions.assertEquals(0.0, statX.getMax(),  0.0103);
-        Assertions.assertEquals(0.0, statY.getMax(),  0.0073);
-        Assertions.assertEquals(0.0, statZ.getMax(),  0.0082);
+        Assertions.assertEquals(0.0, statX.getMean(), 1.37e-4);
+        Assertions.assertEquals(0.0, statY.getMean(), 4.93e-4);
+        Assertions.assertEquals(0.0, statZ.getMean(), 3.80e-4);
+        Assertions.assertEquals(0.0, statX.getMin(),  0.027); // Value is negative
+        Assertions.assertEquals(0.0, statY.getMin(),  0.028); // Value is negative
+        Assertions.assertEquals(0.0, statZ.getMin(),  0.026); // Value is negative
+        Assertions.assertEquals(0.0, statX.getMax(),  0.029);
+        Assertions.assertEquals(0.0, statY.getMax(),  0.027);
+        Assertions.assertEquals(0.0, statZ.getMax(),  0.026);
 
         // Check that "physical" matrices are not null
         Assertions.assertNotNull(estimation.getPhysicalInnovationCovarianceMatrix());
@@ -255,7 +256,7 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
         final Frame orbitFrame = FramesFactory.getEME2000();
 
         // Bounded propagator from the CPF file
-        final BoundedPropagator bounded = ephemeris.getPropagator();
+        final BoundedPropagator bounded = ephemeris.getPropagator(new FrameAlignedProvider(orbitFrame));
 
         // Initial date
         final AbsoluteDate initialDate = bounded.getMinDate();
@@ -383,7 +384,7 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
             final RadiationSensitive spacecraft = new IsotropicRadiationSingleCoefficient(surface, 1.13);
 
             // Solar radiation pressure
-            final DSSTForceModel srp = new DSSTSolarRadiationPressure(CelestialBodyFactory.getSun(), gravityField.getAe(), spacecraft, gravityField.getMu());
+            final DSSTForceModel srp = new DSSTSolarRadiationPressure(CelestialBodyFactory.getSun(), centralBody, spacecraft, gravityField.getMu());
             for (final ParameterDriver driver : srp.getParametersDrivers()) {
                 if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
                     //driver.setSelected(true);

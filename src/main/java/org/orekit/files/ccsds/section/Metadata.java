@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,7 +47,7 @@ public class Metadata extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(timeSystem, MetadataKey.TIME_SYSTEM);
+        checkNotNull(timeSystem, MetadataKey.TIME_SYSTEM.name());
     }
 
     /** Get the Time System that: for OPM, is used for metadata, state vector,

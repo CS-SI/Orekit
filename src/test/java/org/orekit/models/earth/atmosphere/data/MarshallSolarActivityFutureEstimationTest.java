@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth.atmosphere.data;
 
+import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
@@ -29,6 +30,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.IsotropicDrag;
@@ -55,11 +57,16 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.text.ParseException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.orekit.OrekitMatchers.closeTo;
@@ -182,6 +189,41 @@ public class MarshallSolarActivityFutureEstimationTest {
         expected = propagator.propagate(end);
 
         assertThat(actual.getPVCoordinates(), pvCloseTo(expected.getPVCoordinates(), 1.0));
+    }
+
+    @Test
+    public void testIssue1118() throws URISyntaxException {
+        // Setup
+        final String fileName = "Jan2000F10-edited-data.txt";
+        final URL url = MarshallSolarActivityFutureEstimationTest.class.getClassLoader().getResource("atmosphere/" + fileName);
+        final DataSource source = new DataSource(url.toURI());
+        MarshallSolarActivityFutureEstimation flux =
+                        new MarshallSolarActivityFutureEstimation(fileName, StrengthLevel.AVERAGE);
+
+        // Load file
+        try (InputStream is = source.getOpener().openStreamOnce();
+             BufferedInputStream bis = new BufferedInputStream(is)) {
+            flux.loadData(bis, source.getName());
+        } catch (IOException | ParseException ioe) {
+            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
+        }
+
+        final AbsoluteDate july = new AbsoluteDate(2008, 7, 1, utc);
+        final AbsoluteDate august = new AbsoluteDate(2008, 8, 1, utc);
+        final AbsoluteDate middle = july.shiftedBy(august.durationFrom(july) / 2.0);
+        final double minute = 60;
+        final AbsoluteDate before = middle.shiftedBy(-minute);
+        final AbsoluteDate after = middle.shiftedBy(+minute);
+
+        // action + verify
+        // non-chaotic i.e. small change in input produces small change in output.
+        double kpHourlyDifference =
+                flux.getThreeHourlyKP(before) - flux.getThreeHourlyKP(after);
+        assertThat(kpHourlyDifference, closeTo(0.0, 1e-4));
+        double kpDailyDifference = flux.get24HoursKp(before) - flux.get24HoursKp(after);
+        assertThat(kpDailyDifference, closeTo(0.0, 1e-4));
+        assertThat(flux.getThreeHourlyKP(middle), closeTo(2.18, 0.3));
+        assertThat(flux.get24HoursKp(middle), closeTo(2.18, 0.3));
     }
 
     /**

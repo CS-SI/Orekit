@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,6 +53,8 @@ public class KvnGenerator extends AbstractGenerator {
      * @param paddingWidth padding width for aligning the '=' sign
      * (not counting the extra blank added before the '=' sign)
      * @param outputName output name for error messages
+     * @param maxRelativeOffset maximum offset in seconds to use relative dates
+     * (if a date is too far from reference, it will be displayed as calendar elements)
      * @param unitsColumn columns number for aligning units (if negative or zero, units are not output)
      * @see org.orekit.files.ccsds.ndm.tdm.TdmWriter#KVN_PADDING_WIDTH     TdmWriter.KVN_PADDING_WIDTH
      * @see org.orekit.files.ccsds.ndm.adm.aem.AemWriter#KVN_PADDING_WIDTH AemWriter.KVN_PADDING_WIDTH
@@ -63,8 +65,9 @@ public class KvnGenerator extends AbstractGenerator {
      * @see org.orekit.files.ccsds.ndm.odm.ocm.OcmWriter#KVN_PADDING_WIDTH OcmWriter.KVN_PADDING_WIDTH
      */
     public KvnGenerator(final Appendable output, final int paddingWidth,
-                        final String outputName, final int unitsColumn) {
-        super(output, outputName, unitsColumn > 0);
+                        final String outputName, final double maxRelativeOffset,
+                        final int unitsColumn) {
+        super(output, outputName, maxRelativeOffset, unitsColumn > 0);
         kvFormat = "%-" + FastMath.max(1, paddingWidth) + "s = %s";
         final StringBuilder builder = new StringBuilder(COMMENT);
         builder.append(' ');

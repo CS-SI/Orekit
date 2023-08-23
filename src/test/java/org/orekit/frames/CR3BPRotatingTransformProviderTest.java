@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,7 +74,7 @@ public class CR3BPRotatingTransformProviderTest {
 
     @Test
     public void testFieldTransformationOrientationForEarthMoon() {
-        doTestFieldTransformationOrientationForEarthMoon(Decimal64Field.getInstance());
+        doTestFieldTransformationOrientationForEarthMoon(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldTransformationOrientationForEarthMoon(final Field<T> field) {
@@ -139,7 +139,7 @@ public class CR3BPRotatingTransformProviderTest {
 
     @Test
     public void testFieldSunEarth() {
-        doTestFieldSunEarth(Decimal64Field.getInstance());
+        doTestFieldSunEarth(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldSunEarth(final Field<T> field) {
@@ -205,7 +205,7 @@ public class CR3BPRotatingTransformProviderTest {
 
     @Test
     public void testFieldSunJupiter() {
-        doTestFieldSunJupiter(Decimal64Field.getInstance());
+        doTestFieldSunJupiter(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldSunJupiter(final Field<T> field) {
@@ -250,8 +250,8 @@ public class CR3BPRotatingTransformProviderTest {
         final Frame baryFrame = syst.getRotatingFrame();
         for (double dt = -Constants.JULIAN_DAY; dt <= Constants.JULIAN_DAY; dt += 3600.0) {
             final AbsoluteDate date              = date0.shiftedBy(dt);
-            final Vector3D     sunPositionInBary   = sun.getPVCoordinates(date, baryFrame).getPosition();
-            final Vector3D     earthPositionInBary = earth.getPVCoordinates(date, baryFrame).getPosition();
+            final Vector3D     sunPositionInBary   = sun.getPosition(date, baryFrame);
+            final Vector3D     earthPositionInBary = earth.getPosition(date, baryFrame);
             Assertions.assertEquals(0.0, Vector3D.angle(sunPositionInBary,   Vector3D.MINUS_I), 1.0e-10);
             Assertions.assertEquals(FastMath.PI, Vector3D.angle(earthPositionInBary, Vector3D.MINUS_I), 1.0e-4);
         }
@@ -259,7 +259,7 @@ public class CR3BPRotatingTransformProviderTest {
 
     @Test
     public void testFieldBaryOrientation() {
-        doTestFieldBaryOrientation(Decimal64Field.getInstance());
+        doTestFieldBaryOrientation(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldBaryOrientation(final Field<T> field) {
@@ -273,8 +273,8 @@ public class CR3BPRotatingTransformProviderTest {
         final Frame baryFrame = syst.getRotatingFrame();
         for (double dt = -Constants.JULIAN_DAY; dt <= Constants.JULIAN_DAY; dt += 3600.0) {
             final FieldAbsoluteDate<T> date              = date0.shiftedBy(dt);
-            final FieldVector3D<T>     sunPositionInBary   = sun.getPVCoordinates(date, baryFrame).getPosition();
-            final FieldVector3D<T>     earthPositionInBary = earth.getPVCoordinates(date, baryFrame).getPosition();
+            final FieldVector3D<T>     sunPositionInBary   = sun.getPosition(date, baryFrame);
+            final FieldVector3D<T>     earthPositionInBary = earth.getPosition(date, baryFrame);
             Assertions.assertEquals(0.0, FieldVector3D.angle(sunPositionInBary,   Vector3D.MINUS_I).getReal(), 1.0e-10);
             Assertions.assertEquals(FastMath.PI, FieldVector3D.angle(earthPositionInBary, Vector3D.MINUS_I).getReal(), 1.0e-4);
         }

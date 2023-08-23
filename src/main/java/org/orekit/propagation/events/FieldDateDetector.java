@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -65,7 +65,7 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
      */
     @SafeVarargs
     public FieldDateDetector(final T maxCheck, final T threshold, final FieldTimeStamped<T>... dates) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new FieldStopOnEvent<FieldDateDetector<T>, T>(), dates);
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new FieldStopOnEvent<>(), dates);
     }
 
     /** Build a new instance.
@@ -92,9 +92,9 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
      * @param dates list of event dates
      */
     @SafeVarargs
-    private FieldDateDetector(final T maxCheck, final T threshold,
-                              final int maxIter, final FieldEventHandler<? super FieldDateDetector<T>, T> handler,
-                              final FieldTimeStamped<T>... dates) {
+    protected FieldDateDetector(final T maxCheck, final T threshold,
+                                final int maxIter, final FieldEventHandler<T> handler,
+                                final FieldTimeStamped<T>... dates) {
         super(maxCheck, threshold, maxIter, handler);
         this.currentIndex  = -1;
         this.gDate         = null;
@@ -107,7 +107,7 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
     /** {@inheritDoc} */
     @Override
     protected FieldDateDetector<T> create(final T newMaxCheck, final T newThreshold,
-                                          final int newMaxIter, final FieldEventHandler<? super FieldDateDetector<T>, T> newHandler) {
+                                          final int newMaxIter, final FieldEventHandler<T> newHandler) {
         @SuppressWarnings("unchecked")
         final FieldTimeStamped<T>[] dates = eventDateList.toArray(new FieldEventDate[eventDateList.size()]);
         return new FieldDateDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler, dates);

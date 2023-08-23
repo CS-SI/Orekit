@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -63,7 +63,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      */
     public ElevationExtremumDetector(final double maxCheck, final double threshold,
                                      final TopocentricFrame topo) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<ElevationExtremumDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              topo);
     }
 
@@ -79,9 +79,9 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * @param handler event handler to call at event occurrences
      * @param topo topocentric frame centered on ground point
      */
-    private ElevationExtremumDetector(final double maxCheck, final double threshold,
-                                      final int maxIter, final EventHandler<? super ElevationExtremumDetector> handler,
-                                      final TopocentricFrame topo) {
+    protected ElevationExtremumDetector(final double maxCheck, final double threshold,
+                                        final int maxIter, final EventHandler handler,
+                                        final TopocentricFrame topo) {
         super(maxCheck, threshold, maxIter, handler);
         this.topo = topo;
     }
@@ -90,7 +90,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
     @Override
     protected ElevationExtremumDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<? super ElevationExtremumDetector> newHandler) {
+                                              final EventHandler newHandler) {
         return new ElevationExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, topo);
     }
 
@@ -107,7 +107,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * @return spacecraft elevation
      */
     public double getElevation(final SpacecraftState s) {
-        return topo.getElevation(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
+        return topo.getElevation(s.getPosition(), s.getFrame(), s.getDate());
     }
 
     /** Compute the value of the detection function.

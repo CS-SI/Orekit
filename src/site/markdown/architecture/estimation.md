@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2022 CS GROUP
+<!--- Copyright 2002-2023 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -30,8 +30,8 @@ operational needs.
 Organization
 ------------
 
-There are three main sub-packages: `org.orekit.estimation.measurements`, `org.orekit.estimation.leastsquares`,
-and `org.orekit.estimation.sequential`.
+There are four main sub-packages: `org.orekit.estimation.measurements`, `org.orekit.estimation.leastsquares`,
+`org.orekit.estimation.sequential`, and `org.orekit.estimation.iod`.
 
 ### Measurements
 
@@ -60,7 +60,7 @@ one bias modifier for the on-board delay for distance measurements, a few modifi
 by two difference ground stations would refer to different sets of ground station positions offsets for example).
 
 The classical measurements and modifiers are already provided by Orekit in the same package, but for more advanced
-needs, users are expected to implement their own implementations. This ensures the extensibility of this design.
+needs, users are expected to add their own implementations. This ensures the extensibility of this design.
 
 #### Measurements generation
 
@@ -89,7 +89,16 @@ at exact UTC minutes 5, 10, 15... in the previous example).
 Several schedulers can be configured at the same time, if either different types of measurements are
 available (range, range-rate, optical tracking on stars background...) or several independent schedules
 are used (for example if several ground stations are available). All schedulers are registered to
-a `Generator` which when run will produce simulated measurements in the specified time range.
+a single `Generator` which when run will produce simulated measurements in the specified time range.
+
+In order to handle measurements on the fly as they are generated, users can use custom implementations
+of the `GeneratedMeasurementSubscriber`. This is useful for example if a very large number of measurements
+are to be generated as it would be impractical to store everything in memory. If on the other hand
+the number of measurements remains limited (a few hundreds or thousands), then the `GatheringSubscriber`
+implementation can be used, it will store everything in a sorted set that can be retrieved after generation.
+In both cases (on-the-fly handling or retrieval of a `SortedSet`), the measurements are sorted either
+chronologically or reverse-chronologically according to the `startDate` and `endDate` parameters used when
+calling `Generator.generate`.
 
 ### Least Squares
 
@@ -187,10 +196,10 @@ named Unscented Semi-analytical Kalman Filter
 Users can decide what they want to estimate. The 6 orbital parameters are typically always estimated and are selected
 by default, but it is possible to fix some or all of these parameters. Users can also estimate some propagator parameters
 (like drag coefficient or radiation pressure coefficients) and measurements parameters (like biases, stations position
-offsets or Earth Orientation parameters). One use case for estimating only a subset of the orbital parameters is when
+offsets or Earth Orientation Parameters). One use case for estimating only a subset of the orbital parameters is when
 observations are very scarce (say the first few measurements on a newly detected debris or asteroid). One use case for
 not estimating any orbital parameters at all is when calibrating measurements biases from a reference orbit considered
-to be perfect. Selecting which parameters should be estimates and which parameters should remain fixed is done thanks
+to be perfect. Selecting which parameters should be estimated and which parameters should remain fixed is done thanks
 to the `ParameterDriver` class. During setup, the user can retrieve three different `ParametersDriversList` from the
 `BatchLSEstimator`:
 
@@ -217,7 +226,7 @@ containing the ephemeris. Orekit automatically disable the estimation of the dyn
 Once everything has been set up, the `estimate` method of `BatchLSEstimator` is called. The least squares solver will
 then modify the values of the parameters that have been flagged as selected (and hence should be estimated). The
 estimator does not know the meaning of any of the parameters, they appear all the same for it. Under the hood,
-each parameters was in fact created by an object which knows what the parameter mean, like for example an object
+each parameter was in fact created by an object which knows what the parameter means, like for example an object
 involved in the drag computation. This object uses the observer design pattern to monitor each change attempted by
 the optimization algorithm, and it will adapt its computation according to the last change performed. This design
 improves the decoupling between the upper layer managing the batch least square estimation and the lower layer to
@@ -266,7 +275,7 @@ Some parameters values are forbidden and should not be used by the least squares
 mid 2017 the Hipparchus library does not support simple bounds constraints for these algorithms. There is
 however a workaround with parameters validator. Orekit uses this workaround and set up a validator for the full
 set of parameters. This validator checks the test values provided by the least squares solver are within the
-parameters bounds, and if not it simply force them at boundary, effectively clipping the values. Just like
+parameters bounds, and if not it simply forces them at boundary, effectively clipping the values. Just like
 scaling factors, the minimum and maximum bounds are currently hard-coded in the library. The limits have been
 set to quite loose value, as they are only meant to prevent computation failures (like negative eccentricities
 or semi-major axes). If anyway the least squares algorithm tries such extreme values, there is probably a

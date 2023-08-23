@@ -18,6 +18,17 @@
 
 package org.orekit.models.earth.atmosphere.data;
 
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.orekit.OrekitMatchers.closeTo;
+import static org.orekit.OrekitMatchers.pvCloseTo;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.text.ParseException;
+import java.util.SortedSet;
+
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
@@ -28,6 +39,9 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataContext;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.DragForce;
@@ -39,6 +53,7 @@ import org.orekit.models.earth.atmosphere.DTM2000;
 import org.orekit.models.earth.atmosphere.DTM2000InputParameters;
 import org.orekit.models.earth.atmosphere.NRLMSISE00;
 import org.orekit.models.earth.atmosphere.NRLMSISE00InputParameters;
+import org.orekit.models.earth.atmosphere.data.CssiSpaceWeatherDataLoader.LineParameters;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -51,10 +66,6 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.orekit.OrekitMatchers.closeTo;
-import static org.orekit.OrekitMatchers.pvCloseTo;
 
 /**
  *
@@ -72,6 +83,14 @@ public class CssiSpaceWeatherLoaderTest {
     private CssiSpaceWeatherData loadCswl() {
         CssiSpaceWeatherData cswl = new CssiSpaceWeatherData(CssiSpaceWeatherData.DEFAULT_SUPPORTED_NAMES);
         return cswl;
+    }
+
+    @Test
+    public void testIssue1117() throws URISyntaxException {
+        final URL url = CssiSpaceWeatherLoaderTest.class.getClassLoader().getResource("atmosphere/SpaceWeather-All-v1.2_reduced.txt");
+        CssiSpaceWeatherData cswl = new CssiSpaceWeatherData(new DataSource(url.toURI()));
+        Assertions.assertEquals(new AbsoluteDate("2020-02-19", utc), cswl.getMinDate());
+        Assertions.assertEquals(new AbsoluteDate("2020-02-22", utc), cswl.getMaxDate());
     }
 
     @Test
@@ -325,6 +344,18 @@ public class CssiSpaceWeatherLoaderTest {
         expected = propagator.propagate(end);
 
         assertThat(actual.getPVCoordinates(), pvCloseTo(expected.getPVCoordinates(), 1.0));
+    }
+
+    @Test
+    public void testIssue841() throws OrekitException, IOException, ParseException {
+        final CssiSpaceWeatherDataLoader loader = new CssiSpaceWeatherDataLoader(utc);
+        DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
+        manager.feed("SpaceWeather-All-v1.2_reduced.txt", loader);
+        final SortedSet<LineParameters> set = loader.getDataSet();
+        Assertions.assertEquals(4, set.size());
+
+        CssiSpaceWeatherData cswl = new CssiSpaceWeatherData("SpaceWeather-All-v1.2_reduced.txt");
+        Assertions.assertEquals(71.6, cswl.getInstantFlux(new AbsoluteDate("2020-02-20T00:00:00.000", utc)), 0.01);
     }
 
     /**

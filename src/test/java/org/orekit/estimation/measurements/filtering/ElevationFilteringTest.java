@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,6 +36,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.generation.EventBasedScheduler;
+import org.orekit.estimation.measurements.generation.GatheringSubscriber;
 import org.orekit.estimation.measurements.generation.Generator;
 import org.orekit.estimation.measurements.generation.MeasurementBuilder;
 import org.orekit.estimation.measurements.generation.RangeBuilder;
@@ -135,10 +136,16 @@ public class ElevationFilteringTest {
         final GroundStation station = new GroundStation(topo);
         final double noise = 0.1;
         Generator generatorThreshold = getGenerator(orbit, station, topo, noise, threshold);
+        final GatheringSubscriber gathererThreshold = new GatheringSubscriber();
+        generatorThreshold.addSubscriber(gathererThreshold);
         Generator generator0 = getGenerator(orbit, station, topo, noise, 0.0);
-        //Generate two measurements sorted set, one with elevation greter than threshold the other greater than 0
-        SortedSet<ObservedMeasurement<?>> measurementsPlusThreshold = generatorThreshold.generate(date, date.shiftedBy(3600 * 5));
-        SortedSet<ObservedMeasurement<?>> measurements0 = generator0.generate(date, date.shiftedBy(3600 * 5));
+        final GatheringSubscriber gatherer0 = new GatheringSubscriber();
+        generator0.addSubscriber(gatherer0);
+        //Generate two measurements sorted set, one with elevation greater than threshold the other greater than 0
+        generatorThreshold.generate(date, date.shiftedBy(3600 * 5));
+        SortedSet<ObservedMeasurement<?>> measurementsPlusThreshold = gathererThreshold.getGeneratedMeasurements();
+        generator0.generate(date, date.shiftedBy(3600 * 5));
+        SortedSet<ObservedMeasurement<?>> measurements0 = gatherer0.getGeneratedMeasurements();
 
         //Elevation filter
         ElevationFilter<Range> filter = new ElevationFilter<>(station, threshold);

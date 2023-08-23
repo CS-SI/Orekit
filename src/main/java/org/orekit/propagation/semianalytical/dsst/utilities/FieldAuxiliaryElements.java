@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,9 @@ import org.orekit.time.FieldAbsoluteDate;
  *  @author Bryan Cazabonne
  */
 public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
+
+    /** Orbit. */
+    private final FieldOrbit<T> orbit;
 
     /** Orbit date. */
     private final FieldAbsoluteDate<T> date;
@@ -85,9 +88,6 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
      *  </p>
      */
     private final int    I;
-
-    /** Orbit. */
-    private FieldOrbit<T> orbit;
 
     /** B = sqrt(1 - h² - k²). */
     private final T B;
@@ -353,4 +353,11 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
         return gamma;
     }
 
+    /** Transforms the FieldAuxiliaryElements instance into an AuxiliaryElements instance.
+     * @return the AuxiliaryElements instance
+     * @since 11.3.3
+     */
+    public AuxiliaryElements toAuxiliaryElements() {
+        return new AuxiliaryElements(orbit.toOrbit(), getRetrogradeFactor());
+    }
 }

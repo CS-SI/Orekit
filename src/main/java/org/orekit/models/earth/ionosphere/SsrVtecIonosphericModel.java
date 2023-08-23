@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -82,7 +82,7 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
                             final double frequency, final double[] parameters) {
 
         // Elevation in radians
-        final Vector3D position  = state.getPVCoordinates(baseFrame).getPosition();
+        final Vector3D position  = state.getPosition(baseFrame);
         final double   elevation = position.getDelta();
 
         // Only consider measures above the horizon
@@ -124,7 +124,7 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
         final Field<T> field = state.getDate().getField();
 
         // Elevation in radians
-        final FieldVector3D<T> position  = state.getPVCoordinates(baseFrame).getPosition();
+        final FieldVector3D<T> position  = state.getPosition(baseFrame);
         final T                elevation = position.getDelta();
 
         // Only consider measures above the horizon

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -104,7 +104,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
                                     final SphericalPolygonsSet zone,
                                     final double samplingStep) {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new StopOnIncreasing<FootprintOverlapDetector>(),
+             new StopOnIncreasing(),
              fov, body, zone, samplingStep, sample(body, zone, samplingStep));
     }
 
@@ -124,13 +124,13 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      * @param sampledZone sampling of the geographic zone
      * @param samplingStep linear step used for sampling the geographic zone (in meters)
      */
-    private FootprintOverlapDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<? super FootprintOverlapDetector> handler,
-                                     final FieldOfView fov,
-                                     final OneAxisEllipsoid body,
-                                     final SphericalPolygonsSet zone,
-                                     final double samplingStep,
-                                     final List<SamplingPoint> sampledZone) {
+    protected FootprintOverlapDetector(final double maxCheck, final double threshold,
+                                       final int maxIter, final EventHandler handler,
+                                       final FieldOfView fov,
+                                       final OneAxisEllipsoid body,
+                                       final SphericalPolygonsSet zone,
+                                       final double samplingStep,
+                                       final List<SamplingPoint> sampledZone) {
 
         super(maxCheck, threshold, maxIter, handler);
         this.fov          = fov;
@@ -194,7 +194,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
     @Override
     protected FootprintOverlapDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<? super FootprintOverlapDetector> newHandler) {
+                                              final EventHandler newHandler) {
         return new FootprintOverlapDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                             fov, body, zone, samplingStep, sampledZone);
     }
@@ -248,7 +248,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
         double value = FastMath.PI;
 
         // get spacecraft position in body frame
-        final Vector3D      scBody      = s.getPVCoordinates(body.getBodyFrame()).getPosition();
+        final Vector3D      scBody      = s.getPosition(body.getBodyFrame());
 
         // map the point to a sphere
         final GeodeticPoint gp          = body.transform(scBody, body.getBodyFrame(), s.getDate());

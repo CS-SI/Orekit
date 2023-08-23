@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,45 +19,37 @@ package org.orekit.propagation.integration;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.ode.DenseOutputModel;
-import org.hipparchus.ode.ExpandableODE;
-import org.hipparchus.ode.ODEState;
-import org.hipparchus.ode.OrdinaryDifferentialEquation;
-import org.hipparchus.ode.SecondaryODE;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.hipparchus.ode.nonstiff.EulerIntegrator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.CelestialBodyPointed;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.errors.OrekitInternalError;
+import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.MatricesHarvester;
-import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AbsolutePVCoordinatesTest;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
-
-import java.util.Collections;
-
 
 public class IntegratedEphemerisTest {
 
@@ -82,8 +74,8 @@ public class IntegratedEphemerisTest {
             AbsoluteDate intermediateDate = initialOrbit.getDate().shiftedBy(i);
             SpacecraftState keplerIntermediateOrbit = keplerEx.propagate(intermediateDate);
             SpacecraftState numericIntermediateOrbit = ephemeris.propagate(intermediateDate);
-            Vector3D kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
-            Vector3D numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();
+            Vector3D kepPosition = keplerIntermediateOrbit.getPosition();
+            Vector3D numPosition = numericIntermediateOrbit.getPosition();
             Assertions.assertEquals(0, kepPosition.subtract(numPosition).getNorm(), 0.06);
         }
 
@@ -96,8 +88,8 @@ public class IntegratedEphemerisTest {
         numericalPropagator.propagate(initialOrbit.getDate());
         BoundedPropagator invEphemeris = generator2.getGeneratedEphemeris();
         SpacecraftState numericIntermediateOrbit = invEphemeris.propagate(intermediateDate);
-        Vector3D kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
-        Vector3D numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();
+        Vector3D kepPosition = keplerIntermediateOrbit.getPosition();
+        Vector3D numPosition = numericIntermediateOrbit.getPosition();
         Assertions.assertEquals(0, kepPosition.subtract(numPosition).getNorm(), 10e-2);
 
     }
@@ -156,61 +148,13 @@ public class IntegratedEphemerisTest {
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         // verify
-        Assertions.assertTrue(ephemeris.getAttitudeProvider() instanceof InertialProvider);
+        Assertions.assertTrue(ephemeris.getAttitudeProvider() instanceof FrameAlignedProvider);
 
         // action
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         ephemeris.setAttitudeProvider(new CelestialBodyPointed(FramesFactory.getEME2000(), sun, Vector3D.PLUS_K,
                                                                Vector3D.PLUS_I, Vector3D.PLUS_K));
         Assertions.assertTrue(ephemeris.getAttitudeProvider() instanceof CelestialBodyPointed);
-
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-
-        EulerIntegrator integ = new EulerIntegrator(1.0);
-        DenseOutputModel dom = new DenseOutputModel();
-        integ.addStepHandler(dom);
-        ExpandableODE eode = new ExpandableODE(new OrdinaryDifferentialEquation() {
-            public int getDimension() { return 1; }
-            public double[] computeDerivatives(double t, double[] y) { return y; }
-        });
-        eode.addSecondaryEquations(new SecondaryODE() {
-            public int getDimension() { return 1; }
-            public double[] computeDerivatives(double t, double[] primary,
-                                               double[] primaryDot, double[] secondary) { return secondary; }
-        });
-        integ.integrate(eode, new ODEState(0.0, new double[1], new double[1][1]), 1.0);
-
-        StateMapper mapper = new StateMapper(AbsoluteDate.ARBITRARY_EPOCH, Constants.EIGEN5C_EARTH_MU,
-                                             OrbitType.CARTESIAN, PositionAngle.TRUE,
-                                             new InertialProvider(FramesFactory.getEME2000()),
-                                             FramesFactory.getEME2000()) {
-            public void mapStateToArray(SpacecraftState state, double[] y, double[] yDot) {}
-            public SpacecraftState mapArrayToState(AbsoluteDate date, double[] y, double[] yDot, PropagationType type) {
-                return null;
-            }
-        };
-
-        try {
-            new IntegratedEphemeris(AbsoluteDate.ARBITRARY_EPOCH,
-                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
-                                    mapper, PropagationType.OSCULATING,
-                                    dom, Collections.emptyMap(), Collections.emptyList(),
-                                    new String[] { "equation-1", "equation-2" });
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitInternalError oie) {
-            // expected as only one equation could be handled properly by this deprecated constructor
-        }
-
-        IntegratedEphemeris ie = new IntegratedEphemeris(AbsoluteDate.ARBITRARY_EPOCH,
-                                                         AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
-                                                         mapper, PropagationType.OSCULATING,
-                                                         dom, Collections.emptyMap(), Collections.emptyList(),
-                                                         new String[] { "equation-1" });
-        Assertions.assertNotNull(ie);
 
     }
 
@@ -231,7 +175,7 @@ public class IntegratedEphemerisTest {
                                    addAdditionalState(provider1.getName(), new double[provider1.getDimension()]).
                                    addAdditionalState(provider2.getName(), new double[provider2.getDimension()]));
         propagator.propagate(finalDate);
-        BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+        IntegratedEphemeris ephemeris = (IntegratedEphemeris) generator.getGeneratedEphemeris();
 
         for (double dt = 0; dt < ephemeris.getMaxDate().durationFrom(ephemeris.getMinDate()); dt += 0.1) {
             SpacecraftState state = ephemeris.propagate(ephemeris.getMinDate().shiftedBy(dt));
@@ -239,6 +183,47 @@ public class IntegratedEphemerisTest {
             checkState(dt, state, provider2);
         }
 
+        // Test getters
+        Assertions.assertEquals(SpacecraftState.DEFAULT_MASS, ephemeris.getMass(initialOrbit.getDate()));
+        assertOrbit(initialOrbit, ephemeris.propagateOrbit(initialOrbit.getDate()), 1e-8);
+
+        // Test error thrown when trying to reset intermediate state
+        Exception thrown = Assertions.assertThrows(OrekitException.class,
+                                                   () -> ephemeris.resetIntermediateState(new SpacecraftState(initialOrbit), true));
+        Assertions.assertEquals(
+                "reset state not allowed", thrown.getMessage());
+
+    }
+
+    /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
+    @Test
+    public void testIssue949() {
+        // GIVEN
+        final AbsoluteDate initialDate = new AbsoluteDate();
+        numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
+        numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
+
+        // Setup additional state provider which use the initial state in its init method
+        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
+        numericalPropagator.addAdditionalStateProvider(additionalStateProvider);
+
+        // Setup integrated ephemeris
+        final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
+        numericalPropagator.propagate(initialDate.shiftedBy(1));
+
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+
+        // WHEN & THEN
+        Assertions.assertDoesNotThrow(() -> ephemeris.propagate(ephemeris.getMaxDate()), "No error should have been thrown");
+
+    }
+
+    public static void assertOrbit(final Orbit expected, final Orbit actual, final double epsilon) {
+        Assertions.assertEquals(expected.getMu(), actual.getMu());
+        Assertions.assertEquals(expected.getType(), actual.getType());
+        AbsolutePVCoordinatesTest.assertPV(expected.getPVCoordinates(expected.getFrame()),
+                                           actual.getPVCoordinates(expected.getFrame()),
+                                           epsilon);
     }
 
     private void checkState(final double dt, final SpacecraftState state, final DerivativesProvider provider) {
@@ -306,8 +291,8 @@ public class IntegratedEphemerisTest {
         public int getDimension() {
             return derivatives.length;
         }
-        public double[] derivatives(final SpacecraftState s) {
-            return derivatives;
+        public CombinedDerivatives combinedDerivatives(final SpacecraftState s) {
+            return new CombinedDerivatives(derivatives, null);
         }
     }
 

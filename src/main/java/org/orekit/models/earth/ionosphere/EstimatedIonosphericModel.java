@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -81,7 +81,7 @@ public class EstimatedIonosphericModel implements IonosphericModel {
     public double pathDelay(final SpacecraftState state, final TopocentricFrame baseFrame,
                             final double frequency, final double[] parameters) {
         // Elevation in radians
-        final Vector3D position  = state.getPVCoordinates(baseFrame).getPosition();
+        final Vector3D position  = state.getPosition(baseFrame);
         final double   elevation = position.getDelta();
 
         // Only consider measures above the horizon
@@ -121,7 +121,7 @@ public class EstimatedIonosphericModel implements IonosphericModel {
     public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
                                                        final double frequency, final T[] parameters) {
         // Elevation and azimuth in radians
-        final FieldVector3D<T> position = state.getPVCoordinates(baseFrame).getPosition();
+        final FieldVector3D<T> position = state.getPosition(baseFrame);
         final T elevation = position.getDelta();
 
         if (elevation.getReal() > 0.0) {
@@ -141,7 +141,7 @@ public class EstimatedIonosphericModel implements IonosphericModel {
      * @param <T> type of the elements
      * @param elevation elevation of the satellite in radians
      * @param frequency frequency of the signal in Hz
-     * @param parameters ionospheric model parameters
+     * @param parameters ionospheric model parameters at state date
      * @return the path delay due to the ionosphere in m
      */
     public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final double frequency, final T[] parameters) {

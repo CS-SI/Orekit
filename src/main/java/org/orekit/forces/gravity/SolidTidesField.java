@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -168,13 +168,6 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     @Override
-    @Deprecated
-    public double getOffset(final AbsoluteDate date) {
-        return date.durationFrom(getReferenceDate());
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public TideSystem getTideSystem() {
         // not really used here, but for consistency we can state that either
         // we add the permanent tide or it was already in the central attraction
@@ -197,7 +190,7 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
         for (final CelestialBody body : bodies) {
 
             // compute tide generating body state
-            final Vector3D position = body.getPVCoordinates(date, centralBodyFrame).getPosition();
+            final Vector3D position = body.getPosition(date, centralBodyFrame);
 
             // compute polar coordinates
             final double x    = position.getX();

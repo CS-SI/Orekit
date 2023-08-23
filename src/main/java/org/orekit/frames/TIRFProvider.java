@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -131,6 +131,19 @@ class TIRFProvider implements EOPBasedTransformProvider {
                                                               RotationConvention.FRAME_TRANSFORM);
         return new FieldTransform<>(date, rotation, rotationRate);
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+        // compute proper rotation
+        final T correctedERA = era.value(date);
+        // set up the transform from parent CIRF
+        final FieldRotation<T> rotation = new FieldRotation<>(
+                FieldVector3D.getPlusK(date.getField()),
+                correctedERA,
+                RotationConvention.FRAME_TRANSFORM);
+        return FieldStaticTransform.of(date, rotation);
     }
 
     /** Get the Earth Rotation Angle at the current date.

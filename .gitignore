@@ -2,6 +2,7 @@
 .project
 .settings
 .checkstyle
+.idea
 bin
 target
 /build

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -48,12 +49,14 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.SpacecraftStateInterpolator;
 import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventsLogger;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -149,7 +152,8 @@ public class OrekitEphemerisFileTest {
         template.setCenter(new BodyFacade("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth()));
         template.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000()));
         EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
-                                                     null, template, fileFormat, "dummy", 60);
+                                                     null, template, fileFormat, "dummy",
+                                                     Constants.JULIAN_DAY, 60);
         writer.write(tempOem, ephemerisFile);
 
         OemParser parser = new ParserBuilder().withMu(body.getGM()).withDefaultInterpolationDegree(2).buildOemParser();
@@ -182,7 +186,7 @@ public class OrekitEphemerisFileTest {
         final TopocentricFrame topo = new TopocentricFrame(parentShape, point, "testPoint1");
         final ElevationDetector elevationDetector = new ElevationDetector(topo);
         final EphemerisSegmentPropagator<TimeStampedPVCoordinates> ephemerisSegmentPropagator =
-                        new EphemerisSegmentPropagator<>(segment);
+                        new EphemerisSegmentPropagator<>(segment, new FrameAlignedProvider(segment.getInertialFrame()));
         final EventsLogger lookupLogger = new EventsLogger();
         ephemerisSegmentPropagator.addEventDetector(lookupLogger.monitorDetector(elevationDetector));
 
@@ -204,7 +208,7 @@ public class OrekitEphemerisFileTest {
                          dateEpsilon);
         }
 
-        final Propagator embeddedPropagator = segment.getPropagator();
+        final Propagator embeddedPropagator = segment.getPropagator(new FrameAlignedProvider(segment.getInertialFrame()));
         final EventsLogger embeddedPropLogger = new EventsLogger();
         embeddedPropagator.addEventDetector(embeddedPropLogger.monitorDetector(elevationDetector));
         embeddedPropagator.propagate(segment.getStart(), segment.getStop());
@@ -227,8 +231,12 @@ public class OrekitEphemerisFileTest {
             }
         });
 
+        // Create interpolator
         final int interpolationPoints = 5;
-        Ephemeris directEphemProp = new Ephemeris(readInStates, interpolationPoints);
+        final TimeInterpolator<SpacecraftState> interpolator =
+                new SpacecraftStateInterpolator(interpolationPoints, frame, frame);
+
+        Ephemeris directEphemProp = new Ephemeris(readInStates, interpolator);
         final EventsLogger directEphemPropLogger = new EventsLogger();
         directEphemProp.addEventDetector(directEphemPropLogger.monitorDetector(elevationDetector));
         directEphemProp.propagate(segment.getStart(), segment.getStop());

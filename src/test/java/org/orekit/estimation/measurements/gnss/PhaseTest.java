@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -199,7 +199,8 @@ public class PhaseTest {
 
                     // Values of the Phase & errors
                     final double phaseObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
+                                                                                                         new SpacecraftState[] { state });
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assertions.assertEquals(2, participants.length);
@@ -336,7 +337,9 @@ public class PhaseTest {
                     // Compute a reference value using finite differences
                     jacobianRef = Differentiation.differentiate(new StateFunction() {
                         public double[] value(final SpacecraftState state) {
-                            return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                            return measurement.
+                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                   getEstimatedValue();
                         }
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
                        OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
@@ -504,11 +507,13 @@ public class PhaseTest {
                                         Differentiation.differentiate(new ParameterFunction() {
                                             /** {@inheritDoc} */
                                             @Override
-                                            public double value(final ParameterDriver parameterDriver) {
-                                                return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                            public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
+                                                return measurement.
+                                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                       getEstimatedValue()[0];
                                             }
                                         }, 3, 20.0 * drivers[i].getScale());
-                        final double ref = dMkdP.value(drivers[i]);
+                        final double ref = dMkdP.value(drivers[i], date);
 
                         if (printResults) {
                             System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
@@ -645,7 +650,9 @@ public class PhaseTest {
                     // Compute a reference value using finite differences
                     jacobianRef = Differentiation.differentiate(new StateFunction() {
                         public double[] value(final SpacecraftState state) {
-                            return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                            return measurement.
+                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                   getEstimatedValue();
                         }
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
                        OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
@@ -736,11 +743,11 @@ public class PhaseTest {
     public void testStateDerivativesWithIonosphericModifier() {
 
         final boolean printResults = false;
-        final double refErrorsPMedian = 5.1e-10;
-        final double refErrorsPMean = 5.6e-9;
-        final double refErrorsPMax = 3.8e-7;
-        final double refErrorsVMedian = 2.0e-5;
-        final double refErrorsVMean = 8.4e-5;
+        final double refErrorsPMedian = 5.6e-10;
+        final double refErrorsPMean = 2.1e-9;
+        final double refErrorsPMax = 7.1e-8;
+        final double refErrorsVMedian = 1.5e-5;
+        final double refErrorsVMean = 7.9e-5;
         final double refErrorsVMax = 4.6e-3;
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -807,7 +814,9 @@ public class PhaseTest {
                     // Compute a reference value using finite differences
                     jacobianRef = Differentiation.differentiate(new StateFunction() {
                         public double[] value(final SpacecraftState state) {
-                            return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                            return measurement.
+                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                   getEstimatedValue();
                         }
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
                        OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);

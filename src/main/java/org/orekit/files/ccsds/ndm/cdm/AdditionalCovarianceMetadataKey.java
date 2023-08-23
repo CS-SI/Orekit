@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,28 +31,30 @@ public enum AdditionalCovarianceMetadataKey {
 
     /** The atmospheric density forecast error. */
     DENSITY_FORECAST_UNCERTAINTY((token, context, container) -> token.processAsDouble(Unit.NONE, context.getParsedUnitsBehavior(),
-                                                                             container::setDensityForecastUncertainty)),
+                                                                                      container::setDensityForecastUncertainty)),
 
     /** The minimum suggested covariance scale factor. */
     CSCALE_FACTOR_MIN((token, context, container) -> token.processAsDouble(Unit.NONE, context.getParsedUnitsBehavior(),
-                                                                             container::setcScaleFactorMin)),
+                                                                           container::setcScaleFactorMin)),
 
     /** The (median) suggested covariance scale factor. */
     CSCALE_FACTOR((token, context, container) -> token.processAsDouble(Unit.NONE, context.getParsedUnitsBehavior(),
-                                                                             container::setcScaleFactor)),
+                                                                       container::setcScaleFactor)),
 
     /** The maximum suggested covariance scale factor. */
     CSCALE_FACTOR_MAX((token, context, container) -> token.processAsDouble(Unit.NONE, context.getParsedUnitsBehavior(),
-                                                                             container::setcScaleFactorMax)),
+                                                                           container::setcScaleFactorMax)),
 
     /** The source (or origin) of the specific orbital data for this object. */
     SCREENING_DATA_SOURCE((token, context, container) -> token.processAsFreeTextString(container::setScreeningDataSource)),
 
     /** The Drag Consider Parameter (DCP) sensitivity vector (position errors at TCA). */
-    DCP_SENSITIVITY_VECTOR_POSITION((token, context, container) -> token.processAsDoubleArray(container::setDcpSensitivityVectorPosition)),
+    DCP_SENSITIVITY_VECTOR_POSITION((token, context, container) -> token.processAsDoubleArray(Unit.NONE, context.getParsedUnitsBehavior(),
+                                                                                              container::setDcpSensitivityVectorPosition)),
 
      /** The Drag Consider Parameter (DCP) sensitivity vector (velocity errors at TCA). */
-    DCP_SENSITIVITY_VECTOR_VELOCITY((token, context, container) -> token.processAsDoubleArray(container::setDcpSensitivityVectorVelocity));
+    DCP_SENSITIVITY_VECTOR_VELOCITY((token, context, container) -> token.processAsDoubleArray(Unit.NONE, context.getParsedUnitsBehavior(),
+                                                                                              container::setDcpSensitivityVectorVelocity));
 
     /** Processing method. */
     private final TokenProcessor processor;

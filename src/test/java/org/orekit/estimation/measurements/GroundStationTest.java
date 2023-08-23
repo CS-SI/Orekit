@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -83,7 +83,7 @@ public class GroundStationTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // change one station clock
@@ -154,7 +154,7 @@ public class GroundStationTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // move one station
@@ -295,7 +295,7 @@ public class GroundStationTest {
                                                                            linearPropagatorBuilder);
         final List<ObservedMeasurement<?>> linearMeasurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(linearEOPContext),
+                                                               new TwoWayRangeMeasurementCreator(linearEOPContext),
                                                                1.0, 5.0, 60.0);
 
         Utils.clearFactories();
@@ -1278,7 +1278,7 @@ public class GroundStationTest {
                                                                              new GeodeticPoint(0.1, 0.2, 100),
                                                                              "dummy"));
         try {
-            station.getOffsetToInertial(eme2000, date);
+            station.getOffsetToInertial(eme2000, date, false);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
@@ -1298,7 +1298,7 @@ public class GroundStationTest {
                                                               station.getEastOffsetDriver(),
                                                               station.getNorthOffsetDriver(),
                                                               station.getZenithOffsetDriver())) {
-                indices.put(driver.getName(), indices.size());
+                indices.put(driver.getNameSpan(date), indices.size());
             }
             station.getOffsetToInertial(eme2000, date, freeParameters, indices);
             Assertions.fail("an exception should have been thrown");
@@ -1337,7 +1337,7 @@ public class GroundStationTest {
                 if (allDrivers[i].getName().matches(parameterPattern[k])) {
                     selectedDrivers[k] = allDrivers[i];
                     dFCartesian[k] = differentiatedStationPV(station, eme2000, date, selectedDrivers[k], stepFactor);
-                    indices.put(selectedDrivers[k].getName(), k);
+                    indices.put(selectedDrivers[k].getNameSpan(date0), k);
                 }
             }
         };
@@ -1406,8 +1406,8 @@ public class GroundStationTest {
             maxPositionDerivativeRelativeError > relativeTolerancePositionDerivative ||
             maxVelocityValueRelativeError      > relativeToleranceVelocityValue      ||
             maxVelocityDerivativeRelativeError > relativeToleranceVelocityDerivative) {
-            print("relativeTolerancePositionValue",          maxPositionValueRelativeError);
-            print("relativeTolerancePositionDerivative",     maxPositionDerivativeRelativeError);
+            print("relativeTolerancePositionValue",      maxPositionValueRelativeError);
+            print("relativeTolerancePositionDerivative", maxPositionDerivativeRelativeError);
             print("relativeToleranceVelocityValue",      maxVelocityValueRelativeError);
             print("relativeToleranceVelocityDerivative", maxVelocityDerivativeRelativeError);
         }
@@ -1445,7 +1445,7 @@ public class GroundStationTest {
                 if (allDrivers[i].getName().matches(parameterPattern[k])) {
                     selectedDrivers[k] = allDrivers[i];
                     dFAngular[k]   = differentiatedTransformAngular(station, eme2000, date, selectedDrivers[k], stepFactor);
-                    indices.put(selectedDrivers[k].getName(), k);
+                    indices.put(selectedDrivers[k].getNameSpan(date0), k);
                 }
             }
         };
@@ -1549,10 +1549,10 @@ public class GroundStationTest {
             public double[] value(double x) {
                 final double[] result = new double[6];
                 try {
-                    final double previouspI = driver.getValue();
-                    driver.setValue(x);
-                    Transform t = station.getOffsetToInertial(eme2000, date);
-                    driver.setValue(previouspI);
+                    final double previouspI = driver.getValue(date);
+                    driver.setValue(x, new AbsoluteDate());
+                    Transform t = station.getOffsetToInertial(eme2000, date, false);
+                    driver.setValue(previouspI, date);
                     PVCoordinates stationPV = t.transformPVCoordinates(PVCoordinates.ZERO);
                     result[ 0] = stationPV.getPosition().getX();
                     result[ 1] = stationPV.getPosition().getY();
@@ -1586,10 +1586,10 @@ public class GroundStationTest {
             public double[] value(double x) {
                 final double[] result = new double[7];
                 try {
-                    final double previouspI = driver.getValue();
-                    driver.setValue(x);
-                    Transform t = station.getOffsetToInertial(eme2000, date);
-                    driver.setValue(previouspI);
+                    final double previouspI = driver.getValue(date);
+                    driver.setValue(x, date);
+                    Transform t = station.getOffsetToInertial(eme2000, date, false);
+                    driver.setValue(previouspI, date);
                     final double sign;
                     if (Double.isNaN(previous0)) {
                         sign = +1;

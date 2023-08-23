@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,17 @@
  */
 package org.orekit.time;
 
+import java.io.Serializable;
 
 /** TAI UTC offset model.
  * @see UTCTAIOffsetsLoader
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class OffsetModel {
+public class OffsetModel implements Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20230302L;
 
     /** Date of the offset start. */
     private final DateComponents start;

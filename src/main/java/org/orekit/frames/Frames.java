@@ -22,6 +22,7 @@ import java.util.function.Supplier;
 
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.time.TimeScales;
+import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -129,6 +130,20 @@ public interface Frames {
     VersionedITRF getITRF(ITRFVersion version,
                           IERSConventions conventions,
                           boolean simpleEOP);
+
+    /** Build an uncached International Terrestrial Reference Frame with specific {@link EOPHistory EOP history}.
+     * <p>
+     * This frame and its parent frames (TIRF and CIRF) will <em>not</em> be cached, they are
+     * rebuilt from scratch each time this method is called. This factory method is intended
+     * to be used when EOP history is changed at run time. For regular ITRF use, the
+     * {@link #getITRF(IERSConventions, boolean)} and {link {@link #getITRF(ITRFVersion, IERSConventions, boolean)}
+     * are more suitable.
+     * </p>
+     * @param ut1 UT1 time scale (contains the {@link EOPHistory EOP history})
+     * @return an ITRF frame with specified time scale and embedded EOP history
+     * @since 12.0
+     */
+    Frame buildUncachedITRF(UT1Scale ut1);
 
     /** Get the TIRF reference frame.
      * @param conventions IERS conventions to apply

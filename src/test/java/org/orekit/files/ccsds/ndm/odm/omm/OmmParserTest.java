@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,15 @@
  * limitations under the License.
  */
 package org.orekit.files.ccsds.ndm.odm.omm;
+
+import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.util.FastMath;
@@ -36,6 +45,8 @@ import org.orekit.files.ccsds.ndm.odm.SpacecraftParameters;
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
+import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -43,15 +54,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-
-import java.io.ByteArrayInputStream;
-import java.io.CharArrayWriter;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 
 public class OmmParserTest {
 
@@ -131,7 +133,7 @@ public class OmmParserTest {
             Assertions.assertEquals(OrekitMessages.CCSDS_UNKNOWN_SPACECRAFT_MASS, orekitException.getSpecifier());
         }
         TLE generated = file.generateTLE();
-        Assertions.assertEquals("1 23581U 95025A   07064.44075725 -.00000113  00000-0  10000-3 0  9250", generated.getLine1());
+        Assertions.assertEquals("1 23581U 95025A   07064.44075725 -.00000056  00000-0  10000-3 0  9256", generated.getLine1());
         Assertions.assertEquals("2 23581   3.0539  81.7939 0005013 249.2363 150.1602  1.00273272 43169", generated.getLine2());
     }
 
@@ -171,7 +173,8 @@ public class OmmParserTest {
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
-        final Generator generator = new KvnGenerator(caw, OmmWriter.KVN_PADDING_WIDTH, "dummy", 60);
+        final Generator generator = new KvnGenerator(caw, OmmWriter.KVN_PADDING_WIDTH, "dummy",
+                                                     Constants.JULIAN_DAY, 60);
         new WriterBuilder().buildOmmWriter().writeMessage(generator, original);
 
         // reparse the written file
@@ -184,7 +187,7 @@ public class OmmParserTest {
 
     private void validateOMM2(final Omm file) throws URISyntaxException {
         Assertions.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
-        Assertions.assertEquals("SGP/SGP4", file.getMetadata().getMeanElementTheory());
+        Assertions.assertEquals(OmmMetadata.SGP_SGP4_THEORY, file.getMetadata().getMeanElementTheory());
         final KeplerianElements kep = file.getData().getKeplerianElementsBlock();
         Assertions.assertEquals(1.00273272, Constants.JULIAN_DAY * kep.getMeanMotion() / MathUtils.TWO_PI, 1e-10);
         Assertions.assertTrue(Double.isNaN(file.getData().getMass()));
@@ -195,6 +198,8 @@ public class OmmParserTest {
         Assertions.assertEquals(1995, file.getMetadata().getLaunchYear());
         Assertions.assertEquals(25, file.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A", file.getMetadata().getLaunchPiece());
+        Assertions.assertEquals(0.0001, file.getData().getTLEBlock().getBStar(), 1.0e-15);
+        Assertions.assertTrue(Double.isNaN(file.getData().getTLEBlock().getBTerm()));
         file.generateKeplerianOrbit();
 
         Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
@@ -296,6 +301,27 @@ public class OmmParserTest {
     }
 
     @Test
+    public void testParseOMM5() throws URISyntaxException {
+        // simple test for OMM file, contains SGP4-XP elements with BTERM
+        final String name = "/ccsds/odm/omm/OMMExample5.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final AbsoluteDate missionReferenceDate = new AbsoluteDate(2000, 1, 1, DataContext.getDefault().getTimeScales().getUTC());
+        final OmmParser parser = new ParserBuilder().
+                                 withMu(Constants.EIGEN5C_EARTH_MU).
+                                 withMissionReferenceDate(missionReferenceDate).
+                                 buildOmmParser();
+
+        final Omm file = parser.parseMessage(source);
+        Assertions.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
+        Assertions.assertEquals(OmmMetadata.SGP4_XP_THEORY, file.getMetadata().getMeanElementTheory());
+        final KeplerianElements kep = file.getData().getKeplerianElementsBlock();
+        Assertions.assertEquals(1.00273272, Constants.JULIAN_DAY * kep.getMeanMotion() / MathUtils.TWO_PI, 1e-10);
+        Assertions.assertTrue(Double.isNaN(file.getData().getMass()));
+        Assertions.assertTrue(Double.isNaN(file.getData().getTLEBlock().getBStar()));
+        Assertions.assertEquals(0.0015, file.getData().getTLEBlock().getBTerm(), 1.0e-15);
+    }
+
+    @Test
     public void testWrongKeyword() throws URISyntaxException {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
@@ -314,6 +340,146 @@ public class OmmParserTest {
             Assertions.assertEquals(9, ((Integer) oe.getParts()[0]).intValue());
             Assertions.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
         }
+    }
+
+    @Test
+    public void testEmptyObjectID() throws URISyntaxException {
+        // test with an OMM file that does not fulfills CCSDS standard and uses an empty OBJECT_ID
+        final String name = "/ccsds/odm/omm/OMM-empty-object-id.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final OmmParser parser = new ParserBuilder().
+                                 withMu(Constants.EIGEN5C_EARTH_MU).
+                                 withMissionReferenceDate(new AbsoluteDate()).
+                                 withDefaultMass(1000.0).
+                                 buildOmmParser();
+        try {
+            parser.parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
+            Assertions.assertEquals("OBJECT_ID", oe.getParts()[0]);
+        }
+
+        final String replacement = "replacement-object-id";
+        final Omm omm = new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        withMissionReferenceDate(new AbsoluteDate()).
+                        withDefaultMass(1000.0).
+                        withFilter(token -> {
+                            if ("OBJECT_ID".equals(token.getName()) &&
+                                            (token.getRawContent() == null || token.getRawContent().isEmpty())) {
+                                // replace null/empty entries with specified value
+                                return Collections.singletonList(new ParseToken(token.getType(), token.getName(),
+                                                                                replacement, token.getUnits(),
+                                                                                token.getLineNumber(), token.getFileName()));
+                            } else {
+                                return Collections.singletonList(token);
+                            }
+                        }).
+                        buildOmmParser().
+                        parseMessage(source);
+        // note that object id is always converted to uppercase during parsing
+        Assertions.assertEquals(replacement.toUpperCase(), omm.getMetadata().getObjectID());
+
+    }
+
+    @Test
+    public void testEmptyObjectIDXml() throws URISyntaxException {
+        // test with an OMM file that does not fulfills CCSDS standard and uses an empty OBJECT_ID
+        String name = "/ccsds/odm/omm/OMM-empty-object-id.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final OmmParser parser = new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        withMissionReferenceDate(new AbsoluteDate()).
+                        withDefaultMass(1000.0).
+                        buildOmmParser();
+        try {
+            parser.parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
+            Assertions.assertEquals("OBJECT_ID", oe.getParts()[0]);
+        }
+
+        final String replacement = "replacement-object-id";
+        final Omm omm = new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        withMissionReferenceDate(new AbsoluteDate()).
+                        withDefaultMass(1000.0).
+                        withFilter(token -> {
+                            if ("OBJECT_ID".equals(token.getName()) &&
+                                (token.getRawContent() == null || token.getRawContent().isEmpty())) {
+                                // replace null/empty entries with specified value
+                                return Collections.singletonList(new ParseToken(token.getType(), token.getName(),
+                                                                                replacement, token.getUnits(),
+                                                                                token.getLineNumber(), token.getFileName()));
+                            } else {
+                                return Collections.singletonList(token);
+                            }
+                        }).
+                        buildOmmParser().
+                        parseMessage(source);
+        // note that object id is always converted to uppercase during parsing
+        Assertions.assertEquals(replacement.toUpperCase(), omm.getMetadata().getObjectID());
+    }
+
+    @Test
+    public void testRemoveUserData() throws URISyntaxException {
+        final String name = "/ccsds/odm/omm/OMMExample3.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final AbsoluteDate missionReferenceDate = new AbsoluteDate(2000, 1, 1, DataContext.getDefault().getTimeScales().getUTC());
+        final Omm omm = new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        withMissionReferenceDate(missionReferenceDate).
+                        withDefaultMass(1000.0).
+                        withFilter(token -> {
+                            if (token.getName().startsWith("USER_DEFINED")) {
+                                return Collections.emptyList();
+                            } else {
+                                return Collections.singletonList(token);
+                            }
+                        }).
+                        buildOmmParser().
+                        parseMessage(source);
+        Assertions.assertNull(omm.getData().getUserDefinedBlock());
+    }
+
+    @Test
+    public void testChangeVersionAndAddMessageId() throws URISyntaxException {
+        final String name = "/ccsds/odm/omm/OMMExample3.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        final AbsoluteDate missionReferenceDate = new AbsoluteDate(2000, 1, 1, DataContext.getDefault().getTimeScales().getUTC());
+        final String myMessageId = "custom-message-id";
+        final Omm omm = new ParserBuilder().
+                        withMu(Constants.EIGEN5C_EARTH_MU).
+                        withMissionReferenceDate(missionReferenceDate).
+                        withDefaultMass(1000.0).
+                        withFilter(token -> {
+                            if ("CCSDS_OMM_VERS".equals(token.getName())) {
+                                // enforce ODM V3
+                                return Collections.singletonList(new ParseToken(token.getType(), token.getName(),
+                                                                                "3.0", token.getUnits(),
+                                                                                token.getLineNumber(), token.getFileName()));
+                            } else {
+                                return Collections.singletonList(token);
+                            }
+                        }).
+                        withFilter(token -> {
+                            if ("ORIGINATOR".equals(token.getName())) {
+                                // add generated message ID after ORIGINATOR entry
+                                return Arrays.asList(token,
+                                                     new ParseToken(TokenType.ENTRY, "MESSAGE_ID",
+                                                                    myMessageId, null,
+                                                                    -1, token.getFileName()));
+                            } else {
+                                return Collections.singletonList(token);
+                            }
+                        }).
+                        buildOmmParser().
+                        parseMessage(source);
+        Assertions.assertEquals(3.0, omm.getHeader().getFormatVersion(), 1.0e-10);
+        Assertions.assertEquals("NOAA/USA", omm.getHeader().getOriginator());
+        Assertions.assertEquals(myMessageId, omm.getHeader().getMessageId());
     }
 
     @Test
@@ -351,6 +517,20 @@ public class OmmParserTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
             Assertions.assertEquals(name, oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testSpuriousMetaDataSection() throws URISyntaxException {
+        final String name = "/ccsds/odm/omm/spurious-metadata.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().buildOmmParser().parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assertions.assertEquals(17, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals("metadata", oe.getParts()[2]);
         }
     }
 

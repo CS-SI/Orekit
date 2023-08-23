@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,22 +17,19 @@
 package org.orekit.orbits;
 
 import java.io.Serializable;
-import java.util.stream.Stream;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
-import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -71,11 +68,15 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Guylaine Prat
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
+ * @author Andrew Goetz
  */
 public class CartesianOrbit extends Orbit {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20170414L;
+
+    /** 6x6 identity matrix. */
+    private static final double[][] SIX_BY_SIX_IDENTITY = MatrixUtils.createRealIdentityMatrix(6).getData();
 
     /** Indicator for non-Keplerian derivatives. */
     private final transient boolean hasNonKeplerianAcceleration;
@@ -155,7 +156,7 @@ public class CartesianOrbit extends Orbit {
             } else {
                 // get rid of Keplerian acceleration so we don't assume
                 // we have derivatives when in fact we don't have them
-                equinoctial = new EquinoctialOrbit(new PVCoordinates(getPVCoordinates().getPosition(),
+                equinoctial = new EquinoctialOrbit(new PVCoordinates(getPosition(),
                                                                      getPVCoordinates().getVelocity()),
                                                    getFrame(), getDate(), getMu());
             }
@@ -184,7 +185,7 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public double getA() {
-        final double r  = getPVCoordinates().getPosition().getNorm();
+        final double r  = getPosition().getNorm();
         final double V2 = getPVCoordinates().getVelocity().getNormSq();
         return r / (2 - r * V2 / getMu());
     }
@@ -207,7 +208,7 @@ public class CartesianOrbit extends Orbit {
         final double muA = getMu() * getA();
         if (muA > 0) {
             // elliptic or circular orbit
-            final Vector3D pvP   = getPVCoordinates().getPosition();
+            final Vector3D pvP   = getPosition();
             final Vector3D pvV   = getPVCoordinates().getVelocity();
             final double rV2OnMu = pvP.getNorm() * pvV.getNormSq() / getMu();
             final double eSE     = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(muA);
@@ -383,6 +384,12 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    protected Vector3D initPosition() {
+        // nothing to do here, as the canonical elements are already the Cartesian ones
+        return getPVCoordinates().getPosition();
+    }
+
+    /** {@inheritDoc} */
     protected TimeStampedPVCoordinates initPVCoordinates() {
         // nothing to do here, as the canonical elements are already the Cartesian ones
         return getPVCoordinates();
@@ -394,32 +401,6 @@ public class CartesianOrbit extends Orbit {
         return new CartesianOrbit(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 
-    /** {@inheritDoc}
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * ensuring velocity remains the exact derivative of position.
-     * </p>
-     * <p>
-     * As this implementation of interpolation is polynomial, it should be used only
-     * with small samples (about 10-20 points) in order to avoid <a
-     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
-     * and numerical problems (including NaN appearing).
-     * </p>
-     * <p>
-     * If orbit interpolation on large samples is needed, using the {@link
-     * org.orekit.propagation.analytical.Ephemeris} class is a better way than using this
-     * low-level interpolation. The Ephemeris class automatically handles selection of
-     * a neighboring sub-sample with a predefined number of point from a large global sample
-     * in a thread-safe way.
-     * </p>
-     */
-    public CartesianOrbit interpolate(final AbsoluteDate date, final Stream<Orbit> sample) {
-        final TimeStampedPVCoordinates interpolated =
-                TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_PVA,
-                                                     sample.map(orbit -> orbit.getPVCoordinates()));
-        return new CartesianOrbit(interpolated, getFrame(), date, getMu());
-    }
-
     /** Compute shifted position and velocity in elliptic case.
      * @param dt time shift
      * @return shifted position and velocity
@@ -427,48 +408,49 @@ public class CartesianOrbit extends Orbit {
     private PVCoordinates shiftPVElliptic(final double dt) {
 
         // preliminary computation
-        final Vector3D pvP   = getPVCoordinates().getPosition();
-        final Vector3D pvV   = getPVCoordinates().getVelocity();
-        final double r2      = pvP.getNormSq();
-        final double r       = FastMath.sqrt(r2);
-        final double rV2OnMu = r * pvV.getNormSq() / getMu();
-        final double a       = getA();
-        final double eSE     = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(getMu() * a);
-        final double eCE     = rV2OnMu - 1;
-        final double e2      = eCE * eCE + eSE * eSE;
+        final PVCoordinates pv = getPVCoordinates();
+        final Vector3D pvP     = pv.getPosition();
+        final Vector3D pvV     = pv.getVelocity();
+        final Vector3D pvM     = pv.getMomentum();
+        final double r2        = pvP.getNormSq();
+        final double r         = FastMath.sqrt(r2);
+        final double rV2OnMu   = r * pvV.getNormSq() / getMu();
+        final double a         = r / (2 - rV2OnMu);
+        final double muA       = getMu() * a;
 
-        // we can use any arbitrary reference 2D frame in the orbital plane
-        // in order to simplify some equations below, we use the current position as the u axis
-        final Vector3D u     = pvP.normalize();
-        final Vector3D v     = Vector3D.crossProduct(getPVCoordinates().getMomentum(), u).normalize();
+        // compute mean anomaly
+        final double eSE    = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(muA);
+        final double eCE    = rV2OnMu - 1;
+        final double E0     = FastMath.atan2(eSE, eCE);
+        final double M0     = E0 - eSE;
 
-        // the following equations rely on the specific choice of u explained above,
-        // some coefficients that vanish to 0 in this case have already been removed here
-        final double ex        = (eCE - e2) * a / r;
-        final double ey        = -FastMath.sqrt(1 - e2) * eSE * a / r;
-        final double beta      = 1 / (1 + FastMath.sqrt(1 - e2));
-        final double thetaE0   = FastMath.atan2(ey + eSE * beta * ex, r / a + ex - eSE * beta * ey);
-        final SinCos scThetaE0 = FastMath.sinCos(thetaE0);
-        final double thetaM0   = thetaE0 - ex * scThetaE0.sin() + ey * scThetaE0.cos();
+        final double e         = FastMath.sqrt(eCE * eCE + eSE * eSE);
+        final double sqrt      = FastMath.sqrt((1 + e) / (1 - e));
 
-        // compute in-plane shifted eccentric argument
-        final double thetaM1 = thetaM0 + getKeplerianMeanMotion() * dt;
-        final double thetaE1 = meanToEccentric(thetaM1, ex, ey);
-        final SinCos scTE    = FastMath.sinCos(thetaE1);
-        final double cTE     = scTE.cos();
-        final double sTE     = scTE.sin();
+        // find canonical 2D frame with p pointing to perigee
+        final double v0     = 2 * FastMath.atan(sqrt * FastMath.tan(E0 / 2));
+        final Vector3D p    = new Rotation(pvM, v0, RotationConvention.FRAME_TRANSFORM).applyTo(pvP).normalize();
+        final Vector3D q    = Vector3D.crossProduct(pvM, p).normalize();
+
+        // compute shifted eccentric anomaly
+        final double M1     = M0 + getKeplerianMeanMotion() * dt;
+        final double E1     = KeplerianAnomalyUtility.ellipticMeanToEccentric(e, M1);
 
         // compute shifted in-plane Cartesian coordinates
-        final double exey   = ex * ey;
-        final double exCeyS = ex * cTE + ey * sTE;
-        final double x      = a * ((1 - beta * ey * ey) * cTE + beta * exey * sTE - ex);
-        final double y      = a * ((1 - beta * ex * ex) * sTE + beta * exey * cTE - ey);
-        final double factor = FastMath.sqrt(getMu() / a) / (1 - exCeyS);
-        final double xDot   = factor * (-sTE + beta * ey * exCeyS);
-        final double yDot   = factor * ( cTE - beta * ex * exCeyS);
+        final SinCos scE    = FastMath.sinCos(E1);
+        final double cE     = scE.cos();
+        final double sE     = scE.sin();
+        final double sE2m1  = FastMath.sqrt((1 - e) * (1 + e));
 
-        final Vector3D shiftedP = new Vector3D(x, u, y, v);
-        final Vector3D shiftedV = new Vector3D(xDot, u, yDot, v);
+        // coordinates of position and velocity in the orbital plane
+        final double x      = a * (cE - e);
+        final double y      = a * sE2m1 * sE;
+        final double factor = FastMath.sqrt(getMu() / a) / (1 - e * cE);
+        final double xDot   = -factor * sE;
+        final double yDot   =  factor * sE2m1 * cE;
+
+        final Vector3D shiftedP = new Vector3D(x, p, y, q);
+        final Vector3D shiftedV = new Vector3D(xDot, p, yDot, q);
         if (hasNonKeplerianAcceleration) {
 
             // extract non-Keplerian part of the initial acceleration
@@ -568,68 +550,19 @@ public class CartesianOrbit extends Orbit {
 
     }
 
-    /** Computes the eccentric in-plane argument from the mean in-plane argument.
-     * @param thetaM = mean in-plane argument (rad)
-     * @param ex first component of eccentricity vector
-     * @param ey second component of eccentricity vector
-     * @return the eccentric in-plane argument.
-     */
-    private double meanToEccentric(final double thetaM, final double ex, final double ey) {
-        // Generalization of Kepler equation to in-plane parameters
-        // with thetaE = eta + E and
-        //      thetaM = eta + M = thetaE - ex.sin(thetaE) + ey.cos(thetaE)
-        // and eta being counted from an arbitrary reference in the orbital plane
-        double thetaE        = thetaM;
-        double thetaEMthetaM = 0.0;
-        int    iter          = 0;
-        do {
-            final SinCos scThetaE = FastMath.sinCos(thetaE);
-
-            final double f2 = ex * scThetaE.sin() - ey * scThetaE.cos();
-            final double f1 = 1.0 - ex * scThetaE.cos() - ey * scThetaE.sin();
-            final double f0 = thetaEMthetaM - f2;
-
-            final double f12 = 2.0 * f1;
-            final double shift = f0 * f12 / (f1 * f12 - f0 * f2);
-
-            thetaEMthetaM -= shift;
-            thetaE         = thetaM + thetaEMthetaM;
-
-            if (FastMath.abs(shift) <= 1.0e-12) {
-                return thetaE;
-            }
-
-        } while (++iter < 50);
-
-        throw new MathIllegalStateException(LocalizedCoreFormats.CONVERGENCE_FAILED);
-
-    }
-
-    /** Create a 6x6 identity matrix.
-     * @return 6x6 identity matrix
-     */
-    private double[][] create6x6Identity() {
-        // this is the fastest way to set the 6x6 identity matrix
-        final double[][] identity = new double[6][6];
-        for (int i = 0; i < 6; i++) {
-            identity[i][i] = 1.0;
-        }
-        return identity;
-    }
-
     @Override
     protected double[][] computeJacobianMeanWrtCartesian() {
-        return create6x6Identity();
+        return SIX_BY_SIX_IDENTITY;
     }
 
     @Override
     protected double[][] computeJacobianEccentricWrtCartesian() {
-        return create6x6Identity();
+        return SIX_BY_SIX_IDENTITY;
     }
 
     @Override
     protected double[][] computeJacobianTrueWrtCartesian() {
-        return create6x6Identity();
+        return SIX_BY_SIX_IDENTITY;
     }
 
     /** {@inheritDoc} */

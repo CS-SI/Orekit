@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -74,8 +74,11 @@ public class GeneratorTest {
         genR.addPropagator(numProp);
         genR.addScheduler(aeBS);
         genR.addScheduler(eBS);
+        final GatheringSubscriber gatherer = new GatheringSubscriber();
+        genR.addSubscriber(gatherer);
 
-        SortedSet<ObservedMeasurement<?>> generated = genR.generate(initialDate, finalDate);
+        genR.generate(initialDate, finalDate);
+        SortedSet<ObservedMeasurement<?>> generated = gatherer.getGeneratedMeasurements();
 
         int nbAzEl  = 0;
         int nbRange = 0;

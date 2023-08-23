@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,9 +24,12 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Class multiplexing several measurements as one.
  * <p>
@@ -43,6 +46,10 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
 
     /** Multiplexed measurements. */
     private final List<ObservedMeasurement<?>> observedMeasurements;
+
+    /** Multiplexed measurements without derivatives.
+     */
+    private final List<EstimatedMeasurementBase<?>> estimatedMeasurementsWithoutDerivatives;
 
     /** Multiplexed measurements. */
     private final List<EstimatedMeasurement<?>> estimatedMeasurements;
@@ -70,9 +77,10 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
               multiplex(measurements, m -> m.getBaseWeight()),
               multiplex(measurements));
 
-        this.observedMeasurements  = measurements;
-        this.estimatedMeasurements = new ArrayList<>();
-        this.parametersDrivers     = new ParameterDriversList();
+        this.observedMeasurements                    = measurements;
+        this.estimatedMeasurementsWithoutDerivatives = new ArrayList<>();
+        this.estimatedMeasurements                   = new ArrayList<>();
+        this.parametersDrivers                       = new ParameterDriversList();
 
         // gather parameters drivers
         int dim = 0;
@@ -115,11 +123,70 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
         return observedMeasurements;
     }
 
+    /** Get the underlying estimated measurements without derivatives.
+     * @return underlying estimated measurements without derivatives
+     * @since 12.0
+     */
+    public List<EstimatedMeasurementBase<?>> getEstimatedMeasurementsWithoutDerivatives() {
+        return estimatedMeasurementsWithoutDerivatives;
+    }
+
     /** Get the underlying estimated measurements.
      * @return underlying estimated measurements
      */
     public List<EstimatedMeasurement<?>> getEstimatedMeasurements() {
         return estimatedMeasurements;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EstimatedMeasurementBase<MultiplexedMeasurement> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                                       final int evaluation,
+                                                                                                       final SpacecraftState[] states) {
+
+        final SpacecraftState[]              evaluationStates = new SpacecraftState[nbSat];
+        final List<TimeStampedPVCoordinates> participants     = new ArrayList<>();
+        final double[]                       value            = new double[dimension];
+
+        // loop over all multiplexed measurements
+        estimatedMeasurementsWithoutDerivatives.clear();
+        int index = 0;
+        for (int i = 0; i < observedMeasurements.size(); ++i) {
+
+            // filter states involved in the current measurement
+            final SpacecraftState[] filteredStates = new SpacecraftState[mapping[i].length];
+            for (int j = 0; j < mapping[i].length; ++j) {
+                filteredStates[j] = states[mapping[i][j]];
+            }
+
+            // perform evaluation
+            final EstimatedMeasurementBase<?> eI = observedMeasurements.get(i).estimateWithoutDerivatives(iteration, evaluation, filteredStates);
+            estimatedMeasurementsWithoutDerivatives.add(eI);
+
+            // extract results
+            final double[] valueI = eI.getEstimatedValue();
+            System.arraycopy(valueI, 0, value, index, valueI.length);
+            index += valueI.length;
+
+            // extract states
+            final SpacecraftState[] statesI = eI.getStates();
+            for (int j = 0; j < mapping[i].length; ++j) {
+                evaluationStates[mapping[i][j]] = statesI[j];
+            }
+
+        }
+
+        // create multiplexed estimation
+        final EstimatedMeasurementBase<MultiplexedMeasurement> multiplexed =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       evaluationStates,
+                                                       participants.toArray(new TimeStampedPVCoordinates[0]));
+
+        // copy multiplexed value
+        multiplexed.setEstimatedValue(value);
+
+        return multiplexed;
+
     }
 
     /** {@inheritDoc} */
@@ -176,7 +243,7 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
             Arrays.fill(m, zeroDerivative);
         }
 
-        final Map<ParameterDriver, double[]> parametersDerivatives = new IdentityHashMap<>();
+        final Map<ParameterDriver, TimeSpanMap<double[]>> parametersDerivatives = new IdentityHashMap<>();
         index = 0;
         for (int i = 0; i < observedMeasurements.size(); ++i) {
 
@@ -194,12 +261,32 @@ public class MultiplexedMeasurement extends AbstractMeasurement<MultiplexedMeasu
             // parameters derivatives
             eI.getDerivativesDrivers().forEach(driver -> {
                 final ParameterDriversList.DelegatingDriver delegating = parametersDrivers.findByName(driver.getName());
-                double[] derivatives = parametersDerivatives.get(delegating);
-                if (derivatives == null) {
-                    derivatives = new double[dimension];
-                    parametersDerivatives.put(delegating, derivatives);
+
+                if (parametersDerivatives.get(delegating) == null) {
+                    final TimeSpanMap<double[]> derivativeSpanMap = new TimeSpanMap<double[]>(new double[dimension]);
+                    parametersDerivatives.put(delegating, derivativeSpanMap);
                 }
-                System.arraycopy(eI.getParameterDerivatives(driver), 0, derivatives, idx, dimI);
+
+                final TimeSpanMap<Double> driverNameSpan = delegating.getValueSpanMap();
+                for (Span<Double> span = driverNameSpan.getSpan(driverNameSpan.getFirstSpan().getEnd()); span != null; span = span.next()) {
+
+                    double[] derivatives = parametersDerivatives.get(delegating).get(span.getStart());
+                    if (derivatives == null) {
+                        derivatives = new double[dimension];
+                    }
+                    if (!parametersDerivatives.get(delegating).getSpan(span.getStart()).getStart().equals(span.getStart())) {
+                        if ((span.getStart()).equals(AbsoluteDate.PAST_INFINITY)) {
+                            parametersDerivatives.get(delegating).addValidBefore(derivatives, span.getEnd(), false);
+                        } else {
+                            parametersDerivatives.get(delegating).addValidAfter(derivatives, span.getStart(), false);
+                        }
+
+                    }
+
+                    System.arraycopy(eI.getParameterDerivatives(driver, span.getStart()), 0, derivatives, idx, dimI);
+
+                }
+
             });
 
             index += dimI;

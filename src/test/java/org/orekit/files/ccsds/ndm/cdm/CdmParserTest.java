@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,10 +24,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.PocMethodType;
 import org.orekit.files.ccsds.definitions.YesNoUnknown;
@@ -376,9 +378,9 @@ public class CdmParserTest {
         Assertions.assertEquals(36, file.getMetadataObject1().getGravityOrder(), 0);
         Assertions.assertEquals("MOON", file.getMetadataObject1().getNBodyPerturbations().get(0).getName());
         Assertions.assertEquals("SUN", file.getMetadataObject1().getNBodyPerturbations().get(1).getName());
-        Assertions.assertEquals(false, file.getMetadataObject1().getSolarRadiationPressure());
-        Assertions.assertEquals(false, file.getMetadataObject1().getEarthTides());
-        Assertions.assertEquals(false, file.getMetadataObject1().getIntrackThrust());
+        Assertions.assertEquals("NO", file.getMetadataObject1().getSolarRadiationPressure().name());
+        Assertions.assertEquals("NO", file.getMetadataObject1().getEarthTides().name());
+        Assertions.assertEquals("NO", file.getMetadataObject1().getIntrackThrust().name());
         Assertions.assertEquals("UTC", file.getMetadataObject1().getTimeSystem().name());
 
         // Check data block
@@ -1293,8 +1295,11 @@ public class CdmParserTest {
         }
     }
 
+    /** Test that the Earth is returned by default when no orbit center were explicitly defined. */
     @Test
-    public void testMissingObj1OrbitCenterAsk_getFrame() throws URISyntaxException {
+    public void testMissingObj1OrbitCenterGetFrame() {
+
+        // GIVEN
         final String ex = "/ccsds/cdm/CDM-no-orbit-center-defined-obj1.txt";
 
         // Initialize the parser
@@ -1302,14 +1307,18 @@ public class CdmParserTest {
 
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
+        // WHEN
         // Generated CDM file
         final Cdm file = parser.parseMessage(source);
-        try {
-            file.getMetadataObject1().getFrame();
-            Assertions.fail("Expected Exception");
-        } catch (OrekitException e){
-            Assertions.assertEquals(e.getSpecifier(), OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY);
-        }
+
+        // WHEN
+        final BodyFacade obj1OrbitCenter     = file.getMetadataObject1().getOrbitCenter();
+        final BodyFacade expectedOrbitCenter = new BodyFacade(CelestialBodyFactory.EARTH.toUpperCase(),
+                                                              CelestialBodyFactory.getEarth());
+
+        Assertions.assertEquals(expectedOrbitCenter.getName(), obj1OrbitCenter.getName());
+        Assertions.assertEquals(expectedOrbitCenter.getBody(), obj1OrbitCenter.getBody());
+
     }
 
     @Test
@@ -1548,7 +1557,7 @@ public class CdmParserTest {
         Assertions.assertEquals(800000, file.getDataObject1().getAdditionalParametersBlock().getApoapsisAltitude(), 0.0); 	
 
         // Check PERIAPSIS_HEIGHT is correctly read
-        Assertions.assertEquals(750000, file.getDataObject1().getAdditionalParametersBlock().getPeriapsissAltitude(), 0.0); 
+        Assertions.assertEquals(750000, file.getDataObject1().getAdditionalParametersBlock().getPeriapsisAltitude(), 0.0);
 
         // Check INCLINATION is correctly read
         Assertions.assertEquals(FastMath.toRadians(89.0), file.getDataObject1().getAdditionalParametersBlock().getInclination(), 0.0);    
@@ -1616,10 +1625,10 @@ public class CdmParserTest {
 
         // OBJECT 2 - Eigenvector covariance block
         Assertions.assertEquals(AltCovarianceType.CSIG3EIGVEC3, file.getMetadataObject2().getAltCovType(), "ALT_COV_TYPE");
-        Assertions.assertEquals("Object2 Covariance in the Sigma / eigenvector format",  file.getDataObject2().getSig3Eigvec3CovarianceBlock().getComments().get(0));
-        Assertions.assertEquals(12,  file.getDataObject2().getSig3Eigvec3CovarianceBlock().getCsig3eigvec3().length);
+        Assertions.assertEquals("Object2 Covariance in the Sigma / eigenvector format",  file.getDataObject2().getSig3EigVec3CovarianceBlock().getComments().get(0));
+        Assertions.assertEquals(12,  file.getDataObject2().getSig3EigVec3CovarianceBlock().getCsig3eigvec3().length);
         for (int i=0; i<12; i++) {
-            Assertions.assertEquals(i+1,  file.getDataObject2().getSig3Eigvec3CovarianceBlock().getCsig3eigvec3()[i], COVARIANCE_DIAG_PRECISION);
+            Assertions.assertEquals(i+1, file.getDataObject2().getSig3EigVec3CovarianceBlock().getCsig3eigvec3()[i], COVARIANCE_DIAG_PRECISION);
         }
 
 
@@ -1657,7 +1666,7 @@ public class CdmParserTest {
         Assertions.assertEquals(DataContext.getDefault(),  file.getDataContext());
 
         // Check Header Block
-        Assertions.assertEquals(1.0, file.getHeader().getFormatVersion(), 1.0e-10);
+        Assertions.assertEquals(2.0, file.getHeader().getFormatVersion(), 1.0e-10);
         Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 22, 31, 12,
                                                  TimeScalesFactory.getUTC()),
                                 file.getHeader().getCreationDate());

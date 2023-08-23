@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,16 @@
  */
 package org.orekit.gnss.antenna;
 
+import java.net.URISyntaxException;
+import java.net.URL;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.Frequency;
@@ -40,9 +44,11 @@ public class AntexLoaderTest {
     }
 
     @Test
-    public void testSmallAntexFile() {
+    public void testSmallAntex14File() throws URISyntaxException {
 
-        AntexLoader  loader = new AntexLoader("^igs14-small\\.atx$");
+        final URL url = AntexLoaderTest.class.getClassLoader().getResource("antex/igs14-small.atx");
+        AntexLoader  loader = new AntexLoader(new DataSource(url.toURI()),
+                                              TimeScalesFactory.getGPS());
 
         Assertions.assertEquals(16, loader.getSatellitesAntennas().size());
 
@@ -193,6 +199,16 @@ public class AntexLoaderTest {
                                                                                                       FastMath.toRadians(55.0))),
                             1.0e-15);
 
+    }
+
+    @Test
+    public void testSmallAntex20File() throws URISyntaxException {
+
+        final URL url = AntexLoaderTest.class.getClassLoader().getResource("antex/igs20-small.atx");
+        AntexLoader  loader = new AntexLoader(new DataSource(url.toURI()),
+                                              TimeScalesFactory.getGPS());
+        Assertions.assertEquals(12, loader.getSatellitesAntennas().size());
+        Assertions.assertEquals(3,  loader.getReceiversAntennas().size());
     }
 
     @Test

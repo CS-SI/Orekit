@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,13 @@
  */
 package org.orekit.forces.gravity.potential;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.exception.Localizable;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -34,10 +37,6 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeSpanMap;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ICGEMFormatReaderTest {
 
@@ -88,19 +87,6 @@ public class ICGEMFormatReaderTest {
         Assertions.assertEquals( 0.308816581016e-06, harmonics.getNormalizedSnm(4, 4), 1.0e-15);
         Assertions.assertEquals(0.3986004415E+15, provider.getMu(), 1.0e-20);
         Assertions.assertEquals(0.6378136460E+07, provider.getAe(), 1.0e-20);
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecated() throws OrekitException {
-        Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
-        NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
-        Assertions.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
-        AbsoluteDate refDate = new AbsoluteDate("2004-10-01T12:00:00", TimeScalesFactory.getTT());
-        Assertions.assertEquals(refDate, provider.getReferenceDate());
-        AbsoluteDate date = new AbsoluteDate("2013-01-08T10:46:53", TimeScalesFactory.getTT());
-        Assertions.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
     }
 
     @Test

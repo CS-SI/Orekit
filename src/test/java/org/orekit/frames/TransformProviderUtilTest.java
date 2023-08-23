@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,8 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ public class TransformProviderUtilTest {
     @Test
     public void testIdentityField() {
         RandomGenerator random = new Well19937a(0x7086a8e4ad1265b0l);
-        final FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
+        final FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(Binary64Field.getInstance(),
                                                                           AbsoluteDate.J2000_EPOCH);
         checkNoTransform(TransformProviderUtils.IDENTITY_PROVIDER.getTransform(date), random);
     }
@@ -62,7 +62,7 @@ public class TransformProviderUtilTest {
     @Test
     public void testReverseField() {
         RandomGenerator random = new Well19937a(0xd74443b3079403e7l);
-        final FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
+        final FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(Binary64Field.getInstance(),
                                                                           AbsoluteDate.J2000_EPOCH);
         for (int i = 0; i < 20; ++i) {
             TransformProvider tp = constantProvider(random);
@@ -90,7 +90,7 @@ public class TransformProviderUtilTest {
     @Test
     public void testCombineField() {
         RandomGenerator random = new Well19937a(0x1f8bf20bfa4b54eal);
-        final FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
+        final FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(Binary64Field.getInstance(),
                                                                           AbsoluteDate.J2000_EPOCH);
         for (int i = 0; i < 20; ++i) {
             TransformProvider first  = constantProvider(random);
@@ -145,7 +145,7 @@ public class TransformProviderUtilTest {
         return new Rotation(q0 / q, q1 / q, q2 / q, q3 / q, false);
     }
 
-    private void checkNoTransform(FieldTransform<Decimal64> transform, RandomGenerator random) {
+    private void checkNoTransform(FieldTransform<Binary64> transform, RandomGenerator random) {
         for (int i = 0; i < 100; ++i) {
             Vector3D a = randomVector(1.0e3, random);
             Vector3D tA = transform.transformVector(a).toVector3D();

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 Joseph Reed
+/* Copyright 2002-2023 Joseph Reed
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,21 +58,24 @@ public class WaypointPVBuilder {
     private final OneAxisEllipsoid body;
 
     /** Set of waypoints, indexed by time. */
-    private final TreeMap<AbsoluteDate, GeodeticPoint> waypoints = new TreeMap<>();
+    private final TreeMap<AbsoluteDate, GeodeticPoint> waypoints;
 
     /** Whether the resulting provider should be invalid or constant prior to the first waypoint. */
-    private boolean invalidBefore = true;
+    private boolean invalidBefore;
 
     /** Whether the resulting provider should be invalid or constant after to the last waypoint. */
-    private boolean invalidAfter = true;
+    private boolean invalidAfter;
 
     /** Create a new instance.
      * @param factory The factory used to create the intermediate coordinate providers between waypoints.
      * @param body The central body, on which the way points are defined.
      */
     public WaypointPVBuilder(final InterpolationFactory factory, final OneAxisEllipsoid body) {
-        this.factory = factory;
-        this.body = body;
+        this.factory       = factory;
+        this.body          = body;
+        this.waypoints     = new TreeMap<>();
+        this.invalidBefore = true;
+        this.invalidAfter  = true;
     }
 
     /** Construct a waypoint builder interpolating points using a linear cartesian interpolation.
@@ -298,6 +301,20 @@ public class WaypointPVBuilder {
         }
 
         @Override
+        public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+            final double d = date.durationFrom(t0);
+            final double fraction = d / duration;
+            final double phase = fraction * phaseLength;
+
+            final S2Point sp = new S2Point(circle.getPointAt(phase0 + phase));
+            final GeodeticPoint point = toGeodetic(sp, initialAltitude + d * altitudeSlope);
+            final Vector3D p = body.transform(point);
+
+            return body.getBodyFrame().getStaticTransformTo(frame, date).transformPosition(p);
+
+        }
+
+        @Override
         public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
             final double d = date.durationFrom(t0);
             final double fraction = d / duration;
@@ -317,10 +334,19 @@ public class WaypointPVBuilder {
             return body.getBodyFrame().getTransformTo(frame, date).transformPVCoordinates(tpv);
         }
 
+        /** Converts the given geodetic point to a point on the 2-sphere.
+         * @param point input geodetic point
+         * @return a point on the 2-sphere
+         */
         static S2Point toSpherical(final GeodeticPoint point) {
             return new S2Point(point.getLongitude(), 0.5 * FastMath.PI - point.getLatitude());
         }
 
+        /** Converts a 2-sphere point to a geodetic point.
+         * @param point point on the 2-sphere
+         * @param alt point altitude
+         * @return a geodetic point
+         */
         static GeodeticPoint toGeodetic(final S2Point point, final double alt) {
             return new GeodeticPoint(0.5 * FastMath.PI - point.getPhi(), point.getTheta(), alt);
         }
@@ -355,6 +381,15 @@ public class WaypointPVBuilder {
             this.t0 = date1;
             this.duration = date2.durationFrom(date1);
             this.velocity = arc.getDistance() / duration;
+        }
+
+        @Override
+        public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+            final double fraction = date.durationFrom(t0) / duration;
+            final GeodeticPoint point = arc.calculatePointAlongArc(fraction);
+            final Vector3D p = arc.getBody().transform(point);
+
+            return arc.getBody().getBodyFrame().getStaticTransformTo(frame, date).transformPosition(p);
         }
 
         @Override
@@ -404,11 +439,19 @@ public class WaypointPVBuilder {
         }
 
         @Override
+        public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+            final double d = date.durationFrom(t0);
+            final Vector3D p = p0.add(vel.scalarMultiply(d));
+            return sourceFrame.getStaticTransformTo(frame, date).transformPosition(p);
+        }
+
+        @Override
         public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
             final double d = date.durationFrom(t0);
             final Vector3D p = p0.add(vel.scalarMultiply(d));
             final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(date, p, vel);
             return sourceFrame.getTransformTo(frame, date).transformPVCoordinates(pv);
         }
+
     }
 }

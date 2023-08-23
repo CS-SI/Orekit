@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.time;
 
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
-import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Binary64;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,7 +56,7 @@ public class SatelliteClockScaleTest {
         final double    offset = 0.0;
         final double    drift  = 0.001;
         final TimeScale sclk   = new SatelliteClockScale("SCLK",epoch, utc,  offset, drift);
-        FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(epoch, new Decimal64(1000.0));
+        FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(epoch, new Binary64(1000.0));
         Assertions.assertEquals(-24.0, sclk.offsetFromTAI(date).getReal(), 1.0e-12);
     }
 

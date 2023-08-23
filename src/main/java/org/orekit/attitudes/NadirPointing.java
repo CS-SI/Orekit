@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,17 +25,22 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolator;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 /**
  * This class handles nadir pointing attitude provider.
@@ -81,15 +86,22 @@ public class NadirPointing extends GroundPointing {
         sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+h),     frame), refToBody.staticShiftedBy(+h)));
         sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+2 * h), frame), refToBody.staticShiftedBy(+2 * h)));
 
+        // create interpolator
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_P);
+
         // use interpolation to compute properly the time-derivatives
-        return TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
+        return interpolator.interpolate(date, sample);
 
     }
 
     /** {@inheritDoc} */
     public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                                        final FieldAbsoluteDate<T> date,
-                                                                                        final Frame frame) {
+                                                                                            final FieldAbsoluteDate<T> date,
+                                                                                            final Frame frame) {
+
+        // zero
+        final T zero = date.getField().getZero();
 
         // transform from specified reference frame to body frame
         final FieldTransform<T> refToBody = frame.getTransformTo(shape.getBodyFrame(), date);
@@ -97,14 +109,18 @@ public class NadirPointing extends GroundPointing {
         // sample intersection points in current date neighborhood
         final double h  = 0.01;
         final List<TimeStampedFieldPVCoordinates<T>> sample = new ArrayList<>();
-        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-2 * h), frame), refToBody.shiftedBy(-2 * h)));
-        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-h),     frame), refToBody.shiftedBy(-h)));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-2 * h), frame), refToBody.staticShiftedBy(zero.add(-2 * h))));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-h),     frame), refToBody.staticShiftedBy(zero.add(-h))));
         sample.add(nadirRef(pvProv.getPVCoordinates(date,                   frame), refToBody));
-        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+h),     frame), refToBody.shiftedBy(+h)));
-        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+2 * h), frame), refToBody.shiftedBy(+2 * h)));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+h),     frame), refToBody.staticShiftedBy(zero.add(+h))));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+2 * h), frame), refToBody.staticShiftedBy(zero.add(+2 * h))));
+
+        // create interpolator
+        final FieldTimeInterpolator<TimeStampedFieldPVCoordinates<T>, T> interpolator =
+                new TimeStampedFieldPVCoordinatesHermiteInterpolator<>(sample.size(), CartesianDerivativesFilter.USE_P);
 
         // use interpolation to compute properly the time-derivatives
-        return TimeStampedFieldPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
+        return interpolator.interpolate(date, sample);
 
     }
 
@@ -142,7 +158,7 @@ public class NadirPointing extends GroundPointing {
      * @since 9.0
      */
     private <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> nadirRef(final TimeStampedFieldPVCoordinates<T> scRef,
-                                                                                      final FieldTransform<T> refToBody) {
+                                                                                          final FieldStaticTransform<T> refToBody) {
 
         final FieldVector3D<T> satInBodyFrame = refToBody.transformPosition(scRef.getPosition());
 

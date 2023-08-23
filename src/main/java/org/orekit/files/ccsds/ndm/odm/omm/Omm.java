@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,9 +21,9 @@ import java.util.List;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
-import org.orekit.files.ccsds.ndm.odm.CommonMetadata;
+import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
-import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -38,7 +38,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public class Omm extends NdmConstituent<Header, Segment<OmmMetadata, OmmData>> implements TimeStamped {
+public class Omm extends NdmConstituent<OdmHeader, Segment<OmmMetadata, OmmData>> implements TimeStamped {
 
     /** Root element for XML files. */
     public static final String ROOT = "omm";
@@ -52,7 +52,7 @@ public class Omm extends NdmConstituent<Header, Segment<OmmMetadata, OmmData>> i
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
      */
-    public Omm(final Header header, final List<Segment<OmmMetadata, OmmData>> segments,
+    public Omm(final OdmHeader header, final List<Segment<OmmMetadata, OmmData>> segments,
                final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
     }
@@ -97,13 +97,13 @@ public class Omm extends NdmConstituent<Header, Segment<OmmMetadata, OmmData>> i
      * @return the tle
      */
     public TLE generateTLE() {
-        final CommonMetadata metadata = getMetadata();
+        final OdmCommonMetadata metadata = getMetadata();
         final KeplerianElements kep = getData().getKeplerianElementsBlock();
         final OmmTle               tle = getData().getTLEBlock();
         return new TLE(tle.getNoradID(), tle.getClassificationType(),
                        metadata.getLaunchYear(), metadata.getLaunchNumber(), metadata.getLaunchPiece(),
                        tle.getEphemerisType(), tle.getElementSetNumber(), kep.getEpoch(),
-                       kep.getMeanMotion(), tle.getMeanMotionDot(), tle.getMeanMotionDotDot(),
+                       kep.getMeanMotion(), tle.getMeanMotionDot() / 2, tle.getMeanMotionDotDot() / 6,
                        kep.getE(), kep.getI(), kep.getPa(), kep.getRaan(),
                        kep.getAnomaly(), tle.getRevAtEpoch(),
                        tle.getBStar(), getDataContext().getTimeScales().getUTC());

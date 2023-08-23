@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -119,7 +119,7 @@ public class SsrVtecIonosphericModelTest {
 
     @Test
     public void testFieldDelay() {
-        doTestFieldDelay(Decimal64Field.getInstance());
+        doTestFieldDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
@@ -186,7 +186,7 @@ public class SsrVtecIonosphericModelTest {
 
     @Test
     public void testFieldZeroDelay() {
-        doTestFieldZeroDelay(Decimal64Field.getInstance());
+        doTestFieldZeroDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldZeroDelay(final Field<T> field) {
@@ -283,28 +283,28 @@ public class SsrVtecIonosphericModelTest {
         for (int i = 0; i < 6; i++) {
             SpacecraftState stateM4 = shiftState(state, orbitType, angleType, -4 * steps[i], i);
             double  delayM4 = model.pathDelay(stateM4, baseFrame, frequency, model.getParameters());
-
+            
             SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
             double  delayM3 = model.pathDelay(stateM3, baseFrame, frequency, model.getParameters());
-
+            
             SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
             double  delayM2 = model.pathDelay(stateM2, baseFrame, frequency, model.getParameters());
-
+ 
             SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
             double  delayM1 = model.pathDelay(stateM1, baseFrame, frequency, model.getParameters());
-
+           
             SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
             double  delayP1 = model.pathDelay(stateP1, baseFrame, frequency, model.getParameters());
-
+            
             SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
             double  delayP2 = model.pathDelay(stateP2, baseFrame, frequency, model.getParameters());
-
+            
             SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
             double  delayP3 = model.pathDelay(stateP3, baseFrame, frequency, model.getParameters());
-
+            
             SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
             double  delayP4 = model.pathDelay(stateP4, baseFrame, frequency, model.getParameters());
-
+            
             fillJacobianColumn(refDeriv, i, steps[i],
                                delayM4, delayM3, delayM2, delayM1,
                                delayP1, delayP2, delayP3, delayP4);
@@ -354,7 +354,7 @@ public class SsrVtecIonosphericModelTest {
 
     @Test
     public void testFieldDelayRange() {
-        doTestFieldDelayRange(Decimal64Field.getInstance());
+        doTestFieldDelayRange(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDelayRange(final Field<T> field) {

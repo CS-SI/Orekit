@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,16 +43,13 @@ import org.orekit.utils.IERSConventions;
 public class GNSSDate implements Serializable, TimeStamped {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 201902141L;
+    private static final long serialVersionUID = 20221228L;
 
     /** Duration of a week in days. */
     private static final int WEEK_D = 7;
 
     /** Duration of a week in seconds. */
     private static final double WEEK_S = WEEK_D * Constants.JULIAN_DAY;
-
-    /** Conversion factor from seconds to milliseconds. */
-    private static final double S_TO_MS = 1000.0;
 
     /** Reference date for ensuring continuity across GNSS week rollover.
      * @since 9.3.1
@@ -62,8 +59,8 @@ public class GNSSDate implements Serializable, TimeStamped {
     /** Week number since the GNSS reference epoch. */
     private final int weekNumber;
 
-    /** Number of milliseconds since week start. */
-    private final double milliInWeek;
+    /** Number of seconds since week start. */
+    private final double secondsInWeek;
 
     /** Satellite system to consider. */
     private final SatelliteSystem system;
@@ -74,7 +71,7 @@ public class GNSSDate implements Serializable, TimeStamped {
     /** Build an instance corresponding to a GNSS date.
      * <p>
      * GNSS dates are provided as a week number starting at
-     * the GNSS reference epoch and as a number of milliseconds
+     * the GNSS reference epoch and as a number of seconds
      * since week start.
      * </p>
      * <p>
@@ -88,21 +85,21 @@ public class GNSSDate implements Serializable, TimeStamped {
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
      *
      * @param weekNumber week number
-     * @param milliInWeek number of milliseconds since week start
+     * @param secondsInWeek number of seconds since week start
      * @param system satellite system to consider
      * @see #GNSSDate(int, double, SatelliteSystem, TimeScales)
+     * @since 12.0
      */
     @DefaultDataContext
-    public GNSSDate(final int weekNumber, final double milliInWeek,
-                    final SatelliteSystem system) {
-        this(weekNumber, milliInWeek, system, DataContext.getDefault().getTimeScales());
+    public GNSSDate(final int weekNumber, final double secondsInWeek, final SatelliteSystem system) {
+        this(weekNumber, secondsInWeek, system, DataContext.getDefault().getTimeScales());
     }
 
     /**
      * Build an instance corresponding to a GNSS date.
      * <p>
      * GNSS dates are provided as a week number starting at the GNSS reference epoch and
-     * as a number of milliseconds since week start.
+     * as a number of seconds since week start.
      * </p>
      * <p>
      * Many interfaces provide week number modulo the constellation week cycle. In order
@@ -114,20 +111,18 @@ public class GNSSDate implements Serializable, TimeStamped {
      * correction.
      * </p>
      *
-     * @param weekNumber  week number
-     * @param milliInWeek number of milliseconds since week start
-     * @param system      satellite system to consider
-     * @param timeScales  the set of time scales. Used to retrieve the appropriate time
-     *                    scale for the given {@code system}.
-     * @since 10.1
+     * @param weekNumber    week number
+     * @param secondsInWeek number of seconds since week start
+     * @param system        satellite system to consider
+     * @param timeScales    the set of time scales. Used to retrieve the appropriate time
+     *                      scale for the given {@code system}.
+     * @since 12.0
      */
-    public GNSSDate(final int weekNumber,
-                    final double milliInWeek,
-                    final SatelliteSystem system,
-                    final TimeScales timeScales) {
+    public GNSSDate(final int weekNumber, final double secondsInWeek,
+                    final SatelliteSystem system, final TimeScales timeScales) {
 
-        final int day = (int) FastMath.floor(milliInWeek / (Constants.JULIAN_DAY * S_TO_MS));
-        final double secondsInDay = milliInWeek / S_TO_MS - day * Constants.JULIAN_DAY;
+        final int day = (int) FastMath.floor(secondsInWeek / Constants.JULIAN_DAY);
+        final double secondsInDay = secondsInWeek - day * Constants.JULIAN_DAY;
 
         int w = weekNumber;
         DateComponents dc = new DateComponents(getWeekReferenceDateComponents(system), weekNumber * 7 + day);
@@ -153,9 +148,54 @@ public class GNSSDate implements Serializable, TimeStamped {
 
         }
 
-        this.weekNumber  = w;
-        this.milliInWeek = milliInWeek;
-        this.system      = system;
+        this.weekNumber    = w;
+        this.secondsInWeek = secondsInWeek;
+        this.system        = system;
+
+        date = new AbsoluteDate(dc, new TimeComponents(secondsInDay), getTimeScale(system, timeScales));
+
+    }
+
+    /**
+     * Build an instance corresponding to a GNSS date.
+     * <p>
+     * GNSS dates are provided as a week number starting at the GNSS reference epoch and
+     * as a number of seconds since week start.
+     * </p>
+     *
+     * @param weekNumber    week number
+     * @param secondsInWeek number of seconds since week start
+     * @param system        satellite system to consider
+     * @param reference     reference date for rollover, the generated date will be less
+     *                      than one half cycle from this date
+     * @param timeScales    the set of time scales. Used to retrieve the appropriate time
+     *                      scale for the given {@code system}.
+     * @since 12.0
+     */
+    public GNSSDate(final int weekNumber, final double secondsInWeek,
+                    final SatelliteSystem system, final DateComponents reference,
+                    final TimeScales timeScales) {
+
+        final int day = (int) FastMath.floor(secondsInWeek / Constants.JULIAN_DAY);
+        final double secondsInDay = secondsInWeek - day * Constants.JULIAN_DAY;
+
+        int w = weekNumber;
+        DateComponents dc = new DateComponents(getWeekReferenceDateComponents(system), weekNumber * 7 + day);
+        final int cycleW = GNSSDateType.getRollOverWeek(system);
+        if (weekNumber < cycleW) {
+
+            // fix GNSS week rollover
+            final int cycleD = WEEK_D * cycleW;
+            while (dc.getJ2000Day() < reference.getJ2000Day() - cycleD / 2) {
+                dc = new DateComponents(dc, cycleD);
+                w += cycleW;
+            }
+
+        }
+
+        this.weekNumber    = w;
+        this.secondsInWeek = secondsInWeek;
+        this.system        = system;
 
         date = new AbsoluteDate(dc, new TimeComponents(secondsInDay), getTimeScale(system, timeScales));
 
@@ -191,14 +231,14 @@ public class GNSSDate implements Serializable, TimeStamped {
         final AbsoluteDate epoch = getWeekReferenceAbsoluteDate(system, timeScales);
         this.weekNumber  = (int) FastMath.floor(date.durationFrom(epoch) / WEEK_S);
         final AbsoluteDate weekStart = new AbsoluteDate(epoch, WEEK_S * weekNumber);
-        this.milliInWeek = date.durationFrom(weekStart) * S_TO_MS;
-        this.date        = date;
+        this.secondsInWeek = date.durationFrom(weekStart);
+        this.date          = date;
 
     }
 
     /** Set a reference date for ensuring continuity across GNSS week rollover.
      * <p>
-     * Instance created using the {@link #GNSSDate(int, double, SatelliteSystem) GNSSDate(weekNumber, milliInWeek, system)}
+     * Instance created using the {@link #GNSSDate(int, double, SatelliteSystem) GNSSDate(weekNumber, secondsInWeek, system)}
      * constructor and with a week number between 0 and the constellation week cycle (cycleW) after this method has been called will
      * fix the week number to ensure they correspond to dates between {@code reference - cycleW / 2 weeks}
      * and {@code reference + cycleW / 2 weeks}.
@@ -242,7 +282,15 @@ public class GNSSDate implements Serializable, TimeStamped {
      * @return number of milliseconds since week start
      */
     public double getMilliInWeek() {
-        return milliInWeek;
+        return getSecondsInWeek() * 1000.0;
+    }
+
+    /** Get the number of seconds since week start.
+     * @return number of seconds since week start
+     * @since 12.0
+     */
+    public double getSecondsInWeek() {
+        return secondsInWeek;
     }
 
     /** {@inheritDoc} */
@@ -310,7 +358,7 @@ public class GNSSDate implements Serializable, TimeStamped {
      */
     @DefaultDataContext
     private Object writeReplace() {
-        return new DataTransferObject(weekNumber, milliInWeek, system);
+        return new DataTransferObject(weekNumber, secondsInWeek, system);
     }
 
     /** Internal class used only for serialization. */
@@ -318,34 +366,34 @@ public class GNSSDate implements Serializable, TimeStamped {
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 201902141L;
+        private static final long serialVersionUID = 20221228L;
 
         /** Week number since the GNSS reference epoch. */
         private final int weekNumber;
 
-        /** Number of milliseconds since week start. */
-        private final double milliInWeek;
+        /** Number of seconds since week start. */
+        private final double secondsInWeek;
 
         /** Satellite system to consider. */
         private final SatelliteSystem system;
 
         /** Simple constructor.
          * @param weekNumber week number since the GNSS reference epoch
-         * @param milliInWeek number of milliseconds since week start
+         * @param secondsInWeek number of seconds since week start
          * @param system satellite system to consider
          */
-        DataTransferObject(final int weekNumber, final double milliInWeek,
+        DataTransferObject(final int weekNumber, final double secondsInWeek,
                            final SatelliteSystem system) {
-            this.weekNumber  = weekNumber;
-            this.milliInWeek = milliInWeek;
-            this.system      = system;
+            this.weekNumber    = weekNumber;
+            this.secondsInWeek = secondsInWeek;
+            this.system        = system;
         }
 
         /** Replace the deserialized data transfer object with a {@link GNSSDate}.
          * @return replacement {@link GNSSDate}
          */
         private Object readResolve() {
-            return new GNSSDate(weekNumber, milliInWeek, system);
+            return new GNSSDate(weekNumber, secondsInWeek, system);
         }
 
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,13 +28,13 @@ import org.hipparchus.linear.BlockRealMatrix;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
-import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -46,6 +46,15 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
 public class LocalOrbitalFrameTest {
+
+    @Test
+    public void testIssue977() {
+        LOFType type = LOFType.TNW;
+        LocalOrbitalFrame lof = new LocalOrbitalFrame(FramesFactory.getGCRF(), type, provider, type.name());
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+            lof.getTransformProvider().getTransform(FieldAbsoluteDate.getJ2000Epoch(Binary64Field.getInstance()));
+        });
+    }
 
     @Test
     public void testTNW() {
@@ -122,9 +131,9 @@ public class LocalOrbitalFrameTest {
                                                    new Vector3D(0, 7669, 0));
 
         // When
-        final Transform transformFromTNWToQSW = LOFType.transformFromLOFInToLOFOut(LOFType.TNW, LOFType.QSW, date, pv);
-        final Transform transformFromQSWToNTW = LOFType.transformFromLOFInToLOFOut(LOFType.QSW, LOFType.NTW, date, pv);
-        final Transform transformFromNTWToTNW = LOFType.transformFromLOFInToLOFOut(LOFType.NTW, LOFType.TNW, date, pv);
+        final Transform transformFromTNWToQSW = LOF.transformFromLOFInToLOFOut(LOFType.TNW, LOFType.QSW, date, pv);
+        final Transform transformFromQSWToNTW = LOF.transformFromLOFInToLOFOut(LOFType.QSW, LOFType.NTW, date, pv);
+        final Transform transformFromNTWToTNW = LOF.transformFromLOFInToLOFOut(LOFType.NTW, LOFType.TNW, date, pv);
         final Transform composedTransform = composeTransform(date,
                                                              transformFromTNWToQSW,
                                                              transformFromQSWToNTW,
@@ -137,8 +146,8 @@ public class LocalOrbitalFrameTest {
         final Vector3D expectedTranslation = new Vector3D(0, 0, 0);
         final RealMatrix expectedRotation = MatrixUtils.createRealIdentityMatrix(3);
 
-        validateVector3D(expectedTranslation, computedTranslation, 1e-15);
-        validateRealMatrix(expectedRotation, computedRotation, 1e-15);
+        TestUtils.validateVector3D(expectedTranslation, computedTranslation, 1e-15);
+        TestUtils.validateRealMatrix(expectedRotation, computedRotation, 1e-15);
 
     }
 
@@ -146,38 +155,38 @@ public class LocalOrbitalFrameTest {
     @DisplayName("Test transformFromLOFInToLOFOut (field version) method")
     void should_return_expected_field_transform_from_LOFIn_To_LOFOut() {
         // Given
-        final Field<Decimal64> field = Decimal64Field.getInstance();
-        final FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(field);
-        final FieldPVCoordinates<Decimal64> pv =
-                new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(6378000 + 400000),
-                                                             new Decimal64(0),
-                                                             new Decimal64(0)),
-                                         new FieldVector3D<>(new Decimal64(0),
-                                                             new Decimal64(7669),
-                                                             new Decimal64(0)));
+        final Field<Binary64> field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(field);
+        final FieldPVCoordinates<Binary64> pv =
+                new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(6378000 + 400000),
+                                                             new Binary64(0),
+                                                             new Binary64(0)),
+                                         new FieldVector3D<>(new Binary64(0),
+                                                             new Binary64(7669),
+                                                             new Binary64(0)));
 
         // When
-        final FieldTransform<Decimal64> transformFromTNWToQSW =
-                LOFType.transformFromLOFInToLOFOut(LOFType.TNW, LOFType.QSW, date, pv);
-        final FieldTransform<Decimal64> transformFromQSWToNTW =
-                LOFType.transformFromLOFInToLOFOut(LOFType.QSW, LOFType.NTW, date, pv);
-        final FieldTransform<Decimal64> transformFromNTWToTNW =
-                LOFType.transformFromLOFInToLOFOut(LOFType.NTW, LOFType.TNW, date, pv);
-        final FieldTransform<Decimal64> composedTransform = composeFieldTransform(date,
+        final FieldTransform<Binary64> transformFromTNWToQSW =
+                LOF.transformFromLOFInToLOFOut(LOFType.TNW, LOFType.QSW, date, pv);
+        final FieldTransform<Binary64> transformFromQSWToNTW =
+                LOF.transformFromLOFInToLOFOut(LOFType.QSW, LOFType.NTW, date, pv);
+        final FieldTransform<Binary64> transformFromNTWToTNW =
+                LOF.transformFromLOFInToLOFOut(LOFType.NTW, LOFType.TNW, date, pv);
+        final FieldTransform<Binary64> composedTransform = composeFieldTransform(date,
                                                                                   transformFromTNWToQSW,
                                                                                   transformFromQSWToNTW,
                                                                                   transformFromNTWToTNW);
 
-        final FieldVector3D<Decimal64>    computedTranslation = composedTransform.getTranslation();
-        final BlockFieldMatrix<Decimal64> computedRotation    =
+        final FieldVector3D<Binary64>    computedTranslation = composedTransform.getTranslation();
+        final BlockFieldMatrix<Binary64> computedRotation    =
                 new BlockFieldMatrix<>(composedTransform.getRotation().getMatrix());
 
         // Then
         final Vector3D expectedTranslation = new Vector3D(0, 0, 0);
         final RealMatrix expectedRotation = MatrixUtils.createRealIdentityMatrix(3);
 
-        validateFieldVector3D(expectedTranslation, computedTranslation, 1e-15);
-        validateFieldMatrix(expectedRotation, computedRotation, 1e-15);
+        TestUtils.validateFieldVector3D(expectedTranslation, computedTranslation, 1e-15);
+        TestUtils.validateFieldMatrix(expectedRotation, computedRotation, 1e-15);
 
     }
 
@@ -203,8 +212,8 @@ public class LocalOrbitalFrameTest {
                 { 0, 0, 1 }
         });
 
-        validateVector3D(expectedTranslation, computedTranslation, 1e-15);
-        validateRealMatrix(expectedRotation, computedRotation, 1e-15);
+        TestUtils.validateVector3D(expectedTranslation, computedTranslation, 1e-15);
+        TestUtils.validateRealMatrix(expectedRotation, computedRotation, 1e-15);
 
     }
 
@@ -212,20 +221,20 @@ public class LocalOrbitalFrameTest {
     @DisplayName("Test transformFromInertial (field version) method")
     void should_return_expected_field_transform_from_inertial() {
         // Given
-        final Field<Decimal64>             field = Decimal64Field.getInstance();
-        final FieldAbsoluteDate<Decimal64> date  = new FieldAbsoluteDate<>(field);
-        final FieldPVCoordinates<Decimal64> pv =
-                new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(6378000 + 400000),
-                                                             new Decimal64(0),
-                                                             new Decimal64(0)),
-                                         new FieldVector3D<>(new Decimal64(0),
-                                                             new Decimal64(7669),
-                                                             new Decimal64(0)));
+        final Field<Binary64>             field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> date  = new FieldAbsoluteDate<>(field);
+        final FieldPVCoordinates<Binary64> pv =
+                new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(6378000 + 400000),
+                                                             new Binary64(0),
+                                                             new Binary64(0)),
+                                         new FieldVector3D<>(new Binary64(0),
+                                                             new Binary64(7669),
+                                                             new Binary64(0)));
 
         // When
-        final FieldTransform<Decimal64> transformFromInertialToLOF = LOFType.TNW.transformFromInertial(date, pv);
-        final FieldVector3D<Decimal64>  computedTranslation        = transformFromInertialToLOF.getTranslation();
-        final BlockFieldMatrix<Decimal64> computedRotation =
+        final FieldTransform<Binary64> transformFromInertialToLOF = LOFType.TNW.transformFromInertial(date, pv);
+        final FieldVector3D<Binary64>  computedTranslation        = transformFromInertialToLOF.getTranslation();
+        final BlockFieldMatrix<Binary64> computedRotation =
                 new BlockFieldMatrix<>(transformFromInertialToLOF.getRotation().getMatrix());
 
         // Then
@@ -236,8 +245,176 @@ public class LocalOrbitalFrameTest {
                 { 0, 0, 1 }
         });
 
-        validateFieldVector3D(expectedTranslation, computedTranslation, 1e-15);
-        validateFieldMatrix(expectedRotation, computedRotation, 1e-15);
+        TestUtils.validateFieldVector3D(expectedTranslation, computedTranslation, 1e-15);
+        TestUtils.validateFieldMatrix(expectedRotation, computedRotation, 1e-15);
+
+    }
+
+    @Test
+    @DisplayName("Test all rotation methods using default method of the interface")
+    void should_return_initial_value_after_multiple_rotations_default_method() {
+        // Given
+        final AbsoluteDate arbitraryEpoch = AbsoluteDate.ARBITRARY_EPOCH;
+        final PVCoordinates pv = new PVCoordinates(new Vector3D(6378000 + 400000, 0, 0),
+                                                   new Vector3D(0, 5422.8, 5422.8));
+
+        // When
+        final Rotation rotationFromTNWToTNWInertial =
+                LOFType.TNW_INERTIAL.rotationFromLOF(LOFType.TNW, arbitraryEpoch, pv);
+
+        final Rotation rotationFromTNWInertialToQSW =
+                LOFType.QSW.rotationFromLOF(LOFType.TNW_INERTIAL, arbitraryEpoch, pv);
+
+        final Rotation rotationFromQSWToQSWInertial =
+                LOFType.QSW_INERTIAL.rotationFromLOF(LOFType.QSW, arbitraryEpoch, pv);
+
+        final Rotation rotationFromQSWInertialToLVLH =
+                LOFType.LVLH.rotationFromLOF(LOFType.QSW_INERTIAL, arbitraryEpoch, pv);
+
+        final Rotation rotationFromLVLHToLVLHInertial =
+                LOFType.LVLH_INERTIAL.rotationFromLOF(LOFType.LVLH, arbitraryEpoch, pv);
+
+        final Rotation rotationFromLVLHInertialToLVLH_CCSDS =
+                LOFType.LVLH_CCSDS.rotationFromLOF(LOFType.LVLH_INERTIAL, arbitraryEpoch, pv);
+
+        final Rotation rotationFromLVLH_CCSDSToLVLH_CCSDSInertial =
+                LOFType.LVLH_CCSDS_INERTIAL.rotationFromLOF(LOFType.LVLH_CCSDS, arbitraryEpoch, pv);
+
+        final Rotation rotationFromLVLH_CCSDSInertialToVVLH =
+                LOFType.VVLH.rotationFromLOF(LOFType.LVLH_CCSDS_INERTIAL, arbitraryEpoch, pv);
+
+        final Rotation rotationFromVVLHToVVLHInertial =
+                LOFType.VVLH_INERTIAL.rotationFromLOF(LOFType.VVLH, arbitraryEpoch, pv);
+
+        final Rotation rotationFromVVLHInertialToVNC =
+                LOFType.VNC.rotationFromLOF(LOFType.VVLH_INERTIAL, arbitraryEpoch, pv);
+
+        final Rotation rotationFromVNCToVNCInertial =
+                LOFType.VNC_INERTIAL.rotationFromLOF(LOFType.VNC, arbitraryEpoch, pv);
+
+        final Rotation rotationFromVNCInertialToNTW =
+                LOFType.NTW.rotationFromLOF(LOFType.VNC_INERTIAL, arbitraryEpoch, pv);
+
+        final Rotation rotationFromNTWToNTWInertial =
+                LOFType.NTW_INERTIAL.rotationFromLOF(LOFType.NTW, arbitraryEpoch, pv);
+
+        final Rotation rotationFromNTWInertialToEQW =
+                LOFType.EQW.rotationFromLOF(LOFType.NTW_INERTIAL, arbitraryEpoch, pv);
+
+        final Rotation rotationFromEQWToTNW =
+                LOF.rotationFromLOFInToLOFOut(LOFType.EQW, LOFType.TNW, arbitraryEpoch, pv);
+
+        final Rotation rotationFromTNWToTNW =
+                composeRotations(rotationFromTNWToTNWInertial,
+                                 rotationFromTNWInertialToQSW,
+                                 rotationFromQSWToQSWInertial,
+                                 rotationFromQSWInertialToLVLH,
+                                 rotationFromLVLHToLVLHInertial,
+                                 rotationFromLVLHInertialToLVLH_CCSDS,
+                                 rotationFromLVLH_CCSDSToLVLH_CCSDSInertial,
+                                 rotationFromLVLH_CCSDSInertialToVVLH,
+                                 rotationFromVVLHToVVLHInertial,
+                                 rotationFromVVLHInertialToVNC,
+                                 rotationFromVNCToVNCInertial,
+                                 rotationFromVNCInertialToNTW,
+                                 rotationFromNTWToNTWInertial,
+                                 rotationFromNTWInertialToEQW,
+                                 rotationFromEQWToTNW);
+
+        final RealMatrix rotationMatrixFromTNWToTNW =
+                new BlockRealMatrix(rotationFromTNWToTNW.getMatrix());
+
+        // Then
+        final RealMatrix identityMatrix = MatrixUtils.createRealIdentityMatrix(3);
+
+        TestUtils.validateRealMatrix(identityMatrix, rotationMatrixFromTNWToTNW, 1e-15);
+
+    }
+
+    @Test
+    @DisplayName("Test all rotation methods (field version) using default method of the interface")
+    void should_return_initial_value_after_multiple_field_rotations_default_method() {
+        // Given
+        final Binary64Field               field          = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> arbitraryEpoch = new FieldAbsoluteDate<>(field, AbsoluteDate.ARBITRARY_EPOCH);
+        final FieldPVCoordinates<Binary64> pv =
+                new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(6378000 + 400000),
+                                                             new Binary64(0),
+                                                             new Binary64(0)),
+                                         new FieldVector3D<>(new Binary64(0),
+                                                             new Binary64(5422.8),
+                                                             new Binary64(5422.8)));
+
+        // When
+        final FieldRotation<Binary64> rotationFromTNWToTNWInertial =
+                LOFType.TNW_INERTIAL.rotationFromLOF(field, LOFType.TNW, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromTNWInertialToQSW =
+                LOFType.QSW.rotationFromLOF(field, LOFType.TNW_INERTIAL, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromQSWToQSWInertial =
+                LOFType.QSW_INERTIAL.rotationFromLOF(field, LOFType.QSW, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromQSWInertialToLVLH =
+                LOFType.LVLH.rotationFromLOF(field, LOFType.QSW_INERTIAL, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromLVLHToLVLHInertial =
+                LOFType.LVLH_INERTIAL.rotationFromLOF(field, LOFType.LVLH, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromLVLHInertialToLVLH_CCSDS =
+                LOFType.LVLH_CCSDS.rotationFromLOF(field, LOFType.LVLH_INERTIAL, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromLVLH_CCSDSToLVLH_CCSDSInertial =
+                LOFType.LVLH_CCSDS_INERTIAL.rotationFromLOF(field, LOFType.LVLH_CCSDS, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromLVLH_CCSDSInertialToVVLH =
+                LOFType.VVLH.rotationFromLOF(field, LOFType.LVLH_CCSDS_INERTIAL, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromVVLHToVVLHInertial =
+                LOFType.VVLH_INERTIAL.rotationFromLOF(field, LOFType.VVLH, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromVVLHInertialToVNC =
+                LOFType.VNC.rotationFromLOF(field, LOFType.VVLH_INERTIAL, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromVNCToVNCInertial =
+                LOFType.VNC_INERTIAL.rotationFromLOF(field, LOFType.VNC, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromVNCInertialToNTW =
+                LOFType.NTW.rotationFromLOF(field, LOFType.VNC_INERTIAL, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromNTWToNTWInertial =
+                LOFType.NTW_INERTIAL.rotationFromLOF(field, LOFType.NTW, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromNTWInertialToEQW =
+                LOFType.EQW.rotationFromLOF(field, LOFType.NTW_INERTIAL, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromEQWToTNW =
+                LOF.rotationFromLOFInToLOFOut(field, LOFType.EQW, LOFType.TNW, arbitraryEpoch, pv);
+
+        final FieldRotation<Binary64> rotationFromTNWToTNW =
+                composeFieldRotations(rotationFromTNWToTNWInertial,
+                                      rotationFromTNWInertialToQSW,
+                                      rotationFromQSWToQSWInertial,
+                                      rotationFromQSWInertialToLVLH,
+                                      rotationFromLVLHToLVLHInertial,
+                                      rotationFromLVLHInertialToLVLH_CCSDS,
+                                      rotationFromLVLH_CCSDSToLVLH_CCSDSInertial,
+                                      rotationFromLVLH_CCSDSInertialToVVLH,
+                                      rotationFromVVLHToVVLHInertial,
+                                      rotationFromVVLHInertialToVNC,
+                                      rotationFromVNCToVNCInertial,
+                                      rotationFromVNCInertialToNTW,
+                                      rotationFromNTWToNTWInertial,
+                                      rotationFromNTWInertialToEQW,
+                                      rotationFromEQWToTNW);
+
+        final FieldMatrix<Binary64> rotationMatrixFromTNWToTNW =
+                new BlockFieldMatrix<>(rotationFromTNWToTNW.getMatrix());
+
+        // Then
+        final RealMatrix identityMatrix = MatrixUtils.createRealIdentityMatrix(3);
+
+        TestUtils.validateFieldMatrix(identityMatrix, rotationMatrixFromTNWToTNW, 1e-15);
 
     }
 
@@ -250,46 +427,46 @@ public class LocalOrbitalFrameTest {
 
         // When
         final Rotation rotationFromTNWToTNWInertial =
-                LOFType.TNW_INERTIAL.rotationFromLOFType(LOFType.TNW, pv);
+                LOFType.TNW_INERTIAL.rotationFromLOF(LOFType.TNW, pv);
 
         final Rotation rotationFromTNWInertialToQSW =
-                LOFType.QSW.rotationFromLOFType(LOFType.TNW_INERTIAL, pv);
+                LOFType.QSW.rotationFromLOF(LOFType.TNW_INERTIAL, pv);
 
         final Rotation rotationFromQSWToQSWInertial =
-                LOFType.QSW_INERTIAL.rotationFromLOFType(LOFType.QSW, pv);
+                LOFType.QSW_INERTIAL.rotationFromLOF(LOFType.QSW, pv);
 
         final Rotation rotationFromQSWInertialToLVLH =
-                LOFType.LVLH.rotationFromLOFType(LOFType.QSW_INERTIAL, pv);
+                LOFType.LVLH.rotationFromLOF(LOFType.QSW_INERTIAL, pv);
 
         final Rotation rotationFromLVLHToLVLHInertial =
-                LOFType.LVLH_INERTIAL.rotationFromLOFType(LOFType.LVLH, pv);
+                LOFType.LVLH_INERTIAL.rotationFromLOF(LOFType.LVLH, pv);
 
         final Rotation rotationFromLVLHInertialToLVLH_CCSDS =
-                LOFType.LVLH_CCSDS.rotationFromLOFType(LOFType.LVLH_INERTIAL, pv);
+                LOFType.LVLH_CCSDS.rotationFromLOF(LOFType.LVLH_INERTIAL, pv);
 
         final Rotation rotationFromLVLH_CCSDSToLVLH_CCSDSInertial =
-                LOFType.LVLH_CCSDS_INERTIAL.rotationFromLOFType(LOFType.LVLH_CCSDS, pv);
+                LOFType.LVLH_CCSDS_INERTIAL.rotationFromLOF(LOFType.LVLH_CCSDS, pv);
 
         final Rotation rotationFromLVLH_CCSDSInertialToVVLH =
-                LOFType.VVLH.rotationFromLOFType(LOFType.LVLH_CCSDS_INERTIAL, pv);
+                LOFType.VVLH.rotationFromLOF(LOFType.LVLH_CCSDS_INERTIAL, pv);
 
         final Rotation rotationFromVVLHToVVLHInertial =
-                LOFType.VVLH_INERTIAL.rotationFromLOFType(LOFType.VVLH, pv);
+                LOFType.VVLH_INERTIAL.rotationFromLOF(LOFType.VVLH, pv);
 
         final Rotation rotationFromVVLHInertialToVNC =
-                LOFType.VNC.rotationFromLOFType(LOFType.VVLH_INERTIAL, pv);
+                LOFType.VNC.rotationFromLOF(LOFType.VVLH_INERTIAL, pv);
 
         final Rotation rotationFromVNCToVNCInertial =
-                LOFType.VNC_INERTIAL.rotationFromLOFType(LOFType.VNC, pv);
+                LOFType.VNC_INERTIAL.rotationFromLOF(LOFType.VNC, pv);
 
         final Rotation rotationFromVNCInertialToNTW =
-                LOFType.NTW.rotationFromLOFType(LOFType.VNC_INERTIAL, pv);
+                LOFType.NTW.rotationFromLOF(LOFType.VNC_INERTIAL, pv);
 
         final Rotation rotationFromNTWToNTWInertial =
-                LOFType.NTW_INERTIAL.rotationFromLOFType(LOFType.NTW, pv);
+                LOFType.NTW_INERTIAL.rotationFromLOF(LOFType.NTW, pv);
 
         final Rotation rotationFromNTWInertialToEQW =
-                LOFType.EQW.rotationFromLOFType(LOFType.NTW_INERTIAL, pv);
+                LOFType.EQW.rotationFromLOF(LOFType.NTW_INERTIAL, pv);
 
         final Rotation rotationFromEQWToTNW =
                 LOFType.rotationFromLOFInToLOFOut(LOFType.EQW, LOFType.TNW, pv);
@@ -317,7 +494,7 @@ public class LocalOrbitalFrameTest {
         // Then
         final RealMatrix identityMatrix = MatrixUtils.createRealIdentityMatrix(3);
 
-        validateRealMatrix(identityMatrix, rotationMatrixFromTNWToTNW, 1e-15);
+        TestUtils.validateRealMatrix(identityMatrix, rotationMatrixFromTNWToTNW, 1e-15);
 
     }
 
@@ -325,62 +502,62 @@ public class LocalOrbitalFrameTest {
     @DisplayName("Test all rotation methods (field version)")
     void should_return_initial_value_after_multiple_field_rotations() {
         // Given
-        final Decimal64Field               field = Decimal64Field.getInstance();
-        final FieldPVCoordinates<Decimal64> pv =
-                new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(6378000 + 400000),
-                                                             new Decimal64(0),
-                                                             new Decimal64(0)),
-                                         new FieldVector3D<>(new Decimal64(0),
-                                                             new Decimal64(5422.8),
-                                                             new Decimal64(5422.8)));
+        final Binary64Field               field = Binary64Field.getInstance();
+        final FieldPVCoordinates<Binary64> pv =
+                new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(6378000 + 400000),
+                                                             new Binary64(0),
+                                                             new Binary64(0)),
+                                         new FieldVector3D<>(new Binary64(0),
+                                                             new Binary64(5422.8),
+                                                             new Binary64(5422.8)));
 
         // When
-        final FieldRotation<Decimal64> rotationFromTNWToTNWInertial =
-                LOFType.TNW_INERTIAL.rotationFromLOFType(field, LOFType.TNW, pv);
+        final FieldRotation<Binary64> rotationFromTNWToTNWInertial =
+                LOFType.TNW_INERTIAL.rotationFromLOF(field, LOFType.TNW, pv);
 
-        final FieldRotation<Decimal64> rotationFromTNWInertialToQSW =
-                LOFType.QSW.rotationFromLOFType(field, LOFType.TNW_INERTIAL, pv);
+        final FieldRotation<Binary64> rotationFromTNWInertialToQSW =
+                LOFType.QSW.rotationFromLOF(field, LOFType.TNW_INERTIAL, pv);
 
-        final FieldRotation<Decimal64> rotationFromQSWToQSWInertial =
-                LOFType.QSW_INERTIAL.rotationFromLOFType(field, LOFType.QSW, pv);
+        final FieldRotation<Binary64> rotationFromQSWToQSWInertial =
+                LOFType.QSW_INERTIAL.rotationFromLOF(field, LOFType.QSW, pv);
 
-        final FieldRotation<Decimal64> rotationFromQSWInertialToLVLH =
-                LOFType.LVLH.rotationFromLOFType(field, LOFType.QSW_INERTIAL, pv);
+        final FieldRotation<Binary64> rotationFromQSWInertialToLVLH =
+                LOFType.LVLH.rotationFromLOF(field, LOFType.QSW_INERTIAL, pv);
 
-        final FieldRotation<Decimal64> rotationFromLVLHToLVLHInertial =
-                LOFType.LVLH_INERTIAL.rotationFromLOFType(field, LOFType.LVLH, pv);
+        final FieldRotation<Binary64> rotationFromLVLHToLVLHInertial =
+                LOFType.LVLH_INERTIAL.rotationFromLOF(field, LOFType.LVLH, pv);
 
-        final FieldRotation<Decimal64> rotationFromLVLHInertialToLVLH_CCSDS =
-                LOFType.LVLH_CCSDS.rotationFromLOFType(field, LOFType.LVLH_INERTIAL, pv);
+        final FieldRotation<Binary64> rotationFromLVLHInertialToLVLH_CCSDS =
+                LOFType.LVLH_CCSDS.rotationFromLOF(field, LOFType.LVLH_INERTIAL, pv);
 
-        final FieldRotation<Decimal64> rotationFromLVLH_CCSDSToLVLH_CCSDSInertial =
-                LOFType.LVLH_CCSDS_INERTIAL.rotationFromLOFType(field, LOFType.LVLH_CCSDS, pv);
+        final FieldRotation<Binary64> rotationFromLVLH_CCSDSToLVLH_CCSDSInertial =
+                LOFType.LVLH_CCSDS_INERTIAL.rotationFromLOF(field, LOFType.LVLH_CCSDS, pv);
 
-        final FieldRotation<Decimal64> rotationFromLVLH_CCSDSInertialToVVLH =
-                LOFType.VVLH.rotationFromLOFType(field, LOFType.LVLH_CCSDS_INERTIAL, pv);
+        final FieldRotation<Binary64> rotationFromLVLH_CCSDSInertialToVVLH =
+                LOFType.VVLH.rotationFromLOF(field, LOFType.LVLH_CCSDS_INERTIAL, pv);
 
-        final FieldRotation<Decimal64> rotationFromVVLHToVVLHInertial =
-                LOFType.VVLH_INERTIAL.rotationFromLOFType(field, LOFType.VVLH, pv);
+        final FieldRotation<Binary64> rotationFromVVLHToVVLHInertial =
+                LOFType.VVLH_INERTIAL.rotationFromLOF(field, LOFType.VVLH, pv);
 
-        final FieldRotation<Decimal64> rotationFromVVLHInertialToVNC =
-                LOFType.VNC.rotationFromLOFType(field, LOFType.VVLH_INERTIAL, pv);
+        final FieldRotation<Binary64> rotationFromVVLHInertialToVNC =
+                LOFType.VNC.rotationFromLOF(field, LOFType.VVLH_INERTIAL, pv);
 
-        final FieldRotation<Decimal64> rotationFromVNCToVNCInertial =
-                LOFType.VNC_INERTIAL.rotationFromLOFType(field, LOFType.VNC, pv);
+        final FieldRotation<Binary64> rotationFromVNCToVNCInertial =
+                LOFType.VNC_INERTIAL.rotationFromLOF(field, LOFType.VNC, pv);
 
-        final FieldRotation<Decimal64> rotationFromVNCInertialToNTW =
-                LOFType.NTW.rotationFromLOFType(field, LOFType.VNC_INERTIAL, pv);
+        final FieldRotation<Binary64> rotationFromVNCInertialToNTW =
+                LOFType.NTW.rotationFromLOF(field, LOFType.VNC_INERTIAL, pv);
 
-        final FieldRotation<Decimal64> rotationFromNTWToNTWInertial =
-                LOFType.NTW_INERTIAL.rotationFromLOFType(field, LOFType.NTW, pv);
+        final FieldRotation<Binary64> rotationFromNTWToNTWInertial =
+                LOFType.NTW_INERTIAL.rotationFromLOF(field, LOFType.NTW, pv);
 
-        final FieldRotation<Decimal64> rotationFromNTWInertialToEQW =
-                LOFType.EQW.rotationFromLOFType(field, LOFType.NTW_INERTIAL, pv);
+        final FieldRotation<Binary64> rotationFromNTWInertialToEQW =
+                LOFType.EQW.rotationFromLOF(field, LOFType.NTW_INERTIAL, pv);
 
-        final FieldRotation<Decimal64> rotationFromEQWToTNW =
-                                       LOFType.rotationFromLOFInToLOFOut(field, LOFType.EQW, LOFType.TNW, pv);
+        final FieldRotation<Binary64> rotationFromEQWToTNW =
+                LOFType.rotationFromLOFInToLOFOut(field, LOFType.EQW, LOFType.TNW, pv);
 
-        final FieldRotation<Decimal64> rotationFromTNWToTNW =
+        final FieldRotation<Binary64> rotationFromTNWToTNW =
                 composeFieldRotations(rotationFromTNWToTNWInertial,
                                       rotationFromTNWInertialToQSW,
                                       rotationFromQSWToQSWInertial,
@@ -397,13 +574,13 @@ public class LocalOrbitalFrameTest {
                                       rotationFromNTWInertialToEQW,
                                       rotationFromEQWToTNW);
 
-        final FieldMatrix<Decimal64> rotationMatrixFromTNWToTNW =
+        final FieldMatrix<Binary64> rotationMatrixFromTNWToTNW =
                 new BlockFieldMatrix<>(rotationFromTNWToTNW.getMatrix());
 
         // Then
         final RealMatrix identityMatrix = MatrixUtils.createRealIdentityMatrix(3);
 
-        validateFieldMatrix(identityMatrix, rotationMatrixFromTNWToTNW, 1e-15);
+        TestUtils.validateFieldMatrix(identityMatrix, rotationMatrixFromTNWToTNW, 1e-15);
 
     }
 
@@ -429,57 +606,6 @@ public class LocalOrbitalFrameTest {
         Assertions.assertFalse(LOFType.LVLH.isQuasiInertial());
         Assertions.assertFalse(LOFType.LVLH_CCSDS.isQuasiInertial());
         Assertions.assertFalse(LOFType.VVLH.isQuasiInertial());
-
-    }
-
-    private void validateVector3D(final Vector3D expected, final Vector3D computed, final double threshold) {
-        Assertions.assertEquals(expected.getX(), computed.getX(), threshold);
-        Assertions.assertEquals(expected.getY(), computed.getY(), threshold);
-        Assertions.assertEquals(expected.getZ(), computed.getZ(), threshold);
-
-    }
-
-    private <T extends CalculusFieldElement<T>> void validateFieldVector3D(final Vector3D expected,
-                                                                           final FieldVector3D<T> computed,
-                                                                           final double threshold) {
-        Assertions.assertEquals(expected.getX(), computed.getX().getReal(), threshold);
-        Assertions.assertEquals(expected.getY(), computed.getY().getReal(), threshold);
-        Assertions.assertEquals(expected.getZ(), computed.getZ().getReal(), threshold);
-    }
-
-    private <T extends CalculusFieldElement<T>> void validateFieldMatrix(final RealMatrix reference,
-                                                                         final FieldMatrix<T> computed,
-                                                                         final double threshold) {
-        for (int row = 0; row < reference.getRowDimension(); row++) {
-            for (int column = 0; column < reference.getColumnDimension(); column++) {
-                if (reference.getEntry(row, column) == 0) {
-                    Assertions.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column).getReal(),
-                                            threshold);
-                }
-                else {
-                    Assertions.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column).getReal(),
-                                            FastMath.abs(threshold * reference.getEntry(row, column)));
-                }
-            }
-        }
-
-    }
-
-    private void validateRealMatrix(final RealMatrix reference,
-                                    final RealMatrix computed,
-                                    final double threshold) {
-        for (int row = 0; row < reference.getRowDimension(); row++) {
-            for (int column = 0; column < reference.getColumnDimension(); column++) {
-                if (reference.getEntry(row, column) == 0) {
-                    Assertions.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column),
-                                            threshold);
-                }
-                else {
-                    Assertions.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column),
-                                            FastMath.abs(threshold * reference.getEntry(row, column)));
-                }
-            }
-        }
 
     }
 

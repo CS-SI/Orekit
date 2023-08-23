@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cdm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:noNamespaceSchemaLocation="http://sanaregistry.org/r/ndmxml/ndmxml-1.0-master.xsd"
-id="CCSDS_CDM_VERS" version="1.0">
+id="CCSDS_CDM_VERS" version="2.0">
 <header>
 <COMMENT>Sample CDM - XML version</COMMENT>
   <CREATION_DATE>2010-03-12T22:31:12.000</CREATION_DATE>

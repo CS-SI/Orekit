@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,60 +18,46 @@
 package org.orekit.estimation.iod;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.orekit.Utils;
+
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * @author Shiva Iyer
  * @since 10.1
  */
-public class IodLaplaceTest {
-    private Frame gcrf;
-
-    private Frame itrf;
-
-    private GroundStation observer;
+public class IodLaplaceTest extends AbstractIodTest {
 
     @BeforeEach
-    public void setUp() {
-        Utils.setDataRoot("regular-data");
-
-        this.gcrf = FramesFactory.getGCRF();
-        this.itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+    public void observerOverride() {
 
         // The ground station is set to Austin, Texas, U.S.A
         final OneAxisEllipsoid body = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                    Constants.WGS84_EARTH_FLATTENING, itrf);
         this.observer = new GroundStation(
-            new TopocentricFrame(body, new GeodeticPoint(0.528253, -1.705768, 0.0), "Austin"));
+                new TopocentricFrame(body, new GeodeticPoint(0.528253, -1.705768, 0.0), "Austin"));
         this.observer.getPrimeMeridianOffsetDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
         this.observer.getPolarOffsetXDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
         this.observer.getPolarOffsetYDriver().setReferenceDate(AbsoluteDate.J2000_EPOCH);
+
     }
 
     // Estimate the orbit of ISS (ZARYA) based on Keplerian motion
@@ -179,72 +165,51 @@ public class IodLaplaceTest {
                                                      new ObservableSatellite(0));
 
         // IOD method
-        final IodLaplace laplace = new IodLaplace(Constants.EGM96_EARTH_MU);
+        final IodLaplace laplace = new IodLaplace(Constants.EGM96_EARTH_MU, gcrf);
 
         // Estimate orbit
-        final TimeStampedPVCoordinates obsPva = observer.getBaseFrame().getPVCoordinates(raDec2.getDate(), gcrf);
-        final CartesianOrbit orbit = laplace.estimate(gcrf, obsPva, raDec1, raDec2, raDec3);
-
-        // Comparison with keplerian propagator
+        final Orbit orbit = laplace.estimate(raDec1, raDec2, raDec3);
         final TimeStampedPVCoordinates ref = prop.getPVCoordinates(raDec2.getDate(), gcrf);
 
         // Verify
-        Assertions.assertEquals(0.0, ref.getPosition().distance(orbit.getPVCoordinates().getPosition()), 275.0);
+        Assertions.assertEquals(0.0, ref.getPosition().distance(orbit.getPosition()), 275.0);
         Assertions.assertEquals(0.0, ref.getVelocity().distance(orbit.getPVCoordinates().getVelocity()), 0.8);
 
     }
 
     // Helper function to generate measurements and estimate orbit for the given propagator
-    private Result estimateOrbit(final Propagator prop, final AbsoluteDate obsDate1,
+    public Result estimateOrbit(final Propagator prop, final AbsoluteDate obsDate1,
                                  final double t2, final double t3) {
+
         // Generate 3 Line Of Sight angles measurements
-        final Vector3D los1 = getLOSAngles(prop, obsDate1, observer);
+        final Vector3D los1 = getLOSAngles(prop,obsDate1);
 
         final AbsoluteDate obsDate2 = obsDate1.shiftedBy(t2);
-        final Vector3D los2 = getLOSAngles(prop, obsDate2, observer);
+        final Vector3D los2 = getLOSAngles(prop,obsDate2);
 
         final AbsoluteDate obsDate3 = obsDate1.shiftedBy(t3);
-        final Vector3D los3 = getLOSAngles(prop, obsDate3, observer);
+        final Vector3D los3 = getLOSAngles(prop,obsDate3);
 
         final TimeStampedPVCoordinates obsPva = observer
             .getBaseFrame().getPVCoordinates(obsDate2, gcrf);
 
         // Estimate the orbit using the classical Laplace method
         final TimeStampedPVCoordinates truth = prop.getPVCoordinates(obsDate2, gcrf);
-        final CartesianOrbit estOrbit = new IodLaplace(Constants.EGM96_EARTH_MU)
-            .estimate(gcrf, obsPva, obsDate1, los1, obsDate2, los2, obsDate3, los3);
+        final Orbit estOrbit = new IodLaplace(Constants.EGM96_EARTH_MU, gcrf)
+            .estimate(obsPva,gcrf, obsDate1, los1, obsDate2, los2, obsDate3, los3);
         return(new Result(truth, estOrbit));
-    }
-
-    // Helper function to generate a Line of Sight angles measurement for the given
-    // observer and date using the TLE propagator.
-    private Vector3D getLOSAngles(final Propagator prop, final AbsoluteDate date,
-                  final GroundStation observer) {
-        final TimeStampedPVCoordinates satPvc = prop.getPVCoordinates(date, gcrf);
-        final AngularRaDec raDec = new AngularRaDec(observer, gcrf, date, new double[] {0.0, 0.0},
-                               new double[] {1.0, 1.0},
-                               new double[] {1.0, 1.0}, new ObservableSatellite(0));
-
-        final double[] angular = raDec.estimate(0, 0, new SpacecraftState[]{new SpacecraftState(
-                new AbsolutePVCoordinates(gcrf, satPvc))}).getEstimatedValue();
-        final double ra = angular[0];
-        final double dec = angular[1];
-
-        return(new Vector3D(FastMath.cos(dec)*FastMath.cos(ra),
-                    FastMath.cos(dec)*FastMath.sin(ra), FastMath.sin(dec)));
     }
 
     // Private class to calculate the errors between truth and estimated orbits at
     // the central observation time.
-    private class Result
-    {
-    private double[] errorNorm;
+    private static class Result {
+    final private double[] errorNorm;
 
-    public Result(final TimeStampedPVCoordinates truth, final CartesianOrbit estOrbit)
+    public Result(final TimeStampedPVCoordinates truth, final Orbit estOrbit)
     {
         this.errorNorm = new double[2];
         this.errorNorm[0] = Vector3D.distance(truth.getPosition(),
-                          estOrbit.getPVCoordinates().getPosition());
+                          estOrbit.getPosition());
         this.errorNorm[1] = Vector3D.distance(truth.getVelocity(),
                           estOrbit.getPVCoordinates().getVelocity());
     }

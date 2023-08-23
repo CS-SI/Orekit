@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,6 +35,7 @@ import org.hipparchus.util.MerweUnscentedTransform;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -80,7 +81,7 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -142,13 +143,13 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final boolean useMoon  = true;
         final boolean useSun   = true;
         final boolean useTides = true;
-        final OrbitDeterminationPropagatorBuilder propagator = initializePropagator(initialOrbit, centralBody, gravityField,
-                                                                                    convention, simpleEop, minStep, maxStep,
-                                                                                    mass, surface, useDrag, useSrp,
-                                                                                    useSun, useMoon, useTides);
+        final PropagatorBuilder propagator = initializePropagator(initialOrbit, centralBody, gravityField,
+                                                                  convention, simpleEop, minStep, maxStep,
+                                                                  mass, surface, useDrag, useSrp,
+                                                                  useSun, useMoon, useTides);
 
         // Measurements
-        final double sigma = 2.0;
+        final double sigma = 1.0;
         final List<ObservedMeasurement<?>> measurements = initializeMeasurements(observations, initialOrbit, sigma);
 
         // Covariance
@@ -168,8 +169,8 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final StreamingStatistics statX      = observer.getXStatistics();
         final StreamingStatistics statY      = observer.getYStatistics();
         final StreamingStatistics statZ      = observer.getZStatistics();
-        Assertions.assertEquals(0.0, statX.getMean(), 1.38e-3);
-        Assertions.assertEquals(0.0, statY.getMean(), 1.87e-4);
+        Assertions.assertEquals(0.0, statX.getMean(), 1.39e-3);
+        Assertions.assertEquals(0.0, statY.getMean(), 1.85e-4);
         Assertions.assertEquals(0.0, statZ.getMean(), 2.85e-4);
         Assertions.assertEquals(0.0, statX.getMin(),  0.031); // Value is negative
         Assertions.assertEquals(0.0, statY.getMin(),  0.028); // Value is negative
@@ -184,7 +185,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final Vector3D estimated = new Vector3D(estimatedState.getEntry(0),
                                                 estimatedState.getEntry(1),
                                                 estimatedState.getEntry(2));
-        final double dP = 0.046;
+        final double dP = 0.029;
         Assertions.assertEquals(0.0, Vector3D.distance(ref, estimated), dP);
 
         // Check that "physical" matrices are not null
@@ -266,7 +267,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final Frame orbitFrame = FramesFactory.getEME2000();
 
         // Bounded propagator from the CPF file
-        final BoundedPropagator bounded = ephemeris.getPropagator();
+        final BoundedPropagator bounded = ephemeris.getPropagator(new FrameAlignedProvider(orbitFrame));
 
         // Initial date
         final AbsoluteDate initialDate = bounded.getMinDate();
@@ -306,21 +307,21 @@ public class UnscentedKalmanOrbitDeterminationTest {
      * @param useTides true if solid Earth tides must be added
      * @return a configured propagator builder
      */
-    private static OrbitDeterminationPropagatorBuilder initializePropagator(final Orbit orbit,
-                                                                            final OneAxisEllipsoid centralBody,
-                                                                            final SphericalHarmonicsProvider gravityField,
-                                                                            final IERSConventions convention, final boolean simpleEop,
-                                                                            final double minStep, final double maxStep,
-                                                                            final double mass, final double surface,
-                                                                            final boolean useDrag, final boolean useSrp,
-                                                                            final boolean useSun, final boolean useMoon,
-                                                                            final boolean useTides) {
+    private static PropagatorBuilder initializePropagator(final Orbit orbit,
+                                                          final OneAxisEllipsoid centralBody,
+                                                          final SphericalHarmonicsProvider gravityField,
+                                                          final IERSConventions convention, final boolean simpleEop,
+                                                          final double minStep, final double maxStep,
+                                                          final double mass, final double surface,
+                                                          final boolean useDrag, final boolean useSrp,
+                                                          final boolean useSun, final boolean useMoon,
+                                                          final boolean useTides) {
 
         // Initialize numerical integrator
         final ODEIntegratorBuilder integrator = new DormandPrince853IntegratorBuilder(minStep, maxStep, 10.0);
 
         // Initialize the builder
-        final OrbitDeterminationPropagatorBuilder builder;
+        final PropagatorBuilder builder;
 
         // Initialize the numerical builder
         final NumericalPropagatorBuilder propagator = new NumericalPropagatorBuilder(orbit, integrator, PositionAngle.MEAN, 10.0);
@@ -402,7 +403,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
             final RadiationSensitive spacecraft = new IsotropicRadiationSingleCoefficient(surface, 1.13);
 
             // Solar radiation pressure
-            final ForceModel srp = new SolarRadiationPressure(CelestialBodyFactory.getSun(), gravityField.getAe(), spacecraft);
+            final ForceModel srp = new SolarRadiationPressure(CelestialBodyFactory.getSun(), centralBody, spacecraft);
             for (final ParameterDriver driver : srp.getParametersDrivers()) {
                 if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
                     //driver.setSelected(true);
@@ -486,9 +487,9 @@ public class UnscentedKalmanOrbitDeterminationTest {
      * @param measurements list of measurements
      * @param provider covariance matrix provider
      */
-    private static Observer initializeEstimator(final OrbitDeterminationPropagatorBuilder propagator,
-                                            final List<ObservedMeasurement<?>> measurements,
-                                            final CovarianceMatrixProvider provider) {
+    private static Observer initializeEstimator(final PropagatorBuilder propagator,
+                                                final List<ObservedMeasurement<?>> measurements,
+                                                final CovarianceMatrixProvider provider) {
 
         // Initialize builder
         final UnscentedKalmanEstimatorBuilder builder = new UnscentedKalmanEstimatorBuilder();

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -79,7 +79,7 @@ class DSSTIntegrableJacobianColumnGenerator
      * </p>
      */
     @Override
-    public boolean yield(final SpacecraftState state) {
+    public boolean yields(final SpacecraftState state) {
         return !state.hasAdditionalStateDerivative(stmName);
     }
 
@@ -95,13 +95,6 @@ class DSSTIntegrableJacobianColumnGenerator
             pDot[i] += meanElementsPartials[i];
         }
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public double[] derivatives(final SpacecraftState state) {
-        return combinedDerivatives(state).getAdditionalDerivatives();
     }
 
     /** {@inheritDoc} */

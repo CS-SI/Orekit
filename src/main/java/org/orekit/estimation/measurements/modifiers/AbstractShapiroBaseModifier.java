@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -45,7 +45,7 @@ public class AbstractShapiroBaseModifier {
     /** Modify measurement.
      * @param estimated measurement to modify
      */
-    protected void doModify(final EstimatedMeasurement<?> estimated) {
+    protected void doModify(final EstimatedMeasurementBase<?> estimated) {
 
         // compute correction, for one way or two way measurements
         final TimeStampedPVCoordinates[] pv = estimated.getParticipants();

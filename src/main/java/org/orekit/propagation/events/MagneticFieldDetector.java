@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.models.earth.GeoMagneticField;
+import org.orekit.models.earth.GeoMagneticFieldFactory;
 import org.orekit.models.earth.GeoMagneticFieldFactory.FieldModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
@@ -39,7 +40,7 @@ import org.orekit.time.TimeScale;
  */
 public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetector> {
 
-    /** Fixed threshold value of Magnetic field to be crossed, in nano Teslas. */
+    /** Fixed threshold value of Magnetic field to be crossed, in Teslas. */
     private final double limit;
 
     /** Fixed altitude of computed magnetic field value. */
@@ -68,7 +69,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      *
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
      *
-     * @param limit the threshold value of magnetic field at see level, in nano Teslas
+     * @param limit the threshold value of magnetic field at see level, in Teslas
      * @param type the magnetic field model
      * @param body the body
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
@@ -87,7 +88,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      *
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
      *
-     * @param limit the threshold value of magnetic field at see level, in nano Teslas
+     * @param limit the threshold value of magnetic field at see level, in Teslas
      * @param type the magnetic field model
      * @param body the body
      * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
@@ -106,7 +107,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      *
      * @param maxCheck maximal checking interval (s)
      * @param threshold convergence threshold (s)
-     * @param limit the threshold value of magnetic field at see level, in nano Teslas
+     * @param limit the threshold value of magnetic field at see level, in Teslas
      * @param type the magnetic field model
      * @param body the body
      * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
@@ -126,7 +127,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      *
      * @param maxCheck    maximal checking interval (s)
      * @param threshold   convergence threshold (s)
-     * @param limit       the threshold value of magnetic field at see level, in nano Teslas
+     * @param limit       the threshold value of magnetic field at see level, in Teslas
      * @param type        the magnetic field model
      * @param body        the body
      * @param seaLevel    true if the magnetic field intensity is computed at the sea
@@ -143,7 +144,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
                                  final boolean seaLevel,
                                  final DataContext dataContext)
         throws OrekitIllegalArgumentException {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              limit, type, body, seaLevel, dataContext);
     }
 
@@ -157,17 +158,17 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
-     * @param limit the threshold value of magnetic field at see level, in nano Teslas
+     * @param limit the threshold value of magnetic field at see level, in Teslas
      * @param type the magnetic field model
      * @param body the body
      * @param seaLevel true if the magnetic field intensity is computed at the sea level, false if it is computed at satellite altitude
      * @param dataContext used to look up the magnetic field model.
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
      */
-    private MagneticFieldDetector(final double maxCheck, final double threshold,
-                                  final int maxIter, final EventHandler<? super MagneticFieldDetector> handler,
-                                  final double limit, final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel,
-                                  final DataContext dataContext)
+    protected MagneticFieldDetector(final double maxCheck, final double threshold,
+                                    final int maxIter, final EventHandler handler,
+                                    final double limit, final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel,
+                                    final DataContext dataContext)
         throws OrekitIllegalArgumentException {
 
         super(maxCheck, threshold, maxIter, handler);
@@ -182,7 +183,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
     /** {@inheritDoc} */
     @Override
     protected MagneticFieldDetector create(final double newMaxCheck, final double newThreshold,
-                                           final int newMaxIter, final EventHandler<? super MagneticFieldDetector> newHandler) {
+                                           final int newMaxIter, final EventHandler newHandler) {
         return new MagneticFieldDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                          limit, type, body, seaLevel, dataContext);
     }
@@ -215,7 +216,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
             this.currentYear = s.getDate().getComponents(utc).getDate().getYear();
             this.field = dataContext.getGeoMagneticFields().getField(type, currentYear);
         }
-        final GeodeticPoint geoPoint = body.transform(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
+        final GeodeticPoint geoPoint = body.transform(s.getPosition(), s.getFrame(), s.getDate());
         final double altitude;
         if (seaLevel) {
             altitude = 0;

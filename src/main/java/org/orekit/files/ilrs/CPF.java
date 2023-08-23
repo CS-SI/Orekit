@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.BoundedPropagator;
@@ -104,19 +105,6 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
      */
     public List<String> getComments() {
         return comments;
-    }
-
-    /**
-     * Adds a new P/V coordinate to the satellite.
-     * <p>
-     * If the header has not been read, the {@link #DEFAULT_ID} is used.
-     * </p>
-     * @param coord the P/V coordinate of the satellite
-     * @deprecated as of 11.0.1, replaced by {@link CPF#addSatelliteCoordinate(String, CPFCoordinate)}
-     */
-    @Deprecated
-    public void addSatelliteCoordinate(final CPFCoordinate coord) {
-        addSatelliteCoordinate(DEFAULT_ID, coord);
     }
 
     /**
@@ -216,15 +204,6 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
 
         /**
          * Constructor.
-         * @deprecated as of 11.0.1, replaced by
-         */
-        @Deprecated
-        public CPFEphemeris() {
-            this(null);
-        }
-
-        /**
-         * Constructor.
          * @param id satellite ID
          */
         public CPFEphemeris(final String id) {
@@ -291,6 +270,12 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
         @Override
         public BoundedPropagator getPropagator() {
             return EphemerisSegment.super.getPropagator();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public BoundedPropagator getPropagator(final AttitudeProvider attitudeProvider) {
+            return EphemerisSegment.super.getPropagator(attitudeProvider);
         }
 
         /** Get the list of Ephemerides data lines.

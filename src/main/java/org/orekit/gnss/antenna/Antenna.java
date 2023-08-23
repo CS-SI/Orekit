@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -103,7 +103,7 @@ public class Antenna {
      * @param frequency frequency of the signal to consider
      * @return pattern for this frequency
      */
-    private FrequencyPattern getPattern(final Frequency frequency) {
+    public FrequencyPattern getPattern(final Frequency frequency) {
         final FrequencyPattern pattern = patterns.get(frequency);
         if (pattern == null) {
             throw new OrekitException(OrekitMessages.UNSUPPORTED_FREQUENCY_FOR_ANTENNA,

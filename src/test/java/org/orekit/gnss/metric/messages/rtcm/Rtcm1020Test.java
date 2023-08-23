@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1020;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1020Data;
-import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
+import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmDataField;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
@@ -84,7 +84,7 @@ public class Rtcm1020Test {
                         "0" +                                // ln (fifth string)
                         "0000000";                           // Reserved
 
-        final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        final EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
         message.start();
 
         ArrayList<Integer> messages = new ArrayList<>();
@@ -174,7 +174,7 @@ public class Rtcm1020Test {
                         "0" +                                // ln (fifth string)
                         "0000000";                           // Reserved
 
-       final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+       final EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
        message.start();
 
        ArrayList<Integer> messages = new ArrayList<>();
@@ -188,13 +188,13 @@ public class Rtcm1020Test {
     @Test
     public void testAdditionalDataFields() {
         String m = "11111111111111111";
-        EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
         Assertions.assertTrue(RtcmDataField.DF105.booleanValue(message));
         m = "11111111111111111";
-        message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
         Assertions.assertEquals(5, RtcmDataField.DF120.intValue(message));
         m = "00000000000000000";
-        message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
         Assertions.assertFalse(RtcmDataField.DF131.booleanValue(message));
     }
 

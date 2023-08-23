@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -160,8 +160,8 @@ public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermi
     /** {@inheritDoc} */
     @Override
     protected List<ParameterDriver> setSolarRadiationPressure(final NumericalPropagatorBuilder propagatorBuilder, final CelestialBody sun,
-                                                              final double equatorialRadius, final RadiationSensitive spacecraft) {
-        final ForceModel srpModel = new SolarRadiationPressure(sun, equatorialRadius, spacecraft);
+                                                              final OneAxisEllipsoid body, final RadiationSensitive spacecraft) {
+        final ForceModel srpModel = new SolarRadiationPressure(sun, body, spacecraft);
         propagatorBuilder.addForceModel(srpModel);
         return srpModel.getParametersDrivers();
     }
@@ -272,7 +272,7 @@ public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermi
         // Run the reference until Kalman last date
         final Orbit refOrbit = runReference(input, orbitType, refPos0, refVel0, null,
                                             kalmanLageos2.getEstimatedPV().getDate());
-        final Vector3D refPos = refOrbit.getPVCoordinates().getPosition();
+        final Vector3D refPos = refOrbit.getPosition();
         final Vector3D refVel = refOrbit.getPVCoordinates().getVelocity();
         
         // Check distances
@@ -295,8 +295,6 @@ public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermi
 
         //test on statistic for the range residuals
         final long nbRange = 258;
-        // Batch LS values
-        //final double[] RefStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
         Assertions.assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
         Assertions.assertEquals(RefStatRange[0], kalmanLageos2.getRangeStat().getMin(),               distanceAccuracy);
         Assertions.assertEquals(RefStatRange[1], kalmanLageos2.getRangeStat().getMax(),               distanceAccuracy);

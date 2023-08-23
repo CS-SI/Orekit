@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -67,6 +67,37 @@ public class CdmWriterTest extends AbstractWriterTest<CdmHeader, CdmSegment, Cdm
     @Test
     public void testWrite_issue_942_XML() {
         doTest("/ccsds/cdm/CDMExample_issue942.xml");
+    }
+
+    @Test
+    public void testWrite_issue_988_KVN_YES() {
+        doTest("/ccsds/cdm/CDMExample_issue988.txt");
+    }
+
+    @Test
+    public void testWrite_issue_988_KVN_NO() {
+        doTest("/ccsds/cdm/CDMExample_issue988_2.txt");
+    }
+
+    @Test
+    public void testWrite_issue_988_KVN_NONE() {
+        doTest("/ccsds/cdm/CDMExample_issue988_3.txt");
+    }
+
+    @Test
+    public void testWrite_issue_988_XML_YES() {
+        doTest("/ccsds/cdm/CDMExample_issue988.xml");
+    }
+
+
+    @Test
+    public void testWrite_issue_988_XML_NO() {
+        doTest("/ccsds/cdm/CDMExample_issue988_2.xml");
+    }
+
+    @Test
+    public void testWrite_issue_988_XML_NONE() {
+        doTest("/ccsds/cdm/CDMExample_issue988_3.txt");
     }
 
 }

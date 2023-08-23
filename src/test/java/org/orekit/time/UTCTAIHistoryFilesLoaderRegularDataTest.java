@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,7 +40,7 @@ public class UTCTAIHistoryFilesLoaderRegularDataTest {
     @Test
     public void testLaststLeap() {
         UTCScale utc = (UTCScale) TimeScalesFactory.getUTC();
-        AbsoluteDate afterLeap = new AbsoluteDate(2015, 7, 1, 0, 0, 0.0, utc);
+        AbsoluteDate afterLeap = new AbsoluteDate(2017, 1, 1, 0, 0, 0.0, utc);
         Assertions.assertEquals(1.0,
                             afterLeap.durationFrom(utc.getLastKnownLeapSecond()),
                             1.0e-12);

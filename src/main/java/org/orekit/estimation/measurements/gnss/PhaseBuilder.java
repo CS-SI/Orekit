@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.orekit.estimation.measurements.gnss;
+
+import java.util.Map;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimationModifier;
@@ -38,6 +40,11 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
 
+    /** Satellite related to this builder.
+     * @since 12.0
+     */
+    private final ObservableSatellite satellite;
+
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param station ground station from which measurement is performed
@@ -53,16 +60,16 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
         super(noiseSource, sigma, baseWeight, satellite);
         this.station    = station;
         this.wavelength = wavelength;
+        this.satellite  = satellite;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Phase build(final SpacecraftState[] states) {
+    public Phase build(final Map<ObservableSatellite, SpacecraftState> states) {
 
-        final ObservableSatellite satellite = getSatellites()[0];
         final double sigma                  = getTheoreticalStandardDeviation()[0];
         final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState[] relevant    = new SpacecraftState[] { states[satellite.getPropagatorIndex()] };
+        final SpacecraftState[] relevant    = new SpacecraftState[] { states.get(satellite) };
 
         // create a dummy measurement
         final Phase dummy = new Phase(station, relevant[0].getDate(), Double.NaN, wavelength, sigma, baseWeight, satellite);
@@ -80,7 +87,7 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
         }
 
         // estimate the perfect value of the measurement
-        double phase = dummy.estimate(0, 0, relevant).getEstimatedValue()[0];
+        double phase = dummy.estimateWithoutDerivatives(0, 0, relevant).getEstimatedValue()[0];
 
         // add the noise
         final double[] noise = getNoise();

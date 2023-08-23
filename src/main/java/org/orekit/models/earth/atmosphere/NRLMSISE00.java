@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1228,7 +1228,7 @@ public class NRLMSISE00 implements Atmosphere {
     private double localSolarTime(final AbsoluteDate date,
                                   final Vector3D position,
                                   final Frame frame) {
-        final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
+        final Vector3D sunPos = sun.getPosition(date, frame);
         final double lst = FastMath.PI + FastMath.atan2(
                 sunPos.getX() * position.getY() - sunPos.getY() * position.getX(),
                 sunPos.getX() * position.getX() + sunPos.getY() * position.getY());
@@ -1245,7 +1245,7 @@ public class NRLMSISE00 implements Atmosphere {
     private <T extends CalculusFieldElement<T>> T localSolarTime(final AbsoluteDate date,
                                                              final FieldVector3D<T> position,
                                                              final Frame frame) {
-        final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
+        final Vector3D sunPos = sun.getPosition(date, frame);
         final T y  = position.getY().multiply(sunPos.getX()).subtract(position.getX().multiply(sunPos.getY()));
         final T x  = position.getX().multiply(sunPos.getX()).add(position.getY().multiply(sunPos.getY()));
         final T hl = y.atan2(x).add(y.getPi());

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -133,7 +133,7 @@ public class CdmWriter extends CdmMessageWriter {
         }
         generator.writeComments(relativeMetadata.getComment());
 
-        generator.writeEntry(CdmRelativeMetadataKey.TCA.name(), getTimeConverter(), relativeMetadata.getTca(), true);
+        generator.writeEntry(CdmRelativeMetadataKey.TCA.name(), getTimeConverter(), relativeMetadata.getTca(), true, true);
         generator.writeEntry(CdmRelativeMetadataKey.MISS_DISTANCE.name(), relativeMetadata.getMissDistance(), Unit.METRE, true);
         generator.writeEntry(CdmRelativeMetadataKey.RELATIVE_SPEED.name(), relativeMetadata.getRelativeSpeed(), Units.M_PER_S, false);
 
@@ -167,18 +167,18 @@ public class CdmWriter extends CdmMessageWriter {
         }
 
         generator.writeEntry(CdmRelativeMetadataKey.START_SCREEN_PERIOD.name(), getTimeConverter(),
-                             relativeMetadata.getStartScreenPeriod(), false);
+                             relativeMetadata.getStartScreenPeriod(), true, false);
         generator.writeEntry(CdmRelativeMetadataKey.STOP_SCREEN_PERIOD.name(),  getTimeConverter(),
-                             relativeMetadata.getStopScreenPeriod(), false);
+                             relativeMetadata.getStopScreenPeriod(), true, false);
         generator.writeEntry(CdmRelativeMetadataKey.SCREEN_VOLUME_FRAME.name(), relativeMetadata.getScreenVolumeFrame(),         false);
         generator.writeEntry(CdmRelativeMetadataKey.SCREEN_VOLUME_SHAPE.name(), relativeMetadata.getScreenVolumeShape(),         false);
         generator.writeEntry(CdmRelativeMetadataKey.SCREEN_VOLUME_X.name(),     relativeMetadata.getScreenVolumeX(), Unit.METRE, false);
         generator.writeEntry(CdmRelativeMetadataKey.SCREEN_VOLUME_Y.name(),     relativeMetadata.getScreenVolumeY(), Unit.METRE, false);
         generator.writeEntry(CdmRelativeMetadataKey.SCREEN_VOLUME_Z.name(),     relativeMetadata.getScreenVolumeZ(), Unit.METRE, false);
         generator.writeEntry(CdmRelativeMetadataKey.SCREEN_ENTRY_TIME.name(),   getTimeConverter(),
-                             relativeMetadata.getScreenEntryTime(), false);
+                             relativeMetadata.getScreenEntryTime(), true, false);
         generator.writeEntry(CdmRelativeMetadataKey.SCREEN_EXIT_TIME.name(),    getTimeConverter(),
-                             relativeMetadata.getScreenExitTime(), false);
+                             relativeMetadata.getScreenExitTime(), true, false);
         generator.writeEntry(CdmRelativeMetadataKey.COLLISION_PROBABILITY.name(), relativeMetadata.getCollisionProbability(), Unit.ONE, false);
         if (relativeMetadata.getCollisionProbaMethod() != null)  {
             generator.writeEntry(CdmRelativeMetadataKey.COLLISION_PROBABILITY_METHOD.name(),

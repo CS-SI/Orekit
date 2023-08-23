@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.SequentialGaussNewtonOptimizer;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 
 /**
@@ -120,7 +119,7 @@ public class SequentialBatchLSEstimator extends BatchLSEstimator {
      * @param propagatorBuilder builders to use for propagation.
      */
     public SequentialBatchLSEstimator(final SequentialGaussNewtonOptimizer sequentialOptimizer,
-                                      final OrbitDeterminationPropagatorBuilder... propagatorBuilder) {
+                                      final PropagatorBuilder... propagatorBuilder) {
         super(sequentialOptimizer, propagatorBuilder);
     }
 

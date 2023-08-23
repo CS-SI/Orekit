@@ -70,6 +70,8 @@ public class KeplerianStateTransitionMatrixTest {
         MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, null);
         final SpacecraftState finalState = propagator.propagate(target);
         RealMatrix dYdY0 = harvester.getStateTransitionMatrix(finalState);
+        Assertions.assertEquals(OrbitType.CARTESIAN, harvester.getOrbitType());
+        Assertions.assertEquals(PositionAngle.MEAN, harvester.getPositionAngle());
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
@@ -101,7 +103,7 @@ public class KeplerianStateTransitionMatrixTest {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
                     double error = FastMath.abs((dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assertions.assertEquals(0, error, 4.51e-14);
+                    Assertions.assertEquals(0, error, 7.16e-14);
                 }
             }
         }

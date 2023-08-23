@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,7 @@ public enum PerturbationsKey {
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Name of atmospheric model. */
-    ATMOSPHERIC_MODEL((token, context, container) -> token.processAsNormalizedString(container::setAtmosphericModel)),
+    ATMOSPHERIC_MODEL((token, context, container) -> token.processAsFreeTextString(container::setAtmosphericModel)),
 
     /** Gravity model. */
     GRAVITY_MODEL(new GravityProcessor()),
@@ -63,16 +63,16 @@ public enum PerturbationsKey {
                                                                            container::setOblateFlattening)),
 
     /** Ocean tides model. */
-    OCEAN_TIDES_MODEL((token, context, container) -> token.processAsNormalizedString(container::setOceanTidesModel)),
+    OCEAN_TIDES_MODEL((token, context, container) -> token.processAsFreeTextString(container::setOceanTidesModel)),
 
     /** Solid tides model. */
-    SOLID_TIDES_MODEL((token, context, container) -> token.processAsNormalizedString(container::setSolidTidesModel)),
+    SOLID_TIDES_MODEL((token, context, container) -> token.processAsFreeTextString(container::setSolidTidesModel)),
 
     /** Reduction theory used for precession and nutation modeling. */
-    REDUCTION_THEORY((token, context, container) -> token.processAsNormalizedString(container::setReductionTheory)),
+    REDUCTION_THEORY((token, context, container) -> token.processAsFreeTextString(container::setReductionTheory)),
 
     /** Albedo model. */
-    ALBEDO_MODEL((token, context, container) -> token.processAsNormalizedString(container::setAlbedoModel)),
+    ALBEDO_MODEL((token, context, container) -> token.processAsFreeTextString(container::setAlbedoModel)),
 
     /** Albedo grid size. */
     ALBEDO_GRID_SIZE((token, context, container) -> token.processAsInteger(container::setAlbedoGridSize)),
@@ -85,16 +85,16 @@ public enum PerturbationsKey {
                                                                            context.getDataContext().getCelestialBodies())),
 
     /** Solar Radiation Pressure model. */
-    SRP_MODEL((token, context, container) -> token.processAsNormalizedString(container::setSrpModel)),
+    SRP_MODEL((token, context, container) -> token.processAsFreeTextString(container::setSrpModel)),
 
     /** Space Weather data source. */
-    SW_DATA_SOURCE((token, context, container) -> token.processAsNormalizedString(container::setSpaceWeatherSource)),
+    SW_DATA_SOURCE((token, context, container) -> token.processAsFreeTextString(container::setSpaceWeatherSource)),
 
     /** Epoch of the Space Weather data. */
     SW_DATA_EPOCH((token, context, container) -> token.processAsDate(container::setSpaceWeatherEpoch, context)),
 
     /** Interpolation method for Space Weather data. */
-    SW_INTERP_METHOD((token, context, container) -> token.processAsNormalizedString(container::setInterpMethodSW)),
+    SW_INTERP_METHOD((token, context, container) -> token.processAsFreeTextString(container::setInterpMethodSW)),
 
     /** Fixed (time invariant) value of the planetary 3-hour-range geomagnetic index Kₚ. */
     FIXED_GEOMAG_KP((token, context, container) -> token.processAsDouble(Units.NANO_TESLA, context.getParsedUnitsBehavior(),
@@ -185,7 +185,7 @@ public enum PerturbationsKey {
         @Override
         public boolean process(final ParseToken token, final ContextBinding context, final Perturbations container) {
             if (token.getType() == TokenType.ENTRY) {
-                final Matcher matcher = GRAVITY_PATTERN.matcher(token.getContentAsNormalizedString());
+                final Matcher matcher = GRAVITY_PATTERN.matcher(token.getRawContent());
                 if (!matcher.matches()) {
                     throw token.generateException(null);
                 }

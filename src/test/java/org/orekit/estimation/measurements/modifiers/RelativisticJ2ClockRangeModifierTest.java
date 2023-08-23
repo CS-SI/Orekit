@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -93,7 +93,7 @@ public class RelativisticJ2ClockRangeModifierTest {
 
         // Station PV
         final Vector3D zero = Vector3D.ZERO;
-        final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate()).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
+        final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate(), false).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
 
         // Range measurement
         final Range range = new Range(station, false, state.getDate(), 26584264.45, 1.0, 1.0, new ObservableSatellite(0));
@@ -155,7 +155,7 @@ public class RelativisticJ2ClockRangeModifierTest {
 
         // Station PV
         final Vector3D zero = Vector3D.ZERO;
-        final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate()).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
+        final TimeStampedPVCoordinates stationPV = station.getOffsetToInertial(state.getFrame(), state.getDate(), false).transformPVCoordinates(new TimeStampedPVCoordinates(state.getDate(), zero, zero, zero));
 
         // Range measurement : The two way boolean is set to true.
         final Range range = new Range(station, true, state.getDate(), 26584264.45, 1.0, 1.0, new ObservableSatellite(0));

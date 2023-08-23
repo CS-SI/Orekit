@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.orekit.forces.gravity.potential;
 
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -55,18 +54,6 @@ public class SHMFormatReaderTest {
         harmonics.getUnnormalizedCnm(3, 2);
         Assertions.assertEquals(3, provider.getMaxDegree());
         Assertions.assertEquals(2, provider.getMaxOrder());
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecated() throws OrekitException {
-        Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_cg03c_coef", false));
-        NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
-        AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
-        Assertions.assertEquals(refDate, provider.getReferenceDate());
-        AbsoluteDate date = new AbsoluteDate("2011-05-01T01:02:03", TimeScalesFactory.getTT());
-        Assertions.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
     }
 
     @Test

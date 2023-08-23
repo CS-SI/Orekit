@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,8 +22,8 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -691,7 +691,7 @@ public class PoissonSeriesParserTest {
         for (double t = 0; t < Constants.JULIAN_DAY; t += 120) {
 
             // computation of derivatives from API
-            Decimal64[] dAPI = compiled.derivative(arguments.evaluateAll(FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance()).shiftedBy(t)));
+            Binary64[] dAPI = compiled.derivative(arguments.evaluateAll(FieldAbsoluteDate.getJ2000Epoch(Binary64Field.getInstance()).shiftedBy(t)));
 
             // finite differences computation of derivatives
             DerivativeStructure[] d = finite.value(factory.variable(0, t));

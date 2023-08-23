@@ -46,7 +46,7 @@ public class NegateDetector extends AbstractDetector<NegateDetector> {
         this(original.getMaxCheckInterval(),
                 original.getThreshold(),
                 original.getMaxIterationCount(),
-                new ContinueOnEvent<>(),
+                new ContinueOnEvent(),
                 original);
     }
 
@@ -59,11 +59,11 @@ public class NegateDetector extends AbstractDetector<NegateDetector> {
      * @param newHandler   event handler.
      * @param original     event detector.
      */
-    private NegateDetector(final double newMaxCheck,
-                           final double newThreshold,
-                           final int newMaxIter,
-                           final EventHandler<? super NegateDetector> newHandler,
-                           final EventDetector original) {
+    protected NegateDetector(final double newMaxCheck,
+                             final double newThreshold,
+                             final int newMaxIter,
+                             final EventHandler newHandler,
+                             final EventDetector original) {
         super(newMaxCheck, newThreshold, newMaxIter, newHandler);
         this.original = original;
     }
@@ -94,7 +94,7 @@ public class NegateDetector extends AbstractDetector<NegateDetector> {
             final double newMaxCheck,
             final double newThreshold,
             final int newMaxIter,
-            final EventHandler<? super NegateDetector> newHandler) {
+            final EventHandler newHandler) {
         return new NegateDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                 this.original);
     }

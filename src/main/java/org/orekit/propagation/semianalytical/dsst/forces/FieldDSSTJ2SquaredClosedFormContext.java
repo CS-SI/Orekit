@@ -29,6 +29,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * contribution to the central body gravitational perturbation.
  * <p>
  * @author Bryan Cazabonne
+ * @since 12.0
  */
 public class FieldDSSTJ2SquaredClosedFormContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 

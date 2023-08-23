@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -283,7 +283,7 @@ class NeQuickParameters {
         // Auxiliary parameter l (Eq. 6 to 8)
         final int lF = (int) ((longitude + 180) * 0.1);
         int l = lF - 2;
-        if (l < 0) {
+        if (l < -2) {
             l += 36;
         } else if (l > 33) {
             l -= 36;

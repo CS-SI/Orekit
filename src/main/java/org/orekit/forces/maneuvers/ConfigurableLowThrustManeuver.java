@@ -20,18 +20,16 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.forces.maneuvers.propulsion.AbstractConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.propulsion.ThrustDirectionAndAttitudeProvider;
-import org.orekit.forces.maneuvers.trigger.EventBasedManeuverTriggers;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
-import org.orekit.propagation.events.AbstractDetector;
-import org.orekit.propagation.events.EventDetector;
+import org.orekit.time.AbsoluteDate;
 
 /**
  * This class implements a configurable low thrust maneuver.
  * <p>
  * The maneuver is composed of succession of a burn interval. Burn intervals are
  * defined by two detectors. See
- * {@link org.orekit.forces.maneuvers.trigger.EventBasedManeuverTriggers
- * EventBasedManeuverTriggers} for more details on the detectors. The attitude
+ * {@link org.orekit.forces.maneuvers.trigger.StartStopEventsTrigger
+ * StartStopEventsTrigger} for more details on the detectors. The attitude
  * and the thrust direction are provided by an instance of
  * ThrustDirectionProvider See
  * {@link org.orekit.forces.maneuvers.propulsion.ThrustDirectionAndAttitudeProvider
@@ -52,34 +50,8 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
     /**
      * Constructor.
      * <p>
-     * This legacy constructor forbids backward propagation.
-     * </p>
-     * <p>
-     * See {@link org.orekit.forces.maneuvers.trigger.EventBasedManeuverTriggers
-     * EventBasedManeuverTriggers} for requirements on detectors
-     * </p>
-     * @param thrustDirectionProvider thrust direction and attitude provider
-     * @param startFiringDetector     detector to start thrusting (start when
-     *                                increasing)
-     * @param stopFiringDetector      detector to stop thrusting (stop when
-     *                                increasing)
-     * @param thrust                  the thrust force (N)
-     * @param isp                     engine specific impulse (s)
-     */
-    public ConfigurableLowThrustManeuver(final ThrustDirectionAndAttitudeProvider thrustDirectionProvider,
-                                         final AbstractDetector<? extends EventDetector> startFiringDetector,
-                                         final AbstractDetector<? extends EventDetector> stopFiringDetector,
-                                         final double thrust, final double isp) {
-        this(thrustDirectionProvider,
-             new EventBasedManeuverTriggers(startFiringDetector, stopFiringDetector),
-             thrust, isp);
-    }
-
-    /**
-     * Constructor.
-     * <p>
-     * See {@link org.orekit.forces.maneuvers.trigger.EventBasedManeuverTriggers
-     * EventBasedManeuverTriggers} for requirements on detectors
+     * See {@link org.orekit.forces.maneuvers.trigger.StartStopEventsTrigger
+     * StartStopEventsTrigger} for requirements on detectors
      * </p>
      * @param thrustDirectionProvider thrust direction and attitude provider
      * @param trigger                 maneuver triggers
@@ -122,8 +94,18 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
 
     /**
      * Get the thrust.
-     *
+     * @param date at which the Thrust wants to be known
      * @return thrust force (N).
+     */
+    public double getThrust(final AbsoluteDate date) {
+        return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getThrustVector(date).getNorm();
+    }
+
+    /**
+     * Get the thrust.
+     * @return thrust force (N). Will throw
+     * an exception if the Thrust driver has several
+     * values driven
      */
     public double getThrust() {
         return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getThrustVector().getNorm();
@@ -131,8 +113,18 @@ public class ConfigurableLowThrustManeuver extends Maneuver {
 
     /**
      * Get the specific impulse.
-     *
+     * @param date at which the ISP wants to be known
      * @return specific impulse (s).
+     */
+    public double getISP(final AbsoluteDate date) {
+        return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getIsp(date);
+    }
+
+    /**
+     * Get the specific impulse.
+     * @return specific impulse (s). Will throw
+     * an exception if the Thrust driver has several
+     * values driven
      */
     public double getISP() {
         return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getIsp();

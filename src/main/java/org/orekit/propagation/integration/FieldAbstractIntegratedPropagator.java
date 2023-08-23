@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import java.util.Queue;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.solvers.FieldBracketingNthOrderBrentSolver;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.ode.FieldDenseOutputModel;
@@ -38,7 +39,7 @@ import org.hipparchus.ode.FieldODEStateAndDerivative;
 import org.hipparchus.ode.FieldOrdinaryDifferentialEquation;
 import org.hipparchus.ode.FieldSecondaryODE;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.ode.events.FieldEventHandlerConfiguration;
+import org.hipparchus.ode.events.FieldODEEventDetector;
 import org.hipparchus.ode.events.FieldODEEventHandler;
 import org.hipparchus.ode.sampling.AbstractFieldODEStateInterpolator;
 import org.hipparchus.ode.sampling.FieldODEStateInterpolator;
@@ -58,6 +59,7 @@ import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
@@ -184,6 +186,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         return propagationType;
     }
 
+    /** Get the propagation type.
+     * @return propagation type.
+     * @since 11.3.2
+     */
+    public PropagationType getPropagationType() {
+        return propagationType;
+    }
+
     /** Set position angle type.
      * <p>
      * The position parameter type is meaningful only if {@link
@@ -263,15 +273,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         return managed;
     }
 
-    /** Add a set of user-specified equations to be integrated along with the orbit propagation.
-     * @param additional additional equations
-     * @deprecated as of 11.1, replaced by {@link #addAdditionalDerivativesProvider(FieldAdditionalDerivativesProvider)}
-     */
-    @Deprecated
-    public void addAdditionalEquations(final FieldAdditionalEquations<T> additional) {
-        addAdditionalDerivativesProvider(new FieldAdditionalEquationsAdapter<>(additional, this::getInitialState));
-    }
-
     /** Add a provider for user-specified state derivatives to be integrated along with the orbit propagation.
      * @param provider provider for additional derivatives
      * @see #addAdditionalStateProvider(org.orekit.propagation.FieldAdditionalStateProvider)
@@ -328,10 +329,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * @param detector event detector to wrap
      */
     protected void setUpEventDetector(final FieldODEIntegrator<T> integ, final FieldEventDetector<T> detector) {
-        integ.addEventHandler(new FieldAdaptedEventDetector(detector),
-                              detector.getMaxCheckInterval().getReal(),
-                              detector.getThreshold().getReal(),
-                              detector.getMaxIterationCount());
+        integ.addEventDetector(new FieldAdaptedEventDetector(detector));
     }
 
     /** {@inheritDoc} */
@@ -444,7 +442,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                 setMu(getInitialState().getMu());
             }
             if (getInitialState().getMass().getReal() <= 0.0) {
-                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
+                throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS,
                                                getInitialState().getMass());
             }
 
@@ -794,7 +792,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             int yieldCount = 0;
             while (!pending.isEmpty()) {
                 final FieldAdditionalDerivativesProvider<T> equations = pending.remove();
-                if (equations.yield(updated)) {
+                if (equations.yields(updated)) {
                     // these equations have to wait for another set,
                     // we put them again in the pending queue
                     pending.add(equations);
@@ -854,14 +852,19 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     }
 
     /** Adapt an {@link org.orekit.propagation.events.FieldEventDetector<T>}
-     * to Hipparchus {@link org.hipparchus.ode.events.FieldODEEventHandler<T>} interface.
+     * to Hipparchus {@link org.hipparchus.ode.events.FieldODEEventDetector<T>} interface.
      * @param <T> class type for the generic version
      * @author Fabien Maussion
      */
-    private class FieldAdaptedEventDetector implements FieldODEEventHandler<T> {
+    private class FieldAdaptedEventDetector implements FieldODEEventDetector<T> {
 
         /** Underlying event detector. */
         private final FieldEventDetector<T> detector;
+
+        /** Underlying event handler.
+         * @since 12.0
+         */
+        private final FieldEventHandler<T> handler;
 
         /** Time of the previous call to g. */
         private T lastT;
@@ -874,8 +877,28 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         */
         FieldAdaptedEventDetector(final FieldEventDetector<T> detector) {
             this.detector = detector;
+            this.handler  = detector.getHandler();
             this.lastT    = getField().getZero().add(Double.NaN);
             this.lastG    = getField().getZero().add(Double.NaN);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public T getMaxCheckInterval() {
+            return detector.getMaxCheckInterval();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int getMaxIterationCount() {
+            return detector.getMaxIterationCount();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public FieldBracketingNthOrderBrentSolver<T> getSolver() {
+            final T zero = detector.getThreshold().getField().getZero();
+            return new FieldBracketingNthOrderBrentSolver<>(zero, detector.getThreshold(), zero, 5);
         }
 
         /** {@inheritDoc} */
@@ -895,32 +918,43 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         }
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final FieldODEStateAndDerivative<T> s, final boolean increasing) {
-            return detector.eventOccurred(convert(s), increasing);
-        }
+        public FieldODEEventHandler<T> getHandler() {
 
-        /** {@inheritDoc} */
-        public FieldODEState<T> resetState(final FieldODEStateAndDerivative<T> s) {
+            return new FieldODEEventHandler<T>() {
 
-            final FieldSpacecraftState<T> oldState = convert(s);
-            final FieldSpacecraftState<T> newState = detector.resetState(oldState);
-            stateChanged(newState);
+                /** {@inheritDoc} */
+                public Action eventOccurred(final FieldODEStateAndDerivative<T> s,
+                                            final FieldODEEventDetector<T> d,
+                                            final boolean increasing) {
+                    return handler.eventOccurred(convert(s), detector, increasing);
+                }
 
-            // main part
-            final T[] primary    = MathArrays.buildArray(getField(), s.getPrimaryStateDimension());
-            stateMapper.mapStateToArray(newState, primary, null);
+                /** {@inheritDoc} */
+                public FieldODEState<T> resetState(final FieldODEEventDetector<T> d,
+                                                   final FieldODEStateAndDerivative<T> s) {
 
-            // secondary part
-            final T[][] secondary = MathArrays.buildArray(getField(), 1, additionalDerivativesProviders.size());
-            for (final FieldAdditionalDerivativesProvider<T> provider : additionalDerivativesProviders) {
-                final String name      = provider.getName();
-                final int    offset    = secondaryOffsets.get(name);
-                final int    dimension = provider.getDimension();
-                System.arraycopy(newState.getAdditionalState(name), 0, secondary[0], offset, dimension);
-            }
+                    final FieldSpacecraftState<T> oldState = convert(s);
+                    final FieldSpacecraftState<T> newState = handler.resetState(detector, oldState);
+                    stateChanged(newState);
 
-            return new FieldODEState<>(newState.getDate().durationFrom(getStartDate()),
-                                       primary, secondary);
+                    // main part
+                    final T[] primary    = MathArrays.buildArray(getField(), s.getPrimaryStateDimension());
+                    stateMapper.mapStateToArray(newState, primary, null);
+
+                    // secondary part
+                    final T[][] secondary = MathArrays.buildArray(getField(), 1, additionalDerivativesProviders.size());
+                    for (final FieldAdditionalDerivativesProvider<T> provider : additionalDerivativesProviders) {
+                        final String name      = provider.getName();
+                        final int    offset    = secondaryOffsets.get(name);
+                        final int    dimension = provider.getDimension();
+                        System.arraycopy(newState.getAdditionalState(name), 0, secondary[0], offset, dimension);
+                    }
+
+                    return new FieldODEState<>(newState.getDate().durationFrom(getStartDate()),
+                                               primary, secondary);
+                }
+            };
+
         }
 
     }
@@ -1148,8 +1182,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         /** Wrapped integrator. */
         private final FieldODEIntegrator<T> integrator;
 
-        /** Initial event handlers list. */
-        private final List<FieldEventHandlerConfiguration<T>> eventHandlersConfigurations;
+        /** Initial event detectors list. */
+        private final List<FieldODEEventDetector<T>> detectors;
 
         /** Initial step handlers list. */
         private final List<FieldODEStepHandler<T>> stepHandlers;
@@ -1158,9 +1192,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
          * @param integrator wrapped integrator
          */
         IntegratorResetter(final FieldODEIntegrator<T> integrator) {
-            this.integrator                  = integrator;
-            this.eventHandlersConfigurations = new ArrayList<>(integrator.getEventHandlersConfigurations());
-            this.stepHandlers                = new ArrayList<>(integrator.getStepHandlers());
+            this.integrator   = integrator;
+            this.detectors    = new ArrayList<>(integrator.getEventDetectors());
+            this.stepHandlers = new ArrayList<>(integrator.getStepHandlers());
         }
 
         /** {@inheritDoc}
@@ -1172,12 +1206,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         public void close() {
 
             // reset event handlers
-            integrator.clearEventHandlers();
-            eventHandlersConfigurations.forEach(c -> integrator.addEventHandler(c.getEventHandler(),
-                                                                                c.getMaxCheckInterval(),
-                                                                                c.getConvergence().getReal(),
-                                                                                c.getMaxIterationCount(),
-                                                                                c.getSolver()));
+            integrator.clearEventDetectors();
+            detectors.forEach(c -> integrator.addEventDetector(c));
 
             // reset step handlers
             integrator.clearStepHandlers();

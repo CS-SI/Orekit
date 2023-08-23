@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -46,6 +46,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /**
  * This class propagates a {@link org.orekit.propagation.SpacecraftState}
@@ -60,7 +61,7 @@ import org.orekit.utils.TimeSpanMap;
  * However, for low Earth orbits, the magnitude of the perturbative acceleration due to
  * atmospheric drag can be significant. Warren Phipps' 1992 thesis considered the atmospheric
  * drag by time derivatives of the <i>mean</i> mean anomaly using the catch-all coefficient
- * {@link #M2Driver}.
+ * {@link #M2Driver}. Beware that M2Driver must have only 1 span on its TimeSpanMap value.
  *
  * Usually, M2 is adjusted during an orbit determination process and it represents the
  * combination of all unmodeled secular along-track effects (i.e. not just the atmospheric drag).
@@ -145,7 +146,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()), M2);
     }
 
@@ -209,8 +210,8 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
                                     final double referenceRadius, final double mu,
                                     final double c20, final double c30, final double c40,
                                     final double c50, final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-                DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, M2);
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, M2);
     }
 
     /** Build a propagator from orbit, mass and potential provider.
@@ -228,7 +229,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
     public BrouwerLyddanePropagator(final Orbit initialOrbit, final double mass,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              mass, provider, provider.onDate(initialOrbit.getDate()), M2);
     }
 
@@ -263,7 +264,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
                                     final double referenceRadius, final double mu,
                                     final double c20, final double c30, final double c40,
                                     final double c50, final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              mass, referenceRadius, mu, c20, c30, c40, c50, M2);
     }
 
@@ -388,7 +389,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
     public BrouwerLyddanePropagator(final Orbit initialOrbit,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final PropagationType initialType, final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()), initialType, M2);
     }
 
@@ -639,7 +640,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
                                                   final double epsilon, final int maxIterations) {
         final BrouwerLyddanePropagator propagator =
                         new BrouwerLyddanePropagator(osculating,
-                                                     InertialProvider.of(osculating.getFrame()),
+                                                     FrameAlignedProvider.of(osculating.getFrame()),
                                                      DEFAULT_MASS,
                                                      referenceRadius, mu, c20, c30, c40, c50,
                                                      PropagationType.OSCULATING, M2Value,
@@ -785,10 +786,14 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
     }
 
     /**
-     * Get the value of the M2 drag parameter.
+     * Get the value of the M2 drag parameter. Beware that M2Driver
+     * must have only 1 span on its TimeSpanMap value (that is
+     * to say setPeriod method should not be called)
      * @return the value of the M2 drag parameter
      */
     public double getM2() {
+        // As Brouwer Lyddane is an analytical propagator, for now it is not possible for
+        // M2Driver to have several values estimated
         return M2Driver.getValue();
     }
 
@@ -843,8 +848,10 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
     protected List<String> getJacobiansColumnsNames() {
         final List<String> columnsNames = new ArrayList<>();
         for (final ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isSelected() && !columnsNames.contains(driver.getName())) {
-                columnsNames.add(driver.getName());
+            if (driver.isSelected() && !columnsNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    columnsNames.add(span.getData());
+                }
             }
         }
         Collections.sort(columnsNames);
@@ -1282,18 +1289,15 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
             // mean mean anomaly (with drag Eq. 2.38 of Phipps' 1992 thesis)
             final UnivariateDerivative2 dtM2  = dt.multiply(m2);
             final UnivariateDerivative2 dt2M2 = dt.multiply(dtM2);
-            final UnivariateDerivative2 lpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getMeanAnomaly() + lt * xnot.getValue() + dt2M2.getValue(),
-                                                                                               FastMath.PI),
+            final UnivariateDerivative2 lpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getMeanAnomaly() + lt * xnot.getValue() + dt2M2.getValue(), 0),
                                                                       lt * xnotDot + 2.0 * dtM2.getValue(),
                                                                       2.0 * m2);
             // mean argument of perigee
-            final UnivariateDerivative2 gpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getPerigeeArgument() + gt * xnot.getValue(),
-                                                                                               FastMath.PI),
+            final UnivariateDerivative2 gpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getPerigeeArgument() + gt * xnot.getValue(), 0),
                                                                       gt * xnotDot,
                                                                       0.0);
             // mean longitude of ascending node
-            final UnivariateDerivative2 hpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ht * xnot.getValue(),
-                                                                                               FastMath.PI),
+            final UnivariateDerivative2 hpp = new UnivariateDerivative2(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ht * xnot.getValue(), 0),
                                                                       ht * xnotDot,
                                                                       0.0);
 

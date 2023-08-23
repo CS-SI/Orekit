@@ -106,7 +106,7 @@ public class FieldOrekitStepNormalizer <T extends CalculusFieldElement<T>> imple
 
         // use the interpolator to push fixed steps events to the underlying handler
         FieldAbsoluteDate<T> nextTime = lastState.getDate().shiftedBy(step);
-        boolean nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0);
+        boolean nextInStep = forward ^ nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0;
         while (nextInStep) {
 
             // output the stored previous step
@@ -117,7 +117,7 @@ public class FieldOrekitStepNormalizer <T extends CalculusFieldElement<T>> imple
 
             // prepare next iteration
             nextTime = nextTime.shiftedBy(step);
-            nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0);
+            nextInStep = forward ^ nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0;
 
         }
     }

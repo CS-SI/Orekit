@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,14 +22,14 @@ import java.util.List;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.CombinedObservationData;
-import org.orekit.gnss.CombinedObservationDataSet;
 import org.orekit.gnss.Frequency;
-import org.orekit.gnss.MeasurementType;
-import org.orekit.gnss.ObservationData;
-import org.orekit.gnss.ObservationDataSet;
-import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.observation.CombinedObservationData;
+import org.orekit.gnss.observation.CombinedObservationDataSet;
+import org.orekit.gnss.observation.MeasurementType;
+import org.orekit.gnss.observation.ObservationData;
+import org.orekit.gnss.observation.ObservationDataSet;
+import org.orekit.gnss.observation.ObservationType;
 import org.orekit.utils.Constants;
 
 /** Base class for dual frequency combination of measurements.
@@ -156,8 +156,9 @@ public abstract class AbstractDualFrequencyCombination implements MeasurementCom
             }
         }
 
-        return new CombinedObservationDataSet(observations.getHeader(), observations.getSatelliteSystem(),
-                                              observations.getPrnNumber(), observations.getDate(),
+        return new CombinedObservationDataSet(observations.getSatellite().getSystem(),
+                                              observations.getSatellite().getPRN(),
+                                              observations.getDate(),
                                               observations.getRcvrClkOffset(), combined);
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataSource;
 import org.orekit.files.ilrs.CPF.CPFEphemeris;
 import org.orekit.files.ilrs.StreamingCpfWriter.Segment;
@@ -73,7 +74,7 @@ public class StreamingCpfWriterTest {
             StreamingCpfWriter writer = new StreamingCpfWriter(buffer, utc, cpfFile.getHeader());
             writer.writeHeader();
             Segment segment = writer.newSegment(frame);
-            BoundedPropagator propagator = satellite.getPropagator();
+            BoundedPropagator propagator = satellite.getPropagator(new FrameAlignedProvider(frame));
             propagator.setStepHandler(step, segment);
             propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
 

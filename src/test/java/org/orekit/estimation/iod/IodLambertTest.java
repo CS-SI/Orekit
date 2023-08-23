@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,6 +34,7 @@ import org.orekit.estimation.measurements.Position;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -109,7 +110,7 @@ public class IodLambertTest {
         // instantiate the IOD method
         final IodLambert iod = new IodLambert(mu);
 
-        final KeplerianOrbit orbit = iod.estimate(frame,
+        final Orbit orbit = iod.estimate(frame,
                                             true,
                                             nRev,
                                             /*stapos1.add*/(position1), date1,
@@ -144,7 +145,7 @@ public class IodLambertTest {
         final KeplerianOrbit refOrbit = new KeplerianOrbit(initialState.getOrbit());
         double[] refOrbitArray = new double[6];
         OrbitType.KEPLERIAN.mapOrbitToArray(refOrbit, PositionAngle.TRUE, refOrbitArray, null);
-        final Vector3D position1 = refOrbit.getPVCoordinates().getPosition();
+        final Vector3D position1 = refOrbit.getPosition();
         final AbsoluteDate date1 = refOrbit.getDate();
 
         // Orbit period
@@ -168,13 +169,13 @@ public class IodLambertTest {
 
             // Propagate to test date
             final AbsoluteDate date2 = date1.shiftedBy(dts[i]);
-            final Vector3D position2 = propagator.propagate(date2).getPVCoordinates().getPosition();
+            final Vector3D position2 = propagator.propagate(date2).getPosition();
 
             // Instantiate the IOD method
             final IodLambert iod = new IodLambert(mu);
 
             // Estimate the orbit
-            final KeplerianOrbit orbit = iod.estimate(frame, posigrades[i], nRevs[i], position1, date1, position2, date2);
+            final KeplerianOrbit orbit = new KeplerianOrbit(iod.estimate(frame, posigrades[i], nRevs[i], position1, date1, position2, date2));
 
             // Test relative values
             final double relTol = 1e-12;
@@ -198,24 +199,24 @@ public class IodLambertTest {
         final Frame teme = FramesFactory.getTEME();
 
         final AbsoluteDate t1 = new AbsoluteDate("2017-03-25T23:48:31.282", TimeScalesFactory.getUTC());
-        final Vector3D p1 = propagator.propagate(t1).getPVCoordinates(teme).getPosition();
+        final Vector3D p1 = propagator.propagate(t1).getPosition(teme);
         final AbsoluteDate t2 = t1.shiftedBy(40000);
-        final Vector3D p2 = propagator.propagate(t2).getPVCoordinates(teme).getPosition();
+        final Vector3D p2 = propagator.propagate(t2).getPosition(teme);
         final AbsoluteDate t3 = t1.shiftedBy(115200.0);
-        final Vector3D p3 = propagator.propagate(t3).getPVCoordinates(teme).getPosition();
+        final Vector3D p3 = propagator.propagate(t3).getPosition(teme);
 
         IodLambert lambert = new IodLambert(Constants.WGS84_EARTH_MU);
-        KeplerianOrbit k0 = lambert.estimate(teme, true, 0, p1, t1, p2, t2);
+        Orbit k0 = lambert.estimate(teme, true, 0, p1, t1, p2, t2);
         Assertions.assertEquals(6.08e-4, k0.getE(), 1.0e-6);
         Assertions.assertEquals(8.55, FastMath.toDegrees(k0.getI()), 0.01);
-        Assertions.assertEquals(0.0, Vector3D.distance(p1, k0.getPVCoordinates(t1, teme).getPosition()), 2.0e-8);
-        Assertions.assertEquals(0.0, Vector3D.distance(p2, k0.getPVCoordinates(t2, teme).getPosition()), 2.0e-7);
+        Assertions.assertEquals(0.0, Vector3D.distance(p1, k0.getPosition(t1, teme)), 2.0e-8);
+        Assertions.assertEquals(0.0, Vector3D.distance(p2, k0.getPosition(t2, teme)), 2.0e-7);
 
-        KeplerianOrbit k1 = lambert.estimate(teme, true, 1, p1, t1, p3, t3);
+        Orbit k1 = lambert.estimate(teme, true, 1, p1, t1, p3, t3);
         Assertions.assertEquals(5.97e-4, k1.getE(), 1.0e-6);
         Assertions.assertEquals(8.55, FastMath.toDegrees(k1.getI()), 0.01);
-        Assertions.assertEquals(0.0, Vector3D.distance(p1, k1.getPVCoordinates(t1, teme).getPosition()), 1.4e-8);
-        Assertions.assertEquals(0.0, Vector3D.distance(p3, k1.getPVCoordinates(t3, teme).getPosition()), 3.0e-7);
+        Assertions.assertEquals(0.0, Vector3D.distance(p1, k1.getPosition(t1, teme)), 1.4e-8);
+        Assertions.assertEquals(0.0, Vector3D.distance(p3, k1.getPosition(t3, teme)), 3.0e-7);
 
     }
 
@@ -241,7 +242,7 @@ public class IodLambertTest {
         double[] refOrbitArray = new double[6];
         OrbitType.KEPLERIAN.mapOrbitToArray(refOrbit, PositionAngle.TRUE, refOrbitArray, null);
 
-        final Vector3D position1 = refOrbit.getPVCoordinates().getPosition();
+        final Vector3D position1 = refOrbit.getPosition();
         final AbsoluteDate date1 = refOrbit.getDate();
 
         // Orbit period
@@ -256,7 +257,7 @@ public class IodLambertTest {
 
         // Propagate to test date
         final AbsoluteDate date2 = date1.shiftedBy(dts);
-        final Vector3D position2 = propagator.propagate(date2).getPVCoordinates().getPosition();
+        final Vector3D position2 = propagator.propagate(date2).getPosition();
 
         // Instantiate the IOD method
         final IodLambert iod = new IodLambert(mu);
@@ -321,7 +322,7 @@ public class IodLambertTest {
             // Assign position and velocity @t1 (defined as the position and velocity vectors and the periapse)
             AbsoluteDate t1 = new AbsoluteDate(2010, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC());
             KeplerianOrbit kep1 = new KeplerianOrbit(a, e, i, aop, raan, nu0, PositionAngle.TRUE, j2000, t1, mu);
-            Vector3D p1 = kep1.getPVCoordinates().getPosition();
+            Vector3D p1 = kep1.getPosition();
             Vector3D v1 = kep1.getPVCoordinates().getVelocity();
 
             // Assign t2 date (defined as the date after a swept angle of "trueAnomalyDifference" after periapsis)
@@ -338,7 +339,7 @@ public class IodLambertTest {
 
             // Solve Lambert problem
             IodLambert iodLambert = new IodLambert(mu);
-            KeplerianOrbit resultOrbit1 = iodLambert.estimate(j2000, posigrade, nRev, p1, t1, p2, t2);
+            Orbit resultOrbit1 = iodLambert.estimate(j2000, posigrade, nRev, p1, t1, p2, t2);
 
             // Get position and velocity coordinates @t1 and @t2 from the output Keplerian orbit of iodLambert.estimate
             PVCoordinates resultPv1 = resultOrbit1.getPVCoordinates(t1, j2000);
@@ -358,12 +359,12 @@ public class IodLambertTest {
             // Tolerances
             double dP1Tol, dP2Tol, dV1Tol, dV2Tol;
             if (testCase == 1) {
-                dP1Tol = 4.28e-25;
+                dP1Tol = 5.65e-25;
                 dV1Tol = 5.97e-12;
                 dP2Tol = 7.57e-9;
                 dV2Tol = 7.50e-12;
             } else {
-                dP1Tol = 2.81e-25;
+                dP1Tol = 5.47e-25;
                 dV1Tol = 3.03e-12;
                 dP2Tol = 9.86e-7;
                 dV2Tol = 4.01e-10;
@@ -405,7 +406,7 @@ public class IodLambertTest {
         final Vector3D velR2 = new Vector3D(-3792.46619, -1777.07641, 6856.81495);
 
         // Lambert IOD
-        final KeplerianOrbit orbit = lambert.estimate(inertialFrame, true, 0,
+        final Orbit orbit = lambert.estimate(inertialFrame, true, 0,
                                                       new Position(dateRef, posR1, 1.0, 1.0, satellite),
                                                       new Position(date2,   posR2, 1.0, 1.0, satellite));
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -84,7 +84,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
                                  final AtmosphericRefractionModel refractionModel) {
         this(groundLocation, sun, dawnDuskElevation, refractionModel,
              DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new ContinueOnEvent<>());
+             new ContinueOnEvent());
     }
 
     /** Private constructor.
@@ -98,13 +98,13 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
      */
-    private GroundAtNightDetector(final TopocentricFrame groundLocation, final PVCoordinatesProvider sun,
-                                  final double dawnDuskElevation,
-                                  final AtmosphericRefractionModel refractionModel,
-                                  final double maxCheck,
-                                  final double threshold,
-                                  final int maxIter,
-                                  final EventHandler<? super GroundAtNightDetector> handler) {
+    protected GroundAtNightDetector(final TopocentricFrame groundLocation, final PVCoordinatesProvider sun,
+                                    final double dawnDuskElevation,
+                                    final AtmosphericRefractionModel refractionModel,
+                                    final double maxCheck,
+                                    final double threshold,
+                                    final int maxIter,
+                                    final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
         this.groundLocation    = groundLocation;
         this.sun               = sun;
@@ -117,7 +117,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
     protected GroundAtNightDetector create(final double newMaxCheck,
                                            final double newThreshold,
                                            final int newMaxIter,
-                                           final EventHandler<? super GroundAtNightDetector> newHandler) {
+                                           final EventHandler newHandler) {
         return new GroundAtNightDetector(groundLocation, sun, dawnDuskElevation, refractionModel,
                                          newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
@@ -136,7 +136,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
 
         final AbsoluteDate  date     = state.getDate();
         final Frame         frame    = state.getFrame();
-        final Vector3D      position = sun.getPVCoordinates(date, frame).getPosition();
+        final Vector3D      position = sun.getPosition(date, frame);
         final double trueElevation   = groundLocation.getElevation(position, frame, date);
 
         final double calculatedElevation;

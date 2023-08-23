@@ -1,4 +1,4 @@
-CCSDS_CDM_VERS                = 1.0
+CCSDS_CDM_VERS                = 2.0
 CREATION_DATE                 = 2010-03-12T22:31:12.000
 ORIGINATOR                    = JSPOC
 MESSAGE_ID                    = 201113719185-1

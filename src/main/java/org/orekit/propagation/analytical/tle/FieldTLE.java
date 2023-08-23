@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -44,12 +44,14 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
 /** This class is a container for a single set of TLE data.
@@ -471,12 +473,17 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         buffer.append(ParseUtils.addPadding("launchPiece",  launchPiece, ' ', 3, false, satelliteNumber));
 
         buffer.append(' ');
-        final DateTimeComponents dtc = epoch.getComponents(utc);
+        DateTimeComponents dtc = epoch.getComponents(utc);
+        int fraction = (int) FastMath.rint(31250 * dtc.getTime().getSecondsInUTCDay() / 27.0);
+        if (fraction >= 100000000) {
+            dtc =  epoch.shiftedBy(Constants.JULIAN_DAY).getComponents(utc);
+            fraction -= 100000000;
+        }
         buffer.append(ParseUtils.addPadding("year", dtc.getDate().getYear() % 100, '0', 2, true, satelliteNumber));
         buffer.append(ParseUtils.addPadding("day",  dtc.getDate().getDayOfYear(),  '0', 3, true, satelliteNumber));
         buffer.append('.');
         // nota: 31250/27 == 100000000/86400
-        final int fraction = (int) FastMath.rint(31250 * dtc.getTime().getSecondsInUTCDay() / 27.0);
+
         buffer.append(ParseUtils.addPadding("fraction", fraction,  '0', 8, true, satelliteNumber));
 
         buffer.append(' ');
@@ -590,6 +597,29 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         int i = 0;
         for (ParameterDriver driver : drivers) {
             parameters[i++] = field.getZero().add(driver.getValue());
+        }
+        return parameters;
+    }
+
+    /** Get model parameters for a certain date.
+     * @param field field to which the elements belong
+     * @param date date for which the value wants to be known. Only if
+     * parameter driver has 1 value estimated over the all orbit determination
+     * period (not validity period intervals for estimation), the date value can
+     * be <em>{@code null}</em> and then the only estimated value will be
+     * returned
+     * @return model parameters
+     */
+    public T[] getParameters(final Field<T> field, final FieldAbsoluteDate<T> date) {
+        final List<ParameterDriver> drivers = getParametersDrivers();
+        final T[] parameters = MathArrays.buildArray(field, drivers.size());
+        int i = 0;
+        for (ParameterDriver driver : drivers) {
+            if (driver.getNbOfValues() == 1) {
+                parameters[i++] = field.getZero().add(driver.getValue(AbsoluteDate.ARBITRARY_EPOCH));
+            } else {
+                parameters[i++] = field.getZero().add(driver.getValue(date.toAbsoluteDate()));
+            }
         }
         return parameters;
     }
@@ -718,7 +748,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      * @return bStar
      */
     public double getBStar() {
-        return bStarParameterDriver.getValue();
+        return bStarParameterDriver.getValue(getDate().toAbsoluteDate());
     }
 
     /** Get a string representation of this TLE set.
@@ -829,7 +859,8 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         while (k++ < maxIterations) {
 
             // recompute the state from the current TLE
-            final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(current, new InertialProvider(Rotation.IDENTITY, teme), state.getMass(), teme, templateTLE.getParameters(field));
+            final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(current, new FrameAlignedProvider(Rotation.IDENTITY, teme),
+                                                                                           state.getMass(), teme, templateTLE.getParameters(field));
             final FieldOrbit<T> recovOrbit = propagator.getInitialState().getOrbit();
             final FieldEquinoctialOrbit<T> recovEquiOrbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(recovOrbit);
 
@@ -921,8 +952,8 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         final T meanMotionSecondDerivative = templateTLE.getMeanMotionSecondDerivative();
         // Returns the new TLE
         return new FieldTLE<>(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
-                       elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
-                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar, utc);
+                              elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
+                              e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar, utc);
     }
 
 

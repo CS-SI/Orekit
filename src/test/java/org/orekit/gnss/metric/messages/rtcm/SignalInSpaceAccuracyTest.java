@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,8 @@ package org.orekit.gnss.metric.messages.rtcm;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.AccuracyProvider;
-import org.orekit.gnss.metric.messages.rtcm.ephemeris.utils.SignalInSpaceAccuracy;
+import org.orekit.gnss.metric.messages.common.AccuracyProvider;
+import org.orekit.gnss.metric.messages.common.SignalInSpaceAccuracy;
 
 public class SignalInSpaceAccuracyTest {
 

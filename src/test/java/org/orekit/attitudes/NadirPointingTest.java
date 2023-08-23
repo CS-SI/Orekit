@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -46,12 +46,14 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -131,7 +133,7 @@ public class NadirPointingTest {
         // Get nadir attitude
         Rotation rotNadir = nadirAttitudeLaw.getAttitude(kep, date, kep.getFrame()).getRotation();
 
-        checkField(Decimal64Field.getInstance(), nadirAttitudeLaw, kep, kep.getDate(), kep.getFrame());
+        checkField(Binary64Field.getInstance(), nadirAttitudeLaw, kep, kep.getDate(), kep.getFrame());
 
         // Get earth center attitude
         Rotation rotCenter = earthCenterAttitudeLaw.getAttitude(kep, date, kep.getFrame()).getRotation();
@@ -254,9 +256,12 @@ public class NadirPointingTest {
             Orbit o = circ.shiftedBy(dt);
             sample.add(nadirAttitudeLaw.getTargetPV(o, o.getDate(), o.getFrame()));
         }
-        TimeStampedPVCoordinates reference =
-                TimeStampedPVCoordinates.interpolate(circ.getDate(),
-                                                     CartesianDerivativesFilter.USE_P, sample);
+
+        // create interpolator
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_P);
+
+        TimeStampedPVCoordinates reference = interpolator.interpolate(circ.getDate(), sample);
 
         TimeStampedPVCoordinates target =
                 nadirAttitudeLaw.getTargetPV(circ, circ.getDate(), circ.getFrame());

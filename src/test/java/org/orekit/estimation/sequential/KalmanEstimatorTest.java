@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,10 +41,11 @@ import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.PositionMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
-import org.orekit.estimation.measurements.modifiers.OnBoardAntennaRangeModifier;
+import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
+import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -169,7 +170,7 @@ public class KalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 4.0, 60.0);
 
         // Reference propagator for estimation performances
@@ -255,11 +256,16 @@ public class KalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context, antennaPhaseCenter),
+                                                               new TwoWayRangeMeasurementCreator(context,
+                                                                                                 Vector3D.ZERO, null,
+                                                                                                 antennaPhaseCenter, null,
+                                                                                                 0),
                                                                1.0, 3.0, 300.0);
 
         // Add antenna offset to the measurements
-        final OnBoardAntennaRangeModifier obaModifier = new OnBoardAntennaRangeModifier(antennaPhaseCenter);
+        final PhaseCentersRangeModifier obaModifier = new PhaseCentersRangeModifier(FrequencyPattern.ZERO_CORRECTION,
+                                                                                    new FrequencyPattern(antennaPhaseCenter,
+                                                                                                         null));
         for (final ObservedMeasurement<?> range : measurements) {
             ((Range) range).addModifier(obaModifier);
         }
@@ -583,7 +589,7 @@ public class KalmanEstimatorTest {
                                                                                 measPropagatorBuilder);
         final List<ObservedMeasurement<?>> rangeMeasurements =
                         EstimationTestUtils.createMeasurements(rangePropagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                0.0, 4.0, 300.0);
         // Create perfect az/el measurements
         final Propagator angularPropagator = EstimationTestUtils.createPropagator(context.initialOrbit,
@@ -688,7 +694,7 @@ public class KalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurementsRange =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         final List<ObservedMeasurement<?>> measurementsRangeRate =
@@ -792,7 +798,7 @@ public class KalmanEstimatorTest {
         propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                            propagatorBuilder1);
         measurements.addAll(EstimationTestUtils.createMeasurements(propagator1,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 60.0));
         measurements.sort(Comparator.naturalOrder());
 
@@ -827,8 +833,8 @@ public class KalmanEstimatorTest {
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
         Assertions.assertEquals(4.7246,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                                              before.getPVCoordinates().getPosition()),
+                            Vector3D.distance(closeOrbit.getPosition(),
+                                              before.getPosition()),
                             1.0e-3);
         Assertions.assertEquals(0.0010514,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
@@ -895,7 +901,7 @@ public class KalmanEstimatorTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         // Build the Kalman filter
         final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder();
@@ -992,7 +998,7 @@ public class KalmanEstimatorTest {
         propagator1 = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                            propagatorBuilder1);
         measurements.addAll(EstimationTestUtils.createMeasurements(propagator1,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 60.0));
         measurements.sort(Comparator.naturalOrder());
 
@@ -1040,8 +1046,8 @@ public class KalmanEstimatorTest {
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
         Assertions.assertEquals(4.7246,
-                            Vector3D.distance(closeOrbit.getPVCoordinates().getPosition(),
-                                              before.getPVCoordinates().getPosition()),
+                            Vector3D.distance(closeOrbit.getPosition(),
+                                              before.getPosition()),
                             1.0e-3);
         Assertions.assertEquals(0.0010514,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
@@ -1141,13 +1147,13 @@ public class KalmanEstimatorTest {
 
         // Perform an estimation at the first measurment epoch (estimated states must be identical to initial orbit)
         Propagator[] estimated = kalman.estimationStep(multiplexed);
-        final Vector3D pos1 = estimated[0].getInitialState().getPVCoordinates().getPosition();
-        final Vector3D pos2 = estimated[1].getInitialState().getPVCoordinates().getPosition();
+        final Vector3D pos1 = estimated[0].getInitialState().getPosition();
+        final Vector3D pos2 = estimated[1].getInitialState().getPosition();
 
         // Verify
         Assertions.assertEquals(0.0, pos1.distance(pos2), 1.0e-12);
-        Assertions.assertEquals(0.0, pos1.distance(context.initialOrbit.getPVCoordinates().getPosition()), 1.0e-12);
-        Assertions.assertEquals(0.0, pos2.distance(context.initialOrbit.getPVCoordinates().getPosition()), 1.0e-12);
+        Assertions.assertEquals(0.0, pos1.distance(context.initialOrbit.getPosition()), 1.0e-12);
+        Assertions.assertEquals(0.0, pos2.distance(context.initialOrbit.getPosition()), 1.0e-12);
 
     }
 

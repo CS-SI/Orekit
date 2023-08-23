@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.gnss.antenna;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,12 +30,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -84,7 +87,7 @@ public class AntexLoader {
     }
 
     /**
-     * Construct a loader by specifying the source of ANTEX auxiliary data files.
+     * Construct a loader by specifying a {@link DataProvidersManager}.
      *
      * @param supportedNames regular expression for supported files names
      * @param dataProvidersManager provides access to auxiliary data.
@@ -98,6 +101,27 @@ public class AntexLoader {
         satellitesAntennas = new ArrayList<>();
         receiversAntennas  = new ArrayList<>();
         dataProvidersManager.feed(supportedNames, new Parser());
+    }
+
+    /**
+     * Construct a loader by specifying the source of ANTEX auxiliary data files.
+     *
+     * @param source source for the ANTEX data
+     * @param gps the GPS time scale to use when loading the ANTEX files.
+     * @since 12.0
+     */
+    public AntexLoader(final DataSource source, final TimeScale gps) {
+        try {
+            this.gps = gps;
+            satellitesAntennas = new ArrayList<>();
+            receiversAntennas  = new ArrayList<>();
+            try (InputStream         is  = source.getOpener().openStreamOnce();
+                 BufferedInputStream bis = new BufferedInputStream(is)) {
+                new Parser().loadData(bis, source.getName());
+            }
+        } catch (IOException ioe) {
+            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
+        }
     }
 
     /** Add a satellite antenna.

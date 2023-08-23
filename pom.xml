@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>11.4-SNAPSHOT</version>
+  <version>12.0-SNAPSHOT</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -52,7 +52,7 @@
     <orekit.maven-install-plugin.version>3.0.1</orekit.maven-install-plugin.version>
     <orekit.mathjax.config>&lt;script type=&quot;text/x-mathjax-config&quot;&gt;MathJax.Hub.Config({ TeX: { extensions: [&quot;autoload.js&quot;]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
-    <orekit.hipparchus.version>2.3</orekit.hipparchus.version>
+    <orekit.hipparchus.version>3.0-SNAPSHOT</orekit.hipparchus.version>
     <orekit.junit.version>5.9.1</orekit.junit.version>
     <orekit.hamcrest.version>2.2</orekit.hamcrest.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
@@ -205,6 +205,13 @@
         <role>developer</role>
       </roles>
     </developer>
+    <developer>
+      <name>Mark Rutten</name>
+      <id>markrutten</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
   </developers>
 
   <contributors>
@@ -242,6 +249,9 @@
       <name>Paul Cefola</name>
     </contributor>
     <contributor>
+      <name>Elisabet Cid-Borobia</name>
+    </contributor>
+    <contributor>
       <name>Francesco Coccoluto</name>
     </contributor>
     <contributor>
@@ -260,6 +270,12 @@
       <name>Mikael Fillastre</name>
     </contributor>
     <contributor>
+      <name>Alberto Foss&#224;</name>
+    </contributor>
+    <contributor>
+      <name>Lucas Girodet</name>
+    </contributor>
+    <contributor>
       <name>Andrew Goetz</name>
     </contributor>
     <contributor>
@@ -269,10 +285,16 @@
       <name>Romaric Her</name>
     </contributor>
     <contributor>
+      <name>Jonathan Hood</name>
+    </contributor>
+    <contributor>
       <name>James Housden</name>
     </contributor>
     <contributor>
       <name>Shiva Iyer</name>
+    </contributor>
+    <contributor>
+      <name>Dimuthu Jayasingha</name>
     </contributor>
     <contributor>
       <name>Fran&#231;ois-Xavier Laffont</name>
@@ -317,9 +339,6 @@
       <name>Chiara Rusconi</name>
     </contributor>
     <contributor>
-      <name>Mark Rutten</name>
-    </contributor>
-    <contributor>
       <name>Beatriz Salazar Garc&#237;a</name>
     </contributor>
     <contributor>
@@ -336,6 +355,9 @@
     </contributor>
     <contributor>
       <name>Sofia Urbina</name>
+    </contributor>
+    <contributor>
+      <name>Jean-Baptiste Valet</name>
     </contributor>
     <contributor>
       <name>M&#233;lina Vanel</name>
@@ -453,6 +475,7 @@
           <showWarnings>true</showWarnings>
           <compilerArgs>
             <arg>-Xlint:deprecation</arg>
+            <arg>-Xlint:unchecked</arg>
             <arg>-Xplugin:dataContextPlugin</arg>
           </compilerArgs>
         </configuration>

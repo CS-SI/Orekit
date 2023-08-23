@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,6 @@ import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
-import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -46,8 +45,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
@@ -75,7 +72,7 @@ public class EquinoctialOrbitTest {
             new EquinoctialOrbit(42166712.0, 0.5, -0.5, hx, hy,
                                       5.300, PositionAngle.MEAN,
                                       FramesFactory.getEME2000(), date, mu);
-        Vector3D pos = equi.getPVCoordinates().getPosition();
+        Vector3D pos = equi.getPosition();
         Vector3D vit = equi.getPVCoordinates().getVelocity();
 
         PVCoordinates pvCoordinates = new PVCoordinates(pos, vit);
@@ -109,7 +106,7 @@ public class EquinoctialOrbitTest {
             new EquinoctialOrbit(42166712.0, 0.1e-10, -0.1e-10, hx, hy,
                                       5.300, PositionAngle.MEAN,
                                       FramesFactory.getEME2000(), date, mu);
-        Vector3D posCir = equiCir.getPVCoordinates().getPosition();
+        Vector3D posCir = equiCir.getPosition();
         Vector3D vitCir = equiCir.getPVCoordinates().getVelocity();
 
         PVCoordinates pvCoordinates = new PVCoordinates(posCir, vitCir);
@@ -144,7 +141,7 @@ public class EquinoctialOrbitTest {
             new EquinoctialOrbit(42166712.0, -7.900e-06, 1.100e-04, hx, hy,
                                       5.300, PositionAngle.MEAN,
                                       FramesFactory.getEME2000(), date, mu);
-        Vector3D pos = equi.getPVCoordinates().getPosition();
+        Vector3D pos = equi.getPosition();
         Vector3D vit = equi.getPVCoordinates().getVelocity();
 
         // verif of 1/a = 2/X - V2/mu
@@ -315,8 +312,8 @@ public class EquinoctialOrbitTest {
         double a = p.getA();
         double na = FastMath.sqrt(p.getMu() / a);
 
-        Assertions.assertEquals(a * epsilon * epsilon / ksi, p.getPVCoordinates().getPosition().getNorm(),
-                     Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getPosition().getNorm()));
+        Assertions.assertEquals(a * epsilon * epsilon / ksi, p.getPosition().getNorm(),
+                     Utils.epsilonTest * FastMath.abs(p.getPosition().getNorm()));
         Assertions.assertEquals(na * FastMath.sqrt(ksi * ksi + nu * nu) / epsilon, p
                      .getPVCoordinates().getVelocity().getNorm(), Utils.epsilonTest
                      * FastMath.abs(p.getPVCoordinates().getVelocity().getNorm()));
@@ -337,9 +334,9 @@ public class EquinoctialOrbitTest {
         a = pCirEqua.getA();
         na = FastMath.sqrt(pCirEqua.getMu() / a);
 
-        Assertions.assertEquals(a * epsilon * epsilon / ksi, pCirEqua.getPVCoordinates().getPosition()
+        Assertions.assertEquals(a * epsilon * epsilon / ksi, pCirEqua.getPosition()
                      .getNorm(), Utils.epsilonTest
-                     * FastMath.abs(pCirEqua.getPVCoordinates().getPosition().getNorm()));
+                     * FastMath.abs(pCirEqua.getPosition().getNorm()));
         Assertions.assertEquals(na * FastMath.sqrt(ksi * ksi + nu * nu) / epsilon, pCirEqua
                      .getPVCoordinates().getVelocity().getNorm(), Utils.epsilonTest
                      * FastMath.abs(pCirEqua.getPVCoordinates().getVelocity().getNorm()));
@@ -354,7 +351,7 @@ public class EquinoctialOrbitTest {
                                  0.67, PositionAngle.TRUE,
                                  FramesFactory.getEME2000(), date, mu);
 
-        Vector3D position = p.getPVCoordinates().getPosition();
+        Vector3D position = p.getPosition();
         Vector3D velocity = p.getPVCoordinates().getVelocity();
         Vector3D momentum = p.getPVCoordinates().getMomentum().normalize();
 
@@ -365,7 +362,7 @@ public class EquinoctialOrbitTest {
             p = new EquinoctialOrbit(p.getA(), p.getEquinoctialEx(),
                                      p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , PositionAngle.TRUE,
                                      p.getFrame(), p.getDate(), p.getMu());
-            position = p.getPVCoordinates().getPosition();
+            position = p.getPosition();
 
             // test if the norm of the position is in the range [perigee radius,
             // apogee radius]
@@ -392,7 +389,7 @@ public class EquinoctialOrbitTest {
                                  0.67, PositionAngle.TRUE,
                                  FramesFactory.getEME2000(), date, mu);
 
-        position = pCirEqua.getPVCoordinates().getPosition();
+        position = pCirEqua.getPosition();
         velocity = pCirEqua.getPVCoordinates().getVelocity();
 
         momentum = Vector3D.crossProduct(position, velocity).normalize();
@@ -407,7 +404,7 @@ public class EquinoctialOrbitTest {
             pCirEqua = new EquinoctialOrbit(pCirEqua.getA(), pCirEqua.getEquinoctialEx(),
                                             pCirEqua.getEquinoctialEy() , pCirEqua.getHx(), pCirEqua.getHy() , lv , PositionAngle.TRUE,
                                             pCirEqua.getFrame(), p.getDate(), p.getMu());
-            position = pCirEqua.getPVCoordinates().getPosition();
+            position = pCirEqua.getPosition();
 
             // test if the norm pf the position is in the range [perigee radius,
             // apogee radius]
@@ -477,11 +474,11 @@ public class EquinoctialOrbitTest {
         EquinoctialOrbit p = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                   FramesFactory.getEME2000(), date, mu);
 
-        Vector3D positionOffset = p.getPVCoordinates().getPosition().subtract(position);
+        Vector3D positionOffset = p.getPosition().subtract(position);
         Vector3D velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
-        Assertions.assertTrue(positionOffset.getNorm() < Utils.epsilonTest);
-        Assertions.assertTrue(velocityOffset.getNorm() < Utils.epsilonTest);
+        Assertions.assertEquals(0, positionOffset.getNorm(), 7.5e-12);
+        Assertions.assertEquals(0, velocityOffset.getNorm(), 1.0e-15);
 
         // circular and equatorial orbit
         position = new Vector3D(33051.2, 26184.9, -1.3E-5);
@@ -490,11 +487,11 @@ public class EquinoctialOrbitTest {
         p = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                  FramesFactory.getEME2000(), date, mu);
 
-        positionOffset = p.getPVCoordinates().getPosition().subtract(position);
+        positionOffset = p.getPosition().subtract(position);
         velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
-        Assertions.assertTrue(positionOffset.getNorm() < Utils.epsilonTest);
-        Assertions.assertTrue(velocityOffset.getNorm() < Utils.epsilonTest);
+        Assertions.assertEquals(0, positionOffset.getNorm(), 1.1e-11);
+        Assertions.assertEquals(0, velocityOffset.getNorm(), 1.0e-15);
     }
 
     @Test
@@ -673,7 +670,7 @@ public class EquinoctialOrbitTest {
 
         // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
         // we use this to compute a velocity step size from the position step size
-        Vector3D p = orbit.getPVCoordinates().getPosition();
+        Vector3D p = orbit.getPosition();
         Vector3D v = orbit.getPVCoordinates().getVelocity();
         double hV = orbit.getMu() * hP / (v.getNorm() * p.getNormSq());
 
@@ -748,104 +745,6 @@ public class EquinoctialOrbitTest {
                           32 * (oP3h.getL(type)         - oM3h.getL(type)) -
                          168 * (oP2h.getL(type)         - oM2h.getL(type)) +
                          672 * (oP1h.getL(type)         - oM1h.getL(type))) / (840 * h);
-
-    }
-
-    @Test
-    public void testInterpolationWithDerivatives() {
-        doTestInterpolation(true,
-                            397, 1.17e-8,
-                            610, 4.48e-6,
-                            4870, 115);
-    }
-
-    @Test
-    public void testInterpolationWithoutDerivatives() {
-        doTestInterpolation(false,
-                            397, 0.0372,
-                            610.0, 1.23,
-                            4879, 8871);
-    }
-
-    private void doTestInterpolation(boolean useDerivatives,
-                                     double shiftErrorWithin, double interpolationErrorWithin,
-                                     double shiftErrorSlightlyPast, double interpolationErrorSlightlyPast,
-                                     double shiftErrorFarPast, double interpolationErrorFarPast)
-        {
-
-        final double ehMu  = 3.9860047e14;
-        final double ae  = 6.378137e6;
-        final double c20 = -1.08263e-3;
-        final double c30 = 2.54e-6;
-        final double c40 = 1.62e-6;
-        final double c50 = 2.3e-7;
-        final double c60 = -5.5e-7;
-
-        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
-        final Vector3D position = new Vector3D(3220103., 69623., 6449822.);
-        final Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
-        final EquinoctialOrbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
-                                                                   FramesFactory.getEME2000(), date, ehMu);
-
-        EcksteinHechlerPropagator propagator =
-                new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
-
-        // set up a 5 points sample
-        List<Orbit> sample = new ArrayList<Orbit>();
-        for (double dt = 0; dt < 300.0; dt += 60.0) {
-            Orbit orbit = propagator.propagate(date.shiftedBy(dt)).getOrbit();
-            if (!useDerivatives) {
-                // remove derivatives
-                double[] stateVector = new double[6];
-                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
-                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
-                                                        orbit.getDate(), orbit.getMu(), orbit.getFrame());
-            }
-            sample.add(orbit);
-        }
-
-        // well inside the sample, interpolation should be much better than Keplerian shift
-        double maxShiftError = 0;
-        double maxInterpolationError = 0;
-        for (double dt = 0; dt < 241.0; dt += 1.0) {
-            AbsoluteDate t        = initialOrbit.getDate().shiftedBy(dt);
-            Vector3D shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
-            Vector3D interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
-            Vector3D propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
-            maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
-            maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
-        }
-        Assertions.assertEquals(shiftErrorWithin, maxShiftError, 0.01 * shiftErrorWithin);
-        Assertions.assertEquals(interpolationErrorWithin, maxInterpolationError, 0.01 * interpolationErrorWithin);
-
-        // slightly past sample end, interpolation should quickly increase, but remain reasonable
-        maxShiftError = 0;
-        maxInterpolationError = 0;
-        for (double dt = 240; dt < 300.0; dt += 1.0) {
-            AbsoluteDate t        = initialOrbit.getDate().shiftedBy(dt);
-            Vector3D shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
-            Vector3D interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
-            Vector3D propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
-            maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
-            maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
-        }
-        Assertions.assertEquals(shiftErrorSlightlyPast, maxShiftError, 0.01 * shiftErrorSlightlyPast);
-        Assertions.assertEquals(interpolationErrorSlightlyPast, maxInterpolationError, 0.01 * interpolationErrorSlightlyPast);
-
-        // far past sample end, interpolation should become really wrong
-        // (in this test case, break even occurs at around 863 seconds, with a 3.9 km error)
-        maxShiftError = 0;
-        maxInterpolationError = 0;
-        for (double dt = 300; dt < 1000; dt += 1.0) {
-            AbsoluteDate t        = initialOrbit.getDate().shiftedBy(dt);
-            Vector3D shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
-            Vector3D interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
-            Vector3D propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
-            maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
-            maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
-        }
-        Assertions.assertEquals(shiftErrorFarPast, maxShiftError, 0.01 * shiftErrorFarPast);
-        Assertions.assertEquals(interpolationErrorFarPast, maxInterpolationError, 0.01 * interpolationErrorFarPast);
 
     }
 
@@ -1121,8 +1020,8 @@ public class EquinoctialOrbitTest {
         final Orbit shiftedOrbitCopy = orbitCopy.shiftedBy(10); // This does not work
 
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(shiftedOrbit.getPVCoordinates().getPosition(),
-                                              shiftedOrbitCopy.getPVCoordinates().getPosition()),
+                            Vector3D.distance(shiftedOrbit.getPosition(),
+                                              shiftedOrbitCopy.getPosition()),
                             1.0e-10);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,11 +22,14 @@ import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.analytical.gnss.data.GLONASSAlmanac;
 import org.orekit.propagation.analytical.gnss.data.GLONASSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
@@ -34,12 +37,14 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.GLONASSDate;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,12 +71,9 @@ public class GLONASSAnalyticalPropagatorTest {
     @Test
     public void testPerfectValues() {
         // Build the propagator
-        final GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).
-                        attitudeProvider(Utils.defaultLaw()).
-                        mass(1521.0).
-                        eci(FramesFactory.getEME2000()).
-                        ecef(FramesFactory.getITRF(IERSConventions.IERS_2010, false)).
-                        build();
+        final GLONASSAnalyticalPropagator propagator = almanac.getPropagator(DataContext.getDefault(), Utils.defaultLaw(),
+                                                                             FramesFactory.getEME2000(),
+                                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, false), 1521.0);
 
         // Target
         final AbsoluteDate target = new AbsoluteDate(new DateComponents(2007, 12, 23),
@@ -108,7 +110,7 @@ public class GLONASSAnalyticalPropagatorTest {
     @Test
     public void testFrames() {
         // Builds the GLONASSAnalyticalPropagator from the almanac
-        final GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).build();
+        final GLONASSAnalyticalPropagator propagator = almanac.getPropagator();
         Assertions.assertEquals("EME2000", propagator.getFrame().getName());
         Assertions.assertEquals("EME2000", propagator.getECI().getName());
         Assertions.assertEquals(3.986004418e+14, GNSSConstants.GLONASS_MU, 1.0e6);
@@ -131,7 +133,7 @@ public class GLONASSAnalyticalPropagatorTest {
         double errorP = 0;
         double errorV = 0;
         double errorA = 0;
-        GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).build();
+        final GLONASSAnalyticalPropagator propagator = almanac.getPropagator();
         GLONASSOrbitalElements elements = propagator.getGLONASSOrbitalElements();
         AbsoluteDate t0 = new GLONASSDate(elements.getNa(), elements.getN4(), elements.getTime()).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
@@ -142,10 +144,12 @@ public class GLONASSAnalyticalPropagatorTest {
             for (int i = -3; i <= 3; ++i) {
                 sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
             }
-            final PVCoordinates interpolated =
-                            TimeStampedPVCoordinates.interpolate(central,
-                                                                 CartesianDerivativesFilter.USE_P,
-                                                                 sample);
+
+            // create interpolator
+            final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                    new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_P);
+
+            final PVCoordinates interpolated = interpolator.interpolate(central, sample);
             errorP = FastMath.max(errorP, Vector3D.distance(pv.getPosition(), interpolated.getPosition()));
             errorV = FastMath.max(errorV, Vector3D.distance(pv.getVelocity(), interpolated.getVelocity()));
             errorA = FastMath.max(errorA, Vector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()));
@@ -159,7 +163,7 @@ public class GLONASSAnalyticalPropagatorTest {
     @Test
     public void testNoReset() {
         try {
-            GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).build();
+            final GLONASSAnalyticalPropagator propagator = almanac.getPropagator();
             propagator.resetInitialState(propagator.getInitialState());
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -177,13 +181,29 @@ public class GLONASSAnalyticalPropagatorTest {
     @Test
     public void testIssue544() {
         // Builds the GLONASSAnalyticalPropagator from the almanac
-        final GLONASSAnalyticalPropagator propagator = new GLONASSAnalyticalPropagatorBuilder(almanac).build();
+        final GLONASSAnalyticalPropagator propagator = almanac.getPropagator(DataContext.getDefault());
         // In order to test the issue, we volontary set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
         // Verify that an infinite loop did not occur
         Assertions.assertEquals(Vector3D.NaN, pv0.getPosition());
         Assertions.assertEquals(Vector3D.NaN, pv0.getVelocity());
+
+    }
+
+    /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
+    @Test
+    public void testIssue949() {
+        // GIVEN
+        // Setup propagator
+        final GLONASSAnalyticalPropagator propagator = almanac.getPropagator();
+
+        // Setup additional state provider which use the initial state in its init method
+        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
+        propagator.addAdditionalStateProvider(additionalStateProvider);
+
+        // WHEN & THEN
+        Assertions.assertDoesNotThrow(() -> propagator.propagate(new AbsoluteDate()), "No error should have been thrown");
 
     }
 

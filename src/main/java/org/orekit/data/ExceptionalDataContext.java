@@ -16,7 +16,6 @@
  */
 package org.orekit.data;
 
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.LazyLoadedCelestialBodies;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -34,7 +33,6 @@ import org.orekit.time.LazyLoadedTimeScales;
  *
  * <ul>
  *     <li>{@link AbsoluteDate}
- *     <li>{@link InertialProvider}
  * </ul>
  *
  * @author Evan Ward

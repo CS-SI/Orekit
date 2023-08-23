@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,19 +29,23 @@ import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeInterpolator;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 /**
  * This class provides a default attitude provider.
@@ -109,7 +113,7 @@ public class LofOffsetPointing extends GroundPointing {
                     shifted,
                     StaticTransform.of(
                             shifted,
-                            pvProv.getPVCoordinates(shifted, frame).getPosition().negate()),
+                            pvProv.getPosition(shifted, frame).negate()),
                     StaticTransform.of(
                             shifted,
                             attitudeLaw.getAttitude(pvProv, shifted, frame).getRotation()));
@@ -126,9 +130,13 @@ public class LofOffsetPointing extends GroundPointing {
 
         }
 
+        // create interpolator
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_P);
+
         // use interpolation to compute properly the time-derivatives
         final TimeStampedPVCoordinates targetBody =
-                TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
+                interpolator.interpolate(date, sample);
 
         // convert back to caller specified frame
         return centralRefToBody.getInverse().transformPVCoordinates(targetBody);
@@ -149,24 +157,34 @@ public class LofOffsetPointing extends GroundPointing {
             final FieldAbsoluteDate<T> shifted = date.shiftedBy(i * h);
 
             // transform from specified reference frame to spacecraft frame
-            final FieldTransform<T> refToSc =
-                            new FieldTransform<>(shifted,
-                                                 new FieldTransform<>(shifted, pvProv.getPVCoordinates(shifted, frame).negate()),
-                                                 new FieldTransform<>(shifted, attitudeLaw.getAttitude(pvProv, shifted, frame).getOrientation()));
+            final FieldStaticTransform<T> refToSc = FieldStaticTransform.compose(
+                    shifted,
+                    FieldStaticTransform.of(
+                            shifted,
+                            pvProv.getPVCoordinates(shifted, frame).getPosition().negate()),
+                    FieldStaticTransform.of(
+                            shifted,
+                            attitudeLaw.getAttitude(pvProv, shifted, frame).getRotation()));
 
             // transform from specified reference frame to body frame
-            final FieldTransform<T> refToBody = frame.getTransformTo(shape.getBodyFrame(), shifted);
+            final FieldStaticTransform<T> refToBody;
             if (i == 0) {
-                centralRefToBody = refToBody;
+                refToBody = centralRefToBody = frame.getTransformTo(shape.getBodyFrame(), shifted);
+            } else {
+                refToBody = frame.getStaticTransformTo(shape.getBodyFrame(), shifted);
             }
 
-            sample.add(losIntersectionWithBody(new FieldTransform<>(shifted, refToSc.getInverse(), refToBody)));
+            sample.add(losIntersectionWithBody(FieldStaticTransform.compose(shifted, refToSc.getInverse(), refToBody)));
 
         }
 
+        // create interpolator
+        final FieldTimeInterpolator<TimeStampedFieldPVCoordinates<T>, T> interpolator =
+                new TimeStampedFieldPVCoordinatesHermiteInterpolator<>(sample.size(), CartesianDerivativesFilter.USE_P);
+
         // use interpolation to compute properly the time-derivatives
         final TimeStampedFieldPVCoordinates<T> targetBody =
-                        TimeStampedFieldPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
+                interpolator.interpolate(date, sample);
 
         // convert back to caller specified frame
         return centralRefToBody.getInverse().transformPVCoordinates(targetBody);
@@ -212,7 +230,7 @@ public class LofOffsetPointing extends GroundPointing {
      * @param <T> type of the field elements
      * @return intersection point in body frame (only the position is set!)
      */
-    private <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> losIntersectionWithBody(final FieldTransform<T> scToBody) {
+    private <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> losIntersectionWithBody(final FieldStaticTransform<T> scToBody) {
 
         // compute satellite pointing axis and position/velocity in body frame
         final FieldVector3D<T> pointingBodyFrame = scToBody.transformVector(satPointingVector);
@@ -227,7 +245,7 @@ public class LofOffsetPointing extends GroundPointing {
 
         // Intersection with body shape
         final FieldGeodeticPoint<T> gpIntersection =
-            shape.getIntersectionPoint(pointingLine, pBodyFrame, shape.getBodyFrame(), scToBody.getFieldDate());
+            shape.getIntersectionPoint(pointingLine, pBodyFrame, shape.getBodyFrame(), new FieldAbsoluteDate<>(pBodyFrame.getX().getField(), scToBody.getDate()));
         final FieldVector3D<T> pIntersection =
             (gpIntersection == null) ? null : shape.transform(gpIntersection);
 
@@ -237,7 +255,7 @@ public class LofOffsetPointing extends GroundPointing {
             throw new OrekitException(OrekitMessages.ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND);
         }
 
-        final FieldVector3D<T> zero = FieldVector3D.getZero(scToBody.getFieldDate().getField());
+        final FieldVector3D<T> zero = FieldVector3D.getZero(pBodyFrame.getX().getField());
         return new TimeStampedFieldPVCoordinates<>(scToBody.getDate(),
                                                    pIntersection, zero, zero);
 

@@ -34,6 +34,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  *      Theory. The Journal of the Astronautical Sciences, 2022, p. 1-27."
  *
  * @author Bryan Cazabonne
+ * @since 12.0
  */
 public class ZeisModel implements J2SquaredModel {
 

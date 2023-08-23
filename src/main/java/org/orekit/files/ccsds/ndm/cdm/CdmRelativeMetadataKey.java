@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -160,7 +160,7 @@ public enum CdmRelativeMetadataKey {
     SEFI_FRAGMENTATION_MODEL((token, context, container) -> token.processAsNormalizedString(container::setSefiFragmentationModel)),
 
     /** ID of previous CDM issued for event identified by CONJUNCTION_ID. */
-    PREVIOUS_MESSAGE_ID((token, context, container) -> token.processAsNormalizedString(container::setPreviousMessageId)),
+    PREVIOUS_MESSAGE_ID((token, context, container) -> token.processAsFreeTextString(container::setPreviousMessageId)),
 
     /** UTC epoch of the previous CDM issued for the event identified by CONJUNCTION_ID. */
     PREVIOUS_MESSAGE_EPOCH((token, context, container) -> token.processAsDate(container::setPreviousMessageEpoch, context)),

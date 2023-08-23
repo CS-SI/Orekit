@@ -19,6 +19,7 @@ package org.orekit.estimation.leastsquares;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -32,7 +33,7 @@ import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.frames.Frame;
@@ -42,12 +43,14 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.SpacecraftStateInterpolator;
 import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.conversion.EphemerisPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 
 public class EphemerisBatchLSEstimatorTest {
@@ -98,12 +101,19 @@ public class EphemerisBatchLSEstimatorTest {
             states.add(propagator.propagate(initDate.shiftedBy(t)));
         }
 
-        final Ephemeris ephemeris = new Ephemeris(states, 3);
+        // Create interpolator
+        final TimeInterpolator<SpacecraftState> interpolator =
+                new SpacecraftStateInterpolator(3, inertialFrame, inertialFrame);
+
+        final Ephemeris ephemeris = new Ephemeris(states, interpolator);
 
         final double refBias = 1234.56;
         final List<ObservedMeasurement<?>> measurements =
                         KeplerianEstimationTestUtils.createMeasurements(ephemeris,
-                                                                        new RangeMeasurementCreator(context, refBias),
+                                                                        new TwoWayRangeMeasurementCreator(context,
+                                                                                                          Vector3D.ZERO, null,
+                                                                                                          Vector3D.ZERO, null,
+                                                                                                          refBias),
                                                                         1.0, 5.0, 10.0);
 
         // estimated bias
@@ -114,9 +124,7 @@ public class EphemerisBatchLSEstimatorTest {
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
-                                                                new EphemerisPropagatorBuilder(states, 3,
-                                                                		ephemeris.getExtrapolationThreshold(),
-                                                                		ephemeris.getAttitudeProvider()));
+                                                                new EphemerisPropagatorBuilder(states, interpolator));
         for (final ObservedMeasurement<?> range : measurements) {
         	((Range) range).addModifier(rangeBias);
             estimator.addMeasurement(range);
@@ -147,7 +155,11 @@ public class EphemerisBatchLSEstimatorTest {
             states.add(propagator.propagate(initDate.shiftedBy(t)));
         }
 
-        final Ephemeris ephemeris = new Ephemeris(states, 3);
+        // Create interpolator
+        final TimeInterpolator<SpacecraftState> interpolator =
+                new SpacecraftStateInterpolator(3, inertialFrame, inertialFrame);
+
+        final Ephemeris ephemeris = new Ephemeris(states, interpolator);
 
         final double refClockBias = 653.47e-11;
         final RangeRateMeasurementCreator creator = new RangeRateMeasurementCreator(context, false, refClockBias);
@@ -159,9 +171,7 @@ public class EphemerisBatchLSEstimatorTest {
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
-                                                                new EphemerisPropagatorBuilder(states, 3,
-                                                                		ephemeris.getExtrapolationThreshold(),
-                                                                		ephemeris.getAttitudeProvider()));
+                                                                new EphemerisPropagatorBuilder(states, interpolator));
         for (final ObservedMeasurement<?> rangeRate : measurements) {
             estimator.addMeasurement(rangeRate);
         }
@@ -192,7 +202,11 @@ public class EphemerisBatchLSEstimatorTest {
             states.add(propagator.propagate(initDate.shiftedBy(t)));
         }
 
-        final Ephemeris ephemeris = new Ephemeris(states, 3);
+        // Create interpolator
+        final TimeInterpolator<SpacecraftState> interpolator =
+                new SpacecraftStateInterpolator(3, inertialFrame, inertialFrame);
+
+        final Ephemeris ephemeris = new Ephemeris(states, interpolator);
 
         final double refAzBias = FastMath.toRadians(0.3);
         final double refElBias = FastMath.toRadians(0.1);
@@ -210,9 +224,7 @@ public class EphemerisBatchLSEstimatorTest {
 
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
-                                                                new EphemerisPropagatorBuilder(states, 3,
-                                                                		ephemeris.getExtrapolationThreshold(),
-                                                                		ephemeris.getAttitudeProvider()));
+                                                                new EphemerisPropagatorBuilder(states, interpolator));
         for (final ObservedMeasurement<?> azEl : measurements) {
         	((AngularAzEl) azEl).addModifier(azElBias);
             estimator.addMeasurement(azEl);

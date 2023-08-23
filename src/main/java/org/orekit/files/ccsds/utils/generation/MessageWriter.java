@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -65,5 +65,23 @@ public interface MessageWriter<H extends Header, S extends Segment<?, ?>, F exte
      * @throws IOException if the stream cannot write to stream
      */
     void writeFooter(Generator generator) throws IOException;
+
+    /** Get root element for XML files.
+     * @return root element for XML files
+     * @since 12.0
+     */
+    String getRoot();
+
+    /** Get key for format version.
+     * @return key for format version
+     * @since 12.0
+     */
+    String getFormatVersionKey();
+
+    /** Get current format version.
+     * @return current format version
+     * @since 12.0
+     */
+    double getVersion();
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -217,7 +217,7 @@ public abstract class AbstractPropagator implements Propagator {
         int yieldCount = 0;
         while (!pending.isEmpty()) {
             final AdditionalStateProvider provider = pending.remove();
-            if (provider.yield(updated)) {
+            if (provider.yields(updated)) {
                 // this generator has to wait for another one,
                 // we put it again in the pending queue
                 pending.add(provider);

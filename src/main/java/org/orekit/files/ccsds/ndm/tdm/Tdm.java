@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.utils.IERSConventions;
 
@@ -36,7 +35,7 @@ import org.orekit.utils.IERSConventions;
  * @author Maxime Journot
  * @since 9.0
  */
-public class Tdm extends NdmConstituent<Header, Segment<TdmMetadata, ObservationsBlock>> {
+public class Tdm extends NdmConstituent<TdmHeader, Segment<TdmMetadata, ObservationsBlock>> {
 
     /** Root element for XML files. */
     public static final String ROOT = "tdm";
@@ -50,7 +49,7 @@ public class Tdm extends NdmConstituent<Header, Segment<TdmMetadata, Observation
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
      */
-    public Tdm(final Header header, final List<Segment<TdmMetadata, ObservationsBlock>> segments,
+    public Tdm(final TdmHeader header, final List<Segment<TdmMetadata, ObservationsBlock>> segments,
                final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
     }

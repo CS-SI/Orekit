@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,7 +64,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      * @see #addEventDate(AbsoluteDate)
      */
     public DateDetector(final double maxCheck, final double threshold, final TimeStamped... dates) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent<DateDetector>(), dates);
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent(), dates);
     }
 
     /** Build a new instance.
@@ -91,9 +91,9 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      * @param dates list of event dates
      * @since 6.1
      */
-    private DateDetector(final double maxCheck, final double threshold,
-                         final int maxIter, final EventHandler<? super DateDetector> handler,
-                         final TimeStamped... dates) {
+    protected DateDetector(final double maxCheck, final double threshold,
+                           final int maxIter, final EventHandler handler,
+                           final TimeStamped... dates) {
         super(maxCheck, threshold, maxIter, handler);
         this.currentIndex  = -1;
         this.gDate         = null;
@@ -106,7 +106,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
     /** {@inheritDoc} */
     @Override
     protected DateDetector create(final double newMaxCheck, final double newThreshold,
-                                  final int newMaxIter, final EventHandler<? super DateDetector> newHandler) {
+                                  final int newMaxIter, final EventHandler newHandler) {
         return new DateDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                 eventDateList.toArray(new EventDate[eventDateList.size()]));
     }

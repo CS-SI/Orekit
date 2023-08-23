@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,15 +17,10 @@
 package org.orekit.orbits;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
-import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
@@ -658,6 +653,47 @@ public class EquinoctialOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    protected Vector3D initPosition() {
+
+        // get equinoctial parameters
+        final double lE = getLE();
+
+        // inclination-related intermediate parameters
+        final double hx2   = hx * hx;
+        final double hy2   = hy * hy;
+        final double factH = 1. / (1 + hx2 + hy2);
+
+        // reference axes defining the orbital plane
+        final double ux = (1 + hx2 - hy2) * factH;
+        final double uy =  2 * hx * hy * factH;
+        final double uz = -2 * hy * factH;
+
+        final double vx = uy;
+        final double vy = (1 - hx2 + hy2) * factH;
+        final double vz =  2 * hx * factH;
+
+        // eccentricity-related intermediate parameters
+        final double exey = ex * ey;
+        final double ex2  = ex * ex;
+        final double ey2  = ey * ey;
+        final double e2   = ex2 + ey2;
+        final double eta  = 1 + FastMath.sqrt(1 - e2);
+        final double beta = 1. / eta;
+
+        // eccentric longitude argument
+        final SinCos scLe   = FastMath.sinCos(lE);
+        final double cLe    = scLe.cos();
+        final double sLe    = scLe.sin();
+
+        // coordinates of position and velocity in the orbital plane
+        final double x      = a * ((1 - beta * ey2) * cLe + beta * exey * sLe - ex);
+        final double y      = a * ((1 - beta * ex2) * sLe + beta * exey * cLe - ey);
+
+        return new Vector3D(x * ux + y * vx, x * uy + y * vy, x * uz + y * vz);
+
+    }
+
+    /** {@inheritDoc} */
     protected TimeStampedPVCoordinates initPVCoordinates() {
 
         // position and velocity
@@ -708,96 +744,6 @@ public class EquinoctialOrbit extends Orbit {
             // Keplerian-only motion is all we can do
             return keplerianShifted;
         }
-
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * on equinoctial elements, without derivatives (which means the interpolation
-     * falls back to Lagrange interpolation only).
-     * </p>
-     * <p>
-     * As this implementation of interpolation is polynomial, it should be used only
-     * with small samples (about 10-20 points) in order to avoid <a
-     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
-     * and numerical problems (including NaN appearing).
-     * </p>
-     * <p>
-     * If orbit interpolation on large samples is needed, using the {@link
-     * org.orekit.propagation.analytical.Ephemeris} class is a better way than using this
-     * low-level interpolation. The Ephemeris class automatically handles selection of
-     * a neighboring sub-sample with a predefined number of point from a large global sample
-     * in a thread-safe way.
-     * </p>
-     */
-    public EquinoctialOrbit interpolate(final AbsoluteDate date, final Stream<Orbit> sample) {
-
-        // first pass to check if derivatives are available throughout the sample
-        final List<Orbit> list = sample.collect(Collectors.toList());
-        boolean useDerivatives = true;
-        for (final Orbit orbit : list) {
-            useDerivatives = useDerivatives && orbit.hasDerivatives();
-        }
-
-        // set up an interpolator
-        final HermiteInterpolator interpolator = new HermiteInterpolator();
-
-        // second pass to feed interpolator
-        AbsoluteDate previousDate = null;
-        double       previousLm   = Double.NaN;
-        for (final Orbit orbit : list) {
-            final EquinoctialOrbit equi = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
-            final double continuousLm;
-            if (previousDate == null) {
-                continuousLm = equi.getLM();
-            } else {
-                final double dt       = equi.getDate().durationFrom(previousDate);
-                final double keplerLm = previousLm + equi.getKeplerianMeanMotion() * dt;
-                continuousLm = MathUtils.normalizeAngle(equi.getLM(), keplerLm);
-            }
-            previousDate = equi.getDate();
-            previousLm   = continuousLm;
-            if (useDerivatives) {
-                interpolator.addSamplePoint(equi.getDate().durationFrom(date),
-                                            new double[] {
-                                                equi.getA(),
-                                                equi.getEquinoctialEx(),
-                                                equi.getEquinoctialEy(),
-                                                equi.getHx(),
-                                                equi.getHy(),
-                                                continuousLm
-                                            },
-                                            new double[] {
-                                                equi.getADot(),
-                                                equi.getEquinoctialExDot(),
-                                                equi.getEquinoctialEyDot(),
-                                                equi.getHxDot(),
-                                                equi.getHyDot(),
-                                                equi.getLMDot()
-                                            });
-            } else {
-                interpolator.addSamplePoint(equi.getDate().durationFrom(date),
-                                            new double[] {
-                                                equi.getA(),
-                                                equi.getEquinoctialEx(),
-                                                equi.getEquinoctialEy(),
-                                                equi.getHx(),
-                                                equi.getHy(),
-                                                continuousLm
-                                            });
-            }
-        }
-
-        // interpolate
-        final double[][] interpolated = interpolator.derivatives(0.0, 1);
-
-        // build a new interpolated instance
-        return new EquinoctialOrbit(interpolated[0][0], interpolated[0][1], interpolated[0][2],
-                                    interpolated[0][3], interpolated[0][4], interpolated[0][5],
-                                    interpolated[1][0], interpolated[1][1], interpolated[1][2],
-                                    interpolated[1][3], interpolated[1][4], interpolated[1][5],
-                                    PositionAngle.MEAN, getFrame(), date, getMu());
 
     }
 

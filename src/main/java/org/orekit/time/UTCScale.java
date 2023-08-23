@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import java.util.List;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.utils.Constants;
@@ -50,21 +49,31 @@ import org.orekit.utils.Constants;
 public class UTCScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20150402L;
+    private static final long serialVersionUID = 20230302L;
+
+    /** International Atomic Scale. */
+    private final TimeScale tai;
+
+    /** base UTC-TAI offsets (may lack the pre-1975 offsets). */
+    private final Collection<? extends OffsetModel> baseOffsets;
 
     /** UTC-TAI offsets. */
-    private UTCTAIOffset[] offsets;
+    private final UTCTAIOffset[] offsets;
 
     /** Package private constructor for the factory.
      * Used to create the prototype instance of this class that is used to
      * clone all subsequent instances of {@link UTCScale}. Initializes the offset
      * table that is shared among all instances.
      * @param tai TAI time scale this UTC time scale references.
-     * @param offsets UTC-TAI offsets
+     * @param baseOffsets UTC-TAI base offsets (may lack the pre-1975 offsets)
      */
-    UTCScale(final TimeScale tai, final Collection<? extends OffsetModel> offsets) {
+    UTCScale(final TimeScale tai, final Collection<? extends OffsetModel> baseOffsets) {
+
+        this.tai         = tai;
+        this.baseOffsets = baseOffsets;
+
         // copy input so the original list is unmodified
-        final List<OffsetModel> offsetModels = new ArrayList<>(offsets);
+        final List<OffsetModel> offsetModels = new ArrayList<>(baseOffsets);
         offsetModels.sort(Comparator.comparing(OffsetModel::getStart));
         if (offsetModels.get(0).getStart().getYear() > 1968) {
             // the pre-1972 linear offsets are missing, add them manually
@@ -131,6 +140,14 @@ public class UTCScale implements TimeScale {
 
         }
 
+    }
+
+    /** Get the base offsets.
+     * @return base offsets (may lack the pre-1975 offsets)
+     * @since 12.0
+     */
+    public Collection<? extends OffsetModel> getBaseOffsets() {
+        return baseOffsets;
     }
 
     /**
@@ -344,7 +361,7 @@ public class UTCScale implements TimeScale {
      */
     @DefaultDataContext
     private Object writeReplace() {
-        return new DataTransferObject();
+        return new DataTransferObject(tai, baseOffsets);
     }
 
     /** Internal class used only for serialization. */
@@ -352,14 +369,29 @@ public class UTCScale implements TimeScale {
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20131209L;
+        private static final long serialVersionUID = 20230302L;
+
+        /** International Atomic Scale. */
+        private final TimeScale tai;
+
+        /** base UTC-TAI offsets (may lack the pre-1975 offsets). */
+        private final Collection<? extends OffsetModel> baseOffsets;
+
+        /** Simple constructor.
+         * @param tai TAI time scale this UTC time scale references.
+         * @param baseOffsets UTC-TAI base offsets (may lack the pre-1975 offsets)
+         */
+        DataTransferObject(final TimeScale tai, final Collection<? extends OffsetModel> baseOffsets) {
+            this.tai         = tai;
+            this.baseOffsets = baseOffsets;
+        }
 
         /** Replace the deserialized data transfer object with a {@link UTCScale}.
          * @return replacement {@link UTCScale}
          */
         private Object readResolve() {
             try {
-                return DataContext.getDefault().getTimeScales().getUTC();
+                return new UTCScale(tai, baseOffsets);
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }

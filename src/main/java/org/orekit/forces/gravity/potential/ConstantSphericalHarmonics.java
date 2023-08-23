@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,23 +49,6 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
      * @param ae central body reference radius
      * @param mu central body attraction coefficient
      * @param tideSystem tide system
-     * @param rawC raw tesseral-sectorial coefficients
-     * @param rawS raw tesseral-sectorial coefficients
-     * @deprecated as of 11.1, replaced by {@link #ConstantSphericalHarmonics(double,
-     * double, TideSystem, Flattener, double[], double[])}
-     */
-    @Deprecated
-    ConstantSphericalHarmonics(final double ae, final double mu,
-                               final TideSystem tideSystem,
-                               final double[][] rawC, final double[][] rawS) {
-        this(ae, mu, tideSystem, buildFlattener(rawC),
-             buildFlattener(rawC).flatten(rawC), buildFlattener(rawS).flatten(rawS));
-    }
-
-    /** Simple constructor.
-     * @param ae central body reference radius
-     * @param mu central body attraction coefficient
-     * @param tideSystem tide system
      * @param flattener flattener from triangular to flatten array
      * @param rawC raw tesseral-sectorial coefficients
      * @param rawS raw tesseral-sectorial coefficients
@@ -107,15 +90,6 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
 
     }
 
-    /** Get a flattener for a triangular array.
-     * @param triangular triangular array to flatten
-     * @return flattener suited for triangular array dimensions
-     * @since 11.1
-     */
-    private static Flattener buildFlattener(final double[][] triangular) {
-        return new Flattener(triangular.length - 1, triangular[triangular.length - 1].length - 1);
-    }
-
     /** {@inheritDoc} */
     public int getMaxDegree() {
         return flattener.getDegree();
@@ -143,12 +117,6 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
      */
     public AbsoluteDate getReferenceDate() {
         return null;
-    }
-
-    /** {@inheritDoc} */
-    @Deprecated
-    public double getOffset(final AbsoluteDate date) {
-        return 0.0;
     }
 
     /** {@inheritDoc} */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
@@ -62,12 +63,12 @@ public class RelativisticJ2ClockInterSatellitesPhaseModifierTest {
         final double wavelength = Frequency.G01.getWavelength();
         final InterSatellitesPhase phase = new InterSatellitesPhase(new ObservableSatellite(0), new ObservableSatellite(1),
                                                                     date,
-                                                                    Vector3D.distance(states[0].getPVCoordinates().getPosition(),
-                                                                                      states[1].getPVCoordinates().getPosition()) / wavelength,
+                                                                    Vector3D.distance(states[0].getPosition(),
+                                                                                      states[1].getPosition()) / wavelength,
                                                                     wavelength, 1.0, 1.0);
 
         // Inter-satellites phase before applying the modifier
-        final EstimatedMeasurement<InterSatellitesPhase> estimatedBefore = phase.estimate(0, 0, states);
+        final EstimatedMeasurementBase<InterSatellitesPhase> estimatedBefore = phase.estimateWithoutDerivatives(0, 0, states);
 
         // Inter-satellites phase after applying the modifier
         final EstimationModifier<InterSatellitesPhase> modifier = new RelativisticJ2ClockInterSatellitesPhaseModifier(Constants.WGS84_EARTH_MU,

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,15 +18,18 @@ package org.orekit.files.ccsds.ndm.cdm;
 
 import java.util.List;
 
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.definitions.BodyFacade;
-import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
 import org.orekit.files.ccsds.definitions.ModifiedFrame;
 import org.orekit.files.ccsds.definitions.TimeSystem;
-import org.orekit.files.ccsds.definitions.YesNoUnknown;
 import org.orekit.files.ccsds.ndm.odm.ocm.ObjectType;
 import org.orekit.files.ccsds.section.Metadata;
 import org.orekit.frames.Frame;
@@ -112,14 +115,14 @@ public class CdmMetadata extends Metadata {
     /** N-body perturbation bodies. */
     private List<BodyFacade> nBodyPerturbations;
 
-    /** Is solar radiation pressure taken into account or not ? */
-    private boolean isSolarRadPressure;
+    /** Is solar radiation pressure taken into account or not ? STANDARD CCSDS saying YES/NO choice and optional */
+    private YesNoUnknown isSolarRadPressure;
 
-    /** Is solid Earth and ocean tides taken into account or not ? */
-    private boolean isEarthTides;
+    /** Is solid Earth and ocean tides taken into account or not. STANDARD CCSDS saying YES/NO choice and optional */
+    private YesNoUnknown isEarthTides;
 
-    /** Is in-track thrust modelling used or not ? */
-    private boolean isIntrackThrustModeled;
+    /** Is in-track thrust modelling used or not. STANDARD CCSDS saying YES/NO choice and optional */
+    private YesNoUnknown isIntrackThrustModeled;
 
     /** The source from which the covariance data used in the report for both Object 1 and Object 2 originates. */
     private String covarianceSource;
@@ -132,23 +135,35 @@ public class CdmMetadata extends Metadata {
 
     /** Simple constructor.
      */
+    @DefaultDataContext
     public CdmMetadata() {
         super(null);
+        orbitCenter = new BodyFacade(CelestialBodyFactory.EARTH.toUpperCase(), CelestialBodyFactory.getEarth());
+    }
+
+    /** Simple constructor.
+     *
+     * @param dataContext data context
+     */
+    public CdmMetadata(final DataContext dataContext) {
+        super(null);
+        final CelestialBody earth = dataContext.getCelestialBodies().getEarth();
+        orbitCenter = new BodyFacade(earth.getName().toUpperCase(), earth);
     }
 
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
         // We only check values that are mandatory in a cdm file
-        checkNotNull(object,                  CdmMetadataKey.OBJECT);
-        checkNotNull(objectDesignator,        CdmMetadataKey.OBJECT_DESIGNATOR);
-        checkNotNull(catalogName,             CdmMetadataKey.CATALOG_NAME);
-        checkNotNull(objectName,              CdmMetadataKey.OBJECT_NAME);
-        checkNotNull(internationalDesignator, CdmMetadataKey.INTERNATIONAL_DESIGNATOR);
-        checkNotNull(ephemName,               CdmMetadataKey.EPHEMERIS_NAME);
-        checkNotNull(covarianceMethod,        CdmMetadataKey.COVARIANCE_METHOD);
-        checkNotNull(maneuverable,            CdmMetadataKey.MANEUVERABLE);
-        checkNotNull(refFrame,                CdmMetadataKey.REF_FRAME);
+        checkNotNull(object,                  CdmMetadataKey.OBJECT.name());
+        checkNotNull(objectDesignator,        CdmMetadataKey.OBJECT_DESIGNATOR.name());
+        checkNotNull(catalogName,             CdmMetadataKey.CATALOG_NAME.name());
+        checkNotNull(objectName,              CdmMetadataKey.OBJECT_NAME.name());
+        checkNotNull(internationalDesignator, CdmMetadataKey.INTERNATIONAL_DESIGNATOR.name());
+        checkNotNull(ephemName,               CdmMetadataKey.EPHEMERIS_NAME.name());
+        checkNotNull(covarianceMethod,        CdmMetadataKey.COVARIANCE_METHOD.name());
+        checkNotNull(maneuverable,            CdmMetadataKey.MANEUVERABLE.name());
+        checkNotNull(refFrame,                CdmMetadataKey.REF_FRAME.name());
     }
 
     /**
@@ -416,8 +431,13 @@ public class CdmMetadata extends Metadata {
         if (orbitCenter == null || orbitCenter.getBody() == null) {
             throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, "No Orbit center name");
         }
-        if (refFrame.asFrame() == null) {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, refFrame.getName());
+        if (refFrame == null) {
+            throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, "No reference frame");
+        }
+        else  {
+            if (refFrame.asFrame() == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, refFrame.getName());
+            }
         }
         // Just return frame if we don't need to shift the center based on CENTER_NAME
         // MCI and ICRF are the only non-Earth centered frames specified in Annex A.
@@ -518,52 +538,52 @@ public class CdmMetadata extends Metadata {
     }
 
     /**
-     * Get boolean that indicates if Solar Radiation Pressure is taken into account or not.
-     * @return isSolarRadPressure boolean
+     * Get Enum YesNoUnknown that indicates if Solar Radiation Pressure is taken into account or not.
+     * @return isSolarRadPressure YesNoUnknown
      */
-    public boolean getSolarRadiationPressure() {
+    public YesNoUnknown getSolarRadiationPressure() {
         return isSolarRadPressure;
     }
 
     /**
-     * Set boolean that indicates if Solar Radiation Pressure is taken into account or not.
-     * @param isSolRadPressure boolean
+     * Set Enum that indicates if Solar Radiation Pressure is taken into account or not.
+     * @param isSolRadPressure YesNoUnknown
      */
-    public void setSolarRadiationPressure(final boolean isSolRadPressure) {
+    public void setSolarRadiationPressure(final YesNoUnknown isSolRadPressure) {
         refuseFurtherComments();
         this.isSolarRadPressure = isSolRadPressure;
     }
 
     /**
-     * Get boolean that indicates if Earth and ocean tides are taken into account or not.
-     * @return isEarthTides boolean
+     * Get Enum YesNoUnknown that indicates if Earth and ocean tides are taken into account or not.
+     * @return isEarthTides YesNoUnknown
      */
-    public boolean getEarthTides() {
+    public YesNoUnknown getEarthTides() {
         return isEarthTides;
     }
 
     /**
-     * Set boolean that indicates if Earth and ocean tides are taken into account or not.
-     * @param EarthTides boolean
+     * Set Enum YesNoUnknown that indicates if Earth and ocean tides are taken into account or not.
+     * @param EarthTides YesNoUnknown
      */
-    public void setEarthTides(final boolean EarthTides) {
+    public void setEarthTides(final YesNoUnknown EarthTides) {
         refuseFurtherComments();
         this.isEarthTides = EarthTides;
     }
 
     /**
-     * Get boolean that indicates if intrack thrust modeling was into account or not.
-     * @return isEarthTides boolean
+     * Get Enum YesNoUnknown that indicates if intrack thrust modeling was into account or not.
+     * @return isEarthTides YesNoUnknown
      */
-    public boolean getIntrackThrust() {
+    public YesNoUnknown getIntrackThrust() {
         return isIntrackThrustModeled;
     }
 
     /**
      * Set boolean that indicates if intrack thrust modeling was into account or not.
-     * @param IntrackThrustModeled boolean
+     * @param IntrackThrustModeled YesNoUnknown
      */
-    public void setIntrackThrust(final boolean IntrackThrustModeled) {
+    public void setIntrackThrust(final YesNoUnknown IntrackThrustModeled) {
         refuseFurtherComments();
         this.isIntrackThrustModeled = IntrackThrustModeled;
     }

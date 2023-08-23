@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -154,21 +154,6 @@ public class GravityFieldFactoryTest {
         Assertions.assertThrows(OrekitException.class, () -> {
             GravityFieldFactory.getUnnormalizationFactors(393, 64);
         });
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-        Utils.setDataRoot("potential/icgem-format");
-        UnnormalizedSphericalHarmonicsProvider ref =
-                GravityFieldFactory.getUnnormalizedProvider(5, 5);
-        NormalizedSphericalHarmonicsProvider normalized =
-                GravityFieldFactory.getNormalizedProvider(5, 5);
-        UnnormalizedSphericalHarmonicsProvider unnormalized =
-                GravityFieldFactory.getUnnormalizedProvider(normalized);
-        Assertions.assertEquals(ref.getOffset(AbsoluteDate.GPS_EPOCH),
-                            unnormalized.getOffset(AbsoluteDate.GPS_EPOCH),
-                            FastMath.ulp(ref.getOffset(AbsoluteDate.GPS_EPOCH)));
     }
 
     @Test
