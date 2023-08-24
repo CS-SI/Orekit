@@ -44,7 +44,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *      Data Definitions and Conventions</a>
  * @see StreamingOemWriter
  */
-public class EphemerisWriter implements EphemerisFileWriter {
+public class EphemerisOemWriter implements EphemerisFileWriter {
 
     /** Underlying writer. */
     private final OemWriter writer;
@@ -93,10 +93,10 @@ public class EphemerisWriter implements EphemerisFileWriter {
      * @param unitsColumn columns number for aligning units (if negative or zero, units are not output)
      * @since 12.0
      */
-    public EphemerisWriter(final OemWriter writer,
-                           final OdmHeader header, final OemMetadata template,
-                           final FileFormat fileFormat, final String outputName,
-                           final double maxRelativeOffset, final int unitsColumn) {
+    public EphemerisOemWriter(final OemWriter writer,
+                              final OdmHeader header, final OemMetadata template,
+                              final FileFormat fileFormat, final String outputName,
+                              final double maxRelativeOffset, final int unitsColumn) {
         this.writer            = writer;
         this.header            = header;
         this.metadata          = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
@@ -113,7 +113,7 @@ public class EphemerisWriter implements EphemerisFileWriter {
      * {@code ephemerisFile} will be the start time, stop time, reference frame, interpolation
      * method and interpolation degree. The missing values (like object name, local spacecraft
      * body frame...) will be inherited from the template  metadata set at writer
-     * {@link #EphemerisWriter(OemWriter, OdmHeader, OemMetadata, FileFormat, String, double, int) construction}.
+     * {@link #EphemerisOemWriter(OemWriter, OdmHeader, OemMetadata, FileFormat, String, double, int) construction}.
      * </p>
      */
     @Override
@@ -135,7 +135,7 @@ public class EphemerisWriter implements EphemerisFileWriter {
                                                      metadata.getObjectID(), "ephemerisFile");
         }
 
-        // Get attitude ephemeris segments to output.
+        // Get ephemeris segments to output.
         final List<S> segments = satEphem.getSegments();
         if (segments.isEmpty()) {
             // No data -> No output

@@ -185,6 +185,11 @@ public class OcmMetadata extends OdmMetadata {
     /** Source and version of celestial body (e.g. Sun/Earth/Planetary). */
     private String celestialSource;
 
+    /** Data context.
+     * @since 12.0
+     */
+    private final DataContext dataContext;
+
     /** Create a new meta-data.
      * @param dataContext data context
      */
@@ -198,6 +203,7 @@ public class OcmMetadata extends OdmMetadata {
         taimutcT0         = Double.NaN;
         ut1mutcT0         = Double.NaN;
         nextLeapTaimutc   = Double.NaN;
+        this.dataContext  = dataContext;
 
     }
 
@@ -896,6 +902,70 @@ public class OcmMetadata extends OdmMetadata {
     public void setCelestialSource(final String celestialSource) {
         refuseFurtherComments();
         this.celestialSource = celestialSource;
+    }
+
+    /** Copy the instance, making sure mandatory fields have been initialized.
+     * <p>
+     * Message ID, previous/next references, start and stop times are not copied.
+     * </p>
+     * @param version format version
+     * @return a new copy
+     * @since 12.0
+     */
+    public OcmMetadata copy(final double version) {
+
+        validate(version);
+
+        // allocate new instance
+        final OcmMetadata copy = new OcmMetadata(dataContext);
+
+        // copy comments
+        for (String comment : getComments()) {
+            copy.addComment(comment);
+        }
+
+        // copy metadata
+        copy.setInternationalDesignator(getInternationalDesignator());
+        copy.setCatalogName(getCatalogName());
+        copy.setObjectDesignator(getObjectDesignator());
+        copy.setAlternateNames(getAlternateNames());
+        copy.setOriginatorPOC(getOriginatorPOC());
+        copy.setOriginatorPosition(getOriginatorPosition());
+        copy.setOriginatorPhone(getOriginatorPhone());
+        copy.setOriginatorEmail(getOriginatorEmail());
+        copy.setOriginatorAddress(getOriginatorAddress());
+        copy.setTechOrg(getTechOrg());
+        copy.setTechPOC(getTechPOC());
+        copy.setTechPosition(getTechPosition());
+        copy.setTechPhone(getTechPhone());
+        copy.setTechEmail(getTechEmail());
+        copy.setTechAddress(getTechAddress());
+        copy.setAdmMessageLink(getAdmMessageLink());
+        copy.setCdmMessageLink(getCdmMessageLink());
+        copy.setPrmMessageLink(getPrmMessageLink());
+        copy.setRdmMessageLink(getRdmMessageLink());
+        copy.setTdmMessageLink(getTdmMessageLink());
+        copy.setOperator(getOperator());
+        copy.setOwner(getOwner());
+        copy.setCountry(getCountry());
+        copy.setConstellation(getConstellation());
+        copy.setObjectType(getObjectType());
+        copy.setEpochT0(getEpochT0());
+        copy.setOpsStatus(getOpsStatus());
+        copy.setOrbitCategory(getOrbitCategory());
+        copy.setOcmDataElements(getOcmDataElements());
+        copy.setSclkOffsetAtEpoch(getSclkOffsetAtEpoch());
+        copy.setSclkSecPerSISec(getSclkSecPerSISec());
+        copy.setTaimutcT0(getTaimutcT0());
+        copy.setNextLeapEpoch(getNextLeapEpoch());
+        copy.setNextLeapTaimutc(getNextLeapTaimutc());
+        copy.setUt1mutcT0(getUt1mutcT0());
+        copy.setEopSource(getEopSource());
+        copy.setInterpMethodEOP(getInterpMethodEOP());
+        copy.setCelestialSource(getCelestialSource());
+
+        return copy;
+
     }
 
 }
