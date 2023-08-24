@@ -182,10 +182,9 @@ public class StreamingOemWriter implements AutoCloseable {
         /**
          * {@inheritDoc}
          *
-         * <p> Sets the {@link OemMetadataKey#START_TIME} and {@link OemMetadataKey#STOP_TIME} in this
-         * segment's metadata if not already set by the user. Then calls {@link OemWriter#writeHeader(Generator, OdmHeader)
-         * writeHeader} if it is the first segment) and {@link OemWriter#writeMetadata(Generator, OemMetadata)}
-         * to start the segment.
+         * <p>Writes the header automatically on first segment.
+         * Sets the {@link OemMetadataKey#START_TIME} and {@link OemMetadataKey#STOP_TIME} in this
+         * segment's metadata if not already set by the user.
          */
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {

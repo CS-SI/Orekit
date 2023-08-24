@@ -35,6 +35,8 @@ import org.orekit.utils.IERSConventions;
 /**
  * Writer for CCSDS Orbit Comprehensive Message.
  *
+ * @see EphemerisOcmWriter
+ * @see StreamingOcmWriter
  * @author Luc Maisonobe
  * @since 11.0
  */

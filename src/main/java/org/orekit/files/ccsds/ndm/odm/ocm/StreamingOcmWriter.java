@@ -24,7 +24,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
@@ -39,7 +38,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * A writer for OCM files.
  *
  * <p> Each instance corresponds to a single Orbit Comprehensive Message.
- * A new OCM ephemeris segment is started by calling {@link #newSegment()}.
+ * A new OCM ephemeris trajectory state history block is started by calling
+ * {@link #newBlock()}.
  * </p>
  *
  * <p>
@@ -50,16 +50,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * used as it handles all OCM data blocks.
  * </p>
  * <p>
- * The trajectory blocks metadata contains identifiers ({@code TRAJ_ID},
- * {@code TRAJ_PREV_ID}, {@code TRAJ_NEXT_ID}) that link the various blocks together.
- * These identifiers are updated automatically, based on the {@code TRAJ_ID} identifier
- * as found by calling the template {@link TrajectoryStateHistoryMetadata#getTrajID()}
- * method and splitting it as a prefix followed by an integer suffix. The suffix will
- * be incremented at each block. If for example the template has a {@code TRAJ_ID}
- * identifier set to {@code BLOCK 237}, then the first block would have {@code TRAJ_NEXT_ID}
- * set to {@code BLOCK 238}, then next block would have {@code TRAJ_PREV_ID}
- * set to {@code BLOCK 237}, {@code TRAJ_ID} set to {@code BLOCK 238}, and
- * {@code TRAJ_NEXT_ID} set to {@code BLOCK 239} and so on…
+ * The trajectory blocks metadata identifiers ({@code TRAJ_ID},
+ * {@code TRAJ_PREV_ID}, {@code TRAJ_NEXT_ID}) are updated automatically
+ * using {@link TrajectoryStateHistoryMetadata#incrementTrajID(String)},
+ * so users should generally only set {@link TrajectoryStateHistoryMetadata#setTrajID(String)}
+ * in the template.
  * </p>
  *
  * <p> This class can be used as a step handler for a {@link Propagator}.
@@ -87,7 +82,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  *
  * @author Luc Maisonobe
- * @see ocmWriter
+ * @see OcmWriter
+ * @see EphemerisOcmWriter
  * @since 12.0
  */
 public class StreamingOcmWriter implements AutoCloseable {
@@ -128,7 +124,7 @@ public class StreamingOcmWriter implements AutoCloseable {
      * @param header    file header (may be null)
      * @param metadata  file metadata
      * @param template  template for trajectory metadata
-     * @see #StreamingOcmWriter(Generator, OcmWriter, Header, OcmMetadata, boolean)
+     * @see #StreamingOcmWriter(Generator, OcmWriter, OdmHeader, OcmMetadata, TrajectoryStateHistoryMetadata, boolean)
      */
     public StreamingOcmWriter(final Generator generator, final OcmWriter writer,
                               final OdmHeader header, final OcmMetadata metadata,
@@ -195,9 +191,9 @@ public class StreamingOcmWriter implements AutoCloseable {
         /**
          * {@inheritDoc}
          *
-         * <p> Sets the {@link OcmMetadataKey#START_TIME} and {@link OcmMetadataKey#STOP_TIME} in this
-         * block metadata if not already set by the user. Then calls {@link OcmWriter#writeHeader(Generator, OdmHeader)
-         * writeHeader} and {@link OcmMetadataWriter#write(Generator)} if it is the first segment.
+         * <p>Writes the header automatically on first segment.
+         * Sets the {@link OcmMetadataKey#START_TIME} and {@link OcmMetadataKey#STOP_TIME} in this
+         * block metadata if not already set by the user.
          */
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {

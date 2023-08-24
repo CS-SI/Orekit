@@ -42,8 +42,16 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * If these blocks are needed, then {@link OcmWriter OcmWriter} must be
  * used as it handles all OCM data blocks.
  * </p>
+ * <p>
+ * The trajectory blocks metadata identifiers ({@code TRAJ_ID},
+ * {@code TRAJ_PREV_ID}, {@code TRAJ_NEXT_ID}) are updated automatically
+ * using {@link TrajectoryStateHistoryMetadata#incrementTrajID(String)},
+ * so users should generally only set {@link TrajectoryStateHistoryMetadata#setTrajID(String)}
+ * in the template.
+ * </p>
  * @author Luc Maisonobe
  * @since 12.0
+ * @see OcmWriter
  * @see StreamingOcmWriter
  */
 public class EphemerisOcmWriter implements EphemerisFileWriter {
