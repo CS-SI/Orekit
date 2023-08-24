@@ -57,8 +57,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * in the template.
  * </p>
  *
- * <p> This class can be used as a step handler for a {@link Propagator}.
- * </>
+ * <p>
+ * The blocks returned by this class can be used as step handlers for a {@link Propagator}.
+ * </p>
  *
  * <pre>{@code
  * Propagator propagator = ...; // pre-configured propagator

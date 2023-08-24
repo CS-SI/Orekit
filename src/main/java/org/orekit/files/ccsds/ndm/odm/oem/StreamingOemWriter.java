@@ -37,7 +37,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p> Each instance corresponds to a single OEM file. A new OEM ephemeris segment is
  * started by calling {@link #newSegment()}.
  *
- * <p> This class can be used as a step handler for a {@link Propagator}.
+ * <p>
+ * The segments returned by this class can be used as step handlers for a {@link Propagator}.
+ * </p>
  *
  * <pre>{@code
  * Propagator propagator = ...; // pre-configured propagator
