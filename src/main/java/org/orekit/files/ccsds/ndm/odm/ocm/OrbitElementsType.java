@@ -156,7 +156,7 @@ public enum OrbitElementsType {
             final EquinoctialOrbit orbit = new EquinoctialOrbit(pv, frame, mu);
             return new double[] {
                 orbit.getA(), orbit.getEquinoctialEx(), orbit.getEquinoctialEy(),
-                orbit.getLM(), orbit.getHy(), orbit.getHx()
+                orbit.getLM(), orbit.getHy(), orbit.getHx(), +1
             };
         }
 
@@ -190,8 +190,8 @@ public enum OrbitElementsType {
             final double           ex    = orbit.getEquinoctialEx();
             final double           ey    = orbit.getEquinoctialEy();
             return new double[] {
-                orbit.getA() * (1 - (ex * ex + ey * ex)), ex, ey,
-                orbit.getLv(), orbit.getHy(), orbit.getHx()
+                orbit.getA() * (1 - (ex * ex + ey * ey)), ex, ey,
+                orbit.getLv(), orbit.getHy(), orbit.getHx(), +1
             };
         }
 
