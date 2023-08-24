@@ -51,6 +51,18 @@ import org.orekit.utils.units.Unit;
  * If these blocks are needed, then {@link OcmWriter OcmWriter} must be
  * used as it handles all OCM data blocks.
  * </p>
+ * <p>
+ * The trajectory blocks metadata contains identifiers ({@code TRAJ_ID},
+ * {@code TRAJ_PREV_ID}, {@code TRAJ_NEXT_ID}) that link the various blocks together.
+ * These identifiers are updated automatically, based on the {@code TRAJ_ID} identifier
+ * as found by calling the template {@link TrajectoryStateHistoryMetadata#getTrajID()}
+ * method and splitting it as a prefix followed by an integer suffix. The suffix will
+ * be incremented at each block. If for example the template has a {@code TRAJ_ID}
+ * identifier set to {@code BLOCK 237}, then the first block would have {@code TRAJ_NEXT_ID}
+ * set to {@code BLOCK 238}, then next block would have {@code TRAJ_PREV_ID}
+ * set to {@code BLOCK 237}, {@code TRAJ_ID} set to {@code BLOCK 238}, and
+ * {@code TRAJ_NEXT_ID} set to {@code BLOCK 239} and so on…
+ * </p>
  *
  * <p> This class can be used as a step handler for a {@link Propagator}.
  * </>
@@ -59,17 +71,17 @@ import org.orekit.utils.units.Unit;
  * Propagator propagator = ...; // pre-configured propagator
  * OCMWriter  ocmWriter  = ...; // pre-configured writer
  *   try (Generator out = ...;  // set-up output stream
- *        StreamingOcmWriter sw = new StreamingOcmWriter(out, ocmWriter)) { // set-up streaming writer
+ *        StreamingOcmWriter sw = new StreamingOcmWriter(out, ocmWriter, header, metadata, template)) { // set-up streaming writer
  *
- *     // write segment 1
- *     propagator.getMultiplexer().add(step, sw.newSegment());
+ *     // write block 1
+ *     propagator.getMultiplexer().add(step, sw.newBlock());
  *     propagator.propagate(startDate1, stopDate1);
  *
  *     ...
  *
- *     // write segment n
+ *     // write block n
  *     propagator.getMultiplexer().clear();
- *     propagator.getMultiplexer().add(step, sw.newSegment());
+ *     propagator.getMultiplexer().add(step, sw.newBlock());
  *     propagator.propagate(startDateN, stopDateN);
  *
  *   }
@@ -105,6 +117,9 @@ public class StreamingOcmWriter implements AutoCloseable {
 
     /** Indicator for writing header. */
     private boolean headerWritePending;
+
+    /** Last Z coordinate seen. */
+    private double lastZ;
 
     /**
      * Construct a writer that for each segment uses the reference frame of the
@@ -148,6 +163,7 @@ public class StreamingOcmWriter implements AutoCloseable {
         this.trajectoryMetadata  = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
         this.useAttitudeFrame    = useAttitudeFrame;
         this.headerWritePending  = true;
+        this.lastZ               = Double.NaN;
     }
 
     /**
@@ -177,9 +193,6 @@ public class StreamingOcmWriter implements AutoCloseable {
 
         /** Units. */
         private List<Unit> units;
-
-        /** Last Z coordinate seen. */
-        private double lastZ;
 
         /** Number of ascending nodes crossings. */
         private int crossings;
@@ -213,7 +226,7 @@ public class StreamingOcmWriter implements AutoCloseable {
                     headerWritePending = false;
                 }
 
-                trajectoryMetadata.setTrajNextID(incrementTrajectoryId(trajectoryMetadata.getTrajID()));
+                trajectoryMetadata.setTrajNextID(TrajectoryStateHistoryMetadata.incrementTrajID(trajectoryMetadata.getTrajID()));
                 trajectoryMetadata.setUseableStartTime(date);
                 trajectoryMetadata.setUseableStopTime(t);
                 if (useAttitudeFrame) {
@@ -223,7 +236,6 @@ public class StreamingOcmWriter implements AutoCloseable {
                     frame = trajectoryMetadata.getTrajReferenceFrame().asFrame();
                 }
 
-                lastZ     = Double.NaN;
                 crossings = 0;
                 type      = trajectoryMetadata.getTrajType();
                 units     = trajectoryMetadata.getTrajUnits();
@@ -232,6 +244,7 @@ public class StreamingOcmWriter implements AutoCloseable {
                                                                                                Collections.emptyList(),
                                                                                                s0.getMu()),
                                                                     writer.getTimeConverter());
+                trajectoryWriter.enterSection(generator);
                 trajectoryWriter.writeMetadata(generator);
 
             } catch (IOException e) {
@@ -261,14 +274,12 @@ public class StreamingOcmWriter implements AutoCloseable {
         @Override
         public void finish(final SpacecraftState finalState) {
             try {
-                if (generator.getFormat() == FileFormat.XML) {
-                    generator.exitSection(); // data
-                    generator.exitSection(); // segment
-                }
+
+                trajectoryWriter.exitSection(generator);
 
                 // update the trajectory IDs
                 trajectoryMetadata.setTrajPrevID(trajectoryMetadata.getTrajID());
-                trajectoryMetadata.setTrajID(incrementTrajectoryId(trajectoryMetadata.getTrajID()));
+                trajectoryMetadata.setTrajID(trajectoryMetadata.getTrajNextID());
 
                 if (trajectoryMetadata.getOrbRevNum() >= 0) {
                     // update the orbits revolution number
@@ -279,33 +290,6 @@ public class StreamingOcmWriter implements AutoCloseable {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
             }
         }
-
-    }
-
-    /** Increment a trajectory ID.
-     * @param original original ID (may be null)
-     * @return changed ID, or null if original was null
-     */
-    private String incrementTrajectoryId(final String original) {
-
-        if (original == null) {
-            // no trajectory ID at all
-            return null;
-        }
-
-        // split the ID into prefix and numerical index
-        int end = original.length();
-        while (end > 0 && Character.isDigit(original.charAt(end - 1))) {
-            --end;
-        }
-        final String prefix   = original.substring(0, end);
-        final int    index    = end < original.length() ? 0 : Integer.parseInt(original.substring(end));
-
-        // build offset index, taking care to use at least the same number of digits
-        final String newIndex = String.format(String.format("%%0%dd", original.length() - end),
-                                              index + 1);
-
-        return prefix + newIndex;
 
     }
 

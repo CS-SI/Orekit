@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
@@ -33,10 +32,16 @@ import org.orekit.files.general.EphemerisFile;
 import org.orekit.files.general.EphemerisFile.SatelliteEphemeris;
 import org.orekit.files.general.EphemerisFileWriter;
 import org.orekit.frames.Frame;
-import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** An {@link EphemerisFileWriter} generating {@link Ocm OCM} files.
+ * <p>
+ * This writer is intended to write only trajectory state history blocks.
+ * It does not writes physical properties, covariance data, maneuver data,
+ * perturbations parameters, orbit determination or user-defined parameters.
+ * If these blocks are needed, then {@link OcmWriter OcmWriter} must be
+ * used as it handles all OCM data blocks.
+ * </p>
  * @author Luc Maisonobe
  * @since 12.0
  * @see StreamingOcmWriter
@@ -177,13 +182,14 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
             // Loop on trajectory blocks
             double lastZ = Double.NaN;
             for (final S block : blocks) {
-                final CartesianDerivativesFilter filter = block.getAvailableDerivatives();
-                if (filter == CartesianDerivativesFilter.USE_P) {
-                    throw new OrekitException(OrekitMessages.MISSING_VELOCITY);
-                }
+
+                // prepare metadata
+                trajectoryMetadata.setTrajNextID(TrajectoryStateHistoryMetadata.incrementTrajID(trajectoryMetadata.getTrajID()));
                 trajectoryMetadata.setUseableStartTime(block.getStart());
                 trajectoryMetadata.setUseableStopTime(block.getStop());
                 trajectoryMetadata.setInterpolationDegree(block.getInterpolationSamples() - 1);
+
+                // prepare data
                 final OrbitElementsType type      = trajectoryMetadata.getTrajType();
                 final Frame             frame     = trajectoryMetadata.getTrajReferenceFrame().asFrame();
                 int                     crossings = 0;
@@ -197,11 +203,21 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
                     states.add(new TrajectoryState(type, pv.getDate(), type.toRawElements(pv, frame, block.getMu())));
                 }
                 final TrajectoryStateHistory history = new TrajectoryStateHistory(trajectoryMetadata, states, block.getMu());
-                new TrajectoryStateHistoryWriter(history, writer.getTimeConverter()).writeContent(generator);
+
+                // write trajectory block
+                final TrajectoryStateHistoryWriter trajectoryWriter =
+                                new TrajectoryStateHistoryWriter(history, writer.getTimeConverter());
+                trajectoryWriter.write(generator);
+
+                // update the trajectory IDs
+                trajectoryMetadata.setTrajPrevID(trajectoryMetadata.getTrajID());
+                trajectoryMetadata.setTrajID(trajectoryMetadata.getTrajNextID());
+
                 if (trajectoryMetadata.getOrbRevNum() >= 0) {
                     // update the orbits revolution number
                     trajectoryMetadata.setOrbRevNum(trajectoryMetadata.getOrbRevNum() + crossings);
                 }
+
             }
 
             if (generator.getFormat() == FileFormat.XML) {

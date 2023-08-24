@@ -43,7 +43,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * Propagator propagator = ...; // pre-configured propagator
  * OEMWriter  aemWriter  = ...; // pre-configured writer
  *   try (Generator out = ...;  // set-up output stream
- *        StreamingOemWriter sw = new StreamingOemWriter(out, oemWriter)) { // set-up streaming writer
+ *        StreamingOemWriter sw = new StreamingOemWriter(out, oemWriter, header, metadata)) { // set-up streaming writer
  *
  *     // write segment 1
  *     propagator.getMultiplexer().add(step, sw.newSegment());

@@ -162,6 +162,50 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         }
     }
 
+    /** Increments a trajectory ID.
+     * <p>
+     * The trajectory blocks metadata contains three identifiers ({@code TRAJ_ID},
+     * {@code TRAJ_PREV_ID}, {@code TRAJ_NEXT_ID}) that link the various blocks together.
+     * This helper method allows to update one identifier based on the value of another
+     * identifier. The update is performed by looking for an integer suffix at the end
+     * of the {@code original} identifier and incrementing it by one, taking care to use
+     * at least the same number of digits. If for example the original identifier is set
+     * to {@code trajectory 037}, then the updated identifier will be {@code trajectory 238}.
+     * </p>
+     * <p>
+     * This helper function is intended to be used by ephemeris generators like {@link EphemerisOcmWriter}
+     * and {@link StreamingOcmWriter}, allowing users to call only {@link #setTrajBasisID(String)}
+     * in the trajectory metadata template. The ephemeris generators call {@code
+     * template.setTrajNextID(TrajectoryStateHistoryMetadata.incrementTrajID(template.getTrajID()))}
+     * before generating each trajectory block and call both {@code template.setTrajPrevID(template.getTrajID()))}
+     * and {@code template.setTrajID(template.getTrajNextID()))} after having generated each block.
+     * </p>
+     * @param original original ID (may be null)
+     * @return incremented ID, or null if original was null
+     */
+    public static String incrementTrajID(final String original) {
+
+        if (original == null) {
+            // no trajectory ID at all
+            return null;
+        }
+
+        // split the ID into prefix and numerical index
+        int end = original.length();
+        while (end > 0 && Character.isDigit(original.charAt(end - 1))) {
+            --end;
+        }
+        final String prefix   = original.substring(0, end);
+        final int    index    = end < original.length() ? 0 : Integer.parseInt(original.substring(end));
+
+        // build offset index, taking care to use at least the same number of digits
+        final String newIndex = String.format(String.format("%%0%dd", original.length() - end),
+                                              index + 1);
+
+        return prefix + newIndex;
+
+    }
+
     /** Get trajectory identification number.
      * @return trajectory identification number
      */
