@@ -148,7 +148,7 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
         final SatelliteEphemeris<C, S> satEphem = ephemerisFile.getSatellites().get(name);
         if (satEphem == null) {
             throw new OrekitIllegalArgumentException(OrekitMessages.VALUE_NOT_FOUND,
-                                                     metadata.getObjectDesignator(), "ephemerisFile");
+                                                     name, "ephemerisFile");
         }
 
         // Get trajectory blocks to output.

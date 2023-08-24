@@ -144,7 +144,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         }
     }
 
-    /** Check is mandatory entries EXCEPT orbites counters have been initialized.
+    /** Check is mandatory entries EXCEPT orbits counters have been initialized.
      * <p>
      * This method should throw an exception if some mandatory entry is missing
      * </p>
@@ -196,7 +196,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
             --end;
         }
         final String prefix   = original.substring(0, end);
-        final int    index    = end < original.length() ? 0 : Integer.parseInt(original.substring(end));
+        final int    index    = end < original.length() ? Integer.parseInt(original.substring(end)) : 0;
 
         // build offset index, taking care to use at least the same number of digits
         final String newIndex = String.format(String.format("%%0%dd", original.length() - end),
@@ -441,6 +441,21 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         this.orbRevNumBasis = orbRevNumBasis;
     }
 
+    /** Get type of averaging (Osculating, mean Brouwer, other.
+     * @return type of averaging (Osculating, mean Brouwer, other)
+     */
+    public String getOrbAveraging() {
+        return orbAveraging;
+    }
+
+    /** Set type of averaging (Osculating, mean Brouwer, other.
+     * @param orbAveraging type of averaging (Osculating, mean Brouwer, other).
+     */
+    public void setOrbAveraging(final String orbAveraging) {
+        refuseFurtherComments();
+        this.orbAveraging = orbAveraging;
+    }
+
     /** Get trajectory element set type.
      * @return trajectory element set type
      */
@@ -454,21 +469,6 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     public void setTrajType(final OrbitElementsType trajType) {
         refuseFurtherComments();
         this.trajType = trajType;
-    }
-
-    /** Get type of averaging (Osculating, mean Brouwer, other.
-     * @return type of averaging (Osculating, mean Brouwer, other
-     .). */
-    public String getOrbAveraging() {
-        return orbAveraging;
-    }
-
-    /** Set type of averaging (Osculating, mean Brouwer, other.
-     * @param orbAveraging type of averaging (Osculating, mean Brouwer, other
-     .). */
-    public void setOrbAveraging(final String orbAveraging) {
-        refuseFurtherComments();
-        this.orbAveraging = orbAveraging;
     }
 
     /** Get trajectory element set units.
@@ -507,6 +507,9 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         }
 
         // copy metadata
+        copy.setTrajPrevID(getTrajPrevID());
+        copy.setTrajID(getTrajID());
+        copy.setTrajNextID(getTrajNextID());
         copy.setTrajBasis(getTrajBasis());
         copy.setTrajBasisID(getTrajBasisID());
         copy.setInterpolationMethod(getInterpolationMethod());
@@ -516,6 +519,9 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         copy.setTrajReferenceFrame(getTrajReferenceFrame());
         copy.setTrajFrameEpoch(getTrajFrameEpoch());
         copy.setOrbRevNumBasis(getOrbRevNumBasis());
+        copy.setOrbAveraging(getOrbAveraging());
+        copy.setTrajType(getTrajType());
+        copy.setTrajUnits(getTrajUnits());
 
         return copy;
 

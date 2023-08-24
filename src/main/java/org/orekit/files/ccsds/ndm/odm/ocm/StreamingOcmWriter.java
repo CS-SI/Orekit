@@ -18,7 +18,6 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
@@ -35,7 +34,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
-import org.orekit.utils.units.Unit;
 
 /**
  * A writer for OCM files.
@@ -191,9 +189,6 @@ public class StreamingOcmWriter implements AutoCloseable {
         /** Elements type. */
         private OrbitElementsType type;
 
-        /** Units. */
-        private List<Unit> units;
-
         /** Number of ascending nodes crossings. */
         private int crossings;
 
@@ -238,7 +233,6 @@ public class StreamingOcmWriter implements AutoCloseable {
 
                 crossings = 0;
                 type      = trajectoryMetadata.getTrajType();
-                units     = trajectoryMetadata.getTrajUnits();
 
                 trajectoryWriter = new TrajectoryStateHistoryWriter(new TrajectoryStateHistory(trajectoryMetadata,
                                                                                                Collections.emptyList(),
@@ -264,7 +258,7 @@ public class StreamingOcmWriter implements AutoCloseable {
                 }
                 lastZ = pv.getPosition().getZ();
                 final TrajectoryState state = new TrajectoryState(type, pv.getDate(), type.toRawElements(pv, frame, currentState.getMu()));
-                trajectoryWriter.writeState(generator, state, units);
+                trajectoryWriter.writeState(generator, state, type.getUnits());
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
             }

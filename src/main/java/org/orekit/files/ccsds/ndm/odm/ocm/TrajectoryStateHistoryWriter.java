@@ -73,6 +73,7 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
     protected void writeMetadata(final Generator generator) throws IOException {
 
         final TrajectoryStateHistoryMetadata metadata = history.getMetadata();
+        generator.writeComments(metadata.getComments());
 
         // identifiers
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_ID.name(),       metadata.getTrajID(),      null, false);
