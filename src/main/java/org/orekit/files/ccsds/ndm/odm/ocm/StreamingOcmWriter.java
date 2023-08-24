@@ -145,7 +145,7 @@ public class StreamingOcmWriter implements AutoCloseable {
      *                            each segment is taken from the first state's
      *                            attitude. Otherwise the {@code template}'s
      *                            reference frame is used, {@link
-     *                            TrajectoryStateHistoryMetadata#getTrajReferenceFrame()()}.
+     *                            TrajectoryStateHistoryMetadata#getTrajReferenceFrame()}.
      */
     public StreamingOcmWriter(final Generator generator, final OcmWriter writer,
                               final OdmHeader header, final OcmMetadata metadata,
