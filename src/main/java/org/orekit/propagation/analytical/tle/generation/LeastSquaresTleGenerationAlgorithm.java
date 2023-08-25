@@ -224,7 +224,7 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
             this.dt = dt;
             // Conversion of template TLE to a field TLE
             final Field<Gradient> field = GradientField.getField(7);
-            this.templateTLE = new FieldTLE<>(field, templateTLE.getLine1(), templateTLE.getLine2());
+            this.templateTLE = new FieldTLE<>(field, templateTLE.getLine1(), templateTLE.getLine2(), utc);
         }
 
         /**  {@inheritDoc} */
@@ -297,7 +297,7 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
 
             // Propagate to epoch
             final FieldPVCoordinates<Gradient> propagatedCoordinates =
-                    FieldTLEPropagator.selectExtrapolator(tle, bStar).getPVCoordinates(epoch.shiftedBy(dt), bStar);
+                    FieldTLEPropagator.selectExtrapolator(tle, teme, bStar).getPVCoordinates(epoch.shiftedBy(dt), bStar);
 
             // Osculating
             final FieldVector<Gradient> osculating = MatrixUtils.createFieldVector(field, 6);
