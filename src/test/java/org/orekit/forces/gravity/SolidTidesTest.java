@@ -99,7 +99,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         TimeScale utc = TimeScalesFactory.getUTC();
         UT1Scale  ut1 = TimeScalesFactory.getUT1(conventions, true);
         NormalizedSphericalHarmonicsProvider gravityField =
-                GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+                GravityFieldFactory.getNormalizedProvider(5, 5);
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(1970, 07, 01, 13, 59, 27.816, utc);
@@ -125,7 +125,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         Assertions.assertEquals(0.0,
                             Vector3D.distance(raw.getPosition(),
                                               interpolated.getPosition()),
-                            2.0e-5); // threshold would be 1.2e-3 for 30 days propagation
+                            2.1e-5); // threshold would be 1.2e-3 for 30 days propagation
 
     }
 
@@ -202,7 +202,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         NormalizedSphericalHarmonicsProvider gravityField =
-                        GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+                        GravityFieldFactory.getNormalizedProvider(5, 5);
 
         ForceModel forceModel = new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
                                                gravityField.getTideSystem(), false,
@@ -231,7 +231,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         NormalizedSphericalHarmonicsProvider gravityField =
-                        GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+                        GravityFieldFactory.getNormalizedProvider(5, 5);
 
         ForceModel forceModel = new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
                                                gravityField.getTideSystem(), false,
@@ -260,7 +260,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         NormalizedSphericalHarmonicsProvider gravityField =
-                        GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+                        GravityFieldFactory.getNormalizedProvider(5, 5);
 
         ForceModel forceModel = new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
                                                gravityField.getTideSystem(), true,
@@ -288,7 +288,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         NormalizedSphericalHarmonicsProvider gravityField =
-                        GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+                        GravityFieldFactory.getNormalizedProvider(5, 5);
 
         ForceModel forceModel = new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
                                                gravityField.getTideSystem(), true,
@@ -316,7 +316,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         NormalizedSphericalHarmonicsProvider gravityField =
-                        GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+                        GravityFieldFactory.getNormalizedProvider(5, 5);
 
         ForceModel forceModel = new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
                                                gravityField.getTideSystem(), false,
@@ -343,7 +343,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         NormalizedSphericalHarmonicsProvider gravityField =
-                        GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+                        GravityFieldFactory.getNormalizedProvider(5, 5);
 
         ForceModel forceModel = new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
                                                gravityField.getTideSystem(), false,
@@ -370,7 +370,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         NormalizedSphericalHarmonicsProvider gravityField =
-                        GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+                        GravityFieldFactory.getNormalizedProvider(5, 5);
 
         ForceModel forceModel = new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
                                                gravityField.getTideSystem(), true,
@@ -397,7 +397,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         NormalizedSphericalHarmonicsProvider gravityField =
-                        GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+                        GravityFieldFactory.getNormalizedProvider(5, 5);
 
         ForceModel forceModel = new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
                                                gravityField.getTideSystem(), true,
@@ -416,7 +416,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         Frame itrf    = FramesFactory.getITRF(conventions, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(conventions, true);
         NormalizedSphericalHarmonicsProvider gravityField =
-                GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+                GravityFieldFactory.getNormalizedProvider(5, 5);
 
         // initialization
 

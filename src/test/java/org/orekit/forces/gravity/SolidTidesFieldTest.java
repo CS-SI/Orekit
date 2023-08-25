@@ -209,7 +209,7 @@ public class SolidTidesFieldTest {
     @Test
     public void testDeltaCnmSnm() {
         NormalizedSphericalHarmonicsProvider gravityField =
-                GravityFieldFactory.getConstantNormalizedProvider(8, 8);
+                GravityFieldFactory.getNormalizedProvider(8, 8);
         UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -263,7 +263,7 @@ public class SolidTidesFieldTest {
         TimeScale utc = TimeScalesFactory.getUTC();
         UT1Scale  ut1 = TimeScalesFactory.getUT1(conventions, true);
         NormalizedSphericalHarmonicsProvider gravityField =
-                GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+                GravityFieldFactory.getNormalizedProvider(5, 5);
 
         SolidTidesField raw = new SolidTidesField(conventions.getLoveNumbers(),
                                         conventions.getTideFrequencyDependenceFunction(ut1),

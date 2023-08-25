@@ -234,21 +234,21 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     @DefaultDataContext
     public static TLEPropagator selectExtrapolator(final TLE tle) {
-        return selectExtrapolator(tle, DataContext.getDefault().getFrames());
+        return selectExtrapolator(tle, DataContext.getDefault().getFrames().getTEME());
     }
 
     /** Selects the extrapolator to use with the selected TLE.
      * @param tle the TLE to propagate.
-     * @param frames set of Frames to use in the propagator.
+     * @param teme TEME frame.
      * @return the correct propagator.
      * @since 10.1
      */
-    public static TLEPropagator selectExtrapolator(final TLE tle, final Frames frames) {
+    public static TLEPropagator selectExtrapolator(final TLE tle, final Frame teme) {
         return selectExtrapolator(
                 tle,
-                FrameAlignedProvider.of(frames.getTEME()),
+                FrameAlignedProvider.of(teme),
                 DEFAULT_MASS,
-                frames.getTEME());
+                teme);
     }
 
     /** Selects the extrapolator to use with the selected TLE.

@@ -992,7 +992,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         double dP = 0.1;
         double duration = 3 * Constants.JULIAN_DAY;
         BoundedPropagator fixedFieldEphemeris   = createEphemeris(dP, spacecraftState, duration,
-                                                                  GravityFieldFactory.getConstantNormalizedProvider(8, 8));
+                                                                  GravityFieldFactory.getConstantNormalizedProvider(8, 8, new AbsoluteDate("2005-01-01T00:00:00.000", TimeScalesFactory.getTAI())));
         BoundedPropagator varyingFieldEphemeris = createEphemeris(dP, spacecraftState, duration,
                                                                   GravityFieldFactory.getNormalizedProvider(8, 8));
 
