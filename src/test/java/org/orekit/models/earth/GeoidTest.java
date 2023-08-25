@@ -78,7 +78,7 @@ public class GeoidTest {
         GravityFieldFactory.clearPotentialCoefficientsReaders();
         GravityFieldFactory.addPotentialCoefficientsReader(
                 new EGMFormatReader("egm96", false));
-        potential = GravityFieldFactory.getConstantNormalizedProvider(
+        potential = GravityFieldFactory.getNormalizedProvider(
                 maxDegree, maxOrder);
         date = null;
     }

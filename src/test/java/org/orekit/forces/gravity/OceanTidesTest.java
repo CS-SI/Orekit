@@ -69,7 +69,7 @@ public class OceanTidesTest {
                                                                          OceanLoadDeformationCoefficients.IERS_2010,
                                                                          map));
         NormalizedSphericalHarmonicsProvider gravityField =
-                GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+                GravityFieldFactory.getNormalizedProvider(5, 5);
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(1970, 07, 01, 13, 59, 27.816, utc);
@@ -122,7 +122,7 @@ public class OceanTidesTest {
                                                                          OceanLoadDeformationCoefficients.IERS_2010,
                                                                          map));
         NormalizedSphericalHarmonicsProvider gravityField =
-                GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+                GravityFieldFactory.getNormalizedProvider(5, 5);
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);

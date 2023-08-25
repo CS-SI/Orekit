@@ -24,6 +24,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 
 /**
@@ -246,14 +247,14 @@ public class LazyLoadedGravityFields implements GravityFields {
      * method will be called automatically.
      */
     @Override
-    public NormalizedSphericalHarmonicsProvider getConstantNormalizedProvider(final int degree,
-                                                                              final int order) {
+    public NormalizedSphericalHarmonicsProvider getConstantNormalizedProvider(final int degree, final int order,
+                                                                              final AbsoluteDate freezingDate) {
         final RawSphericalHarmonicsProvider provider;
         synchronized (readers) {
             final PotentialCoefficientsReader reader = readGravityField(degree, order);
             provider = reader.getProvider(true, degree, order);
         }
-        final ConstantSphericalHarmonics frozen = new ConstantSphericalHarmonics(provider.getReferenceDate(), provider);
+        final ConstantSphericalHarmonics frozen = new ConstantSphericalHarmonics(freezingDate, provider);
         return new WrappingNormalizedProvider(frozen);
     }
 
@@ -289,14 +290,14 @@ public class LazyLoadedGravityFields implements GravityFields {
      * method will be called automatically.
      */
     @Override
-    public UnnormalizedSphericalHarmonicsProvider getConstantUnnormalizedProvider(final int degree,
-                                                                                  final int order) {
+    public UnnormalizedSphericalHarmonicsProvider getConstantUnnormalizedProvider(final int degree, final int order,
+                                                                                  final AbsoluteDate freezingDate) {
         final RawSphericalHarmonicsProvider provider;
         synchronized (readers) {
             final PotentialCoefficientsReader reader = readGravityField(degree, order);
             provider = reader.getProvider(false, degree, order);
         }
-        final ConstantSphericalHarmonics frozen = new ConstantSphericalHarmonics(provider.getReferenceDate(), provider);
+        final ConstantSphericalHarmonics frozen = new ConstantSphericalHarmonics(freezingDate, provider);
         return new WrappingUnnormalizedProvider(frozen);
     }
 
