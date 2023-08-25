@@ -74,7 +74,6 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * <li>the {@link AbstractDetector#DEFAULT_THRESHOLD default value} for convergence threshold</li>
      * <li>the <code>atSeaLevel</code> switch set to false</li>
      * </ul>
-     * </p>
      *
      * @param limit threshold value for magnetic field detection, in Teslas
      * @param model magnetic field model
@@ -94,7 +93,6 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * <li>the {@link AbstractDetector#DEFAULT_MAXCHECK default value} for maximal checking interval</li>
      * <li>the {@link AbstractDetector#DEFAULT_THRESHOLD default value} for convergence threshold </li>
      * </ul>
-     * </p>
      *
      * @param limit    threshold value for magnetic field detection, in Teslas
      * @param model    magnetic field model
