@@ -141,7 +141,7 @@ public class DSSTPropagatorTest {
 
         // add force models
         final Frame ecefFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        final UnnormalizedSphericalHarmonicsProvider gravityProvider = GravityFieldFactory.getConstantUnnormalizedProvider(8, 8);
+        final UnnormalizedSphericalHarmonicsProvider gravityProvider = GravityFieldFactory.getUnnormalizedProvider(8, 8);
         propagator.addForceModel(new DSSTZonal(gravityProvider));
         propagator.addForceModel(new DSSTTesseral(ecefFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, gravityProvider));
         propagator.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getSun(), gravityProvider.getMu()));
@@ -153,7 +153,7 @@ public class DSSTPropagatorTest {
 
         // The purpose is not verifying propagated values, but to check that no exception occurred
         Assertions.assertEquals(0.0, propagated.getDate().durationFrom(orbitEpoch.shiftedBy(20.0 * Constants.JULIAN_DAY)), Double.MIN_VALUE);
-        Assertions.assertEquals(4.216464862955707E7, propagated.getA(), Double.MIN_VALUE);
+        Assertions.assertEquals(4.216464862956647E7, propagated.getA(), Double.MIN_VALUE);
 
     }
 

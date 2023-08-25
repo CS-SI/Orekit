@@ -24,6 +24,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 
 /** Factory used to read gravity field files in several supported formats.
  * @author Fabien Maussion
@@ -196,14 +197,15 @@ public class GravityFieldFactory {
      * </p>
      * @param degree maximal degree
      * @param order maximal order
+     * @param freezingDate freezing epoch
      * @return a gravity field coefficients provider containing already loaded data
-     * @since 6.0
+     * @since 12.0
      * @see #getNormalizedProvider(int, int)
      */
     @DefaultDataContext
-    public static NormalizedSphericalHarmonicsProvider getConstantNormalizedProvider(final int degree,
-                                                                                     final int order) {
-        return getGravityFields().getConstantNormalizedProvider(degree, order);
+    public static NormalizedSphericalHarmonicsProvider getConstantNormalizedProvider(final int degree, final int order,
+                                                                                     final AbsoluteDate freezingDate) {
+        return getGravityFields().getConstantNormalizedProvider(degree, order, freezingDate);
     }
 
     /** Get the gravity field coefficients provider from the first supported file.
@@ -238,14 +240,15 @@ public class GravityFieldFactory {
      * </p>
      * @param degree maximal degree
      * @param order maximal order
+     * @param freezingDate freezing epoch
      * @return a gravity field coefficients provider containing already loaded data
      * @since 6.0
      * @see #getUnnormalizedProvider(int, int)
      */
     @DefaultDataContext
-    public static UnnormalizedSphericalHarmonicsProvider getConstantUnnormalizedProvider(final int degree,
-                                                                                         final int order) {
-        return getGravityFields().getConstantUnnormalizedProvider(degree, order);
+    public static UnnormalizedSphericalHarmonicsProvider getConstantUnnormalizedProvider(final int degree, final int order,
+                                                                                         final AbsoluteDate freezingDate) {
+        return getGravityFields().getConstantUnnormalizedProvider(degree, order, freezingDate);
     }
 
     /** Get the gravity field coefficients provider from the first supported file.

@@ -236,7 +236,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      */
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final T[] parameters) {
-        return selectExtrapolator(tle, DataContext.getDefault().getFrames(), parameters);
+        return selectExtrapolator(tle, DataContext.getDefault().getFrames().getTEME(), parameters);
     }
 
     /** Selects the extrapolator to use with the selected TLE.
@@ -244,17 +244,17 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      *<p>This method uses the {@link DataContext#getDefault() default data context}.
      *
      * @param tle the TLE to propagate.
-     * @param frames set of Frames to use in the propagator.
+     * @param teme TEME frame.
      * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
      * @param <T> elements type
      */
-    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final Frames frames, final T[] parameters) {
+    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final Frame teme, final T[] parameters) {
         return selectExtrapolator(
                 tle,
-                FrameAlignedProvider.of(frames.getTEME()),
+                FrameAlignedProvider.of(teme),
                 tle.getE().getField().getZero().add(DEFAULT_MASS),
-                frames.getTEME(),
+                teme,
                 parameters);
     }
 

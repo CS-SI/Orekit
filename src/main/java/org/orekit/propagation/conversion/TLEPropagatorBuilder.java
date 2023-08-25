@@ -97,7 +97,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
     public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngle positionAngle,
                                 final double positionScale, final DataContext dataContext,
                                 final TleGenerationAlgorithm generationAlgorithm) {
-        super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames()).getInitialState().getOrbit(),
+        super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames().getTEME()).getInitialState().getOrbit(),
               positionAngle, positionScale, false, FrameAlignedProvider.of(dataContext.getFrames().getTEME()));
 
         // Supported parameters: Bstar

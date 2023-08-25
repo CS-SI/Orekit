@@ -106,7 +106,7 @@ public class GeoMagneticFieldTest {
         Utils.setDataRoot("earth:geoid:regular-data");
         GravityFieldFactory.clearPotentialCoefficientsReaders();
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96", false));
-        potential = GravityFieldFactory.getConstantNormalizedProvider(maxDegree, maxOrder);
+        potential = GravityFieldFactory.getNormalizedProvider(maxDegree, maxOrder);
     }
 
     @Test
