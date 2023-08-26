@@ -81,6 +81,35 @@ public class ConstantThrustManeuver extends Maneuver {
      * @param attitudeOverride the attitude provider to use for the maneuver, or
      * null if the attitude from the propagator should be used
      * @param direction the acceleration direction in satellite frame.
+     * @param name name of the maneuver, used as a prefix for the {@link #getParametersDrivers() parameters drivers}
+     * @since 12.0
+     */
+    public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
+                                  final double thrust, final double isp,
+                                  final AttitudeProvider attitudeOverride,
+                                  final Vector3D direction,
+                                  final String name) {
+        this(date, duration, thrust, isp, attitudeOverride, direction, ControlVector3DNormType.NORM_2, name);
+    }
+
+    /** Simple constructor for a constant direction and constant thrust.
+     * <p>
+     * It uses the propulsion model {@link BasicConstantThrustPropulsionModel} and
+     * the maneuver triggers {@link DateBasedManeuverTriggers}
+     * </p><p>
+     * Calling this constructor is equivalent to call {@link
+     * #ConstantThrustManeuver(AbsoluteDate, double, double, double, Vector3D, String)
+     * ConstantThrustManeuver(date, duration, thrust, isp, direction, "")},
+     * hence not using any prefix for the parameters drivers names.
+     * </p>
+     * @param date maneuver date
+     * @param duration the duration of the thrust (s) (if negative,
+     * the date is considered to be the stop date)
+     * @param thrust the thrust force (N)
+     * @param isp engine specific impulse (s)
+     * @param attitudeOverride the attitude provider to use for the maneuver, or
+     * null if the attitude from the propagator should be used
+     * @param direction the acceleration direction in satellite frame.
      * @since 9.2
      */
     public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
@@ -135,14 +164,16 @@ public class ConstantThrustManeuver extends Maneuver {
      * @param attitudeOverride the attitude provider to use for the maneuver, or
      * null if the attitude from the propagator should be used
      * @param direction the acceleration direction in satellite frame
+     * @param controlVector3DNormType control vector's norm type
      * @param name name of the maneuver, used as a prefix for the {@link #getParametersDrivers() parameters drivers}
-     * @since 9.2
+     * @since 12.0
      */
     public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
-                                  final double thrust, final double isp,
-                                  final AttitudeProvider attitudeOverride, final Vector3D direction,
+                                  final double thrust, final double isp, final AttitudeProvider attitudeOverride,
+                                  final Vector3D direction, final ControlVector3DNormType controlVector3DNormType,
                                   final String name) {
-        this(date, duration, attitudeOverride, new BasicConstantThrustPropulsionModel(thrust, isp, direction, name));
+        this(date, duration, attitudeOverride,
+                new BasicConstantThrustPropulsionModel(thrust, isp, direction, controlVector3DNormType, name));
     }
 
     /** Simple constructor for a constant direction and constant thrust.

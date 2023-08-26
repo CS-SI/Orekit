@@ -28,6 +28,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
+import org.orekit.forces.maneuvers.ControlVector3DNormType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
@@ -58,22 +59,33 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
     /** Name fo the maneuver. */
     private final String name;
 
+    /** Type of norm linking thrust vector to mass flow rate. */
+    private final ControlVector3DNormType controlVector3DNormType;
+
     /** Generic constructor.
      * @param profile thrust profile (N)
      * @param isp specific impulse (s)
+     * @param controlVector3DNormType control vector's norm type
      * @param name name of the maneuver
      */
-    public ProfileThrustPropulsionModel(final TimeSpanMap<PolynomialThrustSegment> profile,
-                                        final double isp, final String name) {
+    public ProfileThrustPropulsionModel(final TimeSpanMap<PolynomialThrustSegment> profile, final double isp,
+                                        final ControlVector3DNormType controlVector3DNormType, final String name) {
         this.name    = name;
         this.isp     = isp;
         this.profile = profile;
+        this.controlVector3DNormType = controlVector3DNormType;
     }
 
     /** {@inheritDoc} */
     @Override
     public String getName() {
         return name;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ControlVector3DNormType getControlVector3DNormType() {
+        return controlVector3DNormType;
     }
 
     /** {@inheritDoc} */
@@ -86,7 +98,7 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
     /** {@inheritDoc} */
     @Override
     public double getFlowRate(final SpacecraftState s) {
-        return -getThrustVector(s).getNorm() / (Constants.G0_STANDARD_GRAVITY * isp);
+        return -controlVector3DNormType.evaluate(getThrustVector(s)) / (Constants.G0_STANDARD_GRAVITY * isp);
     }
 
     /** {@inheritDoc}
@@ -125,7 +137,7 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
      * </p>
      */
     public <T extends CalculusFieldElement<T>> T getFlowRate(final FieldSpacecraftState<T> s, final T[] parameters) {
-        return getThrustVector(s, parameters).getNorm().divide(-Constants.G0_STANDARD_GRAVITY * isp);
+        return controlVector3DNormType.evaluate(getThrustVector(s, parameters)).divide(-Constants.G0_STANDARD_GRAVITY * isp);
     }
 
     /** {@inheritDoc}.

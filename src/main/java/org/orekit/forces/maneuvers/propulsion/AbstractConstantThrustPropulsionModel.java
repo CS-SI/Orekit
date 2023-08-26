@@ -20,6 +20,7 @@ package org.orekit.forces.maneuvers.propulsion;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.forces.maneuvers.ControlVector3DNormType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -41,6 +42,9 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
     /** Initial flow rate (kg/s), when building the object. */
     private final double initialFlowRate;
 
+    /** Type of norm linking thrust vector to mass flow rate. */
+    private final ControlVector3DNormType controlVector3DNormType;
+
     /** User-defined name of the maneuver.
      * This String attribute is empty by default.
      * It is added as a prefix to the parameter drivers of the maneuver.
@@ -56,15 +60,32 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
      * @param thrust initial thrust value (N)
      * @param isp initial isp value (s)
      * @param direction initial thrust direction in S/C frame
+     * @param controlVector3DNormType control norm type
+     * @param name name of the maneuver
+     * @since 12.0
+     */
+    public AbstractConstantThrustPropulsionModel(final double thrust,
+                                                 final double isp,
+                                                 final Vector3D direction,
+                                                 final ControlVector3DNormType controlVector3DNormType,
+                                                 final String name) {
+        this.name = name;
+        this.initialThrustVector = direction.normalize().scalarMultiply(thrust);
+        this.controlVector3DNormType = controlVector3DNormType;
+        this.initialFlowRate = -controlVector3DNormType.evaluate(initialThrustVector) / (Constants.G0_STANDARD_GRAVITY * isp);
+    }
+
+    /** Constructor with default norm type.
+     * @param thrust initial thrust value (N)
+     * @param isp initial isp value (s)
+     * @param direction initial thrust direction in S/C frame
      * @param name name of the maneuver
      */
     public AbstractConstantThrustPropulsionModel(final double thrust,
                                                  final double isp,
                                                  final Vector3D direction,
                                                  final String name) {
-        this.name = name;
-        this.initialThrustVector = direction.normalize().scalarMultiply(thrust);
-        this.initialFlowRate = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
+        this(thrust, isp, direction, ThrustPropulsionModel.getDefaultControlVector3DNormType(), name);
     }
 
     /** Get the initial thrust vector.
@@ -77,7 +98,7 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
     /** Get the initial flow rate.
      * @return the initial flow rate
      */
-    protected double getInitialFlowrate() {
+    protected double getInitialFlowRate() {
         return initialFlowRate;
     }
 
@@ -87,15 +108,20 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
         return name;
     }
 
-    /** Get the specific impulse at given date.
+    /** {@inheritDoc} */
+    @Override
+    public ControlVector3DNormType getControlVector3DNormType() {
+        return controlVector3DNormType;
+    }
+
+    /** Get the specific impulse.
      * @return specific impulse (s), will throw exception if
      * used on PDriver having several driven values, because
      * in this case a date is needed.
      */
     public double getIsp() {
-        final double thrust   = getThrust();
         final double flowRate = getFlowRate();
-        return -thrust / (Constants.G0_STANDARD_GRAVITY * flowRate);
+        return -controlVector3DNormType.evaluate(getThrustVector()) / (Constants.G0_STANDARD_GRAVITY * flowRate);
     }
 
     /** Get the specific impulse at given date.
@@ -103,9 +129,8 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
      * @return specific impulse (s).
      */
     public double getIsp(final AbsoluteDate date) {
-        final double thrust   = getThrust(date);
         final double flowRate = getFlowRate(date);
-        return -thrust / (Constants.G0_STANDARD_GRAVITY * flowRate);
+        return -controlVector3DNormType.evaluate(getThrustVector(date)) / (Constants.G0_STANDARD_GRAVITY * flowRate);
     }
 
     /** Get the thrust direction in S/C frame.
@@ -144,7 +169,6 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
     public double getThrust(final AbsoluteDate date) {
         return getThrustVector(date).getNorm();
     }
-
 
     /** {@inheritDoc}
      * Here the thrust vector do not depend on current S/C state.

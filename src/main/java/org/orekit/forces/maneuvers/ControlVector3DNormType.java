@@ -22,9 +22,10 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 
 /** Enumerate on types of norm for 3D control vector (thrust as a force or acceleration, including an impulse)
  * at a given time. See ROSS, I. Michael. Space Trajectory Optimization and L1-norm Optimal Control Problems.
- * Modern astrodynamics, 2006, vol. 1, p. 155. For now, it is only used by {@link org.orekit.forces.maneuvers.ImpulseManeuver}.
+ * Modern astrodynamics, 2006, vol. 1, p. 155. It is used across the package but not yet outside e.g. in estimation.
  * <p>Note that as norms of spaces in finite dimensions, they are all equivalent in a topological sense.</p>
  * @see org.orekit.forces.maneuvers.ImpulseManeuver
+ * @see org.orekit.forces.maneuvers.ConstantThrustManeuver
  * @author Romain Serra
  * @since 12.0
  */

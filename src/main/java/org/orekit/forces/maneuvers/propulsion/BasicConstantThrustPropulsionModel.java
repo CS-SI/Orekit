@@ -25,8 +25,8 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.forces.maneuvers.ControlVector3DNormType;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
 /** Constant thrust propulsion model with:
@@ -69,6 +69,31 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
     /** Thrust direction in spacecraft frame. */
     private final Vector3D direction;
 
+    /** Generic constructor.
+     * @param thrust thrust (N)
+     * @param isp isp (s)
+     * @param direction direction in spacecraft frame
+     * @param controlVector3DNormType control norm type
+     * @param name name of the maneuver
+     * @since 12.0
+     */
+    public BasicConstantThrustPropulsionModel(final double thrust,
+                                              final double isp,
+                                              final Vector3D direction,
+                                              final ControlVector3DNormType controlVector3DNormType,
+                                              final String name) {
+        super(thrust, isp, direction, controlVector3DNormType, name);
+        this.direction = direction.normalize();
+
+        final double initialFlowRate = super.getInitialFlowRate();
+
+        // Build the parameter drivers, using maneuver name as prefix
+        this.thrustDriver   = new ParameterDriver(name + THRUST, thrust, THRUST_SCALE,
+                                                  0.0, Double.POSITIVE_INFINITY);
+        this.flowRateDriver = new ParameterDriver(name + FLOW_RATE, initialFlowRate, FLOW_RATE_SCALE,
+                                                  Double.NEGATIVE_INFINITY, 0.0 );
+    }
+
     /** Simple constructor.
      * @param thrust thrust (N)
      * @param isp isp (s)
@@ -79,16 +104,7 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
                                               final double isp,
                                               final Vector3D direction,
                                               final String name) {
-        super(thrust, isp, direction, name);
-        this.direction = direction.normalize();
-
-        final double initialFlowRate = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
-
-        // Build the parameter drivers, using maneuver name as prefix
-        this.thrustDriver   = new ParameterDriver(name + THRUST, thrust, THRUST_SCALE,
-                                                  0.0, Double.POSITIVE_INFINITY);
-        this.flowRateDriver = new ParameterDriver(name + FLOW_RATE, initialFlowRate, FLOW_RATE_SCALE,
-                                                  Double.NEGATIVE_INFINITY, 0.0 );
+        this(thrust, isp, direction, ThrustPropulsionModel.getDefaultControlVector3DNormType(), name);
     }
 
     /** {@inheritDoc} */
