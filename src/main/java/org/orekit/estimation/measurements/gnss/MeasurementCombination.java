@@ -16,8 +16,8 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import org.orekit.gnss.observation.CombinedObservationDataSet;
-import org.orekit.gnss.observation.ObservationDataSet;
+import org.orekit.files.rinex.observation.CombinedObservationDataSet;
+import org.orekit.files.rinex.observation.ObservationDataSet;
 
 /**
  * Interface for combination of measurements.

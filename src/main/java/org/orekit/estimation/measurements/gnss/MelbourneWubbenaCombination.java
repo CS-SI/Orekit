@@ -20,12 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.files.rinex.observation.CombinedObservationData;
+import org.orekit.files.rinex.observation.CombinedObservationDataSet;
+import org.orekit.files.rinex.observation.MeasurementType;
+import org.orekit.files.rinex.observation.ObservationData;
+import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.gnss.observation.CombinedObservationData;
-import org.orekit.gnss.observation.CombinedObservationDataSet;
-import org.orekit.gnss.observation.MeasurementType;
-import org.orekit.gnss.observation.ObservationData;
-import org.orekit.gnss.observation.ObservationDataSet;
 
 /**
  * Melbourne-Wübbena combination.
