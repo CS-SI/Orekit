@@ -48,14 +48,15 @@ public class SaastamoinenModelTest {
         try {
             new SaastamoinenModel(273.16 + 18, 1013.25, 50.0);
         } catch (OrekitException oe) {
-            Assertions.assertEquals("paramètre invalide humidity: 50 n'est pas dans l'intervalle [0, 1]", oe.getLocalizedMessage());
+            Assertions.assertEquals(OrekitMessages.INVALID_PARAMETER_RANGE, oe.getSpecifier());
         }
         try {
             new SaastamoinenModel(273.16 + 18, 1013.25, -50.0);
         } catch (OrekitException oe) {
-            Assertions.assertEquals("paramètre invalide humidity: -50 n'est pas dans l'intervalle [0, 1]", oe.getLocalizedMessage());
+            Assertions.assertEquals(OrekitMessages.INVALID_PARAMETER_RANGE, oe.getSpecifier());
         }
     }
+
     @Test
     public void testFixedElevation() {
         Utils.setDataRoot("atmosphere");
