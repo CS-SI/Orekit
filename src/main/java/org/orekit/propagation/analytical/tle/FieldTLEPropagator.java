@@ -232,7 +232,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
      * @param <T> elements type
-     * @see #selectExtrapolator(FieldTLE, Frames, CalculusFieldElement[])
+     * @see #selectExtrapolator(FieldTLE, Frame, CalculusFieldElement[])
      */
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final T[] parameters) {

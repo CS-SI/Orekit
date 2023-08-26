@@ -51,7 +51,7 @@ public interface GravityFields {
      * @param order maximal order
      * @return a gravity field coefficients provider containing already loaded data
      * @since 6.0
-     * @see #getConstantNormalizedProvider(int, int)
+     * @see #getConstantNormalizedProvider(int, int, AbsoluteDate)
      */
     NormalizedSphericalHarmonicsProvider getNormalizedProvider(int degree,
                                                                int order);
@@ -75,7 +75,7 @@ public interface GravityFields {
      * @param order maximal order
      * @return a gravity field coefficients provider containing already loaded data
      * @since 6.0
-     * @see #getConstantUnnormalizedProvider(int, int)
+     * @see #getConstantUnnormalizedProvider(int, int, AbsoluteDate)
      */
     UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(int degree,
                                                                    int order);

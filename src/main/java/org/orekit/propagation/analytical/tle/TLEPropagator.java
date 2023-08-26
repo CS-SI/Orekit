@@ -230,7 +230,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      *
      * @param tle the TLE to propagate.
      * @return the correct propagator.
-     * @see #selectExtrapolator(TLE, Frames)
+     * @see #selectExtrapolator(TLE, Frame)
      */
     @DefaultDataContext
     public static TLEPropagator selectExtrapolator(final TLE tle) {
