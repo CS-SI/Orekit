@@ -44,6 +44,19 @@ public class SaastamoinenModelTest {
     private double[] heights;
 
     @Test
+    public void testIssue1078() {
+        try {
+            new SaastamoinenModel(273.16 + 18, 1013.25, 50.0);
+        } catch (OrekitException oe) {
+            Assertions.assertEquals("paramètre invalide humidity: 50 n'est pas dans l'intervalle [0, 1]", oe.getLocalizedMessage());
+        }
+        try {
+            new SaastamoinenModel(273.16 + 18, 1013.25, -50.0);
+        } catch (OrekitException oe) {
+            Assertions.assertEquals("paramètre invalide humidity: -50 n'est pas dans l'intervalle [0, 1]", oe.getLocalizedMessage());
+        }
+    }
+    @Test
     public void testFixedElevation() {
         Utils.setDataRoot("atmosphere");
         SaastamoinenModel model = SaastamoinenModel.getStandardModel();
