@@ -25,7 +25,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.forces.maneuvers.ControlVector3DNormType;
+import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
@@ -73,16 +73,16 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
      * @param thrust thrust (N)
      * @param isp isp (s)
      * @param direction direction in spacecraft frame
-     * @param controlVector3DNormType control norm type
+     * @param control3DVectorCostType control cost type
      * @param name name of the maneuver
      * @since 12.0
      */
     public BasicConstantThrustPropulsionModel(final double thrust,
                                               final double isp,
                                               final Vector3D direction,
-                                              final ControlVector3DNormType controlVector3DNormType,
+                                              final Control3DVectorCostType control3DVectorCostType,
                                               final String name) {
-        super(thrust, isp, direction, controlVector3DNormType, name);
+        super(thrust, isp, direction, control3DVectorCostType, name);
         this.direction = direction.normalize();
 
         final double initialFlowRate = super.getInitialFlowRate();
@@ -104,14 +104,14 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
                                               final double isp,
                                               final Vector3D direction,
                                               final String name) {
-        this(thrust, isp, direction, ThrustPropulsionModel.getDefaultControlVector3DNormType(), name);
+        this(thrust, isp, direction, DEFAULT_CONTROL_3D_VECTOR_COST_TYPE, name);
     }
 
     /** {@inheritDoc} */
     @Override
     public Vector3D getThrustVector() {
         // Thrust vector does not depend on spacecraft state for a constant maneuver.
-        // thrustDriver as only 1 value estimated over the all time period
+        // thrustDriver as only 1 value estimated over the whole time period
         // by construction thrustDriver has only 1 value estimated over the all period
         // that is why no argument is acceptable
         return direction.scalarMultiply(thrustDriver.getValue());
@@ -128,7 +128,7 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
     @Override
     public double getFlowRate() {
         // Thrust vector does not depend on spacecraft state for a constant maneuver.
-        // thrustDriver as only 1 value estimated over the all time period
+        // thrustDriver has only 1 value estimated over the whole time period
         // by construction thrustDriver has only 1 value estimated over the all period
         // that is why no argument is acceptable
         return flowRateDriver.getValue();
@@ -162,7 +162,7 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final T[] parameters) {
-        return new FieldVector3D<T>(parameters[0], direction);
+        return new FieldVector3D<>(parameters[0], direction);
     }
 
     /** {@inheritDoc} */

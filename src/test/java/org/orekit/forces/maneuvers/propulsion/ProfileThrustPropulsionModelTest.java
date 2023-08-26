@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
-import org.orekit.forces.maneuvers.ControlVector3DNormType;
+import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
 import org.orekit.frames.FramesFactory;
@@ -129,7 +129,7 @@ public class ProfileThrustPropulsionModelTest {
                                                           new PolynomialFunction(new double[] { 0.0 }),
                                                           new PolynomialFunction(new double[] { 0.0 })),
                               t3, false);
-        final PropulsionModel propulsionModel = new ProfileThrustPropulsionModel(profile, isp, ControlVector3DNormType.NORM_2, "ABM");
+        final PropulsionModel propulsionModel = new ProfileThrustPropulsionModel(profile, isp, Control3DVectorCostType.TWO_NORM, "ABM");
 
         Assertions.assertEquals("ABM", propulsionModel.getName());
         Assertions.assertEquals(0.0,     thrust(initialState, t0.shiftedBy(-0.001),              propulsionModel), 1.0e-8);
@@ -219,7 +219,7 @@ public class ProfileThrustPropulsionModelTest {
                                                           new PolynomialFunction(new double[] { 0.0 }),
                                                           new PolynomialFunction(new double[] { 0.0 })),
                               t3, false);
-        final PropulsionModel propulsionModel = new ProfileThrustPropulsionModel(profile, isp, ControlVector3DNormType.NORM_2, "ABM");
+        final PropulsionModel propulsionModel = new ProfileThrustPropulsionModel(profile, isp, Control3DVectorCostType.TWO_NORM, "ABM");
 
         Assertions.assertEquals("ABM", propulsionModel.getName());
         Assertions.assertEquals(0.0,     thrust(initialState, fireDate.shiftedBy(-0.001),                        propulsionModel).getReal(), 1.0e-8);

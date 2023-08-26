@@ -25,6 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.FieldAttitude;
+import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -112,5 +113,11 @@ public interface PropulsionModel extends ParameterDriversProvider, EventDetector
     default String getName() {
         return "";
     }
+
+    /** Get the control vector's cost type.
+     * @return control cost type
+     * @since 12.0
+     */
+    Control3DVectorCostType getControl3DVectorCostType();
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2023 Exotrail
+/* Copyright 2020-2023 Exotrail
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,7 +61,7 @@ import org.orekit.utils.FieldPVCoordinates;
  * was constructed using LOFType.VNC the velocity increment should be
  * provided in VNC coordinates.</p>
  * <p>The norm through which the delta-V maps to the mass consumption is chosen via the
- * enum {@link ControlVector3DNormType}. Default is Euclidean. </p>
+ * enum {@link Control3DVectorCostType}. Default is Euclidean. </p>
  * <p>Beware that the triggering event detector must behave properly both
  * before and after maneuver. If for example a node detector is used to trigger
  * an inclination maneuver and the maneuver change the orbit to an equatorial one,
@@ -95,7 +95,7 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
     private boolean forward;
 
     /** Type of norm linking delta-V to mass consumption. */
-    private final ControlVector3DNormType controlVector3DNormType;
+    private final Control3DVectorCostType control3DVectorCostType;
 
     /** Build a new instance.
      * @param trigger triggering event
@@ -116,7 +116,7 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
                                 final FieldVector3D<T> deltaVSat, final T isp) {
         this(trigger.getMaxCheckInterval(), trigger.getThreshold(), trigger.getMaxIterationCount(),
                 new Handler<>(), trigger, attitudeOverride, deltaVSat, isp,
-                ControlVector3DNormType.NORM_2);
+                Control3DVectorCostType.TWO_NORM);
     }
 
     /** Build a new instance.
@@ -124,13 +124,13 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
      * @param attitudeOverride the attitude provider to use for the maneuver
      * @param deltaVSat velocity increment in satellite frame
      * @param isp engine specific impulse (s)
-     * @param controlVector3DNormType increment's norm for mass consumption
+     * @param control3DVectorCostType increment's norm for mass consumption
      */
     public FieldImpulseManeuver(final D trigger, final AttitudeProvider attitudeOverride,
                                 final FieldVector3D<T> deltaVSat, final T isp,
-                                final ControlVector3DNormType controlVector3DNormType) {
+                                final Control3DVectorCostType control3DVectorCostType) {
         this(trigger.getMaxCheckInterval(), trigger.getThreshold(), trigger.getMaxIterationCount(),
-                new Handler<>(), trigger, attitudeOverride, deltaVSat, isp, controlVector3DNormType);
+                new Handler<>(), trigger, attitudeOverride, deltaVSat, isp, control3DVectorCostType);
     }
 
     /** Private constructor with full parameters.
@@ -147,18 +147,18 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
      * @param attitudeOverride the attitude provider to use for the maneuver
      * @param deltaVSat velocity increment in satellite frame
      * @param isp engine specific impulse (s)
-     * @param controlVector3DNormType increment's norm for mass consumption
+     * @param control3DVectorCostType increment's norm for mass consumption
      */
     private FieldImpulseManeuver(final FieldAdaptableInterval<T> maxCheck, final T threshold, final int maxIter,
                                  final FieldEventHandler<T> eventHandler, final D trigger,
                                  final AttitudeProvider attitudeOverride, final FieldVector3D<T> deltaVSat,
-                                 final T isp, final ControlVector3DNormType controlVector3DNormType) {
+                                 final T isp, final Control3DVectorCostType control3DVectorCostType) {
         super(maxCheck, threshold, maxIter, eventHandler);
         this.trigger = trigger;
         this.deltaVSat = deltaVSat;
         this.isp = isp;
         this.attitudeOverride = attitudeOverride;
-        this.controlVector3DNormType = controlVector3DNormType;
+        this.control3DVectorCostType = control3DVectorCostType;
         this.vExhaust = this.isp.multiply(Constants.G0_STANDARD_GRAVITY);
     }
 
@@ -168,7 +168,7 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
                                                 final int newMaxIter,
                                                 final FieldEventHandler<T> fieldEventHandler) {
         return new FieldImpulseManeuver<>(newMaxCheck, newThreshold, newMaxIter, fieldEventHandler,
-                trigger, attitudeOverride, deltaVSat, isp, controlVector3DNormType);
+                trigger, attitudeOverride, deltaVSat, isp, control3DVectorCostType);
     }
 
     /** {@inheritDoc} */
@@ -214,11 +214,12 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
         return isp;
     }
 
-    /** Get the control vector's norm type.
-     * @return norm type
+    /** Get the control vector's cost type.
+     * @return control cost type
+     * @since 12.0
      */
-    public ControlVector3DNormType getControlVector3DNormType() {
-        return controlVector3DNormType;
+    public Control3DVectorCostType getControl3DVectorCostType() {
+        return control3DVectorCostType;
     }
 
     /** Local handler. */
@@ -267,7 +268,7 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
                     new FieldCartesianOrbit<>(newPV, oldState.getFrame(), date, oldState.getMu());
 
             // compute new mass
-            final T normDeltaV = im.controlVector3DNormType.evaluate(im.deltaVSat);
+            final T normDeltaV = im.control3DVectorCostType.evaluate(im.deltaVSat);
             final T newMass = oldState.getMass().multiply(FastMath.exp(normDeltaV.multiply(sign.negate()).divide(im.vExhaust)));
 
             // pack everything in a new state

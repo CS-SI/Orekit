@@ -89,7 +89,7 @@ public class ConstantThrustManeuver extends Maneuver {
                                   final AttitudeProvider attitudeOverride,
                                   final Vector3D direction,
                                   final String name) {
-        this(date, duration, thrust, isp, attitudeOverride, direction, ControlVector3DNormType.NORM_2, name);
+        this(date, duration, thrust, isp, attitudeOverride, direction, Control3DVectorCostType.TWO_NORM, name);
     }
 
     /** Simple constructor for a constant direction and constant thrust.
@@ -164,16 +164,16 @@ public class ConstantThrustManeuver extends Maneuver {
      * @param attitudeOverride the attitude provider to use for the maneuver, or
      * null if the attitude from the propagator should be used
      * @param direction the acceleration direction in satellite frame
-     * @param controlVector3DNormType control vector's norm type
+     * @param control3DVectorCostType control vector's cost type
      * @param name name of the maneuver, used as a prefix for the {@link #getParametersDrivers() parameters drivers}
      * @since 12.0
      */
     public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
                                   final double thrust, final double isp, final AttitudeProvider attitudeOverride,
-                                  final Vector3D direction, final ControlVector3DNormType controlVector3DNormType,
+                                  final Vector3D direction, final Control3DVectorCostType control3DVectorCostType,
                                   final String name) {
         this(date, duration, attitudeOverride,
-                new BasicConstantThrustPropulsionModel(thrust, isp, direction, controlVector3DNormType, name));
+                new BasicConstantThrustPropulsionModel(thrust, isp, direction, control3DVectorCostType, name));
     }
 
     /** Simple constructor for a constant direction and constant thrust.
@@ -239,21 +239,21 @@ public class ConstantThrustManeuver extends Maneuver {
         return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getThrustVector();
     }
 
-    /** Get the thrust.
+    /** Get the thrust magnitude.
      * @param date date at which the thrust vector wants to be known,
      * often the date parameter will not be important and can be whatever
      * if the thrust parameter driver as only value estimated over the all
      * orbit determination interval
      * @return thrust force (N).
      */
-    public double getThrust(final AbsoluteDate date) {
+    public double getThrustMagnitude(final AbsoluteDate date) {
         return getThrustVector(date).getNorm();
     }
 
-    /** Get the thrust.
+    /** Get the thrust magnitude.
      * @return thrust force (N).
      */
-    public double getThrust() {
+    public double getThrustMagnitude() {
         return getThrustVector().getNorm();
     }
 
@@ -264,14 +264,14 @@ public class ConstantThrustManeuver extends Maneuver {
      * orbit determination interval
      * @return specific impulse (s).
      */
-    public double getISP(final AbsoluteDate date) {
+    public double getIsp(final AbsoluteDate date) {
         return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getIsp(date);
     }
 
     /** Get the specific impulse.
      * @return specific impulse (s).
      */
-    public double getISP() {
+    public double getIsp() {
         return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getIsp();
     }
 

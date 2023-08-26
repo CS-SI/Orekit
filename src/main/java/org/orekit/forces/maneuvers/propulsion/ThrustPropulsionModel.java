@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.forces.maneuvers.ControlVector3DNormType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Constants;
@@ -34,29 +33,13 @@ import org.orekit.utils.Constants;
  */
 public interface ThrustPropulsionModel extends PropulsionModel {
 
-    /** Get the default control vector norm type.
-     * @return norm type.
-     * @since 12.0
-     */
-    static ControlVector3DNormType getDefaultControlVector3DNormType() {
-        return ControlVector3DNormType.NORM_2;
-    }
-
     /** Get the specific impulse (s).
      * @param s current spacecraft state
      * @return specific impulse (s).
      */
     default double getIsp(SpacecraftState s) {
         final double flowRate = getFlowRate(s);
-        return -getControlVector3DNormType().evaluate(getThrustVector(s)) / (Constants.G0_STANDARD_GRAVITY * flowRate);
-    }
-
-    /** Get the control vector's norm type.
-     * @return control norm type
-     * @since 12.0
-     */
-    default ControlVector3DNormType getControlVector3DNormType() {
-        return getDefaultControlVector3DNormType();
+        return -getControl3DVectorCostType().evaluate(getThrustVector(s)) / (Constants.G0_STANDARD_GRAVITY * flowRate);
     }
 
     /** Get the thrust direction in spacecraft frame.
@@ -158,7 +141,7 @@ public interface ThrustPropulsionModel extends PropulsionModel {
         // It seems under-efficient to rotate direction and apply thrust
         // instead of just rotating the whole thrust vector itself.
         // However it has to be done that way to avoid numerical discrepancies with legacy tests.
-        return new FieldVector3D<>(s.getMass().reciprocal().multiply(thrust),
+        return new FieldVector3D<>(thrust.divide(s.getMass()),
                         maneuverAttitude.getRotation().applyInverseTo(direction));
     }
 

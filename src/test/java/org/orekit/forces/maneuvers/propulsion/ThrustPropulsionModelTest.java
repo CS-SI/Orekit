@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
@@ -74,6 +75,11 @@ class ThrustPropulsionModelTest {
             @Override
             public List<ParameterDriver> getParametersDrivers() {
                 return Collections.emptyList();
+            }
+
+            @Override
+            public Control3DVectorCostType getControl3DVectorCostType() {
+                return Control3DVectorCostType.NONE;
             }
         };
 
@@ -130,6 +136,11 @@ class ThrustPropulsionModelTest {
             @Override
             public List<ParameterDriver> getParametersDrivers() {
                 return Collections.emptyList();
+            }
+
+            @Override
+            public Control3DVectorCostType getControl3DVectorCostType() {
+                return Control3DVectorCostType.NONE;
             }
         };
 

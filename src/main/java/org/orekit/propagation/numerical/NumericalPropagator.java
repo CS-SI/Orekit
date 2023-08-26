@@ -44,7 +44,6 @@ import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.jacobians.Duration;
 import org.orekit.forces.maneuvers.jacobians.MedianDate;
 import org.orekit.forces.maneuvers.jacobians.TriggerDate;
-import org.orekit.forces.maneuvers.trigger.AbstractManeuverTriggers;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
@@ -501,18 +500,12 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         final List<String> names = new ArrayList<>();
         for (final ForceModel forceModel : getAllForceModels()) {
             if (forceModel instanceof Maneuver) {
-                final Maneuver         maneuver         = (Maneuver) forceModel;
+                final Maneuver maneuver = (Maneuver) forceModel;
                 final ManeuverTriggers maneuverTriggers = maneuver.getManeuverTriggers();
-                if (maneuverTriggers instanceof AbstractManeuverTriggers) {
 
-                    // FIXME: when issue https://gitlab.orekit.org/orekit/orekit/-/issues/854 is solved
-                    // the previous if statement and the following cast should be removed as the following
-                    // code should really be done for all ManeuverTriggers and not only AbstractManeuverTriggers
-                    final AbstractManeuverTriggers amt = (AbstractManeuverTriggers) maneuverTriggers;
-
-                    amt.getEventDetectors().
+                maneuverTriggers.getEventDetectors().
                         filter(d -> d instanceof ParameterDrivenDateIntervalDetector).
-                        map (d -> (ParameterDrivenDateIntervalDetector) d).
+                        map(d -> (ParameterDrivenDateIntervalDetector) d).
                         forEach(d -> {
                             TriggerDate start;
                             TriggerDate stop;
@@ -521,7 +514,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                                 // normally datedriver should have only 1 span but just in case the user defines several span, there will
                                 // be no problem here
                                 for (Span<String> span = d.getStartDriver().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                                    start = manageTriggerDate(stmName, maneuver, amt, span.getData(), true,  d.getThreshold());
+                                    start = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), true, d.getThreshold());
                                     names.add(start.getName());
                                     start = null;
                                 }
@@ -530,7 +523,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                                 // normally datedriver should have only 1 span but just in case the user defines several span, there will
                                 // be no problem here
                                 for (Span<String> span = d.getStopDriver().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                                    stop = manageTriggerDate(stmName, maneuver, amt, span.getData(),  false, d.getThreshold());
+                                    stop = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), false, d.getThreshold());
                                     names.add(stop.getName());
                                     stop = null;
                                 }
@@ -540,7 +533,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                                 Span<String> currentMedianNameSpan = d.getMedianDriver().getNamesSpanMap().getFirstSpan();
                                 MedianDate median =
                                         manageMedianDate(d.getStartDriver().getNamesSpanMap().getFirstSpan().getData(),
-                                                         d.getStopDriver().getNamesSpanMap().getFirstSpan().getData(), currentMedianNameSpan.getData());
+                                                d.getStopDriver().getNamesSpanMap().getFirstSpan().getData(), currentMedianNameSpan.getData());
                                 names.add(median.getName());
                                 // for all span
                                 // normally datedriver should have only 1 span but just in case the user defines several span, there will
@@ -549,8 +542,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                                     currentMedianNameSpan = d.getMedianDriver().getNamesSpanMap().getSpan(currentMedianNameSpan.getEnd());
                                     median =
                                             manageMedianDate(d.getStartDriver().getNamesSpanMap().getSpan(currentMedianNameSpan.getStart()).getData(),
-                                                             d.getStopDriver().getNamesSpanMap().getSpan(currentMedianNameSpan.getStart()).getData(),
-                                                             currentMedianNameSpan.getData());
+                                                    d.getStopDriver().getNamesSpanMap().getSpan(currentMedianNameSpan.getStart()).getData(),
+                                                    currentMedianNameSpan.getData());
                                     names.add(median.getName());
 
                                 }
@@ -560,23 +553,21 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                                 // for first span
                                 Span<String> currentDurationNameSpan = d.getDurationDriver().getNamesSpanMap().getFirstSpan();
                                 Duration duration =
-                                         manageManeuverDuration(d.getStartDriver().getNamesSpanMap().getFirstSpan().getData(),
-                                                                d.getStopDriver().getNamesSpanMap().getFirstSpan().getData(), currentDurationNameSpan.getData());
+                                        manageManeuverDuration(d.getStartDriver().getNamesSpanMap().getFirstSpan().getData(),
+                                                d.getStopDriver().getNamesSpanMap().getFirstSpan().getData(), currentDurationNameSpan.getData());
                                 names.add(duration.getName());
                                 // for all span
                                 for (int spanNumber = 1; spanNumber < d.getDurationDriver().getNamesSpanMap().getSpansNumber(); ++spanNumber) {
                                     currentDurationNameSpan = d.getDurationDriver().getNamesSpanMap().getSpan(currentDurationNameSpan.getEnd());
                                     duration =
                                             manageManeuverDuration(d.getStartDriver().getNamesSpanMap().getSpan(currentDurationNameSpan.getStart()).getData(),
-                                                                   d.getStopDriver().getNamesSpanMap().getSpan(currentDurationNameSpan.getStart()).getData(),
-                                                                   currentDurationNameSpan.getData());
+                                                    d.getStopDriver().getNamesSpanMap().getSpan(currentDurationNameSpan.getStart()).getData(),
+                                                    currentDurationNameSpan.getData());
                                     names.add(duration.getName());
 
                                 }
                             }
                         });
-
-                }
             }
         }
 
@@ -587,7 +578,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     /** Manage a maneuver trigger date.
      * @param stmName name of the State Transition Matrix state
      * @param maneuver maneuver force model
-     * @param amt trigger to which the driver is bound
+     * @param mt trigger to which the driver is bound
      * @param driverName name of the date driver
      * @param start if true, the driver is a maneuver start
      * @param threshold event detector threshold
@@ -596,7 +587,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      */
     private TriggerDate manageTriggerDate(final String stmName,
                                           final Maneuver maneuver,
-                                          final AbstractManeuverTriggers amt,
+                                          final ManeuverTriggers mt,
                                           final String driverName,
                                           final boolean start,
                                           final double threshold) {
@@ -616,7 +607,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         if (triggerGenerator == null) {
             // this is the first time we need the Jacobian column generator, create it
             triggerGenerator = new TriggerDate(stmName, driverName, start, maneuver, threshold);
-            amt.addResetter(triggerGenerator);
+            mt.addResetter(triggerGenerator);
             addAdditionalDerivativesProvider(triggerGenerator.getMassDepletionDelay());
             addAdditionalStateProvider(triggerGenerator);
         }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 Romain Serra
+/* Copyright 2022-2023 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,19 +20,36 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 
-/** Enumerate on types of norm for 3D control vector (thrust as a force or acceleration, including an impulse)
- * at a given time. See ROSS, I. Michael. Space Trajectory Optimization and L1-norm Optimal Control Problems.
- * Modern astrodynamics, 2006, vol. 1, p. 155. It is used across the package but not yet outside e.g. in estimation.
- * <p>Note that as norms of spaces in finite dimensions, they are all equivalent in a topological sense.</p>
+/** Enumerate on types of cost for 3D control vector (thrust as a force or acceleration, including an impulse)
+ * at a given time. It is typically a norm (for a single, gimbaled thruster it would be the Euclidean one)
+ * and relates to the mass flow rate.
+ * See ROSS, I. Michael. Space Trajectory Optimization and L1-norm Optimal Control Problems.
+ * Modern astrodynamics, 2006, vol. 1, p. 155.
+ * <p>It is used widely across the {@link org.orekit.forces.maneuvers} package.</p>
+ * <p>Note that norms in finite-dimensional vector spaces are all equivalent in a topological sense.</p>
  * @see org.orekit.forces.maneuvers.ImpulseManeuver
- * @see org.orekit.forces.maneuvers.ConstantThrustManeuver
+ * @see org.orekit.forces.maneuvers.FieldImpulseManeuver
+ * @see org.orekit.forces.maneuvers.Maneuver
  * @author Romain Serra
  * @since 12.0
  */
-public enum ControlVector3DNormType {
+public enum Control3DVectorCostType {
 
-    /** Norm 1. */
-    NORM_1 {
+    /** Zero cost (free control). */
+    NONE {
+        @Override
+        public double evaluate(final Vector3D controlVector) {
+            return 0.;
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> T evaluate(final FieldVector3D<T> controlVector) {
+            return controlVector.getX().getField().getZero();
+        }
+    },
+
+    /** 1-norm. */
+    ONE_NORM {
         @Override
         public double evaluate(final Vector3D controlVector) {
             return controlVector.getNorm1();
@@ -44,8 +61,8 @@ public enum ControlVector3DNormType {
         }
     },
 
-    /** Norm 2 also known as Euclidean. */
-    NORM_2 {
+    /** 2-norm also known as Euclidean. */
+    TWO_NORM {
         @Override
         public double evaluate(final Vector3D controlVector) {
             return controlVector.getNorm();
@@ -57,8 +74,8 @@ public enum ControlVector3DNormType {
         }
     },
 
-    /** Norm Inf also known as Max. */
-    NORM_INF {
+    /** Infinite norm also known as Max. */
+    INF_NORM {
         @Override
         public double evaluate(final Vector3D controlVector) {
             return controlVector.getNormInf();
@@ -70,16 +87,16 @@ public enum ControlVector3DNormType {
         }
     };
 
-    /** Evaluate the norm on the inputted vector.
+    /** Evaluate the cost of the input seen as a 3D control vector.
      * @param controlVector vector
-     * @return norm of vector
+     * @return cost of vector
      */
     public abstract double evaluate(Vector3D controlVector);
 
-    /** Evaluate the norm on the inputted vector.
+    /** Evaluate the cost of the input seen as a 3D control vector.
      * @param <T> CalculusFieldElement used
      * @param controlVector vector
-     * @return norm of vector
+     * @return cost of vector
      */
     public abstract <T extends CalculusFieldElement<T>> T evaluate(FieldVector3D<T> controlVector);
 
