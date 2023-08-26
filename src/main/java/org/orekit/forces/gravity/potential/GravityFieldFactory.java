@@ -221,7 +221,7 @@ public class GravityFieldFactory {
      * @param order maximal order
      * @return a gravity field coefficients provider containing already loaded data
      * @since 6.0
-     * @see #getConstantNormalizedProvider(int, int)
+     * @see #getConstantNormalizedProvider(int, int, AbsoluteDate)
      */
     @DefaultDataContext
     public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final int degree,
@@ -264,7 +264,7 @@ public class GravityFieldFactory {
      * @param order maximal order
      * @return a gravity field coefficients provider containing already loaded data
      * @since 6.0
-     * @see #getConstantUnnormalizedProvider(int, int)
+     * @see #getConstantUnnormalizedProvider(int, int, AbsoluteDate)
      */
     @DefaultDataContext
     public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final int degree,

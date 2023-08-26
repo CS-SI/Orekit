@@ -54,7 +54,7 @@
 
     * Cartesian, Keplerian (elliptic, parabolic, hyperbolic), circular and equinoctial parameters, with non-Keplerian
       derivatives if available
-    * Two-Line Elements
+    * Two-Line Elements (TLE)
     * transparent conversion between all parameters
     * automatic binding with frames
     * attitude state and derivative
@@ -110,6 +110,7 @@
     * semi-analytical propagation model (DSST)
         * central attraction
         * gravity models
+        * J2-squared effect
         * atmospheric drag
         * third body attraction
         * radiation pressure with eclipses
@@ -239,6 +240,7 @@
         * GNSS code
         * GNSS phase with integer ambiguity resolution and wind-up effect
         * Time Difference of Arrival (TDOA)
+        * Frequency Difference of Arrival (FDOA)
         * Bi-static range and range rate
         * multiplexed
     * possibility to add custom measurements
@@ -272,10 +274,10 @@
 
     * computation of Dilution Of Precision
     * loading of ANTEX antenna models file
-    * loading of RINEX observation files (version 2 and version 3)
-    * loading of RINEX navigation files (version 3)
+    * loading of RINEX observation files (version 2, 3, and 4)
+    * loading of RINEX navigation files (version 2, 3, and 4)
     * support for Hatanaka compact RINEX format
-    * loading of SINEX file (can load station positions, eccentricities and EOPs)
+    * loading of SINEX file (can load station positions, eccentricities, EOPs, and Differential Code Biases)
     * loading of RINEX clock files (version 2 and version 3)
     * parsing of IGS SSR messages for all constellations (version 1)
     * parsing of RTCM messages (both ephemeris and correction messages)

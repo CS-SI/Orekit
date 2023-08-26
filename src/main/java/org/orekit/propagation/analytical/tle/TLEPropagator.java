@@ -33,7 +33,6 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractMatricesHarvester;
@@ -230,7 +229,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      *
      * @param tle the TLE to propagate.
      * @return the correct propagator.
-     * @see #selectExtrapolator(TLE, Frames)
+     * @see #selectExtrapolator(TLE, Frame)
      */
     @DefaultDataContext
     public static TLEPropagator selectExtrapolator(final TLE tle) {
