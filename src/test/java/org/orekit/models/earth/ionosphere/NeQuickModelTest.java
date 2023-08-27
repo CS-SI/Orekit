@@ -176,7 +176,7 @@ public class NeQuickModelTest {
                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Satellite position
         final Vector3D satPosInITRF    = ellipsoid.transform(satP);
-        final Vector3D satPosInEME2000 = ellipsoid.getBodyFrame().getTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
+        final Vector3D satPosInEME2000 = ellipsoid.getBodyFrame().getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
 
         // Spacecraft state
         final PVCoordinates   pv      = new PVCoordinates(satPosInEME2000, new Vector3D(1.0, 1.0, 1.0));
@@ -221,7 +221,7 @@ public class NeQuickModelTest {
                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Satellite position
         final FieldVector3D<T> satPosInITRF    = ellipsoid.transform(satP);
-        final FieldVector3D<T> satPosInEME2000 = ellipsoid.getBodyFrame().getTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
+        final FieldVector3D<T> satPosInEME2000 = ellipsoid.getBodyFrame().getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
 
         // Spacecraft state
         final FieldPVCoordinates<T>   pv      = new FieldPVCoordinates<>(satPosInEME2000, new FieldVector3D<>(one, one, one));

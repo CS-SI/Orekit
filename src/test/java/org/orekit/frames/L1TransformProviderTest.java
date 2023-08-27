@@ -65,7 +65,7 @@ public class L1TransformProviderTest {
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
         // because the test should avoid doing wrong interpretation of the meaning and
         // particularly on the sign of the translation)
-        Vector3D posL1   = l1Frame.getTransformTo(eme2000,date).transformPosition(Vector3D.ZERO);
+        Vector3D posL1   = l1Frame.getStaticTransformTo(eme2000,date).transformPosition(Vector3D.ZERO);
 
         // check L1 and Moon are aligned as seen from Earth
         Assertions.assertEquals(0.0, Vector3D.angle(posMoon, posL1), 1.0e-10);
@@ -136,7 +136,7 @@ public class L1TransformProviderTest {
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
         // because the test should avoid doing wrong interpretation of the meaning and
         // particularly on the sign of the translation)
-        Vector3D posL1   = l1Frame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
+        Vector3D posL1   = l1Frame.getStaticTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L1 and Earth are aligned as seen from Sun
         Assertions.assertEquals(0.0, Vector3D.angle(posEarth, posL1), 1.0e-10);
@@ -172,7 +172,7 @@ public class L1TransformProviderTest {
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
         // because the test should avoid doing wrong interpretation of the meaning and
         // particularly on the sign of the translation)
-        FieldVector3D<T> posL1   = l1Frame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
+        FieldVector3D<T> posL1   = l1Frame.getStaticTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L2 and Earth are aligned as seen from Sun
         Assertions.assertEquals(0.0, FieldVector3D.angle(posEarth, posL1).getReal(), 1.0e-10);
@@ -204,7 +204,7 @@ public class L1TransformProviderTest {
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
         // because the test should avoid doing wrong interpretation of the meaning and
         // particularly on the sign of the translation)
-        Vector3D posL1   = l1Frame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
+        Vector3D posL1   = l1Frame.getStaticTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L1 and Jupiter are aligned as seen from Sun
         Assertions.assertEquals(0.0, Vector3D.angle(posJupiter, posL1), 1.0e-10);
@@ -240,7 +240,7 @@ public class L1TransformProviderTest {
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
         // because the test should avoid doing wrong interpretation of the meaning and
         // particularly on the sign of the translation)
-        FieldVector3D<T> posL1   = l1Frame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
+        FieldVector3D<T> posL1   = l1Frame.getStaticTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L2 and Jupiter are aligned as seen from Sun
         Assertions.assertEquals(0.0, FieldVector3D.angle(posJupiter, posL1).getReal(), 1.0e-10);

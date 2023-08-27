@@ -731,7 +731,7 @@ public class EcksteinHechlerPropagatorTest {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(154.);
         Frame itrf        = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame eme2000     = FramesFactory.getEME2000();
-        Vector3D pole     = itrf.getTransformTo(eme2000, date).transformVector(Vector3D.PLUS_K);
+        Vector3D pole     = itrf.getStaticTransformTo(eme2000, date).transformVector(Vector3D.PLUS_K);
         Frame poleAligned = new Frame(FramesFactory.getEME2000(),
                                       new Transform(date, new Rotation(pole, Vector3D.PLUS_K)),
                                       "pole aligned", true);

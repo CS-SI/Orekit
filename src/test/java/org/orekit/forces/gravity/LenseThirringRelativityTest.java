@@ -36,6 +36,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -84,8 +85,8 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
             final DerivativeStructure r2 = r.multiply(r);
 
             // Earth’s angular momentum per unit mass
-            final Transform t = bodyFrame.getTransformTo(frame, date);
-            final Vector3D  j = t.transformVector(Vector3D.PLUS_K).scalarMultiply(9.8e8);
+            final StaticTransform t = bodyFrame.getStaticTransformTo(frame, date);
+            final Vector3D        j = t.transformVector(Vector3D.PLUS_K).scalarMultiply(9.8e8);
 
             return new FieldVector3D<>(position.dotProduct(j).multiply(3.0).divide(r2),
                                        position.crossProduct(velocity),

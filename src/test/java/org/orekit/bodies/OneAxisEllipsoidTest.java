@@ -499,8 +499,7 @@ public class OneAxisEllipsoidTest {
 
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
-        PVCoordinates pvSatItrf  = frame.getTransformTo(FramesFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
-        Vector3D pSatItrf  = pvSatItrf.getPosition();
+        Vector3D pSatItrf  = frame.getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(pvSatEME2000.getPosition());
 
         // Test first visible surface points
         GeodeticPoint geoPoint = new GeodeticPoint(FastMath.toRadians(70.), FastMath.toRadians(60.), 0.);
@@ -538,8 +537,7 @@ public class OneAxisEllipsoidTest {
 
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
         pvSatEME2000 = circ.getPVCoordinates();
-        pvSatItrf  = frame.getTransformTo(FramesFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
-        pSatItrf  = pvSatItrf.getPosition();
+        pSatItrf  = frame.getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(pvSatEME2000.getPosition());
 
         // Test first visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(5.), FastMath.toRadians(0.), 0.);
@@ -581,8 +579,7 @@ public class OneAxisEllipsoidTest {
 
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
         pvSatEME2000 = circ.getPVCoordinates();
-        pvSatItrf  = frame.getTransformTo(FramesFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
-        pSatItrf  = pvSatItrf.getPosition();
+        pSatItrf  = frame.getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(pvSatEME2000.getPosition());
 
         // Test first visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(40.), FastMath.toRadians(90.), 0.);
