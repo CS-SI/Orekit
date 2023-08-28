@@ -67,6 +67,10 @@ public class Context implements StationDataProvider {
     // key/first    = primary station that dates the measurement
     // value/second = secondary station associated
     public Pair<GroundStation, GroundStation>    TDOAstations;
+    // Stations for FDOA
+    // key/first    = primary station that dates the measurement
+    // value/second = secondary station associated
+    public Pair<GroundStation, GroundStation>    FDOAstations;
 
     public NumericalPropagatorBuilder createBuilder(final OrbitType orbitType, final PositionAngle positionAngle,
                                                     final boolean perfectStart,

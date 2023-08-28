@@ -99,8 +99,7 @@ public class ThirdBodyAttraction extends AbstractForceModel {
         final T gm = parameters[0];
 
         // compute bodies separation vectors and squared norm
-        final FieldVector3D<T> centralToBody = new FieldVector3D<>(s.getA().getField(),
-                                                                   body.getPosition(s.getDate().toAbsoluteDate(), s.getFrame()));
+        final FieldVector3D<T> centralToBody = body.getPosition(s.getDate(), s.getFrame());
         final T                r2Central     = centralToBody.getNormSq();
         final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPosition());
         final T                r2Sat         = satToBody.getNormSq();
