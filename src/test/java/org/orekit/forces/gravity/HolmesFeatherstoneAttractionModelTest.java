@@ -55,6 +55,7 @@ import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -98,9 +99,9 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
             Frame bodyFrame = (Frame) bodyFrameField.get(forceModel);
 
             // get the position in body frame
-            final Transform fromBodyFrame = bodyFrame.getTransformTo(state.getFrame(), date);
-            final Transform toBodyFrame   = fromBodyFrame.getInverse();
-            final Vector3D positionBody   = toBodyFrame.transformPosition(position.toVector3D());
+            final StaticTransform fromBodyFrame = bodyFrame.getStaticTransformTo(state.getFrame(), date);
+            final StaticTransform toBodyFrame   = fromBodyFrame.getInverse();
+            final Vector3D positionBody         = toBodyFrame.transformPosition(position.toVector3D());
 
             // compute gradient and Hessian
             final GradientHessian gh   = gradientHessian((HolmesFeatherstoneAttractionModel) forceModel,

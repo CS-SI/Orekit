@@ -2220,8 +2220,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
          final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
          for (final CPFCoordinate coordinates : ephemeris.getCoordinates()) {
              AbsoluteDate date = coordinates.getDate();
-             final PVCoordinates pvInertial = ephFrame.getTransformTo(initialGuess.getFrame(), date).transformPVCoordinates(coordinates);
-             measurements.add(new Position(date, pvInertial.getPosition(), 1, 1, satellite));
+             final Vector3D posInertial = ephFrame.getStaticTransformTo(initialGuess.getFrame(), date).transformPosition(coordinates.getPosition());
+             measurements.add(new Position(date, posInertial, 1, 1, satellite));
          }
 
          // Return

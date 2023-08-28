@@ -33,7 +33,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.PVCoordinates;
 
 /**Unit tests for {@link L1TransformProvider}.
  *
@@ -58,14 +57,13 @@ public class L1TransformProviderTest {
                                                    TimeScalesFactory.getUTC());
 
         // Compute Moon position in EME2000
-        PVCoordinates pvMoon = moon.getPVCoordinates(date, eme2000);
-        Vector3D posMoon = pvMoon.getPosition();
+        Vector3D posMoon = moon.getPosition(date, eme2000);
 
         // Compute L1 position in EME2000
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
         // because the test should avoid doing wrong interpretation of the meaning and
         // particularly on the sign of the translation)
-        Vector3D posL1   = l1Frame.getTransformTo(eme2000,date).transformPosition(Vector3D.ZERO);
+        Vector3D posL1   = l1Frame.getStaticTransformTo(eme2000,date).transformPosition(Vector3D.ZERO);
 
         // check L1 and Moon are aligned as seen from Earth
         Assertions.assertEquals(0.0, Vector3D.angle(posMoon, posL1), 1.0e-10);
@@ -129,14 +127,13 @@ public class L1TransformProviderTest {
                                                    TimeScalesFactory.getUTC());
 
         // Compute Earth position in Sun centered frame
-        PVCoordinates pvEarth = earth.getPVCoordinates(date, sunFrame);
-        Vector3D posEarth = pvEarth.getPosition();
+        Vector3D posEarth = earth.getPosition(date, sunFrame);
 
         // Compute L1 position in Sun centered frame
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
         // because the test should avoid doing wrong interpretation of the meaning and
         // particularly on the sign of the translation)
-        Vector3D posL1   = l1Frame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
+        Vector3D posL1   = l1Frame.getStaticTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L1 and Earth are aligned as seen from Sun
         Assertions.assertEquals(0.0, Vector3D.angle(posEarth, posL1), 1.0e-10);
@@ -172,7 +169,7 @@ public class L1TransformProviderTest {
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
         // because the test should avoid doing wrong interpretation of the meaning and
         // particularly on the sign of the translation)
-        FieldVector3D<T> posL1   = l1Frame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
+        FieldVector3D<T> posL1   = l1Frame.getStaticTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L2 and Earth are aligned as seen from Sun
         Assertions.assertEquals(0.0, FieldVector3D.angle(posEarth, posL1).getReal(), 1.0e-10);
@@ -197,14 +194,13 @@ public class L1TransformProviderTest {
                                                    TimeScalesFactory.getUTC());
 
         // Compute Jupiter position in Sun centered frame
-        PVCoordinates pvJupiter = jupiter.getPVCoordinates(date, sunFrame);
-        Vector3D posJupiter = pvJupiter.getPosition();
+        Vector3D posJupiter = jupiter.getPosition(date, sunFrame);
 
         // Compute L1 position in Sun centered frame
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
         // because the test should avoid doing wrong interpretation of the meaning and
         // particularly on the sign of the translation)
-        Vector3D posL1   = l1Frame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
+        Vector3D posL1   = l1Frame.getStaticTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L1 and Jupiter are aligned as seen from Sun
         Assertions.assertEquals(0.0, Vector3D.angle(posJupiter, posL1), 1.0e-10);
@@ -240,7 +236,7 @@ public class L1TransformProviderTest {
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
         // because the test should avoid doing wrong interpretation of the meaning and
         // particularly on the sign of the translation)
-        FieldVector3D<T> posL1   = l1Frame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
+        FieldVector3D<T> posL1   = l1Frame.getStaticTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L2 and Jupiter are aligned as seen from Sun
         Assertions.assertEquals(0.0, FieldVector3D.angle(posJupiter, posL1).getReal(), 1.0e-10);

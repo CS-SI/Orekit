@@ -43,6 +43,7 @@ import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.OrbitType;
@@ -165,7 +166,7 @@ public class GroundStationTest {
         final Vector3D deltaTopo = new Vector3D(2 * random.nextDouble() - 1,
                                                 2 * random.nextDouble() - 1,
                                                 2 * random.nextDouble() - 1);
-        final Transform topoToParent = base.getTransformTo(parent.getBodyFrame(), (AbsoluteDate) null);
+        final StaticTransform topoToParent = base.getStaticTransformTo(parent.getBodyFrame(), (AbsoluteDate) null);
         final Vector3D deltaParent   = topoToParent.transformVector(deltaTopo);
         final String movedSuffix     = "-moved";
         final GroundStation moved = new GroundStation(new TopocentricFrame(parent,

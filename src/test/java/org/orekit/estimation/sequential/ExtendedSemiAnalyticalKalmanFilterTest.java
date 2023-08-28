@@ -421,11 +421,11 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         for (final CPFCoordinate coordinate : ephemeris.getCoordinates()) {
 
             // Position in inertial frames
-            final TimeStampedPVCoordinates pvInertial = ephemeris.getFrame().getTransformTo(orbit.getFrame(), coordinate.getDate()).
-                                                                             transformPVCoordinates(coordinate);
+            final Vector3D posInertial = ephemeris.getFrame().getStaticTransformTo(orbit.getFrame(), coordinate.getDate()).
+                            transformPosition(coordinate.getPosition());
 
             // Initialize measurement
-            final Position measurement = new Position(coordinate.getDate(), pvInertial.getPosition(), sigma, 1.0, satellite);
+            final Position measurement = new Position(coordinate.getDate(), posInertial, sigma, 1.0, satellite);
 
             // Add the measurement to the list
             measurements.add(measurement);

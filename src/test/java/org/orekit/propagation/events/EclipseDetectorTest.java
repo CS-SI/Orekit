@@ -198,8 +198,7 @@ public class EclipseDetectorTest {
     @Test
     public void testInsideOcculted() {
         EclipseDetector e = new EclipseDetector(sun, sunRadius, earth);
-        Vector3D p = sun.getPVCoordinates(AbsoluteDate.J2000_EPOCH,
-                                          FramesFactory.getGCRF()).getPosition();
+        Vector3D p = sun.getPosition(AbsoluteDate.J2000_EPOCH, FramesFactory.getGCRF());
         SpacecraftState s = new SpacecraftState(new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH,
                                                                                                 p.add(Vector3D.PLUS_I),
                                                                                                 Vector3D.PLUS_K),
