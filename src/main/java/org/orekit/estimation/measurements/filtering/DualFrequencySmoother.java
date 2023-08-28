@@ -21,10 +21,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.orekit.files.rinex.observation.MeasurementType;
 import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.files.rinex.observation.ObservationDataSet;
-import org.orekit.files.rinex.observation.ObservationType;
+import org.orekit.gnss.MeasurementType;
+import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.ChronologicalComparator;
 

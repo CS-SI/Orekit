@@ -23,11 +23,9 @@ import java.util.Map;
 import org.hipparchus.fitting.PolynomialCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoint;
 import org.hipparchus.util.FastMath;
-import org.orekit.files.rinex.observation.CombinedObservationData;
-import org.orekit.files.rinex.observation.CombinedObservationDataSet;
-import org.orekit.files.rinex.observation.MeasurementType;
 import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.gnss.Frequency;
+import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 

@@ -17,6 +17,8 @@
 package org.orekit.files.rinex.observation;
 import java.util.List;
 
+import org.orekit.gnss.ObservationType;
+
 /** Scale Factor to be applied.
  * Contains the scale factors of 10 applied to the data before
  * being stored into the RINEX file.

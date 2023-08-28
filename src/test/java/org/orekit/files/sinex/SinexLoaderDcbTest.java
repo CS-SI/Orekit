@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
-import org.orekit.files.rinex.observation.ObservationType;
+import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;

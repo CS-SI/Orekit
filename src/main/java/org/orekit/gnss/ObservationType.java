@@ -14,13 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.observation;
+package org.orekit.gnss;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.orekit.gnss.Frequency;
-import org.orekit.gnss.SatelliteSystem;
 
 /** Enumerate for all the Observation Types for Rinex 2 and 3.
  * For Rinex 2, there is an two-character enumerate composed of the Observation

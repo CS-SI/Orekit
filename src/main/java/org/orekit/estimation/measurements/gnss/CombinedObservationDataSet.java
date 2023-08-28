@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.observation;
+package org.orekit.estimation.measurements.gnss;
 
 import java.util.Collections;
 import java.util.List;

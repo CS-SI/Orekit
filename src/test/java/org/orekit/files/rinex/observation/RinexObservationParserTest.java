@@ -34,6 +34,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.AppliedDCBS;
 import org.orekit.files.rinex.AppliedPCVS;
 import org.orekit.files.rinex.HatanakaCompressFilter;
+import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;

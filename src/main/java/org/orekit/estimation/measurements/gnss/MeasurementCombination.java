@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import org.orekit.files.rinex.observation.CombinedObservationDataSet;
 import org.orekit.files.rinex.observation.ObservationDataSet;
 
 /**

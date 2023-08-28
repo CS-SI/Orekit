@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.files.rinex.observation;
+package org.orekit.estimation.measurements.gnss;
 
 import java.util.List;
 
-import org.orekit.estimation.measurements.gnss.CombinationType;
+import org.orekit.files.rinex.observation.ObservationData;
+import org.orekit.gnss.MeasurementType;
 
 /**
  * Combined observation data.

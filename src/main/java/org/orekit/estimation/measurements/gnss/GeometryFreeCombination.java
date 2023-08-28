@@ -17,8 +17,8 @@
 package org.orekit.estimation.measurements.gnss;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.files.rinex.observation.MeasurementType;
 import org.orekit.gnss.Frequency;
+import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.SatelliteSystem;
 
 /**

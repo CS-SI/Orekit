@@ -22,13 +22,11 @@ import java.util.List;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.rinex.observation.CombinedObservationData;
-import org.orekit.files.rinex.observation.CombinedObservationDataSet;
-import org.orekit.files.rinex.observation.MeasurementType;
 import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.files.rinex.observation.ObservationDataSet;
-import org.orekit.files.rinex.observation.ObservationType;
 import org.orekit.gnss.Frequency;
+import org.orekit.gnss.MeasurementType;
+import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatelliteSystem;
 
 /** Base class for single frequency combination of measurements.

@@ -38,6 +38,8 @@ import org.orekit.files.rinex.AppliedDCBS;
 import org.orekit.files.rinex.AppliedPCVS;
 import org.orekit.files.rinex.section.RinexLabels;
 import org.orekit.files.rinex.utils.parsing.RinexUtils;
+import org.orekit.gnss.ObservationTimeScale;
+import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;

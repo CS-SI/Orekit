@@ -18,6 +18,7 @@ package org.orekit.files.rinex.observation;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.gnss.ObservationType;
 
 public class ObservationTypeTest {
 

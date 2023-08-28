@@ -18,6 +18,7 @@ package org.orekit.files.rinex.observation;
 
 import java.util.List;
 
+import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 

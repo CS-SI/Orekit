@@ -16,6 +16,8 @@
  */
 package org.orekit.files.rinex.observation;
 
+import org.orekit.gnss.ObservationType;
+
 /** Observation Data.
  * @since 9.2
  */
