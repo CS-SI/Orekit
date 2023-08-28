@@ -36,7 +36,6 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.PVCoordinates;
 
 /**Unit tests for {@link CR3BPRotatingTransformProvider}.
  * @author Vincent Mouraux
@@ -59,8 +58,7 @@ public class CR3BPRotatingTransformProviderTest {
                                                    TimeScalesFactory.getUTC());
 
         // Compute Moon position in EME2000
-        PVCoordinates pvMoon = moon.getPVCoordinates(date, eme2000);
-        Vector3D posMoon = pvMoon.getPosition();
+        Vector3D posMoon = moon.getPosition(date, eme2000);
 
         // Compute barycenter position in EME2000
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
@@ -124,8 +122,7 @@ public class CR3BPRotatingTransformProviderTest {
         final Frame baryFrame = syst.getRotatingFrame();
 
         // Compute Earth position in Sun centered frame
-        PVCoordinates pvEarth = earth.getPVCoordinates(date, sunFrame);
-        Vector3D posEarth = pvEarth.getPosition();
+        Vector3D posEarth = earth.getPosition(date, sunFrame);
 
         // Compute barycenter position in Sun centered frame
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
@@ -190,14 +187,13 @@ public class CR3BPRotatingTransformProviderTest {
         final Frame baryFrame = syst.getRotatingFrame();
 
         // Compute Jupiter position in Sun centered frame
-        PVCoordinates pvJupiter = jupiter.getPVCoordinates(date, sunFrame);
-        Vector3D posJupiter = pvJupiter.getPosition();
+        Vector3D posJupiter = jupiter.getPosition(date, sunFrame);
 
         // Compute barycenter position in Sun centered frame
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
         // because the test should avoid doing wrong interpretation of the meaning and
         // particularly on the sign of the translation)
-        Vector3D posBary   = baryFrame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
+        Vector3D posBary   = baryFrame.getStaticTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check barycenter and Jupiter are aligned as seen from Sun
         Assertions.assertEquals(0.0, Vector3D.angle(posJupiter, posBary), 1.0e-10);

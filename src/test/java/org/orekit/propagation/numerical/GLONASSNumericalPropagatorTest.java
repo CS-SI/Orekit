@@ -184,9 +184,8 @@ public class GLONASSNumericalPropagatorTest {
         // Initialize the propagator
         final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagatorBuilder(integrator, ge, true).build();
         // Compute the PV coordinates at the date of the GLONASS orbital elements
-        final SpacecraftState finalState = propagator.propagate(target);
-        final PVCoordinates pvInPZ90 = finalState.getPVCoordinates(pz90);
-        final Vector3D computedPos = pz90.getStaticTransformTo(itrf, target).transformPosition(pvInPZ90.getPosition());
+        final Vector3D posInPZ90 = propagator.propagate(target).getPosition(pz90);
+        final Vector3D computedPos = pz90.getStaticTransformTo(itrf, target).transformPosition(posInPZ90);
         // Expected position (reference from IGS file igv20692_06.sp3)
         final Vector3D expectedPos = new Vector3D(-10742801.600, -15247162.619, -17347541.633);
         // Verify

@@ -200,18 +200,19 @@ public class OneAxisEllipsoidTest {
 
         for (double dt = 0; dt < 3600.0; dt += 60.0) {
 
-            TimeStampedPVCoordinates pv = orbit.getPVCoordinates(orbit.getDate().shiftedBy(dt), eme2000);
-            TimeStampedPVCoordinates groundPV = model.projectToGround(pv, eme2000);
-            Vector3D groundP = model.projectToGround(pv.getPosition(), pv.getDate(), eme2000);
+            AbsoluteDate date = orbit.getDate().shiftedBy(dt);
+            Vector3D pos = orbit.getPosition(date, eme2000);
+            Vector3D groundPV = model.projectToGround(pos, date, eme2000);
+            Vector3D groundP = model.projectToGround(pos, date, eme2000);
 
             // check methods projectToGround and transform are consistent with each other
-            Assertions.assertEquals(model.transform(pv.getPosition(), eme2000, pv.getDate()).getLatitude(),
-                                model.transform(groundPV.getPosition(), eme2000, pv.getDate()).getLatitude(),
+            Assertions.assertEquals(model.transform(pos, eme2000, date).getLatitude(),
+                                model.transform(groundPV, eme2000, date).getLatitude(),
                                 1.0e-10);
-            Assertions.assertEquals(model.transform(pv.getPosition(), eme2000, pv.getDate()).getLongitude(),
-                                model.transform(groundPV.getPosition(), eme2000, pv.getDate()).getLongitude(),
+            Assertions.assertEquals(model.transform(pos, eme2000, date).getLongitude(),
+                                model.transform(groundPV, eme2000, date).getLongitude(),
                                 1.0e-10);
-            Assertions.assertEquals(0.0, Vector3D.distance(groundP, groundPV.getPosition()), 1.0e-15 * groundP.getNorm());
+            Assertions.assertEquals(0.0, Vector3D.distance(groundP, groundPV), 1.0e-15 * groundP.getNorm());
 
         }
 

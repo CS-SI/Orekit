@@ -569,7 +569,7 @@ public class SolarBodyTest {
         for (int iBody = 1; iBody <= 13; iBody++) {
             // When
             final CelestialBody body = getBody(iBody);
-            final double dP = Vector3D.distance(body.getPVCoordinates(date, j2000).getPosition(),
+            final double dP = Vector3D.distance(body.getPosition(date, j2000),
                                                 body.getPosition(date, j2000));
             // Then
             Assertions.assertEquals(0., dP, 0.);

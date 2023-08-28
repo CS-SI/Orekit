@@ -32,7 +32,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.PVCoordinates;
 
 /**Unit tests for {@link L2TransformProvider}.
  *
@@ -57,8 +56,7 @@ public class L2TransformProviderTest {
                                                    TimeScalesFactory.getUTC());
 
         // Compute Moon position in EME2000
-        PVCoordinates pvMoon = moon.getPVCoordinates(date, eme2000);
-        Vector3D posMoon = pvMoon.getPosition();
+        Vector3D posMoon = moon.getPosition(date, eme2000);
 
         // Compute L2 position in EME2000
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
@@ -127,8 +125,7 @@ public class L2TransformProviderTest {
                                                    TimeScalesFactory.getUTC());
 
         // Compute Earth position in Sun centered frame
-        PVCoordinates pvEarth = earth.getPVCoordinates(date, sunFrame);
-        Vector3D posEarth = pvEarth.getPosition();
+        Vector3D posEarth = earth.getPosition(date, sunFrame);
 
         // Compute L2 position in Sun centered frame
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
@@ -195,8 +192,7 @@ public class L2TransformProviderTest {
                                                    TimeScalesFactory.getUTC());
 
         // Compute Jupiter position in Sun centered frame
-        PVCoordinates pvJupiter = jupiter.getPVCoordinates(date, sunFrame);
-        Vector3D posJupiter = pvJupiter.getPosition();
+        Vector3D posJupiter = jupiter.getPosition(date, sunFrame);
 
         // Compute L2 position in Sun centered frame
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()

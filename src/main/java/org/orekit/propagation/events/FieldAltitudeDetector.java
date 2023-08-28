@@ -24,7 +24,6 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnDecreasing;
-import org.orekit.utils.FieldPVCoordinates;
 
 /** Finder for satellite altitude crossing events.
  * <p>This class finds altitude events (i.e. satellite crossing
@@ -148,8 +147,7 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
      */
     public T g(final FieldSpacecraftState<T> s) {
         final Frame bodyFrame              = bodyShape.getBodyFrame();
-        final FieldPVCoordinates<T> pvBody = s.getPVCoordinates(bodyFrame);
-        final FieldGeodeticPoint<T> point  = bodyShape.transform(pvBody.getPosition(),
+        final FieldGeodeticPoint<T> point  = bodyShape.transform(s.getPosition(bodyFrame),
                                                                  bodyFrame, s.getDate());
         return point.getAltitude().subtract(altitude);
     }

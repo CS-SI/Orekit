@@ -16,6 +16,14 @@
  */
 package org.orekit.frames;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -49,15 +57,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LocalMagneticFieldFrameTest {
 
@@ -264,11 +263,10 @@ public class LocalMagneticFieldFrameTest {
     private void checkMagneticFieldAngles(final String axis, final Double[] expectedThetaPhi, final Frame itrf,
                                           final GeoMagneticField model, SpacecraftState s) {
         // calculate magnetic field intensity
-        TimeStampedPVCoordinates pvItrf = s.getPVCoordinates(itrf);
-        double                   lat    = pvItrf.getPosition().getDelta();
-        double                   lng    = pvItrf.getPosition().getAlpha();
-        double alt =
-                pvItrf.getPosition().getNorm() - Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
+        Vector3D posItrf = s.getPosition(itrf);
+        double   lat     = posItrf.getDelta();
+        double   lng     = posItrf.getAlpha();
+        double   alt     = posItrf.getNorm() - Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
         Vector3D magneticFieldVector = model.calculateField(lat, lng, alt).getFieldVector();
         Vector3D magneticFieldVectorInertial = itrf.getTransformTo(s.getFrame(), s.getDate())
                                                    .transformVector(magneticFieldVector);

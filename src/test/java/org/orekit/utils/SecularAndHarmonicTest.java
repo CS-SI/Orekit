@@ -348,8 +348,8 @@ public class SecularAndHarmonicTest {
 
         double previousLatitude = Double.NaN;
         for (AbsoluteDate date = searchStart; date.compareTo(end) < 0; date = date.shiftedBy(stepSize)) {
-            final PVCoordinates pv       = propagator.propagate(date).getPVCoordinates(earth.getBodyFrame());
-            final double currentLatitude = earth.transform(pv.getPosition(), earth.getBodyFrame(), date).getLatitude();
+            final Vector3D pos = propagator.propagate(date).getPosition(earth.getBodyFrame());
+            final double currentLatitude = earth.transform(pos, earth.getBodyFrame(), date).getLatitude();
             if (((previousLatitude <= latitude) && (currentLatitude >= latitude) &&  ascending) ||
                 ((previousLatitude >= latitude) && (currentLatitude <= latitude) && !ascending)) {
                 return findLatitudeCrossing(latitude, date.shiftedBy(-0.5 * stepSize), end,
