@@ -119,11 +119,8 @@ public class InterSatDirectViewDetectorTest {
             final Frame            frame       = earth.getBodyFrame();
             final double           dt          = increasing ? -1.0e-8 : +1.0e-8;
             final AbsoluteDate     grazingDate = s.getDate().shiftedBy(dt);
-            final Vector3D pPrimary = s.shiftedBy(dt).
-                                     getPVCoordinates(frame).
-                                     getPosition();
-            final Vector3D psecondary  = isdv.getSecondary().getPVCoordinates(grazingDate, frame).
-                                     getPosition();
+            final Vector3D pPrimary = s.shiftedBy(dt).getPosition(frame);
+            final Vector3D psecondary  = isdv.getSecondary().getPosition(grazingDate, frame);
             final Vector3D grazing = earth.getCartesianIntersectionPoint(new Line(pPrimary,  psecondary, 1.0),
                                                                          pPrimary, frame, grazingDate);
             final TopocentricFrame topo = new TopocentricFrame(earth, earth.transform(grazing, frame, grazingDate),

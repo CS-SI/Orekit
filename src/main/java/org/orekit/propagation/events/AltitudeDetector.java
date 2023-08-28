@@ -23,7 +23,6 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
-import org.orekit.utils.PVCoordinates;
 
 /** Finder for satellite altitude crossing events.
  * <p>This class finds altitude events (i.e. satellite crossing
@@ -143,9 +142,7 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
      */
     public double g(final SpacecraftState s) {
         final Frame bodyFrame      = bodyShape.getBodyFrame();
-        final PVCoordinates pvBody = s.getPVCoordinates(bodyFrame);
-        final GeodeticPoint point  = bodyShape.transform(pvBody.getPosition(),
-                                                         bodyFrame, s.getDate());
+        final GeodeticPoint point  = bodyShape.transform(s.getPosition(bodyFrame), bodyFrame, s.getDate());
         return point.getAltitude() - altitude;
     }
 
