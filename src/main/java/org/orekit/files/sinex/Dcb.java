@@ -17,12 +17,13 @@
 
 package org.orekit.files.sinex;
 
-import java.util.HashSet;
 import java.util.HashMap;
-import org.orekit.utils.TimeSpanMap;
+import java.util.HashSet;
+
 import org.hipparchus.util.Pair;
-import org.orekit.gnss.observation.ObservationType;
+import org.orekit.gnss.ObservationType;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeSpanMap;
 
 /**
  * Class to store DCB Solution data parsed in the SinexLoader.

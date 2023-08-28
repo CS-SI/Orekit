@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.HatanakaCompressFilter;
+import org.orekit.files.rinex.HatanakaCompressFilter;
 
 /** This class manages supported {@link DataProvider data providers}.
  * <p>

@@ -19,8 +19,8 @@ package org.orekit.estimation.measurements.gnss;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.MathArrays;
 import org.orekit.gnss.Frequency;
+import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.gnss.observation.MeasurementType;
 
 /**
  * Ionosphere-free combination.
