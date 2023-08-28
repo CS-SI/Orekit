@@ -114,7 +114,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
         this.handler  = detector.getHandler();
 
         // some dummy values ...
-        final Field<T> field   = detector.getMaxCheckInterval().getField();
+        final Field<T> field   = detector.getThreshold().getField();
         final T nan            = field.getZero().add(Double.NaN);
         lastT                  = FieldAbsoluteDate.getPastInfinity(field);
         lastG                  = nan;
@@ -151,7 +151,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
     public void init(final FieldSpacecraftState<T> s0,
                      final FieldAbsoluteDate<T> t) {
         detector.init(s0, t);
-        final Field<T> field = detector.getMaxCheckInterval().getField();
+        final Field<T> field = detector.getThreshold().getField();
         lastT = FieldAbsoluteDate.getPastInfinity(field);
         lastG = field.getZero().add(Double.NaN);
     }
@@ -214,7 +214,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
             return false;
         }
         // number of points to check in the current step
-        final int n = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt.getReal()) / detector.getMaxCheckInterval().getReal()));
+        final int n = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt.getReal()) / detector.getMaxCheckInterval().currentInterval(s1)));
         final T h = dt.divide(n);
 
 

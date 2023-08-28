@@ -49,7 +49,9 @@ public class AdapterDetectorTest {
 
     @Test
     public void testSimpleTimer() {
-        DateDetector dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(2.0*dt));
+        DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(2.0*dt)).
+                                    withMaxCheck(maxCheck).
+                                    withThreshold(threshold);
         AdapterDetector adapter = new AdapterDetector(dateDetector);
         Assertions.assertSame(dateDetector, adapter.getDetector());
         Assertions.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate), 1.0e-10);
@@ -62,7 +64,9 @@ public class AdapterDetectorTest {
     @Test
     public void testOverrideHandler() {
         AtomicInteger count = new AtomicInteger(0);
-        DateDetector dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(2.0*dt));
+        DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(2.0*dt)).
+                                    withMaxCheck(maxCheck).
+                                    withThreshold(threshold);
         AdapterDetector adapter = new AdapterDetector(dateDetector) {
             /** {@inheritDoc} */
             @Override

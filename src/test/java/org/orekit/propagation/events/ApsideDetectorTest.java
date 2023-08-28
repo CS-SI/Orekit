@@ -49,7 +49,7 @@ public class ApsideDetectorTest {
                                  withThreshold(1.0e-12).
                                  withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(600.0, detector.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(600.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
 

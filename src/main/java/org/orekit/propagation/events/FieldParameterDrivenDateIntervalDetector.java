@@ -97,7 +97,7 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
      */
     public FieldParameterDrivenDateIntervalDetector(final Field<T> field, final String prefix,
                                                     final AbsoluteDate refStart, final AbsoluteDate refStop) {
-        this(field.getZero().newInstance(DEFAULT_MAXCHECK),
+        this(s -> DEFAULT_MAXCHECK,
              field.getZero().newInstance(DEFAULT_THRESHOLD),
              DEFAULT_MAX_ITER,
              new FieldStopOnEvent<>(),
@@ -113,7 +113,7 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -122,7 +122,7 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
      * @param median median date driver
      * @param duration duration driver
      */
-    protected FieldParameterDrivenDateIntervalDetector(final T maxCheck, final T threshold, final int maxIter,
+    protected FieldParameterDrivenDateIntervalDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold, final int maxIter,
                                                        final FieldEventHandler<T> handler,
                                                        final DateDriver start, final DateDriver stop,
                                                        final DateDriver median, final ParameterDriver duration) {
@@ -160,7 +160,7 @@ public class FieldParameterDrivenDateIntervalDetector<T extends CalculusFieldEle
 
     /** {@inheritDoc} */
     @Override
-    protected FieldParameterDrivenDateIntervalDetector<T> create(final T newMaxCheck, final T newThreshold, final int newMaxIter,
+    protected FieldParameterDrivenDateIntervalDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold, final int newMaxIter,
                                                                  final FieldEventHandler<T> newHandler) {
         return new FieldParameterDrivenDateIntervalDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                                               start, stop, median, duration);

@@ -672,7 +672,7 @@ public class FieldDSSTPropagatorTest {
 
         final FieldAbsoluteDate<T> stopDate = state.getDate().shiftedBy(1000);
         CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.STOP);
-        dsstPropagator.addEventDetector(new FieldDateDetector<>(stopDate).withHandler(checking));
+        dsstPropagator.addEventDetector(new FieldDateDetector<>(field, stopDate).withHandler(checking));
         checking.assertEvent(false);
         final FieldSpacecraftState<T> finalState = dsstPropagator.propagate(state.getDate().shiftedBy(3200));
         checking.assertEvent(true);
@@ -690,7 +690,7 @@ public class FieldDSSTPropagatorTest {
 
         final FieldAbsoluteDate<T> resetDate = state.getDate().shiftedBy(1000);
         CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.CONTINUE);
-        dsstPropagator.addEventDetector(new FieldDateDetector<>(resetDate).withHandler(checking));
+        dsstPropagator.addEventDetector(new FieldDateDetector<>(field, resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
         final FieldSpacecraftState<T> finalState = dsstPropagator.propagate(state.getDate().shiftedBy(dt));

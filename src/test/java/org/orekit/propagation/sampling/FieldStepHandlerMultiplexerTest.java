@@ -238,12 +238,12 @@ public class FieldStepHandlerMultiplexerTest {
         double               add60      =  3.0;
         double               rem60      = 78.0;
         FieldFixedCounter    counter60  = new FieldFixedCounter();
-        propagator.addEventDetector(new FieldDateDetector<>(initDate.shiftedBy(add60)).
+        propagator.addEventDetector(new FieldDateDetector<>(field, initDate.shiftedBy(add60)).
                                     withHandler((s, d, i) -> {
                                         multiplexer.add(zero.newInstance(60.0), counter60);
                                         return Action.CONTINUE;
                                     }));
-        propagator.addEventDetector(new FieldDateDetector<>(initDate.shiftedBy(rem60)).
+        propagator.addEventDetector(new FieldDateDetector<>(field, initDate.shiftedBy(rem60)).
                                     withHandler((s, d, i) -> {
                                         multiplexer.remove(counter60);
                                         return Action.CONTINUE;
@@ -252,12 +252,12 @@ public class FieldStepHandlerMultiplexerTest {
         double               addVar     =  5.0;
         double               remVar     =  7.0;
         FieldVariableCounter counterVar = new FieldVariableCounter();
-        propagator.addEventDetector(new FieldDateDetector<>(initDate.shiftedBy(addVar)).
+        propagator.addEventDetector(new FieldDateDetector<>(field, initDate.shiftedBy(addVar)).
                                     withHandler((s, d, i) -> {
                                         multiplexer.add(counterVar);
                                         return Action.CONTINUE;
                                     }));
-        propagator.addEventDetector(new FieldDateDetector<>(initDate.shiftedBy(remVar)).
+        propagator.addEventDetector(new FieldDateDetector<>(field, initDate.shiftedBy(remVar)).
                                     withHandler((s, d, i) -> {
                                         multiplexer.remove(counterVar);
                                         return Action.CONTINUE;
@@ -266,12 +266,12 @@ public class FieldStepHandlerMultiplexerTest {
         double               add10      =  6.0;
         double               rem10      = 82.0;
         FieldFixedCounter    counter10  = new FieldFixedCounter();
-        propagator.addEventDetector(new FieldDateDetector<>(initDate.shiftedBy(add10)).
+        propagator.addEventDetector(new FieldDateDetector<>(field, initDate.shiftedBy(add10)).
                                     withHandler((s, d, i) -> {
                                         multiplexer.add(zero.newInstance(10.0), counter10);
                                         return Action.CONTINUE;
                                     }));
-        propagator.addEventDetector(new FieldDateDetector<>(initDate.shiftedBy(rem10)).
+        propagator.addEventDetector(new FieldDateDetector<>(field, initDate.shiftedBy(rem10)).
                                     withHandler((s, d, i) -> {
                                         multiplexer.clear();
                                         return Action.CONTINUE;

@@ -73,7 +73,7 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
     public AlignmentDetector(final double maxCheck, final double threshold,
                              final PVCoordinatesProvider body,
                              final double alignAngle) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER,
+        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER,
              new StopOnIncreasing(),
              body, alignAngle);
     }
@@ -106,7 +106,7 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
      * @param body the body to align
      * @param alignAngle the alignment angle (rad)
      */
-    protected AlignmentDetector(final double maxCheck, final double threshold,
+    protected AlignmentDetector(final AdaptableInterval maxCheck, final double threshold,
                                 final int maxIter, final EventHandler handler,
                                 final PVCoordinatesProvider body,
                                 final double alignAngle) {
@@ -120,7 +120,7 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
 
     /** {@inheritDoc} */
     @Override
-    protected AlignmentDetector create(final double newMaxCheck, final double newThreshold,
+    protected AlignmentDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                        final int newMaxIter, final EventHandler newHandler) {
         return new AlignmentDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                      body, alignAngle);

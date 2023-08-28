@@ -57,13 +57,13 @@ public class FieldNegateDetector<T extends CalculusFieldElement<T>>  extends Fie
     /**
      * Private constructor.
      *
-     * @param newMaxCheck  max check interval in seconds.
+     * @param newMaxCheck  max check interval.
      * @param newThreshold convergence threshold in seconds.
      * @param newMaxIter   max iterations.
      * @param newHandler   event handler.
      * @param original     event detector.
      */
-    protected FieldNegateDetector(final T newMaxCheck,
+    protected FieldNegateDetector(final FieldAdaptableInterval<T> newMaxCheck,
                                   final T newThreshold,
                                   final int newMaxIter,
                                   final FieldEventHandler<T> newHandler,
@@ -93,7 +93,7 @@ public class FieldNegateDetector<T extends CalculusFieldElement<T>>  extends Fie
     }
 
     @Override
-    protected FieldNegateDetector<T> create(final T newMaxCheck,
+    protected FieldNegateDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck,
                                             final T newThreshold,
                                             final int newMaxIter,
                                             final FieldEventHandler<T> newHandler) {

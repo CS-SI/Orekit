@@ -48,21 +48,21 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
      * ContinueOnEvent}, and a g function that is identically unity.
      */
     public FunctionalDetector() {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                new ContinueOnEvent(),
-                (ToDoubleFunction<SpacecraftState>) value -> 1.0);
+        this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+             new ContinueOnEvent(),
+             (ToDoubleFunction<SpacecraftState>) value -> 1.0);
     }
 
     /**
      * Private constructor.
      *
-     * @param maxCheck  maximum checking interval (s)
+     * @param maxCheck  maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
      * @param function  the switching function.
      */
-    protected FunctionalDetector(final double maxCheck,
+    protected FunctionalDetector(final AdaptableInterval maxCheck,
                                  final double threshold,
                                  final int maxIter,
                                  final EventHandler handler,
@@ -79,7 +79,7 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
 
     @Override
     protected FunctionalDetector create(
-            final double newMaxCheck,
+            final AdaptableInterval newMaxCheck,
             final double newThreshold,
             final int newMaxIter,
             final EventHandler newHandler) {

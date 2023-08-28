@@ -90,7 +90,7 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
                                  final T threshold,
                                  final T altitude,
                                  final BodyShape bodyShape) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new FieldStopOnDecreasing<T>(),
+        this(s -> maxCheck.getReal(), threshold, DEFAULT_MAX_ITER, new FieldStopOnDecreasing<T>(),
              altitude, bodyShape);
     }
 
@@ -100,7 +100,7 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -108,7 +108,7 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
      * @param bodyShape body shape with respect to which altitude should be evaluated
      * @since 6.1
      */
-    protected FieldAltitudeDetector(final T maxCheck, final T threshold,
+    protected FieldAltitudeDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
                                     final int maxIter, final FieldEventHandler<T> handler,
                                     final T altitude,
                                     final BodyShape bodyShape) {
@@ -119,7 +119,7 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
 
     /** {@inheritDoc} */
     @Override
-    protected FieldAltitudeDetector<T> create(final T newMaxCheck, final T newThreshold,
+    protected FieldAltitudeDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
                                               final int newMaxIter,
                                               final FieldEventHandler<T> newHandler) {
         return new FieldAltitudeDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,

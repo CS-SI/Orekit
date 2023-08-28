@@ -75,7 +75,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      * @since 12.0
      */
     public FieldEclipseDetector(final Field<T> field, final OccultationEngine occultationEngine) {
-        this(field.getZero().newInstance(DEFAULT_MAXCHECK), field.getZero().newInstance(DEFAULT_THRESHOLD),
+        this(s -> DEFAULT_MAXCHECK, field.getZero().newInstance(DEFAULT_THRESHOLD),
              DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
              occultationEngine, field.getZero(), true);
     }
@@ -86,7 +86,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -95,7 +95,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      * @param totalEclipse umbra (true) or penumbra (false) detection flag
      * @since 12.0
      */
-    protected FieldEclipseDetector(final T maxCheck, final T threshold,
+    protected FieldEclipseDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
                                    final int maxIter, final FieldEventHandler<T> handler,
                                    final OccultationEngine occultationEngine, final T margin, final boolean totalEclipse) {
         super(maxCheck, threshold, maxIter, handler);
@@ -106,7 +106,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
 
     /** {@inheritDoc} */
     @Override
-    protected FieldEclipseDetector<T> create(final T newMaxCheck, final T newThreshold, final int nawMaxIter,
+    protected FieldEclipseDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold, final int nawMaxIter,
                                              final FieldEventHandler<T> newHandler) {
         return new FieldEclipseDetector<>(newMaxCheck, newThreshold, nawMaxIter, newHandler,
                                           occultationEngine, margin, totalEclipse);

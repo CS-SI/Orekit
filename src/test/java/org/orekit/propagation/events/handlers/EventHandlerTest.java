@@ -20,6 +20,7 @@ import org.hipparchus.ode.events.Action;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AdaptableInterval;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 
@@ -80,8 +81,8 @@ public class EventHandlerTest {
         }
 
         @Override
-        public double getMaxCheckInterval() {
-            return 0;
+        public AdaptableInterval getMaxCheckInterval() {
+            return s -> 0;
         }
 
         @Override

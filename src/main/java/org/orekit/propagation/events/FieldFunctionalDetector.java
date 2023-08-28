@@ -55,7 +55,7 @@ public class FieldFunctionalDetector<T extends CalculusFieldElement<T>>
      * @param field on which this detector is defined.
      */
     public FieldFunctionalDetector(final Field<T> field) {
-        this(field.getZero().add(DEFAULT_MAXCHECK),
+        this(s -> DEFAULT_MAXCHECK,
              field.getZero().add(DEFAULT_THRESHOLD),
              DEFAULT_MAX_ITER,
              new FieldContinueOnEvent<>(), value -> field.getOne());
@@ -64,14 +64,14 @@ public class FieldFunctionalDetector<T extends CalculusFieldElement<T>>
     /**
      * Private constructor.
      *
-     * @param maxCheck  maximum checking interval (s)
+     * @param maxCheck  maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
      * @param function  the switching function.
      */
     protected FieldFunctionalDetector(
-            final T maxCheck,
+            final FieldAdaptableInterval<T> maxCheck,
             final T threshold,
             final int maxIter,
             final FieldEventHandler<T> handler,
@@ -88,7 +88,7 @@ public class FieldFunctionalDetector<T extends CalculusFieldElement<T>>
 
     @Override
     protected FieldFunctionalDetector<T> create(
-            final T newMaxCheck,
+            final FieldAdaptableInterval<T> newMaxCheck,
             final T newThreshold,
             final int newMaxIter,
             final FieldEventHandler<T> newHandler) {

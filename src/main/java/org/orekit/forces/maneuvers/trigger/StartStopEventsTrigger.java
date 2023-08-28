@@ -28,6 +28,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
+import org.orekit.propagation.events.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -200,8 +201,9 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      */
     private <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> D convertAndSetUpStartHandler(final Field<S> field) {
         final FieldAbstractDetector<D, S> converted = convertStartDetector(field, startDetector);
+        final FieldAdaptableInterval<S>   maxCheck  = s -> startDetector.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
         return converted.
-               withMaxCheck(field.getZero().newInstance(startDetector.getMaxCheckInterval())).
+               withMaxCheck(maxCheck).
                withThreshold(field.getZero().newInstance(startDetector.getThreshold())).
                withHandler(new FieldStartHandler<>());
     }
@@ -218,8 +220,9 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      */
     private <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> D convertAndSetUpStopHandler(final Field<S> field) {
         final FieldAbstractDetector<D, S> converted = convertStopDetector(field, stopDetector);
+        final FieldAdaptableInterval<S>   maxCheck  = s -> stopDetector.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
         return converted.
-               withMaxCheck(field.getZero().newInstance(stopDetector.getMaxCheckInterval())).
+               withMaxCheck(maxCheck).
                withThreshold(field.getZero().newInstance(stopDetector.getThreshold())).
                withHandler(new FieldStopHandler<>());
     }

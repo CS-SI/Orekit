@@ -53,7 +53,7 @@ public class FieldRecordAndContinueTest {
         FieldAbsoluteDate<Binary64> date =
                 new FieldAbsoluteDate<>(field, AbsoluteDate.J2000_EPOCH);
         Binary64 zero = date.getField().getZero();
-        FieldDateDetector<Binary64> detector = new FieldDateDetector<>(date);
+        FieldDateDetector<Binary64> detector = new FieldDateDetector<>(field, date);
         Frame eci = FramesFactory.getGCRF();
         FieldOrbit<Binary64> orbit = new FieldKeplerianOrbit<>(
                 v(6378137 + 500e3), v(0), v(0), v(0), v(0), v(0),

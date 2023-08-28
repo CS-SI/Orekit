@@ -67,7 +67,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * @since 10.3
      */
     public NodeDetector(final Frame frame) {
-        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+        this(s -> DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnIncreasing(), frame);
     }
 
@@ -94,7 +94,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      */
     public NodeDetector(final double threshold, final Orbit orbit, final Frame frame) {
-        this(2 * estimateNodesTimeSeparation(orbit) / 3, threshold,
+        this(s -> 2 * estimateNodesTimeSeparation(orbit) / 3, threshold,
              DEFAULT_MAX_ITER, new StopOnIncreasing(),
              frame);
     }
@@ -105,7 +105,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -114,7 +114,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      * @since 6.1
      */
-    protected NodeDetector(final double maxCheck, final double threshold,
+    protected NodeDetector(final AdaptableInterval maxCheck, final double threshold,
                            final int maxIter, final EventHandler handler,
                            final Frame frame) {
         super(maxCheck, threshold, maxIter, handler);
@@ -123,7 +123,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
 
     /** {@inheritDoc} */
     @Override
-    protected NodeDetector create(final double newMaxCheck, final double newThreshold,
+    protected NodeDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                   final int newMaxIter, final EventHandler newHandler) {
         return new NodeDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, frame);
     }

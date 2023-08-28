@@ -18,9 +18,10 @@ package org.orekit.propagation.events;
 
 import java.util.ArrayList;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.hipparchus.CalculusFieldElement;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -35,7 +36,7 @@ import org.orekit.time.FieldTimeStamped;
  *   <li>it can be defined without prior date ({@link #FieldDateDetector(CalculusFieldElement, CalculusFieldElement, FieldTimeStamped...)})</li>
  *   <li>several dates can be added ({@link #addEventDate(FieldAbsoluteDate)})</li>
  * </ul>
- * <p>The gap between the added dates must be more than the maxCheck.</p>
+ * <p>The gap between the added dates must be more than the minGap.</p>
  * <p>The default implementation behavior is to {@link Action#STOP stop}
  * propagation at the first event date occurrence. This can be changed by calling
  * {@link #withHandler(FieldEventHandler)} after construction.</p>
@@ -45,6 +46,16 @@ import org.orekit.time.FieldTimeStamped;
  */
 public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldDateDetector<T>, T>
     implements FieldTimeStamped<T> {
+
+    /** Default value for minimum gap between added dates.
+     * @since 12.0
+     */
+    public static final double DEFAULT_MIN_GAP = 1.0;
+
+    /** Minimum gap between added dates.
+     * @since 12.0
+     */
+    private final double minGap;
 
     /** Last date for g computation. */
     private FieldAbsoluteDate<T> gDate;
@@ -58,25 +69,15 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
     /** Build a new instance.
      * <p>First event dates are set here, but others can be
      * added later with {@link #addEventDate(FieldAbsoluteDate)}.</p>
-     * @param maxCheck maximum checking interval (s)
-     * @param threshold convergence threshold (s)
+     * @param field field to which dates belong
      * @param dates list of event dates
      * @see #addEventDate(FieldAbsoluteDate)
+     * @since 12.0
      */
     @SafeVarargs
-    public FieldDateDetector(final T maxCheck, final T threshold, final FieldTimeStamped<T>... dates) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new FieldStopOnEvent<>(), dates);
-    }
-
-    /** Build a new instance.
-     * <p>This constructor is dedicated to single date detection.
-     * {@link #getMaxCheckInterval() max check interval} is set to 1.0e10, so almost
-     * no other date can be added. Tolerance is set to 1.0e-9.</p>
-     * @param target target date
-     * @see #addEventDate(FieldAbsoluteDate)
-     */
-    public FieldDateDetector(final FieldAbsoluteDate<T> target) {
-        this(target.getField().getZero().add(1.0e10), target.getField().getZero().add(1.e-9), target);
+    public FieldDateDetector(final Field<T> field, final FieldTimeStamped<T>... dates) {
+        this(s-> 1.0e10, field.getZero().newInstance(1.0e-9), DEFAULT_MAX_ITER,
+             new FieldStopOnEvent<>(), DEFAULT_MIN_GAP, dates);
     }
 
     /** Private constructor with full parameters.
@@ -85,16 +86,17 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
+     * @param minGap minimum gap between added dates (s)
      * @param dates list of event dates
      */
     @SafeVarargs
-    protected FieldDateDetector(final T maxCheck, final T threshold,
+    protected FieldDateDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
                                 final int maxIter, final FieldEventHandler<T> handler,
-                                final FieldTimeStamped<T>... dates) {
+                                final double minGap, final FieldTimeStamped<T>... dates) {
         super(maxCheck, threshold, maxIter, handler);
         this.currentIndex  = -1;
         this.gDate         = null;
@@ -102,15 +104,29 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
         for (final FieldTimeStamped<T> ts : dates) {
             addEventDate(ts.getDate());
         }
+        this.minGap        = minGap;
+    }
+
+    /**
+     * Setup minimum gap between added dates.
+     * @param newMinGap new minimum gap between added dates
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 12.0
+     */
+    public FieldDateDetector<T> withMinGap(final double newMinGap) {
+        @SuppressWarnings("unchecked")
+        final FieldTimeStamped<T>[] dates = eventDateList.toArray(new FieldEventDate[eventDateList.size()]);
+        return new FieldDateDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(),
+                                       getHandler(), newMinGap, dates);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected FieldDateDetector<T> create(final T newMaxCheck, final T newThreshold,
+    protected FieldDateDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
                                           final int newMaxIter, final FieldEventHandler<T> newHandler) {
         @SuppressWarnings("unchecked")
         final FieldTimeStamped<T>[] dates = eventDateList.toArray(new FieldEventDate[eventDateList.size()]);
-        return new FieldDateDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler, dates);
+        return new FieldDateDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler, minGap, dates);
     }
 
     /** Compute the value of the switching function.
@@ -152,20 +168,24 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
             currentIndex = 0;
             eventDateList.add(new FieldEventDate<>(target, increasing));
         } else {
-            final int lastIndex = eventDateList.size() - 1;
-            if (eventDateList.get(0).getDate().durationFrom(target).getReal() > getMaxCheckInterval().getReal()) {
+            final                      int lastIndex = eventDateList.size() - 1;
+            final FieldAbsoluteDate<T> firstDate     = eventDateList.get(0).getDate();
+            final FieldAbsoluteDate<T> lastDate      = eventDateList.get(lastIndex).getDate();
+            if (firstDate.durationFrom(target).getReal() > minGap) {
                 increasing = !eventDateList.get(0).isgIncrease();
                 eventDateList.add(0, new FieldEventDate<>(target, increasing));
                 currentIndex++;
-            } else if (target.durationFrom(eventDateList.get(lastIndex).getDate()).getReal() > getMaxCheckInterval().getReal()) {
+            } else if (target.durationFrom(lastDate).getReal() > minGap) {
                 increasing = !eventDateList.get(lastIndex).isgIncrease();
                 eventDateList.add(new FieldEventDate<>(target, increasing));
             } else {
                 throw new OrekitIllegalArgumentException(OrekitMessages.EVENT_DATE_TOO_CLOSE,
                                                          target,
-                                                         eventDateList.get(0).getDate(),
-                                                         eventDateList.get(lastIndex).getDate(),
-                                                         getMaxCheckInterval());
+                                                         firstDate,
+                                                         lastDate,
+                                                         minGap,
+                                                         firstDate.durationFrom(target),
+                                                         target.durationFrom(lastDate));
             }
         }
     }

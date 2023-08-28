@@ -24,6 +24,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
+import org.orekit.propagation.events.AdaptableInterval;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -124,8 +125,8 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
     public ImpulseManeuver(final EventDetector trigger, final AttitudeProvider attitudeOverride,
                            final Vector3D deltaVSat, final double isp, final ControlVector3DNormType controlVector3DNormType) {
         this(trigger.getMaxCheckInterval(), trigger.getThreshold(),
-                trigger.getMaxIterationCount(), new Handler(),
-                trigger, attitudeOverride, deltaVSat, isp, controlVector3DNormType);
+             trigger.getMaxIterationCount(), new Handler(),
+             trigger, attitudeOverride, deltaVSat, isp, controlVector3DNormType);
     }
 
     /** Private constructor with full parameters.
@@ -134,7 +135,7 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -145,7 +146,7 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
      * @param controlVector3DNormType increment's norm for mass consumption
      * @since 6.1
      */
-    protected ImpulseManeuver(final double maxCheck, final double threshold,
+    protected ImpulseManeuver(final AdaptableInterval maxCheck, final double threshold,
                               final int maxIter, final EventHandler handler,
                               final EventDetector trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat,
                               final double isp, final ControlVector3DNormType controlVector3DNormType) {
@@ -160,7 +161,7 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
 
     /** {@inheritDoc} */
     @Override
-    protected ImpulseManeuver create(final double newMaxCheck, final double newThreshold,
+    protected ImpulseManeuver create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                      final int newMaxIter, final EventHandler newHandler) {
         return new ImpulseManeuver(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                    trigger, attitudeOverride, deltaVSat, isp, controlVector3DNormType);

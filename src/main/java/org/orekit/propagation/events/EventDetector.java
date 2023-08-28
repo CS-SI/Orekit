@@ -79,7 +79,7 @@ public interface EventDetector {
     /** Get maximal time interval between switching function checks.
      * @return maximal time interval (s) between switching function checks
      */
-    double getMaxCheckInterval();
+    AdaptableInterval getMaxCheckInterval();
 
     /** Get maximal number of iterations in the event time search.
      * @return maximal number of iterations in the event time search

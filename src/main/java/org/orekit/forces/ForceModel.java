@@ -334,8 +334,8 @@ public interface ForceModel extends ParametersDriversProvider {
             transitionDates.sort(null);
             // Initialize the date detector
             final FieldDateDetector<T> datesDetector =
-                    new FieldDateDetector<>(new FieldAbsoluteDate<>(field, transitionDates.get(0))).
-                    withMaxCheck(field.getZero().add(60.)).
+                    new FieldDateDetector<>(field, new FieldAbsoluteDate<>(field, transitionDates.get(0))).
+                    withMaxCheck(60.0).
                     withHandler(( state, d, increasing) -> {
                         return Action.RESET_DERIVATIVES;
                     });
