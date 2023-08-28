@@ -38,6 +38,7 @@ import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.OrdinaryDifferentialEquation;
 import org.hipparchus.ode.SecondaryODE;
 import org.hipparchus.ode.events.Action;
+import org.hipparchus.ode.events.AdaptableInterval;
 import org.hipparchus.ode.events.ODEEventDetector;
 import org.hipparchus.ode.events.ODEEventHandler;
 import org.hipparchus.ode.sampling.AbstractODEStateInterpolator;
@@ -884,8 +885,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public double getMaxCheckInterval() {
-            return detector.getMaxCheckInterval();
+        public AdaptableInterval getMaxCheckInterval() {
+            return s -> detector.getMaxCheckInterval();
         }
 
         /** {@inheritDoc} */

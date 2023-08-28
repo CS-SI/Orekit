@@ -39,6 +39,7 @@ import org.hipparchus.ode.FieldODEStateAndDerivative;
 import org.hipparchus.ode.FieldOrdinaryDifferentialEquation;
 import org.hipparchus.ode.FieldSecondaryODE;
 import org.hipparchus.ode.events.Action;
+import org.hipparchus.ode.events.FieldAdaptableInterval;
 import org.hipparchus.ode.events.FieldODEEventDetector;
 import org.hipparchus.ode.events.FieldODEEventHandler;
 import org.hipparchus.ode.sampling.AbstractFieldODEStateInterpolator;
@@ -884,8 +885,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
         /** {@inheritDoc} */
         @Override
-        public T getMaxCheckInterval() {
-            return detector.getMaxCheckInterval();
+        public FieldAdaptableInterval<T> getMaxCheckInterval() {
+            return s -> detector.getMaxCheckInterval().getReal();
         }
 
         /** {@inheritDoc} */
