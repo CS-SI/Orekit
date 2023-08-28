@@ -37,6 +37,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
@@ -320,12 +321,12 @@ public class BodyCenterPointingTest {
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Transform from EME2000 to ITRF2008
-        Transform eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(earth.getBodyFrame(), date.toAbsoluteDate());
+        StaticTransform eme2000ToItrf = FramesFactory.getEME2000().getStaticTransformTo(earth.getBodyFrame(), date.toAbsoluteDate());
 
         // Earth center pointing attitude provider
         BodyCenterPointing earthCenterAttitudeLaw= new BodyCenterPointing(circ.getFrame(), earth);
         // Transform satellite position to position/velocity parameters in EME2000 frame
-        FieldPVCoordinates<T> pvSatEME2000 = circ.getPVCoordinates();
+        FieldVector3D<T> positionSatEME2000 = circ.getPosition();
 
         //  Pointing direction
         // ********************
@@ -340,12 +341,12 @@ public class BodyCenterPointingTest {
         FieldVector3D<T> zSatITRF2008C = eme2000ToItrf.transformVector(zSatEME2000);
 
         // Transform satellite position/velocity from EME2000 to ITRF2008
-        FieldPVCoordinates<T> pvSatITRF2008C = eme2000ToItrf.transformPVCoordinates(pvSatEME2000);
+        FieldVector3D<T> positionSatITRF2008C = eme2000ToItrf.transformPosition(positionSatEME2000);
 
 
        // Line containing satellite point and following pointing direction
-        Line pointingLine = new Line(pvSatITRF2008C.getPosition().toVector3D(),
-                                     pvSatITRF2008C.getPosition().toVector3D().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+        Line pointingLine = new Line(positionSatITRF2008C.toVector3D(),
+                                     positionSatITRF2008C.toVector3D().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                       zSatITRF2008C.toVector3D()),
                                      2.0e-8);
 
