@@ -17,14 +17,14 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataFilter;
 import org.orekit.data.DataSource;
-import org.orekit.gnss.HatanakaCompressFilter;
+import org.orekit.files.rinex.HatanakaCompressFilter;
+import org.orekit.files.rinex.observation.ObservationData;
+import org.orekit.files.rinex.observation.ObservationDataSet;
+import org.orekit.files.rinex.observation.RinexObservationParser;
+import org.orekit.gnss.MeasurementType;
+import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.gnss.observation.MeasurementType;
-import org.orekit.gnss.observation.ObservationData;
-import org.orekit.gnss.observation.ObservationDataSet;
-import org.orekit.gnss.observation.ObservationType;
-import org.orekit.gnss.observation.RinexObservationParser;
 
 public class PseudoRangeFilteringTest {
 
