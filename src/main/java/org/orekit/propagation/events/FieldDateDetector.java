@@ -47,10 +47,20 @@ import org.orekit.time.FieldTimeStamped;
 public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldDateDetector<T>, T>
     implements FieldTimeStamped<T> {
 
+    /** Default value for max check.
+     * @since 12.0
+     */
+    public static final double DEFAULT_MAX_CHECK = 1.0e10;
+
     /** Default value for minimum gap between added dates.
      * @since 12.0
      */
     public static final double DEFAULT_MIN_GAP = 1.0;
+
+    /** Default value for convergence threshold.
+     * @since 12.0
+     */
+    public static final double DEFAULT_THRESHOLD = 1.0e-13;
 
     /** Minimum gap between added dates.
      * @since 12.0
@@ -76,8 +86,8 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
      */
     @SafeVarargs
     public FieldDateDetector(final Field<T> field, final FieldTimeStamped<T>... dates) {
-        this(s-> 1.0e10, field.getZero().newInstance(1.0e-9), DEFAULT_MAX_ITER,
-             new FieldStopOnEvent<>(), DEFAULT_MIN_GAP, dates);
+        this(s-> DEFAULT_MAX_CHECK, field.getZero().newInstance(DEFAULT_THRESHOLD),
+             DEFAULT_MAX_ITER, new FieldStopOnEvent<>(), DEFAULT_MIN_GAP, dates);
     }
 
     /** Private constructor with full parameters.

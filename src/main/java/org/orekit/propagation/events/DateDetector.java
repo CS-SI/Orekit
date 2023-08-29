@@ -46,10 +46,20 @@ import org.orekit.time.TimeStamped;
  */
 public class DateDetector extends AbstractDetector<DateDetector> implements TimeStamped {
 
+    /** Default value for max check.
+     * @since 12.0
+     */
+    public static final double DEFAULT_MAX_CHECK = 1.0e10;
+
     /** Default value for minimum gap between added dates.
      * @since 12.0
      */
     public static final double DEFAULT_MIN_GAP = 1.0;
+
+    /** Default value for convergence threshold.
+     * @since 12.0
+     */
+    public static final double DEFAULT_THRESHOLD = 1.0e-13;
 
     /** Minimum gap between added dates.
      * @since 12.0
@@ -73,7 +83,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      * @since 12.0
      */
     public DateDetector(final TimeStamped... dates) {
-        this(s-> 1.0e10, 1.0e-9, DEFAULT_MAX_ITER, new StopOnEvent(), DEFAULT_MIN_GAP, dates);
+        this(s-> DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnEvent(), DEFAULT_MIN_GAP, dates);
     }
 
     /** Private constructor with full parameters.

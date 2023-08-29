@@ -53,6 +53,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.AdaptableInterval;
 import org.orekit.propagation.events.BooleanDetector;
+import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldAdaptableInterval;
@@ -229,7 +230,7 @@ public class ConfigurableLowThrustManeuverTest {
         private final AbsoluteDate endDate;
 
         public DateIntervalDetector(final AbsoluteDate startDate, final AbsoluteDate endDate) {
-            this(startDate, endDate, s -> 1.0e10, 1.e-9 /* values from DateDetector */, DEFAULT_MAX_ITER,
+            this(startDate, endDate, s -> DateDetector.DEFAULT_MAX_CHECK, DateDetector.DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
                     new StopOnEvent());
         }
 
@@ -278,10 +279,9 @@ public class ConfigurableLowThrustManeuverTest {
 
         public DateIntervalFieldDetector(final FieldAbsoluteDate<T> startDate, final FieldAbsoluteDate<T> endDate) {
             this(startDate, endDate,
-                 s -> 1.0e10,
-                 startDate.getField().getZero().newInstance(1.e-9) /* values from DateDetector */,
-                 DEFAULT_MAX_ITER,
-                 new FieldStopOnEvent<>());
+                 s -> DateDetector.DEFAULT_MAX_CHECK,
+                 startDate.getField().getZero().newInstance(DateDetector.DEFAULT_THRESHOLD),
+                 DEFAULT_MAX_ITER, new FieldStopOnEvent<>());
         }
 
         protected DateIntervalFieldDetector(final FieldAbsoluteDate<T> startDate, final FieldAbsoluteDate<T> endDate,
