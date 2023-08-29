@@ -229,7 +229,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
 
     /** Convert a primitive firing start detector into a field firing start detector.
      * <p>
-     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(CalculusFieldElement) withMaxCheck},
+     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(FieldAdaptableInterval) withMaxCheck},
      * {@link FieldAbstractDetector#withThreshold(CalculusFieldElement) withThreshold}, or
      * {@link FieldAbstractDetector#withHandler(org.orekit.propagation.events.handlers.FieldEventHandler) withHandler}
      * in the converted detector, this will be done by caller.
@@ -262,7 +262,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
 
     /** Convert a primitive firing stop detector into a field firing stop detector.
      * <p>
-     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(CalculusFieldElement) withMaxCheck},
+     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(FieldAdaptableInterval) withMaxCheck},
      * {@link FieldAbstractDetector#withThreshold(CalculusFieldElement) withThreshold}, or
      * {@link FieldAbstractDetector#withHandler(org.orekit.propagation.events.handlers.FieldEventHandler) withHandler}
      * in the converted detector, this will be done by caller.

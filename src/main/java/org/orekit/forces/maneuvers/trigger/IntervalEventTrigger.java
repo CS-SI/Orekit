@@ -150,7 +150,7 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
 
     /** Convert a primitive firing intervals detector into a field firing intervals detector.
      * <p>
-     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(CalculusFieldElement) withMaxCheck},
+     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(FieldAdaptableInterval) withMaxCheck},
      * {@link FieldAbstractDetector#withThreshold(CalculusFieldElement) withThreshold}, or
      * {@link FieldAbstractDetector#withHandler(org.orekit.propagation.events.handlers.FieldEventHandler) withHandler}
      * in the converted detector, this will be done by caller.

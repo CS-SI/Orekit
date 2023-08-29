@@ -99,7 +99,7 @@ public class FieldFunctionalDetector<T extends CalculusFieldElement<T>>
 
     /**
      * Create a new event detector with a new g function, keeping all other attributes the
-     * same. It is recommended to use {@link #withMaxCheck(CalculusFieldElement)} and {@link
+     * same. It is recommended to use {@link #withMaxCheck(FieldAdaptableInterval)} and {@link
      * #withThreshold(CalculusFieldElement)} to set appropriate values for this g function.
      *
      * @param newGFunction the new g function.

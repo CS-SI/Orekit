@@ -33,7 +33,7 @@ import org.orekit.time.TimeStamped;
  * <p>This class finds date events (i.e. occurrence of some predefined dates).</p>
  * <p>As of version 5.1, it is an enhanced date detector:</p>
  * <ul>
- *   <li>it can be defined without prior date ({@link #DateDetector(double, double, TimeStamped...)})</li>
+ *   <li>it can be defined without prior date ({@link #DateDetector(TimeStamped...)})</li>
  *   <li>several dates can be added ({@link #addEventDate(AbsoluteDate)})</li>
  * </ul>
  * <p>The gap between the added dates must be more than the minGap.</p>
@@ -170,7 +170,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      * </ul>
      * @param target target date
      * @throws IllegalArgumentException if the date is too close from already defined interval
-     * @see #DateDetector(double, double, TimeStamped...)
+     * @see #DateDetector(TimeStamped...)
      */
     public void addEventDate(final AbsoluteDate target) throws IllegalArgumentException {
         final boolean increasing;

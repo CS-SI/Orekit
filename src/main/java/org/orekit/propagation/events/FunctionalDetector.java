@@ -90,7 +90,7 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
 
     /**
      * Create a new event detector with a new g function, keeping all other attributes the
-     * same. It is recommended to use {@link #withMaxCheck(double)} and {@link
+     * same. It is recommended to use {@link #withMaxCheck(AdaptableInterval)} and {@link
      * #withThreshold(double)} to set appropriate values for this g function.
      *
      * @param newGFunction the new g function.

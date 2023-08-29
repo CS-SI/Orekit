@@ -33,7 +33,7 @@ import org.orekit.time.FieldTimeStamped;
  * <p>This class finds date events (i.e. occurrence of some predefined dates).</p>
  * <p>As of version 5.1, it is an enhanced date detector:</p>
  * <ul>
- *   <li>it can be defined without prior date ({@link #FieldDateDetector(CalculusFieldElement, CalculusFieldElement, FieldTimeStamped...)})</li>
+ *   <li>it can be defined without prior date ({@link #FieldDateDetector(Field, FieldTimeStamped...)})</li>
  *   <li>several dates can be added ({@link #addEventDate(FieldAbsoluteDate)})</li>
  * </ul>
  * <p>The gap between the added dates must be more than the minGap.</p>
@@ -169,7 +169,7 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
      * </ul>
      * @param target target date
      * @throws IllegalArgumentException if the date is too close from already defined interval
-     * @see #FieldDateDetector(CalculusFieldElement, CalculusFieldElement, FieldTimeStamped...)
+     * @see #FieldDateDetector(Field, FieldTimeStamped...)
      */
     public void addEventDate(final FieldAbsoluteDate<T> target) throws IllegalArgumentException {
         final boolean increasing;
