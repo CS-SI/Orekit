@@ -42,7 +42,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
     public static final int DEFAULT_MAX_ITER = 100;
 
     /** Max check interval. */
-    private final T maxCheck;
+    private final FieldAdaptableInterval<T> maxCheck;
 
     /** Convergence threshold. */
     private final T threshold;
@@ -57,14 +57,13 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
     private boolean forward;
 
     /** Build a new instance.
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      */
-    protected FieldAbstractDetector(final T maxCheck, final T threshold, final int maxIter,
+    protected FieldAbstractDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold, final int maxIter,
                                     final FieldEventHandler<T> handler) {
-        checkStrictlyPositive(maxCheck.getReal());
         checkStrictlyPositive(threshold.getReal());
         this.maxCheck  = maxCheck;
         this.threshold = threshold;
@@ -95,7 +94,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
     public abstract T g(FieldSpacecraftState<T> s);
 
     /** {@inheritDoc} */
-    public T getMaxCheckInterval() {
+    public FieldAdaptableInterval<T> getMaxCheckInterval() {
         return maxCheck;
     }
 
@@ -116,9 +115,22 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * </p>
      * @param newMaxCheck maximum checking interval (s)
      * @return a new detector with updated configuration (the instance is not changed)
-     * @since 6.1
+     * @since 12.0
      */
-    public D withMaxCheck(final T newMaxCheck) {
+    public D withMaxCheck(final double newMaxCheck) {
+        return withMaxCheck(s -> newMaxCheck);
+    }
+
+    /**
+     * Setup the maximum checking interval.
+     * <p>
+     * This will override a maximum checking interval if it has been configured previously.
+     * </p>
+     * @param newMaxCheck maximum checking interval (s)
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 12.0
+     */
+    public D withMaxCheck(final FieldAdaptableInterval<T> newMaxCheck) {
         return create(newMaxCheck, getThreshold(), getMaxIterationCount(), getHandler());
     }
 
@@ -167,13 +179,13 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
     }
 
     /** Build a new instance.
-     * @param newMaxCheck maximum checking interval (s)
+     * @param newMaxCheck maximum checking interval
      * @param newThreshold convergence threshold (s)
      * @param newMaxIter maximum number of iterations in the event time search
      * @param newHandler event handler to call at event occurrences
      * @return a new instance of the appropriate sub-type
      */
-    protected abstract D create(T newMaxCheck, T newThreshold,
+    protected abstract D create(FieldAdaptableInterval<T> newMaxCheck, T newThreshold,
                                 int newMaxIter, FieldEventHandler<T> newHandler);
 
     /** Check if the current propagation is forward or backward.

@@ -114,7 +114,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
         this.handler  = detector.getHandler();
 
         // some dummy values ...
-        final Field<T> field   = detector.getMaxCheckInterval().getField();
+        final Field<T> field   = detector.getThreshold().getField();
         final T nan            = field.getZero().add(Double.NaN);
         lastT                  = FieldAbsoluteDate.getPastInfinity(field);
         lastG                  = nan;
@@ -151,7 +151,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
     public void init(final FieldSpacecraftState<T> s0,
                      final FieldAbsoluteDate<T> t) {
         detector.init(s0, t);
-        final Field<T> field = detector.getMaxCheckInterval().getField();
+        final Field<T> field = detector.getThreshold().getField();
         lastT = FieldAbsoluteDate.getPastInfinity(field);
         lastG = field.getZero().add(Double.NaN);
     }
@@ -206,25 +206,26 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
     public boolean evaluateStep(final FieldOrekitStepInterpolator<T> interpolator)
         throws MathRuntimeException {
         forward = interpolator.isForward();
+        final FieldSpacecraftState<T> s0 = interpolator.getPreviousState();
         final FieldSpacecraftState<T> s1 = interpolator.getCurrentState();
         final FieldAbsoluteDate<T> t1 = s1.getDate();
         final T dt = t1.durationFrom(t0);
         if (FastMath.abs(dt.getReal()) < detector.getThreshold().getReal()) {
             // we cannot do anything on such a small step, don't trigger any events
+            pendingEvent     = false;
+            pendingEventTime = null;
             return false;
         }
-        // number of points to check in the current step
-        final int n = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt.getReal()) / detector.getMaxCheckInterval().getReal()));
-        final T h = dt.divide(n);
-
 
         FieldAbsoluteDate<T> ta = t0;
         T ga = g0;
-        for (int i = 0; i < n; ++i) {
+        for (FieldSpacecraftState<T> sb = nextCheck(s0, s1, interpolator);
+             sb != null;
+             sb = nextCheck(sb, s1, interpolator)) {
 
             // evaluate handler value at the end of the substep
-            final FieldAbsoluteDate<T> tb = (i == n - 1) ? t1 : t0.shiftedBy(h.multiply(i + 1));
-            final T gb = g(interpolator.getInterpolatedState(tb));
+            final FieldAbsoluteDate<T> tb = sb.getDate();
+            final T gb = g(sb);
 
             // check events occurrence
             if (gb.getReal() == 0.0 || (g0Positive ^ gb.getReal() > 0)) {
@@ -244,6 +245,29 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
         pendingEventTime = null;
         return false;
 
+    }
+
+    /** Estimate next state to check.
+     * @param done state already checked
+     * @param target target state towards which we are checking
+     * @param interpolator step interpolator for the proposed step
+     * @return intermediate state to check, or exactly {@code null}
+     * if we already have {@code done == target}
+     * @since 12.0
+     */
+    private FieldSpacecraftState<T> nextCheck(final FieldSpacecraftState<T> done, final FieldSpacecraftState<T> target,
+                                              final FieldOrekitStepInterpolator<T> interpolator) {
+        if (done == target) {
+            // we have already reached target
+            return null;
+        } else {
+            // we have to select some intermediate state
+            // attempting to split the remaining time in an integer number of checks
+            final T dt            = target.getDate().durationFrom(done.getDate());
+            final double maxCheck = detector.getMaxCheckInterval().currentInterval(done);
+            final int    n        = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt).divide(maxCheck).getReal()));
+            return n == 1 ? target : interpolator.getInterpolatedState(done.getDate().shiftedBy(dt.divide(n)));
+        }
     }
 
     /**

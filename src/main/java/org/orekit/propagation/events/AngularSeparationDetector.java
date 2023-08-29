@@ -58,7 +58,7 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
     public AngularSeparationDetector(final PVCoordinatesProvider beacon,
                                      final PVCoordinatesProvider observer,
                                      final double proximityAngle) {
-        this(60.0, 1.0e-3, 100, new StopOnDecreasing(),
+        this(s -> 60.0, 1.0e-3, 100, new StopOnDecreasing(),
              beacon, observer, proximityAngle);
     }
 
@@ -68,7 +68,7 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -77,7 +77,7 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      * the beacon at the same time if they are too close to each other
      * @param proximityAngle proximity angle as seen from observer, at which events are triggered (rad)
      */
-    protected AngularSeparationDetector(final double maxCheck, final double threshold,
+    protected AngularSeparationDetector(final AdaptableInterval maxCheck, final double threshold,
                                         final int maxIter,
                                         final EventHandler handler,
                                         final PVCoordinatesProvider beacon,
@@ -91,8 +91,8 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
 
     /** {@inheritDoc} */
     @Override
-    protected AngularSeparationDetector create(final double newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler newHandler) {
+    protected AngularSeparationDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                               final int newMaxIter, final EventHandler newHandler) {
         return new AngularSeparationDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                              beacon, observer, proximityAngle);
     }

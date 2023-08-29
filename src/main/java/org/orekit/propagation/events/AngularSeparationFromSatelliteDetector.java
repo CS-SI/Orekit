@@ -58,7 +58,7 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
     public AngularSeparationFromSatelliteDetector(final PVCoordinatesProvider primaryObject,
                                                   final PVCoordinatesProvider secondaryObject,
                                                   final double proximityAngle) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnDecreasing(),
+        this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnDecreasing(),
              primaryObject, secondaryObject, proximityAngle);
     }
 
@@ -68,7 +68,7 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -77,7 +77,7 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
      *        the primaryObject as seen from the spacecraft
      * @param proximityAngle proximity angle as seen from secondaryObject, at which events are triggered (rad)
      */
-    protected AngularSeparationFromSatelliteDetector(final double maxCheck, final double threshold,
+    protected AngularSeparationFromSatelliteDetector(final AdaptableInterval maxCheck, final double threshold,
                                                      final int maxIter,
                                                      final EventHandler handler,
                                                      final PVCoordinatesProvider primaryObject,
@@ -91,8 +91,8 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
 
     /** {@inheritDoc} */
     @Override
-    protected AngularSeparationFromSatelliteDetector create(final double newMaxCheck, final double newThreshold,
-                                               final int newMaxIter, final EventHandler newHandler) {
+    protected AngularSeparationFromSatelliteDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                                            final int newMaxIter, final EventHandler newHandler) {
         return new AngularSeparationFromSatelliteDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                              primaryObject, secondaryObject, proximityAngle);
     }

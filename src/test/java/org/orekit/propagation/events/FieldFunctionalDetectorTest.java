@@ -61,14 +61,14 @@ public class FieldFunctionalDetectorTest {
         FieldFunctionalDetector<T> detector = new FieldFunctionalDetector<>(field)
                 .withMaxIter(1)
                 .withThreshold(zero.add(2))
-                .withMaxCheck(zero.add(3))
+                .withMaxCheck(3)
                 .withHandler(handler)
                 .withFunction(g);
 
         // verify
         MatcherAssert.assertThat(detector.getMaxIterationCount(), CoreMatchers.is(1));
         MatcherAssert.assertThat(detector.getThreshold().getReal(), CoreMatchers.is(2.0));
-        MatcherAssert.assertThat(detector.getMaxCheckInterval().getReal(), CoreMatchers.is(3.0));
+        MatcherAssert.assertThat(detector.getMaxCheckInterval().currentInterval(null), CoreMatchers.is(3.0));
         MatcherAssert.assertThat(detector.getHandler(), CoreMatchers.is(handler));
         FieldSpacecraftState<T> state = new FieldSpacecraftState<>(
                 new FieldCartesianOrbit<>(

@@ -103,7 +103,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -111,7 +111,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
      * @param filter filter to use
      */
     @SuppressWarnings("unchecked")
-    protected FieldEventSlopeFilter(final T maxCheck, final T threshold,
+    protected FieldEventSlopeFilter(final FieldAdaptableInterval<T> maxCheck, final T threshold,
                                     final int maxIter, final FieldEventHandler<T> handler,
                                     final D rawDetector, final FilterType filter) {
         super(maxCheck, threshold, maxIter, handler);
@@ -123,7 +123,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
 
     /** {@inheritDoc} */
     @Override
-    protected FieldEventSlopeFilter<D, T> create(final T newMaxCheck, final T newThreshold,
+    protected FieldEventSlopeFilter<D, T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
                                                  final int newMaxIter, final FieldEventHandler<T> newHandler) {
         return new FieldEventSlopeFilter<>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, filter);
     }

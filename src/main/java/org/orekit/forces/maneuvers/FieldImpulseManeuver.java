@@ -25,6 +25,7 @@ import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldAbstractDetector;
+import org.orekit.propagation.events.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
@@ -138,7 +139,7 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param eventHandler event handler to call at event occurrences
@@ -148,7 +149,7 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
      * @param isp engine specific impulse (s)
      * @param controlVector3DNormType increment's norm for mass consumption
      */
-    private FieldImpulseManeuver(final T maxCheck, final T threshold, final int maxIter,
+    private FieldImpulseManeuver(final FieldAdaptableInterval<T> maxCheck, final T threshold, final int maxIter,
                                  final FieldEventHandler<T> eventHandler, final D trigger,
                                  final AttitudeProvider attitudeOverride, final FieldVector3D<T> deltaVSat,
                                  final T isp, final ControlVector3DNormType controlVector3DNormType) {
@@ -163,7 +164,7 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
 
     /** {@inheritDoc} */
     @Override
-    protected FieldImpulseManeuver<D, T> create(final T newMaxCheck, final T newThreshold,
+    protected FieldImpulseManeuver<D, T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
                                                 final int newMaxIter,
                                                 final FieldEventHandler<T> fieldEventHandler) {
         return new FieldImpulseManeuver<>(newMaxCheck, newThreshold, newMaxIter, fieldEventHandler,

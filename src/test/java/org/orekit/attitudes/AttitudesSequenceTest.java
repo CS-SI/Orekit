@@ -357,8 +357,9 @@ public class AttitudesSequenceTest {
         try {
             new AttitudesSequence().addSwitchingCondition(new FrameAlignedProvider(Rotation.IDENTITY),
                                                           new FrameAlignedProvider(Rotation.IDENTITY),
-                                                          new DateDetector(1000.0, threshold,
-                                                                           AbsoluteDate.J2000_EPOCH),
+                                                          new DateDetector(AbsoluteDate.J2000_EPOCH).
+                                                          withMaxCheck(1000.0).
+                                                          withThreshold(threshold),
                                                           true, false, transitionTime,
                                                           AngularDerivativesFilter.USE_R, null);
             Assertions.fail("an exception should have been thrown");

@@ -124,13 +124,13 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
             detectors[2 * i]     = new FieldEclipseDetector<>(field, occulting).
                                    withUmbra().
                                    withMargin(zero.newInstance(-ANGULAR_MARGIN)).
-                                   withMaxCheck(zero.newInstance(ECLIPSE_MAX_CHECK)).
+                                   withMaxCheck(ECLIPSE_MAX_CHECK).
                                    withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
                                    withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
             detectors[2 * i + 1] = new FieldEclipseDetector<>(field, occulting).
                                    withPenumbra().
                                    withMargin(zero.newInstance(ANGULAR_MARGIN)).
-                                   withMaxCheck(zero.newInstance(ECLIPSE_MAX_CHECK)).
+                                   withMaxCheck(ECLIPSE_MAX_CHECK).
                                    withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
                                    withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
         }

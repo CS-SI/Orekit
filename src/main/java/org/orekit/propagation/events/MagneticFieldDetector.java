@@ -144,7 +144,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
                                  final boolean seaLevel,
                                  final DataContext dataContext)
         throws OrekitIllegalArgumentException {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
+        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              limit, type, body, seaLevel, dataContext);
     }
 
@@ -154,7 +154,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -165,7 +165,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * @param dataContext used to look up the magnetic field model.
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
      */
-    protected MagneticFieldDetector(final double maxCheck, final double threshold,
+    protected MagneticFieldDetector(final AdaptableInterval maxCheck, final double threshold,
                                     final int maxIter, final EventHandler handler,
                                     final double limit, final FieldModel type, final OneAxisEllipsoid body, final boolean seaLevel,
                                     final DataContext dataContext)
@@ -182,7 +182,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
 
     /** {@inheritDoc} */
     @Override
-    protected MagneticFieldDetector create(final double newMaxCheck, final double newThreshold,
+    protected MagneticFieldDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                            final int newMaxIter, final EventHandler newHandler) {
         return new MagneticFieldDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                          limit, type, body, seaLevel, dataContext);

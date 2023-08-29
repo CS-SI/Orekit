@@ -100,7 +100,7 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -108,7 +108,7 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
      * @param filter filter to use
      * @since 6.1
      */
-    protected EventSlopeFilter(final double maxCheck, final double threshold,
+    protected EventSlopeFilter(final AdaptableInterval maxCheck, final double threshold,
                                final int maxIter, final EventHandler handler,
                                final T rawDetector, final FilterType filter) {
         super(maxCheck, threshold, maxIter, handler);
@@ -120,7 +120,7 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
 
     /** {@inheritDoc} */
     @Override
-    protected EventSlopeFilter<T> create(final double newMaxCheck, final double newThreshold,
+    protected EventSlopeFilter<T> create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                          final int newMaxIter, final EventHandler newHandler) {
         return new EventSlopeFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, filter);
     }

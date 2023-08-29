@@ -32,7 +32,7 @@ public class HaloXZPlaneCrossingDetector extends AbstractDetector<HaloXZPlaneCro
      * @param threshold convergence threshold (s)
      */
     public HaloXZPlaneCrossingDetector(final double maxCheck, final double threshold) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER,
+        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER,
              new StopOnIncreasing());
     }
 
@@ -43,12 +43,12 @@ public class HaloXZPlaneCrossingDetector extends AbstractDetector<HaloXZPlaneCro
      * with the various {@code withXxx()} methods to set up the instance in a
      * readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      */
-    protected HaloXZPlaneCrossingDetector(final double maxCheck, final double threshold,
+    protected HaloXZPlaneCrossingDetector(final AdaptableInterval maxCheck, final double threshold,
                                           final int maxIter,
                                           final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
@@ -56,7 +56,7 @@ public class HaloXZPlaneCrossingDetector extends AbstractDetector<HaloXZPlaneCro
 
     /** {@inheritDoc} */
     @Override
-    protected HaloXZPlaneCrossingDetector create(final double newMaxCheck, final double newThreshold,
+    protected HaloXZPlaneCrossingDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                                  final int newMaxIter,
                                                  final EventHandler newHandler) {
         return new HaloXZPlaneCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);

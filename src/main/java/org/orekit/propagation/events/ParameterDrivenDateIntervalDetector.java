@@ -97,7 +97,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
      */
     public ParameterDrivenDateIntervalDetector(final String prefix,
                                                final AbsoluteDate refStart, final AbsoluteDate refStop) {
-        this(FastMath.max(0.5 * refStop.durationFrom(refStart), THRESHOLD),
+        this(s -> FastMath.max(0.5 * refStop.durationFrom(refStart), THRESHOLD),
              THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnDecreasing(),
              new DateDriver(refStart, prefix + START_SUFFIX, true),
@@ -112,7 +112,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -121,7 +121,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
      * @param median median date driver
      * @param duration duration driver
      */
-    protected ParameterDrivenDateIntervalDetector(final double maxCheck, final double threshold, final int maxIter,
+    protected ParameterDrivenDateIntervalDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
                                                   final EventHandler handler,
                                                   final DateDriver start, final DateDriver stop,
                                                   final DateDriver median, final ParameterDriver duration) {
@@ -159,7 +159,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
 
     /** {@inheritDoc} */
     @Override
-    protected ParameterDrivenDateIntervalDetector create(final double newMaxCheck, final double newThreshold, final int newMaxIter,
+    protected ParameterDrivenDateIntervalDetector create(final AdaptableInterval newMaxCheck, final double newThreshold, final int newMaxIter,
                                                          final EventHandler newHandler) {
         return new ParameterDrivenDateIntervalDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                                        start, stop, median, duration);

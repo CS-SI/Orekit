@@ -55,7 +55,7 @@ public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingD
      */
     public LatitudeCrossingDetector(final double maxCheck, final double threshold,
                                     final OneAxisEllipsoid body, final double latitude) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
+        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              body, latitude);
     }
 
@@ -65,14 +65,14 @@ public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingD
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param body body on which the latitude is defined
      * @param latitude latitude to be crossed
      */
-    protected LatitudeCrossingDetector(final double maxCheck, final double threshold,
+    protected LatitudeCrossingDetector(final AdaptableInterval maxCheck, final double threshold,
                                        final int maxIter, final EventHandler handler,
                                        final OneAxisEllipsoid body, final double latitude) {
         super(maxCheck, threshold, maxIter, handler);
@@ -82,7 +82,7 @@ public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingD
 
     /** {@inheritDoc} */
     @Override
-    protected LatitudeCrossingDetector create(final double newMaxCheck, final double newThreshold,
+    protected LatitudeCrossingDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
                                               final EventHandler newHandler) {
         return new LatitudeCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,

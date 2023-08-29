@@ -87,21 +87,21 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
      * @param secondary provider for the secondary satellite
      */
     public InterSatDirectViewDetector(final OneAxisEllipsoid body, final PVCoordinatesProvider secondary) {
-        this(body, secondary, DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+        this(body, secondary, s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new ContinueOnEvent());
     }
 
     /** Private constructor.
      * @param body central body
      * @param secondary provider for the secondary satellite
-     * @param maxCheck  maximum checking interval (s)
+     * @param maxCheck  maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
      */
     protected InterSatDirectViewDetector(final OneAxisEllipsoid body,
                                          final PVCoordinatesProvider secondary,
-                                         final double maxCheck,
+                                         final AdaptableInterval maxCheck,
                                          final double threshold,
                                          final int maxIter,
                                          final EventHandler handler) {
@@ -128,7 +128,7 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
 
     /** {@inheritDoc} */
     @Override
-    protected InterSatDirectViewDetector create(final double newMaxCheck,
+    protected InterSatDirectViewDetector create(final AdaptableInterval newMaxCheck,
                                                 final double newThreshold,
                                                 final int newMaxIter,
                                                 final EventHandler newHandler) {

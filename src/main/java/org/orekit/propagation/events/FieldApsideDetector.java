@@ -58,7 +58,7 @@ public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends Fiel
      * @param orbit initial orbit
      */
     public FieldApsideDetector(final T threshold, final FieldOrbit<T> orbit) {
-        super(orbit.getKeplerianPeriod().divide(3), threshold,
+        super(s -> orbit.getKeplerianPeriod().divide(3).getReal(), threshold,
               DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>());
     }
 
@@ -68,19 +68,19 @@ public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends Fiel
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      */
-    protected FieldApsideDetector(final T maxCheck, final T threshold,
+    protected FieldApsideDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
                                   final int maxIter, final FieldEventHandler<T> handler) {
         super(maxCheck, threshold, maxIter, handler);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected FieldApsideDetector<T> create(final T newMaxCheck, final T newThreshold,
+    protected FieldApsideDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
                                             final int newMaxIter,
                                             final FieldEventHandler<T> newHandler) {
         return new FieldApsideDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler);

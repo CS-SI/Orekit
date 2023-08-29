@@ -93,7 +93,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
                                  final OrbitType orbitType, final PositionAngle positionAngle,
                                  final double angle)
         throws OrekitIllegalArgumentException {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent(),
+        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent(),
              orbitType, positionAngle, angle);
     }
 
@@ -103,7 +103,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -112,7 +112,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
      * @param angle fixed angle to be crossed
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
      */
-    protected PositionAngleDetector(final double maxCheck, final double threshold,
+    protected PositionAngleDetector(final AdaptableInterval maxCheck, final double threshold,
                                     final int maxIter, final EventHandler handler,
                                     final OrbitType orbitType, final PositionAngle positionAngle,
                                     final double angle)
@@ -148,9 +148,9 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
 
     /** {@inheritDoc} */
     @Override
-    protected PositionAngleDetector create(final double newMaxCheck, final double newThreshold,
-                                              final int newMaxIter,
-                                              final EventHandler newHandler) {
+    protected PositionAngleDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                           final int newMaxIter,
+                                           final EventHandler newHandler) {
         return new PositionAngleDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                          orbitType, positionAngle, angle);
     }

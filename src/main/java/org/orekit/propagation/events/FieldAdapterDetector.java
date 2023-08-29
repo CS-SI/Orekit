@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2023 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,10 @@
  */
 package org.orekit.propagation.events;
 
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.time.AbsoluteDate;
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** Base class for adapting an existing detector.
  * <p>
@@ -28,48 +29,49 @@ import org.orekit.time.AbsoluteDate;
  * therefore override only the methods they want to change.
  * </p>
  * @author Luc Maisonobe
- * @since 9.3
+ * @since 12.0
+ * @param <T> type of the field element
  */
-public class AdapterDetector implements EventDetector {
+public class FieldAdapterDetector<T extends CalculusFieldElement<T>> implements FieldEventDetector<T> {
 
     /** Wrapped detector. */
-    private final EventDetector detector;
+    private final FieldEventDetector<T> detector;
 
     /** Build an adaptor wrapping an existing detector.
      * @param detector detector to wrap
      */
-    public AdapterDetector(final EventDetector detector) {
+    public FieldAdapterDetector(final FieldEventDetector<T> detector) {
         this.detector = detector;
     }
 
     /** Get the wrapped detector.
      * @return wrapped detector
      */
-    public EventDetector getDetector() {
+    public FieldEventDetector<T> getDetector() {
         return detector;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+    public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
         detector.init(s0, t);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double g(final SpacecraftState s) {
+    public T g(final FieldSpacecraftState<T> s) {
         return detector.g(s);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double getThreshold() {
+    public T getThreshold() {
         return detector.getThreshold();
     }
 
     /** {@inheritDoc} */
     @Override
-    public AdaptableInterval getMaxCheckInterval() {
+    public FieldAdaptableInterval<T> getMaxCheckInterval() {
         return detector.getMaxCheckInterval();
     }
 
@@ -81,7 +83,7 @@ public class AdapterDetector implements EventDetector {
 
     /** {@inheritDoc} */
     @Override
-    public EventHandler getHandler() {
+    public FieldEventHandler<T> getHandler() {
         return detector.getHandler();
     }
 
