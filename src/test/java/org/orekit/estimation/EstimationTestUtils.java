@@ -142,6 +142,11 @@ public class EstimationTestUtils {
         context.TDOAstations = new Pair<GroundStation, GroundStation>(context.createStation(40.0, 0.0, 0.0, "TDOA_Prime"),
                                                                       context.createStation(45.0, 0.0, 0.0, "TDOA_Second"));
 
+        // TDOA stations
+        // key/first    = primary station that dates the measurement
+        // value/second = secondary station associated
+        context.FDOAstations = context.TDOAstations;
+
         return context;
 
     }

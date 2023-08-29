@@ -137,10 +137,10 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
      */
     public double g(final SpacecraftState s) {
         final PVCoordinates sPV = s.getPVCoordinates();
-        final PVCoordinates primaryPV   = primaryObject  .getPVCoordinates(s.getDate(), s.getFrame());
-        final PVCoordinates secondaryPV = secondaryObject.getPVCoordinates(s.getDate(), s.getFrame());
-        final double separation = Vector3D.angle(primaryPV  .getPosition().subtract(sPV.getPosition()),
-                                                 secondaryPV.getPosition().subtract(sPV.getPosition()));
+        final Vector3D primaryPos   = primaryObject  .getPosition(s.getDate(), s.getFrame());
+        final Vector3D secondaryPos = secondaryObject.getPosition(s.getDate(), s.getFrame());
+        final double separation = Vector3D.angle(primaryPos.subtract(sPV.getPosition()),
+                                                 secondaryPos.subtract(sPV.getPosition()));
         return separation - proximityAngle;
     }
 

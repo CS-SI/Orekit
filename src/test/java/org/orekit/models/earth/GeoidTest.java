@@ -31,6 +31,7 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 
@@ -78,7 +79,7 @@ public class GeoidTest {
         GravityFieldFactory.clearPotentialCoefficientsReaders();
         GravityFieldFactory.addPotentialCoefficientsReader(
                 new EGMFormatReader("egm96", false));
-        potential = GravityFieldFactory.getConstantNormalizedProvider(
+        potential = GravityFieldFactory.getNormalizedProvider(
                 maxDegree, maxOrder);
         date = null;
     }
@@ -241,7 +242,7 @@ public class GeoidTest {
                 .add(gp.getNorth().scalarMultiply(0.9));
         Vector3D close = expected.add(slope.scalarMultiply(100));
         Line line = new Line(expected.add(slope), close, 0);
-        Transform xform = geoid.getBodyFrame().getTransformTo(frame, date);
+        StaticTransform xform = geoid.getBodyFrame().getStaticTransformTo(frame, date);
         // transform to test frame
         close = xform.transformPosition(close);
         line = xform.transformLine(line);

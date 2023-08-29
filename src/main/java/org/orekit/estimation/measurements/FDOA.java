@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,16 +52,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Mark Rutten
  * @since 12.0
  */
-public class FDOA extends AbstractMeasurement<FDOA> {
+public class FDOA extends GroundReceiverMeasurement<FDOA> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "FDOA";
 
     /** Centre frequency of the signal emitted from the satellite. */
     private final double centreFrequency;
-
-    /** Prime ground station, the one that gives the date of the measurement. */
-    private final GroundStation primeStation;
 
     /** Second ground station, the one that gives the measurement, i.e. the delay. */
     private final GroundStation secondStation;
@@ -72,27 +68,17 @@ public class FDOA extends AbstractMeasurement<FDOA> {
      * @param secondStation ground station that gives the measurement
      * @param centreFrequency satellite emitter frequency
      * @param date date of the measurement
-     * @param tdoa observed value (s)
+     * @param fdoa observed value (s)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
      */
     public FDOA(final GroundStation primeStation, final GroundStation secondStation,
                 final double centreFrequency,
-                final AbsoluteDate date, final double tdoa, final double sigma,
+                final AbsoluteDate date, final double fdoa, final double sigma,
                 final double baseWeight, final ObservableSatellite satellite) {
-        super(date, tdoa, sigma, baseWeight, Collections.singletonList(satellite));
-        // add parameter drivers for the primary station
-        addParameterDriver(primeStation.getClockOffsetDriver());
-        addParameterDriver(primeStation.getEastOffsetDriver());
-        addParameterDriver(primeStation.getNorthOffsetDriver());
-        addParameterDriver(primeStation.getZenithOffsetDriver());
-        addParameterDriver(primeStation.getPrimeMeridianOffsetDriver());
-        addParameterDriver(primeStation.getPrimeMeridianDriftDriver());
-        addParameterDriver(primeStation.getPolarOffsetXDriver());
-        addParameterDriver(primeStation.getPolarDriftXDriver());
-        addParameterDriver(primeStation.getPolarOffsetYDriver());
-        addParameterDriver(primeStation.getPolarDriftYDriver());
+        super(primeStation, false, date, fdoa, sigma, baseWeight, satellite);
+
         // add parameter drivers for the secondary station
         addParameterDriver(secondStation.getClockOffsetDriver());
         addParameterDriver(secondStation.getEastOffsetDriver());
@@ -104,7 +90,6 @@ public class FDOA extends AbstractMeasurement<FDOA> {
         addParameterDriver(secondStation.getPolarDriftXDriver());
         addParameterDriver(secondStation.getPolarOffsetYDriver());
         addParameterDriver(secondStation.getPolarDriftYDriver());
-        this.primeStation  = primeStation;
         this.secondStation = secondStation;
         this.centreFrequency = centreFrequency;
     }
@@ -113,7 +98,7 @@ public class FDOA extends AbstractMeasurement<FDOA> {
      * @return prime ground station
      */
     public GroundStation getPrimeStation() {
-        return primeStation;
+        return getStation();
     }
 
     /** Get the second ground station, the one that gives the measurement.
@@ -135,7 +120,7 @@ public class FDOA extends AbstractMeasurement<FDOA> {
 
         // transform between prime station frame and inertial frame
         // at the real date of measurement, i.e. taking station clock offset into account
-        final Transform primeToInert = primeStation.getOffsetToInertial(state.getFrame(), getDate(), false);
+        final Transform primeToInert = getStation().getOffsetToInertial(state.getFrame(), getDate(), false);
         final AbsoluteDate measurementDate = primeToInert.getDate();
 
         // prime station PV in inertial frame at the real date of the measurement
@@ -179,7 +164,7 @@ public class FDOA extends AbstractMeasurement<FDOA> {
         } while (count++ < 10 && delta >= 2 * FastMath.ulp(tau2));
 
         // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
-        final double offset1 = primeStation.getClockOffsetDriver().getValue(emitterState.getDate());
+        final double offset1 = getStation().getClockOffsetDriver().getValue(emitterState.getDate());
         final double offset2 = secondStation.getClockOffsetDriver().getValue(emitterState.getDate());
         final double tdoa    = (tau1 + offset1) - (tau2 + offset2);
 
@@ -250,7 +235,7 @@ public class FDOA extends AbstractMeasurement<FDOA> {
         // transform between prime station frame and inertial frame
         // at the real date of measurement, i.e. taking station clock offset into account
         final FieldTransform<Gradient> primeToInert =
-                        primeStation.getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
+                        getStation().getOffsetToInertial(state.getFrame(), getDate(), nbParams, indices);
         final FieldAbsoluteDate<Gradient> measurementDateG = primeToInert.getFieldDate();
 
         // prime station PV in inertial frame at the real date of the measurement
@@ -296,7 +281,7 @@ public class FDOA extends AbstractMeasurement<FDOA> {
         } while (count++ < 10 && delta >= 2 * FastMath.ulp(tau2.getValue()));
 
         // The measured TDOA is (tau1 + clockOffset1) - (tau2 + clockOffset2)
-        final Gradient offset1 = primeStation.getClockOffsetDriver().getValue(nbParams, indices, emitterState.getDate());
+        final Gradient offset1 = getStation().getClockOffsetDriver().getValue(nbParams, indices, emitterState.getDate());
         final Gradient offset2 = secondStation.getClockOffsetDriver().getValue(nbParams, indices, emitterState.getDate());
         final Gradient tdoaG   = tau1.add(offset1).subtract(tau2.add(offset2));
         final double tdoa      = tdoaG.getValue();

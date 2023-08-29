@@ -226,7 +226,7 @@ public class NadirPointingTest {
 
         // Get satellite Z axis in EME2000 frame
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);
-        Vector3D zSatItrf = FramesFactory.getEME2000().getTransformTo(itrf, date).transformVector(zSatEME2000);
+        Vector3D zSatItrf = FramesFactory.getEME2000().getStaticTransformTo(itrf, date).transformVector(zSatEME2000);
 
         // Check that satellite Z axis is collinear to local vertical axis
         double angle= Vector3D.angle(zSatItrf, targetVertical);

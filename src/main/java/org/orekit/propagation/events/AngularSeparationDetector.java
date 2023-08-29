@@ -137,10 +137,10 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      */
     public double g(final SpacecraftState s) {
         final PVCoordinates sPV = s.getPVCoordinates();
-        final PVCoordinates bPV = beacon.getPVCoordinates(s.getDate(), s.getFrame());
-        final PVCoordinates oPV = observer.getPVCoordinates(s.getDate(), s.getFrame());
-        final double separation = Vector3D.angle(sPV.getPosition().subtract(oPV.getPosition()),
-                                                 bPV.getPosition().subtract(oPV.getPosition()));
+        final Vector3D bP = beacon.getPosition(s.getDate(), s.getFrame());
+        final Vector3D oP = observer.getPosition(s.getDate(), s.getFrame());
+        final double separation = Vector3D.angle(sPV.getPosition().subtract(oP),
+                                                 bP.subtract(oP));
         return separation - proximityAngle;
     }
 

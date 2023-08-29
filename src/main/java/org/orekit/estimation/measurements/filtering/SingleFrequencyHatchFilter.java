@@ -20,8 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.gnss.observation.MeasurementType;
-import org.orekit.gnss.observation.ObservationData;
+import org.orekit.files.rinex.observation.ObservationData;
+import org.orekit.gnss.MeasurementType;
 
 /**
  * Single frequency Hatch filter.

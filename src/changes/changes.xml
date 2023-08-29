@@ -24,6 +24,18 @@
       <action dev="luc" type="add" issue="1178">
         Max check interval in events detectors can now depend on current state.
       </action>
+      <action dev="bryan" type="update" issue="1182">
+        Moved Rinex parsing/writing into files package.
+      </action>
+      <action dev="serrof" type="fix" issue="1170">
+          Fixed wrong calls in Field acceleration for some gravitational force models.
+      </action>
+      <action dev="markrutten" type="add" issue="1069">
+        Added FDOA measurements.
+      </action>
+      <action dev="bryan" type="add" issue="887">
+        Added possibility to freeze gravity field from user defined epoch.
+      </action>
       <action dev="luc" type="add" issue="993">
         Added EphemerisOcmWriter and StreamingOcmWriter.
       </action>

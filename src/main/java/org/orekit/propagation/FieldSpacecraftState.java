@@ -1066,7 +1066,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @param outputFrame frame in which coordinates should be defined
      * @return pvCoordinates in orbit definition frame
      */
-    public TimeStampedFieldPVCoordinates<T>getPVCoordinates(final Frame outputFrame) {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame) {
         return (absPva == null) ? orbit.getPVCoordinates(outputFrame) : absPva.getPVCoordinates(outputFrame);
     }
 

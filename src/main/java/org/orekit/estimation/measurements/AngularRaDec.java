@@ -23,10 +23,10 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.frames.FieldTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -91,8 +91,8 @@ public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec> {
         final Vector3D staSatInertial = transitPV.getPosition().subtract(common.getStationDownlink().getPosition());
 
         // Field transform from inertial to reference frame at station's reception date
-        final Transform inertialToReferenceDownlink = common.getState().getFrame().
-                                                      getTransformTo(referenceFrame, common.getStationDownlink().getDate());
+        final StaticTransform inertialToReferenceDownlink = common.getState().getFrame().
+                                                            getStaticTransformTo(referenceFrame, common.getStationDownlink().getDate());
 
         // Station-satellite vector in reference frame
         final Vector3D staSatReference = inertialToReferenceDownlink.transformVector(staSatInertial);
@@ -142,8 +142,8 @@ public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec> {
         final FieldVector3D<Gradient> staSatInertial = transitPV.getPosition().subtract(common.getStationDownlink().getPosition());
 
         // Field transform from inertial to reference frame at station's reception date
-        final FieldTransform<Gradient> inertialToReferenceDownlink =
-                        state.getFrame().getTransformTo(referenceFrame, common.getStationDownlink().getDate());
+        final FieldStaticTransform<Gradient> inertialToReferenceDownlink =
+                        state.getFrame().getStaticTransformTo(referenceFrame, common.getStationDownlink().getDate());
 
         // Station-satellite vector in reference frame
         final FieldVector3D<Gradient> staSatReference = inertialToReferenceDownlink.transformVector(staSatInertial);

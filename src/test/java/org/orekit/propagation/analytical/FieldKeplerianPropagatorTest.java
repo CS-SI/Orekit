@@ -639,10 +639,10 @@ public class FieldKeplerianPropagatorTest {
         propagator.addEventDetector(new FieldApsideDetector<>(orbit));
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
-        FieldPVCoordinates<T> pv = propagated.getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        FieldVector3D<T> position = propagated.getPosition(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 3000.0);
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 3500.0);
-        Assertions.assertEquals(orbit.getA().getReal() * (1.0 - orbit.getE().getReal()), pv.getPosition().getNorm().getReal(), 1.0e-6);
+        Assertions.assertEquals(orbit.getA().getReal() * (1.0 - orbit.getE().getReal()), position.getNorm().getReal(), 1.0e-6);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestAltitude(Field<T> field) {

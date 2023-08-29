@@ -20,7 +20,7 @@ package org.orekit.estimation.measurements.filtering;
 import java.util.ArrayList;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.gnss.observation.ObservationData;
+import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.utils.Constants;
 
 /**
