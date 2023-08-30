@@ -25,6 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.EventDetectorsProvider;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;

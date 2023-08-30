@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces;
+package org.orekit.propagation.events;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,11 +24,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.orekit.propagation.events.AbstractDetector;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldDateDetector;
-import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.forces.ForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;

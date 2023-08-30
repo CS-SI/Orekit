@@ -19,9 +19,9 @@ package org.orekit.forces.maneuvers.trigger;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.forces.EventDetectorsProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetectorsProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriversProvider;
