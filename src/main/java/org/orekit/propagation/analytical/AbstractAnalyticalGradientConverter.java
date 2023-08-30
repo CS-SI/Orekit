@@ -152,25 +152,6 @@ public abstract class AbstractAnalyticalGradientConverter extends AbstractGradie
         }
 
         return gStates.get(nbParams);
-
-    }
-
-    /** Get the model parameters as an array of {@link Gradient} objects.
-     * @param state state as returned by {@link #getState()}
-     * @return the model parameters
-     */
-    public Gradient[] getParameters(final FieldSpacecraftState<Gradient> state) {
-        final int freeParameters = state.getMass().getFreeParameters();
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final Gradient[] parameters = new Gradient[drivers.size()];
-        int index = getFreeStateParameters();
-        int i = 0;
-        for (ParameterDriver driver : drivers) {
-            parameters[i++] = driver.isSelected() ?
-                              Gradient.variable(freeParameters, index++, driver.getValue(state.getDate().toAbsoluteDate())) :
-                              Gradient.constant(freeParameters, driver.getValue(state.getDate().toAbsoluteDate()));
-        }
-        return parameters;
     }
 
     /**
