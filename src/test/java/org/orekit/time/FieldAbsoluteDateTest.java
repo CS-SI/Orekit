@@ -16,13 +16,41 @@
  */
 package org.orekit.time;
 
+import java.io.IOException;
+import java.time.Instant;
+import java.util.Date;
+import java.util.TimeZone;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FDSFactory;
+import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldGradient;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
+import org.hipparchus.analysis.differentiation.SparseGradient;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2Field;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
+import org.hipparchus.complex.FieldComplex;
+import org.hipparchus.complex.FieldComplexField;
+import org.hipparchus.dfp.Dfp;
+import org.hipparchus.dfp.DfpField;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldTuple;
 import org.hipparchus.util.Precision;
+import org.hipparchus.util.Tuple;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,11 +60,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.util.Date;
-import java.util.TimeZone;
 
 public class FieldAbsoluteDateTest {
 
@@ -305,6 +328,141 @@ public class FieldAbsoluteDateTest {
     @Test
     public void testNegativeOffsetShift() {
         doTestNegativeOffsetShift(Binary64Field.getInstance());
+    }
+    
+    /** Test for method {@link FieldAbsoluteDate#hasZeroField()}.*/
+    @Test
+    public void testHasZeroField() {
+                       
+        // DerivativeStructure
+        // ----------
+        
+        final DSFactory dsFactory  = new DSFactory(3, 2);
+        final Field<DerivativeStructure> dsField = dsFactory.getDerivativeField();
+        
+        // Constant date returns true
+        final FieldAbsoluteDate<DerivativeStructure> dsConstantDate = new FieldAbsoluteDate<>(dsField);
+        Assertions.assertTrue(dsConstantDate.hasZeroField());
+        Assertions.assertTrue(dsConstantDate.shiftedBy(dsField.getOne()).hasZeroField());
+        
+        // Variable date returns false
+        final DerivativeStructure dsDt0 = dsFactory.variable(0, 10.);
+        final DerivativeStructure dsDt1 = dsFactory.variable(1, -100.);
+        final DerivativeStructure dsDt2 = dsFactory.variable(2, 100.);
+        Assertions.assertFalse(dsConstantDate.shiftedBy(dsDt0).hasZeroField());
+        Assertions.assertFalse(dsConstantDate.shiftedBy(dsDt1).hasZeroField());
+        Assertions.assertFalse(dsConstantDate.shiftedBy(dsDt2).hasZeroField());
+        Assertions.assertFalse(dsConstantDate.shiftedBy(dsDt0).shiftedBy(dsDt1).shiftedBy(dsDt2).hasZeroField());
+        
+        // UnivariateDerivative1
+        // ---------------------
+        
+        final Field<UnivariateDerivative1> u1Field = UnivariateDerivative1Field.getInstance();
+        
+        // Constant date returns true
+        final FieldAbsoluteDate<UnivariateDerivative1> u1ConstantDate = new FieldAbsoluteDate<>(u1Field);
+        Assertions.assertTrue(u1ConstantDate.hasZeroField());
+        Assertions.assertTrue(u1ConstantDate.shiftedBy(u1Field.getOne()).hasZeroField());
+        Assertions.assertTrue(u1ConstantDate.shiftedBy(new UnivariateDerivative1(10., 0.)).hasZeroField());
+        
+        // Variable date returns false
+        Assertions.assertFalse(u1ConstantDate.shiftedBy(new UnivariateDerivative1(10., 10.)).hasZeroField());
+        
+        // UnivariateDerivative1
+        // ---------------------
+        
+        final Field<UnivariateDerivative2> u2Field = UnivariateDerivative2Field.getInstance();
+        
+        // Constant date returns true
+        final FieldAbsoluteDate<UnivariateDerivative2> u2ConstantDate = new FieldAbsoluteDate<>(u2Field);
+        Assertions.assertTrue(u2ConstantDate.hasZeroField());
+        Assertions.assertTrue(u2ConstantDate.shiftedBy(u2Field.getOne()).hasZeroField());
+        Assertions.assertTrue(u2ConstantDate.shiftedBy(new UnivariateDerivative2(10., 0., 0.)).hasZeroField());
+        
+        // Variable date returns false
+        Assertions.assertFalse(u2ConstantDate.shiftedBy(new UnivariateDerivative2(10., 1., 2.)).hasZeroField());
+        
+        // Gradient
+        // --------
+        
+        final Field<Gradient> gdField = GradientField.getField(2);
+        
+        // Constant date returns true
+        final FieldAbsoluteDate<Gradient> gdConstantDate = new FieldAbsoluteDate<>(gdField);
+        Assertions.assertTrue(gdConstantDate.hasZeroField());
+        
+        // Variable date returns false
+        final Gradient gdDt0 = Gradient.variable(2, 0, 10.);
+        final Gradient gdDt1 = Gradient.variable(2, 1, -100.);
+        Assertions.assertFalse(gdConstantDate.shiftedBy(gdDt0).hasZeroField());
+        Assertions.assertFalse(gdConstantDate.shiftedBy(gdDt1).hasZeroField());
+        Assertions.assertFalse(gdConstantDate.shiftedBy(gdDt0).shiftedBy(gdDt1).hasZeroField());
+        
+        // Complex
+        // -------
+        
+        final Field<Complex> cxField = ComplexField.getInstance();
+        
+        // Complex with no imaginary part returns true
+        final FieldAbsoluteDate<Complex> cxConstantDate = new FieldAbsoluteDate<>(cxField);
+        Assertions.assertTrue(cxConstantDate.hasZeroField());
+
+        Assertions.assertTrue(cxConstantDate.shiftedBy(new Complex(10., 0.)).hasZeroField());                
+        
+        // Complex with imaginary part returns true
+        Assertions.assertFalse(cxConstantDate.shiftedBy(new Complex(-100., 10.)).hasZeroField());
+        
+        // Others → Always return false
+        // ----------------------------
+        
+        // Binary64
+        final Binary64Field b64Field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> b64Date = new FieldAbsoluteDate<>(b64Field);
+        Assertions.assertFalse(b64Date.hasZeroField());
+        
+        // Dfp
+        final FieldAbsoluteDate<Dfp> dfpDate = new FieldAbsoluteDate<>(new DfpField(10));
+        Assertions.assertFalse(dfpDate.hasZeroField());
+        
+        // FieldComplex
+        final FieldAbsoluteDate<FieldComplex<Complex>> fcxDate = new FieldAbsoluteDate<>(FieldComplexField.getField(cxField));
+        Assertions.assertFalse(fcxDate.hasZeroField());
+        
+        // FieldTuple
+        final FieldAbsoluteDate<FieldTuple<DerivativeStructure>> ftpDate = new FieldAbsoluteDate<>(new FieldTuple<>(dsDt0, dsDt1).getField());
+        Assertions.assertFalse(ftpDate.hasZeroField());
+        
+        // SparseGradient
+        final FieldAbsoluteDate<SparseGradient> sgdDate = new FieldAbsoluteDate<>(SparseGradient.createConstant(10.).getField());
+        Assertions.assertFalse(sgdDate.hasZeroField());
+        
+        // Tuple
+        final FieldAbsoluteDate<Tuple> tpDate = new FieldAbsoluteDate<>(new Tuple(0., 1., 2.).getField());
+        Assertions.assertFalse(tpDate.hasZeroField());
+        
+        // FieldDerivativeStructure
+        final FDSFactory<Binary64> fdsFactory = new FDSFactory<>(b64Field, 3, 1);
+        final FieldAbsoluteDate<FieldDerivativeStructure<Binary64>> fdsDate = new FieldAbsoluteDate<>(fdsFactory.constant(1.).getField());
+        Assertions.assertFalse(fdsDate.hasZeroField());
+        
+        // FieldGradient
+        final FieldAbsoluteDate<FieldGradient<Binary64>> fgdDate =
+                        new FieldAbsoluteDate<>(new FieldGradient<Binary64>(fdsFactory.constant(1.)).getField());
+        Assertions.assertFalse(fgdDate.hasZeroField());
+        
+        // FieldUnivariateDerivative1
+        FieldUnivariateDerivative1<Binary64> fu1 =  
+                        new FieldUnivariateDerivative1<>(b64Field.getZero().newInstance(1.),
+                                        b64Field.getOne());
+        final FieldAbsoluteDate<FieldUnivariateDerivative1<Binary64>> fu1Date = new FieldAbsoluteDate<>(fu1.getField());
+        Assertions.assertFalse(fu1Date.hasZeroField());
+        
+        // FieldUnivariateDerivative2
+        FieldUnivariateDerivative2<Binary64> fu2 =  
+                        new FieldUnivariateDerivative2<>(b64Field.getZero().newInstance(1.),
+                                        b64Field.getOne(), b64Field.getZero());
+        final FieldAbsoluteDate<FieldUnivariateDerivative2<Binary64>> fu2Date = new FieldAbsoluteDate<>(fu2.getField());
+        Assertions.assertFalse(fu2Date.hasZeroField());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestStandardEpoch(final Field<T> field) {

@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.observation.ObservationTimeScale;
 
 /**
  * Enumerate for satellite system.

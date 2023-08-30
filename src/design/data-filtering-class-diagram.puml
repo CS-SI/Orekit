@@ -68,7 +68,7 @@
  
     }
 
-    package gnss #DDEBD8 {
+    package files.rinex #DDEBD8 {
       class HatanakaCompressFilter
       DataFilter <|-- HatanakaCompressFilter
       DataSource.Opener <-left- HatanakaCompressFilter : creates

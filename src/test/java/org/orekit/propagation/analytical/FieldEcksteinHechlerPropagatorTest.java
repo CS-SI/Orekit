@@ -796,10 +796,10 @@ public class FieldEcksteinHechlerPropagatorTest {
         propagator.addEventDetector(new FieldApsideDetector<>(orbit));
         FieldAbsoluteDate<T> farTarget = date.shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
-        FieldPVCoordinates<T> pv = propagated.getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        FieldVector3D<T> position = propagated.getPosition(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 3000.0);
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 3500.0);
-        Assertions.assertEquals(orbit.getA().getReal() * (1.0 - orbit.getE().getReal()), pv.getPosition().getNorm().getReal(), 410);
+        Assertions.assertEquals(orbit.getA().getReal() * (1.0 - orbit.getE().getReal()), position.getNorm().getReal(), 410);
     }
 
     @Test
@@ -817,7 +817,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
         final FieldAbsoluteDate<T> stopDate = date.shiftedBy(500.0);
-        propagator.addEventDetector(new FieldDateDetector<>(stopDate));
+        propagator.addEventDetector(new FieldDateDetector<>(field, stopDate));
         FieldAbsoluteDate<T> farTarget = date.shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
         Assertions.assertEquals(0, stopDate.durationFrom(propagated.getDate()).getReal(), 1.0e-10);

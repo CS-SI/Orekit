@@ -28,6 +28,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
+import org.orekit.propagation.events.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -140,15 +141,16 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
      */
     private <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> D convertAndSetUpHandler(final Field<S> field) {
         final FieldAbstractDetector<D, S> converted = convertIntervalDetector(field, firingIntervalDetector);
+        final FieldAdaptableInterval<S>   maxCheck  = s -> firingIntervalDetector.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
         return converted.
-               withMaxCheck(field.getZero().newInstance(firingIntervalDetector.getMaxCheckInterval())).
+               withMaxCheck(maxCheck).
                withThreshold(field.getZero().newInstance(firingIntervalDetector.getThreshold())).
                withHandler(new FieldHandler<>());
     }
 
     /** Convert a primitive firing intervals detector into a field firing intervals detector.
      * <p>
-     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(CalculusFieldElement) withMaxCheck},
+     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(FieldAdaptableInterval) withMaxCheck},
      * {@link FieldAbstractDetector#withThreshold(CalculusFieldElement) withThreshold}, or
      * {@link FieldAbstractDetector#withHandler(org.orekit.propagation.events.handlers.FieldEventHandler) withHandler}
      * in the converted detector, this will be done by caller.

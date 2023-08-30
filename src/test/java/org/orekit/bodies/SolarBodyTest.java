@@ -32,6 +32,8 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -52,6 +54,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -422,7 +425,6 @@ public class SolarBodyTest {
             });
 
         propag.propagate(startingDate, endDate);
-
     }
 
     private static class BodyAttraction implements ForceModel {
@@ -545,6 +547,48 @@ public class SolarBodyTest {
             max = FastMath.max(max, error.getNorm());
         }
         Assertions.assertTrue(max < epsilon * a);
+    }
+    
+    /** Test added for issue  <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1151">1151</a>.
+     * 
+     *  Test implementation of {@link JPLCelestialBody#getPosition(AbsoluteDate, Frame)} method.
+     */
+    @Test
+    public void testGetPosition() {
+        Utils.setDataRoot("regular-data");
+     
+        // double test: Given
+        // -----------
+        
+        // J2000 date and frame
+        final Frame j2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = new AbsoluteDate();
+        
+        // Loop on bodies
+        for (int iBody = 1; iBody <= 13; iBody++) {
+            // When
+            final CelestialBody body = getBody(iBody);
+            final double dP = Vector3D.distance(body.getPosition(date, j2000),
+                                                body.getPosition(date, j2000));
+            // Then
+            Assertions.assertEquals(0., dP, 0.);
+        }
+        
+        // Field test: given
+        // -----------
+        
+        // Fielded date
+        final FieldAbsoluteDate<Binary64> fDate = new FieldAbsoluteDate<>(Binary64Field.getInstance());
+        
+        // Loop on bodies
+        for (int iBody = 1; iBody <= 13; iBody++) {
+            // When
+            final CelestialBody body = getBody(iBody);
+            final Binary64 dP = FieldVector3D.distance(body.getPVCoordinates(fDate, j2000).getPosition(),
+                                                body.getPosition(fDate, j2000));
+            // Then
+            Assertions.assertEquals(0., dP.getReal(), 0.);
+        }
     }
 
 }

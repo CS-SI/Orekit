@@ -26,23 +26,16 @@ import java.util.Objects;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.Frame;
-import org.orekit.orbits.FieldEquinoctialOrbit;
-import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -93,12 +86,6 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
 
     /** Parameter name for B* coefficient. */
     public static final String B_STAR = "BSTAR";
-
-    /** Default value for epsilon. */
-    private static final double EPSILON_DEFAULT = 1.0e-10;
-
-    /** Default value for maxIterations. */
-    private static final int MAX_ITERATIONS_DEFAULT = 100;
 
     /** B* scaling factor.
      * <p>
@@ -730,196 +717,18 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
 
     /**
      * Convert Spacecraft State into TLE.
-     * This converter uses Newton method to reverse SGP4 and SDP4 propagation algorithm
-     * and generates a usable TLE version of a state.
-     * New TLE epoch is state epoch.
-     *
-     * <p>
-     * This method uses the {@link DataContext#getDefault() default data context},
-     * as well as {@link #EPSILON_DEFAULT} and {@link #MAX_ITERATIONS_DEFAULT} for method convergence.
      *
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param generationAlgorithm TLE generation algorithm
      * @param <T> type of the element
-     * @return TLE matching with Spacecraft State and template identification
-     * @see #stateToTLE(FieldSpacecraftState, FieldTLE, TimeScale, Frame)
-     * @see #stateToTLE(FieldSpacecraftState, FieldTLE, TimeScale, Frame, double, int)
-     * @since 11.0
-     */
-    @DefaultDataContext
-    public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE) {
-        return stateToTLE(state, templateTLE,
-                          DataContext.getDefault().getTimeScales().getUTC(),
-                          DataContext.getDefault().getFrames().getTEME());
-    }
-
-    /**
-     * Convert Spacecraft State into TLE.
-     * This converter uses Newton method to reverse SGP4 and SDP4 propagation algorithm
-     * and generates a usable TLE version of a state.
-     * New TLE epoch is state epoch.
-     *
-     * <p>
-     * This method uses {@link #EPSILON_DEFAULT} and {@link #MAX_ITERATIONS_DEFAULT}
-     * for method convergence.
-     *
-     * @param state Spacecraft State to convert into TLE
-     * @param templateTLE first guess used to get identification and estimate new TLE
-     * @param utc the UTC time scale
-     * @param teme the TEME frame to use for propagation
-     * @param <T> type of the element
-     * @return TLE matching with Spacecraft State and template identification
-     * @see #stateToTLE(FieldSpacecraftState, FieldTLE, TimeScale, Frame, double, int)
-     * @since 11.0
+     * @return a generated TLE
+     * @since 12.0
      */
     public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
-                                                                             final TimeScale utc, final Frame teme) {
-        return stateToTLE(state, templateTLE, utc, teme, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+                                                                             final TleGenerationAlgorithm generationAlgorithm) {
+        return generationAlgorithm.generate(state, templateTLE);
     }
-
-    /**
-     * Convert Spacecraft State into TLE.
-     * This converter uses Newton method to reverse SGP4 and SDP4 propagation algorithm
-     * and generates a usable TLE version of a state.
-     * New TLE epoch is state epoch.
-     *
-     * @param state Spacecraft State to convert into TLE
-     * @param templateTLE first guess used to get identification and estimate new TLE
-     * @param utc the UTC time scale
-     * @param teme the TEME frame to use for propagation
-     * @param epsilon used to compute threshold for convergence check
-     * @param maxIterations maximum number of iterations for convergence
-     * @param <T> type of the element
-     * @return TLE matching with Spacecraft State and template identification
-     * @since 11.0
-     */
-    public static <T extends CalculusFieldElement<T>> FieldTLE<T> stateToTLE(final FieldSpacecraftState<T> state, final FieldTLE<T> templateTLE,
-                                                                             final TimeScale utc, final Frame teme,
-                                                                             final double epsilon, final int maxIterations) {
-
-        // Gets equinoctial parameters in TEME frame from state
-        final FieldEquinoctialOrbit<T> equiOrbit = convert(state.getOrbit(), teme);
-        T sma = equiOrbit.getA();
-        T ex  = equiOrbit.getEquinoctialEx();
-        T ey  = equiOrbit.getEquinoctialEy();
-        T hx  = equiOrbit.getHx();
-        T hy  = equiOrbit.getHy();
-        T lv  = equiOrbit.getLv();
-
-        // Rough initialization of the TLE
-        final FieldKeplerianOrbit<T> keplerianOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(equiOrbit);
-        FieldTLE<T> current = newTLE(keplerianOrbit, templateTLE, utc);
-
-        // Field
-        final Field<T> field = state.getDate().getField();
-
-        // threshold for each parameter
-        final T thrA = sma.add(1).multiply(epsilon);
-        final T thrE = FastMath.hypot(ex, ey).add(1).multiply(epsilon);
-        final T thrH = FastMath.hypot(hx, hy).add(1).multiply(epsilon);
-        final T thrV = sma.getPi().multiply(epsilon);
-
-        int k = 0;
-        while (k++ < maxIterations) {
-
-            // recompute the state from the current TLE
-            final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(current, new FrameAlignedProvider(Rotation.IDENTITY, teme),
-                                                                                           state.getMass(), teme, templateTLE.getParameters(field));
-            final FieldOrbit<T> recovOrbit = propagator.getInitialState().getOrbit();
-            final FieldEquinoctialOrbit<T> recovEquiOrbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(recovOrbit);
-
-            // adapted parameters residuals
-            final T deltaSma = equiOrbit.getA().subtract(recovEquiOrbit.getA());
-            final T deltaEx  = equiOrbit.getEquinoctialEx().subtract(recovEquiOrbit.getEquinoctialEx());
-            final T deltaEy  = equiOrbit.getEquinoctialEy().subtract(recovEquiOrbit.getEquinoctialEy());
-            final T deltaHx  = equiOrbit.getHx().subtract(recovEquiOrbit.getHx());
-            final T deltaHy  = equiOrbit.getHy().subtract(recovEquiOrbit.getHy());
-            final T deltaLv  = MathUtils.normalizeAngle(equiOrbit.getLv().subtract(recovEquiOrbit.getLv()), field.getZero());
-
-            // check convergence
-            if (FastMath.abs(deltaSma.getReal()) < thrA.getReal() &&
-                FastMath.abs(deltaEx.getReal())  < thrE.getReal() &&
-                FastMath.abs(deltaEy.getReal())  < thrE.getReal() &&
-                FastMath.abs(deltaHx.getReal())  < thrH.getReal() &&
-                FastMath.abs(deltaHy.getReal())  < thrH.getReal() &&
-                FastMath.abs(deltaLv.getReal())  < thrV.getReal()) {
-
-                return current;
-            }
-
-            // update state
-            sma = sma.add(deltaSma);
-            ex  = ex.add(deltaEx);
-            ey  = ey.add(deltaEy);
-            hx  = hx.add(deltaHx);
-            hy  = hy.add(deltaHy);
-            lv  = lv.add(deltaLv);
-            final FieldEquinoctialOrbit<T> newEquiOrbit =
-                                    new FieldEquinoctialOrbit<>(sma, ex, ey, hx, hy, lv, PositionAngle.TRUE,
-                                    equiOrbit.getFrame(), equiOrbit.getDate(), equiOrbit.getMu());
-            final FieldKeplerianOrbit<T> newKeplOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(newEquiOrbit);
-
-            // update TLE
-            current = newTLE(newKeplOrbit, templateTLE, utc);
-        }
-
-        throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_TLE, k);
-    }
-
-    /**
-     * Converts an orbit into an equinoctial orbit expressed in TEME frame.
-     *
-     * @param orbitIn the orbit to convert
-     * @param teme the TEME frame to use for propagation
-     * @param <T> type of the element
-     * @return the converted orbit, i.e. equinoctial in TEME frame
-     */
-    private static <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> convert(final FieldOrbit<T> orbitIn, final Frame teme) {
-        return new FieldEquinoctialOrbit<T>(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu());
-    }
-
-    /**
-     * Builds a new TLE from Keplerian parameters and a template for TLE data.
-     * @param keplerianOrbit the Keplerian parameters to build the TLE from
-     * @param templateTLE TLE used to get object identification
-     * @param utc the UTC time scale
-     * @param <T> type of the element
-     * @return TLE with template identification and new orbital parameters
-     */
-    private static <T extends CalculusFieldElement<T>> FieldTLE<T> newTLE(final FieldKeplerianOrbit<T> keplerianOrbit, final FieldTLE<T> templateTLE,
-                                                                          final TimeScale utc) {
-        // Keplerian parameters
-        final T meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
-        final T e           = keplerianOrbit.getE();
-        final T i           = keplerianOrbit.getI();
-        final T raan        = keplerianOrbit.getRightAscensionOfAscendingNode();
-        final T pa          = keplerianOrbit.getPerigeeArgument();
-        final T meanAnomaly = keplerianOrbit.getMeanAnomaly();
-        // TLE epoch is state epoch
-        final FieldAbsoluteDate<T> epoch = keplerianOrbit.getDate();
-        // Identification
-        final int satelliteNumber = templateTLE.getSatelliteNumber();
-        final char classification = templateTLE.getClassification();
-        final int launchYear = templateTLE.getLaunchYear();
-        final int launchNumber = templateTLE.getLaunchNumber();
-        final String launchPiece = templateTLE.getLaunchPiece();
-        final int ephemerisType = templateTLE.getEphemerisType();
-        final int elementNumber = templateTLE.getElementNumber();
-        // Updates revolutionNumberAtEpoch
-        final int revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
-        final T dt = epoch.durationFrom(templateTLE.getDate());
-        final int newRevolutionNumberAtEpoch = (int) ((int) revolutionNumberAtEpoch + FastMath.floor(MathUtils.normalizeAngle(meanAnomaly, e.getPi()).add(dt.multiply(meanMotion)).divide(e.getPi().multiply(2.0))).getReal());
-        // Gets B*
-        final double bStar = templateTLE.getBStar();
-        // Gets Mean Motion derivatives
-        final T meanMotionFirstDerivative = templateTLE.getMeanMotionFirstDerivative();
-        final T meanMotionSecondDerivative = templateTLE.getMeanMotionSecondDerivative();
-        // Returns the new TLE
-        return new FieldTLE<>(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
-                              elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
-                              e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar, utc);
-    }
-
 
     /** Check the lines format validity.
      * @param line1 the first element

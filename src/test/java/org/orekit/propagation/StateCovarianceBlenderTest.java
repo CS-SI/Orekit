@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation;
 
+import java.util.Locale;
+import java.util.Map;
+
 import org.hipparchus.analysis.polynomials.SmoothStepFactory;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.FastMath;
@@ -44,8 +47,6 @@ import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeStampedPair;
 import org.orekit.utils.Constants;
 
-import java.util.Map;
-
 class StateCovarianceBlenderTest {
 
     private static SpacecraftState sergeiState;
@@ -61,7 +62,7 @@ class StateCovarianceBlenderTest {
         Utils.setDataRoot("regular-data:potential/egm-format:atmosphere:tides:regular-data/de405-ephemerides");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("EGM96-truncated-21x21", true));
         AstronomicalAmplitudeReader aaReader =
-                new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
+                        new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
         DataContext.getDefault().getDataProvidersManager().feed(aaReader.getSupportedNames(), aaReader);
         Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
         GravityFieldFactory.addOceanTidesReader(new FESCHatEpsilonReader("fes2004-7x7.dat",
@@ -83,26 +84,37 @@ class StateCovarianceBlenderTest {
                                 final double expectedMedianRMSVelocityError,
                                 final double expectedMaxRMSPositionError,
                                 final double expectedMaxRMSVelocityError,
-                                final double tolerance) {
+                                final double tolerance,
+                                final boolean showResults) {
         final TimeInterpolator<Orbit> orbitInterpolator = new OrbitBlender(blendingFunction,
                                                                            analyticalPropagator,
                                                                            sergeiFrame);
 
         final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceInterpolator =
-                new StateCovarianceBlender(blendingFunction, orbitInterpolator,
-                                           sergeiFrame, OrbitType.CARTESIAN,
-                                           PositionAngle.MEAN);
+                        new StateCovarianceBlender(blendingFunction, orbitInterpolator,
+                                                   sergeiFrame, OrbitType.CARTESIAN,
+                                                   PositionAngle.MEAN);
 
         // Create state interpolator
         final TimeInterpolator<SpacecraftState> stateInterpolator =
-                new SpacecraftStateInterpolator(sergeiFrame, orbitInterpolator, null, null, null, null);
+                        new SpacecraftStateInterpolator(sergeiFrame, orbitInterpolator, null, null, null, null);
 
         // When
         final DescriptiveStatistics[] relativeRMSSigmaError =
-                StateCovarianceKeplerianHermiteInterpolatorTest.computeStatisticsCovarianceInterpolationOnSergeiCase(
-                        propagationHorizon, tabulatedTimeStep, stateInterpolator, covarianceInterpolator);
+                        StateCovarianceKeplerianHermiteInterpolatorTest.computeStatisticsCovarianceInterpolationOnSergeiCase(
+                                                                                                                             propagationHorizon, tabulatedTimeStep, stateInterpolator, covarianceInterpolator);
 
         // Then
+        if (showResults) {
+            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[0].getMean", relativeRMSSigmaError[0].getMean());
+            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[1].getMean", relativeRMSSigmaError[1].getMean());
+            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[0].getMedian", relativeRMSSigmaError[0].getPercentile(50));
+            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[1].getMedian", relativeRMSSigmaError[1].getPercentile(50));
+            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[0].getMax", relativeRMSSigmaError[0].getMax());
+            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[1].getMax", relativeRMSSigmaError[1].getMax());
+
+        }
+
         // Results obtained when using modified orbit date to use truncated JPL test resource file
         Assertions.assertEquals(expectedMeanRMSPositionError, relativeRMSSigmaError[0].getMean(), tolerance);
         Assertions.assertEquals(expectedMeanRMSVelocityError, relativeRMSSigmaError[1].getMean(), tolerance);
@@ -123,25 +135,30 @@ class StateCovarianceBlenderTest {
      */
     @Test
     @DisplayName("test Keplerian quadratic blending interpolation on full force model test case from: "
-            + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
-            + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
+                    + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
+                    + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
     void testKeplerianQuadraticBlending() {
         // Given
+        final boolean showResults = false; // Show results?
+        final double tolerance = 1.e-16;
+
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
 
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        new KeplerianPropagator(sergeiOrbit),
-                       0.10893117502278186,
-                       0.2596446611452972,
-                       0.10519888609039357,
-                       0.28036786120486396,
-                       0.29692889227737684,
-                       0.5750518125401441, 1e-16);
+                       0.1089311750227663,
+                       0.2596446611452776,
+                       0.1051988860904129,
+                       0.2803678612048340,
+                       0.2969288922773901,
+                       0.5750518125401615,
+                       tolerance,
+                       showResults);
 
         // Results obtained when using Sergei reference date
-/*        Assertions.assertEquals(0.12086964077199346, relativeRMSSigmaError[0].getMean(), 1e-17);
+        /*        Assertions.assertEquals(0.12086964077199346, relativeRMSSigmaError[0].getMean(), 1e-17);
         Assertions.assertEquals(0.21871712884727984, relativeRMSSigmaError[1].getMean(), 1e-17);
         Assertions.assertEquals(0.12172900928265865, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
         Assertions.assertEquals(0.24456923477457276, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
@@ -158,10 +175,13 @@ class StateCovarianceBlenderTest {
      */
     @Test
     @DisplayName("test Brouwer Lyddane quadratic blending interpolation on full force model test case from: "
-            + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
-            + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
+                    + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
+                    + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
     void testBrouwerLyddaneQuadraticBlending() {
         // Given
+        final boolean showResults = false; // Show results?
+        final double tolerance = 1.e-16;
+
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
 
@@ -178,15 +198,17 @@ class StateCovarianceBlenderTest {
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        propagator,
-                       0.08986015483172992,
-                       0.22449764469077402,
-                       0.09705016641506019,
-                       0.22462741715597975,
-                       0.15788797289350096,
-                       0.5635732855379268, 1e-16);
+                       0.0898601548317524,
+                       0.2244976446907571,
+                       0.0970501664150387,
+                       0.2246274171559650,
+                       0.1578879728929423,
+                       0.5635732855379500,
+                       tolerance,
+                       showResults);
 
         // Results obtained when using Sergei reference date
-/*        Assertions.assertEquals(0.07645785479359624, relativeRMSSigmaError[0].getMean(), 1e-17);
+        /*        Assertions.assertEquals(0.07645785479359624, relativeRMSSigmaError[0].getMean(), 1e-17);
         Assertions.assertEquals(0.17941792898602038, relativeRMSSigmaError[1].getMean(), 1e-17);
         Assertions.assertEquals(0.08259069655149026, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
         Assertions.assertEquals(0.18352413417267063, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
@@ -203,10 +225,13 @@ class StateCovarianceBlenderTest {
      */
     @Test
     @DisplayName("test Ekstein Hechler quadratic blending interpolation on full force model test case from: "
-            + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
-            + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
+                    + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
+                    + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
     void testEksteinHechlerQuadraticBlending() {
         // Given
+        final boolean showResults = false; // Show results?
+        final double tolerance = 1.e-16;
+
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
 
@@ -223,15 +248,17 @@ class StateCovarianceBlenderTest {
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        propagator,
-                       0.09919050025473311,
-                       0.2032481714771728,
-                       0.09969057639046483,
-                       0.21519642371336853,
-                       0.18189925769828325,
-                       0.5453231160284159, 1e-16);
+                       0.0991905002547425,
+                       0.2032481714771556,
+                       0.0996905763904645,
+                       0.2151964237133183,
+                       0.1818992576978108,
+                       0.5453231160284534,
+                       tolerance,
+                       showResults);
 
         // Results obtained when using Sergei reference date
-/*        Assertions.assertEquals(0.08688580997030507, relativeRMSSigmaError[0].getMean(), 1e-17);
+        /*        Assertions.assertEquals(0.08688580997030507, relativeRMSSigmaError[0].getMean(), 1e-17);
         Assertions.assertEquals(0.15630296926592135, relativeRMSSigmaError[1].getMean(), 1e-17);
         Assertions.assertEquals(0.07771211628338093, relativeRMSSigmaError[0].getPercentile(50), 1e-17);
         Assertions.assertEquals(0.17056867629454775, relativeRMSSigmaError[1].getPercentile(50), 1e-17);
@@ -255,10 +282,13 @@ class StateCovarianceBlenderTest {
      */
     @Test
     @DisplayName("test Keplerian quadratic blending expressed in LOF on full force model test case from : "
-            + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
-            + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
+                    + "TANYGIN, Sergei. Efficient covariance interpolation using blending of approximate covariance propagations. "
+                    + "The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.")
     void testLOFKeplerianBlending() {
         // Given
+        final boolean showResults = false; // Show results?
+        final double tolerance = 1.e-16;
+
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
 
@@ -268,22 +298,32 @@ class StateCovarianceBlenderTest {
 
         final LOFType DEFAULT_LOFTYPE = LOFType.TNW;
         final AbstractStateCovarianceInterpolator covarianceInterpolator =
-                new StateCovarianceBlender(blendingFunction, orbitInterpolator, DEFAULT_LOFTYPE);
+                        new StateCovarianceBlender(blendingFunction, orbitInterpolator, DEFAULT_LOFTYPE);
 
         // When
         final DescriptiveStatistics[] relativeRMSSigmaError =
-                StateCovarianceKeplerianHermiteInterpolatorTest.computeStatisticsCovarianceLOFInterpolation(
-                        DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                        DEFAULT_LOFTYPE, covarianceInterpolator);
+                        StateCovarianceKeplerianHermiteInterpolatorTest.computeStatisticsCovarianceLOFInterpolation(
+                                                                                                                    DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
+                                                                                                                    DEFAULT_LOFTYPE, covarianceInterpolator);
 
         // Then
+        if (showResults) {
+            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[0].getMean", relativeRMSSigmaError[0].getMean());
+            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[1].getMean", relativeRMSSigmaError[1].getMean());
+            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[0].getMedian", relativeRMSSigmaError[0].getPercentile(50));
+            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[1].getMedian", relativeRMSSigmaError[1].getPercentile(50));
+            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[0].getMax", relativeRMSSigmaError[0].getMax());
+            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[1].getMax", relativeRMSSigmaError[1].getMax());
+
+        }
+
         // Results obtained when using modified orbit date to use truncated JPL test resource file
-        Assertions.assertEquals(0.12191976038569027, relativeRMSSigmaError[0].getMean(), 1e-22);
-        Assertions.assertEquals(9.046997825346464, relativeRMSSigmaError[1].getMean(), 1e-21);
-        Assertions.assertEquals(0.12687141787871853, relativeRMSSigmaError[0].getPercentile(50), 1e-22);
-        Assertions.assertEquals(8.849625530916887, relativeRMSSigmaError[1].getPercentile(50), 1e-21);
-        Assertions.assertEquals(0.23947876206895072, relativeRMSSigmaError[0].getMax(), 1e-20);
-        Assertions.assertEquals(21.469525455933358, relativeRMSSigmaError[1].getMax(), 1e-20);
+        Assertions.assertEquals( 0.1219197603846056, relativeRMSSigmaError[0].getMean(), tolerance);
+        Assertions.assertEquals( 9.0469978254487930, relativeRMSSigmaError[1].getMean(), tolerance);
+        Assertions.assertEquals( 0.1268714178770034, relativeRMSSigmaError[0].getPercentile(50), tolerance);
+        Assertions.assertEquals( 8.8496255309734640, relativeRMSSigmaError[1].getPercentile(50), tolerance);
+        Assertions.assertEquals( 0.2394787620684697, relativeRMSSigmaError[0].getMax(), tolerance);
+        Assertions.assertEquals(21.4695254558469000, relativeRMSSigmaError[1].getMax(), tolerance);
 
         // Assert getters as well
         Assertions.assertNull(covarianceInterpolator.getOutFrame());

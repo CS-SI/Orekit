@@ -28,6 +28,9 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.Units;
+import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -154,6 +157,31 @@ public class OrbitElementsTypeTest {
         Vector3D vRef = new Vector3D(5660.262, -63.842, 4933.262);
         Assertions.assertEquals(0, cart.getPosition().subtract(pRef).getNorm(), 1.0e-6);
         Assertions.assertEquals(0, cart.getVelocity().subtract(vRef).getNorm(), 1.0e-3);
+    }
+
+    @Test
+    public void testRoundTrip() {
+        final KeplerianOrbit orbit = new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 1.00681, 3.10686,
+                                                        0.048363, PositionAngle.MEAN,
+                                                        FramesFactory.getEME2000(),
+                                                        AbsoluteDate.ARBITRARY_EPOCH, Constants.EIGEN5C_EARTH_MU);
+        for (final OrbitElementsType type : OrbitElementsType.values()) {
+            try {
+                final double[] elements = type.toRawElements(orbit.getPVCoordinates(), orbit.getFrame(), orbit.getMu());
+                final TimeStampedPVCoordinates rebuilt = type.toCartesian(orbit.getDate(), elements, orbit.getMu());
+                Assertions.assertEquals(0.0,
+                                        Vector3D.distance(orbit.getPVCoordinates().getPosition(), rebuilt.getPosition()),
+                                        2.0e-8);
+                if (elements.length > 3) {
+                    Assertions.assertEquals(0.0,
+                                            Vector3D.distance(orbit.getPVCoordinates().getVelocity(), rebuilt.getVelocity()),
+                                            2.0e-11);
+                }
+            } catch (OrekitException oe) {
+                // the only expected exception here is for unsupported types
+                Assertions.assertEquals(OrekitMessages.CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE, oe.getSpecifier());
+            }
+        }
     }
 
     @Test

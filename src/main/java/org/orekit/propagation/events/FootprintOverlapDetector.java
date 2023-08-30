@@ -103,7 +103,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
                                     final OneAxisEllipsoid body,
                                     final SphericalPolygonsSet zone,
                                     final double samplingStep) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+        this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnIncreasing(),
              fov, body, zone, samplingStep, sample(body, zone, samplingStep));
     }
@@ -114,7 +114,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -124,7 +124,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      * @param sampledZone sampling of the geographic zone
      * @param samplingStep linear step used for sampling the geographic zone (in meters)
      */
-    protected FootprintOverlapDetector(final double maxCheck, final double threshold,
+    protected FootprintOverlapDetector(final AdaptableInterval maxCheck, final double threshold,
                                        final int maxIter, final EventHandler handler,
                                        final FieldOfView fov,
                                        final OneAxisEllipsoid body,
@@ -192,7 +192,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
 
     /** {@inheritDoc} */
     @Override
-    protected FootprintOverlapDetector create(final double newMaxCheck, final double newThreshold,
+    protected FootprintOverlapDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
                                               final EventHandler newHandler) {
         return new FootprintOverlapDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,

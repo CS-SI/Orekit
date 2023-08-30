@@ -140,7 +140,7 @@ public class EclipseDetectorTest {
                             withThreshold(1.0e-3).
                             withHandler(new StopOnDecreasing()).
                             withUmbra();
-        Assertions.assertEquals(60.0, e.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(60.0, e.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-3, e.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, e.getMaxIterationCount());
         Assertions.assertEquals(0.0, e.getMargin(), 1.0e-15);
@@ -170,7 +170,7 @@ public class EclipseDetectorTest {
                              withThreshold(1.0e-4).
                              withMaxIter(12).
                              withMargin(0.001);
-        Assertions.assertEquals(120.0, e.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(120.0, e.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-4, e.getThreshold(), 1.0e-15);
         Assertions.assertEquals(12, e.getMaxIterationCount());
         propagator.addEventDetector(e);
@@ -198,8 +198,7 @@ public class EclipseDetectorTest {
     @Test
     public void testInsideOcculted() {
         EclipseDetector e = new EclipseDetector(sun, sunRadius, earth);
-        Vector3D p = sun.getPVCoordinates(AbsoluteDate.J2000_EPOCH,
-                                          FramesFactory.getGCRF()).getPosition();
+        Vector3D p = sun.getPosition(AbsoluteDate.J2000_EPOCH, FramesFactory.getGCRF());
         SpacecraftState s = new SpacecraftState(new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH,
                                                                                                 p.add(Vector3D.PLUS_I),
                                                                                                 Vector3D.PLUS_K),

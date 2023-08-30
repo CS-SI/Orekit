@@ -24,10 +24,10 @@ import org.orekit.data.DataFilter;
 import org.orekit.data.DataSource;
 import org.orekit.data.GzipFilter;
 import org.orekit.data.UnixCompressFilter;
+import org.orekit.files.rinex.HatanakaCompressFilter;
+import org.orekit.files.rinex.observation.ObservationDataSet;
+import org.orekit.files.rinex.observation.RinexObservationParser;
 import org.orekit.gnss.Frequency;
-import org.orekit.gnss.HatanakaCompressFilter;
-import org.orekit.gnss.observation.ObservationDataSet;
-import org.orekit.gnss.observation.RinexObservationParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 

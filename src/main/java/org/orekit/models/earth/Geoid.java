@@ -162,7 +162,7 @@ public class Geoid implements EarthShape {
      *                           {@code geopotential} and the {@code
      *                           referenceEllipsoid} are defined in the same
      *                           frame. Usually a {@link GravityFields#getConstantNormalizedProvider(int,
-     *                           int) constant geopotential} is used to define a
+     *                           int, AbsoluteDate) constant geopotential} is used to define a
      *                           time-invariant Geoid.
      * @param referenceEllipsoid the normal gravity potential.
      * @throws NullPointerException if {@code geopotential == null ||

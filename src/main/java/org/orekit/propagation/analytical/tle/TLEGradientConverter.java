@@ -88,7 +88,7 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter implement
                         revolutionNumberAtEpoch, bStar, utc);
 
         // TLE
-        final FieldTLE<Gradient> gTLE = FieldTLE.stateToTLE(state, templateTLE, utc, teme);
+        final FieldTLE<Gradient> gTLE = TLEPropagator.getDefaultTleGenerationAlgorithm(utc, teme).generate(state, templateTLE);
 
         // Return the "Field" propagator
         return FieldTLEPropagator.selectExtrapolator(gTLE, provider, state.getMass(), teme, parameters);

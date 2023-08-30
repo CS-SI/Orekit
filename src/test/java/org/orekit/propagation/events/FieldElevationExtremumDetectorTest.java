@@ -54,13 +54,13 @@ public class FieldElevationExtremumDetectorTest {
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(51.0), FastMath.toRadians(66.6), 300.0);
         final FieldElevationExtremumDetector<Binary64> raw =
                 new FieldElevationExtremumDetector<>(Binary64Field.getInstance(), new TopocentricFrame(earth, gp, "test")).
-                withMaxCheck(new Binary64(60)).
+                withMaxCheck(60.0).
                 withThreshold(new Binary64(1.e-6)).
                 withHandler(new FieldContinueOnEvent<>());
         final FieldEventSlopeFilter<FieldElevationExtremumDetector<Binary64>, Binary64> maxElevationDetector =
                 new FieldEventSlopeFilter<>(raw, FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
 
-        Assertions.assertEquals(60.0, raw.getMaxCheckInterval().getReal(), 1.0e-15);
+        Assertions.assertEquals(60.0, raw.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-6, raw.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, raw.getMaxIterationCount());
         Assertions.assertEquals("test", raw.getTopocentricFrame().getName());

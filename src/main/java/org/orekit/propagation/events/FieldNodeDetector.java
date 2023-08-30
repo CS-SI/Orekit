@@ -73,7 +73,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      */
     public FieldNodeDetector(final T threshold, final FieldOrbit<T> orbit, final Frame frame) {
-        this(orbit.getA().getField().getZero().add(2 * estimateNodesTimeSeparation(orbit.toOrbit()) / 3), threshold,
+        this(s -> orbit.getA().getField().getZero().add(2 * estimateNodesTimeSeparation(orbit.toOrbit()) / 3).getReal(), threshold,
              DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
              frame);
     }
@@ -84,7 +84,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -93,7 +93,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      * @since 6.1
      */
-    protected FieldNodeDetector(final T maxCheck, final T threshold,
+    protected FieldNodeDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
                                 final int maxIter, final FieldEventHandler<T> handler,
                                 final Frame frame) {
         super(maxCheck, threshold, maxIter, handler);
@@ -102,7 +102,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
 
     /** {@inheritDoc} */
     @Override
-    protected FieldNodeDetector<T> create(final T newMaxCheck, final T newThreshold,
+    protected FieldNodeDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
                                           final int newMaxIter, final FieldEventHandler<T> newHandler) {
         return new FieldNodeDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler, frame);
     }

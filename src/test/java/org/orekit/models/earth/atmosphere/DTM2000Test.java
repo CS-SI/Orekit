@@ -150,7 +150,7 @@ public class DTM2000Test {
         Rotation rotation = new Rotation(Vector3D.PLUS_I, FastMath.PI / 2, RotationConvention.VECTOR_OPERATOR);
         Frame frame = new Frame(ecef, new Transform(date, rotation), "other");
         Vector3D pEcef = new Vector3D(6378137 + 300e3, 0, 0);
-        Vector3D pFrame = ecef.getTransformTo(frame, date)
+        Vector3D pFrame = ecef.getStaticTransformTo(frame, date)
                 .transformPosition(pEcef);
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(

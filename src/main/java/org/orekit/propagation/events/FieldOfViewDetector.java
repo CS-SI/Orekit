@@ -81,7 +81,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      */
     public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final double radiusTarget,
                                final VisibilityTrigger trigger, final FieldOfView fov) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+        this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnIncreasing(),
              pvTarget, radiusTarget, trigger, fov);
     }
@@ -92,7 +92,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -101,7 +101,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * @param trigger visibility trigger for spherical bodies
      * @param fov Field Of View
      */
-    protected FieldOfViewDetector(final double maxCheck, final double threshold, final int maxIter,
+    protected FieldOfViewDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
                                   final EventHandler handler,
                                   final PVCoordinatesProvider pvTarget, final double radiusTarget,
                                   final VisibilityTrigger trigger, final FieldOfView fov) {
@@ -114,7 +114,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
 
     /** {@inheritDoc} */
     @Override
-    protected FieldOfViewDetector create(final double newMaxCheck, final double newThreshold,
+    protected FieldOfViewDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                          final int newMaxIter,
                                          final EventHandler newHandler) {
         return new FieldOfViewDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,

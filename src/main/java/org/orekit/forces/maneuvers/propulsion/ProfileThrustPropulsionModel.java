@@ -137,7 +137,11 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
     @Override
     public Stream<EventDetector> getEventDetectors() {
 
-        final DateDetector detector = new DateDetector(0.5 * shortestSegmentDuration(), DATATION_ACCURACY).
+        final double shortest = shortestSegmentDuration();
+        final DateDetector detector = new DateDetector().
+                                      withMaxCheck(0.5 * shortest).
+                                      withMinGap(0.5 * shortest).
+                                      withThreshold(DATATION_ACCURACY).
                                       withHandler((state, det, increasing) -> Action.RESET_DERIVATIVES);
         for (TimeSpanMap.Transition<PolynomialThrustSegment> transition = profile.getFirstTransition();
              transition != null;
@@ -155,10 +159,13 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
      */
     @Override
     public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
+        final double shortest = shortestSegmentDuration();
         @SuppressWarnings("unchecked")
-        final FieldDateDetector<T> detector = new FieldDateDetector<>(field.getZero().newInstance(0.5 * shortestSegmentDuration()),
-                                                                      field.getZero().newInstance(DATATION_ACCURACY),
+        final FieldDateDetector<T> detector = new FieldDateDetector<>(field,
                                                                       (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 0)).
+                                              withMaxCheck(0.5 * shortest).
+                                              withMinGap(0.5 * shortest).
+                                              withThreshold(field.getZero().newInstance(DATATION_ACCURACY)).
                                               withHandler((state, det, increasing) -> Action.RESET_DERIVATIVES);
         for (TimeSpanMap.Transition<PolynomialThrustSegment> transition = profile.getFirstTransition();
              transition != null;

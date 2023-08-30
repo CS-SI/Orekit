@@ -112,11 +112,11 @@ public class FieldEclipseDetectorTest {
         propagator.resetInitialState(initialState);
 
         FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field, sun, sunRadius, earth).
-                                    withMaxCheck(zero.newInstance(60.)).
+                                    withMaxCheck(60.0).
                                     withThreshold(zero.newInstance(1e-3)).
                                     withHandler(new FieldStopOnDecreasing<T>()).
                                     withUmbra();
-        Assertions.assertEquals(60.0, e.getMaxCheckInterval().getReal(), 1.0e-15);
+        Assertions.assertEquals(60.0, e.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-3, e.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, e.getMaxIterationCount());
         Assertions.assertEquals(0.0, e.getMargin().getReal(), 1.0e-15);
@@ -151,7 +151,7 @@ public class FieldEclipseDetectorTest {
         propagator.setInitialState(initialState);
 
         FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field, sun, sunRadius, earth).
-                                    withMaxCheck(zero.newInstance(60.)).
+                                    withMaxCheck(60.0).
                                     withThreshold(zero.newInstance(1e-3)).
                                     withPenumbra();
         Assertions.assertFalse(e.getTotalEclipse());
@@ -182,12 +182,12 @@ public class FieldEclipseDetectorTest {
         propagator.setInitialState(initialState);
 
         FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field, sun, sunRadius, earth).
-                                    withMaxCheck(zero.newInstance(120.)).
+                                    withMaxCheck(120.0).
                                     withThreshold(zero.newInstance(1e-4)).
                                     withHandler(new FieldStopOnDecreasing<T>()).
                                     withMaxIter(12).
                                     withMargin(zero.newInstance(0.001));
-        Assertions.assertEquals(120.0, e.getMaxCheckInterval().getReal(), 1.0e-15);
+        Assertions.assertEquals(120.0, e.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-4, e.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(12, e.getMaxIterationCount());
         propagator.addEventDetector(e);
@@ -218,7 +218,7 @@ public class FieldEclipseDetectorTest {
         propagator.setInitialState(initialState);
 
         FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field, sun, sunRadius, earth).
-                                    withMaxCheck(zero.newInstance(60.)).
+                                    withMaxCheck(60.0).
                                     withThreshold(zero.newInstance(1e-3));
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getJ2000Epoch(field),
                                                                                                                              new FieldPVCoordinates<>(new FieldVector3D<>(zero.newInstance(1e6),
@@ -260,7 +260,7 @@ public class FieldEclipseDetectorTest {
         propagator.setInitialState(initialState);
 
         FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field, sun, sunRadius, earth).
-                                    withMaxCheck(zero.newInstance(60.)).
+                                    withMaxCheck(60.0).
                                     withThreshold(zero.newInstance(1e-3));
         Vector3D p = sun.getPVCoordinates(AbsoluteDate.J2000_EPOCH,
                                           FramesFactory.getGCRF()).getPosition();
@@ -299,7 +299,7 @@ public class FieldEclipseDetectorTest {
 
         int n = 5;
         FieldEclipseDetector<T> e = new FieldEclipseDetector<>(field, sun, sunRadius, earth).
-                                    withMaxCheck(zero.newInstance(120.)).
+                                    withMaxCheck(120.0).
                                     withThreshold(zero.newInstance(1e-4)).
                                     withHandler(new FieldStopOnDecreasing<T>()).
                                     withMaxIter(n);

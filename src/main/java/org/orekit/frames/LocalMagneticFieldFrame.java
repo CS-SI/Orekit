@@ -127,18 +127,18 @@ public class LocalMagneticFieldFrame implements LOF {
     @Override
     public Rotation rotationFromInertial(final AbsoluteDate date, final PVCoordinates pv) {
         // Express satellite coordinates in body frame
-        final Transform     inertialToBodyFrame = inertialFrame.getTransformTo(wgs84BodyShape.getBodyFrame(), date);
-        final PVCoordinates pvaBody             = inertialToBodyFrame.transformPVCoordinates(pv);
+        final StaticTransform inertialToBodyFrame = inertialFrame.getStaticTransformTo(wgs84BodyShape.getBodyFrame(), date);
+        final Vector3D        posBody             = inertialToBodyFrame.transformPosition(pv.getPosition());
 
         // Compute satellite coordinates LLA and magnetic field vector in body frame
-        final double   lat            = pvaBody.getPosition().getDelta();
-        final double   lng            = pvaBody.getPosition().getAlpha();
-        final double   alt            = pvaBody.getPosition().getNorm() - wgs84BodyShape.getEquatorialRadius();
+        final double   lat            = posBody.getDelta();
+        final double   lng            = posBody.getAlpha();
+        final double   alt            = posBody.getNorm() - wgs84BodyShape.getEquatorialRadius();
         final Vector3D magnVectorBody = magneticField.calculateField(lat, lng, alt).getFieldVector();
 
         // Compute magnetic field in inertial frame
-        final Transform bodyToInertialFrame = inertialToBodyFrame.getInverse();
-        final Vector3D  magnVector          = bodyToInertialFrame.transformVector(magnVectorBody);
+        final StaticTransform bodyToInertialFrame = inertialToBodyFrame.getInverse();
+        final Vector3D        magnVector          = bodyToInertialFrame.transformVector(magnVectorBody);
 
         return new Rotation(magnVector, magnVector.crossProduct(lofBuilderVector.getVector(pv)),
                             Vector3D.PLUS_I, Vector3D.PLUS_K);

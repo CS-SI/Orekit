@@ -75,8 +75,8 @@ public interface EventDetectorsProvider {
      * <p>Date detectors are used to cleanly stop the propagator and reset
      * the state derivatives at transition dates (if any) of the parameter drivers.
      *
-     * <p><b>This method is not intended to be called several time, only once by a propagator</b>,
-     * as it has the side effect of rebuilding the events detectors when called
+     * <p><b>This method is not intended to be called several times, only once by a propagator</b>,
+     * as it has the side effect of rebuilding the events detectors when called.
      *
      * @param parameterDrivers list of parameter drivers
      * @return stream of event detectors
@@ -108,9 +108,10 @@ public interface EventDetectorsProvider {
 
             // Create the date detector containing all transition dates and return it
             // Max check set to half the shortest duration between 2 consecutive dates
-            final DateDetector datesDetector = new DateDetector(0.5 * shortestDuration,
-                                                                DATATION_ACCURACY,
-                                                                transitionDates.toArray(new TimeStamped[0])).
+            final DateDetector datesDetector = new DateDetector(transitionDates.toArray(new TimeStamped[0])).
+                            withMaxCheck(0.5 * shortestDuration).
+                            withMinGap(0.5 * shortestDuration).
+                            withThreshold(DATATION_ACCURACY).
                             withHandler((state, d, increasing) -> {
                                 return Action.RESET_DERIVATIVES;
                             });
@@ -123,8 +124,8 @@ public interface EventDetectorsProvider {
      * <p>Date detectors are used to cleanly stop the propagator and reset
      * the state derivatives at transition dates (if any) of the parameter drivers.
      *
-     * <p><b>This method is not intended to be called several time, only once by a propagator</b>,
-     * as it has the side effect of rebuilding the events detectors when called
+     * <p><b>This method is not intended to be called several times, only once by a propagator</b>,
+     * as it has the side effect of rebuilding the events detectors when called.
      *
      * @param parameterDrivers list of parameter drivers
      * @param field field to which the state belongs
@@ -159,8 +160,9 @@ public interface EventDetectorsProvider {
             // Initialize the date detector
             // Max check set to half the shortest duration between 2 consecutive dates
             final FieldDateDetector<T> datesDetector =
-                            new FieldDateDetector<>(new FieldAbsoluteDate<>(field, transitionDates.get(0))).
-                            withMaxCheck(field.getZero().newInstance(0.5 * shortestDuration)).
+                            new FieldDateDetector<>(field, new FieldAbsoluteDate<>(field, transitionDates.get(0))).
+                            withMaxCheck(0.5 * shortestDuration).
+                            withMinGap(0.5 * shortestDuration).
                             withThreshold(field.getZero().newInstance(DATATION_ACCURACY)).
                             withHandler(( state, d, increasing) -> {
                                 return Action.RESET_DERIVATIVES;

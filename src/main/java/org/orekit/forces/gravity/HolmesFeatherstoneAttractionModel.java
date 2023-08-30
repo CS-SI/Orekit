@@ -35,6 +35,7 @@ import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.TideSystemProvider;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -216,24 +217,25 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         double[] pnm0      = new double[degree + 1];
 
         // compute polar coordinates
-        final double x   = position.getX();
-        final double y   = position.getY();
-        final double z   = position.getZ();
-        final double x2  = x * x;
-        final double y2  = y * y;
-        final double z2  = z * z;
-        final double r2  = x2 + y2 + z2;
-        final double r   = FastMath.sqrt (r2);
-        final double rho = FastMath.sqrt(x2 + y2);
-        final double t   = z / r;   // cos(theta), where theta is the polar angle
-        final double u   = rho / r; // sin(theta), where theta is the polar angle
-        final double tOu = z / rho;
+        final double x    = position.getX();
+        final double y    = position.getY();
+        final double z    = position.getZ();
+        final double x2   = x * x;
+        final double y2   = y * y;
+        final double z2   = z * z;
+        final double rho2 = x2 + y2;
+        final double r2   = rho2 + z2;
+        final double r    = FastMath.sqrt(r2);
+        final double rho  = FastMath.sqrt(rho2);
+        final double t    = z / r;   // cos(theta), where theta is the polar angle
+        final double u    = rho / r; // sin(theta), where theta is the polar angle
+        final double tOu  = z / rho;
 
         // compute distance powers
         final double[] aOrN = createDistancePowersArray(provider.getAe() / r);
 
         // compute longitude cosines/sines
-        final double[][] cosSinLambda = createCosSinArrays(position.getX() / rho, position.getY() / rho);
+        final double[][] cosSinLambda = createCosSinArrays(x / rho, y / rho);
 
         // outer summation over order
         int    index = 0;
@@ -313,7 +315,7 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         final double[] aOrN = createDistancePowersArray(provider.getAe() / r);
 
         // compute longitude cosines/sines
-        final double[][] cosSinLambda = createCosSinArrays(position.getX() / rho, position.getY() / rho);
+        final double[][] cosSinLambda = createCosSinArrays(x / rho, y / rho);
 
         // outer summation over order
         int    index = 0;
@@ -416,11 +418,11 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         final T z    = position.getZ();
         final T x2   = x.multiply(x);
         final T y2   = y.multiply(y);
-        final T z2   = z.multiply(z);
-        final T r2   = x2.add(y2).add(z2);
-        final T r    = r2.sqrt();
         final T rho2 = x2.add(y2);
         final T rho  = rho2.sqrt();
+        final T z2   = z.multiply(z);
+        final T r2   = rho2.add(z2);
+        final T r    = r2.sqrt();
         final T t    = z.divide(r);   // cos(theta), where theta is the polar angle
         final T u    = rho.divide(r); // sin(theta), where theta is the polar angle
         final T tOu  = z.divide(rho);
@@ -429,7 +431,7 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         final T[] aOrN = createDistancePowersArray(r.reciprocal().multiply(provider.getAe()));
 
         // compute longitude cosines/sines
-        final T[][] cosSinLambda = createCosSinArrays(rho.reciprocal().multiply(position.getX()), rho.reciprocal().multiply(position.getY()));
+        final T[][] cosSinLambda = createCosSinArrays(x.divide(rho), y.divide(rho));
         // outer summation over order
         int    index = 0;
         T value = zero;
@@ -492,14 +494,14 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         // apply the global mu/r factor
         final T muOr = r.reciprocal().multiply(mu);
         value            = value.multiply(muOr);
-        gradient[0]       = muOr.multiply(gradient[0]).subtract(value.divide(r));
+        gradient[0]      = muOr.multiply(gradient[0]).subtract(value.divide(r));
         gradient[1]      = gradient[1].multiply(muOr);
         gradient[2]      = gradient[2].multiply(muOr);
 
         // convert gradient from spherical to Cartesian
         // Cartesian coordinates
         // remaining spherical coordinates
-        final T rPos     = position.getNorm();
+
         // intermediate variables
         final T xPos    = position.getX();
         final T yPos    = position.getY();
@@ -507,6 +509,7 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         final T rho2Pos = x.multiply(x).add(y.multiply(y));
         final T rhoPos  = rho2.sqrt();
         final T r2Pos   = rho2.add(z.multiply(z));
+        final T rPos    = r2Pos.sqrt();
 
         final T[][] jacobianPos = MathArrays.buildArray(zero.getField(), 3, 3);
 
@@ -521,8 +524,9 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         // jacobian[1][2] is already set to 0 at allocation time
 
         // row representing the gradient of phi
-        jacobianPos[2][0] = xPos.multiply(zPos).divide(rhoPos.multiply(r2Pos));
-        jacobianPos[2][1] = yPos.multiply(zPos).divide(rhoPos.multiply(r2Pos));
+        final T rhoPosTimesR2Pos = rhoPos.multiply(r2Pos);
+        jacobianPos[2][0] = xPos.multiply(zPos).divide(rhoPosTimesR2Pos);
+        jacobianPos[2][1] = yPos.multiply(zPos).divide(rhoPosTimesR2Pos);
         jacobianPos[2][2] = rhoPos.negate().divide(r2Pos);
         final T[] cartGradPos = MathArrays.buildArray(zero.getField(), 3);
         cartGradPos[0] = gradient[0].multiply(jacobianPos[0][0]).add(gradient[1].multiply(jacobianPos[1][0])).add(gradient[2].multiply(jacobianPos[2][0]));
@@ -559,10 +563,10 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         final double x2   = x * x;
         final double y2   = y * y;
         final double z2   = z * z;
-        final double r2   = x2 + y2 + z2;
-        final double r    = FastMath.sqrt (r2);
         final double rho2 = x2 + y2;
         final double rho  = FastMath.sqrt(rho2);
+        final double r2   = rho2 + z2;
+        final double r    = FastMath.sqrt(r2);
         final double t    = z / r;   // cos(theta), where theta is the polar angle
         final double u    = rho / r; // sin(theta), where theta is the polar angle
         final double tOu  = z / rho;
@@ -571,7 +575,7 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         final double[] aOrN = createDistancePowersArray(provider.getAe() / r);
 
         // compute longitude cosines/sines
-        final double[][] cosSinLambda = createCosSinArrays(position.getX() / rho, position.getY() / rho);
+        final double[][] cosSinLambda = createCosSinArrays(x / rho, y / rho);
 
         // outer summation over order
         int    index = 0;
@@ -1043,8 +1047,7 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
 
         // get the position in body frame
         final AbsoluteDate date       = s.getDate();
-        final StaticTransform fromBodyFrame =
-                bodyFrame.getStaticTransformTo(s.getFrame(), date);
+        final StaticTransform fromBodyFrame = bodyFrame.getStaticTransformTo(s.getFrame(), date);
         final StaticTransform toBodyFrame   = fromBodyFrame.getInverse();
         final Vector3D position       = toBodyFrame.transformPosition(s.getPosition());
 
@@ -1079,11 +1082,10 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         }
 
         // get the position in body frame
-        final FieldAbsoluteDate<T> date          = s.getDate();
-        final StaticTransform      fromBodyFrame =
-                bodyFrame.getStaticTransformTo(s.getFrame(), date.toAbsoluteDate());
-        final StaticTransform      toBodyFrame   = fromBodyFrame.getInverse();
-        final FieldVector3D<T>     position      = toBodyFrame.transformPosition(s.getPosition());
+        final FieldAbsoluteDate<T> date             = s.getDate();
+        final FieldStaticTransform<T> fromBodyFrame = bodyFrame.getStaticTransformTo(s.getFrame(), date);
+        final FieldStaticTransform<T> toBodyFrame   = fromBodyFrame.getInverse();
+        final FieldVector3D<T> position             = toBodyFrame.transformPosition(s.getPosition());
 
         // gradient of the non-central part of the gravity field
         return fromBodyFrame.transformVector(new FieldVector3D<>(gradient(date, position, mu)));
@@ -1202,8 +1204,7 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         final int freeParameters = mu.getFreeParameters();
 
         // get the position in body frame
-        final StaticTransform fromBodyFrame =
-                bodyFrame.getStaticTransformTo(frame, date);
+        final StaticTransform fromBodyFrame = bodyFrame.getStaticTransformTo(frame, date);
         final StaticTransform toBodyFrame   = fromBodyFrame.getInverse();
         final Vector3D positionBody   = toBodyFrame.transformPosition(position.toVector3D());
 

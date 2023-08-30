@@ -53,13 +53,13 @@ public class NegateDetector extends AbstractDetector<NegateDetector> {
     /**
      * Private constructor.
      *
-     * @param newMaxCheck  max check interval in seconds.
+     * @param newMaxCheck  max check interval.
      * @param newThreshold convergence threshold in seconds.
      * @param newMaxIter   max iterations.
      * @param newHandler   event handler.
      * @param original     event detector.
      */
-    protected NegateDetector(final double newMaxCheck,
+    protected NegateDetector(final AdaptableInterval newMaxCheck,
                              final double newThreshold,
                              final int newMaxIter,
                              final EventHandler newHandler,
@@ -91,7 +91,7 @@ public class NegateDetector extends AbstractDetector<NegateDetector> {
 
     @Override
     protected NegateDetector create(
-            final double newMaxCheck,
+            final AdaptableInterval newMaxCheck,
             final double newThreshold,
             final int newMaxIter,
             final EventHandler newHandler) {

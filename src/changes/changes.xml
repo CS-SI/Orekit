@@ -21,6 +21,48 @@
   </properties>
   <body>
   <release version="12.0" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="1178">
+        Max check interval in events detectors can now depend on current state.
+      </action>
+      <action dev="bryan" type="update" issue="1182">
+        Moved Rinex parsing/writing into files package.
+      </action>
+      <action dev="serrof" type="fix" issue="1170">
+          Fixed wrong calls in Field acceleration for some gravitational force models.
+      </action>
+      <action dev="markrutten" type="add" issue="1069">
+        Added FDOA measurements.
+      </action>
+      <action dev="bryan" type="add" issue="887">
+        Added possibility to freeze gravity field from user defined epoch.
+      </action>
+      <action dev="luc" type="add" issue="993">
+        Added EphemerisOcmWriter and StreamingOcmWriter.
+      </action>
+      <action dev="luc" type="update">
+        Renamed EphemerisWriter → EphemerisOemWriter.
+      </action>
+      <action dev="bryan" type="fix" issue="859">
+        Created a new API for TLE generation allowing user defined setting.
+      </action>
+      <action dev="luc" type="add" issue="1177">
+        Fixed writing of Rinex observation files with empty GLONASS SLOT / FRQ #.
+      </action>
+      <action dev="luc" type="add" issue="1176">
+        Fixed parsing of Rinex observation files with QZSS satellites in SYS / PHASE SHIFT.
+      </action>
+      <action dev="luc" type="add" issue="1175">
+        Fixed parsing of Rinex observation files with continuation lines in SYS / PHASE SHIFT.
+      </action>
+      <action dev="luc" type="add" issue="1174">
+        Added getPropagators to AggregateBoundedPropagator.
+      </action>
+      <action dev="bryan" type="update" issue="1123">
+        Generalized unscented Kalman filter to work with any PropagatorBuilder.
+      </action>
+      <action dev="maxime" type="update" issue="1151">
+        Increased performance of orbit determination when using solar radiation pressure.
+      </action>
       <action dev="bryan" type="add" issue="950">
         Added getOrbitType() and getPositionAngle in MatricesHarvester.
       </action>

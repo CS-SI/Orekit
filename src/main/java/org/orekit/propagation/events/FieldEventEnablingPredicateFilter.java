@@ -103,7 +103,7 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -111,7 +111,7 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
      * @param enabler event enabling function to use
      */
     @SuppressWarnings("unchecked")
-    protected FieldEventEnablingPredicateFilter(final T maxCheck, final T threshold,
+    protected FieldEventEnablingPredicateFilter(final FieldAdaptableInterval<T> maxCheck, final T threshold,
                                                 final int maxIter, final FieldEventHandler<T> handler,
                                                 final FieldEventDetector<T> rawDetector,
                                                 final FieldEnablingPredicate<T> enabler) {
@@ -124,7 +124,7 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
 
     /** {@inheritDoc} */
     @Override
-    protected FieldEventEnablingPredicateFilter<T> create(final T newMaxCheck, final T newThreshold,
+    protected FieldEventEnablingPredicateFilter<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
                                                           final int newMaxIter,
                                                           final FieldEventHandler<T> newHandler) {
         return new FieldEventEnablingPredicateFilter<>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, enabler);

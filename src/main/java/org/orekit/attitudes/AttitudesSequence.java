@@ -31,7 +31,9 @@ import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AdaptableInterval;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -164,8 +166,8 @@ public class AttitudesSequence implements AttitudeProvider {
 
                 /** {@inheritDoc} */
                 @Override
-                public T getMaxCheckInterval() {
-                    return field.getZero().add(sw.getMaxCheckInterval());
+                public FieldAdaptableInterval<T> getMaxCheckInterval() {
+                    return s -> sw.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
                 }
 
                 /** {@inheritDoc} */
@@ -379,7 +381,7 @@ public class AttitudesSequence implements AttitudeProvider {
 
         /** {@inheritDoc} */
         @Override
-        public double getMaxCheckInterval() {
+        public AdaptableInterval getMaxCheckInterval() {
             return event.getMaxCheckInterval();
         }
 

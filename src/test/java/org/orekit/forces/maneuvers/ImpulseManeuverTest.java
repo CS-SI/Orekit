@@ -43,6 +43,7 @@ import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.AbstractDetector;
+import org.orekit.propagation.events.AdaptableInterval;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -436,7 +437,7 @@ public class ImpulseManeuverTest {
 
         /** {@inheritDoc} */
         @Override
-        protected InitializationDetector create(double newMaxCheck, double newThreshold, int newMaxIter, EventHandler newHandler) {
+        protected InitializationDetector create(AdaptableInterval newMaxCheck, double newThreshold, int newMaxIter, EventHandler newHandler) {
             return new InitializationDetector();
         }
 

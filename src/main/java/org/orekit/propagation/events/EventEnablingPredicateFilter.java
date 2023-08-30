@@ -100,14 +100,14 @@ public class EventEnablingPredicateFilter
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param rawDetector event detector to wrap
      * @param enabler event enabling function to use
      */
-    protected EventEnablingPredicateFilter(final double maxCheck, final double threshold,
+    protected EventEnablingPredicateFilter(final AdaptableInterval maxCheck, final double threshold,
                                            final int maxIter, final EventHandler handler,
                                            final EventDetector rawDetector,
                                            final EnablingPredicate enabler) {
@@ -120,7 +120,7 @@ public class EventEnablingPredicateFilter
 
     /** {@inheritDoc} */
     @Override
-    protected EventEnablingPredicateFilter create(final double newMaxCheck, final double newThreshold,
+    protected EventEnablingPredicateFilter create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                                   final int newMaxIter,
                                                   final EventHandler newHandler) {
         return new EventEnablingPredicateFilter(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, enabler);

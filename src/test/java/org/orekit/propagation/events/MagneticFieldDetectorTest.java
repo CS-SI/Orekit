@@ -16,6 +16,10 @@
  */
 package org.orekit.propagation.events;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Comparator;
+
 import org.hipparchus.geometry.euclidean.twod.PolygonsSet;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.geometry.partitioning.Region.Location;
@@ -48,12 +52,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.units.UnitsConverter;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Comparator;
-
 /**
- * test class for MagneticFieldDetector
+ * Test class for MagneticFieldDetector.
  * @author Romaric Her
  */
 public class MagneticFieldDetectorTest {
@@ -70,18 +70,11 @@ public class MagneticFieldDetectorTest {
     double saaValidationThreshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(500);
     double saaValidationWidth = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(200);
 
-
-    /**
-     * Prepare the Orekit library.
-     */
     @BeforeEach
     public void setup()
     {
-        // Prepare the Orekit library
-        final String orekitCfgPath = "src/test/resources";
-
-        // Initialize Orekit
-        DataContext.getDefault().getDataProvidersManager().addProvider(new DirectoryCrawler(new File(orekitCfgPath)));
+        // Initialize context
+        DataContext.getDefault().getDataProvidersManager().addProvider(new DirectoryCrawler(new File("src/test/resources")));
 
         // Initialize constants
         eme2000 = FramesFactory.getEME2000();
@@ -96,12 +89,10 @@ public class MagneticFieldDetectorTest {
 
     }
 
-    /**
-     * Remove the Orekit configuration
-     */
     @AfterEach
     public void tearDown()
     {
+        // Clear the context
         DataContext.getDefault().getDataProvidersManager().clearProviders();
         DataContext.getDefault().getDataProvidersManager().clearLoadedDataNames();
     }
@@ -149,7 +140,7 @@ public class MagneticFieldDetectorTest {
     }
 
     /**
-     * Test for the magnetic field detector based on the WMM at sea level
+     * Test for the magnetic field detector based on the WMM at satellite's altitude.
      */
     @Test
     public void magneticFieldDetectorWMMTrueAltitudeTest() {
@@ -165,7 +156,7 @@ public class MagneticFieldDetectorTest {
     }
 
     /**
-     * Test for the magnetic field detector based on the IGRF at sea level
+     * Test for the magnetic field detector based on the IGRF at satellite's altitude.
      */
     @Test
     public void magneticFieldDetectorIGRFTrueAltitudeTest() {
@@ -225,7 +216,7 @@ public class MagneticFieldDetectorTest {
     }
 
     /**
-     * Test for the SAA detector based on the WMM at sea level
+     * Test for the SAA detector based on the WMM at satellite's altitude.
      */
     @Test
     public void saaDetectorWMMTrueAltitudeTest() {
@@ -247,7 +238,7 @@ public class MagneticFieldDetectorTest {
     }
 
     /**
-     * Test for the SAA detector based on the IGRF at sea level
+     * Test for the SAA detector based on the IGRF at satellite's altitude.
      */
     @Test
     public void saaDetectorIGRFTrueAltitudeTest() {
@@ -269,23 +260,26 @@ public class MagneticFieldDetectorTest {
     }
 
     /**
-     * Build 2 geographical zones, one just bigger than SAA, and another one just smaller than SAA
-     * @param model the geomagnetic field model
-     * @param threshold the value of magnetic field at sea level set in the MagneticFieldDetector
+     * Build a geographical zone covering the SAA.
+     *
+     * @param field     the geomagnetic field
+     * @param altitude  the considered altitude
+     * @param threshold detection threshold for magnetic field
+     * @param width     margin for selecting the points on the boundary
+     * @return the geographical zone covering the SAA
      */
     private PolygonsSet generateGeomagneticMap(GeoMagneticField field, double altitude, double threshold, double width) {
 
         //Find a polygon corresponding to the threshold field line
-
         ArrayList<Double[]> points = new ArrayList<Double[]>();
 
         for(int latitude = -89; latitude < 90; latitude++) {
             for(int longitude = -179; longitude < 180; longitude++) {
 
-                //Check the magnetic field value at sea level for each latitude and longitude, with a 1° step
+                // Check the magnetic field value at the given altitude for each latitude and longitude, with a 1° step
                 double value = field.calculateField(FastMath.toRadians(latitude), FastMath.toRadians(longitude), altitude).getTotalIntensity();
 
-                //add the vertice to the outside polygon
+                // add the vertice to the outside polygon
                 if (value - threshold > -0.5*width && value - threshold < 0.5*width) {
                     Double[] point = {(double)latitude, (double)longitude};
                     points.add(point);
@@ -398,8 +392,7 @@ public class MagneticFieldDetectorTest {
     }
 
     /**
-     * the custom event handler used in tests to check if the event detected is located between the inside and the outside geographical zones
-     * @author Romaric Her
+     * Custom event handler gathering states when events occurred.
      */
     private class CustomEventHandler implements EventHandler {
 
@@ -419,10 +412,10 @@ public class MagneticFieldDetectorTest {
     }
 
     /**
-     * Check that the magnetic field value at the event is equals to the expected value
+     * Check that the magnetic field value at the event is equal to the expected value
      * @param events the list of events
      * @param threshold the expected value
-     * @param field the magnetic field model
+     * @param field the magnetic field
      * @param sea if the magnetic field is computed at sea level or at the satellite altitude
      */
     private void checkEvents(ArrayList<SpacecraftState> events, double threshold, GeoMagneticField field, boolean sea) {
@@ -431,7 +424,7 @@ public class MagneticFieldDetectorTest {
             //Get the geodetic point corresponding to the event
             GeodeticPoint geo = earth.transform(s.getPosition(), s.getFrame(), s.getDate());
             double altitude = geo.getAltitude();
-            if(sea) {
+            if (sea) {
                 altitude = 0;
             }
             double meas = field.calculateField(geo.getLatitude(), geo.getLongitude(), altitude).getTotalIntensity();

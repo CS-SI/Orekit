@@ -83,7 +83,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
                                  final double dawnDuskElevation,
                                  final AtmosphericRefractionModel refractionModel) {
         this(groundLocation, sun, dawnDuskElevation, refractionModel,
-             DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+             s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new ContinueOnEvent());
     }
 
@@ -93,7 +93,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
      * @param dawnDuskElevation Sun elevation below which we consider night is dark enough (rad)
      * (typically {@link #ASTRONOMICAL_DAWN_DUSK_ELEVATION})
      * @param refractionModel reference to refraction model (null if refraction should be ignored),
-     * @param maxCheck  maximum checking interval (s)
+     * @param maxCheck  maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
@@ -101,7 +101,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
     protected GroundAtNightDetector(final TopocentricFrame groundLocation, final PVCoordinatesProvider sun,
                                     final double dawnDuskElevation,
                                     final AtmosphericRefractionModel refractionModel,
-                                    final double maxCheck,
+                                    final AdaptableInterval maxCheck,
                                     final double threshold,
                                     final int maxIter,
                                     final EventHandler handler) {
@@ -114,7 +114,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
 
     /** {@inheritDoc} */
     @Override
-    protected GroundAtNightDetector create(final double newMaxCheck,
+    protected GroundAtNightDetector create(final AdaptableInterval newMaxCheck,
                                            final double newThreshold,
                                            final int newMaxIter,
                                            final EventHandler newHandler) {

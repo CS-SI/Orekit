@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -42,9 +45,6 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 public class GLONASSNumericalPropagatorTest {
 
@@ -123,7 +123,7 @@ public class GLONASSNumericalPropagatorTest {
         // Recomputed position in PZ-90.11
         final Frame pz90 = FramesFactory.getPZ9011(IERSConventions.IERS_2010, true);
         final Frame itrf2008 = FramesFactory.getITRF(ITRFVersion.ITRF_2008, IERSConventions.IERS_2010, true);
-        final Vector3D comPZ90 = itrf2008.getTransformTo(pz90, new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT())).transformPosition(itrf2008P);
+        final Vector3D comPZ90 = itrf2008.getStaticTransformTo(pz90, new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT())).transformPosition(itrf2008P);
 
         // Check
         Assertions.assertEquals(refPZ90.getX(), comPZ90.getX(), 1.0e-4);
@@ -152,7 +152,7 @@ public class GLONASSNumericalPropagatorTest {
         // Recomputed position in PZ-90.11
         final Frame pz90 = FramesFactory.getPZ9011(IERSConventions.IERS_2010, true);
         final Frame itrf2008 = FramesFactory.getITRF(ITRFVersion.ITRF_2008, IERSConventions.IERS_2010, true);
-        final FieldVector3D<T> comPZ90 = itrf2008.getTransformTo(pz90, new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT())).transformPosition(itrf2008P);
+        final FieldVector3D<T> comPZ90 = itrf2008.getStaticTransformTo(pz90, new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT())).transformPosition(itrf2008P);
 
         // Check
         Assertions.assertEquals(refPZ90.getX().getReal(), comPZ90.getX().getReal(), 1.0e-4);
@@ -184,11 +184,8 @@ public class GLONASSNumericalPropagatorTest {
         // Initialize the propagator
         final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagatorBuilder(integrator, ge, true).build();
         // Compute the PV coordinates at the date of the GLONASS orbital elements
-        final SpacecraftState finalState = propagator.propagate(target);
-        final PVCoordinates pvInPZ90 = finalState.getPVCoordinates(pz90);
-        final PVCoordinates pvInITRF = pz90.getTransformTo(itrf, target).transformPVCoordinates(pvInPZ90);
-        // Computed position
-        final Vector3D computedPos = pvInITRF.getPosition();
+        final Vector3D posInPZ90 = propagator.propagate(target).getPosition(pz90);
+        final Vector3D computedPos = pz90.getStaticTransformTo(itrf, target).transformPosition(posInPZ90);
         // Expected position (reference from IGS file igv20692_06.sp3)
         final Vector3D expectedPos = new Vector3D(-10742801.600, -15247162.619, -17347541.633);
         // Verify

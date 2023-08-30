@@ -118,8 +118,7 @@ public class SingleBodyAbsoluteAttraction implements ForceModel {
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                          final T[] parameters) {
          // compute bodies separation vectors and squared norm
-        final FieldVector3D<T> centralToBody = new FieldVector3D<>(s.getA().getField(),
-                                                                   body.getPosition(s.getDate().toAbsoluteDate(), s.getFrame()));
+        final FieldVector3D<T> centralToBody = body.getPosition(s.getDate(), s.getFrame());
         final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPosition());
         final T                r2Sat         = satToBody.getNormSq();
 

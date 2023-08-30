@@ -52,6 +52,7 @@ import org.orekit.estimation.measurements.Position;
 import org.orekit.files.ilrs.CPF;
 import org.orekit.files.ilrs.CPF.CPFCoordinate;
 import org.orekit.files.ilrs.CPF.CPFEphemeris;
+import org.orekit.files.rinex.HatanakaCompressFilter;
 import org.orekit.files.ilrs.CPFParser;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
@@ -70,7 +71,6 @@ import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.gnss.HatanakaCompressFilter;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.NRLMSISE00;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
@@ -465,11 +465,11 @@ public class UnscentedKalmanOrbitDeterminationTest {
         for (final CPFCoordinate coordinate : ephemeris.getCoordinates()) {
 
             // Position in inertial frames
-            final TimeStampedPVCoordinates pvInertial = ephemeris.getFrame().getTransformTo(orbit.getFrame(), coordinate.getDate()).
-                                                                             transformPVCoordinates(coordinate);
+            final Vector3D posInertial = ephemeris.getFrame().getStaticTransformTo(orbit.getFrame(), coordinate.getDate()).
+                                                              transformPosition(coordinate.getPosition());
 
             // Initialize measurement
-            final Position measurement = new Position(coordinate.getDate(), pvInertial.getPosition(), sigma, 1.0, satellite);
+            final Position measurement = new Position(coordinate.getDate(), posInertial, sigma, 1.0, satellite);
 
             // Add the measurement to the list
             measurements.add(measurement);

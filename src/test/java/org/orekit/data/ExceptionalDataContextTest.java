@@ -39,7 +39,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.LazyLoadedTimeScales;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Test for {@link ExceptionalDataContext}.
@@ -110,9 +109,8 @@ public class ExceptionalDataContextTest {
         AttitudeProvider attitude = new FrameAlignedProvider(eci);
         Propagator propagator = new KeplerianPropagator(orbit, attitude);
         SpacecraftState state = propagator.propagate(date.shiftedBy(86400));
-        TimeStampedPVCoordinates pv = state.getPVCoordinates(ecef);
         MatcherAssert.assertThat(
-                pv.getPosition().getNorm(),
+                state.getPosition(ecef).getNorm(),
                 OrekitMatchers.relativelyCloseTo(a, 10));
 
         // verify using default data context throws an exception

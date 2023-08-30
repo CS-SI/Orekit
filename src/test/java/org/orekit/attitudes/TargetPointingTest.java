@@ -35,7 +35,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -70,7 +70,7 @@ public class TargetPointingTest {
     private Frame itrf;
 
     // Transform from EME2000 to ITRF
-    private Transform eme2000ToItrf;
+    private StaticTransform eme2000ToItrf;
 
     /** Test if both constructors are equivalent
      */
@@ -454,7 +454,7 @@ public class TargetPointingTest {
             itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             // Transform from EME2000 to ITRF
-            eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(itrf, date);
+            eme2000ToItrf = FramesFactory.getEME2000().getStaticTransformTo(itrf, date);
 
         } catch (OrekitException oe) {
             Assertions.fail(oe.getMessage());

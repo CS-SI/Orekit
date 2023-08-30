@@ -52,7 +52,7 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
      */
     public LongitudeExtremumDetector(final double maxCheck, final double threshold,
                                     final OneAxisEllipsoid body) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
+        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              body);
     }
 
@@ -62,13 +62,13 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param body body on which the longitude is defined
      */
-    protected LongitudeExtremumDetector(final double maxCheck, final double threshold,
+    protected LongitudeExtremumDetector(final AdaptableInterval maxCheck, final double threshold,
                                         final int maxIter, final EventHandler handler,
                                         final OneAxisEllipsoid body) {
         super(maxCheck, threshold, maxIter, handler);
@@ -77,9 +77,9 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
 
     /** {@inheritDoc} */
     @Override
-    protected LongitudeExtremumDetector create(final double newMaxCheck, final double newThreshold,
-                                              final int newMaxIter,
-                                              final EventHandler newHandler) {
+    protected LongitudeExtremumDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                               final int newMaxIter,
+                                               final EventHandler newHandler) {
         return new LongitudeExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, body);
     }
 

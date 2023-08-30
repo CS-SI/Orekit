@@ -120,7 +120,7 @@ public class FieldImpulseManeuverTest {
         final FieldVector3D<Complex> deltaV = new FieldVector3D<>(complexField, Vector3D.PLUS_I);
         final FieldAbsoluteDate<Complex> fieldAbsoluteDate = new FieldAbsoluteDate<>(complexField,
                 AbsoluteDate.ARBITRARY_EPOCH);
-        final FieldDateDetector<Complex> dateDetector = new FieldDateDetector<>(fieldAbsoluteDate).withThreshold(zero.add(100.));
+        final FieldDateDetector<Complex> dateDetector = new FieldDateDetector<>(complexField, fieldAbsoluteDate).withThreshold(zero.add(100.));
 
         // When
         final FieldImpulseManeuver<?, Complex> fieldImpulseManeuver1 = new FieldImpulseManeuver<>
@@ -143,7 +143,7 @@ public class FieldImpulseManeuverTest {
         final FieldVector3D<Complex> deltaV = new FieldVector3D<>(complexField, Vector3D.PLUS_I);
         final FieldAbsoluteDate<Complex> fieldAbsoluteDate = new FieldAbsoluteDate<>(complexField,
                 AbsoluteDate.ARBITRARY_EPOCH);
-        final FieldDateDetector<Complex> dateDetector = new FieldDateDetector<>(fieldAbsoluteDate);
+        final FieldDateDetector<Complex> dateDetector = new FieldDateDetector<>(complexField, fieldAbsoluteDate);
 
         // When
         final FieldImpulseManeuver<?, Complex> fieldImpulseManeuverNorm1 = new FieldImpulseManeuver<>
@@ -207,12 +207,12 @@ public class FieldImpulseManeuverTest {
         final FieldVector3D<T> fieldDeltaVSat = new FieldVector3D<>(field, impulseManeuver.getDeltaVSat());
         final EventDetector detector = impulseManeuver.getTrigger();
         final int maxIter = detector.getMaxIterationCount();
-        final T fieldMaxCheck = field.getZero().add(detector.getMaxCheckInterval());
+        final FieldAdaptableInterval<T> fieldMaxCheck = s -> detector.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
         final T fieldThreshold = field.getZero().add(detector.getThreshold());
         FieldAbstractDetector<?, T> fieldDetector;
         if (detector instanceof DateDetector) {
-            fieldDetector = new FieldDateDetector<>(fieldMaxCheck,
-                    fieldThreshold, new FieldAbsoluteDate<>(field, ((DateDetector) detector).getDate()));
+            fieldDetector = new FieldDateDetector<>(field,
+                                                    new FieldAbsoluteDate<>(field, ((DateDetector) detector).getDate()));
         } else if (detector instanceof LatitudeCrossingDetector) {
             fieldDetector = new FieldLatitudeCrossingDetector<>(field,
                     ((LatitudeCrossingDetector) detector).getBody(),
@@ -223,7 +223,10 @@ public class FieldImpulseManeuverTest {
         } else {
             throw new OrekitInternalError(null);
         }
-        fieldDetector = fieldDetector.withMaxIter(maxIter).withMaxCheck(fieldMaxCheck).withThreshold(fieldThreshold);
+        fieldDetector = fieldDetector.
+                        withMaxIter(maxIter).
+                        withMaxCheck(fieldMaxCheck).
+                        withThreshold(fieldThreshold);
         return new FieldImpulseManeuver<>(fieldDetector.withHandler(fieldHandler),
                 impulseManeuver.getAttitudeOverride(), fieldDeltaVSat, fieldIsp, impulseManeuver.getControlVector3DNormType());
     }
@@ -430,8 +433,9 @@ public class FieldImpulseManeuverTest {
         propagator.addEventDetector(dateDetector);
         propagator.setOrbitType(OrbitType.CARTESIAN);
         final Gradient zero = field.getZero();
-        final FieldDateDetector<Gradient> fieldDateDetector = new FieldDateDetector<>(
-                new FieldAbsoluteDate<>(field, dateDetector.getDate()));
+        final FieldDateDetector<Gradient> fieldDateDetector =
+                        new FieldDateDetector<>(field,
+                                        new FieldAbsoluteDate<>(field, dateDetector.getDate()));
         final FieldVector3D<Gradient> fieldDeltaV = new FieldVector3D<>(
                 Gradient.variable(freeParameters, 0, 0.),
                 Gradient.variable(freeParameters, 1, 0.),

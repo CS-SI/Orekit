@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.Locale;
+import java.util.function.Function;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -30,7 +33,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
@@ -53,9 +55,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
-
-import java.util.Locale;
-import java.util.function.Function;
 
 public class EventDetectorTest {
 
@@ -172,7 +171,7 @@ public class EventDetectorTest {
         final int    n    = 100;
         NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(step));
         propagator.resetInitialState(new SpacecraftState(orbit));
-        GCallsCounter counter = new GCallsCounter(100000.0, 1.0e-6, 20, new StopOnEvent());
+        GCallsCounter counter = new GCallsCounter(s -> 100000.0, 1.0e-6, 20, new StopOnEvent());
         propagator.addEventDetector(counter);
         propagator.propagate(date.shiftedBy(n * step));
         Assertions.assertEquals(n + 1, counter.getCount());
@@ -189,7 +188,7 @@ public class EventDetectorTest {
         final double step = 60.0;
         final int    n    = 100;
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        GCallsCounter counter = new GCallsCounter(100000.0, 1.0e-6, 20, new StopOnEvent());
+        GCallsCounter counter = new GCallsCounter(s -> 100000.0, 1.0e-6, 20, new StopOnEvent());
         propagator.addEventDetector(counter);
         propagator.setStepHandler(step, currentState -> {});
         propagator.propagate(date.shiftedBy(n * step));
@@ -201,13 +200,13 @@ public class EventDetectorTest {
 
         private int count;
 
-        public GCallsCounter(final double maxCheck, final double threshold,
+        public GCallsCounter(final AdaptableInterval maxCheck, final double threshold,
                              final int maxIter, final EventHandler handler) {
             super(maxCheck, threshold, maxIter, handler);
             count = 0;
         }
 
-        protected GCallsCounter create(final double newMaxCheck, final double newThreshold,
+        protected GCallsCounter create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                        final int newMaxIter, final EventHandler newHandler) {
             return new GCallsCounter(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
@@ -241,10 +240,12 @@ public class EventDetectorTest {
                 new KeplerianPropagator(new EquinoctialOrbit(new PVCoordinates(new Vector3D(4008912.4039522274, -3155453.3125615157, -5044297.6484738905),
                                                                                new Vector3D(-5012.5883854112530, 1920.6332221785074, -5172.2177085540500)),
                                                              eme2000, initialDate, Constants.WGS84_EARTH_MU));
-        k2.addEventDetector(new CloseApproachDetector(2015.243454166727, 0.0001, 100,
+        k2.addEventDetector(new CloseApproachDetector(s -> 2015.243454166727, 0.0001, 100,
                                                       new ContinueOnEvent(),
                                                       k1));
-        k2.addEventDetector(new DateDetector(Constants.JULIAN_DAY, 1.0e-6, interruptDate));
+        k2.addEventDetector(new DateDetector(interruptDate).
+                            withMaxCheck(Constants.JULIAN_DAY).
+                            withThreshold(1.0e-6));
         SpacecraftState s = k2.propagate(startDate, targetDate);
         Assertions.assertEquals(0.0, interruptDate.durationFrom(s.getDate()), 1.1e-6);
     }
@@ -253,7 +254,7 @@ public class EventDetectorTest {
 
         private final PVCoordinatesProvider provider;
 
-        public CloseApproachDetector(double maxCheck, double threshold,
+        public CloseApproachDetector(AdaptableInterval maxCheck, double threshold,
                                      final int maxIter, final EventHandler handler,
                                      PVCoordinatesProvider provider) {
             super(maxCheck, threshold, maxIter, handler);
@@ -269,7 +270,7 @@ public class EventDetectorTest {
             return radialVelocity;
         }
 
-        protected CloseApproachDetector create(final double newMaxCheck, final double newThreshold,
+        protected CloseApproachDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                                final int newMaxIter,
                                                final EventHandler newHandler) {
             return new CloseApproachDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
@@ -329,8 +330,8 @@ public class EventDetectorTest {
             }
 
             @Override
-            public double getMaxCheckInterval() {
-                return 60;
+            public AdaptableInterval getMaxCheckInterval() {
+                return s -> 60;
             }
 
             @Override
@@ -374,17 +375,6 @@ public class EventDetectorTest {
         SpacecraftState finalState = propagator.propagate(finalTime);
         Assertions.assertEquals(0.0, finalState.getDate().durationFrom(eventTime), noise);
 
-    }
-
-    @Test
-    public void testWrongConfiguration() {
-        try {
-            new DateDetector(-1.0, 1.0e-6, AbsoluteDate.ARBITRARY_EPOCH);
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NOT_STRICTLY_POSITIVE, oe.getSpecifier());
-            Assertions.assertEquals(-1.0, ((Double) oe.getParts()[0]).doubleValue(), 1.0e-15);
-        }
     }
 
     @Test

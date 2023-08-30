@@ -17,6 +17,8 @@
 
 package org.orekit.propagation.conversion;
 
+import static org.orekit.Utils.assertParametersDriversValues;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,8 +26,7 @@ import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.analytical.tle.TLE;
-
-import static org.orekit.Utils.assertParametersDriversValues;
+import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 
 public class TLEPropagatorBuilderTest {
 
@@ -40,11 +41,8 @@ public class TLEPropagatorBuilderTest {
         final PositionAngle positionAngle = null;
         final double        positionScale = 1;
 
-        final double epsilon       = 1e-5;
-        final int    maxIterations = 100;
-
-        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, positionAngle, positionScale,
-                                                                      dataContext, epsilon, maxIterations);
+        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, positionAngle, positionScale, dataContext,
+                                                                      new FixedPointTleGenerationAlgorithm());
 
         // When
         final TLEPropagatorBuilder copyBuilder = builder.copy();

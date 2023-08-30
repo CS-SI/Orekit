@@ -69,7 +69,7 @@ public class AdapterDetector implements EventDetector {
 
     /** {@inheritDoc} */
     @Override
-    public double getMaxCheckInterval() {
+    public AdaptableInterval getMaxCheckInterval() {
         return detector.getMaxCheckInterval();
     }
 

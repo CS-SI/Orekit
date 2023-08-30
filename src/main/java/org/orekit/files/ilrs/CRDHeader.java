@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateComponents;
@@ -480,6 +481,7 @@ public class CRDHeader extends ILRSHeader {
      * @return a string representation of the H4, in the CRD format.
      * @since 12.0
      */
+    @DefaultDataContext
     public String getH4CrdString() {
         // "2006-11-13T15:23:52" -- > "2006 11 13 15 23 52"
         final TimeScale utc = TimeScalesFactory.getUTC();

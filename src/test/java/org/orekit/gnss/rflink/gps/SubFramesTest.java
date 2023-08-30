@@ -554,4 +554,24 @@ public class SubFramesTest {
         Assertions.assertEquals( 57, page26.getSvId());
     }
 
+    @Test
+    public void testSubFrame5Almanac() {
+        SubFrameAlmanac almanac = (SubFrameAlmanac) SubFrame.parse(new HexadecimalSequenceEncodedMessage("8b03085412acda043242dece45a69afd4300de8436811f6b0e290a9631922b9fd70b38007040"));
+        Assertions.assertEquals(               14340,   almanac.getTow());
+        Assertions.assertEquals(                   5,   almanac.getId());
+        Assertions.assertEquals(                   1,   almanac.getDataId());
+        Assertions.assertEquals(                   3,   almanac.getSvId());
+        Assertions.assertEquals(                   3,   almanac.getPRN());
+        Assertions.assertEquals(              233472,   almanac.getToaA());
+        Assertions.assertEquals( 0.03467036265119664,   almanac.getDeltai(),          1.0e-15);
+        Assertions.assertEquals(7.410022942913008e-7,   almanac.getOmegaDot(),        1.0e-15);
+        Assertions.assertEquals(                   0,   almanac.getSvHealth());
+        Assertions.assertEquals(         5153.703125,   almanac.getSqrtA(),           1.0e-15);
+        Assertions.assertEquals(   6.054706808373034,   almanac.getUppercaseOmega0(), 1.0e-15);
+        Assertions.assertEquals(   1.039346136184126,   almanac.getLowercaseOmega(),  1.0e-15);
+        Assertions.assertEquals(    1.07070323515602,   almanac.getM0(),              1.0e-15);
+        Assertions.assertEquals( 0.0015783309936523438, almanac.getAF0(),             1.0e-15);
+        Assertions.assertEquals(                   0.0, almanac.getAF1(),             1.0e-15);
+    }
+
 }

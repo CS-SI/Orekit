@@ -16,6 +16,18 @@
  */
 package org.orekit.gnss.attitude;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -30,7 +42,7 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.antenna.SatelliteType;
 import org.orekit.orbits.CartesianOrbit;
@@ -51,18 +63,6 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public abstract class AbstractGNSSAttitudeProviderTest {
 
@@ -271,7 +271,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
         ParsedLine(final String line, final Frame eme2000, final Frame itrf) {
             final String[] fields = line.split("\\s+");
             gpsDate    = new GNSSDate(Integer.parseInt(fields[1]), Double.parseDouble(fields[2]) * MS_TO_S, SatelliteSystem.GPS);
-            final Transform t = itrf.getTransformTo(eme2000, gpsDate.getDate());
+            final StaticTransform t = itrf.getStaticTransformTo(eme2000, gpsDate.getDate());
             prnNumber  = Integer.parseInt(fields[3].substring(1));
             satType    = SatelliteType.parseSatelliteType(fields[4].replaceAll("[-_ ]", ""));
             orbit      = new CartesianOrbit(new TimeStampedPVCoordinates(gpsDate.getDate(),

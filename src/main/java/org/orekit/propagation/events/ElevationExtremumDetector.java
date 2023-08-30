@@ -63,7 +63,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      */
     public ElevationExtremumDetector(final double maxCheck, final double threshold,
                                      final TopocentricFrame topo) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
+        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              topo);
     }
 
@@ -73,13 +73,13 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param topo topocentric frame centered on ground point
      */
-    protected ElevationExtremumDetector(final double maxCheck, final double threshold,
+    protected ElevationExtremumDetector(final AdaptableInterval maxCheck, final double threshold,
                                         final int maxIter, final EventHandler handler,
                                         final TopocentricFrame topo) {
         super(maxCheck, threshold, maxIter, handler);
@@ -88,7 +88,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
 
     /** {@inheritDoc} */
     @Override
-    protected ElevationExtremumDetector create(final double newMaxCheck, final double newThreshold,
+    protected ElevationExtremumDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
                                               final EventHandler newHandler) {
         return new ElevationExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, topo);

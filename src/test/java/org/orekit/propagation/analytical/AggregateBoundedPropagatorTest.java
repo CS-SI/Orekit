@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
@@ -35,7 +36,6 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -69,7 +69,7 @@ public class AggregateBoundedPropagatorTest {
         BoundedPropagator p2 = createPropagator(date.shiftedBy(10), date.shiftedBy(20), 1);
 
         // action
-        BoundedPropagator actual = new AggregateBoundedPropagator(Arrays.asList(p1, p2));
+        AggregateBoundedPropagator actual = new AggregateBoundedPropagator(Arrays.asList(p1, p2));
 
         //verify
         int ulps = 0;
@@ -91,6 +91,12 @@ public class AggregateBoundedPropagatorTest {
         MatcherAssert.assertThat(
                 actual.propagate(date.shiftedBy(20)).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p2.propagate(date.shiftedBy(20)).getPVCoordinates(), ulps));
+
+        Assertions.assertEquals(2, actual.getPropagators().size());
+        for (final Map.Entry<AbsoluteDate, ? extends BoundedPropagator> entry : actual.getPropagators().entrySet()) {
+            Assertions.assertEquals(entry.getKey(), entry.getValue().getMinDate());
+        }
+
     }
 
     /**
@@ -270,7 +276,7 @@ public class AggregateBoundedPropagatorTest {
     @Test
     public void testAggregateBoundedPropagator() {
         // setup
-        NavigableMap<AbsoluteDate, Propagator> map = new TreeMap<>();
+        NavigableMap<AbsoluteDate, BoundedPropagator> map = new TreeMap<>();
         AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         AbsoluteDate end = date.shiftedBy(20);
         BoundedPropagator p1 = createPropagator(date, end, 0);
