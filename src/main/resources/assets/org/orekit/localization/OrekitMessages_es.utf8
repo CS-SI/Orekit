@@ -857,3 +857,6 @@ HEADER_NOT_WRITTEN = la cabezera del fichero {0} aún no se ha escrito
 
 # header for file {0} has already been written
 HEADER_ALREADY_WRITTEN = la cabezera del fichero {0} ya se ha escrito
+
+# Cannot start the propagation from an infinitely far date
+CANNOT_START_PROPAGATION_FROM_INFINITY = <MISSING TRANSLATION>
