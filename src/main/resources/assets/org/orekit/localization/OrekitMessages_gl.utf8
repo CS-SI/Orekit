@@ -857,3 +857,6 @@ HEADER_NOT_WRITTEN = <MISSING TRANSLATION>
 
 # header for file {0} has already been written
 HEADER_ALREADY_WRITTEN = <MISSING TRANSLATION>
+
+# Cannot start the propagation from an infinitely far date
+CANNOT_START_PROPAGATION_FROM_INFINITY = <MISSING TRANSLATION>
