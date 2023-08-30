@@ -16,6 +16,9 @@
  */
 package org.orekit.forces.gravity;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
@@ -24,6 +27,8 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,13 +50,21 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.EventDetectorsProvider;
+import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeStamped;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.ParameterDriver;
 
 
 public class SolidTidesTest extends AbstractLegacyForceModelTest {
@@ -409,6 +422,68 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         checkStateJacobianVsFiniteDifferencesGradient(new SpacecraftState(orbit), forceModel, DEFAULT_LAW,
                                               10.0, 2.0e-10, false);
 
+    }
+    
+    /** Test added for <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1167">issue 1167</a>.
+     * <p>Mostly for code coverage, with the introduction of interface {@link EventDetectorsProvider}
+     */
+    @Test
+    public void testGetEventDetectors() {
+        
+        // Given
+        // -----
+        
+        final IERSConventions conventions = IERSConventions.IERS_2010;
+        final Frame itrf = FramesFactory.getITRF(conventions, true);
+        final AbsoluteDate t0 = AbsoluteDate.ARBITRARY_EPOCH;
+
+        final NormalizedSphericalHarmonicsProvider gravityField =
+                        GravityFieldFactory.getNormalizedProvider(5, 5);
+        final UT1Scale  ut1 = TimeScalesFactory.getUT1(conventions, true);
+        
+        // Create solid tides force model
+        final ForceModel solidTidesModel = new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
+                                                          gravityField.getTideSystem(), false,
+                                                          SolidTides.DEFAULT_STEP, SolidTides.DEFAULT_POINTS,
+                                                          conventions, ut1,
+                                                          CelestialBodyFactory.getSun(),
+                                                          CelestialBodyFactory.getMoon());
+
+        // When: Empty list
+        List<EventDetector>                detectors      = solidTidesModel.getEventDetectors().collect(Collectors.toList());
+        List<FieldEventDetector<Binary64>> fieldDetectors = solidTidesModel.getFieldEventDetectors(Binary64Field.getInstance()).collect(Collectors.toList());
+        
+        // Then
+        Assertions.assertTrue(detectors.isEmpty());
+        Assertions.assertTrue(fieldDetectors.isEmpty());
+        
+        // When: 1 span added to driver
+        final List<ParameterDriver> drivers = solidTidesModel.getParametersDrivers();
+        
+        for (final ParameterDriver driver : drivers) {
+            driver.addSpanAtDate(t0);
+        }
+        
+        detectors      = solidTidesModel.getEventDetectors().collect(Collectors.toList());
+        DateDetector dateDetector = (DateDetector) detectors.get(0);
+        List<TimeStamped> dates = dateDetector.getDates();
+        
+        fieldDetectors = solidTidesModel.getFieldEventDetectors(Binary64Field.getInstance()).collect(Collectors.toList());
+        FieldDateDetector<Binary64> fieldDateDetector = (FieldDateDetector<Binary64>) fieldDetectors.get(0);
+        FieldAbsoluteDate<Binary64> fieldDate = fieldDateDetector.getDate();
+        
+        // Then
+        Assertions.assertFalse(detectors.isEmpty());
+        Assertions.assertEquals(1, detectors.size());
+        Assertions.assertTrue(detectors.get(0) instanceof DateDetector);
+        
+        Assertions.assertEquals(1, dates.size());
+        Assertions.assertEquals(0., dates.get(0).durationFrom(t0), 0.);
+        
+        Assertions.assertFalse(fieldDetectors.isEmpty());
+        Assertions.assertEquals(1, fieldDetectors.size());
+        Assertions.assertTrue(fieldDetectors.get(0) instanceof FieldDateDetector);
+        Assertions.assertEquals(0., fieldDate.durationFrom(t0).getReal(), 0.);
     }
 
     private void doTestTideEffect(Orbit orbit, IERSConventions conventions, double delta1, double delta2) {
