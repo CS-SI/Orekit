@@ -22,6 +22,8 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -110,7 +112,7 @@ public class AttitudesSequence implements AttitudeProvider {
      * @param provider provider to activate
      */
     public void resetActiveProvider(final AttitudeProvider provider) {
-        activated = new TimeSpanMap<AttitudeProvider>(provider);
+        activated = new TimeSpanMap<>(provider);
     }
 
     /** Register all wrapped switch events to the propagator.
@@ -304,16 +306,31 @@ public class AttitudesSequence implements AttitudeProvider {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                 final AbsoluteDate date, final Frame frame) {
         return activated.get(date).getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                             final FieldAbsoluteDate<T> date,
                                                                             final Frame frame) {
         return activated.get(date.toAbsoluteDate()).getAttitude(pvProv, date, frame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+        return activated.get(date).getAttitudeRotation(pvProv, date, frame);
+    }
+
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                    final FieldAbsoluteDate<T> date,
+                                                                                    final Frame frame) {
+        return activated.get(date.toAbsoluteDate()).getAttitudeRotation(pvProv, date, frame);
     }
 
     /** Switch specification. */
@@ -395,7 +412,7 @@ public class AttitudesSequence implements AttitudeProvider {
         public void init(final SpacecraftState s0, final AbsoluteDate t) {
 
             // reset the transition parameters (this will be done once for each switch,
-            //  despite doing it only once would have sufficient; its not really a problem)
+            //  despite doing it only once would have sufficient; it's not really a problem)
             forward = t.durationFrom(s0.getDate()) >= 0.0;
             if (activated.getSpansNumber() > 1) {
                 // remove transitions that will be overridden during upcoming propagation

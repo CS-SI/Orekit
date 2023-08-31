@@ -16,10 +16,10 @@
  */
 package org.orekit.forces.maneuvers;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
@@ -238,16 +238,16 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
             final ImpulseManeuver im = (ImpulseManeuver) detector;
             final AbsoluteDate date = oldState.getDate();
             final AttitudeProvider override = im.getAttitudeOverride();
-            final Attitude attitude;
+            final Rotation rotation;
 
             if (override == null) {
-                attitude = oldState.getAttitude();
+                rotation = oldState.getAttitude().getRotation();
             } else {
-                attitude = override.getAttitude(oldState.getOrbit(), date, oldState.getFrame());
+                rotation = override.getAttitudeRotation(oldState.getOrbit(), date, oldState.getFrame());
             }
 
             // convert velocity increment in inertial frame
-            final Vector3D deltaV = attitude.getRotation().applyInverseTo(im.deltaVSat);
+            final Vector3D deltaV = rotation.applyInverseTo(im.deltaVSat);
             final double sign     = im.forward ? +1 : -1;
 
             // apply increment to position/velocity
@@ -264,7 +264,7 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
 
             // pack everything in a new state
             SpacecraftState newState = new SpacecraftState(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),
-                                                           attitude, newMass);
+                                                           oldState.getAttitude(), newMass);
             for (final DoubleArrayDictionary.Entry entry : oldState.getAdditionalStatesValues().getData()) {
                 newState = newState.addAdditionalState(entry.getKey(), entry.getValue());
             }
@@ -272,7 +272,6 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
                 newState = newState.addAdditionalStateDerivative(entry.getKey(), entry.getValue());
             }
             return newState;
-
 
         }
 
