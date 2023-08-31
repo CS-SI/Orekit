@@ -150,8 +150,8 @@ class JPLCelestialBody implements CelestialBody {
     public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
 
         // apply the scale factor to raw position
-        final PVCoordinates rawPV     = rawPVProvider.getRawPV(date);
-        final Vector3D scaledPosition = rawPV.getPosition().scalarMultiply(scale);
+        final Vector3D rawPosition    = rawPVProvider.getRawPosition(date);
+        final Vector3D scaledPosition = rawPosition.scalarMultiply(scale);
 
         // the raw position is relative to the parent of the body centered inertially oriented frame
         final StaticTransform transform = getInertiallyOrientedFrame().getParent().getStaticTransformTo(frame, date);
@@ -165,8 +165,8 @@ class JPLCelestialBody implements CelestialBody {
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date, final Frame frame) {
 
         // apply the scale factor to raw position
-        final FieldPVCoordinates<T> rawPV    = rawPVProvider.getRawPV(date);
-        final FieldVector3D<T> scaledPosition  = rawPV.getPosition().scalarMultiply(scale);
+        final FieldVector3D<T> rawPosition     = rawPVProvider.getRawPosition(date);
+        final FieldVector3D<T> scaledPosition  = rawPosition.scalarMultiply(scale);
 
         // the raw position is relative to the parent of the body centered inertially oriented frame
         final FieldStaticTransform<T> transform = getInertiallyOrientedFrame().getParent().getStaticTransformTo(frame, date);
