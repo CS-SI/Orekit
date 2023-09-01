@@ -17,6 +17,8 @@
 package org.orekit.propagation.events;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -137,6 +139,14 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
         @SuppressWarnings("unchecked")
         final FieldTimeStamped<T>[] dates = eventDateList.toArray(new FieldEventDate[eventDateList.size()]);
         return new FieldDateDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler, minGap, dates);
+    }
+
+    /** Get all event field dates currently managed, in chronological order.
+     * @return all event field dates currently managed, in chronological order
+     * @since 12.0
+     */
+    public List<FieldTimeStamped<T>> getDates() {
+        return Collections.unmodifiableList(eventDateList);
     }
 
     /** Compute the value of the switching function.
