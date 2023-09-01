@@ -30,7 +30,7 @@ import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.forces.gravity.potential.TideSystem;
@@ -72,7 +72,7 @@ import org.orekit.utils.ParameterDriver;
  * @since 6.0
  */
 
-public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implements TideSystemProvider {
+public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystemProvider {
 
     /** Exponent scaling to avoid floating point overflow.
      * <p>The paper uses 10^280, we prefer a power of two to preserve accuracy thanks to

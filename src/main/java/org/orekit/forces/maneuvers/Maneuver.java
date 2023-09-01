@@ -29,7 +29,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.forces.maneuvers.propulsion.PropulsionModel;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -55,7 +55,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Maxime Journot
  * @since 10.2
  */
-public class Maneuver extends AbstractForceModel {
+public class Maneuver implements ForceModel {
 
     /** The attitude to override during the maneuver, if set. */
     private final AttitudeProvider attitudeOverride;
@@ -236,18 +236,18 @@ public class Maneuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
+    public Stream<EventDetector> getEventDetectors() {
         // Event detectors are extracted from both the maneuver triggers and the propulsion model
-        return Stream.concat(maneuverTriggers.getEventsDetectors(),
-                             propulsionModel.getEventsDetectors());
+        return Stream.concat(maneuverTriggers.getEventDetectors(),
+                             propulsionModel.getEventDetectors());
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
         // Event detectors are extracted from both the maneuver triggers and the propulsion model
-        return Stream.concat(maneuverTriggers.getFieldEventsDetectors(field),
-                             propulsionModel.getFieldEventsDetectors(field));
+        return Stream.concat(maneuverTriggers.getFieldEventDetectors(field),
+                             propulsionModel.getFieldEventDetectors(field));
     }
 
     @Override

@@ -199,7 +199,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
 
     /** {@inheritDoc} */
     @Override
-    protected List<ParameterDriver> getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
         // Keplerian propagation model does not have parameter drivers.
         return Collections.emptyList();
     }

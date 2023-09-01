@@ -401,7 +401,7 @@ public class ParameterDriver {
      * <p>
      * Must be called only once at the beginning of orbit
      * determination for example. If called several times, will throw exception. If parameter
-     * estimations intervals want to be changed then a new ParameterDriver must be created or the
+     * estimations intervals must be changed then a new ParameterDriver must be created or the
      * function {@link #addSpanAtDate} should be used.
      * </p>
      * <p>
@@ -425,8 +425,8 @@ public class ParameterDriver {
      * @since 12.0
      */
     public void addSpans(final AbsoluteDate orbitDeterminationStartDate,
-                           final AbsoluteDate orbitDeterminationEndDate,
-                           final double validityPeriodForDriver) {
+                         final AbsoluteDate orbitDeterminationEndDate,
+                         final double validityPeriodForDriver) {
 
         // by convention 0 is when the parameter needs to be drived only on 1
         // interval from -INF to +INF time period
@@ -455,16 +455,16 @@ public class ParameterDriver {
      * it might not converge or find singular matrix if the spans are too short and contains to few measurements.
      * Must be called before any computation (for example before
      * orbit determination).</b>
-     * @param spanSartDate wanted start date for parameter value interval
+     * @param spanStartDate wanted start date for parameter value interval
      * starts to be estimated.
      * @since 12.0
      */
-    public void addSpanAtDate(final AbsoluteDate spanSartDate) {
+    public void addSpanAtDate(final AbsoluteDate spanStartDate) {
 
         // Split value span map with new interval having for start date spanStartDate and end
         // date next span start date of +INF if no span is present after
-        valueSpanMap.addValidAfter(getValue(spanSartDate), spanSartDate, false);
-        nameSpanMap.addValidAfter(name, spanSartDate, false);
+        valueSpanMap.addValidAfter(getValue(spanStartDate), spanStartDate, false);
+        nameSpanMap.addValidAfter(name, spanStartDate, false);
         // Rename spans recursively
         Span<String> currentNameSpan = nameSpanMap.getFirstSpan();
         nameSpanMap.addValidBefore(SPAN + name + Integer.toString(0), currentNameSpan.getEnd(), false);

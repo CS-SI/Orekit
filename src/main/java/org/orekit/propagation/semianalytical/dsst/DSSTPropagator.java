@@ -48,7 +48,6 @@ import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.StateMapper;
@@ -65,9 +64,9 @@ import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /**
  * This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
@@ -1136,15 +1135,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         Main(final ODEIntegrator integrator) {
             yDot = new double[7];
 
-            for (final DSSTForceModel forceModel : forceModels) {
-                final EventDetector[] modelDetectors = forceModel.getEventsDetectors();
-                if (modelDetectors != null) {
-                    for (final EventDetector detector : modelDetectors) {
-                        setUpEventDetector(integrator, detector);
-                    }
-                }
-            }
-
+            // Setup event detectors for each force model
+            forceModels.forEach(dsstForceModel -> dsstForceModel.getEventDetectors().
+                                forEach(eventDetector -> setUpEventDetector(integrator, eventDetector)));
         }
 
         /** {@inheritDoc} */

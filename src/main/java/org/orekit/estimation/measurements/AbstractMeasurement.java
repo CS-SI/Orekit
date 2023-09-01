@@ -38,8 +38,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
-    implements ObservedMeasurement<T> {
+public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> implements ObservedMeasurement<T> {
 
     /** List of the supported parameters. */
     private final List<ParameterDriver> supportedParameters;

@@ -1135,7 +1135,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
 
     /** {@inheritDoc} */
     @Override
-    protected List<ParameterDriver> getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
         // Eckstein Hechler propagation model does not have parameter drivers.
         return Collections.emptyList();
     }
