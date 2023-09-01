@@ -157,7 +157,7 @@ public abstract class AbstractAnalyticalGradientConverter extends AbstractGradie
     /**
      * Get the converted analytical orbit propagator.
      * @param state state as returned by {@link #getState()}
-     * @param parameters model parameters as returned by {@link #getParameters(FieldSpacecraftState)}
+     * @param parameters model parameters
      * @return the converted analytical orbit propagator
      */
     public abstract FieldAbstractAnalyticalPropagator<Gradient> getPropagator(FieldSpacecraftState<Gradient> state,
