@@ -28,14 +28,20 @@ import org.orekit.utils.ParameterDriversProvider;
  */
 public class UnsupportedParameterException extends OrekitException {
 
+    /** String for empty parameter drivers' list. */
+    public static final String NO_PARAMETER = "<none>";
+
+    /** Comma separator for printing list of supported parameter drivers. */
+    public static final String COMMA_SEP = ", ";
+
     /** Serializable UID. */
     private static final long serialVersionUID =  -1363569710782876135L;
 
     /** Constructor.
-    *
-    * @param parameterName name of the parameter driver that is not supported by the model
-    * @param parameterDrivers list of the model's parameter drivers
-    */
+     *
+     * @param parameterName name of the parameter driver that is not supported by the model
+     * @param parameterDrivers list of the model's parameter drivers
+     */
     public UnsupportedParameterException(final String parameterName, final List<ParameterDriver> parameterDrivers) {
         super(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, parameterName, getSupportedNames(parameterDrivers));
     }
@@ -49,12 +55,12 @@ public class UnsupportedParameterException extends OrekitException {
         final StringBuilder builder = new StringBuilder();
         for (final ParameterDriver driver : parameterDrivers) {
             if (builder.length() > 0) {
-                builder.append(", ");
+                builder.append(COMMA_SEP);
             }
             builder.append(driver.getName());
         }
         if (builder.length() == 0) {
-            builder.append("<none>");
+            builder.append(NO_PARAMETER);
         }
         return builder.toString();
     }
