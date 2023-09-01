@@ -24,6 +24,7 @@ import org.orekit.utils.ParameterDriversProvider;
 /** Exception for unsupported {@link ParameterDriver} in a model implementing {@link ParameterDriversProvider}.
  *
  * @author Maxime Journot
+ * @author Luc Maisonobe
  * @since 12.0
  */
 public class UnsupportedParameterException extends OrekitException {
