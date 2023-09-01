@@ -33,7 +33,7 @@ import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -65,7 +65,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Thomas Paulet
  * @since 10.3
  */
-public class KnockeRediffusedForceModel extends AbstractForceModel {
+public class KnockeRediffusedForceModel implements ForceModel {
 
     /** Earth rotation around Sun pulsation in rad/sec. */
     private static final double EARTH_AROUND_SUN_PULSATION = MathUtils.TWO_PI / Constants.JULIAN_YEAR;

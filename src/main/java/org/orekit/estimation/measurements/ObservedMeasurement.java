@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements;
 import java.util.List;
 
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
 
 /** Interface for measurements used for orbit determination.
@@ -40,7 +40,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends ComparableMeasurement {
+public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends ComparableMeasurement, ParameterDriversProvider {
 
     /** Enable or disable a measurement.
      * <p>
@@ -112,11 +112,6 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
      * @see #addModifier(EstimationModifier)
      */
     List<EstimationModifier<T>> getModifiers();
-
-    /** Get the drivers for this measurement parameters, including its modifiers parameters.
-     * @return drivers for this measurement parameters, including its modifiers parameters
-     */
-    List<ParameterDriver> getParametersDrivers();
 
     /** Get the satellites related to this measurement.
      * @return satellites related to this measurement

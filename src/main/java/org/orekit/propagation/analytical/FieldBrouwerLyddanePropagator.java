@@ -84,7 +84,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T>  {
+public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
     /** Default convergence threshold for mean parameters conversion. */
     private static final double EPSILON_DEFAULT = 1.0e-13;
@@ -1409,7 +1409,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
 
     /** {@inheritDoc} */
     @Override
-    protected List<ParameterDriver> getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
         return Collections.singletonList(M2Driver);
     }
 

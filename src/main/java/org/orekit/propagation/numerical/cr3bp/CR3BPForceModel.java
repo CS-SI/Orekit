@@ -28,7 +28,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CR3BPSystem;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
@@ -38,7 +38,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Vincent Mouraux
  * @since 10.2
  */
-public class CR3BPForceModel extends AbstractForceModel {
+public class CR3BPForceModel implements ForceModel {
 
     /** Suffix for parameter name for Mass Ratio enabling Jacobian processing. */
     public static final String MASS_RATIO_SUFFIX =  "CR3BP System Mass Ratio";

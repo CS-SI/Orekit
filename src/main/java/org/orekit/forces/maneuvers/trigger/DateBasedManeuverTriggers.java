@@ -17,6 +17,7 @@
 package org.orekit.forces.maneuvers.trigger;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
@@ -77,10 +78,10 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
     private static ParameterDrivenDateIntervalDetector createDetector(final String prefix, final AbsoluteDate date, final double duration) {
         if (duration >= 0) {
             return new ParameterDrivenDateIntervalDetector(prefix, date, date.shiftedBy(duration)).
-                   withMaxCheck(FastMath.max(MIN_MAX_CHECK, duration));
+                            withMaxCheck(FastMath.max(MIN_MAX_CHECK, duration));
         } else {
             return new ParameterDrivenDateIntervalDetector(prefix, date.shiftedBy(duration), date).
-                   withMaxCheck(FastMath.max(MIN_MAX_CHECK, -duration));
+                            withMaxCheck(FastMath.max(MIN_MAX_CHECK, -duration));
         }
     }
 
@@ -114,13 +115,13 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
 
     /** {@inheritDoc} */
     @Override
-    protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
-        FieldAbstractDetector<D, S> convertIntervalDetector(final Field<S> field, final ParameterDrivenDateIntervalDetector detector) {
+    protected <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> FieldAbstractDetector<D, S> convertIntervalDetector(final Field<S> field,
+                                                                                                                                             final ParameterDrivenDateIntervalDetector detector) {
 
         final FieldParameterDrivenDateIntervalDetector<S> fd =
                         new FieldParameterDrivenDateIntervalDetector<S>(field, "",
-                                                                        detector.getStartDriver().getBaseDate(),
-                                                                        detector.getStopDriver().getBaseDate());
+                                        detector.getStartDriver().getBaseDate(),
+                                        detector.getStopDriver().getBaseDate());
         fd.getStartDriver().setName(detector.getStartDriver().getName());
         fd.getStopDriver().setName(detector.getStopDriver().getName());
         fd.getMedianDriver().setName(detector.getMedianDriver().getName());
@@ -135,10 +136,9 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        return Arrays.asList(getFiringIntervalDetector().getStartDriver(),
-                             getFiringIntervalDetector().getStopDriver(),
-                             getFiringIntervalDetector().getMedianDriver(),
-                             getFiringIntervalDetector().getDurationDriver());
+        return Collections.unmodifiableList(Arrays.asList(getFiringIntervalDetector().getStartDriver(),
+                                                          getFiringIntervalDetector().getStopDriver(),
+                                                          getFiringIntervalDetector().getMedianDriver(),
+                                                          getFiringIntervalDetector().getDurationDriver()));
     }
-
 }

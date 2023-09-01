@@ -42,6 +42,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
 /** This class is a container for a single set of TLE data.
  *
@@ -59,7 +60,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */
-public class TLE implements TimeStamped, Serializable {
+public class TLE implements TimeStamped, Serializable, ParameterDriversProvider {
 
     /** Identifier for SGP type of ephemeris. */
     public static final int SGP = 1;
@@ -842,33 +843,6 @@ public class TLE implements TimeStamped, Serializable {
      */
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.singletonList(bStarParameterDriver);
-    }
-
-    /** Get parameter driver from its name.
-     * @param name parameter name
-     * @return parameter driver
-     * @since 11.1
-     */
-    public ParameterDriver getParameterDriver(final String name) {
-        // Loop on known drivers
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            if (name.equals(driver.getName())) {
-                // we have found a parameter with that name
-                return driver;
-            }
-        }
-
-        // build the list of supported parameters
-        final StringBuilder sBuilder = new StringBuilder();
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            if (sBuilder.length() > 0) {
-                sBuilder.append(", ");
-            }
-            sBuilder.append(driver.getName());
-        }
-        throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                  name, sBuilder.toString());
-
     }
 
     /** Replace the instance with a data transfer object for serialization.

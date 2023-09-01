@@ -18,6 +18,7 @@
 package org.orekit.forces.maneuvers.propulsion;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
@@ -126,7 +127,7 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        return Arrays.asList(thrustDriver, flowRateDriver);
+        return Collections.unmodifiableList(Arrays.asList(thrustDriver, flowRateDriver));
     }
 
     /** {@inheritDoc} */

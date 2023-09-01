@@ -274,7 +274,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    protected List<ParameterDriver> getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
         // Integrated Ephemeris propagation model does not have parameter drivers.
         return Collections.emptyList();
     }

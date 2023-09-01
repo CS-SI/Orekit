@@ -16,6 +16,9 @@
  */
 package org.orekit.forces.maneuvers.propulsion;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -33,8 +36,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
-
-import java.util.List;
 
 /** Test for AbstractConstantThrust class and its sub-classes. */
 public class AbstractConstantThrustTest {
@@ -94,6 +95,11 @@ public class AbstractConstantThrustTest {
 			public double getFlowRate() {
 				return flowRate;
 			}
+
+            @Override
+            public List<ParameterDriver> getParametersDrivers() {
+                return Collections.emptyList();
+            }
         };
 
         // Test non-abstract methods

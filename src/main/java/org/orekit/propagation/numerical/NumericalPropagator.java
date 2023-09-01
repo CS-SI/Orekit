@@ -510,7 +510,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                     // code should really be done for all ManeuverTriggers and not only AbstractManeuverTriggers
                     final AbstractManeuverTriggers amt = (AbstractManeuverTriggers) maneuverTriggers;
 
-                    amt.getEventsDetectors().
+                    amt.getEventDetectors().
                         filter(d -> d instanceof ParameterDrivenDateIntervalDetector).
                         map (d -> (ParameterDrivenDateIntervalDetector) d).
                         forEach(d -> {
@@ -920,7 +920,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             this.jacobian = new double[6][6];
 
             for (final ForceModel forceModel : forceModels) {
-                forceModel.getEventsDetectors().forEach(detector -> setUpEventDetector(integrator, detector));
+                forceModel.getEventDetectors().forEach(detector -> setUpEventDetector(integrator, detector));
             }
 
             if (getOrbitType() == null) {

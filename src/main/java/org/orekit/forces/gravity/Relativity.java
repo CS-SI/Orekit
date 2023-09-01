@@ -23,7 +23,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Constants;
@@ -41,7 +41,7 @@ import org.orekit.utils.ParameterDriver;
  * @see "Montenbruck, Oliver, and Gill, Eberhard. Satellite orbits : models, methods, and
  * applications. Berlin New York: Springer, 2000."
  */
-public class Relativity extends AbstractForceModel {
+public class Relativity implements ForceModel {
 
     /** Central attraction scaling factor.
      * <p>

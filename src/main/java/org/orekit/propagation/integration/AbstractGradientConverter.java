@@ -29,7 +29,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParametersDriversProvider;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeSpanMap.Span;
@@ -111,7 +111,7 @@ public abstract class AbstractGradientConverter {
      * @param parametricModel parametric model
      * @return state with the number of parameters consistent with parametric model
      */
-    public FieldSpacecraftState<Gradient> getState(final ParametersDriversProvider parametricModel) {
+    public FieldSpacecraftState<Gradient> getState(final ParameterDriversProvider parametricModel) {
 
         // count the required number of parameters
         int nbParams = 0;
@@ -163,15 +163,15 @@ public abstract class AbstractGradientConverter {
 
     /** Get the parametric model parameters, return gradient values for each span of each driver (several gradient
      * values for each parameter).
-     * Different from {@link #getParametersAtStateDate(FieldSpacecraftState, ParametersDriversProvider)}
+     * Different from {@link #getParametersAtStateDate(FieldSpacecraftState, ParameterDriversProvider)}
      * which return a Gradient list containing for each driver the gradient value at state date (only 1 gradient
      * value for each parameter).
-     * @param state state as returned by {@link #getState(ParametersDriversProvider) getState(parametricModel)}
+     * @param state state as returned by {@link #getState(ParameterDriversProvider) getState(parametricModel)}
      * @param parametricModel parametric model associated with the parameters
      * @return parametric model parameters (for all span of each driver)
      */
     public Gradient[] getParameters(final FieldSpacecraftState<Gradient> state,
-                                    final ParametersDriversProvider parametricModel) {
+                                    final ParameterDriversProvider parametricModel) {
         final int freeParameters = state.getMass().getFreeParameters();
         final List<ParameterDriver> drivers = parametricModel.getParametersDrivers();
         int sizeDrivers = 0;
@@ -195,15 +195,15 @@ public abstract class AbstractGradientConverter {
 
     /** Get the parametric model parameters, return gradient values at state date for each driver (only 1 gradient
      * value for each parameter).
-     * Different from {@link #getParameters(FieldSpacecraftState, ParametersDriversProvider)}
+     * Different from {@link #getParameters(FieldSpacecraftState, ParameterDriversProvider)}
      * which return a Gradient list containing for each driver the gradient values for each span value (several gradient
      * values for each parameter).
-     * @param state state as returned by {@link #getState(ParametersDriversProvider) getState(parametricModel)}
+     * @param state state as returned by {@link #getState(ParameterDriversProvider) getState(parametricModel)}
      * @param parametricModel parametric model associated with the parameters
      * @return parametric model parameters (for all span of each driver)
      */
     public Gradient[] getParametersAtStateDate(final FieldSpacecraftState<Gradient> state,
-            final ParametersDriversProvider parametricModel) {
+            final ParameterDriversProvider parametricModel) {
         final int freeParameters = state.getMass().getFreeParameters();
         final List<ParameterDriver> drivers = parametricModel.getParametersDrivers();
 

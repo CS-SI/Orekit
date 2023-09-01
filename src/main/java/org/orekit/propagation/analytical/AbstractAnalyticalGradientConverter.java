@@ -32,6 +32,7 @@ import org.orekit.propagation.integration.AbstractGradientConverter;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
@@ -41,7 +42,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public abstract class AbstractAnalyticalGradientConverter extends AbstractGradientConverter {
+public abstract class AbstractAnalyticalGradientConverter extends AbstractGradientConverter implements ParameterDriversProvider {
 
     /** Attitude provider. */
     private final AttitudeProvider provider;
@@ -151,37 +152,12 @@ public abstract class AbstractAnalyticalGradientConverter extends AbstractGradie
         }
 
         return gStates.get(nbParams);
-
     }
-
-    /** Get the model parameters.
-     * @param state state as returned by {@link #getState()}
-     * @return the model parameters
-     */
-    public Gradient[] getParameters(final FieldSpacecraftState<Gradient> state) {
-        final int freeParameters = state.getMass().getFreeParameters();
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final Gradient[] parameters = new Gradient[drivers.size()];
-        int index = getFreeStateParameters();
-        int i = 0;
-        for (ParameterDriver driver : drivers) {
-            parameters[i++] = driver.isSelected() ?
-                              Gradient.variable(freeParameters, index++, driver.getValue(state.getDate().toAbsoluteDate())) :
-                              Gradient.constant(freeParameters, driver.getValue(state.getDate().toAbsoluteDate()));
-        }
-        return parameters;
-    }
-
-    /**
-     * Get the parameter drivers related to the analytical propagation model.
-     * @return a list of parameter drivers
-     */
-    public abstract List<ParameterDriver> getParametersDrivers();
 
     /**
      * Get the converted analytical orbit propagator.
      * @param state state as returned by {@link #getState()}
-     * @param parameters model parameters as returned by {@link #getParameters(FieldSpacecraftState)}
+     * @param parameters model parameters
      * @return the converted analytical orbit propagator
      */
     public abstract FieldAbstractAnalyticalPropagator<Gradient> getPropagator(FieldSpacecraftState<Gradient> state,

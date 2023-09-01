@@ -54,7 +54,6 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
@@ -1353,12 +1352,6 @@ public class FieldDSSTPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
-            return null;
-        }
-
-        /** {@inheritDoc} */
-        @Override
         protected List<ParameterDriver> getParametersDriversWithoutMu() {
             return Collections.emptyList();
         }
@@ -1386,7 +1379,7 @@ public class FieldDSSTPropagatorTest {
     }
 
     /** This class is based on the example given by Orekit user kris06 in https://gitlab.orekit.org/orekit/orekit/-/issues/670. */
-    private class NumericalForce extends AbstractForceModel {
+    private class NumericalForce implements ForceModel {
 
         private boolean initialized;
         private boolean accComputed;
@@ -1423,13 +1416,13 @@ public class FieldDSSTPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public Stream<EventDetector> getEventsDetectors() {
+        public Stream<EventDetector> getEventDetectors() {
             return Stream.empty();
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
             return Stream.empty();
         }
 

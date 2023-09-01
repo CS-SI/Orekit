@@ -164,7 +164,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
 
         final AbstractAnalyticalGradientConverter converter           = getGradientConverter();
         final FieldSpacecraftState<Gradient> gState                   = converter.getState();
-        final Gradient[] gParameters                                  = converter.getParameters(gState);
+        final Gradient[] gParameters                                  = converter.getParameters(gState, converter);
         final FieldAbstractAnalyticalPropagator<Gradient> gPropagator = converter.getPropagator(gState, gParameters);
 
         // Compute Jacobian

@@ -18,6 +18,8 @@
 package org.orekit.forces.maneuvers.propulsion;
 
 import java.lang.reflect.Array;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
@@ -35,6 +37,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
 /** Thrust propulsion model based on segmented profile.
@@ -131,7 +134,8 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
      * at every {@link PolynomialThrustSegment thrust segments} boundaries.
      * </p>
      */
-    public Stream<EventDetector> getEventsDetectors() {
+    @Override
+    public Stream<EventDetector> getEventDetectors() {
 
         final double shortest = shortestSegmentDuration();
         final DateDetector detector = new DateDetector().
@@ -153,7 +157,8 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
      * at every {@link PolynomialThrustSegment thrust segments} boundaries.
      * </p>
      */
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    @Override
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
         final double shortest = shortestSegmentDuration();
         @SuppressWarnings("unchecked")
         final FieldDateDetector<T> detector = new FieldDateDetector<>(field,
@@ -183,4 +188,8 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
         return shortest;
     }
 
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
+    }
 }

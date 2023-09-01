@@ -28,7 +28,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractGradientConverter;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParametersDriversProvider;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap.Span;
 
 /** Utility class for bistatic measurements.
@@ -74,7 +74,7 @@ class BistaticModifierUtil {
      * @param modelEffectGradient model effect gradient
      */
     public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurement<T> estimated,
-                                                                 final ParametersDriversProvider parametricModel,
+                                                                 final ParameterDriversProvider parametricModel,
                                                                  final AbstractGradientConverter converter,
                                                                  final GroundStation emitter, final GroundStation receiver,
                                                                  final ParametricModelEffect modelEffect,

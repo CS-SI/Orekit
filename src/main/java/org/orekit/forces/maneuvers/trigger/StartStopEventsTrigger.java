@@ -161,13 +161,13 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
+    public Stream<EventDetector> getEventDetectors() {
         return Stream.of(startDetector, stopDetector);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <S extends CalculusFieldElement<S>> Stream<FieldEventDetector<S>> getFieldEventsDetectors(final Field<S> field) {
+    public <S extends CalculusFieldElement<S>> Stream<FieldEventDetector<S>> getFieldEventDetectors(final Field<S> field) {
 
         // get the field version of the start detector
         @SuppressWarnings("unchecked")
@@ -191,7 +191,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
 
     /** Convert a detector and set up new handler.
      * <p>
-     * This method is not inlined in {@link #getFieldEventsDetectors(Field)} because the
+     * This method is not inlined in {@link #getFieldEventDetectors(Field)} because the
      * parameterized types confuses the Java compiler.
      * </p>
      * @param field field to which the state belongs
@@ -210,7 +210,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
 
     /** Convert a detector and set up new handler.
      * <p>
-     * This method is not inlined in {@link #getFieldEventsDetectors(Field)} because the
+     * This method is not inlined in {@link #getFieldEventDetectors(Field)} because the
      * parameterized types confuses the Java compiler.
      * </p>
      * @param field field to which the state belongs

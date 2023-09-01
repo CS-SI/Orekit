@@ -23,7 +23,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
@@ -46,7 +46,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class LenseThirringRelativity extends AbstractForceModel {
+public class LenseThirringRelativity implements ForceModel {
 
     /** Intensity of the Earth's angular momentum per unit mass [m²/s]. */
     private static final double J = 9.8e8;

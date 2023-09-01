@@ -19,12 +19,12 @@ package org.orekit.forces.gravity;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
@@ -36,7 +36,7 @@ import org.orekit.utils.ParameterDriver;
 /** Force model for Newtonian central body attraction.
  * @author Luc Maisonobe
  */
-public class NewtonianAttraction extends AbstractForceModel {
+public class NewtonianAttraction implements ForceModel {
 
     /** Name of the single parameter of this model: the central attraction coefficient. */
     public static final String CENTRAL_ATTRACTION_COEFFICIENT = "central attraction coefficient";

@@ -135,7 +135,7 @@ public class NumericalPropagatorTest {
                                              });
         ForceModel force = new ForceModelAdapter() {
             @Override
-            public Stream<EventDetector> getEventsDetectors() {
+            public Stream<EventDetector> getEventDetectors() {
                 return Stream.of(singleDetector);
             }
         };
@@ -1821,12 +1821,12 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public Stream<EventDetector> getEventsDetectors() {
+        public Stream<EventDetector> getEventDetectors() {
             return Stream.empty();
         }
 
         @Override
-        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
             return Stream.empty();
         }
 
@@ -1834,19 +1834,6 @@ public class NumericalPropagatorTest {
         public List<ParameterDriver> getParametersDrivers() {
             return Collections.emptyList();
         }
-
-        @Override
-        public ParameterDriver getParameterDriver(String name)
-            {
-            final List<ParameterDriver> drivers =  getParametersDrivers();
-            final String[] names = new String[drivers.size()];
-            for (int i = 0; i < names.length; ++i) {
-                names[i] = drivers.get(i).getName();
-            }
-            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                      name, names);
-        }
-
     }
 
 }

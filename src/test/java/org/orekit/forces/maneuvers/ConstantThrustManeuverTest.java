@@ -160,7 +160,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         // in maneuver
         SpacecraftState startState = initialState.shiftedBy(fireDate.durationFrom(initDate));
-        EventDetector d = maneuver.getEventsDetectors().findFirst().get();
+        EventDetector d = maneuver.getEventDetectors().findFirst().get();
         d.getHandler().eventOccurred(startState, d, true);
         SpacecraftState midState = startState.shiftedBy(duration / 2.0);
         checkStateJacobianVs80Implementation(midState, maneuver, law, 1.0e-20, false);
@@ -202,7 +202,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         // in maneuver
         SpacecraftState startState = initialState.shiftedBy(fireDate.durationFrom(initDate));
-        EventDetector d = maneuver.getEventsDetectors().findFirst().get();
+        EventDetector d = maneuver.getEventDetectors().findFirst().get();
         d.getHandler().eventOccurred(startState, d, true);
         SpacecraftState midState = startState.shiftedBy(duration / 2.0);
         checkStateJacobianVs80ImplementationGradient(midState, maneuver, law, 1.0e-20, false);
@@ -227,7 +227,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         Assertions.assertEquals(6, drivers.size());
         Assertions.assertEquals("thrust", drivers.get(0).getName());
         Assertions.assertEquals("flow rate", drivers.get(1).getName());
-        EventDetector detector = maneuver.getEventsDetectors().findFirst().get();
+        EventDetector detector = maneuver.getEventDetectors().findFirst().get();
 
         Orbit o1 = dummyOrbit(date.shiftedBy(- 1.0));
         Assertions.assertTrue(detector.g(new SpacecraftState(o1)) < 0);
@@ -251,7 +251,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         Assertions.assertEquals(6, drivers.size());
         Assertions.assertEquals("1A-thrust", drivers.get(0).getName());
         Assertions.assertEquals("1A-flow rate", drivers.get(1).getName());
-        EventDetector detector = maneuver.getEventsDetectors().findFirst().get();
+        EventDetector detector = maneuver.getEventDetectors().findFirst().get();
 
         Orbit o1 = dummyOrbit(date.shiftedBy(-11.0));
         Assertions.assertTrue(detector.g(new SpacecraftState(o1)) < 0);
@@ -314,7 +314,7 @@ public class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         final SpacecraftState finalorb = propagator.propagate(fireDate.shiftedBy(3800));
 
         final double massTolerance =
-                FastMath.abs(maneuver.getFlowRate()) * maneuver.getEventsDetectors().findFirst().get().getThreshold();
+                FastMath.abs(maneuver.getFlowRate()) * maneuver.getEventDetectors().findFirst().get().getThreshold();
         Assertions.assertEquals(2007.8824544261233, finalorb.getMass(), massTolerance);
         Assertions.assertEquals(2.6872, FastMath.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), FastMath.PI)), 1e-4);
         Assertions.assertEquals(28970, finalorb.getA()/1000, 1);

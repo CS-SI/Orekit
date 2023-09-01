@@ -17,8 +17,6 @@
 
 package org.orekit.forces.maneuvers.propulsion;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
@@ -28,20 +26,20 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.forces.maneuvers.Maneuver;
-import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.EventDetectorsProvider;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
 /** Generic interface for a propulsion model used in a {@link Maneuver}.
  * @author Maxime Journot
  * @since 10.2
  */
-public interface PropulsionModel {
+public interface PropulsionModel extends ParameterDriversProvider, EventDetectorsProvider {
 
     /** Initialization method.
      *  Called in when Maneuver.init(...) is called (from ForceModel.init(...))
@@ -62,6 +60,18 @@ public interface PropulsionModel {
         init(initialState.toSpacecraftState(), target.toAbsoluteDate());
     }
 
+    /** {@inheritDoc}.*/
+    @Override
+    default Stream<EventDetector> getEventDetectors() {
+        return getEventDetectors(getParametersDrivers());
+    }
+
+    /** {@inheritDoc}.*/
+    @Override
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
+        return getFieldEventDetectors(field, getParametersDrivers());
+    }
+
     /** Get the acceleration of the spacecraft during maneuver and in maneuver frame.
      * @param s current spacecraft state
      * @param maneuverAttitude current attitude in maneuver
@@ -78,8 +88,8 @@ public interface PropulsionModel {
      * @return acceleration
      */
     <T extends CalculusFieldElement<T>> FieldVector3D<T> getAcceleration(FieldSpacecraftState<T> s,
-                                                                     FieldAttitude<T> maneuverAttitude,
-                                                                     T[] parameters);
+                                                                         FieldAttitude<T> maneuverAttitude,
+                                                                         T[] parameters);
 
     /** Get the mass derivative (i.e. flow rate in kg/s) during maneuver.
      * @param s current spacecraft state
@@ -95,56 +105,7 @@ public interface PropulsionModel {
      * @return mass derivative in kg/s
      */
     <T extends CalculusFieldElement<T>> T getMassDerivatives(FieldSpacecraftState<T> s,
-                                                         T[] parameters);
-
-    /** Get the propulsion model parameter drivers.
-     * @return propulsion model parameter drivers
-     */
-    default List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
-    }
-
-    /** Get the event detectors associated with the propulsion model.
-     * <p>
-     * Beware that these detectors are <em>not</em> intended for
-     * maneuver triggering. Triggering is managed by {@link ManeuverTriggers}.
-     * These detectors are intended to help propagator compute
-     * accurately regime changes during thrust by generating {@link
-     * org.hipparchus.ode.events.Action#RESET_DERIVATIVES} events when the
-     * thrust changes, typically when a {@link ProfileThrustPropulsionModel}
-     * switches from one {@link PolynomialThrustSegment} to the next.
-     * </p>
-     * <p>
-     * The default implementation returns an empty stream.
-     * </p>
-     * @return the event detectors
-     * @since 12.0
-     */
-    default Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
-    /** Get the event detectors associated with the propulsion model.
-     * <p>
-     * Beware that these detectors are <em>not</em> intended for
-     * maneuver triggering. Triggering is managed by {@link ManeuverTriggers}.
-     * These detectors are intended to help propagator compute
-     * accurately regime changes during thrust by generating {@link
-     * org.hipparchus.ode.events.Action#RESET_DERIVATIVES} events when the
-     * thrust changes, typically when a {@link ProfileThrustPropulsionModel}
-     * switches from one {@link PolynomialThrustSegment} to the next.
-     * </p>
-     * <p>
-     * The default implementation returns an empty stream.
-     * </p>
-     * @param field field to which the state belongs
-     * @param <T> type of the field elements
-     * @return the event detectors
-     */
-    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(Field<T> field) {
-        return Stream.empty();
-    }
-
+                                                             T[] parameters);
     /** Get the maneuver name.
      * @return the maneuver name
      */

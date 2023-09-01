@@ -45,6 +45,7 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
 
@@ -88,7 +89,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator {
+public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator implements ParameterDriversProvider {
 
     /** Parameter name for M2 coefficient. */
     public static final String M2_NAME = "M2";
