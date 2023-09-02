@@ -208,10 +208,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                             try {
                                 candidate.parse(line, pi);
                                 if (pi.done) {
-                                    if (pi.nbEpochs != pi.file.getNumberOfEpochs()) {
-                                        throw new OrekitException(OrekitMessages.SP3_NUMBER_OF_EPOCH_MISMATCH,
-                                                                  pi.nbEpochs, pi.fileName, pi.file.getNumberOfEpochs());
-                                    }
+                                    pi.file.validate(pi.fileName);
                                     return pi.file;
                                 }
                                 candidateParsers = candidate.allowedNext();
@@ -233,12 +230,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
             // Sometimes, the "EOF" key is not available in the file
             // If the expected number of entries has been read
             // we can suppose that the file has been read properly
-            if (pi.nbEpochs == pi.file.getNumberOfEpochs()) {
-                return pi.file;
-            }
-
-            // we never reached the EOF marker or number of epochs doesn't correspond to the expected number
-            throw new OrekitException(OrekitMessages.SP3_UNEXPECTED_END_OF_FILE, lineNumber);
+            pi.file.validate(pi.fileName);
+            return pi.file;
 
         } catch (IOException ioe) {
             throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
@@ -288,9 +281,6 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
         /** The number of satellites accuracies already seen. */
         private int nbAccuracies;
 
-        /** The number of epochs already seen. */
-        private int nbEpochs;
-
         /** End Of File reached indicator. */
         private boolean done;
 
@@ -315,7 +305,6 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
             timeScale          = timeScales.getGPS();
             maxSatellites      = 0;
             nbAccuracies       = 0;
-            nbEpochs           = 0;
             done               = false;
             //posVelBase = 2d;
             //clockBase = 2d;
@@ -649,7 +638,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     // in order to generate again an exception
                     pi.latestEpoch = new AbsoluteDate(year, month, day, hour, minute, second, pi.timeScale);
                 }
-                pi.nbEpochs++;
+
             }
 
             /** Add an epoch candidate to a list.

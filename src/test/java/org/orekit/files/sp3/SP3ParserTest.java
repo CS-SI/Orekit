@@ -30,6 +30,7 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.sp3.SP3.SP3Coordinate;
 import org.orekit.files.sp3.SP3.SP3Ephemeris;
@@ -387,17 +388,18 @@ public class SP3ParserTest {
 
     @Test
     public void testMissingEOF() throws IOException {
+        final String    ex     = "/sp3/missing-eof.sp3";
         try {
-            final String    ex     = "/sp3/missing-eof.sp3";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
             final Frame     frame  = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
             final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
             parser.parse(source);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.SP3_UNEXPECTED_END_OF_FILE,
-                                oe.getSpecifier());
-            Assertions.assertEquals(24, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals(OrekitMessages.SP3_NUMBER_OF_EPOCH_MISMATCH, oe.getSpecifier());
+            Assertions.assertEquals(  1, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals( ex, oe.getParts()[1]);
+            Assertions.assertEquals(192, ((Integer) oe.getParts()[2]).intValue());
         }
 
     }
@@ -821,8 +823,8 @@ public class SP3ParserTest {
         try {
             splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_data_used.sp3");
             Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.SP3_INCOMPATIBLE_FILE_METADATA, oe.getSpecifier());
+        } catch (OrekitIllegalArgumentException oe) {
+            Assertions.assertEquals(OrekitMessages.SP3_INVALID_DATA_USED, oe.getSpecifier());
         }
     }
 

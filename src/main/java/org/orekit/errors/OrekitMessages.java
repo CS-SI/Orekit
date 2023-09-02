@@ -207,7 +207,6 @@ public enum OrekitMessages implements Localizable {
     SP3_UNSUPPORTED_VERSION("unsupported sp3 file version {0}"),
     SP3_INVALID_DATA_USED("invalid data used \"{0}\" in file {1}"),
     SP3_NUMBER_OF_EPOCH_MISMATCH("found {0} epochs in file {1}, expected {2}"),
-    SP3_UNEXPECTED_END_OF_FILE("unexpected end of sp3 file (after line {0})"),
     SP3_INCOMPATIBLE_FILE_METADATA("cannot splice sp3 files with incompatible metadata"),
     SP3_INCOMPATIBLE_SATELLITE_MEDATADA("cannot splice sp3 files with incompatible satellite metadata for satellite {0}"),
     SP3_TOO_LARGE_GAP_FOR_SPLICING("cannot splice sp3 files with large gap for satellite {0} ({1} s)"),

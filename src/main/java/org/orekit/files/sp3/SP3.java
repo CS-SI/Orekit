@@ -199,6 +199,28 @@ public class SP3
         satellites = new LinkedHashMap<>();
     }
 
+    /** Check file is valid.
+     * @param fileName file name to generate the error message
+     * @exception OrekitException if file is not valid
+     */
+    public void validate(final String fileName) throws OrekitException {
+
+        // count the number of epochs
+        final SortedSet<AbsoluteDate> epochs = new TreeSet<>(new ChronologicalComparator());
+        for (final Map.Entry<String, SP3Ephemeris> entry : satellites.entrySet()) {
+            for (final SP3Coordinate coordinate : entry.getValue().getCoordinates()) {
+                epochs.add(coordinate.getDate());
+            }
+        }
+
+        // check epochs
+        if (epochs.size() != getNumberOfEpochs()) {
+            throw new OrekitException(OrekitMessages.SP3_NUMBER_OF_EPOCH_MISMATCH,
+                                      epochs.size(), fileName, getNumberOfEpochs());
+        }
+
+    }
+
     /** Splice several SP3 files together.
      * <p>
      * Splicing SP3 files is intended to be used when continuous computation
