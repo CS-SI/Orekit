@@ -64,6 +64,9 @@ public enum DataUsed {
     /** Change in 2-receiver/2-satellite code phase. */
     CHANGE_IN_TWO_RECEIVER_TWO_SATELLITE_CODE_PHASE("dD"),
 
+    /** Satellite Laser Ranging. */
+    SATELLITE_LASER_RANGING("SLR"),
+
     /** Mixed data. */
     MIXED("MIXED"),
 
