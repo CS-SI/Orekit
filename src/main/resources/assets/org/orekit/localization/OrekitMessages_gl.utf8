@@ -391,6 +391,9 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = a órbita corrente ten unha excentricid
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = versión de formato sp3 {0} non incluída
 
+# invalid data used "{0}" in file {1}
+SP3_INVALID_DATA_USED = <MISSING TRANSLATION>
+
 # found {0} epochs in file {1}, expected {2}
 SP3_NUMBER_OF_EPOCH_MISMATCH = <MISSING TRANSLATION>
 

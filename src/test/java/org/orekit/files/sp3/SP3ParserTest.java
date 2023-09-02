@@ -56,6 +56,7 @@ public class SP3ParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3   file   = new SP3Parser().parse(source);
 
+        Assertions.assertEquals('a', file.getVersion());
         Assertions.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
         Assertions.assertSame(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP,
@@ -79,7 +80,8 @@ public class SP3ParserTest {
         Assertions.assertEquals(-0.0000625406, coord.getClockCorrection(), 1.0e-15);
         Assertions.assertEquals("NGS", file.getAgency());
         Assertions.assertEquals("ITR92", file.getCoordinateSystem());
-        Assertions.assertEquals("d", file.getDataUsed());
+        Assertions.assertEquals(1, file.getDataUsed().size());
+        Assertions.assertEquals(DataUsed.TWO_RECEIVER_TWO_SATELLITE_CARRIER_PHASE, file.getDataUsed().get(0));
         Assertions.assertEquals(0.0, file.getDayFraction(), 1.0e-15);
         Assertions.assertEquals("1994-12-16T23:59:50.000", file.getEpoch().toString(TimeScalesFactory.getUTC()));
         Assertions.assertEquals(49703, file.getJulianDay());
@@ -99,6 +101,7 @@ public class SP3ParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3   file   = new SP3Parser().parse(source);
 
+        Assertions.assertEquals('a', file.getVersion());
         Assertions.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
 
@@ -129,6 +132,7 @@ public class SP3ParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3   file   = new SP3Parser().parse(source);
 
+        Assertions.assertEquals('c', file.getVersion());
         Assertions.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
         Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
 
@@ -157,6 +161,7 @@ public class SP3ParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3   file   = new SP3Parser().parse(source);
 
+        Assertions.assertEquals('c', file.getVersion());
         Assertions.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
         Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
 
@@ -187,6 +192,7 @@ public class SP3ParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3   file   = new SP3Parser().parse(source);
 
+        Assertions.assertEquals('d', file.getVersion());
         Assertions.assertEquals(SP3OrbitType.BCT, file.getOrbitType());
         Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
 
@@ -215,6 +221,7 @@ public class SP3ParserTest {
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final SP3   file   = new SP3Parser().parse(source);
 
+        Assertions.assertEquals('d', file.getVersion());
         Assertions.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
         Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
 

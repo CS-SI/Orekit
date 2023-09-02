@@ -391,6 +391,9 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = l''orbite courante a une excentricité 
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = version de fichier sp3 {0} non prise en compte
 
+# invalid data used "{0}" in file {1}
+SP3_INVALID_DATA_USED = données utilisées "{0}" invalides dans le fichier {1}
+
 # found {0} epochs in file {1}, expected {2}
 SP3_NUMBER_OF_EPOCH_MISMATCH = {0} époques trouvées dans le fichier {1} au lieu de {2} attendues
 

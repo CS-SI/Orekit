@@ -391,6 +391,9 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = l''orbita attuale ha un''eccentricità 
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = versione del file sp3 {0} non supportata
 
+# invalid data used "{0}" in file {1}
+SP3_INVALID_DATA_USED = <MISSING TRANSLATION>
+
 # found {0} epochs in file {1}, expected {2}
 SP3_NUMBER_OF_EPOCH_MISMATCH = {0} epoche trovate nel file {1} invece di {2} attese
 

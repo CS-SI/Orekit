@@ -391,6 +391,9 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = The current orbit has an eccentricity (
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = unsupported sp3 file version {0}
 
+# invalid data used "{0}" in file {1}
+SP3_INVALID_DATA_USED = invalid data used "{0}" in file {1}
+
 # found {0} epochs in file {1}, expected {2}
 SP3_NUMBER_OF_EPOCH_MISMATCH = found {0} epochs in file {1}, expected {2}
 

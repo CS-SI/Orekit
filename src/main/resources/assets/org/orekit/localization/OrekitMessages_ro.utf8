@@ -391,6 +391,9 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Orbita curentă are o eccentricitate {0
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = versiune neacceptată a fișierului sp3 {0}
 
+# invalid data used "{0}" in file {1}
+SP3_INVALID_DATA_USED = <MISSING TRANSLATION>
+
 # found {0} epochs in file {1}, expected {2}
 SP3_NUMBER_OF_EPOCH_MISMATCH = au fost găsite {0} date de referință în fișierul {1}, așteptate {2}
 

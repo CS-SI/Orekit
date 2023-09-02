@@ -118,6 +118,11 @@ public class SP3
 
     }
 
+    /** File version.
+     * @since 12.0
+     */
+    private char version;
+
     /** File type. */
     private SP3FileType type;
 
@@ -149,7 +154,7 @@ public class SP3
     private String coordinateSystem;
 
     /** Data used indicator. */
-    private String dataUsed;
+    private List<DataUsed> dataUsed;
 
     /** Orbit type. */
     private SP3OrbitType orbitType;
@@ -362,6 +367,26 @@ public class SP3
     }
 
     /**
+     * Set the file version.
+     *
+     * @param version file version
+     * @since 12.0
+     */
+    public void setVersion(final char version) {
+        this.version = version;
+    }
+
+    /**
+     * Get the file version.
+     *
+     * @return file version
+     * @since 12.0
+     */
+    public char getVersion() {
+        return version;
+    }
+
+    /**
      * Set the derivatives filter.
      *
      * @param filter that indicates which derivatives of position are available.
@@ -399,17 +424,17 @@ public class SP3
     }
 
     /** Returns the data used indicator from the SP3 file.
-     * @return the data used indicator (unparsed)
+     * @return the data used indicator
      */
-    public String getDataUsed() {
+    public List<DataUsed> getDataUsed() {
         return dataUsed;
     }
 
     /** Set the data used indicator for this SP3 file.
-     * @param data the data used indicator to be set
+     * @param dataUsed the data used indicator to be set
      */
-    public void setDataUsed(final String data) {
-        this.dataUsed = data;
+    public void setDataUsed(final List<DataUsed> dataUsed) {
+        this.dataUsed = dataUsed;
     }
 
     /** Returns the start epoch of the orbit file.

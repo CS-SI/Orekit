@@ -391,6 +391,9 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Den aktuelle banen har en eksentrisitet
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = ustøttet version for sp3 filen {0}
 
+# invalid data used "{0}" in file {1}
+SP3_INVALID_DATA_USED = <MISSING TRANSLATION>
+
 # found {0} epochs in file {1}, expected {2}
 SP3_NUMBER_OF_EPOCH_MISMATCH = fant {0} epoker i filen {1}, ventet {2}
 

@@ -58,9 +58,9 @@ import org.orekit.utils.IERSConventions;
  * <b>Note:</b> this parser is thread-safe, so calling {@link #parse} from
  * different threads is allowed.
  * </p>
- * @see <a href="ftp://igs.org/pub/data/format/sp3_docu.txt">SP3-a file format</a>
- * @see <a href="ftp://igs.org/pub/data/format/sp3c.txt">SP3-c file format</a>
- * @see <a href="ftp://igs.org/pub/data/format/sp3d.pdf">SP3-d file format</a>
+ * @see <a href="https://files.igs.org/pub/data/format/sp3_docu.txt">SP3-a file format</a>
+ * @see <a href="https://files.igs.org/pub/data/format/sp3c.txt">SP3-c file format</a>
+ * @see <a href="https://files.igs.org/pub/data/format/sp3d.pdf">SP3-d file format</a>
  * @author Thomas Neidhart
  * @author Luc Maisonobe
  */
@@ -196,7 +196,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
             }
 
             // initialize internal data structures
-            final ParseInfo pi = new ParseInfo();
+            final ParseInfo pi = new ParseInfo(source.getName());
 
             int lineNumber = 0;
             Iterable<LineParser> candidateParsers = Collections.singleton(LineParser.HEADER_VERSION);
@@ -210,7 +210,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                                 if (pi.done) {
                                     if (pi.nbEpochs != pi.file.getNumberOfEpochs()) {
                                         throw new OrekitException(OrekitMessages.SP3_NUMBER_OF_EPOCH_MISMATCH,
-                                                                  pi.nbEpochs, source.getName(), pi.file.getNumberOfEpochs());
+                                                                  pi.nbEpochs, pi.fileName, pi.file.getNumberOfEpochs());
                                     }
                                     return pi.file;
                                 }
@@ -219,14 +219,14 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                             } catch (StringIndexOutOfBoundsException | NumberFormatException e) {
                                 throw new OrekitException(e,
                                                           OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                          lineNumber, source.getName(), line);
+                                                          lineNumber, pi.fileName, line);
                             }
                         }
                     }
 
                     // no parsers found for this line
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              lineNumber, source.getName(), line);
+                                              lineNumber, pi.fileName, line);
 
                 }
 
@@ -252,6 +252,11 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
      * methods, as it is only used internally for parsing a SP3 file.</p>
      */
     private class ParseInfo {
+
+        /** File name.
+         * @since 12.0
+         */
+        private final String fileName;
 
         /** Set of time scales for parsing dates. */
         private final TimeScales timeScales;
@@ -295,9 +300,12 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
         /** The base for clock/rate. */
         //private double clockBase;
 
-        /** Create a new {@link ParseInfo} object. */
-        protected ParseInfo() {
-            this.timeScales = SP3Parser.this.timeScales;
+        /** Create a new {@link ParseInfo} object.
+         * @param fileName file name
+         */
+        protected ParseInfo(final String fileName) {
+            this.fileName      = fileName;
+            this.timeScales    = SP3Parser.this.timeScales;
             file               = new SP3(mu, interpolationSamples, frameBuilder);
             latestEpoch        = null;
             latestPosition     = null;
@@ -333,6 +341,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     if (version != 'a' && version != 'b' && version != 'c' && version != 'd') {
                         throw new OrekitException(OrekitMessages.SP3_UNSUPPORTED_VERSION, version);
                     }
+                    pi.file.setVersion(version);
 
                     pi.hasVelocityEntries = "V".equals(v.substring(1, 2));
                     pi.file.setFilter(pi.hasVelocityEntries ?
@@ -353,7 +362,12 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     pi.file.setNumberOfEpochs(numEpochs);
 
                     // data used indicator
-                    pi.file.setDataUsed(scanner.next());
+                    final String fullSpec = scanner.next();
+                    final List<DataUsed> dataUsed = new ArrayList<>();
+                    for (final String specifier : fullSpec.split("\\+")) {
+                        dataUsed.add(DataUsed.parse(specifier, pi.fileName));
+                    }
+                    pi.file.setDataUsed(dataUsed);
 
                     pi.file.setCoordinateSystem(scanner.next());
                     pi.file.setOrbitTypeKey(scanner.next());
