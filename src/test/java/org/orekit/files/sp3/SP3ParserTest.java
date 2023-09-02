@@ -942,6 +942,7 @@ public class SP3ParserTest {
 
         Assertions.assertEquals(new AbsoluteDate(2017, 5, 21, 0, 10, 0, TimeScalesFactory.getGPS()),
                                 coords.get(coords.size() - 1).getDate());
+
     }
 
     @Test
@@ -970,6 +971,23 @@ public class SP3ParserTest {
 
         Assertions.assertEquals(new AbsoluteDate(2017, 5, 21, 0, 15, 0, TimeScalesFactory.getGPS()),
                                 coords.get(coords.size() - 1).getDate());
+
+        Assertions.assertEquals("R23", spliced.getEphemeris("R23").getId());
+        try {
+            spliced.getEphemeris(88);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.INVALID_SATELLITE_ID, oe.getSpecifier());
+            Assertions.assertEquals(88, ((Integer) oe.getParts()[0]).intValue());
+        }
+        try {
+            spliced.getEphemeris("Z00");
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.INVALID_SATELLITE_ID, oe.getSpecifier());
+            Assertions.assertEquals("Z00", oe.getParts()[0]);
+        }
+
     }
 
     private SP3 splice(final String name1, final String name2) {

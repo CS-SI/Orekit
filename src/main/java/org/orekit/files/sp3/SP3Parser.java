@@ -446,7 +446,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     if (sub.length() > 0) {
                         final int exponent = Integer.parseInt(sub);
                         // the accuracy is calculated as 2**exp (in mm)
-                        pi.file.setAccuracy(pi.nbAccuracies++, (2 << exponent) * MILLIMETER);
+                        pi.file.getEphemeris(pi.nbAccuracies++).setAccuracy((2 << exponent) * MILLIMETER);
                     }
                     startIdx += 3;
                 }

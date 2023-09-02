@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import java.util.function.Function;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -255,7 +256,12 @@ public class SP3
         }
         for (final SP3 current : sorted) {
             for (final String sat : commonSats) {
-                if (!current.containsSatellite(sat)) {
+                if (current.containsSatellite(sat)) {
+                    // in order to be conservative, we keep the worst accuracy from all SP3 files for this satellite
+                    final SP3Ephemeris ephemeris      = current.getEphemeris(sat);
+                    final SP3Ephemeris firstEphemeris = first.getEphemeris(sat);
+                    firstEphemeris.setAccuracy(FastMath.max(firstEphemeris.getAccuracy(), ephemeris.getAccuracy()));
+                } else {
                     commonSats.remove(sat);
                     break;
                 }
@@ -264,11 +270,7 @@ public class SP3
         for (int i = 0; i < commonSats.size(); ++i) {
             final String sat = commonSats.get(i);
             spliced.addSatellite(sat);
-            for (int j = 0; j < firstSats.size(); ++j) {
-                if (sat.equals(firstSats.get(j))) {
-                    spliced.setAccuracy(i, first.getAccuracy(j));
-                }
-            }
+            spliced.getEphemeris(sat).setAccuracy(first.getEphemeris(sat).getAccuracy());
         }
 
         // splice files
@@ -574,45 +576,44 @@ public class SP3
         return Collections.unmodifiableMap(satellites);
     }
 
+    /** Get an ephemeris.
+     * @param index index of the satellite
+     * @return satellite ephemeris
+     * @since 12.0
+     */
+    public SP3Ephemeris getEphemeris(final int index) {
+        int n = index;
+        for (final Map.Entry<String, SP3Ephemeris> entry : satellites.entrySet()) {
+            if (n == 0) {
+                return entry.getValue();
+            }
+            n--;
+        }
+
+        // satellite not found
+        throw new OrekitException(OrekitMessages.INVALID_SATELLITE_ID, index);
+
+    }
+
+    /** Get an ephemeris.
+     * @param satId satellite identifier
+     * @return satellite ephemeris, or null if not found
+     * @since 12.0
+     */
+    public SP3Ephemeris getEphemeris(final String satId) {
+        final SP3Ephemeris ephemeris = satellites.get(satId);
+        if (ephemeris == null) {
+            throw new OrekitException(OrekitMessages.INVALID_SATELLITE_ID, satId);
+        } else {
+            return ephemeris;
+        }
+    }
+
     /** Get the number of satellites contained in this orbit file.
      * @return the number of satellites
      */
     public int getSatelliteCount() {
         return satellites.size();
-    }
-
-    /**
-     * Set the formal accuracy for a satellite.
-     *
-     * @param index    is the index of the satellite.
-     * @param accuracy of the satellite, in m.
-     */
-    public void setAccuracy(final int index, final double accuracy) {
-        int n = index;
-        for (final SP3Ephemeris ephemeris : satellites.values()) {
-            if (n == 0) {
-                ephemeris.setAccuracy(accuracy);
-                return;
-            }
-            n--;
-        }
-    }
-
-    /**
-     * Get the formal accuracy for a satellite.
-     *
-     * @param index    is the index of the satellite.
-     * @return accuracy of the satellite, in m.
-     */
-    public double getAccuracy(final int index) {
-        int n = index;
-        for (final SP3Ephemeris ephemeris : satellites.values()) {
-            if (n == 0) {
-                return ephemeris.getAccuracy();
-            }
-            n--;
-        }
-        return Double.NaN;
     }
 
     /** Tests whether a satellite with the given id is contained in this orbit

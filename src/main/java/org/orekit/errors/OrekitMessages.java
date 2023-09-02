@@ -369,7 +369,8 @@ public enum OrekitMessages implements Localizable {
     MULTIPLE_INTERPOLATOR_USED("multiple interpolators are used so they may use different numbers of interpolation points"),
     HEADER_NOT_WRITTEN("header for file {0} has not been written yet"),
     HEADER_ALREADY_WRITTEN("header for file {0} has already been written"),
-    CANNOT_START_PROPAGATION_FROM_INFINITY("Cannot start the propagation from an infinitely far date");
+    CANNOT_START_PROPAGATION_FROM_INFINITY("Cannot start the propagation from an infinitely far date"),
+    INVALID_SATELLITE_ID("invalid satellite id {0}");
 
     // CHECKSTYLE: resume JavadocVariable check
 
