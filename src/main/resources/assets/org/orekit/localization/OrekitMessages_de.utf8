@@ -388,8 +388,8 @@ DSST_SPR_SHADOW_INCONSISTENT = inkonsistente Schattenberechnung: Anfang = {0} wo
 # The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
 DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Der aktuelle Orbit hat eine Exzentrizität ({0} > 0.5). DSST benötigt eine nicht implementierte, zeitabhängige numerische Methode um die gemittelten Raten zu berechnen
 
-# unsupported sp3 file version {0}
-SP3_UNSUPPORTED_VERSION = nicht unterstützte SP3 Dateiversion {0}
+# unsupported sp3 file version "{0}"
+SP3_UNSUPPORTED_VERSION = nicht unterstützte SP3 Dateiversion "{0}"
 
 # invalid data used "{0}" in file {1}
 SP3_INVALID_DATA_USED = <MISSING TRANSLATION>

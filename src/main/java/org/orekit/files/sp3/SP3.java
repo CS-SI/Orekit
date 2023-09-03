@@ -196,6 +196,7 @@ public class SP3
         this.mu = mu;
         this.interpolationSamples = interpolationSamples;
         this.frameBuilder = frameBuilder;
+        this.version      = '?';
         // must be linked hash map to preserve order of satellites in the file.
         satellites = new LinkedHashMap<>();
     }

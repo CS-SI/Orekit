@@ -388,8 +388,8 @@ DSST_SPR_SHADOW_INCONSISTENT = ikke-konsistent skyggeberegning: indgang = {0} og
 # The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
 DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Den aktuelle bane har en excentricitet ({0} > 0.5). DSST kræver en ikke implementeret tidsafhængig numerisk metode til at beregne de gennemsnitlige hastigheder
 
-# unsupported sp3 file version {0}
-SP3_UNSUPPORTED_VERSION = ikke-understøttet version {0} af sp3 fil
+# unsupported sp3 file version "{0}"
+SP3_UNSUPPORTED_VERSION = ikke-understøttet version "{0}" af sp3 fil
 
 # invalid data used "{0}" in file {1}
 SP3_INVALID_DATA_USED = <MISSING TRANSLATION>
