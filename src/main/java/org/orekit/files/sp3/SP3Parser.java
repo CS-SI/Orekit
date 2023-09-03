@@ -51,6 +51,7 @@ import org.orekit.time.TimeScales;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.units.Unit;
 
 /** A parser for the SP3 orbit file format. It supports all formats from sp3-a
  * to sp3-d.
@@ -72,15 +73,30 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
 
-    /** One millimeter, in meters. */
-    private static final double MILLIMETER = 1.0e-3;
+    /** Position unit. */
+    private static final Unit POSITION = Unit.parse("km");
+
+    /** Position accuracy unit. */
+    private static final Unit POSITION_ACCURACY = Unit.parse("mm");
+
+    /** Velocity unit. */
+    private static final Unit VELOCITY = Unit.parse("dm/s");
+
+    /** Clock unit. */
+    private static final Unit CLOCK = Unit.parse("µs");
+
+    /** Clock rate unit. */
+    private static final Unit CLOCK_RATE = Unit.parse("µs/s").scale("10⁻⁴µs/s", 1.0e-4);
 
     /** Standard gravitational parameter in m^3 / s^2. */
     private final double mu;
+
     /** Number of data points to use in interpolation. */
     private final int interpolationSamples;
+
     /** Mapping from frame identifier in the file to a {@link Frame}. */
     private final Function<? super String, ? extends Frame> frameBuilder;
+
     /** Set of time scales. */
     private final TimeScales timeScales;
 
@@ -441,7 +457,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     if (sub.length() > 0) {
                         final int exponent = Integer.parseInt(sub);
                         // the accuracy is calculated as 2**exp (in mm)
-                        pi.file.getEphemeris(pi.nbAccuracies++).setAccuracy((2 << exponent) * MILLIMETER);
+                        pi.file.getEphemeris(pi.nbAccuracies++).setAccuracy(POSITION_ACCURACY.toSI(2 << exponent));
                     }
                     startIdx += 3;
                 }
@@ -676,12 +692,12 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     final double z = Double.parseDouble(line.substring(32, 46).trim());
 
                     // the position values are in km and have to be converted to m
-                    pi.latestPosition = new Vector3D(x * 1000, y * 1000, z * 1000);
+                    pi.latestPosition = new Vector3D(POSITION.toSI(x), POSITION.toSI(y), POSITION.toSI(z));
 
                     // clock (microsec)
                     pi.latestClock = line.trim().length() <= 46 ?
-                                                          DEFAULT_CLOCK_VALUE :
-                                                              Double.parseDouble(line.substring(46, 60).trim()) * 1e-6;
+                                     DEFAULT_CLOCK_VALUE :
+                                     CLOCK.toSI(Double.parseDouble(line.substring(46, 60).trim()));
 
                     // the additional items are optional and not read yet
 
@@ -760,12 +776,12 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     final double zv = Double.parseDouble(line.substring(32, 46).trim());
 
                     // the velocity values are in dm/s and have to be converted to m/s
-                    final Vector3D velocity = new Vector3D(xv / 10d, yv / 10d, zv / 10d);
+                    final Vector3D velocity = new Vector3D(VELOCITY.toSI(xv), VELOCITY.toSI(yv), VELOCITY.toSI(zv));
 
                     // clock rate in file is 1e-4 us / s
                     final double clockRateChange = line.trim().length() <= 46 ?
-                                                                        DEFAULT_CLOCK_VALUE :
-                                                                            Double.parseDouble(line.substring(46, 60).trim()) * 1e-4;
+                                                   DEFAULT_CLOCK_VALUE :
+                                                   CLOCK_RATE.toSI(Double.parseDouble(line.substring(46, 60).trim()));
 
                     // the additional items are optional and not read yet
 
