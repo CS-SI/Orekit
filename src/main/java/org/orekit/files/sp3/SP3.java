@@ -900,22 +900,42 @@ public class SP3
         /** Position accuracy.
          * @since 12.0
          */
-        private Vector3D positionAccuracy;
+        private final Vector3D positionAccuracy;
 
         /** Velocity accuracy.
          * @since 12.0
          */
-        private Vector3D velocityAccuracy;
+        private final Vector3D velocityAccuracy;
 
         /** Clock accuracy.
          * @since 12.0
          */
-        private double clockAccuracy;
+        private final double clockAccuracy;
 
         /** Clock rate accuracy.
          * @since 12.0
          */
-        private double clockRateAccuracy;
+        private final double clockRateAccuracy;
+
+        /** Clock event flag.
+         * @since 12.0
+         */
+        private final boolean clockEvent;
+
+        /** Clock prediction flag.
+         * @since 12.0
+         */
+        private final boolean clockPrediction;
+
+        /** Orbit maneuver event flag.
+         * @since 12.0
+         */
+        private final boolean orbitManeuverEvent;
+
+        /** Clock orbit prediction flag.
+         * @since 12.0
+         */
+        private final boolean orbitPrediction;
 
         /**
          * Create a coordinate with position and velocity.
@@ -929,22 +949,32 @@ public class SP3
          * @param clockAccuracy     correction in s ({@code Double.NaN} if not known).
          * @param clockRate in s / s.
          * @param clockRateAccuracy in s / s ({@code Double.NaN} if not known).
+         * @param clockEvent clock event flag
+         * @param clockPrediction clock prediction flag
+         * @param orbitManeuverEvent orbit maneuver event flag
+         * @param orbitPrediction flag
          * @since 12.0
          */
         public SP3Coordinate(final AbsoluteDate date,
-                             final Vector3D position, final Vector3D positionAccuracy,
-                             final Vector3D velocity, final Vector3D velocityAccuracy,
-                             final double clock,      final double clockAccuracy,
-                             final double clockRate,  final double clockRateAccuracy) {
+                             final Vector3D position,          final Vector3D positionAccuracy,
+                             final Vector3D velocity,          final Vector3D velocityAccuracy,
+                             final double clock,               final double clockAccuracy,
+                             final double clockRate,           final double clockRateAccuracy,
+                             final boolean clockEvent,         final boolean clockPrediction,
+                             final boolean orbitManeuverEvent, final boolean orbitPrediction) {
 
             super(date, position, velocity, Vector3D.ZERO);
             this.clock     = clock;
             this.clockRate = clockRate;
 
-            this.positionAccuracy  = positionAccuracy;
-            this.velocityAccuracy  = velocityAccuracy;
-            this.clockAccuracy     = clockAccuracy;
-            this.clockRateAccuracy = clockRateAccuracy;
+            this.positionAccuracy   = positionAccuracy;
+            this.velocityAccuracy   = velocityAccuracy;
+            this.clockAccuracy      = clockAccuracy;
+            this.clockRateAccuracy  = clockRateAccuracy;
+            this.clockEvent         = clockEvent;
+            this.clockPrediction    = clockPrediction;
+            this.orbitManeuverEvent = orbitManeuverEvent;
+            this.orbitPrediction    = orbitPrediction;
 
         }
 
@@ -1003,6 +1033,38 @@ public class SP3
                      velocityAccuracy == null &&
                      Double.isNaN(clockAccuracy) &&
                      Double.isNaN(clockRateAccuracy));
+        }
+
+        /** Get clock event flag.
+         * @return true if clock event flag is set
+         * @since 12.0
+         */
+        public boolean hasClockEvent() {
+            return clockEvent;
+        }
+
+        /** Get clock prediction flag.
+         * @return true if clock prediction flag is set
+         * @since 12.0
+         */
+        public boolean hasClockPrediction() {
+            return clockPrediction;
+        }
+
+        /** Get orbit maneuver event flag.
+         * @return true if orbit maneuver event flag is set
+         * @since 12.0
+         */
+        public boolean hasOrbitManeuverEvent() {
+            return orbitManeuverEvent;
+        }
+
+        /** Get orbit prediction flag.
+         * @return true if orbit prediction flag is set
+         * @since 12.0
+         */
+        public boolean hasOrbitPrediction() {
+            return orbitPrediction;
         }
 
     }

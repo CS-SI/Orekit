@@ -252,6 +252,16 @@ public class SP3ParserTest {
         Assertions.assertEquals(22.737e-7,           coord.getVelocityAccuracy().getY(), 1.0e-10);
         Assertions.assertEquals(22.737e-7,           coord.getVelocityAccuracy().getZ(), 1.0e-10);
         Assertions.assertEquals(111.75277e-16,       coord.getClockRateAccuracy(),       1.0e-21);
+        Assertions.assertFalse(coord.hasClockEvent());
+        Assertions.assertFalse(coord.hasClockPrediction());
+        Assertions.assertFalse(coord.hasOrbitManeuverEvent());
+        Assertions.assertFalse(coord.hasOrbitPrediction());
+
+        Assertions.assertFalse(coords.get(1).hasClockEvent());
+        Assertions.assertTrue(coords.get(1).hasClockPrediction());
+        Assertions.assertFalse(coords.get(1).hasOrbitManeuverEvent());
+        Assertions.assertTrue(coords.get(1).hasOrbitPrediction());
+
     }
 
     @Test

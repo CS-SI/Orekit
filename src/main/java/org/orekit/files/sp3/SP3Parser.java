@@ -269,6 +269,26 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
          */
         private double latestClockAccuracy;
 
+        /** The latest clock event flag as read from the SP3 file.
+         * @since 12.0
+         */
+        private boolean latestClockEvent;
+
+        /** The latest clock prediction flag as read from the SP3 file.
+         * @since 12.0
+         */
+        private boolean latestClockPrediction;
+
+        /** The latest orbit maneuver event flag as read from the SP3 file.
+         * @since 12.0
+         */
+        private boolean latestOrbitManeuverEvent;
+
+        /** The latest orbit prediction flag as read from the SP3 file.
+         * @since 12.0
+         */
+        private boolean latestOrbitPrediction;
+
         /** Indicates if the SP3 file has velocity entries. */
         private boolean hasVelocityEntries;
 
@@ -699,23 +719,20 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                                                                                                        Integer.valueOf(line.substring(70, 73).trim())));
                     }
 
-                    if (line.length() < 80 || line.substring(74, 80).trim().length() == 0) {
-                        // TODO
-                    } else {
-                        // TODO
-                        String clockEventFlag = line.substring(74, 75);
-                        String clockPredFlag  = line.substring(75, 76);
-                        String maneuverFlag   = line.substring(78, 79);
-                        String orbitPredFlag  = line.substring(79, 80);
-                    }
+                    pi.latestClockEvent         = line.length() < 75 ? false : line.substring(74, 75).equals("E");
+                    pi.latestClockPrediction    = line.length() < 76 ? false : line.substring(75, 76).equals("P");
+                    pi.latestOrbitManeuverEvent = line.length() < 79 ? false : line.substring(78, 79).equals("M");
+                    pi.latestOrbitPrediction    = line.length() < 80 ? false : line.substring(79, 80).equals("P");
 
                     if (!pi.hasVelocityEntries) {
                         final SP3Coordinate coord =
                                 new SP3Coordinate(pi.latestEpoch,
-                                                  pi.latestPosition, pi.latestPositionAccuracy,
-                                                  Vector3D.ZERO,     null,
-                                                  pi.latestClock,    Double.NaN,
-                                                  0.0,               Double.NaN);
+                                                  pi.latestPosition,           pi.latestPositionAccuracy,
+                                                  Vector3D.ZERO,               null,
+                                                  pi.latestClock,              Double.NaN,
+                                                  0.0,                         Double.NaN,
+                                                  pi.latestClockEvent,         pi.latestClockPrediction,
+                                                  pi.latestOrbitManeuverEvent, pi.latestOrbitPrediction);
                         pi.file.addSatelliteCoordinate(satelliteId, coord);
                     }
                 }
@@ -788,10 +805,12 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
                     final SP3Coordinate coord =
                             new SP3Coordinate(pi.latestEpoch,
-                                              pi.latestPosition, pi.latestPositionAccuracy,
-                                              velocity,          velocityAccuracy,
-                                              pi.latestClock,    pi.latestClockAccuracy,
-                                              clockRateChange,   clockRateAccuracy);
+                                              pi.latestPosition,           pi.latestPositionAccuracy,
+                                              velocity,                    velocityAccuracy,
+                                              pi.latestClock,              pi.latestClockAccuracy,
+                                              clockRateChange,             clockRateAccuracy,
+                                              pi.latestClockEvent,         pi.latestClockPrediction,
+                                              pi.latestOrbitManeuverEvent, pi.latestOrbitPrediction);
                     pi.file.addSatelliteCoordinate(satelliteId, coord);
                 }
             }
