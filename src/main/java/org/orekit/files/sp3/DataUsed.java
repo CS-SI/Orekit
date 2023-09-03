@@ -107,7 +107,7 @@ public enum DataUsed {
     public static DataUsed parse(final String s, final String fileName) {
         final DataUsed dataUsed = MAP.get(s);
         if (dataUsed == null) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.SP3_INVALID_DATA_USED, s, fileName);
+            throw new OrekitIllegalArgumentException(OrekitMessages.SP3_INVALID_HEADER_ENTRY, "data used", s, fileName);
         }
         return dataUsed;
     }

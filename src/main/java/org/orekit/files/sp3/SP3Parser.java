@@ -51,7 +51,6 @@ import org.orekit.time.TimeScales;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.units.Unit;
 
 /** A parser for the SP3 orbit file format. It supports all formats from sp3-a
  * to sp3-d.
@@ -67,28 +66,10 @@ import org.orekit.utils.units.Unit;
  */
 public class SP3Parser implements EphemerisFileParser<SP3> {
 
-    /** Bad or absent clock values are to be set to 999999.999999. */
-    public static final double DEFAULT_CLOCK_VALUE = 999999.999999;
-
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
 
-    /** Position unit. */
-    private static final Unit POSITION = Unit.parse("km");
-
-    /** Position accuracy unit. */
-    private static final Unit POSITION_ACCURACY = Unit.parse("mm");
-
-    /** Velocity unit. */
-    private static final Unit VELOCITY = Unit.parse("dm/s");
-
-    /** Clock unit. */
-    private static final Unit CLOCK = Unit.parse("µs");
-
-    /** Clock rate unit. */
-    private static final Unit CLOCK_RATE = Unit.parse("µs/s").scale("10⁻⁴µs/s", 1.0e-4);
-
-    /** Standard gravitational parameter in m^3 / s^2. */
+    /** Standard gravitational parameter in m³/s². */
     private final double mu;
 
     /** Number of data points to use in interpolation. */
@@ -275,8 +256,18 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
         /** The latest position as read from the SP3 file. */
         private Vector3D latestPosition;
 
+        /** The latest position accuracy as read from the SP3 file.
+         * @since 12.0
+         */
+        private Vector3D latestPositionAccuracy;
+
         /** The latest clock value as read from the SP3 file. */
         private double latestClock;
+
+        /** The latest clock value as read from the SP3 file.
+         * @since 12.0
+         */
+        private double latestClockAccuracy;
 
         /** Indicates if the SP3 file has velocity entries. */
         private boolean hasVelocityEntries;
@@ -296,12 +287,6 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
         /** End Of File reached indicator. */
         private boolean done;
 
-        /** The base for pos/vel. */
-        //private double posVelBase;
-
-        /** The base for clock/rate. */
-        //private double clockBase;
-
         /** Create a new {@link ParseInfo} object.
          * @param fileName file name
          */
@@ -318,8 +303,6 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
             maxSatellites      = 0;
             nbAccuracies       = 0;
             done               = false;
-            //posVelBase = 2d;
-            //clockBase = 2d;
         }
     }
 
@@ -457,7 +440,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     if (sub.length() > 0) {
                         final int exponent = Integer.parseInt(sub);
                         // the accuracy is calculated as 2**exp (in mm)
-                        pi.file.getEphemeris(pi.nbAccuracies++).setAccuracy(POSITION_ACCURACY.toSI(2 << exponent));
+                        pi.file.getEphemeris(pi.nbAccuracies++).setAccuracy(SP3Constants.POSITION_ACCURACY_UNIT.toSI(2 << exponent));
                     }
                     startIdx += 3;
                 }
@@ -513,17 +496,17 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                // String base = line.substring(3, 13).trim();
-                // if (!base.equals("0.0000000")) {
-                //    // (mm or 10**-4 mm/sec)
-                //    pi.posVelBase = Double.valueOf(base);
-                // }
+                final double posVelBase = Double.valueOf(line.substring(3, 13).trim());
+                if (posVelBase != 0.0) {
+                    // (mm or 10⁻⁴ mm/s)
+                    pi.file.setPosVelBase(posVelBase);
+                }
 
-                // base = line.substring(14, 26).trim();
-                // if (!base.equals("0.000000000")) {
-                //    // (psec or 10**-4 psec/sec)
-                //    pi.clockBase = Double.valueOf(base);
-                // }
+                final double clockBase = Double.valueOf(line.substring(14, 26).trim());
+                if (clockBase != 0.0) {
+                    // (ps or 10⁻⁴ ps/s)
+                    pi.file.setClockBase(clockBase);
+                }
             }
 
             /** {@inheritDoc} */
@@ -687,51 +670,52 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                 if (!pi.file.containsSatellite(satelliteId)) {
                     pi.latestPosition = null;
                 } else {
-                    final double x = Double.parseDouble(line.substring(4, 18).trim());
-                    final double y = Double.parseDouble(line.substring(18, 32).trim());
-                    final double z = Double.parseDouble(line.substring(32, 46).trim());
 
                     // the position values are in km and have to be converted to m
-                    pi.latestPosition = new Vector3D(POSITION.toSI(x), POSITION.toSI(y), POSITION.toSI(z));
+                    pi.latestPosition = new Vector3D(SP3Constants.POSITION_UNIT.toSI(Double.parseDouble(line.substring(4, 18).trim())),
+                                                     SP3Constants.POSITION_UNIT.toSI(Double.parseDouble(line.substring(18, 32).trim())),
+                                                     SP3Constants.POSITION_UNIT.toSI(Double.parseDouble(line.substring(32, 46).trim())));
 
                     // clock (microsec)
                     pi.latestClock = line.trim().length() <= 46 ?
-                                     DEFAULT_CLOCK_VALUE :
-                                     CLOCK.toSI(Double.parseDouble(line.substring(46, 60).trim()));
+                                     SP3Constants.DEFAULT_CLOCK_VALUE :
+                                     SP3Constants.CLOCK_UNIT.toSI(Double.parseDouble(line.substring(46, 60).trim()));
 
-                    // the additional items are optional and not read yet
+                    if (line.length() < 69 || line.substring(61, 69).trim().length() == 0) {
+                        pi.latestPositionAccuracy = null;
+                    } else {
+                        pi.latestPositionAccuracy = new Vector3D(SP3Constants.POSITION_ACCURACY_UNIT.toSI(FastMath.pow(pi.file.getPosVelBase(),
+                                                                                                                       Integer.valueOf(line.substring(61, 63).trim()))),
+                                                                 SP3Constants.POSITION_ACCURACY_UNIT.toSI(FastMath.pow(pi.file.getPosVelBase(),
+                                                                                                                       Integer.valueOf(line.substring(64, 66).trim()))),
+                                                                 SP3Constants.POSITION_ACCURACY_UNIT.toSI(FastMath.pow(pi.file.getPosVelBase(),
+                                                                                                                       Integer.valueOf(line.substring(67, 69).trim()))));
+                    }
 
-                    // if (line.length() >= 73) {
-                    // // x-sdev (b**n mm)
-                    // int xStdDevExp = Integer.valueOf(line.substring(61,
-                    // 63).trim());
-                    // // y-sdev (b**n mm)
-                    // int yStdDevExp = Integer.valueOf(line.substring(64,
-                    // 66).trim());
-                    // // z-sdev (b**n mm)
-                    // int zStdDevExp = Integer.valueOf(line.substring(67,
-                    // 69).trim());
-                    // // c-sdev (b**n psec)
-                    // int cStdDevExp = Integer.valueOf(line.substring(70,
-                    // 73).trim());
-                    //
-                    // pi.posStdDevRecord =
-                    // new PositionStdDevRecord(FastMath.pow(pi.posVelBase, xStdDevExp),
-                    // FastMath.pow(pi.posVelBase,
-                    // yStdDevExp), FastMath.pow(pi.posVelBase, zStdDevExp),
-                    // FastMath.pow(pi.clockBase, cStdDevExp));
-                    //
-                    // String clockEventFlag = line.substring(74, 75);
-                    // String clockPredFlag = line.substring(75, 76);
-                    // String maneuverFlag = line.substring(78, 79);
-                    // String orbitPredFlag = line.substring(79, 80);
-                    // }
+                    if (line.length() < 73 || line.substring(70, 73).trim().length() == 0) {
+                        pi.latestClockAccuracy    = Double.NaN;
+                    } else {
+                        pi.latestClockAccuracy    = SP3Constants.CLOCK_ACCURACY_UNIT.toSI(FastMath.pow(pi.file.getClockBase(),
+                                                                                                       Integer.valueOf(line.substring(70, 73).trim())));
+                    }
+
+                    if (line.length() < 80 || line.substring(74, 80).trim().length() == 0) {
+                        // TODO
+                    } else {
+                        // TODO
+                        String clockEventFlag = line.substring(74, 75);
+                        String clockPredFlag  = line.substring(75, 76);
+                        String maneuverFlag   = line.substring(78, 79);
+                        String orbitPredFlag  = line.substring(79, 80);
+                    }
 
                     if (!pi.hasVelocityEntries) {
                         final SP3Coordinate coord =
                                 new SP3Coordinate(pi.latestEpoch,
-                                                  pi.latestPosition,
-                                                  pi.latestClock);
+                                                  pi.latestPosition, pi.latestPositionAccuracy,
+                                                  Vector3D.ZERO,     null,
+                                                  pi.latestClock,    Double.NaN,
+                                                  0.0,               Double.NaN);
                         pi.file.addSatelliteCoordinate(satelliteId, coord);
                     }
                 }
@@ -771,41 +755,43 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                 final String satelliteId = line.substring(1, 4).trim();
 
                 if (pi.file.containsSatellite(satelliteId)) {
-                    final double xv = Double.parseDouble(line.substring(4, 18).trim());
-                    final double yv = Double.parseDouble(line.substring(18, 32).trim());
-                    final double zv = Double.parseDouble(line.substring(32, 46).trim());
 
                     // the velocity values are in dm/s and have to be converted to m/s
-                    final Vector3D velocity = new Vector3D(VELOCITY.toSI(xv), VELOCITY.toSI(yv), VELOCITY.toSI(zv));
+                    final Vector3D velocity = new Vector3D(SP3Constants.VELOCITY_UNIT.toSI(Double.parseDouble(line.substring(4, 18).trim())),
+                                                           SP3Constants.VELOCITY_UNIT.toSI(Double.parseDouble(line.substring(18, 32).trim())),
+                                                           SP3Constants.VELOCITY_UNIT.toSI(Double.parseDouble(line.substring(32, 46).trim())));
 
                     // clock rate in file is 1e-4 us / s
                     final double clockRateChange = line.trim().length() <= 46 ?
-                                                   DEFAULT_CLOCK_VALUE :
-                                                   CLOCK_RATE.toSI(Double.parseDouble(line.substring(46, 60).trim()));
+                                                   SP3Constants.DEFAULT_CLOCK_VALUE :
+                                                   SP3Constants.CLOCK_RATE_UNIT.toSI(Double.parseDouble(line.substring(46, 60).trim()));
 
-                    // the additional items are optional and not read yet
+                    final Vector3D velocityAccuracy;
+                    if (line.length() < 69 || line.substring(61, 69).trim().length() == 0) {
+                        velocityAccuracy  = null;
+                    } else {
+                        velocityAccuracy = new Vector3D(SP3Constants.VELOCITY_ACCURACY_UNIT.toSI(FastMath.pow(pi.file.getPosVelBase(),
+                                                                                                              Integer.valueOf(line.substring(61, 63).trim()))),
+                                                        SP3Constants.VELOCITY_ACCURACY_UNIT.toSI(FastMath.pow(pi.file.getPosVelBase(),
+                                                                                                              Integer.valueOf(line.substring(64, 66).trim()))),
+                                                        SP3Constants.VELOCITY_ACCURACY_UNIT.toSI(FastMath.pow(pi.file.getPosVelBase(),
+                                                                                                              Integer.valueOf(line.substring(67, 69).trim()))));
+                    }
 
-                    // if (line.length() >= 73) {
-                    // // xvel-sdev (b**n 10**-4 mm/sec)
-                    // int xVstdDevExp = Integer.valueOf(line.substring(61,
-                    // 63).trim());
-                    // // yvel-sdev (b**n 10**-4 mm/sec)
-                    // int yVstdDevExp = Integer.valueOf(line.substring(64,
-                    // 66).trim());
-                    // // zvel-sdev (b**n 10**-4 mm/sec)
-                    // int zVstdDevExp = Integer.valueOf(line.substring(67,
-                    // 69).trim());
-                    // // clkrate-sdev (b**n 10**-4 psec/sec)
-                    // int clkStdDevExp = Integer.valueOf(line.substring(70,
-                    // 73).trim());
-                    // }
+                    final double clockRateAccuracy;
+                    if (line.length() < 73 || line.substring(70, 73).trim().length() == 0) {
+                        clockRateAccuracy = Double.NaN;
+                    } else {
+                        clockRateAccuracy = SP3Constants.CLOCK_RATE_ACCURACY_UNIT.toSI(FastMath.pow(pi.file.getClockBase(),
+                                                                                                    Integer.valueOf(line.substring(70, 73).trim())));
+                    }
 
                     final SP3Coordinate coord =
                             new SP3Coordinate(pi.latestEpoch,
-                                              pi.latestPosition,
-                                              velocity,
-                                              pi.latestClock,
-                                              clockRateChange);
+                                              pi.latestPosition, pi.latestPositionAccuracy,
+                                              velocity,          velocityAccuracy,
+                                              pi.latestClock,    pi.latestClockAccuracy,
+                                              clockRateChange,   clockRateAccuracy);
                     pi.file.addSatelliteCoordinate(satelliteId, coord);
                 }
             }

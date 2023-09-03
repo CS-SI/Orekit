@@ -119,6 +119,16 @@ public class SP3
 
     }
 
+    /** Name for pos/vel accuracy base header entry.
+     * @since 12.0
+     */
+    private static final String POS_VEL_ACCURACY_BASE = "pos/vel accuracy base";
+
+    /** Name for clock accuracy base header entry.
+     * @since 12.0
+     */
+    private static final String CLOCK_ACCURACY_BASE = "clock accuracy base";
+
     /** File version.
      * @since 12.0
      */
@@ -171,6 +181,16 @@ public class SP3
     /** Indicates if data contains velocity or not. */
     private CartesianDerivativesFilter filter;
 
+    /** Base for position/velocity accuracy.
+     * @since 12.0
+     */
+    private double posVelBase;
+
+    /** Base for clock/clock-rate accuracy.
+     * @since 12.0
+     */
+    private double clockBase;
+
     /** Standard gravitational parameter in m^3 / s^2. */
     private final double mu;
 
@@ -210,6 +230,16 @@ public class SP3
      */
     public void validate(final boolean parsing, final String fileName) throws OrekitException {
 
+        // check available data the number of epochs
+        final SortedSet<AbsoluteDate> epochs = new TreeSet<>(new ChronologicalComparator());
+        boolean hasAccuracy = false;
+        for (final Map.Entry<String, SP3Ephemeris> entry : satellites.entrySet()) {
+            for (final SP3Coordinate coordinate : entry.getValue().getCoordinates()) {
+                epochs.add(coordinate.getDate());
+                hasAccuracy |= coordinate.hasAccuracy();
+            }
+        }
+
         // check version
         if ("abcd".indexOf(getVersion()) < 0) {
             throw new OrekitException(OrekitMessages.SP3_UNSUPPORTED_VERSION, version);
@@ -221,12 +251,23 @@ public class SP3
                                       getVersion(), getMaxAllowedSatCount(parsing), getSatelliteCount(),
                                       fileName);
         }
-
-        // count the number of epochs
-        final SortedSet<AbsoluteDate> epochs = new TreeSet<>(new ChronologicalComparator());
-        for (final Map.Entry<String, SP3Ephemeris> entry : satellites.entrySet()) {
-            for (final SP3Coordinate coordinate : entry.getValue().getCoordinates()) {
-                epochs.add(coordinate.getDate());
+        if (getVersion() == 'a') {
+            if (getPosVelBase() != 0.0) {
+                throw new OrekitException(OrekitMessages.SP3_INVALID_HEADER_ENTRY,
+                                          POS_VEL_ACCURACY_BASE, getPosVelBase(), fileName);
+            }
+            if (getClockBase() != 0.0) {
+                throw new OrekitException(OrekitMessages.SP3_INVALID_HEADER_ENTRY,
+                                          CLOCK_ACCURACY_BASE, getClockBase(), fileName);
+            }
+        } else if (hasAccuracy) {
+            if (getPosVelBase() <= 0.0) {
+                throw new OrekitException(OrekitMessages.SP3_INVALID_HEADER_ENTRY,
+                                          POS_VEL_ACCURACY_BASE, getPosVelBase(), fileName);
+            }
+            if (getClockBase() <= 0.0) {
+                throw new OrekitException(OrekitMessages.SP3_INVALID_HEADER_ENTRY,
+                                          CLOCK_ACCURACY_BASE, getClockBase(), fileName);
             }
         }
 
@@ -637,6 +678,38 @@ public class SP3
         this.agency = agencyStr;
     }
 
+    /** Set the base for position/velocity accuracy.
+     * @param posVelBase base for position/velocity accuracy
+     * @since 12.0
+     */
+    public void setPosVelBase(final double posVelBase) {
+        this.posVelBase = posVelBase;
+    }
+
+    /** Get the base for position/velocity accuracy.
+     * @return base for position/velocity accuracy
+     * @since 12.0
+     */
+    public double getPosVelBase() {
+        return posVelBase;
+    }
+
+    /** Set the base for clock/clock-rate accuracy.
+     * @param clockBase base for clock/clock-rate accuracy
+     * @since 12.0
+     */
+    public void setClockBase(final double clockBase) {
+        this.clockBase = clockBase;
+    }
+
+    /** Get the base for clock/clock-rate accuracy.
+     * @return base for clock/clock-rate accuracy
+     * @since 12.0
+     */
+    public double getClockBase() {
+        return clockBase;
+    }
+
     /** Add a new satellite with a given identifier to the list of
      * stored satellites.
      * @param satId the satellite identifier
@@ -816,60 +889,120 @@ public class SP3
     public static class SP3Coordinate extends TimeStampedPVCoordinates {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20161116L;
+        private static final long serialVersionUID = 20230903L;
+
         /** Clock correction in s. */
         private final double clock;
+
         /** Clock rate in s / s. */
         private final double clockRate;
 
-        /**
-         * Create a coordinate with only position.
-         *
-         * @param date     of validity.
-         * @param position of the satellite.
-         * @param clock    correction in s.
+        /** Position accuracy.
+         * @since 12.0
          */
-        public SP3Coordinate(final AbsoluteDate date,
-                             final Vector3D position,
-                             final double clock) {
-            this(date, position, Vector3D.ZERO, clock, 0);
-        }
+        private Vector3D positionAccuracy;
+
+        /** Velocity accuracy.
+         * @since 12.0
+         */
+        private Vector3D velocityAccuracy;
+
+        /** Clock accuracy.
+         * @since 12.0
+         */
+        private double clockAccuracy;
+
+        /** Clock rate accuracy.
+         * @since 12.0
+         */
+        private double clockRateAccuracy;
 
         /**
          * Create a coordinate with position and velocity.
          *
          * @param date      of validity.
          * @param position  of the satellite.
+         * @param positionAccuracy  of the satellite (null if not known).
          * @param velocity  of the satellite.
+         * @param velocityAccuracy  of the satellite (null if not known).
          * @param clock     correction in s.
+         * @param clockAccuracy     correction in s ({@code Double.NaN} if not known).
          * @param clockRate in s / s.
+         * @param clockRateAccuracy in s / s ({@code Double.NaN} if not known).
+         * @since 12.0
          */
         public SP3Coordinate(final AbsoluteDate date,
-                             final Vector3D position,
-                             final Vector3D velocity,
-                             final double clock,
-                             final double clockRate) {
+                             final Vector3D position, final Vector3D positionAccuracy,
+                             final Vector3D velocity, final Vector3D velocityAccuracy,
+                             final double clock,      final double clockAccuracy,
+                             final double clockRate,  final double clockRateAccuracy) {
+
             super(date, position, velocity, Vector3D.ZERO);
-            this.clock = clock;
+            this.clock     = clock;
             this.clockRate = clockRate;
+
+            this.positionAccuracy  = positionAccuracy;
+            this.velocityAccuracy  = velocityAccuracy;
+            this.clockAccuracy     = clockAccuracy;
+            this.clockRateAccuracy = clockRateAccuracy;
+
         }
 
-        /**
-         * Returns the clock correction value.
-         *
+        /** Get the clock correction value.
          * @return the clock correction in s.
          */
         public double getClockCorrection() {
             return clock;
         }
 
-        /**
-         * Returns the clock rate.
-         *
+        /** Get the clock rate.
          * @return the clock rate of change in s/s.
          */
         public double getClockRateChange() {
             return clockRate;
+        }
+
+        /** Get the position accuracy.
+         * @return position accuracy in m (null if not known).
+         * @since 12.0
+         */
+        public Vector3D getPositionAccuracy() {
+            return positionAccuracy;
+        }
+
+        /** Get the velocity accuracy.
+         * @return velocity accuracy in m/s (null if not known).
+         * @since 12.0
+         */
+        public Vector3D getVelocityAccuracy() {
+            return velocityAccuracy;
+        }
+
+        /** Get the clock accuracy.
+         * @return clock accuracy in s ({@code Double.NaN} if not known).
+         * @since 12.0
+         */
+        public double getClockAccuracy() {
+            return clockAccuracy;
+        }
+
+        /** Get the clock rate accuracy.
+         * @return clock rate accuracy in s/s ({@code Double.NaN} if not known).
+         * @since 12.0
+         */
+        public double getClockRateAccuracy() {
+            return clockRateAccuracy;
+        }
+
+        /** Check if entry has any accuracy parameter.
+         * @return true if entry has any accuracy parameter
+         * @since 12.0
+         */
+        public boolean hasAccuracy() {
+            return !(positionAccuracy == null &&
+                     velocityAccuracy == null &&
+                     Double.isNaN(clockAccuracy) &&
+                     Double.isNaN(clockRateAccuracy));
         }
 
     }

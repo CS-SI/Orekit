@@ -242,8 +242,16 @@ public class SP3ParserTest {
         checkPVEntry(new PVCoordinates(new Vector3D(-11044805.8, -10475672.35, 21929418.2),
                                        new Vector3D(2029.8880364, -1846.2044804, 138.1387685)),
                      coord);
-        Assertions.assertEquals(0.0001891633,  coord.getClockCorrection(), 1.0e-15);
-        Assertions.assertEquals(-0.0000000004534317, coord.getClockRateChange(), 1.0e-15);
+        Assertions.assertEquals(0.0001891633,        coord.getClockCorrection(),         1.0e-10);
+        Assertions.assertEquals(55.512e-3,           coord.getPositionAccuracy().getX(), 1.0e-6);
+        Assertions.assertEquals(55.512e-3,           coord.getPositionAccuracy().getY(), 1.0e-6);
+        Assertions.assertEquals(55.512e-3,           coord.getPositionAccuracy().getZ(), 1.0e-6);
+        Assertions.assertEquals(223.1138e-12,        coord.getClockAccuracy(),           1.0e-16);
+        Assertions.assertEquals(-0.0000000004534317, coord.getClockRateChange(),         1.0e-16);
+        Assertions.assertEquals(22.737e-7,           coord.getVelocityAccuracy().getX(), 1.0e-10);
+        Assertions.assertEquals(22.737e-7,           coord.getVelocityAccuracy().getY(), 1.0e-10);
+        Assertions.assertEquals(22.737e-7,           coord.getVelocityAccuracy().getZ(), 1.0e-10);
+        Assertions.assertEquals(111.75277e-16,       coord.getClockRateAccuracy(),       1.0e-21);
     }
 
     @Test
@@ -789,6 +797,38 @@ public class SP3ParserTest {
     }
 
     @Test
+    public void testWrongPosVelBaseA() {
+        doTestWrongHeaderEntry("/sp3/wrong-pos-vel-base-a.sp3", "pos/vel accuracy base");
+    }
+
+    @Test
+    public void testWrongPosVelBaseD() {
+        doTestWrongHeaderEntry("/sp3/wrong-pos-vel-base-d.sp3", "pos/vel accuracy base");
+    }
+
+    @Test
+    public void testWrongClockBaseA() {
+        doTestWrongHeaderEntry("/sp3/wrong-clock-base-a.sp3", "clock accuracy base");
+    }
+
+    @Test
+    public void testWrongClockBaseD() {
+        doTestWrongHeaderEntry("/sp3/wrong-clock-base-d.sp3", "clock accuracy base");
+    }
+
+    private void doTestWrongHeaderEntry(final String ex, final String entry) {
+        try {
+            final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+            new SP3Parser().parse(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.SP3_INVALID_HEADER_ENTRY, oe.getSpecifier());
+            Assertions.assertEquals(entry, oe.getParts()[0]);
+            Assertions.assertEquals(ex, oe.getParts()[2]);
+        }
+    }
+
+    @Test
     public void testSpliceWrongType() {
         try {
             splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_type.sp3");
@@ -840,7 +880,9 @@ public class SP3ParserTest {
             splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_data_used.sp3");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oe) {
-            Assertions.assertEquals(OrekitMessages.SP3_INVALID_DATA_USED, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.SP3_INVALID_HEADER_ENTRY, oe.getSpecifier());
+            Assertions.assertEquals("data used", oe.getParts()[0]);
+            Assertions.assertEquals("v", oe.getParts()[1]);
         }
     }
 

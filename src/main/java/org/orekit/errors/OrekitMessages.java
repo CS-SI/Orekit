@@ -205,7 +205,7 @@ public enum OrekitMessages implements Localizable {
     DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD(
             "The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates"),
     SP3_UNSUPPORTED_VERSION("unsupported sp3 file version \"{0}\""),
-    SP3_INVALID_DATA_USED("invalid data used \"{0}\" in file {1}"),
+    SP3_INVALID_HEADER_ENTRY("invalid header entry {0} \"{1}\" in file {2}"),
     SP3_TOO_MANY_SATELLITES_FOR_VERSION("version \"{0}\" supports only up to {1} satellites, found {2} in file {3}"),
     SP3_NUMBER_OF_EPOCH_MISMATCH("found {0} epochs in file {1}, expected {2}"),
     SP3_INCOMPATIBLE_FILE_METADATA("cannot splice sp3 files with incompatible metadata"),

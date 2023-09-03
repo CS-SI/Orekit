@@ -391,8 +391,8 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Der aktuelle Orbit hat eine Exzentrizit
 # unsupported sp3 file version "{0}"
 SP3_UNSUPPORTED_VERSION = nicht unterstützte SP3 Dateiversion "{0}"
 
-# invalid data used "{0}" in file {1}
-SP3_INVALID_DATA_USED = <MISSING TRANSLATION>
+# invalid header entry {0} "{1}" in file {2}
+SP3_INVALID_HEADER_ENTRY = <MISSING TRANSLATION>
 
 # version "{0}" supports only up to {1} satellites, found {2} in file {3}
 SP3_TOO_MANY_SATELLITES_FOR_VERSION = <MISSING TRANSLATION>
