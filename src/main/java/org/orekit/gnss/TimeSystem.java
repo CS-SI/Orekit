@@ -128,6 +128,14 @@ public enum TimeSystem {
         this.timeScaleProvider = timeScaleProvider;
     }
 
+    /** Get the 3 letters key of the time system.
+     * @return 3 letters key
+     * @since 12.0
+     */
+    public String getKey() {
+        return key;
+    }
+
     /** Parse a string to get the time system.
      * <p>
      * The string must be the time system.

@@ -68,7 +68,7 @@ public enum DataUsed {
     SATELLITE_LASER_RANGING("SLR"),
 
     /** Mixed data. */
-    MIXED("MIXED"),
+    MIXED("mixed"),
 
     /** Orbit data. */
     ORBIT("ORBIT");

@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -53,72 +52,6 @@ public class SP3
     /** String representation of the center of ephemeris coordinate system. **/
     public static final String SP3_FRAME_CENTER_STRING = "EARTH";
 
-    /** File type indicator. */
-    public enum SP3FileType {
-        /** GPS only file. */
-        GPS,
-        /** Mixed file. */
-        MIXED,
-        /** GLONASS only file. */
-        GLONASS,
-        /** LEO only file. */
-        LEO,
-        /** Galileo only file. */
-        GALILEO,
-        /** SBAS only file. */
-        SBAS,
-        /** IRNSS only file. */
-        IRNSS,
-        /** COMPASS only file. */
-        COMPASS,
-        /** QZSS only file. */
-        QZSS,
-        /** undefined file format. */
-        UNDEFINED
-    }
-
-    /** Orbit type indicator. */
-    public enum SP3OrbitType {
-        /** fitted. */
-        FIT,
-        /** extrapolated or predicted. */
-        EXT,
-        /** broadcast. */
-        BCT,
-        /** fitted after applying a Helmert transformation. */
-        HLM,
-        /** other type, defined by SP3 file producing agency.
-         * @since 9.3
-         */
-        OTHER;
-
-        /** Parse a string to get the type.
-         * @param s string to parse
-         * @return the type corresponding to the string
-         */
-        public static SP3OrbitType parseType(final String s) {
-            final String normalizedString = s.trim().toUpperCase(Locale.US);
-            if ("EST".equals(normalizedString)) {
-                return FIT;
-            } else if ("BHN".equals(normalizedString)) {
-                // ESOC navigation team uses BHN for files produced
-                // by their main parameter estimation program Bahn
-                return FIT;
-            } else if ("PRO".equals(normalizedString)) {
-                // ESOC navigation team uses PRO for files produced
-                // by their orbit propagation program Propag
-                return EXT;
-            } else {
-                try {
-                    return valueOf(normalizedString);
-                } catch (IllegalArgumentException iae) {
-                    return OTHER;
-                }
-            }
-        }
-
-    }
-
     /** Name for pos/vel accuracy base header entry.
      * @since 12.0
      */
@@ -128,6 +61,11 @@ public class SP3
      * @since 12.0
      */
     private static final String CLOCK_ACCURACY_BASE = "clock accuracy base";
+
+    /** Name for comments header entry.
+     * @since 12.0
+     */
+    private static final String COMMENTS = "comments";
 
     /** File version.
      * @since 12.0
@@ -150,7 +88,7 @@ public class SP3
     private double secondsOfWeek;
 
     /** Julian day. */
-    private int julianDay;
+    private int modifiedJulianDay;
 
     /** Day fraction. */
     private double dayFraction;
@@ -200,6 +138,11 @@ public class SP3
     /** Maps {@link #coordinateSystem} to a {@link Frame}. */
     private final Function<? super String, ? extends Frame> frameBuilder;
 
+    /** Comments.
+     * @since 12.0
+     */
+    private final List<String> comments;
+
     /** A map containing satellite information. */
     private Map<String, SP3Ephemeris> satellites;
 
@@ -213,10 +156,11 @@ public class SP3
     public SP3(final double mu,
                final int interpolationSamples,
                final Function<? super String, ? extends Frame> frameBuilder) {
-        this.mu = mu;
+        this.mu                   = mu;
         this.interpolationSamples = interpolationSamples;
-        this.frameBuilder = frameBuilder;
-        this.version      = '?';
+        this.frameBuilder         = frameBuilder;
+        this.version              = '?';
+        this.comments             = new ArrayList<>();
         // must be linked hash map to preserve order of satellites in the file.
         satellites = new LinkedHashMap<>();
     }
@@ -275,6 +219,27 @@ public class SP3
                                           CLOCK_ACCURACY_BASE, getClockBase(), fileName);
             }
         }
+        if (getVersion() < 'd') {
+            // in SP3 versions a, b, and c, there are exactly 4 comments with max length 57
+            // (60 minus first three characters)
+            if (comments.size() != 4 ||
+                comments.get(0).length() > 57 ||
+                comments.get(1).length() > 57 ||
+                comments.get(2).length() > 57 ||
+                comments.get(3).length() > 57) {
+                throw new OrekitException(OrekitMessages.SP3_INVALID_HEADER_ENTRY,
+                                          COMMENTS, "/* …", fileName);
+            }
+        } else {
+            // in SP3 version d, there are exactly 4 comments with max length 57
+            // (60 minus first three characters)
+            for (final String c : comments) {
+                if (c.length() > 77) {
+                    throw new OrekitException(OrekitMessages.SP3_INVALID_HEADER_ENTRY,
+                                              COMMENTS, c, fileName);
+                }
+            }
+        }
 
         // check epochs
         if (epochs.size() != getNumberOfEpochs()) {
@@ -292,7 +257,7 @@ public class SP3
      * @since 12.0
      */
     private int getMaxAllowedSatCount(final boolean parsing) {
-        return "abc".indexOf(getVersion()) >= 0 ? (parsing ? 99 : 85) : 999;
+        return getVersion() < 'd' ? (parsing ? 99 : 85) : 999;
     }
 
     /** Splice several SP3 files together.
@@ -341,7 +306,7 @@ public class SP3
         spliced.setEpoch(first.getEpoch());
         spliced.setGpsWeek(first.getGpsWeek());
         spliced.setSecondsOfWeek(first.getSecondsOfWeek());
-        spliced.setJulianDay(first.getJulianDay());
+        spliced.setModifiedJulianDay(first.getModifiedJulianDay());
         spliced.setDayFraction(first.getDayFraction());
         spliced.setEpochInterval(first.getEpochInterval());
         spliced.setCoordinateSystem(first.getCoordinateSystem());
@@ -493,6 +458,16 @@ public class SP3
         this.filter = filter;
     }
 
+    /**
+     * Get the derivatives filter.
+     *
+     * @return filter with available derivatives
+     * @since 12.0
+     */
+    public CartesianDerivativesFilter getFilter() {
+        return filter;
+    }
+
     /** Returns the {@link SP3FileType} associated with this SP3 file.
      * @return the file type for this SP3 file
      */
@@ -577,18 +552,18 @@ public class SP3
         this.secondsOfWeek = seconds;
     }
 
-    /** Returns the julian day for this SP3 file.
-     * @return the julian day
+    /** Returns the modified julian day for this SP3 file.
+     * @return the modified julian day
      */
-    public int getJulianDay() {
-        return julianDay;
+    public int getModifiedJulianDay() {
+        return modifiedJulianDay;
     }
 
-    /** Set the julian day for this SP3 file.
-     * @param day the julian day to be set
+    /** Set the modified julian day for this SP3 file.
+     * @param day the modified julian day to be set
      */
-    public void setJulianDay(final int day) {
-        this.julianDay = day;
+    public void setModifiedJulianDay(final int day) {
+        this.modifiedJulianDay = day;
     }
 
     /** Returns the day fraction for this SP3 file.
@@ -715,6 +690,22 @@ public class SP3
      */
     public double getClockBase() {
         return clockBase;
+    }
+
+    /** Get the comments.
+     * @return an unmodifialble view of comments
+     * @since 12.0
+     */
+    public List<String> getComments() {
+        return Collections.unmodifiableList(comments);
+    }
+
+    /** Add a comment.
+     * @param comment comment to add
+     * @since 12.0
+     */
+    public void addComment(final String comment) {
+        comments.add(comment);
     }
 
     /** Add a new satellite with a given identifier to the list of

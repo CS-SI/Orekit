@@ -39,7 +39,6 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.files.sp3.SP3.SP3Coordinate;
-import org.orekit.files.sp3.SP3.SP3FileType;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
@@ -152,34 +151,6 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
     private static Frame guessFrame(final String name) {
         return DataContext.getDefault().getFrames()
                 .getITRF(IERSConventions.IERS_2010, false);
-    }
-
-    /** Returns the {@link SP3FileType} that corresponds to a given string in a SP3 file.
-     * @param fileType file type as string
-     * @return file type as enum
-     */
-    private static SP3FileType getFileType(final String fileType) {
-        SP3FileType type = SP3FileType.UNDEFINED;
-        if ("G".equalsIgnoreCase(fileType)) {
-            type = SP3FileType.GPS;
-        } else if ("M".equalsIgnoreCase(fileType)) {
-            type = SP3FileType.MIXED;
-        } else if ("R".equalsIgnoreCase(fileType)) {
-            type = SP3FileType.GLONASS;
-        } else if ("L".equalsIgnoreCase(fileType)) {
-            type = SP3FileType.LEO;
-        } else if ("S".equalsIgnoreCase(fileType)) {
-            type = SP3FileType.SBAS;
-        } else if ("I".equalsIgnoreCase(fileType)) {
-            type = SP3FileType.IRNSS;
-        } else if ("E".equalsIgnoreCase(fileType)) {
-            type = SP3FileType.GALILEO;
-        } else if ("C".equalsIgnoreCase(fileType)) {
-            type = SP3FileType.COMPASS;
-        } else if ("J".equalsIgnoreCase(fileType)) {
-            type = SP3FileType.QZSS;
-        }
-        return type;
     }
 
     @Override
@@ -400,8 +371,8 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     pi.file.setSecondsOfWeek(scanner.nextDouble());
                     // epoch interval
                     pi.file.setEpochInterval(scanner.nextDouble());
-                    // julian day
-                    pi.file.setJulianDay(scanner.nextInt());
+                    // modified julian day
+                    pi.file.setModifiedJulianDay(scanner.nextInt());
                     // day fraction
                     pi.file.setDayFraction(scanner.nextDouble());
                 }
@@ -483,7 +454,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
                 if (pi.file.getType() == null) {
                     // this the first custom fields line, the only one really used
-                    pi.file.setType(getFileType(line.substring(3, 5).trim()));
+                    pi.file.setType(SP3FileType.parse(line.substring(3, 5).trim()));
 
                     // now identify the time system in use
                     final String tsStr = line.substring(9, 12).trim();
@@ -560,7 +531,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                // ignore comments
+                pi.file.addComment(line.substring(line.indexOf('*') + 1).trim());
             }
 
             /** {@inheritDoc} */

@@ -34,7 +34,6 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.sp3.SP3.SP3Coordinate;
 import org.orekit.files.sp3.SP3.SP3Ephemeris;
-import org.orekit.files.sp3.SP3.SP3OrbitType;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -44,6 +43,7 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
@@ -85,13 +85,13 @@ public class SP3ParserTest {
         Assertions.assertEquals(DataUsed.TWO_RECEIVER_TWO_SATELLITE_CARRIER_PHASE, file.getDataUsed().get(0));
         Assertions.assertEquals(0.0, file.getDayFraction(), 1.0e-15);
         Assertions.assertEquals("1994-12-16T23:59:50.000", file.getEpoch().toString(TimeScalesFactory.getUTC()));
-        Assertions.assertEquals(49703, file.getJulianDay());
+        Assertions.assertEquals(49703, file.getModifiedJulianDay());
         Assertions.assertEquals(3, file.getNumberOfEpochs());
         Assertions.assertEquals(900.0, file.getEpochInterval(), 1.0e-15);
         Assertions.assertEquals(779, file.getGpsWeek());
         Assertions.assertEquals(518400.0, file.getSecondsOfWeek(), 1.0e-10);
         Assertions.assertEquals(25, file.getSatellites().size());
-        Assertions.assertEquals(SP3.SP3FileType.UNDEFINED, file.getType());
+        Assertions.assertEquals(SP3FileType.UNDEFINED, file.getType());
         Assertions.assertNull(file.getSatellites().get(null));
     }
 
@@ -105,6 +105,7 @@ public class SP3ParserTest {
         Assertions.assertEquals('a', file.getVersion());
         Assertions.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+        Assertions.assertEquals(CartesianDerivativesFilter.USE_PV, file.getFilter());
 
         Assertions.assertEquals(25, file.getSatelliteCount());
 
@@ -136,6 +137,7 @@ public class SP3ParserTest {
         Assertions.assertEquals('c', file.getVersion());
         Assertions.assertEquals(SP3OrbitType.HLM, file.getOrbitType());
         Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+        Assertions.assertEquals(CartesianDerivativesFilter.USE_P, file.getFilter());
 
         Assertions.assertEquals(26, file.getSatelliteCount());
 
@@ -196,6 +198,13 @@ public class SP3ParserTest {
         Assertions.assertEquals('d', file.getVersion());
         Assertions.assertEquals(SP3OrbitType.BCT, file.getOrbitType());
         Assertions.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+
+        Assertions.assertEquals(5, file.getComments().size());
+        Assertions.assertEquals("Note: This is a simulated file, meant to illustrate what an SP3-d header",     file.getComments().get(0));
+        Assertions.assertEquals("might look like with more than 85 satellites. Source for GPS and SBAS satel-", file.getComments().get(1));
+        Assertions.assertEquals("lite positions: BRDM0930.13N. G=GPS,R=GLONASS,E=Galileo,C=BeiDou,J=QZSS,",     file.getComments().get(2));
+        Assertions.assertEquals("I=IRNSS,S=SBAS. For definitions of SBAS satellites, refer to the website:",    file.getComments().get(3));
+        Assertions.assertEquals("http://igs.org/mgex/status-SBAS",                                              file.getComments().get(4));
 
         Assertions.assertEquals(140, file.getSatelliteCount());
 
@@ -524,7 +533,7 @@ public class SP3ParserTest {
         final SP3Coordinate coord = coords.get(0);
 
         // Verify
-        Assertions.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assertions.assertEquals(SP3FileType.LEO, file.getType());
 
         // PL52   2228.470946   7268.265924   9581.471543
         // VL52 -44856.945000  24321.151000  -7116.222800
@@ -551,7 +560,7 @@ public class SP3ParserTest {
 
         // Verify
         Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assertions.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assertions.assertEquals(SP3FileType.LEO, file.getType());
 
         // 2016  2 28 0 0 0.00000000
         Assertions.assertEquals(new AbsoluteDate(2016, 2, 28, 0, 0, 0,
@@ -578,7 +587,7 @@ public class SP3ParserTest {
 
         // Verify
         Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assertions.assertEquals(SP3.SP3FileType.IRNSS, file.getType());
+        Assertions.assertEquals(SP3FileType.IRNSS, file.getType());
 
     }
 
@@ -592,7 +601,7 @@ public class SP3ParserTest {
 
         // Verify
         Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assertions.assertEquals(SP3.SP3FileType.SBAS, file.getType());
+        Assertions.assertEquals(SP3FileType.SBAS, file.getType());
 
     }
 
@@ -606,7 +615,7 @@ public class SP3ParserTest {
 
         // Verify
         Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assertions.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assertions.assertEquals(SP3FileType.LEO, file.getType());
 
     }
 
@@ -620,7 +629,7 @@ public class SP3ParserTest {
 
         // Verify
         Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assertions.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assertions.assertEquals(SP3FileType.LEO, file.getType());
         Assertions.assertEquals(1, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("L51").getCoordinates();
@@ -650,7 +659,7 @@ public class SP3ParserTest {
 
         // Verify
         Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assertions.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assertions.assertEquals(SP3FileType.LEO, file.getType());
         Assertions.assertEquals(1, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("L51").getCoordinates();
@@ -704,7 +713,7 @@ public class SP3ParserTest {
 
         // Verify
         Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assertions.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assertions.assertEquals(SP3FileType.LEO, file.getType());
         Assertions.assertEquals(1, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("L51").getCoordinates();
@@ -746,7 +755,7 @@ public class SP3ParserTest {
 
         // Verify
         Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assertions.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assertions.assertEquals(SP3FileType.LEO, file.getType());
         Assertions.assertEquals(1, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("L51").getCoordinates();
@@ -770,7 +779,7 @@ public class SP3ParserTest {
 
         // Verify
         Assertions.assertEquals(TimeSystem.UTC, file.getTimeSystem());
-        Assertions.assertEquals(SP3.SP3FileType.LEO, file.getType());
+        Assertions.assertEquals(SP3FileType.LEO, file.getType());
         Assertions.assertEquals(1, file.getSatelliteCount());
 
         final List<SP3Coordinate> coords = file.getSatellites().get("L51").getCoordinates();
@@ -824,6 +833,21 @@ public class SP3ParserTest {
     @Test
     public void testWrongClockBaseD() {
         doTestWrongHeaderEntry("/sp3/wrong-clock-base-d.sp3", "clock accuracy base");
+    }
+
+    @Test
+    public void testWrongTooManyCommentsA() {
+        doTestWrongHeaderEntry("/sp3/too-many-comments-a.sp3", "comments");
+    }
+
+    @Test
+    public void testWrongTooLongCommentA() {
+        doTestWrongHeaderEntry("/sp3/too-long-comment-a.sp3", "comments");
+    }
+
+    @Test
+    public void testWrongTooLongCommentD() {
+        doTestWrongHeaderEntry("/sp3/too-long-comment-d.sp3", "comments");
     }
 
     private void doTestWrongHeaderEntry(final String ex, final String entry) {
