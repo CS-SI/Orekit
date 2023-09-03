@@ -773,6 +773,22 @@ public class SP3ParserTest {
     }
 
     @Test
+    public void testExceededSatCount() {
+        final String    ex     = "/sp3/exceeded-sat-count.sp3";
+        try {
+            final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+            new SP3Parser().parse(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.SP3_TOO_MANY_SATELLITES_FOR_VERSION, oe.getSpecifier());
+            Assertions.assertEquals('c', ((Character) oe.getParts()[0]).charValue());
+            Assertions.assertEquals( 99, ((Integer) oe.getParts()[1]).intValue());
+            Assertions.assertEquals(140, ((Integer) oe.getParts()[2]).intValue());
+            Assertions.assertEquals(ex, oe.getParts()[3]);
+        }
+    }
+
+    @Test
     public void testSpliceWrongType() {
         try {
             splice("/sp3/gbm19500_truncated.sp3", "/sp3/gbm19500_wrong_type.sp3");

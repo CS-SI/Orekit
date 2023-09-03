@@ -394,6 +394,9 @@ SP3_UNSUPPORTED_VERSION = version de fichier sp3 {0} non prise en compte
 # invalid data used "{0}" in file {1}
 SP3_INVALID_DATA_USED = données utilisées "{0}" invalides dans le fichier {1}
 
+# version "{0}" supports only up to {1} satellites, found {2} in file {3}
+SP3_TOO_MANY_SATELLITES_FOR_VERSION = la version "{0}" du format ne prend en compte que {1} satellites au plus, {2} trouvés dans le fichier {3}
+
 # found {0} epochs in file {1}, expected {2}
 SP3_NUMBER_OF_EPOCH_MISMATCH = {0} époques trouvées dans le fichier {1} au lieu de {2} attendues
 

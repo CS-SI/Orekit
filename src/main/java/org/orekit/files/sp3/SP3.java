@@ -49,6 +49,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class SP3
     implements EphemerisFile<SP3.SP3Coordinate, SP3.SP3Ephemeris> {
+
     /** String representation of the center of ephemeris coordinate system. **/
     public static final String SP3_FRAME_CENTER_STRING = "EARTH";
 
@@ -200,10 +201,25 @@ public class SP3
     }
 
     /** Check file is valid.
+     * @param parsing if true, we are parsing an existing file, and are more lenient
+     * in order to accept some common errors (like between 86 and 99 satellites
+     * in SP3a, SP3b or SP3c files)
      * @param fileName file name to generate the error message
      * @exception OrekitException if file is not valid
      */
-    public void validate(final String fileName) throws OrekitException {
+    public void validate(final boolean parsing, final String fileName) throws OrekitException {
+
+        // check version
+        if ("abcd".indexOf(getVersion()) < 0) {
+            throw new OrekitException(OrekitMessages.SP3_UNSUPPORTED_VERSION, version);
+        }
+
+        // check versions limitations
+        if (getSatelliteCount() > getMaxAllowedSatCount(parsing)) {
+            throw new OrekitException(OrekitMessages.SP3_TOO_MANY_SATELLITES_FOR_VERSION,
+                                      getVersion(), getMaxAllowedSatCount(parsing), getSatelliteCount(),
+                                      fileName);
+        }
 
         // count the number of epochs
         final SortedSet<AbsoluteDate> epochs = new TreeSet<>(new ChronologicalComparator());
@@ -219,6 +235,17 @@ public class SP3
                                       epochs.size(), fileName, getNumberOfEpochs());
         }
 
+    }
+
+    /** Get maximum number of satellites allowed for format version.
+     * @param parsing if true, we are parsing an existing file, and are more lenient
+     * in order to accept some common errors (like between 86 and 99 satellites
+     * in SP3a, SP3b or SP3c files)
+     * @return maximum number of satellites allowed for format version
+     * @since 12.0
+     */
+    private int getMaxAllowedSatCount(final boolean parsing) {
+        return "abc".indexOf(getVersion()) >= 0 ? (parsing ? 99 : 85) : 999;
     }
 
     /** Splice several SP3 files together.

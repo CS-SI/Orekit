@@ -208,8 +208,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                             try {
                                 candidate.parse(line, pi);
                                 if (pi.done) {
-                                    pi.file.validate(pi.fileName);
-                                    return pi.file;
+                                    break nextLine;
                                 }
                                 candidateParsers = candidate.allowedNext();
                                 continue nextLine;
@@ -227,10 +226,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
                 }
 
-            // Sometimes, the "EOF" key is not available in the file
-            // If the expected number of entries has been read
-            // we can suppose that the file has been read properly
-            pi.file.validate(pi.fileName);
+            pi.file.validate(true, pi.fileName);
             return pi.file;
 
         } catch (IOException ioe) {
@@ -326,11 +322,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     scanner.skip("#");
                     final String v = scanner.next();
 
-                    final char version = v.substring(0, 1).toLowerCase().charAt(0);
-                    if (version != 'a' && version != 'b' && version != 'c' && version != 'd') {
-                        throw new OrekitException(OrekitMessages.SP3_UNSUPPORTED_VERSION, version);
-                    }
-                    pi.file.setVersion(version);
+                    pi.file.setVersion(v.substring(0, 1).toLowerCase().charAt(0));
 
                     pi.hasVelocityEntries = "V".equals(v.substring(1, 2));
                     pi.file.setFilter(pi.hasVelocityEntries ?

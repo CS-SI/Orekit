@@ -394,6 +394,9 @@ SP3_UNSUPPORTED_VERSION = nicht unterstützte SP3 Dateiversion {0}
 # invalid data used "{0}" in file {1}
 SP3_INVALID_DATA_USED = <MISSING TRANSLATION>
 
+# version "{0}" supports only up to {1} satellites, found {2} in file {3}
+SP3_TOO_MANY_SATELLITES_FOR_VERSION = <MISSING TRANSLATION>
+
 # found {0} epochs in file {1}, expected {2}
 SP3_NUMBER_OF_EPOCH_MISMATCH = Es wurden {0} von {2} erwarteten Epochen in der Datei {1} gefunden
 

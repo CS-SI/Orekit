@@ -394,6 +394,9 @@ SP3_UNSUPPORTED_VERSION = unsupported sp3 file version {0}
 # invalid data used "{0}" in file {1}
 SP3_INVALID_DATA_USED = invalid data used "{0}" in file {1}
 
+# version "{0}" supports only up to {1} satellites, found {2} in file {3}
+SP3_TOO_MANY_SATELLITES_FOR_VERSION = version "{0}" supports only up to {1} satellites, found {2} in file {3}
+
 # found {0} epochs in file {1}, expected {2}
 SP3_NUMBER_OF_EPOCH_MISMATCH = found {0} epochs in file {1}, expected {2}
 

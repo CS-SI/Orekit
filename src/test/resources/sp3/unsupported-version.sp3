@@ -10,7 +10,7 @@
 ++         0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
 ++         0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
 ++         0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-@@ G  cc GPS ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc
+%c G  cc GPS ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc
 %c cc cc ccc ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc
 %f  1.2500000  1.025000000  0.00000000000  0.000000000000000
 %f  0.0000000  0.000000000  0.00000000000  0.000000000000000

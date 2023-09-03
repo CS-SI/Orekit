@@ -394,6 +394,9 @@ SP3_UNSUPPORTED_VERSION = versiune neacceptată a fișierului sp3 {0}
 # invalid data used "{0}" in file {1}
 SP3_INVALID_DATA_USED = <MISSING TRANSLATION>
 
+# version "{0}" supports only up to {1} satellites, found {2} in file {3}
+SP3_TOO_MANY_SATELLITES_FOR_VERSION = <MISSING TRANSLATION>
+
 # found {0} epochs in file {1}, expected {2}
 SP3_NUMBER_OF_EPOCH_MISMATCH = au fost găsite {0} date de referință în fișierul {1}, așteptate {2}
 
