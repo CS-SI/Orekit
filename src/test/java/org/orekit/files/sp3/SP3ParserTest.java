@@ -1020,6 +1020,9 @@ public class SP3ParserTest {
         Assertions.assertEquals(new AbsoluteDate(2017, 5, 21, 0, 10, 0, TimeScalesFactory.getGPS()),
                                 coords.get(coords.size() - 1).getDate());
 
+        Assertions.assertEquals(1.25,  spliced.getPosVelBase(), 1.0e-15);
+        Assertions.assertEquals(1.025, spliced.getClockBase(),  1.0e-15);
+
     }
 
     @Test

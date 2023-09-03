@@ -230,13 +230,16 @@ public class SP3
      */
     public void validate(final boolean parsing, final String fileName) throws OrekitException {
 
-        // check available data the number of epochs
+        // check available data
         final SortedSet<AbsoluteDate> epochs = new TreeSet<>(new ChronologicalComparator());
         boolean hasAccuracy = false;
         for (final Map.Entry<String, SP3Ephemeris> entry : satellites.entrySet()) {
             for (final SP3Coordinate coordinate : entry.getValue().getCoordinates()) {
                 epochs.add(coordinate.getDate());
-                hasAccuracy |= coordinate.hasAccuracy();
+                hasAccuracy |= !(coordinate.getPositionAccuracy() == null &&
+                                 coordinate.getVelocityAccuracy() == null &&
+                                 Double.isNaN(coordinate.getClockAccuracy()) &&
+                                 Double.isNaN(coordinate.getClockRateAccuracy()));
             }
         }
 
@@ -252,6 +255,7 @@ public class SP3
                                       fileName);
         }
         if (getVersion() == 'a') {
+            // in SP3 version a, the base accuracy must be set to 0
             if (getPosVelBase() != 0.0) {
                 throw new OrekitException(OrekitMessages.SP3_INVALID_HEADER_ENTRY,
                                           POS_VEL_ACCURACY_BASE, getPosVelBase(), fileName);
@@ -261,6 +265,7 @@ public class SP3
                                           CLOCK_ACCURACY_BASE, getClockBase(), fileName);
             }
         } else if (hasAccuracy) {
+            // in SP3 versions after version a, the base accuracy must be set if entries specify accuracy
             if (getPosVelBase() <= 0.0) {
                 throw new OrekitException(OrekitMessages.SP3_INVALID_HEADER_ENTRY,
                                           POS_VEL_ACCURACY_BASE, getPosVelBase(), fileName);
@@ -342,6 +347,8 @@ public class SP3
         spliced.setCoordinateSystem(first.getCoordinateSystem());
         spliced.setOrbitTypeKey(first.getOrbitTypeKey());
         spliced.setAgency(first.getAgency());
+        spliced.setPosVelBase(first.getPosVelBase());
+        spliced.setClockBase(first.getClockBase());
 
         // identify the satellites that are present in all files
         final List<String> firstSats  = new ArrayList<>();
@@ -1024,18 +1031,7 @@ public class SP3
             return clockRateAccuracy;
         }
 
-        /** Check if entry has any accuracy parameter.
-         * @return true if entry has any accuracy parameter
-         * @since 12.0
-         */
-        public boolean hasAccuracy() {
-            return !(positionAccuracy == null &&
-                     velocityAccuracy == null &&
-                     Double.isNaN(clockAccuracy) &&
-                     Double.isNaN(clockRateAccuracy));
-        }
-
-        /** Get clock event flag.
+       /** Get clock event flag.
          * @return true if clock event flag is set
          * @since 12.0
          */
