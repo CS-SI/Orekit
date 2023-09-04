@@ -132,7 +132,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         final Maneuver maneuver = new Maneuver(null,
                                                configureTrigger(fireDate, fireDate.shiftedBy(duration)),
                                                new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
-        Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrust(), 1.0e-10);
+        Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrustMagnitude(), 1.0e-10);
         Assertions.assertEquals(isp, ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getIsp(),    1.0e-10);
 
         final SpacecraftState finalorb = buildPropagator(attitudeProvider, initialState, maneuver).
@@ -171,7 +171,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         final Maneuver maneuver = new Maneuver(null,
                                                configureTrigger(fireDate, fireDate.shiftedBy(duration)),
                                                new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
-        Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrust(), 1.0e-10);
+        Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrustMagnitude(), 1.0e-10);
         Assertions.assertEquals(isp, ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getIsp(),    1.0e-10);
 
         final SpacecraftState finalorb = buildPropagator(attitudeProvider,
@@ -205,7 +205,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         final Maneuver maneuver = new Maneuver(null,
                                                configureTrigger(field, fireDate, fireDate.shiftedBy(duration)),
                                                new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
-        Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrust(), 1.0e-10);
+        Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrustMagnitude(), 1.0e-10);
         Assertions.assertEquals(isp, ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getIsp(),    1.0e-10);
 
         final FieldSpacecraftState<S> finalorb = buildPropagator(field, attitudeProvider, initialState, maneuver).
@@ -248,7 +248,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         final Maneuver maneuver = new Maneuver(null,
                                                configureTrigger(field, fireDate, fireDate.shiftedBy(duration)),
                                                new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
-        Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrust(), 1.0e-10);
+        Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrustMagnitude(), 1.0e-10);
         Assertions.assertEquals(isp, ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getIsp(),    1.0e-10);
 
         final FieldSpacecraftState<S> finalorb = buildPropagator(field, attitudeProvider,

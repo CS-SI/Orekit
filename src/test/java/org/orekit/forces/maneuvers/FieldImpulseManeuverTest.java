@@ -147,58 +147,58 @@ public class FieldImpulseManeuverTest {
 
         // When
         final FieldImpulseManeuver<?, Complex> fieldImpulseManeuverNorm1 = new FieldImpulseManeuver<>
-                (dateDetector.withHandler(new FieldStopOnEvent<>()), null, deltaV, isp, ControlVector3DNormType.NORM_1);
+                (dateDetector.withHandler(new FieldStopOnEvent<>()), null, deltaV, isp, Control3DVectorCostType.ONE_NORM);
         final FieldImpulseManeuver<?, Complex> fieldImpulseManeuverNorm2 = new FieldImpulseManeuver<>
-                (dateDetector.withHandler(new FieldStopOnEvent<>()), null, deltaV, isp, ControlVector3DNormType.NORM_2);
+                (dateDetector.withHandler(new FieldStopOnEvent<>()), null, deltaV, isp, Control3DVectorCostType.TWO_NORM);
         final FieldImpulseManeuver<?, Complex> fieldImpulseManeuverNormInf = new FieldImpulseManeuver<>
-                (dateDetector.withHandler(new FieldStopOnEvent<>()), null, deltaV, isp, ControlVector3DNormType.NORM_INF);
+                (dateDetector.withHandler(new FieldStopOnEvent<>()), null, deltaV, isp, Control3DVectorCostType.INF_NORM);
 
         // Then
-        Assertions.assertEquals(ControlVector3DNormType.NORM_1, fieldImpulseManeuverNorm1.getControlVector3DNormType());
-        Assertions.assertEquals(ControlVector3DNormType.NORM_2, fieldImpulseManeuverNorm2.getControlVector3DNormType());
-        Assertions.assertEquals(ControlVector3DNormType.NORM_INF, fieldImpulseManeuverNormInf.getControlVector3DNormType());
+        Assertions.assertEquals(Control3DVectorCostType.ONE_NORM, fieldImpulseManeuverNorm1.getControl3DVectorCostType());
+        Assertions.assertEquals(Control3DVectorCostType.TWO_NORM, fieldImpulseManeuverNorm2.getControl3DVectorCostType());
+        Assertions.assertEquals(Control3DVectorCostType.INF_NORM, fieldImpulseManeuverNormInf.getControl3DVectorCostType());
     }
 
     @Test
     public void testEclipseDetectorDerivativeStructure() {
         templateDetector(new DSFactory(1, 1).getDerivativeField(),
-                DetectorType.ECLIPSE_DETECTOR, ControlVector3DNormType.NORM_2);
+                DetectorType.ECLIPSE_DETECTOR, Control3DVectorCostType.TWO_NORM);
     }
 
     @Test
     public void testEclipseDetectorGradient() {
-        templateDetector(gradientField, DetectorType.ECLIPSE_DETECTOR, ControlVector3DNormType.NORM_2);
+        templateDetector(gradientField, DetectorType.ECLIPSE_DETECTOR, Control3DVectorCostType.TWO_NORM);
     }
 
     @Test
     public void testEclipseDetectorGradientNormInf() {
-        templateDetector(gradientField, DetectorType.ECLIPSE_DETECTOR, ControlVector3DNormType.NORM_INF);
+        templateDetector(gradientField, DetectorType.ECLIPSE_DETECTOR, Control3DVectorCostType.INF_NORM);
     }
 
     @Test
     public void testDateDetectorComplex() {
-        templateDetector(complexField, DetectorType.DATE_DETECTOR, ControlVector3DNormType.NORM_2);
+        templateDetector(complexField, DetectorType.DATE_DETECTOR, Control3DVectorCostType.TWO_NORM);
     }
 
     @Test
     public void testDateDetectorUnivariateDerivative2() {
-        templateDetector(univariateDerivative2Field, DetectorType.DATE_DETECTOR, ControlVector3DNormType.NORM_2);
+        templateDetector(univariateDerivative2Field, DetectorType.DATE_DETECTOR, Control3DVectorCostType.TWO_NORM);
     }
 
     @Test
     public void testDateDetectorGradientNorm1() {
-        templateDetector(gradientField, DetectorType.DATE_DETECTOR, ControlVector3DNormType.NORM_1);
+        templateDetector(gradientField, DetectorType.DATE_DETECTOR, Control3DVectorCostType.ONE_NORM);
     }
 
     @Test
     public void testLatitudeCrossingDetectorUnivariateDerivative1() {
-        templateDetector(univariateDerivative1Field, DetectorType.LATITUDE_CROSSING_DETECTOR, ControlVector3DNormType.NORM_2);
+        templateDetector(univariateDerivative1Field, DetectorType.LATITUDE_CROSSING_DETECTOR, Control3DVectorCostType.TWO_NORM);
     }
 
     @Test
     public void testLatitudeCrossingDetectorDerivativeStructure() {
         templateDetector(new DSFactory(1, 1).getDerivativeField(),
-                DetectorType.LATITUDE_CROSSING_DETECTOR, ControlVector3DNormType.NORM_2);
+                DetectorType.LATITUDE_CROSSING_DETECTOR, Control3DVectorCostType.TWO_NORM);
     }
 
     private <T extends CalculusFieldElement<T>> FieldImpulseManeuver<FieldEventDetector<T>, T> convertManeuver(
@@ -228,12 +228,12 @@ public class FieldImpulseManeuverTest {
                         withMaxCheck(fieldMaxCheck).
                         withThreshold(fieldThreshold);
         return new FieldImpulseManeuver<>(fieldDetector.withHandler(fieldHandler),
-                impulseManeuver.getAttitudeOverride(), fieldDeltaVSat, fieldIsp, impulseManeuver.getControlVector3DNormType());
+                impulseManeuver.getAttitudeOverride(), fieldDeltaVSat, fieldIsp, impulseManeuver.getControl3DVectorCostType());
     }
 
     private <T extends CalculusFieldElement<T>> void templateDetector(final Field<T> field,
                                                                       final DetectorType detectorType,
-                                                                      final ControlVector3DNormType controlVector3DNormType) {
+                                                                      final Control3DVectorCostType control3DVectorCostType) {
         // Given
         final Orbit initialOrbit = createOrbit();
         final NumericalPropagator propagator = createUnperturbedPropagator(initialOrbit, initialMass);
@@ -243,7 +243,7 @@ public class FieldImpulseManeuverTest {
         final AbsoluteDate endOfPropagationDate = propagator.getInitialState().getDate().shiftedBy(timeOfFlight);
         final ImpulseManeuver impulseManeuver = new ImpulseManeuver(
                 buildEventDetector(detectorType, propagator).withHandler(new StopOnEvent()),
-                attitudeOverride, deltaV, isp, controlVector3DNormType);
+                attitudeOverride, deltaV, isp, control3DVectorCostType);
         propagator.addEventDetector(impulseManeuver);
         fieldPropagator.addEventDetector(convertManeuver(field, impulseManeuver, new FieldStopOnEvent<>()));
         // When
