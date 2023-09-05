@@ -26,7 +26,7 @@ package org.orekit.files.ccsds.section;
 public class Segment<M extends Metadata, D extends Data> {
 
     /** Metadata. */
-    private final M metadata;
+    private M metadata;
 
     /** Data. */
     private final D data;
@@ -46,6 +46,13 @@ public class Segment<M extends Metadata, D extends Data> {
      */
     public M getMetadata() {
         return metadata;
+    }
+
+    /** Set the segment metadata.
+     * @param metadata the segment metadata
+     */
+    public void setMetadata(final M metadata) {
+        this.metadata = metadata;
     }
 
     /** Get the segment data.
