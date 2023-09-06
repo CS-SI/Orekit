@@ -190,17 +190,23 @@ public class EventSlopeFilterTest {
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.addEventDetector(new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS));
+        final EventSlopeFilter<EclipseDetector> outOfEclipseDetector =
+              new EventSlopeFilter<>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS);
+        propagator.addEventDetector(outOfEclipseDetector);
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
         Assertions.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
+        Assertions.assertEquals(0, ((Counter) detector.getHandler()).getDecreasingCounter());
+        Assertions.assertEquals(FilterType.TRIGGER_ONLY_INCREASING_EVENTS, outOfEclipseDetector.getFilter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.addEventDetector(new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS));
+        final EventSlopeFilter<EclipseDetector> enteringEclipseDetector =
+              new EventSlopeFilter<>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
+        propagator.addEventDetector(enteringEclipseDetector);
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assertions.assertEquals(0, ((Counter) detector.getHandler()).getIncreasingCounter());
         Assertions.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
+        Assertions.assertEquals(FilterType.TRIGGER_ONLY_DECREASING_EVENTS, enteringEclipseDetector.getFilter());
 
     }
 
