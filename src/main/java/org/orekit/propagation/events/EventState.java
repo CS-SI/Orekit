@@ -201,25 +201,27 @@ public class EventState<T extends EventDetector> {
         throws MathRuntimeException {
 
         forward = interpolator.isForward();
+        final SpacecraftState s0 = interpolator.getPreviousState();
         final SpacecraftState s1 = interpolator.getCurrentState();
         final AbsoluteDate t1 = s1.getDate();
         final double dt = t1.durationFrom(t0);
         if (FastMath.abs(dt) < detector.getThreshold()) {
             // we cannot do anything on such a small step, don't trigger any events
+            pendingEvent     = false;
+            pendingEventTime = null;
             return false;
         }
-        // number of points to check in the current step
-        final int n = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt) / detector.getMaxCheckInterval()));
-        final double h = dt / n;
 
 
         AbsoluteDate ta = t0;
         double ga = g0;
-        for (int i = 0; i < n; ++i) {
+        for (SpacecraftState sb = nextCheck(s0, s1, interpolator);
+             sb != null;
+             sb = nextCheck(sb, s1, interpolator)) {
 
             // evaluate handler value at the end of the substep
-            final AbsoluteDate tb = (i == n - 1) ? t1 : t0.shiftedBy((i + 1) * h);
-            final double gb = g(interpolator.getInterpolatedState(tb));
+            final AbsoluteDate tb = sb.getDate();
+            final double gb = g(sb);
 
             // check events occurrence
             if (gb == 0.0 || (g0Positive ^ gb > 0)) {
@@ -240,6 +242,29 @@ public class EventState<T extends EventDetector> {
         pendingEventTime = null;
         return false;
 
+    }
+
+    /** Estimate next state to check.
+     * @param done state already checked
+     * @param target target state towards which we are checking
+     * @param interpolator step interpolator for the proposed step
+     * @return intermediate state to check, or exactly {@code null}
+     * if we already have {@code done == target}
+     * @since 12.0
+     */
+    private SpacecraftState nextCheck(final SpacecraftState done, final SpacecraftState target,
+                                      final OrekitStepInterpolator interpolator) {
+        if (done == target) {
+            // we have already reached target
+            return null;
+        } else {
+            // we have to select some intermediate state
+            // attempting to split the remaining time in an integer number of checks
+            final double dt       = target.getDate().durationFrom(done.getDate());
+            final double maxCheck = detector.getMaxCheckInterval().currentInterval(done);
+            final int    n        = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt) / maxCheck));
+            return n == 1 ? target : interpolator.getInterpolatedState(done.getDate().shiftedBy(dt / n));
+        }
     }
 
     /**

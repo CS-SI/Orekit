@@ -148,6 +148,9 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
         this.equations  = equations.clone();
         this.dimensions = dimensions.clone();
 
+        // set up initial state
+        super.resetInitialState(getInitialState());
+
     }
 
     /** Interpolate the model at some date.
@@ -271,7 +274,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    protected List<ParameterDriver> getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
         // Integrated Ephemeris propagation model does not have parameter drivers.
         return Collections.emptyList();
     }

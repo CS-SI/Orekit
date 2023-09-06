@@ -17,8 +17,8 @@
 
 package org.orekit.estimation.measurements.filtering;
 
-import org.orekit.gnss.ObservationData;
-import org.orekit.gnss.ObservationDataSet;
+import org.orekit.files.rinex.observation.ObservationData;
+import org.orekit.files.rinex.observation.ObservationDataSet;
 
 /**
  * Container used to store smoothed observation data along with the original data set it originates from.

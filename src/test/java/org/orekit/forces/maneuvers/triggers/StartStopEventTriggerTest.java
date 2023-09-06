@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.maneuvers.triggers;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
@@ -31,15 +32,20 @@ import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.ParameterDriver;
 
 public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<StartStopEventsTrigger<DateDetector, DateDetector>> {
 
     public static class StartStopDates extends StartStopEventsTrigger<DateDetector, DateDetector> {
 
         public StartStopDates(final AbsoluteDate start, final AbsoluteDate stop) {
-            super(new DateDetector(5.0, 1.0e-10, start, stop.shiftedBy(10.0)).
+            super(new DateDetector(start, stop.shiftedBy(10.0)).
+                  withMaxCheck(5.0).
+                  withThreshold(1.0e-10).
                   withHandler(new StopOnEvent()),
-                  new DateDetector(5.0, 1.0e-10, stop, stop.shiftedBy(20.0)).
+                  new DateDetector(stop, stop.shiftedBy(20.0)).
+                  withMaxCheck(5.0).
+                  withThreshold(1.0e-10).
                   withHandler(new StopOnEvent()));
         }
 
@@ -48,7 +54,7 @@ public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<Star
             FieldAbstractDetector<D, S> convertStartDetector(Field<S> field, DateDetector detector) {
             final FieldAbsoluteDate<S> target = new FieldAbsoluteDate<>(field, detector.getDates().get(0).getDate());
             @SuppressWarnings("unchecked")
-            final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) new FieldDateDetector<>(target);
+            final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) new FieldDateDetector<>(field, target);
             return converted;
         }
 
@@ -57,8 +63,13 @@ public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<Star
             FieldAbstractDetector<D, S> convertStopDetector(Field<S> field, DateDetector detector) {
             final FieldAbsoluteDate<S> target = new FieldAbsoluteDate<>(field, detector.getDates().get(0).getDate());
             @SuppressWarnings("unchecked")
-            final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) new FieldDateDetector<>(target);
+            final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>) new FieldDateDetector<>(field, target);
             return converted;
+        }
+
+        @Override
+        public List<ParameterDriver> getParametersDrivers() {
+            return Collections.emptyList();
         }
 
     }
@@ -73,8 +84,8 @@ public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<Star
                                                                                    AbsoluteDate.J2000_EPOCH.shiftedBy(100.0));
         final List<TimeStamped>    startDates = trigger.getStartDetector().getDates();
         final List<TimeStamped>    stopDates  = trigger.getStopDetector().getDates();
-        Assertions.assertEquals(2,     trigger.getEventsDetectors().count());
-        Assertions.assertEquals(2,     trigger.getFieldEventsDetectors(Binary64Field.getInstance()).count());
+        Assertions.assertEquals(2,     trigger.getEventDetectors().count());
+        Assertions.assertEquals(2,     trigger.getFieldEventDetectors(Binary64Field.getInstance()).count());
         Assertions.assertEquals(2,     startDates.size());
         Assertions.assertEquals(  0.0, startDates.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
         Assertions.assertEquals(110.0, startDates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);

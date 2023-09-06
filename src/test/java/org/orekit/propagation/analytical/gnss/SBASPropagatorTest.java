@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -30,6 +31,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.SBASOrbitalElements;
@@ -200,5 +202,21 @@ public class SBASPropagatorTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
+    }
+
+    /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
+    @Test
+    public void testIssue949() {
+        // GIVEN
+        // Setup propagator
+        final SBASPropagator propagator = new SBASPropagatorBuilder(soe, frames).build();
+
+        // Setup additional state provider which use the initial state in its init method
+        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
+        propagator.addAdditionalStateProvider(additionalStateProvider);
+
+        // WHEN & THEN
+        Assertions.assertDoesNotThrow(() -> propagator.propagate(new AbsoluteDate()), "No error should have been thrown");
+
     }
 }

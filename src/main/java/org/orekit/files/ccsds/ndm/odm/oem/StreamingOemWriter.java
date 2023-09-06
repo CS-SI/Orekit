@@ -23,7 +23,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
@@ -38,13 +37,15 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p> Each instance corresponds to a single OEM file. A new OEM ephemeris segment is
  * started by calling {@link #newSegment()}.
  *
- * <p> This class can be used as a step handler for a {@link Propagator}.
+ * <p>
+ * The segments returned by this class can be used as step handlers for a {@link Propagator}.
+ * </p>
  *
  * <pre>{@code
  * Propagator propagator = ...; // pre-configured propagator
  * OEMWriter  aemWriter  = ...; // pre-configured writer
  *   try (Generator out = ...;  // set-up output stream
- *        StreamingOemWriter sw = new StreamingOemWriter(out, oemWriter)) { // set-up streaming writer
+ *        StreamingOemWriter sw = new StreamingOemWriter(out, oemWriter, header, metadata)) { // set-up streaming writer
  *
  *     // write segment 1
  *     propagator.getMultiplexer().add(step, sw.newSegment());
@@ -183,10 +184,9 @@ public class StreamingOemWriter implements AutoCloseable {
         /**
          * {@inheritDoc}
          *
-         * <p> Sets the {@link OemMetadataKey#START_TIME} and {@link OemMetadataKey#STOP_TIME} in this
-         * segment's metadata if not already set by the user. Then calls {@link OemWriter#writeHeader(Generator, Header)
-         * writeHeader} if it is the first segment) and {@link OemWriter#writeMetadata(Generator, OemMetadata)}
-         * to start the segment.
+         * <p>Writes the header automatically on first segment.
+         * Sets the {@link OemMetadataKey#START_TIME} and {@link OemMetadataKey#STOP_TIME} in this
+         * segment's metadata if not already set by the user.
          */
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {

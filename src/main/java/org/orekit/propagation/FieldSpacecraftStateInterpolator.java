@@ -17,6 +17,7 @@
 package org.orekit.propagation;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Pair;
 import org.orekit.attitudes.AttitudeProvider;
@@ -337,10 +338,13 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
      * {@inheritDoc}
      */
     @Override
-    protected FieldSpacecraftState<KK> interpolate(final FieldAbsoluteDate<KK> interpolationDate) {
+    protected FieldSpacecraftState<KK> interpolate(final InterpolationData interpolationData) {
+
+        // Get interpolation date
+        final FieldAbsoluteDate<KK> interpolationDate = interpolationData.getInterpolationDate();
 
         // Get first state definition
-        final FieldSpacecraftState<KK> earliestState = neighborList.get(0);
+        final FieldSpacecraftState<KK> earliestState = interpolationData.getNeighborList().get(0);
         this.areOrbitDefined = earliestState.isOrbitDefined();
 
         // Prepare samples
@@ -359,7 +363,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
                 createAdditionalStateSample(additionalDotEntries);
 
         // Fill interpolators with samples
-        final List<FieldSpacecraftState<KK>>       samples      = cachedSamples.getAll();
+        final List<FieldSpacecraftState<KK>>       samples      = interpolationData.getCachedSamples().getAll();
         final List<FieldOrbit<KK>>                 orbitSample  = new ArrayList<>();
         final List<FieldAbsolutePVCoordinates<KK>> absPVASample = new ArrayList<>();
         for (FieldSpacecraftState<KK> state : samples) {
@@ -400,6 +404,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
         }
 
         // Interpolate mass
+        final KK one = interpolationData.getOne();
         final KK interpolatedMass;
         if (massInterpolator.isPresent()) {
             interpolatedMass = massInterpolator.get().interpolate(interpolationDate, masses).getValue();
@@ -542,6 +547,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
      */
     private FieldArrayDictionary<KK> interpolateAdditionalState(final FieldAbsoluteDate<KK> interpolationDate,
                                                                 final Map<String, List<Pair<FieldAbsoluteDate<KK>, KK[]>>> additionalSamples) {
+        final Field<KK> field = interpolationDate.getField();
         final FieldArrayDictionary<KK> interpolatedAdditional;
 
         if (additionalSamples.isEmpty()) {

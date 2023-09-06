@@ -31,11 +31,11 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Frames;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldPVCoordinates;
@@ -231,11 +231,11 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
      * @param <T> elements type
-     * @see #selectExtrapolator(FieldTLE, Frames, CalculusFieldElement[])
+     * @see #selectExtrapolator(FieldTLE, Frame, CalculusFieldElement[])
      */
     @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final T[] parameters) {
-        return selectExtrapolator(tle, DataContext.getDefault().getFrames(), parameters);
+        return selectExtrapolator(tle, DataContext.getDefault().getFrames().getTEME(), parameters);
     }
 
     /** Selects the extrapolator to use with the selected TLE.
@@ -243,17 +243,17 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      *<p>This method uses the {@link DataContext#getDefault() default data context}.
      *
      * @param tle the TLE to propagate.
-     * @param frames set of Frames to use in the propagator.
+     * @param teme TEME frame.
      * @param parameters SGP4 and SDP4 model parameters
      * @return the correct propagator.
      * @param <T> elements type
      */
-    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final Frames frames, final T[] parameters) {
+    public static <T extends CalculusFieldElement<T>> FieldTLEPropagator<T> selectExtrapolator(final FieldTLE<T> tle, final Frame teme, final T[] parameters) {
         return selectExtrapolator(
                 tle,
-                FrameAlignedProvider.of(frames.getTEME()),
+                FrameAlignedProvider.of(teme),
                 tle.getE().getField().getZero().add(DEFAULT_MASS),
-                frames.getTEME(),
+                teme,
                 parameters);
     }
 
@@ -586,7 +586,8 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
     public void resetInitialState(final FieldSpacecraftState<T> state) {
         super.resetInitialState(state);
         super.setStartDate(state.getDate());
-        final FieldTLE<T> newTLE = FieldTLE.stateToTLE(state, tle, utc, teme);
+        final TleGenerationAlgorithm algorithm = TLEPropagator.getDefaultTleGenerationAlgorithm(utc, teme);
+        final FieldTLE<T> newTLE = algorithm.generate(state, tle);
         this.tle = newTLE;
         initializeCommons(tle.getParameters(state.getDate().getField()));
         sxpInitialize(tle.getParameters(state.getDate().getField()));

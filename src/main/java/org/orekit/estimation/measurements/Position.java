@@ -158,6 +158,29 @@ public class Position extends AbstractMeasurement<Position> {
 
     /** {@inheritDoc} */
     @Override
+    protected EstimatedMeasurementBase<Position> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
+                                                                                         final SpacecraftState[] states) {
+
+        // PV value
+        final TimeStampedPVCoordinates pv = states[0].getPVCoordinates();
+
+        // prepare the evaluation
+        final EstimatedMeasurementBase<Position> estimated =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation, states,
+                                                       new TimeStampedPVCoordinates[] {
+                                                           pv
+                                                       });
+
+        estimated.setEstimatedValue(new double[] {
+            pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ()
+        });
+
+        return estimated;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected EstimatedMeasurement<Position> theoreticalEvaluation(final int iteration, final int evaluation,
                                                                    final SpacecraftState[] states) {
 

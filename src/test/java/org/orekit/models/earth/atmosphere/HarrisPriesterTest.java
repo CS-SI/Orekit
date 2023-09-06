@@ -225,7 +225,7 @@ public class HarrisPriesterTest {
     public void testVelocityDerivative() {
         final Frame eme2000 = FramesFactory.getEME2000();
         final HarrisPriester hp = new HarrisPriester(sun, earth);
-        final Vector3D pos = earth.getBodyFrame().getTransformTo(eme2000, date).
+        final Vector3D pos = earth.getBodyFrame().getStaticTransformTo(eme2000, date).
                              transformPosition(earth.transform(new GeodeticPoint(-1.7, 4.2, 987654.321)));
         double dP = 100.0;
         double dVxdX = gradientComponent(hp, pos, Vector3D.PLUS_I, dP, eme2000, v -> v.getX());

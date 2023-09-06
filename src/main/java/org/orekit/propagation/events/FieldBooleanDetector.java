@@ -75,14 +75,14 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
      * @param detectors    the operands.
      * @param operator     reduction operator to apply to value of the g function of the
      *                     operands.
-     * @param newMaxCheck  max check interval in seconds.
+     * @param newMaxCheck  max check interval.
      * @param newThreshold convergence threshold in seconds.
      * @param newMaxIter   max iterations.
      * @param newHandler   event handler.
      */
     protected FieldBooleanDetector(final List<FieldEventDetector<T>> detectors,
                                    final Operator operator,
-                                   final T newMaxCheck,
+                                   final FieldAdaptableInterval<T> newMaxCheck,
                                    final T newThreshold,
                                    final int newMaxIter,
                                    final FieldEventHandler<T> newHandler) {
@@ -140,7 +140,13 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
 
         return new FieldBooleanDetector<>(new ArrayList<>(detectors), // copy for immutability
                                           Operator.AND,
-                                          detectors.stream().map(FieldEventDetector::getMaxCheckInterval).min(new FieldComparator<>()).get(),
+                                          s -> {
+                                              double minInterval = Double.POSITIVE_INFINITY;
+                                              for (final FieldEventDetector<T> detector : detectors) {
+                                                  minInterval = FastMath.min(minInterval, detector.getMaxCheckInterval().currentInterval(s));
+                                              }
+                                              return minInterval;
+                                          },
                                           detectors.stream().map(FieldEventDetector::getThreshold).min(new FieldComparator<>()).get(),
                                           detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get(),
                                           new FieldContinueOnEvent<>());
@@ -195,7 +201,13 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
 
         return new FieldBooleanDetector<>(new ArrayList<>(detectors), // copy for immutability
                                           Operator.OR,
-                                          detectors.stream().map(FieldEventDetector::getMaxCheckInterval).min(new FieldComparator<>()).get(),
+                                          s -> {
+                                              double minInterval = Double.POSITIVE_INFINITY;
+                                              for (final FieldEventDetector<T> detector : detectors) {
+                                                  minInterval = FastMath.min(minInterval, detector.getMaxCheckInterval().currentInterval(s));
+                                              }
+                                              return minInterval;
+                                          },
                                           detectors.stream().map(FieldEventDetector::getThreshold).min(new FieldComparator<>()).get(),
                                           detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get(),
                                           new FieldContinueOnEvent<>());
@@ -241,7 +253,7 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
     }
 
     @Override
-    protected FieldBooleanDetector<T> create(final T newMaxCheck,
+    protected FieldBooleanDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck,
                                              final T newThreshold,
                                              final int newMaxIter,
                                              final FieldEventHandler<T> newHandler) {

@@ -17,8 +17,11 @@
 package org.orekit.time;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.util.MathArrays;
+
+import java.util.List;
 
 /**
  * Hermite interpolator of time stamped field value.
@@ -85,10 +88,14 @@ public class TimeStampedFieldHermiteInterpolator<KK extends CalculusFieldElement
      * problems (including NaN appearing).
      */
     @Override
-    protected TimeStampedField<KK> interpolate(final FieldAbsoluteDate<KK> interpolationDate) {
+    protected TimeStampedField<KK> interpolate(final InterpolationData interpolationData) {
         final FieldHermiteInterpolator<KK> interpolator = new FieldHermiteInterpolator<>();
 
         // Fill interpolator with sample
+        final Field<KK>                  field             = interpolationData.getField();
+        final KK                         zero              = interpolationData.getZero();
+        final FieldAbsoluteDate<KK>      interpolationDate = interpolationData.getInterpolationDate();
+        final List<TimeStampedField<KK>> neighborList      = interpolationData.getNeighborList();
         for (TimeStampedField<KK> value : neighborList) {
             final KK   deltaT    = value.getDate().durationFrom(interpolationDate);
             final KK[] tempArray = MathArrays.buildArray(field, 1);

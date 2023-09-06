@@ -141,11 +141,11 @@ public class InterSatellitesRangeBuilderTest {
                 }
             }
             previous = date;
-            double[] e = measurement.estimate(0, 0,
-                                              new SpacecraftState[] {
-                                                  propagator1.propagate(date),
-                                                  propagator2.propagate(date)
-                                              }).getEstimatedValue();
+            double[] e = measurement.estimateWithoutDerivatives(0, 0,
+                                                                new SpacecraftState[] {
+                                                                    propagator1.propagate(date),
+                                                                    propagator2.propagate(date)
+                                                                }).getEstimatedValue();
             for (int i = 0; i < m.length; ++i) {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
             }

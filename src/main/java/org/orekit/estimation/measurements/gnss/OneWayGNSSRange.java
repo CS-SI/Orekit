@@ -24,6 +24,7 @@ import java.util.Map;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.SpacecraftState;
@@ -32,9 +33,9 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-import org.orekit.utils.TimeSpanMap.Span;
 
 /** One-way GNSS range measurement.
  * <p>
@@ -87,6 +88,49 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
         // Initialise fields
         this.dtRemote = dtRemote;
         this.remote   = remote;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EstimatedMeasurementBase<OneWayGNSSRange> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                                final int evaluation,
+                                                                                                final SpacecraftState[] states) {
+
+        // Coordinates of both satellites in local satellite frame
+        final SpacecraftState          localState = states[0];
+        final TimeStampedPVCoordinates pvaLocal   = localState.getPVCoordinates();
+        final TimeStampedPVCoordinates pvaRemote  = remote.getPVCoordinates(getDate(), localState.getFrame());
+
+        // Downlink delay
+        final double dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(localState.getDate());
+        final AbsoluteDate arrivalDate = getDate().shiftedBy(-dtLocal);
+
+        final TimeStampedPVCoordinates s1Downlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
+        final double tauD = signalTimeOfFlight(pvaRemote, s1Downlink.getPosition(), arrivalDate);
+
+        // Transit state
+        final double delta      = getDate().durationFrom(pvaRemote.getDate());
+        final double deltaMTauD = delta - tauD;
+
+        // Estimated measurement
+        final EstimatedMeasurementBase<OneWayGNSSRange> estimatedRange =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       new SpacecraftState[] {
+                                                           localState.shiftedBy(deltaMTauD)
+                                                       }, new TimeStampedPVCoordinates[] {
+                                                           pvaRemote.shiftedBy(delta - tauD),
+                                                           localState.shiftedBy(delta).getPVCoordinates()
+                                                       });
+
+        // Range value
+        final double range = (tauD + dtLocal - dtRemote) * Constants.SPEED_OF_LIGHT;
+
+        // Set value of the estimated measurement
+        estimatedRange.setEstimatedValue(range);
+
+        // Return the estimated measurement
+        return estimatedRange;
+
     }
 
     /** {@inheritDoc} */

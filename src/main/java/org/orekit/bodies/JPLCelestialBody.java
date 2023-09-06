@@ -131,10 +131,10 @@ class JPLCelestialBody implements CelestialBody {
      * @return time-stamped position/velocity of the body (m and m/s)
      */
     public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
-                                                                                             final Frame frame) {
+                                                                                                 final Frame frame) {
 
         // apply the scale factor to raw position-velocity
-        final FieldPVCoordinates<T> rawPV    = rawPVProvider.getRawPV(date);
+        final FieldPVCoordinates<T>            rawPV    = rawPVProvider.getRawPV(date);
         final TimeStampedFieldPVCoordinates<T> scaledPV = new TimeStampedFieldPVCoordinates<>(date, scale, rawPV);
 
         // the raw PV are relative to the parent of the body centered inertially oriented frame
@@ -144,6 +144,37 @@ class JPLCelestialBody implements CelestialBody {
         return transform.transformPVCoordinates(scaledPV);
 
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+
+        // apply the scale factor to raw position
+        final Vector3D rawPosition    = rawPVProvider.getRawPosition(date);
+        final Vector3D scaledPosition = rawPosition.scalarMultiply(scale);
+
+        // the raw position is relative to the parent of the body centered inertially oriented frame
+        final StaticTransform transform = getInertiallyOrientedFrame().getParent().getStaticTransformTo(frame, date);
+
+        // convert to requested frame
+        return transform.transformPosition(scaledPosition);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date, final Frame frame) {
+
+        // apply the scale factor to raw position
+        final FieldVector3D<T> rawPosition     = rawPVProvider.getRawPosition(date);
+        final FieldVector3D<T> scaledPosition  = rawPosition.scalarMultiply(scale);
+
+        // the raw position is relative to the parent of the body centered inertially oriented frame
+        final FieldStaticTransform<T> transform = getInertiallyOrientedFrame().getParent().getStaticTransformTo(frame, date);
+
+        // convert to requested frame
+        return transform.transformPosition(scaledPosition);
+    }
+
 
     /** Replace the instance with a data transfer object for serialization.
      * <p>
@@ -177,7 +208,7 @@ class JPLCelestialBody implements CelestialBody {
         return bodyFrame;
     }
 
-   /** Inertially oriented body centered frame. */
+    /** Inertially oriented body centered frame. */
     private class InertiallyOriented extends Frame {
 
         /** Serializable UID. */
@@ -215,7 +246,7 @@ class JPLCelestialBody implements CelestialBody {
                     final Vector3D pole  = iauPole.getPole(date);
                     final Vector3D qNode = iauPole.getNode(date);
                     final Transform rotation =
-                            new Transform(date, new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I));
+                                    new Transform(date, new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I));
 
                     // update transform from parent to self
                     return new Transform(date, translation, rotation);
@@ -239,7 +270,7 @@ class JPLCelestialBody implements CelestialBody {
                     final Vector3D pole  = iauPole.getPole(date);
                     final Vector3D qNode = iauPole.getNode(date);
                     final Rotation rotation =
-                            new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I);
+                                    new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I);
 
                     // update transform from parent to self
                     return StaticTransform.of(date, pv.getPosition().negate(), rotation);
@@ -267,11 +298,11 @@ class JPLCelestialBody implements CelestialBody {
                         qNode = FieldVector3D.getPlusI(date.getField());
                     }
                     final FieldTransform<T> rotation =
-                            new FieldTransform<>(date,
-                                                 new FieldRotation<>(pole,
-                                                                     qNode,
-                                                                     FieldVector3D.getPlusK(date.getField()),
-                                                                     FieldVector3D.getPlusI(date.getField())));
+                                    new FieldTransform<>(date,
+                                                    new FieldRotation<>(pole,
+                                                                    qNode,
+                                                                    FieldVector3D.getPlusK(date.getField()),
+                                                                    FieldVector3D.getPlusI(date.getField())));
 
                     // update transform from parent to self
                     return new FieldTransform<>(date, translation, rotation);
@@ -297,7 +328,7 @@ class JPLCelestialBody implements CelestialBody {
                     final FieldVector3D<T> pole  = iauPole.getPole(date);
                     final FieldVector3D<T> qNode = iauPole.getNode(date);
                     final FieldRotation<T> rotation =
-                            new FieldRotation<>(pole, qNode, FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field));
+                                    new FieldRotation<>(pole, qNode, FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field));
 
                     // update transform from parent to self
                     return FieldStaticTransform.of(date, pv.getPosition().negate(), rotation);
@@ -354,9 +385,9 @@ class JPLCelestialBody implements CelestialBody {
                     final T w0 = iauPole.getPrimeMeridianAngle(date);
                     final T w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));
                     return new FieldTransform<>(date,
-                                                new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), w0,
-                                                                    RotationConvention.FRAME_TRANSFORM),
-                                                new FieldVector3D<>(w1.subtract(w0).divide(dt), Vector3D.PLUS_K));
+                                    new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), w0,
+                                                    RotationConvention.FRAME_TRANSFORM),
+                                    new FieldVector3D<>(w1.subtract(w0).divide(dt), Vector3D.PLUS_K));
                 }
 
             }, frameName == null ? name + BODY_FRAME_SUFFIX : frameName, false);
@@ -412,7 +443,7 @@ class JPLCelestialBody implements CelestialBody {
                 // first try to use the factory, in order to avoid building a new instance
                 // each time we deserialize and have the object properly cached
                 final CelestialBody factoryProvided =
-                        DataContext.getDefault().getCelestialBodies().getBody(name);
+                                DataContext.getDefault().getCelestialBodies().getBody(name);
                 if (factoryProvided instanceof JPLCelestialBody) {
                     final JPLCelestialBody jplBody = (JPLCelestialBody) factoryProvided;
                     if (supportedNames.equals(jplBody.supportedNames) && generateType == jplBody.generateType) {

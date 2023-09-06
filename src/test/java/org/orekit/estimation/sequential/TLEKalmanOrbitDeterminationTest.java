@@ -47,6 +47,7 @@ import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.HarrisPriester;
@@ -57,6 +58,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEConstants;
+import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -100,10 +102,10 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
     /** {@inheritDoc} */
     @Override
     protected TLEPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
-                                                            final ODEIntegratorBuilder builder,
-                                                            final double positionScale) {
-        return new TLEPropagatorBuilder(templateTLE, PositionAngle.MEAN,
-                                         positionScale);
+                                                           final ODEIntegratorBuilder builder,
+                                                           final double positionScale) {
+        return new TLEPropagatorBuilder(templateTLE, PositionAngle.MEAN, positionScale,
+                                        new FixedPointTleGenerationAlgorithm());
     }
 
     /** {@inheritDoc} */
@@ -369,9 +371,8 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         //test on the estimated position
         TimeStampedPVCoordinates odPV = kalmanGNSS.getEstimatedPV();
-        final Transform transform = FramesFactory.getTEME().getTransformTo(FramesFactory.getGCRF(), odPV.getDate());
-        odPV = transform.transformPVCoordinates(odPV);
-        final Vector3D estimatedPos = odPV.getPosition();
+        final StaticTransform transform = FramesFactory.getTEME().getStaticTransformTo(FramesFactory.getGCRF(), odPV.getDate());
+        final Vector3D estimatedPos = transform.transformPosition(odPV.getPosition());
 
         // Reference position from GPS ephemeris (esa18836.sp3)
         final Vector3D refPos = new Vector3D(2167703.453226041, 19788555.311260417, 17514805.616900872);

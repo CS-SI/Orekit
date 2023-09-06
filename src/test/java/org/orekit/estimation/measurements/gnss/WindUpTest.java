@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.util.SortedSet;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
@@ -27,7 +29,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -55,8 +57,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.SortedSet;
 
 public class WindUpTest {
 
@@ -161,9 +161,12 @@ public class WindUpTest {
         for (ObservedMeasurement<?> m : measurements) {
             Phase phase = (Phase) m;
             @SuppressWarnings("unchecked")
-            EstimatedMeasurement<Phase> estimated = (EstimatedMeasurement<Phase>) m.estimate(0, 0, new SpacecraftState[] { propagator.propagate(phase.getDate()) });
+            EstimatedMeasurementBase<Phase> estimated = (EstimatedMeasurementBase<Phase>) m.estimateWithoutDerivatives(0, 0,
+                                                                                                                       new SpacecraftState[] {
+                                                                                                                           propagator.propagate(phase.getDate()) 
+                                                                                                                       });
             final double original = estimated.getEstimatedValue()[0];
-            windUp.modify(estimated);
+            windUp.modifyWithoutDerivatives(estimated);
             final double modified = estimated.getEstimatedValue()[0];
             final double correction = modified - original;
             min = FastMath.min(min, correction);

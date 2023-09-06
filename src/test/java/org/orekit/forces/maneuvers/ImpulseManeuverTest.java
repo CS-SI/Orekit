@@ -43,6 +43,7 @@ import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.AbstractDetector;
+import org.orekit.propagation.events.AdaptableInterval;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -344,7 +345,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testControlVector3DNormType() {
+    public void testControl3DVectorCostType() {
 
         // GIVEN
         // Initial orbit
@@ -370,19 +371,23 @@ public class ImpulseManeuverTest {
         final double           isp                = 100.;
 
         // Building propagators
+        final KeplerianPropagator propagatorNone    = new KeplerianPropagator(orbit, provider, orbit.getMu(), initialMass);
         final KeplerianPropagator propagatorNorm1   = new KeplerianPropagator(orbit, provider, orbit.getMu(), initialMass);
         final KeplerianPropagator propagatorNorm2   = new KeplerianPropagator(orbit, provider, orbit.getMu(), initialMass);
         final KeplerianPropagator propagatorNormInf = new KeplerianPropagator(orbit, provider, orbit.getMu(), initialMass);
 
         // Add impulse maneuvers
+        propagatorNone.addEventDetector(new ImpulseManeuver(dateDetector, provider, deltaV, isp,
+                Control3DVectorCostType.NONE));
         propagatorNorm1.addEventDetector(new ImpulseManeuver(dateDetector, provider, deltaV, isp,
-                ControlVector3DNormType.NORM_1));
+                Control3DVectorCostType.ONE_NORM));
         propagatorNorm2.addEventDetector(new ImpulseManeuver(dateDetector, provider, deltaV, isp,
-                ControlVector3DNormType.NORM_2));
+                Control3DVectorCostType.TWO_NORM));
         propagatorNormInf.addEventDetector(new ImpulseManeuver(dateDetector, provider, deltaV, isp,
-                ControlVector3DNormType.NORM_INF));
+                Control3DVectorCostType.INF_NORM));
 
         // WHEN
+        final double finalMassWithNone    = propagatorNone.propagate(endPropagationDate).getMass();
         final double finalMassWithNorm1   = propagatorNorm1.propagate(endPropagationDate).getMass();
         final double finalMassWithNorm2   = propagatorNorm2.propagate(endPropagationDate).getMass();
         final double finalMassWithNormInf = propagatorNormInf.propagate(endPropagationDate).getMass();
@@ -394,10 +399,11 @@ public class ImpulseManeuverTest {
         Assertions.assertNotEquals(finalMassWithNormInf, finalMassWithNorm2);
 
         // Assert that final mass is equal to expected mass
+        Assertions.assertEquals(initialMass, finalMassWithNone);
         final double factorExponential = -1. / (isp * Constants.G0_STANDARD_GRAVITY);
-        Assertions.assertEquals(finalMassWithNorm1, initialMass * FastMath.exp(deltaV.getNorm1() * factorExponential));
-        Assertions.assertEquals(finalMassWithNorm2, initialMass * FastMath.exp(deltaV.getNorm() * factorExponential));
-        Assertions.assertEquals(finalMassWithNormInf, initialMass * FastMath.exp(deltaV.getNormInf() * factorExponential));
+        Assertions.assertEquals(initialMass * FastMath.exp(deltaV.getNorm1() * factorExponential), finalMassWithNorm1);
+        Assertions.assertEquals(initialMass * FastMath.exp(deltaV.getNorm() * factorExponential), finalMassWithNorm2);
+        Assertions.assertEquals(initialMass * FastMath.exp(deltaV.getNormInf() * factorExponential), finalMassWithNormInf);
     }
 
 
@@ -436,7 +442,7 @@ public class ImpulseManeuverTest {
 
         /** {@inheritDoc} */
         @Override
-        protected InitializationDetector create(double newMaxCheck, double newThreshold, int newMaxIter, EventHandler newHandler) {
+        protected InitializationDetector create(AdaptableInterval newMaxCheck, double newThreshold, int newMaxIter, EventHandler newHandler) {
             return new InitializationDetector();
         }
 

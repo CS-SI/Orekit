@@ -97,6 +97,7 @@
         class "ContinuousScheduler<T>" as ContinuousScheduler_T_
 
         interface "Scheduler<T>" as Scheduler_T_ {
+          +MeasurementBuilder_T_ getBuilder()
           +SortedSet<T> generate(interpolators)
         }
 

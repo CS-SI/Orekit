@@ -97,6 +97,7 @@
       AttitudeProvider             <|-- FrameAlignedProvider
       AttitudeProvider             <|-- LofOffset
       AttitudeProvider             <|-- TabulatedProvider
+      AttitudeProvider             <|-- TorqueFree
 
     }
 

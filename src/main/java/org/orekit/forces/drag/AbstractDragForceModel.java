@@ -22,7 +22,7 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.models.earth.atmosphere.Atmosphere;
@@ -38,7 +38,7 @@ import org.orekit.utils.FieldPVCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public abstract class AbstractDragForceModel extends AbstractForceModel {
+public abstract class AbstractDragForceModel implements ForceModel {
 
     /** Atmospheric model. */
     private final Atmosphere atmosphere;

@@ -16,7 +16,14 @@
  */
 package org.orekit.utils;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -27,12 +34,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldChronologicalComparator;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeStamped;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * A cache of {@link TimeStamped} data that provides concurrency through immutability. This strategy is suitable when all the
@@ -47,13 +48,6 @@ import java.util.stream.Stream;
  */
 public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK extends CalculusFieldElement<KK>>
         implements FieldTimeStampedCache<T, KK> {
-    /** An empty immutable cache that always throws an exception on attempted access. */
-    @SuppressWarnings("rawtypes")
-    private static final ImmutableFieldTimeStampedCache EMPTY_CACHE =
-            new EmptyFieldTimeStampedCache<>();
-
-    /** A single chronological comparator since instances are thread safe. */
-    private final FieldChronologicalComparator<KK> CMP = new FieldChronologicalComparator<>();
 
     /**
      * the cached data. Be careful not to modify it after the constructor, or return a reference that allows mutating this
@@ -63,6 +57,16 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
 
     /** the size list to return from {@link #getNeighbors(FieldAbsoluteDate)}. */
     private final int neighborsSize;
+
+    /** Earliest date.
+     * @since 12.0
+     */
+    private final FieldAbsoluteDate<KK> earliestDate;
+
+    /** Latest date.
+     * @since 12.0
+     */
+    private final FieldAbsoluteDate<KK> latestDate;
 
     /**
      * Create a new cache with the given neighbors size and data.
@@ -91,15 +95,22 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
 
         // Sort and copy data first
         this.data = new ArrayList<>(data);
-        this.data.sort(CMP);
+        Collections.sort(this.data, new FieldChronologicalComparator<>());
+
+        this.earliestDate = this.data.get(0).getDate();
+        this.latestDate   = this.data.get(this.data.size() - 1).getDate();
+
     }
 
     /**
      * private constructor for {@link #EMPTY_CACHE}.
+     * @param field field to which the elements belong
      */
-    private ImmutableFieldTimeStampedCache() {
+    private ImmutableFieldTimeStampedCache(final Field<KK> field) {
         this.data          = null;
         this.neighborsSize = 0;
+        this.earliestDate  = FieldAbsoluteDate.getArbitraryEpoch(field);
+        this.latestDate    = FieldAbsoluteDate.getArbitraryEpoch(field);
     }
 
     /**
@@ -107,13 +118,12 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
      *
      * @param <TS> the type of data
      * @param <CFE> the type of the calculus field element
-     *
+     * @param field field to which the elements belong
      * @return an empty {@link ImmutableTimeStampedCache}.
      */
-    @SuppressWarnings("unchecked")
-    public static <TS extends FieldTimeStamped<CFE>,
-            CFE extends CalculusFieldElement<CFE>> ImmutableFieldTimeStampedCache<TS, CFE> emptyCache() {
-        return (ImmutableFieldTimeStampedCache<TS, CFE>) EMPTY_CACHE;
+    public static <TS extends FieldTimeStamped<CFE>, CFE extends CalculusFieldElement<CFE>>
+        ImmutableFieldTimeStampedCache<TS, CFE> emptyCache(final Field<CFE> field) {
+        return new EmptyFieldTimeStampedCache<>(field);
     }
 
     /** {@inheritDoc} */
@@ -185,22 +195,52 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
      * {@code data.size()} if {@code t} is after the last entry.
      */
     private int findIndex(final FieldAbsoluteDate<KK> t) {
-        // Guaranteed log(n) time
-        int i = Collections.binarySearch(this.data, t, CMP);
-        if (i == -this.data.size() - 1) {
-            // Beyond last entry
-            i = this.data.size();
+        // left bracket of search algorithm
+        int iInf  = 0;
+        KK  dtInf = t.durationFrom(earliestDate);
+        if (dtInf.getReal() < 0) {
+            // before first entry
+            return -1;
         }
-        else if (i < 0) {
-            //Did not find exact match, but contained in data interval
-            i = -i - 2;
+
+        // right bracket of search algorithm
+        int iSup  = data.size() - 1;
+        KK  dtSup = t.durationFrom(latestDate);
+        if (dtSup.getReal() > 0) {
+            // after last entry
+            return data.size();
         }
-        return i;
+
+        // search entries, using linear interpolation
+        // this should take only 2 iterations for near linear entries (most frequent use case)
+        // regardless of the number of entries
+        // this is much faster than binary search for large number of entries
+        while (iSup - iInf > 1) {
+            final int iInterp = (int) FastMath.rint(dtSup.multiply(iInf).subtract(dtInf.multiply(iSup)).divide(dtSup.subtract(dtInf)).getReal());
+            final int iMed    = FastMath.max(iInf + 1, FastMath.min(iInterp, iSup - 1));
+            final KK  dtMed   = t.durationFrom(data.get(iMed).getDate());
+            if (dtMed.getReal() < 0) {
+                iSup  = iMed;
+                dtSup = dtMed;
+            } else {
+                iInf  = iMed;
+                dtInf = dtMed;
+            }
+        }
+
+        return iInf;
     }
 
     /** An empty immutable cache that always throws an exception on attempted access. */
     private static class EmptyFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK extends CalculusFieldElement<KK>>
             extends ImmutableFieldTimeStampedCache<T, KK> {
+
+        /** Simple constructor.
+         * @param field field to which elements belong
+         */
+        EmptyFieldTimeStampedCache(final Field<KK> field) {
+            super(field);
+        }
 
         /** {@inheritDoc} */
         @Override

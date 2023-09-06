@@ -120,11 +120,11 @@ public class FieldEventEnablingPredicateFilterTest {
                                                   final Binary64 g) {
                         return ((FieldElevationExtremumDetector<Binary64>) eventDetector).getElevation(state).getReal() > minElevation;
                     }
-                }).withMaxCheck(new Binary64(60.0));
+                }).withMaxCheck(60.0);
 
         Assertions.assertSame(raw, aboveGroundElevationDetector.getDetector());
-        Assertions.assertEquals(0.001, raw.getMaxCheckInterval().getReal(), 1.0e-15);
-        Assertions.assertEquals(60.0, aboveGroundElevationDetector.getMaxCheckInterval().getReal(), 1.0e-15);
+        Assertions.assertEquals(0.001, raw.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(60.0, aboveGroundElevationDetector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-6, aboveGroundElevationDetector.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, aboveGroundElevationDetector.getMaxIterationCount());
 
@@ -173,8 +173,8 @@ public class FieldEventEnablingPredicateFilterTest {
     @Test
     public void testResetState() {
         final List<FieldAbsoluteDate<Binary64>> reset = new ArrayList<>();
-        FieldDateDetector<Binary64> raw = new FieldDateDetector<>(orbit.getDate().shiftedBy(3600.0)).
-                        withMaxCheck(new Binary64(1000.0)).
+        FieldDateDetector<Binary64> raw = new FieldDateDetector<>(Binary64Field.getInstance(), orbit.getDate().shiftedBy(3600.0)).
+                        withMaxCheck(1000.0).
                         withHandler(new FieldEventHandler<Binary64>() {
                             public FieldSpacecraftState<Binary64> resetState(FieldEventDetector<Binary64> detector,
                                                                              FieldSpacecraftState<Binary64> oldState) {
@@ -221,9 +221,10 @@ public class FieldEventEnablingPredicateFilterTest {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
-        final FieldDateDetector<Binary64> raw = new FieldDateDetector<>(orbit.getDate().shiftedBy(-0.5 * period)).
-                                 withMaxCheck(new Binary64(period / 3)).
-                                 withHandler(new FieldContinueOnEvent<>());
+        final FieldDateDetector<Binary64> raw = new FieldDateDetector<>(Binary64Field.getInstance(),
+                                                                        orbit.getDate().shiftedBy(-0.5 * period)).
+                                                withMaxCheck(period / 3).
+                                                withHandler(new FieldContinueOnEvent<>());
         for (int i = 0; i < 300; ++i) {
             raw.addEventDate(orbit.getDate().shiftedBy((i + 0.5) * period));
         }
@@ -274,9 +275,10 @@ public class FieldEventEnablingPredicateFilterTest {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
-        final FieldDateDetector<Binary64> raw = new FieldDateDetector<>(orbit.getDate().shiftedBy(+0.5 * period)).
-                                 withMaxCheck(new Binary64(period / 3)).
-                                 withHandler(new FieldContinueOnEvent<>());
+        final FieldDateDetector<Binary64> raw = new FieldDateDetector<>(Binary64Field.getInstance(),
+                                                                        orbit.getDate().shiftedBy(+0.5 * period)).
+                                                withMaxCheck(period / 3).
+                                                withHandler(new FieldContinueOnEvent<>());
         for (int i = 0; i < 300; ++i) {
             raw.addEventDate(orbit.getDate().shiftedBy(-(i + 0.5) * period));
         }
@@ -325,7 +327,7 @@ public class FieldEventEnablingPredicateFilterTest {
     @Test
     public void testGenerics() {
         // setup
-        FieldDateDetector<Binary64> detector = new FieldDateDetector<>(orbit.getDate());
+        FieldDateDetector<Binary64> detector = new FieldDateDetector<>(orbit.getDate().getField(), orbit.getDate());
         FieldEnablingPredicate<Binary64> predicate = (state, eventDetector, g) -> true;
 
         // action + verify. Just make sure it compiles with generics

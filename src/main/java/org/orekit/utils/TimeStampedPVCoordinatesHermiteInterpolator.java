@@ -31,7 +31,7 @@ import java.util.stream.Stream;
  * (about 10-20 points) in order to avoid <a href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
  * and numerical problems (including NaN appearing).
  *
- * @author Luc Maisonaube
+ * @author Luc Maisonobe
  * @author Vincent Cucchietti
  * @see HermiteInterpolator
  * @see TimeStampedPVCoordinates
@@ -126,10 +126,13 @@ public class TimeStampedPVCoordinatesHermiteInterpolator extends AbstractTimeInt
      * positions.
      */
     @Override
-    protected TimeStampedPVCoordinates interpolate(final AbsoluteDate date) {
+    protected TimeStampedPVCoordinates interpolate(final InterpolationData interpolationData) {
+
+        // Get date
+        final AbsoluteDate date = interpolationData.getInterpolationDate();
 
         // Convert sample to stream
-        final Stream<TimeStampedPVCoordinates> sample = neighborList.stream();
+        final Stream<TimeStampedPVCoordinates> sample = interpolationData.getNeighborList().stream();
 
         // Set up an interpolator taking derivatives into account
         final HermiteInterpolator interpolator = new HermiteInterpolator();

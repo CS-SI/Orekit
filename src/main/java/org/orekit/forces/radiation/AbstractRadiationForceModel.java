@@ -30,7 +30,7 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.EventDetector;
@@ -47,7 +47,7 @@ import org.orekit.utils.OccultationEngine;
  * @see ECOM2
  * @since 10.2
  */
-public abstract class AbstractRadiationForceModel extends AbstractForceModel {
+public abstract class AbstractRadiationForceModel implements ForceModel {
 
     /** Margin to force recompute lighting ratio derivatives when we are really inside penumbra. */
     private static final double ANGULAR_MARGIN = 1.0e-10;
@@ -90,7 +90,7 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
+    public Stream<EventDetector> getEventDetectors() {
         final EventDetector[] detectors = new EventDetector[2 * occultingBodies.size()];
         for (int i = 0; i < occultingBodies.size(); ++i) {
             final OccultationEngine occulting = occultingBodies.get(i);
@@ -109,12 +109,12 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
         }
         // Fusion between Date detector for parameter driver span change and
         // Detector for umbra / penumbra events
-        return Stream.concat(Stream.of(detectors), super.getEventsDetectors());
+        return Stream.concat(Stream.of(detectors), ForceModel.super.getEventDetectors());
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
         final T zero = field.getZero();
         @SuppressWarnings("unchecked")
         final FieldEventDetector<T>[] detectors = (FieldEventDetector<T>[]) Array.newInstance(FieldEventDetector.class,
@@ -124,17 +124,17 @@ public abstract class AbstractRadiationForceModel extends AbstractForceModel {
             detectors[2 * i]     = new FieldEclipseDetector<>(field, occulting).
                                    withUmbra().
                                    withMargin(zero.newInstance(-ANGULAR_MARGIN)).
-                                   withMaxCheck(zero.newInstance(ECLIPSE_MAX_CHECK)).
+                                   withMaxCheck(ECLIPSE_MAX_CHECK).
                                    withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
                                    withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
             detectors[2 * i + 1] = new FieldEclipseDetector<>(field, occulting).
                                    withPenumbra().
                                    withMargin(zero.newInstance(ANGULAR_MARGIN)).
-                                   withMaxCheck(zero.newInstance(ECLIPSE_MAX_CHECK)).
+                                   withMaxCheck(ECLIPSE_MAX_CHECK).
                                    withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
                                    withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
         }
-        return Stream.concat(Stream.of(detectors), super.getFieldEventsDetectors(field));
+        return Stream.concat(Stream.of(detectors), ForceModel.super.getFieldEventDetectors(field));
     }
 
     /**

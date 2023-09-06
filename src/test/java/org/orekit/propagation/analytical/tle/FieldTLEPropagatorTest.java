@@ -32,7 +32,7 @@ import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.frames.FieldTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.FieldBoundedPropagator;
@@ -216,17 +216,14 @@ public class FieldTLEPropagatorTest {
             FieldVector3D<T> zSat = rotSat.applyInverseTo(Vector3D.PLUS_K);
 
             // Transform Z axis from inertial frame to ITRF
-            FieldTransform<T> transform = currentState.getFrame().getTransformTo(itrf, currentState.getDate());
+            FieldStaticTransform<T> transform = currentState.getFrame().getStaticTransformTo(itrf, currentState.getDate());
             FieldVector3D<T> zSatITRF = transform.transformVector(zSat);
 
             // Transform satellite position/velocity from inertial frame to ITRF
-            FieldPVCoordinates<T> pvSatITRF = transform.transformPVCoordinates(currentState.getPVCoordinates());
+            FieldVector3D<T> posSatITRF = transform.transformPosition(currentState.getPosition());
 
             // Line containing satellite point and following pointing direction
-            FieldLine<T> pointingLine = new FieldLine<T>(pvSatITRF.getPosition(),
-                                         pvSatITRF.getPosition().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                     zSatITRF),
-                                         1.0e-10);
+            FieldLine<T> pointingLine = new FieldLine<T>(posSatITRF, posSatITRF.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, zSatITRF), 1.0e-10);
 
             double distance = pointingLine.distance(Vector3D.ZERO).getReal();
             minDistance = FastMath.min(minDistance, distance);

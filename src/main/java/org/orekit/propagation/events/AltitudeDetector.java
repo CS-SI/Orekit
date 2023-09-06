@@ -23,7 +23,6 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
-import org.orekit.utils.PVCoordinates;
 
 /** Finder for satellite altitude crossing events.
  * <p>This class finds altitude events (i.e. satellite crossing
@@ -86,7 +85,7 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
                             final double threshold,
                             final double altitude,
                             final BodyShape bodyShape) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnDecreasing(),
+        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnDecreasing(),
              altitude, bodyShape);
     }
 
@@ -96,7 +95,7 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -104,7 +103,7 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
      * @param bodyShape body shape with respect to which altitude should be evaluated
      * @since 6.1
      */
-    protected AltitudeDetector(final double maxCheck, final double threshold,
+    protected AltitudeDetector(final AdaptableInterval maxCheck, final double threshold,
                                final int maxIter, final EventHandler handler,
                                final double altitude,
                                final BodyShape bodyShape) {
@@ -115,7 +114,7 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
 
     /** {@inheritDoc} */
     @Override
-    protected AltitudeDetector create(final double newMaxCheck, final double newThreshold,
+    protected AltitudeDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                       final int newMaxIter, final EventHandler newHandler) {
         return new AltitudeDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                     altitude, bodyShape);
@@ -143,9 +142,7 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
      */
     public double g(final SpacecraftState s) {
         final Frame bodyFrame      = bodyShape.getBodyFrame();
-        final PVCoordinates pvBody = s.getPVCoordinates(bodyFrame);
-        final GeodeticPoint point  = bodyShape.transform(pvBody.getPosition(),
-                                                         bodyFrame, s.getDate());
+        final GeodeticPoint point  = bodyShape.transform(s.getPosition(bodyFrame), bodyFrame, s.getDate());
         return point.getAltitude() - altitude;
     }
 

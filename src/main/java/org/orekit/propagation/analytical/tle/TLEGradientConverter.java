@@ -25,6 +25,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
 /** Converter for TLE propagator.
  * @author Luc Maisonobe
@@ -32,7 +33,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Thomas Paulet
  * @since 11.0
  */
-class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
+class TLEGradientConverter extends AbstractAnalyticalGradientConverter implements ParameterDriversProvider {
 
     /** Fixed dimension of the state. */
     public static final int FREE_STATE_PARAMETERS = 6;
@@ -87,7 +88,7 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
                         revolutionNumberAtEpoch, bStar, utc);
 
         // TLE
-        final FieldTLE<Gradient> gTLE = FieldTLE.stateToTLE(state, templateTLE, utc, teme);
+        final FieldTLE<Gradient> gTLE = TLEPropagator.getDefaultTleGenerationAlgorithm(utc, teme).generate(state, templateTLE);
 
         // Return the "Field" propagator
         return FieldTLEPropagator.selectExtrapolator(gTLE, provider, state.getMass(), teme, parameters);

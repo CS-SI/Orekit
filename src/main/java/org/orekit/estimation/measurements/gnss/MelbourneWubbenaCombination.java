@@ -20,11 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.gnss.CombinedObservationData;
-import org.orekit.gnss.CombinedObservationDataSet;
+import org.orekit.files.rinex.observation.ObservationData;
+import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.gnss.MeasurementType;
-import org.orekit.gnss.ObservationData;
-import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.SatelliteSystem;
 
 /**
@@ -120,8 +118,9 @@ public class MelbourneWubbenaCombination implements MeasurementCombination {
             }
         }
 
-        return new CombinedObservationDataSet(observations.getHeader(), observations.getSatelliteSystem(),
-                                              observations.getPrnNumber(), observations.getDate(),
+        return new CombinedObservationDataSet(observations.getSatellite().getSystem(),
+                                              observations.getSatellite().getPRN(),
+                                              observations.getDate(),
                                               observations.getRcvrClkOffset(), combined);
     }
 

@@ -16,20 +16,18 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.hipparchus.Field;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.EventDetectorsProvider;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.AbstractGradientConverter;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
@@ -37,7 +35,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParametersDriversProvider;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap.Span;
 
 /** This interface represents a force modifying spacecraft motion for a {@link
@@ -66,7 +64,7 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @author Romain Di Constanzo
  * @author Pascal Parraud
  */
-public interface DSSTForceModel extends ParametersDriversProvider {
+public interface DSSTForceModel extends ParameterDriversProvider, EventDetectorsProvider {
 
     /**
      * Initialize the force model at the start of propagation.
@@ -90,6 +88,18 @@ public interface DSSTForceModel extends ParametersDriversProvider {
      */
     default <T extends CalculusFieldElement<T>> void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
         init(initialState.toSpacecraftState(), target.toAbsoluteDate());
+    }
+
+    /** {@inheritDoc}.*/
+    @Override
+    default Stream<EventDetector> getEventDetectors() {
+        return getEventDetectors(getParametersDrivers());
+    }
+
+    /** {@inheritDoc}.*/
+    @Override
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
+        return getFieldEventDetectors(field, getParametersDrivers());
     }
 
     /** Performs initialization prior to propagation for the current force model.
@@ -117,150 +127,13 @@ public interface DSSTForceModel extends ParametersDriversProvider {
      *  @param parameters values of the force model parameters for specific date
      *  (1 value only per parameter driver) obtained for example by calling
      *  {@link #getParameters(AbsoluteDate)} on force model or
-     *  {@link AbstractGradientConverter#getParametersAtStateDate(FieldSpacecraftState, ParametersDriversProvider)}
+     *  {@link AbstractGradientConverter#getParametersAtStateDate(FieldSpacecraftState, ParameterDriversProvider)}
      *  on gradient converter.
      *  @return a list of objects that will hold short period terms (the objects
      *  are also retained by the force model, which will update them during propagation)
      */
     <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                              PropagationType type, T[] parameters);
-
-    /** Get total number of spans for all the parameters driver.
-     * @return total number of span to be estimated
-     * @since 12.0
-     */
-    default int getNbParametersDriversValue() {
-        int totalSpan = 0;
-        final List<ParameterDriver> allParameters = getParametersDrivers();
-        for (ParameterDriver dragDriver : allParameters) {
-            totalSpan += dragDriver.getNbOfValues();
-        }
-        return totalSpan;
-    }
-
-    /** Get force model parameters, return each span value for
-     * each parameter driver. Different from {@link #getParameters(AbsoluteDate)}
-     * which return the value of the parameter at a specific date (1 value
-     * per parameter driver)
-     * @return force model parameters
-     * @since 12.0
-     */
-    default double[] getParametersAllValues() {
-
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final int nbParametersValues = getNbParametersDriversValue();
-        final double[] parameters = new double[nbParametersValues];
-        int paramIndex = 0;
-        for (int i = 0; i < drivers.size(); ++i) {
-            for (Span<Double> span = drivers.get(i).getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                parameters[paramIndex++] = span.getData();
-            }
-
-        }
-        return parameters;
-    }
-
-    /** Get force model parameters, return each span value for
-     * each parameter driver. Different from {@link #getParameters(Field, FieldAbsoluteDate)}
-     * which return the value of the parameter at a specific date (1 value
-     * per parameter driver)
-     * @param <T> type of the elements
-     * @param field field to which the elements belong
-     * @return force model parameters
-     * @since 12.0
-     */
-    default <T extends CalculusFieldElement<T>> T[] getParametersAllValues(final Field<T> field) {
-
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final int nbParametersValues = getNbParametersDriversValue();
-        final T[] parameters = MathArrays.buildArray(field, nbParametersValues);
-        int paramIndex = 0;
-        for (int i = 0; i < drivers.size(); ++i) {
-            for (Span<Double> span = drivers.get(i).getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                parameters[paramIndex++] = field.getZero().add(span.getData());
-            }
-
-        }
-        return parameters;
-    }
-
-    /** Get force model parameters at specific date (1 value per parameter
-     * driver. Different from {@link #getParametersAllValues()} which
-     * returns all span values of all parameters.
-     * @return force model parameters, will throw an exception if one
-     * of the PDriver in the DSST force model have more than 1 value driven. In this
-     * case (if one of the force PDriver has several values driven then the
-     * {@link #getParameters(AbsoluteDate)} must be used.
-     * @since 9.0
-     */
-    default double[] getParameters() {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.size()];
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = drivers.get(i).getValue();
-        }
-        return parameters;
-    }
-
-    /** Get force model parameters at specific date (1 value per parameter
-     * driver. Different from {@link #getParametersAllValues()} which
-     * returns all span values of all parameters.
-     * @param date date at which the parameters want to be known, can
-     * be new AbsoluteDate() if all the parameters have no validity period
-     * that is to say that they have only 1 estimated value over the all
-     * interval.
-     * @return force model parameters
-     * @since 12.0
-     */
-    default double[] getParameters(AbsoluteDate date) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.size()];
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = drivers.get(i).getValue(date);
-        }
-        return parameters;
-    }
-
-    /** Get force model parameters at specific date (1 value per parameter
-     * driver. Different from {@link #getParametersAllValues(Field)} which
-     * returns all span values of all parameters.
-     * @param field field to which the elements belong
-     * @param <T> type of the elements
-     * @return force model parameters, will throw an exception if one
-     * of the PDriver in the DSST force model have more than 1 value driven. In this
-     * case (if one of the force PDriver has several values driven then the
-     * {@link #getParameters(Field, FieldAbsoluteDate)} must be used.
-     * @since 9.0
-     */
-    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.size());
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = field.getZero().add(drivers.get(i).getValue());
-        }
-        return parameters;
-    }
-
-    /** Get force model parameters at specific date (1 value per parameter
-     * driver. Different from {@link #getParametersAllValues(Field)} which
-     * returns all span values of all parameters.
-     * @param field field to which the elements belong
-     * @param <T> type of the elements
-     * @param date field date at which the parameters want to be known, can
-     * be new AbsoluteDate() if all the parameters have no validity period
-     * that is to say that they have only 1 estimated value over the all
-     * interval.
-     * @return force model parameters
-     * @since 12.0
-     */
-    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field, FieldAbsoluteDate<T> date) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.size());
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = field.getZero().add(drivers.get(i).getValue(date.toAbsoluteDate()));
-        }
-        return parameters;
-    }
+                                                                                                  PropagationType type, T[] parameters);
 
     /** Extract the proper parameter drivers' values from the array in input of the
      * {@link #updateShortPeriodTerms(double[], SpacecraftState...) updateShortPeriodTerms} method.
@@ -345,55 +218,12 @@ public interface DSSTForceModel extends ParametersDriversProvider {
      *  @param parameters values of the force model parameters at state date (only 1 span for
      *  each parameter driver) obtained for example by calling {@link #getParameters(Field, FieldAbsoluteDate)}
      *  on force model  or
-     *  {@link AbstractGradientConverter#getParametersAtStateDate(FieldSpacecraftState, ParametersDriversProvider)}
+     *  {@link AbstractGradientConverter#getParametersAtStateDate(FieldSpacecraftState, ParameterDriversProvider)}
      *  on gradient converter.
      *  @return the mean element rates dai/dt
      */
     <T extends CalculusFieldElement<T>> T[] getMeanElementRate(FieldSpacecraftState<T> state,
-                                                           FieldAuxiliaryElements<T> auxiliaryElements, T[] parameters);
-
-
-    /** Get the discrete events related to the model.
-     * @return array of events detectors or null if the model is not
-     * related to any discrete events
-     */
-    default EventDetector[] getEventsDetectors() {
-        // If force model does not have parameter Driver, an empty stream is given as results
-        final ArrayList<AbsoluteDate> transitionDates = new ArrayList<>();
-        for (ParameterDriver driver : getParametersDrivers()) {
-            // Get the transitions' dates from the TimeSpanMap
-            for (AbsoluteDate date : driver.getTransitionDates()) {
-                transitionDates.add(date);
-            }
-        }
-        // Either force model does not have any parameter driver or only contains parameter driver with only 1 span
-        if (transitionDates.size() == 0) {
-            return null;
-
-        } else {
-            transitionDates.sort(null);
-            // Initialize the date detector
-            final DateDetector datesDetector = new DateDetector(transitionDates.get(0)).
-                    withMaxCheck(60.).
-                    withHandler(( state, d, increasing) -> {
-                        return Action.RESET_DERIVATIVES;
-                    });
-            // Add all transitions' dates to the date detector
-            for (int i = 1; i < transitionDates.size(); i++) {
-                datesDetector.addEventDate(transitionDates.get(i));
-            }
-            // Return the detector
-            return (EventDetector[]) Stream.of(datesDetector).toArray();
-        }
-    }
-
-    /** Get the discrete events related to the model.
-     * @param <T> type of the elements
-     * @param field field used by default
-     * @return array of events detectors or null if the model is not
-     * related to any discrete events
-     */
-    <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(Field<T> field);
+                                                               FieldAuxiliaryElements<T> auxiliaryElements, T[] parameters);
 
     /** Register an attitude provider.
      * <p>
@@ -427,7 +257,7 @@ public interface DSSTForceModel extends ParametersDriversProvider {
      * @param <T> type of the elements
      * @param parameters values of the force model parameters (all span values for each parameters)
      * obtained for example by calling {@link #getParametersAllValues(Field)} on force model or
-     *  {@link AbstractGradientConverter#getParameters(FieldSpacecraftState, ParametersDriversProvider)}
+     *  {@link AbstractGradientConverter#getParameters(FieldSpacecraftState, ParameterDriversProvider)}
      *  on gradient converter. The extract parameter method
      *  {@link #extractParameters(CalculusFieldElement[], FieldAbsoluteDate)} is called in
      * the method to select the right parameter.

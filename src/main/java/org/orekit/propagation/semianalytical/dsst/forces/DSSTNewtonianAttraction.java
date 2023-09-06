@@ -31,7 +31,6 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
@@ -151,12 +150,6 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
         orbit.addKeplerContribution(PositionAngle.MEAN, context.getGM(), yDot);
 
         return yDot;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
-        return null;
     }
 
     /** {@inheritDoc} */

@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.BistaticRangeRate;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
@@ -43,6 +44,18 @@ public class BistaticRangeRateIonosphericDelayModifier extends BaseRangeRateIono
      */
     public BistaticRangeRateIonosphericDelayModifier(final IonosphericModel model, final double freq) {
         super(model, freq);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<BistaticRangeRate> estimated) {
+
+        final BistaticRangeRate measurement = estimated.getObservedMeasurement();
+        final GroundStation     emitter     = measurement.getEmitterStation();
+        final GroundStation     receiver    = measurement.getReceiverStation();
+
+        BistaticModifierUtil.modify(estimated, emitter, receiver, this::rangeRateErrorIonosphericModel);
+
     }
 
     /** {@inheritDoc} */

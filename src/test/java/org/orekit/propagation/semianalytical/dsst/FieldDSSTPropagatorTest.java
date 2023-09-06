@@ -54,7 +54,6 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
@@ -146,7 +145,7 @@ public class FieldDSSTPropagatorTest {
 
         // add force models
         final Frame ecefFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        final UnnormalizedSphericalHarmonicsProvider gravityProvider = GravityFieldFactory.getConstantUnnormalizedProvider(8, 8);
+        final UnnormalizedSphericalHarmonicsProvider gravityProvider = GravityFieldFactory.getUnnormalizedProvider(8, 8);
         propagator.addForceModel(new DSSTZonal(gravityProvider));
         propagator.addForceModel(new DSSTTesseral(ecefFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, gravityProvider));
         propagator.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getSun(), gravityProvider.getMu()));
@@ -158,7 +157,7 @@ public class FieldDSSTPropagatorTest {
 
         // The purpose is not verifying propagated values, but to check that no exception occurred
         Assertions.assertEquals(0.0, propagated.getDate().durationFrom(orbitEpoch.shiftedBy(20.0 * Constants.JULIAN_DAY)).getReal(), Double.MIN_VALUE);
-        Assertions.assertEquals(4.216464862955707E7, propagated.getA().getReal(), Double.MIN_VALUE);
+        Assertions.assertEquals(4.216464862956647E7, propagated.getA().getReal(), Double.MIN_VALUE);
 
     }
 
@@ -672,7 +671,7 @@ public class FieldDSSTPropagatorTest {
 
         final FieldAbsoluteDate<T> stopDate = state.getDate().shiftedBy(1000);
         CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.STOP);
-        dsstPropagator.addEventDetector(new FieldDateDetector<>(stopDate).withHandler(checking));
+        dsstPropagator.addEventDetector(new FieldDateDetector<>(field, stopDate).withHandler(checking));
         checking.assertEvent(false);
         final FieldSpacecraftState<T> finalState = dsstPropagator.propagate(state.getDate().shiftedBy(3200));
         checking.assertEvent(true);
@@ -690,7 +689,7 @@ public class FieldDSSTPropagatorTest {
 
         final FieldAbsoluteDate<T> resetDate = state.getDate().shiftedBy(1000);
         CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.CONTINUE);
-        dsstPropagator.addEventDetector(new FieldDateDetector<>(resetDate).withHandler(checking));
+        dsstPropagator.addEventDetector(new FieldDateDetector<>(field, resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
         final FieldSpacecraftState<T> finalState = dsstPropagator.propagate(state.getDate().shiftedBy(dt));
@@ -1353,12 +1352,6 @@ public class FieldDSSTPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
-            return null;
-        }
-
-        /** {@inheritDoc} */
-        @Override
         protected List<ParameterDriver> getParametersDriversWithoutMu() {
             return Collections.emptyList();
         }
@@ -1386,7 +1379,7 @@ public class FieldDSSTPropagatorTest {
     }
 
     /** This class is based on the example given by Orekit user kris06 in https://gitlab.orekit.org/orekit/orekit/-/issues/670. */
-    private class NumericalForce extends AbstractForceModel {
+    private class NumericalForce implements ForceModel {
 
         private boolean initialized;
         private boolean accComputed;
@@ -1423,13 +1416,13 @@ public class FieldDSSTPropagatorTest {
 
         /** {@inheritDoc} */
         @Override
-        public Stream<EventDetector> getEventsDetectors() {
+        public Stream<EventDetector> getEventDetectors() {
             return Stream.empty();
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
             return Stream.empty();
         }
 

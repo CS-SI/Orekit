@@ -51,6 +51,13 @@ public class SatInSystem {
         return prn;
     }
 
+    /** Get a 2-digits Pseudo Random Number for RINEX files.
+     * @return 2-digits Pseudo Random Number for RINEX files
+     */
+    public int getTwoDigitsRinexPRN() {
+        return system == SatelliteSystem.SBAS ? prn - 100 : (system == SatelliteSystem.QZSS ? prn - 192 : prn);
+    }
+
     @Override
     public boolean equals(final Object object) {
         if (object instanceof SatInSystem) {

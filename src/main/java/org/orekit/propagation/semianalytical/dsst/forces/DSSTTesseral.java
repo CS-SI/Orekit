@@ -51,7 +51,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
@@ -760,12 +759,6 @@ public class DSSTTesseral implements DSSTForceModel {
         slot.cijm[m][j + maxFrequencyShortPeriodics].addGridPoint(date, currentCijm);
         slot.sijm[m][j + maxFrequencyShortPeriodics].addGridPoint(date, currentSijm);
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
-        return null;
     }
 
      /**

@@ -92,6 +92,12 @@ public interface PropagatorBuilder {
      */
     Frame getFrame();
 
+    /** Get the central attraction coefficient (µ - m³/s²) value.
+     * @return the central attraction coefficient (µ - m³/s²) value
+     * @since 12.0
+     */
+    double getMu();
+
     /** Get the drivers for the configurable orbital parameters.
      * Orbital drivers should have only 1 value estimated (1 span)
      * @return drivers for the configurable orbital parameters

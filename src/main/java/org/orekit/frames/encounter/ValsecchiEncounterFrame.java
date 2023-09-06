@@ -61,8 +61,8 @@ public class ValsecchiEncounterFrame extends AbstractEncounterLOF {
     @Override
     public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
                                                                                      final FieldPVCoordinates<T> origin,
-                                                                                     final FieldPVCoordinates<T> otherInstance) {
-        final FieldVector3D<T> otherVelocity = otherInstance.getVelocity();
+                                                                                     final FieldPVCoordinates<T> other) {
+        final FieldVector3D<T> otherVelocity = other.getVelocity();
 
         final FieldVector3D<T> xAxis = origin.getVelocity().crossProduct(otherVelocity).normalize();
         final FieldVector3D<T> yAxis = otherVelocity.subtract(origin.getVelocity()).normalize();
@@ -72,9 +72,9 @@ public class ValsecchiEncounterFrame extends AbstractEncounterLOF {
 
     /** {@inheritDoc} */
     @Override
-    public Rotation rotationFromInertial(final PVCoordinates origin, final PVCoordinates otherInstance) {
-        final Vector3D xAxis = origin.getVelocity().crossProduct(otherInstance.getVelocity()).normalize();
-        final Vector3D yAxis = otherInstance.getVelocity().subtract(origin.getVelocity()).normalize();
+    public Rotation rotationFromInertial(final PVCoordinates origin, final PVCoordinates other) {
+        final Vector3D xAxis = origin.getVelocity().crossProduct(other.getVelocity()).normalize();
+        final Vector3D yAxis = other.getVelocity().subtract(origin.getVelocity()).normalize();
 
         return new Rotation(xAxis, yAxis, Vector3D.PLUS_I, Vector3D.PLUS_J);
     }
@@ -97,5 +97,11 @@ public class ValsecchiEncounterFrame extends AbstractEncounterLOF {
     @Override
     public Vector3D getAxisNormalToCollisionPlane() {
         return Vector3D.PLUS_J;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getName() {
+        return "VALSECCHI_ENCOUNTER_LOF";
     }
 }

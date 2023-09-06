@@ -56,7 +56,7 @@ public class FieldCloseEventsAnalyticalKeplerianTest extends FieldCloseEventsAbs
         FieldRecordAndContinue<Binary64> handler = new FieldRecordAndContinue<>();
         TimeDetector detector = new TimeDetector(1, period - 1)
                 .withHandler(handler)
-                .withMaxCheck(v(1e100))
+                .withMaxCheck(1e100)
                 .withThreshold(v(1));
         propagator.addEventDetector(detector);
 
@@ -78,7 +78,7 @@ public class FieldCloseEventsAnalyticalKeplerianTest extends FieldCloseEventsAbs
         FieldRecordAndContinue<Binary64> handler = new FieldRecordAndContinue<>();
         TimeDetector detector = new TimeDetector(-1, period + 1)
                 .withHandler(handler)
-                .withMaxCheck(v(1e100))
+                .withMaxCheck(1e100)
                 .withThreshold(v(1));
         propagator.addEventDetector(detector);
 

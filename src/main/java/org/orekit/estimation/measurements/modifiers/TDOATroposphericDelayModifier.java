@@ -24,6 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.TDOA;
@@ -117,6 +118,18 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return tropoModel.getParametersDrivers();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<TDOA> estimated) {
+
+        final TDOA            measurement   = estimated.getObservedMeasurement();
+        final GroundStation   primeStation  = measurement.getPrimeStation();
+        final GroundStation   secondStation = measurement.getSecondStation();
+
+        TDOAModifierUtil.modifyWithoutDerivatives(estimated,  primeStation, secondStation, this::timeErrorTroposphericModel);
+
     }
 
     /** {@inheritDoc} */

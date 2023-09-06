@@ -23,6 +23,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.gnss.Phase;
@@ -87,8 +88,8 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
      * @return the measurement error due to ionosphere
      */
     private <T extends CalculusFieldElement<T>> T phaseErrorIonosphericModel(final GroundStation station,
-                                                                         final FieldSpacecraftState<T> state,
-                                                                         final T[] parameters) {
+                                                                             final FieldSpacecraftState<T> state,
+                                                                             final T[] parameters) {
 
         // Base frame associated with the station
         final TopocentricFrame baseFrame = station.getBaseFrame();
@@ -159,13 +160,27 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<Phase> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Phase> estimated) {
+
         final Phase           measurement = estimated.getObservedMeasurement();
         final GroundStation   station     = measurement.getStation();
         final SpacecraftState state       = estimated.getStates()[0];
 
-        // Old phase value
-        final double[] oldValue = estimated.getEstimatedValue();
+        // Update estimated value taking into account the ionospheric delay.
+        // The ionospheric delay is directly subtracted to the phase.
+        final double[] newValue = estimated.getEstimatedValue();
+        final double delay = phaseErrorIonosphericModel(station, state);
+        newValue[0] = newValue[0] - delay;
+        estimated.setEstimatedValue(newValue);
+
+    }
+
+    @Override
+    public void modify(final EstimatedMeasurement<Phase> estimated) {
+
+        final Phase           measurement = estimated.getObservedMeasurement();
+        final GroundStation   station     = measurement.getStation();
+        final SpacecraftState state       = estimated.getStates()[0];
 
         // Compute ionospheric delay (the division by the wavelength is performed)
         final ModifierGradientConverter converter =
@@ -217,10 +232,8 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
         }
 
         // Update estimated value taking into account the ionospheric delay.
-        // The ionospheric delay is directly subtracted to the phase.
-        final double[] newValue = oldValue.clone();
-        newValue[0] = newValue[0] - gDelay.getValue();
-        estimated.setEstimatedValue(newValue);
+        modifyWithoutDerivatives(estimated);
+
     }
 
 }

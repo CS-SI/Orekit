@@ -33,13 +33,14 @@ import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Frames;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
+import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.DoubleArrayDictionary;
@@ -228,25 +229,25 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      *
      * @param tle the TLE to propagate.
      * @return the correct propagator.
-     * @see #selectExtrapolator(TLE, Frames)
+     * @see #selectExtrapolator(TLE, Frame)
      */
     @DefaultDataContext
     public static TLEPropagator selectExtrapolator(final TLE tle) {
-        return selectExtrapolator(tle, DataContext.getDefault().getFrames());
+        return selectExtrapolator(tle, DataContext.getDefault().getFrames().getTEME());
     }
 
     /** Selects the extrapolator to use with the selected TLE.
      * @param tle the TLE to propagate.
-     * @param frames set of Frames to use in the propagator.
+     * @param teme TEME frame.
      * @return the correct propagator.
      * @since 10.1
      */
-    public static TLEPropagator selectExtrapolator(final TLE tle, final Frames frames) {
+    public static TLEPropagator selectExtrapolator(final TLE tle, final Frame teme) {
         return selectExtrapolator(
                 tle,
-                FrameAlignedProvider.of(frames.getTEME()),
+                FrameAlignedProvider.of(teme),
                 DEFAULT_MASS,
-                frames.getTEME());
+                teme);
     }
 
     /** Selects the extrapolator to use with the selected TLE.
@@ -558,7 +559,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     public void resetInitialState(final SpacecraftState state) {
         super.resetInitialState(state);
         super.setStartDate(state.getDate());
-        final TLE newTLE = TLE.stateToTLE(state, tle, utc, teme);
+        final TleGenerationAlgorithm algorithm = getDefaultTleGenerationAlgorithm(utc, teme);
+        final TLE newTLE = algorithm.generate(state, tle);
         this.tle = newTLE;
         initializeCommons();
         sxpInitialize();
@@ -621,6 +623,19 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         }
         Collections.sort(columnsNames);
         return columnsNames;
+    }
+
+    /**
+     * Get the default TLE generation algorithm.
+     * @param utc UTC time scale
+     * @param teme TEME frame
+     * @return a TLE generation algorithm
+     * @since 12.0
+     */
+    public static TleGenerationAlgorithm getDefaultTleGenerationAlgorithm(final TimeScale utc, final Frame teme) {
+        return new FixedPointTleGenerationAlgorithm(FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,
+                                                    FixedPointTleGenerationAlgorithm.MAX_ITERATIONS_DEFAULT,
+                                                    FixedPointTleGenerationAlgorithm.SCALE_DEFAULT, utc, teme);
     }
 
 }

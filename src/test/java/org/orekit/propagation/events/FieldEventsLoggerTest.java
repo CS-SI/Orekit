@@ -337,7 +337,7 @@ public class FieldEventsLoggerTest {
         FieldEclipseDetector<T> detector =
                 new FieldEclipseDetector<>(field, CelestialBodyFactory.getSun(), 696000000,
                                            new OneAxisEllipsoid(6400000, 0.0, FramesFactory.getGCRF())).
-                withMaxCheck(field.getZero().newInstance(60)).
+                withMaxCheck(60.0).
                 withThreshold(field.getZero().newInstance(1.0e-3));
 
         if (totalEclipse) {

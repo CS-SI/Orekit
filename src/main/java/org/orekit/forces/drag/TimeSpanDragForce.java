@@ -301,7 +301,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
      * </p>
      */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
+    public Stream<EventDetector> getEventDetectors() {
 
         // Get the transitions' dates from the TimeSpanMap
         final AbsoluteDate[] transitionDates = getTransitionDates();
@@ -326,15 +326,15 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
      * </p>
      */
     @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
 
         // Get the transitions' dates from the TimeSpanMap
         final AbsoluteDate[] transitionDates = getTransitionDates();
 
         // Initialize the date detector
         final FieldDateDetector<T> datesDetector =
-                        new FieldDateDetector<>(new FieldAbsoluteDate<>(field, transitionDates[0])).
-                        withMaxCheck(field.getZero().add(60.)).
+                        new FieldDateDetector<>(field, new FieldAbsoluteDate<>(field, transitionDates[0])).
+                        withMaxCheck(60.0).
                         withHandler((FieldSpacecraftState<T> state, FieldEventDetector<T> detector, boolean increasing) ->
                                     Action.RESET_DERIVATIVES);
         // Add all transitions' dates to the date detector

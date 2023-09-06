@@ -35,7 +35,7 @@ public interface AttitudeProvider {
      * @param pvProv local position-velocity provider around current date
      * @param date current date
      * @param frame reference frame from which attitude is computed
-     * @return attitude attitude on the specified date and position-velocity state
+     * @return attitude on the specified date and position-velocity state
      */
     Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame);
 
@@ -44,7 +44,7 @@ public interface AttitudeProvider {
      * @param date current date
      * @param frame reference frame from which attitude is computed
      * @param <T> type of the field elements
-     * @return attitude attitude on the specified date and position-velocity state
+     * @return attitude on the specified date and position-velocity state
      * @since 9.0
      */
     <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,

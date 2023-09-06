@@ -16,6 +16,18 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
@@ -74,6 +86,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.events.AbstractDetector;
+import org.orekit.propagation.events.AdaptableInterval;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
@@ -99,18 +112,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
 public class NumericalPropagatorTest {
 
     private double               mu;
@@ -134,7 +135,7 @@ public class NumericalPropagatorTest {
                                              });
         ForceModel force = new ForceModelAdapter() {
             @Override
-            public Stream<EventDetector> getEventsDetectors() {
+            public Stream<EventDetector> getEventDetectors() {
                 return Stream.of(singleDetector);
             }
         };
@@ -209,8 +210,11 @@ public class NumericalPropagatorTest {
         propagator.propagate(end);
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         CountingHandler handler = new CountingHandler();
-        DateDetector detector = new DateDetector(10, 1e-9, end)
-                .withHandler(handler);
+        DateDetector detector = new DateDetector(end).
+                                withMaxCheck(10).
+                                withThreshold(1e-9).
+                                withMinGap(10).
+                                withHandler(handler);
         // propagation works fine w/o event detector, but breaks with it
         ephemeris.addEventDetector(detector);
 
@@ -237,7 +241,11 @@ public class NumericalPropagatorTest {
         // events directly on propagation start date are not triggered,
         // so move the event date slightly after
         AbsoluteDate eventDate = initDate.shiftedBy(FastMath.ulp(100.0) / 10.0);
-        DateDetector detector = new DateDetector(10, 1e-9, eventDate).withHandler(handler);
+        DateDetector detector = new DateDetector(eventDate).
+                                withMaxCheck(10).
+                                withThreshold(1e-9).
+                                withMinGap(10).
+                                withHandler(handler);
         // propagation works fine w/o event detector, but breaks with it
         ephemeris.addEventDetector(detector);
 
@@ -280,8 +288,14 @@ public class NumericalPropagatorTest {
     @Test
     public void testCloseEventDates() {
         // setup
-        DateDetector d1 = new DateDetector(10, 1, initDate.shiftedBy(15)).withHandler(new ContinueOnEvent());
-        DateDetector d2 = new DateDetector(10, 1, initDate.shiftedBy(15.5)).withHandler(new ContinueOnEvent());
+        DateDetector d1 = new DateDetector(initDate.shiftedBy(15)).
+                          withMaxCheck(10).
+                          withThreshold(1).
+                          withHandler(new ContinueOnEvent());
+        DateDetector d2 = new DateDetector(initDate.shiftedBy(15.5)).
+                          withMaxCheck(10).
+                          withThreshold(1).
+                          withHandler(new ContinueOnEvent());
         propagator.addEventDetector(d1);
         propagator.addEventDetector(d2);
 
@@ -775,14 +789,14 @@ public class NumericalPropagatorTest {
     private static class AdditionalStateLinearDetector extends AbstractDetector<AdditionalStateLinearDetector> {
 
         public AdditionalStateLinearDetector(double maxCheck, double threshold) {
-            this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent());
+            this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent());
         }
 
-        private AdditionalStateLinearDetector(double maxCheck, double threshold, int maxIter, EventHandler handler) {
+        private AdditionalStateLinearDetector(AdaptableInterval maxCheck, double threshold, int maxIter, EventHandler handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
 
-        protected AdditionalStateLinearDetector create(final double newMaxCheck, final double newThreshold,
+        protected AdditionalStateLinearDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                                        final int newMaxIter, final EventHandler newHandler) {
             return new AdditionalStateLinearDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
@@ -1340,12 +1354,14 @@ public class NumericalPropagatorTest {
                                                         error60s,
                                                         error120s, error300s,
                                                         error600s, error900s);
-        np.addEventDetector(new DateDetector(30.0, 1.0e-9, reference,
+        np.addEventDetector(new DateDetector(reference,
                                              reference.shiftedBy( 60.0),
                                              reference.shiftedBy(120.0),
                                              reference.shiftedBy(300.0),
                                              reference.shiftedBy(600.0),
                                              reference.shiftedBy(900.0)).
+                            withMaxCheck(30.0).
+                            withThreshold(1.0e-9).
                             withHandler(checker));
         np.propagate(reference.shiftedBy(1000.0));
     }
@@ -1437,11 +1453,12 @@ public class NumericalPropagatorTest {
 
         // Setup
         RecordAndContinue recordAndContinue = new RecordAndContinue();
-        DateDetector dateDetector = new DateDetector(1, 1E-1,
-                                                     initDate.shiftedBy(10.),
+        DateDetector dateDetector = new DateDetector(initDate.shiftedBy(10.),
                                                      initDate.shiftedBy(15.),
-                                                     initDate.shiftedBy(20.))
-                        .withHandler(recordAndContinue);
+                                                     initDate.shiftedBy(20.)).
+                                    withMaxCheck(1).
+                                    withThreshold(1e-1).
+                                    withHandler(recordAndContinue);
 
         propagator.addEventDetector(dateDetector);
 
@@ -1607,7 +1624,9 @@ public class NumericalPropagatorTest {
 
         // Stop condition
         final double convergenceThreshold = 1e-9;
-        propag.addEventDetector(new DateDetector(1e10, convergenceThreshold, initialState.getDate().shiftedBy(60)));
+        propag.addEventDetector(new DateDetector(initialState.getDate().shiftedBy(60)).
+                                withMaxCheck(1e10).
+                                withThreshold(convergenceThreshold));
 
         // Propagate until the stop condition is reached
         final SpacecraftState finalState =  propag.propagate(AbsoluteDate.FUTURE_INFINITY);
@@ -1802,12 +1821,12 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public Stream<EventDetector> getEventsDetectors() {
+        public Stream<EventDetector> getEventDetectors() {
             return Stream.empty();
         }
 
         @Override
-        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
             return Stream.empty();
         }
 
@@ -1815,19 +1834,6 @@ public class NumericalPropagatorTest {
         public List<ParameterDriver> getParametersDrivers() {
             return Collections.emptyList();
         }
-
-        @Override
-        public ParameterDriver getParameterDriver(String name)
-            {
-            final List<ParameterDriver> drivers =  getParametersDrivers();
-            final String[] names = new String[drivers.size()];
-            for (int i = 0; i < names.length; ++i) {
-                names[i] = drivers.get(i).getName();
-            }
-            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                      name, names);
-        }
-
     }
 
 }

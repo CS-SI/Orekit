@@ -56,6 +56,5 @@ public enum TimeTagSpecificationType {
     public String getName() {
         return name;
     }
-
 }
 

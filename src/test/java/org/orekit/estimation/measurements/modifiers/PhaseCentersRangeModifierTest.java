@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.OneWayRangeMeasurementCreator;
@@ -145,10 +145,11 @@ public class PhaseCentersRangeModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             Range sr = (Range) spacecraftCenteredMeasurements.get(i);
             sr.addModifier(modifier);
-            EstimatedMeasurement<Range> estimated = sr.estimate(0, 0, new SpacecraftState[] { p3.propagate(sr.getDate()) });
+            EstimatedMeasurementBase<Range> estimated = sr.estimateWithoutDerivatives(0, 0,
+                                                                                      new SpacecraftState[] { p3.propagate(sr.getDate()) });
             Range ar = (Range) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
-            Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 1.6e-6);
+            Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 1.7e-6);
         }
 
     }
@@ -210,10 +211,11 @@ public class PhaseCentersRangeModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             Range sr = (Range) spacecraftCenteredMeasurements.get(i);
             sr.addModifier(modifier);
-            EstimatedMeasurement<Range> estimated = sr.estimate(0, 0, new SpacecraftState[] { p3.propagate(sr.getDate()) });
+            EstimatedMeasurementBase<Range> estimated = sr.estimateWithoutDerivatives(0, 0,
+                                                                                      new SpacecraftState[] { p3.propagate(sr.getDate()) });
             Range ar = (Range) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
-            Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 2.3e-7);
+            Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 3.4e-7);
         }
 
     }

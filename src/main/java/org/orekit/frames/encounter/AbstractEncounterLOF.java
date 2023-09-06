@@ -20,7 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
@@ -99,12 +98,6 @@ public abstract class AbstractEncounterLOF implements EncounterLOF {
         return rotationFromInertial(origin, getOther());
     }
 
-    /** No encounter local orbital frame are currently defined in CCSDS so this will necessarily return null. */
-    @Override
-    public OrbitRelativeFrame toOrbitRelativeFrame() {
-        return null;
-    }
-
     /**
      * Get the field version of other's position and velocity coordinates. If the instance has been created with normal
      * {@link PVCoordinates}, then it will build its field equivalent.
@@ -115,40 +108,10 @@ public abstract class AbstractEncounterLOF implements EncounterLOF {
      * @return field version of other's position and velocity coordinates
      */
     @SuppressWarnings("unchecked")
-    protected <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getFieldOther(final Field<T> field) {
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getFieldOther(final Field<T> field) {
         return fieldOther == null ? new FieldPVCoordinates<>(field, other) : (FieldPVCoordinates<T>) fieldOther;
     }
-
-    /**
-     * Get the rotation from inertial to this encounter local orbital frame.
-     * <p>
-     * <b>BEWARE: The given origin's position and velocity coordinates must be given in the frame in which this instance
-     * has been expressed in.</b>
-     *
-     * @param field field to which the elements belong
-     * @param origin position-velocity of the origin in the same inertial frame as the one this instance has been defined
-     * in.
-     * @param otherInstance position-velocity of the other instance
-     * @param <T> type of the field elements
-     *
-     * @return rotation from inertial to this encounter local orbital frame
-     */
-    protected abstract <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(Field<T> field,
-                                                                                                 FieldPVCoordinates<T> origin,
-                                                                                                 FieldPVCoordinates<T> otherInstance);
-
-    /**
-     * Get the rotation from inertial to this encounter local orbital frame.
-     * <p>
-     * <b>BEWARE: The given origin's position and velocity coordinates must be given in the frame in which this instance
-     * has been expressed in.</b>
-     *
-     * @param origin position-velocity of the origin in some inertial frame
-     * @param otherInstance position-velocity of the other instance
-     *
-     * @return rotation from inertial to this encounter local orbital frame
-     */
-    protected abstract Rotation rotationFromInertial(PVCoordinates origin, PVCoordinates otherInstance);
 
     /**
      * Get the normal version of other's position and velocity coordinates. If the instance has been created with field
@@ -156,7 +119,8 @@ public abstract class AbstractEncounterLOF implements EncounterLOF {
      *
      * @return normal version of other's position and velocity coordinates
      */
-    protected PVCoordinates getOther() {
+    @Override
+    public PVCoordinates getOther() {
         return other == null ? fieldOther.toPVCoordinates() : other;
     }
 }

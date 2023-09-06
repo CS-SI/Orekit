@@ -52,6 +52,7 @@ import org.orekit.estimation.measurements.Position;
 import org.orekit.files.ilrs.CPF;
 import org.orekit.files.ilrs.CPF.CPFCoordinate;
 import org.orekit.files.ilrs.CPF.CPFEphemeris;
+import org.orekit.files.rinex.HatanakaCompressFilter;
 import org.orekit.files.ilrs.CPFParser;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
@@ -70,7 +71,6 @@ import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.gnss.HatanakaCompressFilter;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.NRLMSISE00;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
@@ -170,7 +170,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final StreamingStatistics statY      = observer.getYStatistics();
         final StreamingStatistics statZ      = observer.getZStatistics();
         Assertions.assertEquals(0.0, statX.getMean(), 1.39e-3);
-        Assertions.assertEquals(0.0, statY.getMean(), 1.87e-4);
+        Assertions.assertEquals(0.0, statY.getMean(), 1.85e-4);
         Assertions.assertEquals(0.0, statZ.getMean(), 2.85e-4);
         Assertions.assertEquals(0.0, statX.getMin(),  0.031); // Value is negative
         Assertions.assertEquals(0.0, statY.getMin(),  0.028); // Value is negative
@@ -185,7 +185,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final Vector3D estimated = new Vector3D(estimatedState.getEntry(0),
                                                 estimatedState.getEntry(1),
                                                 estimatedState.getEntry(2));
-        final double dP = 0.046;
+        final double dP = 0.029;
         Assertions.assertEquals(0.0, Vector3D.distance(ref, estimated), dP);
 
         // Check that "physical" matrices are not null
@@ -465,11 +465,11 @@ public class UnscentedKalmanOrbitDeterminationTest {
         for (final CPFCoordinate coordinate : ephemeris.getCoordinates()) {
 
             // Position in inertial frames
-            final TimeStampedPVCoordinates pvInertial = ephemeris.getFrame().getTransformTo(orbit.getFrame(), coordinate.getDate()).
-                                                                             transformPVCoordinates(coordinate);
+            final Vector3D posInertial = ephemeris.getFrame().getStaticTransformTo(orbit.getFrame(), coordinate.getDate()).
+                                                              transformPosition(coordinate.getPosition());
 
             // Initialize measurement
-            final Position measurement = new Position(coordinate.getDate(), pvInertial.getPosition(), sigma, 1.0, satellite);
+            final Position measurement = new Position(coordinate.getDate(), posInertial, sigma, 1.0, satellite);
 
             // Add the measurement to the list
             measurements.add(measurement);

@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.analytical;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
@@ -76,9 +79,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class KeplerianPropagatorTest {
@@ -513,10 +513,10 @@ public class KeplerianPropagatorTest {
         propagator.addEventDetector(new ApsideDetector(orbit));
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        Vector3D pos = propagated.getPosition(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) > 3000.0);
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) < 3500.0);
-        Assertions.assertEquals(orbit.getA() * (1.0 - orbit.getE()), pv.getPosition().getNorm(), 1.0e-6);
+        Assertions.assertEquals(orbit.getA() * (1.0 - orbit.getE()), pos.getNorm(), 1.0e-6);
     }
 
     @Test
@@ -938,7 +938,7 @@ public class KeplerianPropagatorTest {
             return name;
         }
 
-        public boolean yield(final SpacecraftState state) {
+        public boolean yields(final SpacecraftState state) {
             return dependency != null && state.getAdditionalStatesValues().getEntry(dependency) == null;
         }
 

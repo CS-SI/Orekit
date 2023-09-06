@@ -17,7 +17,7 @@
 
 package org.orekit.forces.maneuvers.propulsion;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -114,41 +114,39 @@ public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustP
     /** {@inheritDoc} */
     @Override
     public double getFlowRate() {
-        return getInitialFlowrate();
+        return getInitialFlowRate();
     }
 
     /** {@inheritDoc} */
     @Override
     public double getFlowRate(final AbsoluteDate date) {
-        return getInitialFlowrate();
+        return getInitialFlowRate();
     }
 
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        final List<ParameterDriver> drivers = new ArrayList<>(3);
-        drivers.add(scaleFactorThrustXDriver);
-        drivers.add(scaleFactorThrustYDriver);
-        drivers.add(scaleFactorThrustZDriver);
-        return Collections.unmodifiableList(drivers);
+        return Collections.unmodifiableList(Arrays.asList(scaleFactorThrustXDriver,
+                                                          scaleFactorThrustYDriver,
+                                                          scaleFactorThrustZDriver));
     }
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D getThrustVector(final double parameters[]) {
+    public Vector3D getThrustVector(final double[] parameters) {
         return getThrustVector(parameters[0], parameters[1], parameters[2]);
     }
 
     /** {@inheritDoc} */
     @Override
     public double getFlowRate(final double[] parameters) {
-        return getInitialFlowrate();
+        return getInitialFlowRate();
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final T parameters[]) {
-        return new FieldVector3D<T>(parameters[0].multiply(getInitialThrustVector().getX()),
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final T[] parameters) {
+        return new FieldVector3D<>(parameters[0].multiply(getInitialThrustVector().getX()),
                         parameters[1].multiply(getInitialThrustVector().getY()),
                         parameters[2].multiply(getInitialThrustVector().getZ()));
     }
@@ -156,6 +154,6 @@ public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustP
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T getFlowRate(final T[] parameters) {
-        return parameters[0].getField().getZero().add(getInitialFlowrate());
+        return parameters[0].getField().getZero().add(getInitialFlowRate());
     }
 }

@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -34,6 +36,17 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
 
+    /** Satellite which receives the signal and performs the measurement.
+     * @since 12.0
+     */
+    private final ObservableSatellite local;
+
+    /** Satellite which simply emits the signal in the one-way case,
+     * or reflects the signal in the two-way case.
+     * @since 12.0
+     */
+    private final ObservableSatellite remote;
+
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param local satellite which receives the signal and performs the measurement
@@ -48,23 +61,23 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
                                        final double wavelength, final double sigma, final double baseWeight) {
         super(noiseSource, sigma, baseWeight, local, remote);
         this.wavelength = wavelength;
+        this.local      = local;
+        this.remote     = remote;
     }
 
     /** {@inheritDoc} */
     @Override
-    public InterSatellitesPhase build(final SpacecraftState[] states) {
+    public InterSatellitesPhase build(final Map<ObservableSatellite, SpacecraftState> states) {
 
-        final ObservableSatellite[] satellites = getSatellites();
         final double sigma                     = getTheoreticalStandardDeviation()[0];
         final double baseWeight                = getBaseWeight()[0];
         final SpacecraftState[] relevant       = new SpacecraftState[] {
-            states[satellites[0].getPropagatorIndex()],
-            states[satellites[1].getPropagatorIndex()]
+            states.get(local),
+            states.get(remote)
         };
-        final SpacecraftState state            = states[satellites[0].getPropagatorIndex()];
 
         // create a dummy measurement
-        final InterSatellitesPhase dummy = new InterSatellitesPhase(satellites[0], satellites[1], state.getDate(),
+        final InterSatellitesPhase dummy = new InterSatellitesPhase(local, remote, relevant[0].getDate(),
                                                                     Double.NaN, wavelength, sigma, baseWeight);
         for (final EstimationModifier<InterSatellitesPhase> modifier : getModifiers()) {
             dummy.addModifier(modifier);
@@ -80,7 +93,7 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
         }
 
         // estimate the perfect value of the measurement
-        double phase = dummy.estimate(0, 0, relevant).getEstimatedValue()[0];
+        double phase = dummy.estimateWithoutDerivatives(0, 0, relevant).getEstimatedValue()[0];
 
         // add the noise
         final double[] noise = getNoise();
@@ -89,7 +102,7 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
         }
 
         // generate measurement
-        final InterSatellitesPhase measurement = new InterSatellitesPhase(satellites[0], satellites[1], state.getDate(),
+        final InterSatellitesPhase measurement = new InterSatellitesPhase(local, remote, relevant[0].getDate(),
                                                                           phase, wavelength, sigma, baseWeight);
         for (final EstimationModifier<InterSatellitesPhase> modifier : getModifiers()) {
             measurement.addModifier(modifier);

@@ -18,7 +18,7 @@ package org.orekit.estimation.measurements.gnss;
 
 import java.util.List;
 
-import org.orekit.gnss.ObservationDataSet;
+import org.orekit.files.rinex.observation.ObservationDataSet;
 
 /**
  * Interface for phase measurement cycle-slip detection.

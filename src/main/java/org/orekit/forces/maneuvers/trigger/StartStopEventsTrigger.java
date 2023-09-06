@@ -28,6 +28,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
+import org.orekit.propagation.events.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -160,13 +161,13 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
+    public Stream<EventDetector> getEventDetectors() {
         return Stream.of(startDetector, stopDetector);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <S extends CalculusFieldElement<S>> Stream<FieldEventDetector<S>> getFieldEventsDetectors(final Field<S> field) {
+    public <S extends CalculusFieldElement<S>> Stream<FieldEventDetector<S>> getFieldEventDetectors(final Field<S> field) {
 
         // get the field version of the start detector
         @SuppressWarnings("unchecked")
@@ -190,7 +191,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
 
     /** Convert a detector and set up new handler.
      * <p>
-     * This method is not inlined in {@link #getFieldEventsDetectors(Field)} because the
+     * This method is not inlined in {@link #getFieldEventDetectors(Field)} because the
      * parameterized types confuses the Java compiler.
      * </p>
      * @param field field to which the state belongs
@@ -200,15 +201,16 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      */
     private <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> D convertAndSetUpStartHandler(final Field<S> field) {
         final FieldAbstractDetector<D, S> converted = convertStartDetector(field, startDetector);
+        final FieldAdaptableInterval<S>   maxCheck  = s -> startDetector.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
         return converted.
-               withMaxCheck(field.getZero().newInstance(startDetector.getMaxCheckInterval())).
+               withMaxCheck(maxCheck).
                withThreshold(field.getZero().newInstance(startDetector.getThreshold())).
                withHandler(new FieldStartHandler<>());
     }
 
     /** Convert a detector and set up new handler.
      * <p>
-     * This method is not inlined in {@link #getFieldEventsDetectors(Field)} because the
+     * This method is not inlined in {@link #getFieldEventDetectors(Field)} because the
      * parameterized types confuses the Java compiler.
      * </p>
      * @param field field to which the state belongs
@@ -218,15 +220,16 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
      */
     private <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> D convertAndSetUpStopHandler(final Field<S> field) {
         final FieldAbstractDetector<D, S> converted = convertStopDetector(field, stopDetector);
+        final FieldAdaptableInterval<S>   maxCheck  = s -> stopDetector.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
         return converted.
-               withMaxCheck(field.getZero().newInstance(stopDetector.getMaxCheckInterval())).
+               withMaxCheck(maxCheck).
                withThreshold(field.getZero().newInstance(stopDetector.getThreshold())).
                withHandler(new FieldStopHandler<>());
     }
 
     /** Convert a primitive firing start detector into a field firing start detector.
      * <p>
-     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(CalculusFieldElement) withMaxCheck},
+     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(FieldAdaptableInterval) withMaxCheck},
      * {@link FieldAbstractDetector#withThreshold(CalculusFieldElement) withThreshold}, or
      * {@link FieldAbstractDetector#withHandler(org.orekit.propagation.events.handlers.FieldEventHandler) withHandler}
      * in the converted detector, this will be done by caller.
@@ -259,7 +262,7 @@ public abstract class StartStopEventsTrigger<A extends AbstractDetector<A>, O ex
 
     /** Convert a primitive firing stop detector into a field firing stop detector.
      * <p>
-     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(CalculusFieldElement) withMaxCheck},
+     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(FieldAdaptableInterval) withMaxCheck},
      * {@link FieldAbstractDetector#withThreshold(CalculusFieldElement) withThreshold}, or
      * {@link FieldAbstractDetector#withHandler(org.orekit.propagation.events.handlers.FieldEventHandler) withHandler}
      * in the converted detector, this will be done by caller.

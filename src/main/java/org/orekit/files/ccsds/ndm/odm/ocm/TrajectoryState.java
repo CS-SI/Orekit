@@ -44,7 +44,7 @@ public class TrajectoryState implements TimeStamped {
      * @param type type of the elements
      * @param date entry date
      * @param fields trajectory elements
-     * @param first index of first field to consider
+     * @param first index of first field to consider when parsing
      * @param units units to use for parsing
      */
     public TrajectoryState(final OrbitElementsType type, final AbsoluteDate date,
@@ -55,6 +55,19 @@ public class TrajectoryState implements TimeStamped {
         for (int i = 0; i < elements.length; ++i) {
             elements[i] = units.get(i).toSI(Double.parseDouble(fields[first + i]));
         }
+    }
+
+    /** Simple constructor.
+     * @param type type of the elements
+     * @param date entry date
+     * @param elements trajectory elements in SI units
+     * @since 12.0
+     */
+    public TrajectoryState(final OrbitElementsType type, final AbsoluteDate date,
+                           final double[] elements) {
+        this.type     = type;
+        this.date     = date;
+        this.elements = elements.clone();
     }
 
     /** {@inheritDoc} */

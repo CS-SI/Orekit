@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.BistaticRange;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
@@ -48,6 +49,17 @@ public class BistaticRangeTroposphericDelayModifier extends BaseRangeTropospheri
 
     /** {@inheritDoc} */
     @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<BistaticRange> estimated) {
+        final BistaticRange measurement = estimated.getObservedMeasurement();
+        final GroundStation emitter     = measurement.getEmitterStation();
+        final GroundStation receiver    = measurement.getReceiverStation();
+
+        BistaticModifierUtil.modify(estimated, emitter, receiver, this::rangeErrorTroposphericModel);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void modify(final EstimatedMeasurement<BistaticRange> estimated) {
         final BistaticRange measurement = estimated.getObservedMeasurement();
         final GroundStation emitter     = measurement.getEmitterStation();
@@ -59,6 +71,7 @@ public class BistaticRangeTroposphericDelayModifier extends BaseRangeTropospheri
                                     emitter, receiver,
                                     this::rangeErrorTroposphericModel,
                                     this::rangeErrorTroposphericModel);
+
     }
 
 }

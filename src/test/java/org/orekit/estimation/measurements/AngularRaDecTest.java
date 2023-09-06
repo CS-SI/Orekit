@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -82,7 +83,8 @@ public class AngularRaDecTest {
             SpacecraftState    state     = propagator.propagate(datemeas);
 
             // Estimate the RADEC value
-            final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
+                                                                                                 new SpacecraftState[] { state });
 
             // Store the difference between estimated and observed values in the stats
             raDiffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
@@ -156,7 +158,9 @@ public class AngularRaDecTest {
             final double[][] finiteDifferencesJacobian =
                 Differentiation.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) {
-                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                        return measurement.
+                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                               getEstimatedValue();
                     }
                 }, measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
                    PositionAngle.TRUE, 250.0, 4).value(state);
@@ -197,8 +201,8 @@ public class AngularRaDecTest {
         Assertions.assertEquals(0.0, new Median().evaluate(RaerrorsV), 2.2e-5);
 
         // median errors on declination
-        Assertions.assertEquals(0.0, new Median().evaluate(DecerrorsP), 1.5e-11);
-        Assertions.assertEquals(0.0, new Median().evaluate(DecerrorsV), 5.4e-6);
+        Assertions.assertEquals(0.0, new Median().evaluate(DecerrorsP), 1.9e-11);
+        Assertions.assertEquals(0.0, new Median().evaluate(DecerrorsV), 9.0e-6);
 
         // Test measurement type
         Assertions.assertEquals(AngularRaDec.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
@@ -266,7 +270,9 @@ public class AngularRaDecTest {
                                         /** {@inheritDoc} */
                                         @Override
                                         public double value(final ParameterDriver parameterDriver, AbsoluteDate date) {
-                                            return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[k];
+                                            return measurement.
+                                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                   getEstimatedValue()[k];
                                         }
                                     }, 3, 50.0 * drivers[i].getScale());
                     final double ref = dMkdP.value(drivers[i], date);
@@ -310,10 +316,11 @@ public class AngularRaDecTest {
         final double[][] raDec = new double[frames.length][];
         for (int i = 0; i < frames.length; i++) {
             // build RA-Dec with specific reference frame
+            final ObservableSatellite os = new ObservableSatellite(0);
             final AngularRaDecBuilder builder = new AngularRaDecBuilder(null, station, frames[i],
-                    new double[]{1., 1.}, new double[]{1., 1.}, new ObservableSatellite(0));
+                    new double[]{1., 1.}, new double[]{1., 1.}, os);
             builder.init(spacecraftState.getDate(), spacecraftState.getDate());
-            final double[] moreRaDec = builder.build(new SpacecraftState[] {spacecraftState}).getObservedValue();
+            final double[] moreRaDec = builder.build(Collections.singletonMap(os, spacecraftState)).getObservedValue();
             // convert in common frame
             final StaticTransform transform = frames[i].getStaticTransformTo(orbit.getFrame(), epoch);
             final Vector3D transformedLoS = transform.transformVector(new Vector3D(moreRaDec[0], moreRaDec[1]));

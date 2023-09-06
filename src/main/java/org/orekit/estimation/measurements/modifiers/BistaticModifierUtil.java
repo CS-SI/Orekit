@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -27,7 +28,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractGradientConverter;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParametersDriversProvider;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap.Span;
 
 /** Utility class for bistatic measurements.
@@ -46,20 +47,40 @@ class BistaticModifierUtil {
      * @param estimated estimated measurement to modify
      * @param emitter emitter station
      * @param receiver receiver station
+     * @param modelEffect model effect
+     */
+    public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurementBase<T> estimated,
+                                                                 final GroundStation emitter, final GroundStation receiver,
+                                                                 final ParametricModelEffect modelEffect) {
+
+        // update estimated value taking into account the model effect.
+        // The model effect delay is directly added to the measurement.
+        final SpacecraftState state    = estimated.getStates()[0];
+        final double[]        newValue = estimated.getEstimatedValue().clone();
+        newValue[0] += modelEffect.evaluate(emitter, state);
+        newValue[0] += modelEffect.evaluate(receiver, state);
+        estimated.setEstimatedValue(newValue);
+
+    }
+
+    /** Apply a modifier to an estimated measurement.
+     * @param <T> type of the measurement
+     * @param estimated estimated measurement to modify
+     * @param emitter emitter station
+     * @param receiver receiver station
      * @param converter gradient converter
      * @param parametricModel parametric modifier model
      * @param modelEffect model effect
      * @param modelEffectGradient model effect gradient
      */
     public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurement<T> estimated,
-                                                                 final ParametersDriversProvider parametricModel,
+                                                                 final ParameterDriversProvider parametricModel,
                                                                  final AbstractGradientConverter converter,
                                                                  final GroundStation emitter, final GroundStation receiver,
                                                                  final ParametricModelEffect modelEffect,
                                                                  final ParametricModelEffectGradient modelEffectGradient) {
 
         final SpacecraftState state    = estimated.getStates()[0];
-        final double[]        oldValue = estimated.getEstimatedValue();
 
         // update estimated derivatives with Jacobian of the measure wrt state
         final FieldSpacecraftState<Gradient> gState = converter.getState(parametricModel);
@@ -126,12 +147,8 @@ class BistaticModifierUtil {
             }
         }
 
-        // update estimated value taking into account the model effect.
-        // The model effect delay is directly added to the measurement.
-        final double[] newValue = oldValue.clone();
-        newValue[0] += delayUp.getValue();
-        newValue[0] += delayDown.getValue();
-        estimated.setEstimatedValue(newValue);
+        // modify the value
+        modify(estimated, emitter, receiver, modelEffect);
 
     }
 

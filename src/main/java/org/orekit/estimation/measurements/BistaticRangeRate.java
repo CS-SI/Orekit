@@ -23,7 +23,9 @@ import java.util.Map;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.FieldTransform;
+import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -62,7 +64,7 @@ public class BistaticRangeRate extends GroundReceiverMeasurement<BistaticRangeRa
     /** Emitter ground station. */
     private final GroundStation emitter;
 
-    /** Simple constructor with timetag of observed value set to reception time.
+    /** Constructor.
      * @param emitter emitter ground station
      * @param receiver receiver ground station
      * @param date date of the measurement
@@ -74,38 +76,7 @@ public class BistaticRangeRate extends GroundReceiverMeasurement<BistaticRangeRa
     public BistaticRangeRate(final GroundStation emitter, final GroundStation receiver,
                              final AbsoluteDate date, final double rangeRate, final double sigma,
                              final double baseWeight, final ObservableSatellite satellite) {
-        super(receiver, true, date, rangeRate, sigma, baseWeight, satellite, TimeTagSpecificationType.RX);
-
-        // add parameter drivers for the emitter, clock offset is not used
-        addParameterDriver(emitter.getEastOffsetDriver());
-        addParameterDriver(emitter.getNorthOffsetDriver());
-        addParameterDriver(emitter.getZenithOffsetDriver());
-        addParameterDriver(emitter.getPrimeMeridianOffsetDriver());
-        addParameterDriver(emitter.getPrimeMeridianDriftDriver());
-        addParameterDriver(emitter.getPolarOffsetXDriver());
-        addParameterDriver(emitter.getPolarDriftXDriver());
-        addParameterDriver(emitter.getPolarOffsetYDriver());
-        addParameterDriver(emitter.getPolarDriftYDriver());
-
-        this.emitter  = emitter;
-
-    }
-
-    /** Simple constructor.
-     * @param emitter emitter ground station
-     * @param receiver receiver ground station
-     * @param date date of the measurement
-     * @param rangeRate observed value, m/s
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @param satellite satellite related to this measurement
-     * @param timeTagSpecificationType specify the timetag configuration of the provided angular RaDec observation
-     */
-    public BistaticRangeRate(final GroundStation emitter, final GroundStation receiver,
-                             final AbsoluteDate date, final double rangeRate, final double sigma,
-                             final double baseWeight, final ObservableSatellite satellite,
-                             final TimeTagSpecificationType timeTagSpecificationType) {
-        super(receiver, true, date, rangeRate, sigma, baseWeight, satellite, timeTagSpecificationType);
+        super(receiver, true, date, rangeRate, sigma, baseWeight, satellite);
 
         // add parameter drivers for the emitter, clock offset is not used
         addParameterDriver(emitter.getEastOffsetDriver());
@@ -134,6 +105,82 @@ public class BistaticRangeRate extends GroundReceiverMeasurement<BistaticRangeRa
      */
     public GroundStation getReceiverStation() {
         return getStation();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EstimatedMeasurementBase<BistaticRangeRate> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                                  final int evaluation,
+                                                                                                  final SpacecraftState[] states) {
+
+        final SpacecraftState state = states[0];
+
+        // coordinates of the spacecraft
+        final TimeStampedPVCoordinates pva = state.getPVCoordinates();
+
+        // transform between receiver station frame and inertial frame
+        // at the real date of measurement, i.e. taking station clock offset into account
+        final Transform receiverToInertial = getReceiverStation().getOffsetToInertial(state.getFrame(), getDate(), false);
+        final AbsoluteDate measurementDate = receiverToInertial.getDate();
+
+        // Receiver PV in inertial frame at the end of the downlink leg
+        final TimeStampedPVCoordinates receiverPV =
+                        receiverToInertial.transformPVCoordinates(new TimeStampedPVCoordinates(measurementDate,
+                                                                                               Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
+
+        // Compute propagation times
+        // (if state has already been set up to pre-compensate propagation delay,
+        //  we will have delta == tauD and transitState will be the same as state)
+
+        // Downlink delay
+        final double tauD       = signalTimeOfFlight(pva, receiverPV.getPosition(), measurementDate);
+        final double delta      = measurementDate.durationFrom(state.getDate());
+        final double deltaMTauD = delta - tauD;
+
+        // Transit state
+        final SpacecraftState transitState = state.shiftedBy(deltaMTauD);
+
+        // Transit PV
+        final TimeStampedPVCoordinates transitPV = pva.shiftedBy(deltaMTauD);
+
+        // Downlink range-rate
+        final EstimatedMeasurementBase<BistaticRangeRate> evalDownlink =
+                        oneWayTheoreticalEvaluation(iteration, evaluation, true,
+                                                    receiverPV, transitPV, transitState);
+
+        // transform between emitter station frame and inertial frame at the transit date
+        // clock offset from receiver is already compensated
+        final Transform emitterToInertial = getEmitterStation().getOffsetToInertial(state.getFrame(), transitPV.getDate(), true);
+
+        // emitter PV in inertial frame at the end of the uplink leg
+        final TimeStampedPVCoordinates emitterPV =
+                        emitterToInertial.transformPVCoordinates(new TimeStampedPVCoordinates(transitPV.getDate(),
+                                                                                              Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
+
+        // Uplink delay
+        final double tauU = signalTimeOfFlight(emitterPV, transitPV.getPosition(), transitPV.getDate());
+
+        // emitter position in inertial frame at the end of the uplink leg
+        final TimeStampedPVCoordinates emitterUplink = emitterPV.shiftedBy(-tauU);
+
+        // Uplink range-rate
+        final EstimatedMeasurementBase<BistaticRangeRate> evalUplink =
+                        oneWayTheoreticalEvaluation(iteration, evaluation, false,
+                                                    emitterUplink, transitPV, transitState);
+
+        // combine uplink and downlink values
+        final EstimatedMeasurementBase<BistaticRangeRate> estimated =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       evalDownlink.getStates(),
+                                                       new TimeStampedPVCoordinates[] {
+                                                           evalUplink.getParticipants()[0],
+                                                           evalDownlink.getParticipants()[0],
+                                                           evalDownlink.getParticipants()[1]
+                                                       });
+        estimated.setEstimatedValue(evalDownlink.getEstimatedValue()[0] + evalUplink.getEstimatedValue()[0]);
+
+        return estimated;
+
     }
 
     /** {@inheritDoc} */
@@ -264,6 +311,50 @@ public class BistaticRangeRate extends GroundReceiverMeasurement<BistaticRangeRa
 
     }
 
+    /** Evaluate range rate measurement in one-way without derivatives.
+     * @param iteration iteration number
+     * @param evaluation evaluations counter
+     * @param downlink indicator for downlink leg
+     * @param stationPV station coordinates when signal is at station
+     * @param transitPV spacecraft coordinates at onboard signal transit
+     * @param transitState orbital state at onboard signal transit
+     * @return theoretical value for the current leg
+     * @since 12.0
+     */
+    private EstimatedMeasurementBase<BistaticRangeRate> oneWayTheoreticalEvaluation(final int iteration, final int evaluation,
+                                                                                    final boolean downlink,
+                                                                                    final TimeStampedPVCoordinates stationPV,
+                                                                                    final TimeStampedPVCoordinates transitPV,
+                                                                                    final SpacecraftState transitState) {
+
+        // prepare the evaluation
+        final EstimatedMeasurementBase<BistaticRangeRate> estimated =
+            new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                           new SpacecraftState[] {
+                                               transitState
+                                           }, new TimeStampedPVCoordinates[] {
+                                               downlink ? transitPV : stationPV,
+                                               downlink ? stationPV : transitPV
+                                           });
+
+        // range rate value
+        final Vector3D stationPosition  = stationPV.getPosition();
+        final Vector3D relativePosition = stationPosition.subtract(transitPV.getPosition());
+
+        final Vector3D stationVelocity  = stationPV.getVelocity();
+        final Vector3D relativeVelocity = stationVelocity.subtract(transitPV.getVelocity());
+
+        // radial direction
+        final Vector3D lineOfSight      = relativePosition.normalize();
+
+        // range rate
+        final double rangeRate = Vector3D.dotProduct(relativeVelocity, lineOfSight);
+
+        estimated.setEstimatedValue(rangeRate);
+
+        return estimated;
+
+    }
 
     /** Evaluate range rate measurement in one-way.
      * @param iteration iteration number
@@ -323,4 +414,5 @@ public class BistaticRangeRate extends GroundReceiverMeasurement<BistaticRangeRa
         return estimated;
 
     }
+
 }

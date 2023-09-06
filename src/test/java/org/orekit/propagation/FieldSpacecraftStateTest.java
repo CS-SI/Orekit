@@ -973,7 +973,7 @@ public class FieldSpacecraftStateTest {
 
         // Create date detector and handler
         FieldAbsoluteDate<T> changeDate = date0.shiftedBy(3);
-        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(changeDate).
+        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, changeDate).
                                     withHandler(new FieldEventHandler<T>() {
 
             @Override
@@ -1024,7 +1024,7 @@ public class FieldSpacecraftStateTest {
 
         // Create date detector and handler
         FieldAbsoluteDate<T> changeDate = date0.shiftedBy(3);
-        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(changeDate).
+        FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, changeDate).
                                     withHandler(new FieldEventHandler<T>() {
 
             @Override

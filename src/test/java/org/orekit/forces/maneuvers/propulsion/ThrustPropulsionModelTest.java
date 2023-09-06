@@ -16,6 +16,9 @@
  */
 package org.orekit.forces.maneuvers.propulsion;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -23,8 +26,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.ParameterDriver;
 
 class ThrustPropulsionModelTest {
     @Test
@@ -65,6 +70,16 @@ class ThrustPropulsionModelTest {
             @Override
             public <T extends CalculusFieldElement<T>> T getFlowRate(final FieldSpacecraftState<T> s, final T[] parameters) {
                 return null;
+            }
+
+            @Override
+            public List<ParameterDriver> getParametersDrivers() {
+                return Collections.emptyList();
+            }
+
+            @Override
+            public Control3DVectorCostType getControl3DVectorCostType() {
+                return Control3DVectorCostType.NONE;
             }
         };
 
@@ -116,6 +131,16 @@ class ThrustPropulsionModelTest {
             @Override
             public <T extends CalculusFieldElement<T>> T getFlowRate(final FieldSpacecraftState<T> s, final T[] parameters) {
                 return null;
+            }
+
+            @Override
+            public List<ParameterDriver> getParametersDrivers() {
+                return Collections.emptyList();
+            }
+
+            @Override
+            public Control3DVectorCostType getControl3DVectorCostType() {
+                return Control3DVectorCostType.NONE;
             }
         };
 

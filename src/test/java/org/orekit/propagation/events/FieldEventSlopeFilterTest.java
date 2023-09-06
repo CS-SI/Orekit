@@ -78,7 +78,7 @@ public class FieldEventSlopeFilterTest {
                                            new OneAxisEllipsoid(earthRadius,
                                                           0.0,
                                                           FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
-                withMaxCheck(new Binary64(60.0)).
+                withMaxCheck(60.0).
                 withThreshold(new Binary64(1.0e-3)).
                 withPenumbra().withHandler(new Counter());
         final FieldEventSlopeFilter<FieldEclipseDetector<Binary64>, Binary64> filter =
@@ -113,7 +113,7 @@ public class FieldEventSlopeFilterTest {
                                                    new OneAxisEllipsoid(earthRadius,
                                                                         0.0,
                                                                        FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
-                       withMaxCheck(new Binary64(60.0)).
+                       withMaxCheck(60.0).
                        withThreshold(new Binary64(1.0e-3)).
                        withPenumbra().
                        withHandler(new Counter());
@@ -149,7 +149,7 @@ public class FieldEventSlopeFilterTest {
                                                    new OneAxisEllipsoid(earthRadius,
                                                                         0.0,
                                                                        FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
-                       withMaxCheck(new Binary64(60.0)).
+                       withMaxCheck(60.0).
                        withThreshold(new Binary64(1.0e-3)).
                        withPenumbra().
                        withHandler(new Counter());
@@ -184,7 +184,7 @@ public class FieldEventSlopeFilterTest {
                                                    new OneAxisEllipsoid(earthRadius,
                                                                         0.0,
                                                                        FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
-                       withMaxCheck(new Binary64(60.0)).
+                       withMaxCheck(60.0).
                        withThreshold(new Binary64(1.0e-3)).
                        withPenumbra().
                        withHandler(new Counter());
@@ -353,7 +353,7 @@ public class FieldEventSlopeFilterTest {
         final int[] count = new int[2];
         FieldLatitudeCrossingDetector<Binary64> detector =
                 new FieldLatitudeCrossingDetector<>(latitude.getField(), earth, latitude.getReal()).
-                withMaxCheck(new Binary64(300.0)).
+                withMaxCheck(300.0).
                 withMaxIter(100).
                 withThreshold(new Binary64(1.0e-3)).
                 withHandler(new FieldEventHandler<Binary64>() {

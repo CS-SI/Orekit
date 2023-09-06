@@ -31,9 +31,12 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.IERSConventions;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public abstract class AbstractIodTest {
     /**
@@ -87,7 +90,16 @@ public abstract class AbstractIodTest {
         final AngularRaDec raDec = new AngularRaDec(observer, gcrf, date, new double[] { 0.0, 0.0 },
                                                     new double[] { 1.0, 1.0 },
                                                     new double[] { 1.0, 1.0 }, new ObservableSatellite(0));
-        return (raDec.getEstimatedLOS(prop, date));
+        final Frame                    frame        = prop.getFrame();
+        final TimeStampedPVCoordinates satPV        = prop.getPVCoordinates(date, frame);
+        final AbsolutePVCoordinates    satPVInFrame = new AbsolutePVCoordinates(frame, satPV);
+        final SpacecraftState[]        satState     = new SpacecraftState[] { new SpacecraftState(satPVInFrame) };
+        final double[]                 angular      = raDec.estimateWithoutDerivatives(0, 0, satState).getEstimatedValue();
+
+        final double ra = angular[0];
+        final double dec = angular[1];
+
+        return new Vector3D(ra, dec);
     }
 
     protected double getRelativeRangeError(final Orbit estimatedGauss, final Orbit orbitRef) {

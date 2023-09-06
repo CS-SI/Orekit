@@ -38,8 +38,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
-    implements ObservedMeasurement<T> {
+public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> implements ObservedMeasurement<T> {
 
     /** List of the supported parameters. */
     private final List<ParameterDriver> supportedParameters;
@@ -180,6 +179,20 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
         return satellites;
     }
 
+    /** Estimate the theoretical value without derivatives.
+     * <p>
+     * The theoretical value does not have <em>any</em> modifiers applied.
+     * </p>
+     * @param iteration iteration number
+     * @param evaluation evaluation number
+     * @param states orbital states at measurement date
+     * @return theoretical value
+     * @see #estimate(int, int, SpacecraftState[])
+     * @since 12.0
+     */
+    protected abstract EstimatedMeasurementBase<T> theoreticalEvaluationWithoutDerivatives(int iteration, int evaluation,
+                                                                                           SpacecraftState[] states);
+
     /** Estimate the theoretical value.
      * <p>
      * The theoretical value does not have <em>any</em> modifiers applied.
@@ -191,6 +204,22 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * @see #estimate(int, int, SpacecraftState[])
      */
     protected abstract EstimatedMeasurement<T> theoreticalEvaluation(int iteration, int evaluation, SpacecraftState[] states);
+
+    /** {@inheritDoc} */
+    @Override
+    public EstimatedMeasurementBase<T> estimateWithoutDerivatives(final int iteration, final int evaluation, final SpacecraftState[] states) {
+
+        // compute the theoretical value
+        final EstimatedMeasurementBase<T> estimation = theoreticalEvaluationWithoutDerivatives(iteration, evaluation, states);
+
+        // apply the modifiers
+        for (final EstimationModifier<T> modifier : modifiers) {
+            modifier.modifyWithoutDerivatives(estimation);
+        }
+
+        return estimation;
+
+    }
 
     /** {@inheritDoc} */
     @Override

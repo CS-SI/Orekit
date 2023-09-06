@@ -39,6 +39,7 @@ import org.hipparchus.ode.FieldODEStateAndDerivative;
 import org.hipparchus.ode.FieldOrdinaryDifferentialEquation;
 import org.hipparchus.ode.FieldSecondaryODE;
 import org.hipparchus.ode.events.Action;
+import org.hipparchus.ode.events.FieldAdaptableInterval;
 import org.hipparchus.ode.events.FieldODEEventDetector;
 import org.hipparchus.ode.events.FieldODEEventHandler;
 import org.hipparchus.ode.sampling.AbstractFieldODEStateInterpolator;
@@ -792,7 +793,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             int yieldCount = 0;
             while (!pending.isEmpty()) {
                 final FieldAdditionalDerivativesProvider<T> equations = pending.remove();
-                if (equations.yield(updated)) {
+                if (equations.yields(updated)) {
                     // these equations have to wait for another set,
                     // we put them again in the pending queue
                     pending.add(equations);
@@ -884,8 +885,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
         /** {@inheritDoc} */
         @Override
-        public T getMaxCheckInterval() {
-            return detector.getMaxCheckInterval();
+        public FieldAdaptableInterval<T> getMaxCheckInterval() {
+            return s -> detector.getMaxCheckInterval().currentInterval(convert(s));
         }
 
         /** {@inheritDoc} */

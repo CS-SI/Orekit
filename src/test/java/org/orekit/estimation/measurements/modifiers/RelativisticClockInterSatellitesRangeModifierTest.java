@@ -22,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -50,7 +51,7 @@ public class RelativisticClockInterSatellitesRangeModifierTest {
                                                                     1.0, 1.0);
 
         // Inter-satellites range before applying the modifier
-        final EstimatedMeasurement<InterSatellitesRange> estimatedBefore = range.estimate(0, 0, states);
+        final EstimatedMeasurementBase<InterSatellitesRange> estimatedBefore = range.estimateWithoutDerivatives(0, 0, states);
 
         // Inter-satellites range before applying the modifier
         final EstimationModifier<InterSatellitesRange> modifier = new RelativisticClockInterSatellitesRangeModifier();

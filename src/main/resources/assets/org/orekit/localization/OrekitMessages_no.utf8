@@ -91,6 +91,9 @@ UNEXPECTED_DATA_AT_LINE_IN_FILE = <MISSING TRANSLATION>
 # non-chronological dates in file {0}, line {1}
 NON_CHRONOLOGICAL_DATES_IN_FILE = ikkekronologiske datoer i filen {0}, linje {1}
 
+# inconsistent sampling date: expected {0} but got {1}
+INCONSISTENT_SAMPLING_DATE = <MISSING TRANSLATION>
+
 # no IERS UTC-TAI history data loaded
 NO_IERS_UTC_TAI_HISTORY_DATA_LOADED = ingen IERS UTC-TAI historikk data er lastet
 
@@ -265,8 +268,8 @@ NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = ingen binære JPL efemeridefil funnet
 # out of range date for {0} ephemerides: {1}
 OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = dato utenfor gyldighetsperioden til {0} efemeridene: {1}
 
-# out of range date for ephemerides: {0}, [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE = dato utenfor gyldighetsperioden til efemeridene: {0}, [{1}, {2}]
+# out of range date: {0}, [{1}, {2}]
+OUT_OF_RANGE_DATE = dato utenfor gyldighetsperioden: {0}, [{1}, {2}]
 
 # out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]
 OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = <MISSING TRANSLATION>
@@ -393,6 +396,15 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = fant {0} epoker i filen {1}, ventet {2}
 
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = uventet slutt på fil for sp3 fil (etter linje {0})
+
+# cannot splice sp3 files with incompatible metadata
+SP3_INCOMPATIBLE_FILE_METADATA = <MISSING TRANSLATION>
+
+# cannot splice sp3 files with incompatible satellite metadata for satellite {0}
+SP3_INCOMPATIBLE_SATELLITE_MEDATADA = <MISSING TRANSLATION>
+
+# cannot splice sp3 files with large gap for satellite {0} ({1} s)
+SP3_TOO_LARGE_GAP_FOR_SPLICING = <MISSING TRANSLATION>
 
 # STK coordinate system "{0}" is invalid or not yet supported
 STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
@@ -839,3 +851,12 @@ WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION = <MISSING TRANSLATION>
 
 # multiple interpolators are used so they may use different numbers of interpolation points
 MULTIPLE_INTERPOLATOR_USED = <MISSING TRANSLATION>
+
+# header for file {0} has not been written yet
+HEADER_NOT_WRITTEN = <MISSING TRANSLATION>
+
+# header for file {0} has already been written
+HEADER_ALREADY_WRITTEN = <MISSING TRANSLATION>
+
+# Cannot start the propagation from an infinitely far date
+CANNOT_START_PROPAGATION_FROM_INFINITY = <MISSING TRANSLATION>

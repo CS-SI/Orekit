@@ -44,7 +44,7 @@ public class AntexLoaderTest {
     }
 
     @Test
-    public void testSmallAntexFile() throws URISyntaxException {
+    public void testSmallAntex14File() throws URISyntaxException {
 
         final URL url = AntexLoaderTest.class.getClassLoader().getResource("antex/igs14-small.atx");
         AntexLoader  loader = new AntexLoader(new DataSource(url.toURI()),
@@ -199,6 +199,16 @@ public class AntexLoaderTest {
                                                                                                       FastMath.toRadians(55.0))),
                             1.0e-15);
 
+    }
+
+    @Test
+    public void testSmallAntex20File() throws URISyntaxException {
+
+        final URL url = AntexLoaderTest.class.getClassLoader().getResource("antex/igs20-small.atx");
+        AntexLoader  loader = new AntexLoader(new DataSource(url.toURI()),
+                                              TimeScalesFactory.getGPS());
+        Assertions.assertEquals(12, loader.getSatellitesAntennas().size());
+        Assertions.assertEquals(3,  loader.getReceiversAntennas().size());
     }
 
     @Test

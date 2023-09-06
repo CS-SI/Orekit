@@ -99,6 +99,11 @@ import org.orekit.files.ilrs.CRD.MeteorologicalMeasurement;
 import org.orekit.files.ilrs.CRD.RangeMeasurement;
 import org.orekit.files.ilrs.CRDHeader;
 import org.orekit.files.ilrs.CRDHeader.RangeType;
+import org.orekit.files.rinex.HatanakaCompressFilter;
+import org.orekit.files.rinex.observation.ObservationData;
+import org.orekit.files.rinex.observation.ObservationDataSet;
+import org.orekit.files.rinex.observation.RinexObservation;
+import org.orekit.files.rinex.observation.RinexObservationParser;
 import org.orekit.files.ilrs.CRDParser;
 import org.orekit.files.sinex.SinexLoader;
 import org.orekit.files.sinex.Station;
@@ -110,11 +115,7 @@ import org.orekit.frames.EOPHistory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.gnss.HatanakaCompressFilter;
 import org.orekit.gnss.MeasurementType;
-import org.orekit.gnss.ObservationData;
-import org.orekit.gnss.ObservationDataSet;
-import org.orekit.gnss.RinexObservationParser;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.models.AtmosphericRefractionModel;
@@ -2124,16 +2125,16 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             default:
                 prnNumber = -1;
         }
-        final RinexObservationParser parser = new RinexObservationParser();
-        for (final ObservationDataSet observationDataSet : parser.parse(source)) {
-            if (observationDataSet.getSatelliteSystem() == system    &&
-                observationDataSet.getPrnNumber()       == prnNumber) {
+        final RinexObservation rinexObs = new RinexObservationParser().parse(source);
+        for (final ObservationDataSet observationDataSet : rinexObs.getObservationDataSets()) {
+            if (observationDataSet.getSatellite().getSystem() == system    &&
+                observationDataSet.getSatellite().getPRN()    == prnNumber) {
                 for (final ObservationData od : observationDataSet.getObservationData()) {
                     final double snr = od.getSignalStrength();
                     if (!Double.isNaN(od.getValue()) && (snr == 0 || snr >= 4)) {
                         if (od.getObservationType().getMeasurementType() == MeasurementType.PSEUDO_RANGE && useRangeMeasurements) {
                             // this is a measurement we want
-                            final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();
+                            final String stationName = rinexObs.getHeader().getMarkerName() + "/" + od.getObservationType();
                             final StationData stationData = stations.get(stationName);
                             if (stationData == null) {
                                 throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -2166,7 +2167,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
                         } else if (od.getObservationType().getMeasurementType() == MeasurementType.DOPPLER && useRangeRateMeasurements) {
                             // this is a measurement we want
-                            final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();
+                            final String stationName = rinexObs.getHeader().getMarkerName() + "/" + od.getObservationType();
                             final StationData stationData = stations.get(stationName);
                             if (stationData == null) {
                                 throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -2219,8 +2220,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
          final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
          for (final CPFCoordinate coordinates : ephemeris.getCoordinates()) {
              AbsoluteDate date = coordinates.getDate();
-             final PVCoordinates pvInertial = ephFrame.getTransformTo(initialGuess.getFrame(), date).transformPVCoordinates(coordinates);
-             measurements.add(new Position(date, pvInertial.getPosition(), 1, 1, satellite));
+             final Vector3D posInertial = ephFrame.getStaticTransformTo(initialGuess.getFrame(), date).transformPosition(coordinates.getPosition());
+             measurements.add(new Position(date, posInertial, 1, 1, satellite));
          }
 
          // Return

@@ -71,7 +71,7 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
      */
     public FieldElevationExtremumDetector(final T maxCheck, final T threshold,
                                           final TopocentricFrame topo) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
+        this(s -> maxCheck.getReal(), threshold, DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
              topo);
     }
 
@@ -81,13 +81,13 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param topo topocentric frame centered on ground point
      */
-    protected FieldElevationExtremumDetector(final T maxCheck, final T threshold,
+    protected FieldElevationExtremumDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
                                              final int maxIter, final FieldEventHandler<T> handler,
                                              final TopocentricFrame topo) {
         super(maxCheck, threshold, maxIter, handler);
@@ -96,7 +96,7 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    protected FieldElevationExtremumDetector<T> create(final T newMaxCheck, final T newThreshold,
+    protected FieldElevationExtremumDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
                                                        final int newMaxIter,
                                                        final FieldEventHandler<T> newHandler) {
         return new FieldElevationExtremumDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler, topo);

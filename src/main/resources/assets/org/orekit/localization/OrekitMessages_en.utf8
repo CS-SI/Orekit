@@ -91,6 +91,9 @@ UNEXPECTED_DATA_AT_LINE_IN_FILE = unexpected data at line {0} in file {1}
 # non-chronological dates in file {0}, line {1}
 NON_CHRONOLOGICAL_DATES_IN_FILE = non-chronological dates in file {0}, line {1}
 
+# inconsistent sampling date: expected {0} but got {1}
+INCONSISTENT_SAMPLING_DATE = inconsistent sampling date: expected {0} but got {1}
+
 # no IERS UTC-TAI history data loaded
 NO_IERS_UTC_TAI_HISTORY_DATA_LOADED = no IERS UTC-TAI history data loaded
 
@@ -265,8 +268,8 @@ NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = no JPL ephemerides binary files found
 # out of range date for {0} ephemerides: {1}
 OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = out of range date for {0} ephemerides: {1}
 
-# out of range date for ephemerides: {0}, [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE = out of range date for ephemerides: {0}, [{1}, {2}]
+# out of range date: {0}, [{1}, {2}]
+OUT_OF_RANGE_DATE = out of range date: {0}, [{1}, {2}]
 
 # out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]
 OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE = out of range date for ephemerides: {0} is {3,number,0.0##############E0} s before [{1}, {2}]
@@ -393,6 +396,15 @@ SP3_NUMBER_OF_EPOCH_MISMATCH = found {0} epochs in file {1}, expected {2}
 
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = unexpected end of sp3 file (after line {0})
+
+# cannot splice sp3 files with incompatible metadata
+SP3_INCOMPATIBLE_FILE_METADATA = cannot splice sp3 files with incompatible metadata
+
+# cannot splice sp3 files with incompatible satellite metadata for satellite {0}
+SP3_INCOMPATIBLE_SATELLITE_MEDATADA = cannot splice sp3 files with incompatible satellite metadata for satellite {0}
+
+# cannot splice sp3 files with large gap for satellite {0} ({1} s)
+SP3_TOO_LARGE_GAP_FOR_SPLICING = cannot splice sp3 files with large gap for satellite {0} ({1} s)
 
 # STK coordinate system "{0}" is invalid or not yet supported
 STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = STK coordinate system "{0}" is invalid or not yet supported
@@ -818,6 +830,7 @@ CANNOT_CHANGE_COVARIANCE_TYPE_IF_DEFINED_IN_NON_INERTIAL_FRAME = cannot change c
 
 # primary collision object time of closest approach is different from the secondary collision object's one
 DIFFERENT_TIME_OF_CLOSEST_APPROACH = primary collision object time of closest approach is different from the secondary collision object's one
+
 # first date {0} does not match second date {1}
 DATES_MISMATCH = first date {0} does not match second date {1}
 
@@ -838,3 +851,12 @@ WRONG_INTERPOLATOR_DEFINED_FOR_STATE_INTERPOLATION = wrong interpolator defined 
 
 # multiple interpolators are used so they may use different numbers of interpolation points
 MULTIPLE_INTERPOLATOR_USED = multiple interpolators are used so they may use different numbers of interpolation points
+
+# header for file {0} has not been written yet
+HEADER_NOT_WRITTEN = header for file {0} has not been written yet
+
+# header for file {0} has already been written
+HEADER_ALREADY_WRITTEN = header for file {0} has already been written
+
+# Cannot start the propagation from an infinitely far date
+CANNOT_START_PROPAGATION_FROM_INFINITY = Cannot start the propagation from an infinitely far date

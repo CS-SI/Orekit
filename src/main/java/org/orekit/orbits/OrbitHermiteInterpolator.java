@@ -45,7 +45,7 @@ import java.util.stream.Stream;
  * <a href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a> and numerical problems
  * (including NaN appearing).
  *
- * @author Luc Maisonaube
+ * @author Luc Maisonobe
  * @author Vincent Cucchietti
  * @see Orbit
  * @see HermiteInterpolator
@@ -147,23 +147,23 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
      * a neighboring sub-sample with a predefined number of point from a large global sample
      * in a thread-safe way.
      *
-     * @param interpolationDate interpolation date
+     * @param interpolationData interpolation data
      *
      * @return interpolated instance at given date
      */
     @Override
-    protected Orbit interpolate(final AbsoluteDate interpolationDate) {
+    protected Orbit interpolate(final InterpolationData interpolationData) {
         // Get orbit sample
-        final List<Orbit> sample = neighborList;
+        final List<Orbit> sample = interpolationData.getNeighborList();
 
         // Get orbit type for interpolation
-        final OrbitType orbitType = neighborList.get(0).getType();
+        final OrbitType orbitType = sample.get(0).getType();
 
         if (orbitType == OrbitType.CARTESIAN) {
-            return interpolateCartesian(interpolationDate, sample);
+            return interpolateCartesian(interpolationData.getInterpolationDate(), sample);
         }
         else {
-            return interpolateCommon(interpolationDate, sample, orbitType);
+            return interpolateCommon(interpolationData.getInterpolationDate(), sample, orbitType);
         }
 
     }

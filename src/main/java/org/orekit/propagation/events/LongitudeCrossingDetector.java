@@ -62,7 +62,7 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
      */
     public LongitudeCrossingDetector(final double maxCheck, final double threshold,
                                     final OneAxisEllipsoid body, final double longitude) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
+        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
              body, longitude);
     }
 
@@ -72,14 +72,14 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param body body on which the longitude is defined
      * @param longitude longitude to be crossed
      */
-    protected LongitudeCrossingDetector(final double maxCheck, final double threshold,
+    protected LongitudeCrossingDetector(final AdaptableInterval maxCheck, final double threshold,
                                         final int maxIter, final EventHandler handler,
                                         final OneAxisEllipsoid body, final double longitude) {
 
@@ -99,7 +99,7 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
 
     /** {@inheritDoc} */
     @Override
-    protected LongitudeCrossingDetector create(final double newMaxCheck, final double newThreshold, final int newMaxIter,
+    protected LongitudeCrossingDetector create(final AdaptableInterval newMaxCheck, final double newThreshold, final int newMaxIter,
                                                final EventHandler newHandler) {
         return new LongitudeCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                              body, longitude);
@@ -152,19 +152,19 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
          * API with the various {@code withXxx()} methods to set up the instance
          * in a readable manner without using a huge amount of parameters.
          * </p>
-         * @param maxCheck maximum checking interval (s)
+         * @param maxCheck maximum checking interval
          * @param threshold convergence threshold (s)
          * @param maxIter maximum number of iterations in the event time search
          * @param handler event handler to call at event occurrences
          */
-        protected RawLongitudeCrossingDetector(final double maxCheck, final double threshold, final int maxIter,
+        protected RawLongitudeCrossingDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
                                                final EventHandler handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
 
         /** {@inheritDoc} */
         @Override
-        protected RawLongitudeCrossingDetector create(final double newMaxCheck, final double newThreshold,
+        protected RawLongitudeCrossingDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                                       final int newMaxIter,
                                                       final EventHandler newHandler) {
             return new RawLongitudeCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);

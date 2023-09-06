@@ -21,6 +21,129 @@
   </properties>
   <body>
   <release version="12.0" date="TBD" description="TBD">
+      <action dev="serrof" type="update">
+          Various renaming across maneuvers package.
+      </action>
+      <action dev="serrof" type="fix" issue="1165">
+          Added non-Euclidean norms for mass flow rates of finite-valued burn.
+      </action>
+      <action dev="maxime" type="update" issue="1167">
+          Refactored ForceModel, DSSTForceModel and ParametersDriversProvider.
+      </action>
+      <action dev="serrof" type="update" issue="1171">
+          Removed unnecessary computations (velocity and acceleration) from JPL ephemerides when possible.
+      </action>
+      <action dev="vincent" type="fix" issue="1108">
+        Fixed corruption of GenericTimeStampedCache when propagating from infinity by preventing a propagation to start from infinity
+      </action>
+      <action dev="luc" type="add" issue="1178">
+        Max check interval in events detectors can now depend on current state.
+      </action>
+      <action dev="bryan" type="update" issue="1182">
+        Moved Rinex parsing/writing into files package.
+      </action>
+      <action dev="serrof" type="fix" issue="1170">
+          Fixed wrong calls in Field acceleration for some gravitational force models.
+      </action>
+      <action dev="markrutten" type="add" issue="1069">
+        Added FDOA measurements.
+      </action>
+      <action dev="bryan" type="add" issue="887">
+        Added possibility to freeze gravity field from user defined epoch.
+      </action>
+      <action dev="luc" type="add" issue="993">
+        Added EphemerisOcmWriter and StreamingOcmWriter.
+      </action>
+      <action dev="luc" type="update">
+        Renamed EphemerisWriter → EphemerisOemWriter.
+      </action>
+      <action dev="bryan" type="fix" issue="859">
+        Created a new API for TLE generation allowing user defined setting.
+      </action>
+      <action dev="luc" type="add" issue="1177">
+        Fixed writing of Rinex observation files with empty GLONASS SLOT / FRQ #.
+      </action>
+      <action dev="luc" type="add" issue="1176">
+        Fixed parsing of Rinex observation files with QZSS satellites in SYS / PHASE SHIFT.
+      </action>
+      <action dev="luc" type="add" issue="1175">
+        Fixed parsing of Rinex observation files with continuation lines in SYS / PHASE SHIFT.
+      </action>
+      <action dev="luc" type="add" issue="1174">
+        Added getPropagators to AggregateBoundedPropagator.
+      </action>
+      <action dev="bryan" type="update" issue="1123">
+        Generalized unscented Kalman filter to work with any PropagatorBuilder.
+      </action>
+      <action dev="maxime" type="update" issue="1151">
+        Increased performance of orbit determination when using solar radiation pressure.
+      </action>
+      <action dev="bryan" type="add" issue="950">
+        Added getOrbitType() and getPositionAngle in MatricesHarvester.
+      </action>
+      <action dev="bryan" type="add" issue="1118">
+        Verified that MSAFE data can be loaded from a DataSource.
+      </action>
+      <action dev="bryan" type="add" issue="1116">
+        Allowed loading JB2008 space wheater data from a DataSource.
+      </action>
+      <action dev="bryan" type="add" issue="1117">
+        Allowed loading CSSI space wheater data from a DataSource.
+      </action>
+      <action dev="bryan" type="fix" issue="1150">
+        Fixed wrong validity interval in Sinex files.
+      </action>
+      <action dev="louis" type="add" issue="893">
+        Added support for loading DCB data from Sinex files.
+      </action>
+      <action dev="vincent" type="fix" issue="1164">
+        Classes extending AbstractTimeInterpolator and AbstractFieldTimeInterpolator are now thread safe.
+      </action>
+      <action dev="vincent" type="update" issue="1144">
+        Changed methods computing rotation in LOF to expect date as argument in addition to the PVCoordinates.
+      </action>
+      <action dev="luc" type="update" issue="1157">
+        Improved parallelism in measurements generation.
+      </action>
+      <action dev="luc" type="update" issue="1156">
+        Moved getBuilder from AbstractScheduler base class to Scheduler interface.
+      </action>
+      <action dev="luc" type="fix" issue="1152">
+        Fixed ArrayIndexOutOfBoundException in {Field}NeQuickParameters.
+      </action>
+      <action dev="luc" type="fix" issue="1134">
+        Fixed missing enumerate entries needed for recent antex files.
+      </action>
+      <action dev="luc" type="update" issue="1150">
+        Fixed default validity intervals in Sinex files.
+      </action>
+      <action dev="luc" type="update" issue="1149">
+        Fixed parsing of Sinex files without agency codes.
+      </action>
+      <action dev="luc" type="update" issue="1147">
+        Allow custom satellite systems in GNSS.
+      </action>
+      <action dev="sebastien" type="update" issue="1154">
+        Moved orekit-performance project to official forge and updated CI.
+      </action>
+      <action dev="luc" type="add" issue="1064">
+        Allow estimating measurements values without computing derivatives.
+      </action>
+      <action dev="maxime" type="fix" issue="1153">
+        Fixed failing tests on Windows in probability of collision package.
+      </action>
+      <action dev="serrof" type="add" issue="1061">
+          Added a Field implementation of impulsive maneuvers.
+      </action>
+      <action dev="luc" type="add" issue="1028" due-to="Lucas Girodet">
+        Added torque-free attitude mode for general (non-symmetrical) body.
+      </action>
+      <action dev="maxime" type="add" issue="1023">
+        Forbid Python keywords in method, class, interface and enum names.
+      </action>
+      <action dev="vincent" type="update" issue="1148">
+        Added getName method in LOF interface and moved toOrbitRelativeFrame from LOF to LOFType
+      </action>
       <action dev="maxime" type="update" issue="854">
         Moved method AbstractManeuverTriggers.addResetter to interface level, in ManeuverTriggers.
       </action>
@@ -307,6 +430,9 @@
       </action>
       <action dev="luc" type="fix" issue="997">
         Fixed longitude crossing detection in stepless propagators.
+      </action>
+      <action dev="alfe" type="add" issue="995">
+        Added attitude provider: BdotPointing.
       </action>
       <action dev="luc" type="fix" issue="994">
         Fixed typo in method name OcmData.getTrajectoryBlocks().

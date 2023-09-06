@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.EstimatedMeasurement.Status;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase.Status;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;

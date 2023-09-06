@@ -16,13 +16,15 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -37,8 +39,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.util.List;
 
 public class OnBoardAntennaInterSatellitesRangeModifierTest {
 
@@ -158,10 +158,11 @@ public class OnBoardAntennaInterSatellitesRangeModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             InterSatellitesRange sr = (InterSatellitesRange) spacecraftCenteredMeasurements.get(i);
             sr.addModifier(modifier);
-            EstimatedMeasurement<InterSatellitesRange> estimated = sr.estimate(0, 0, new SpacecraftState[] {
-                                                                                         p3.propagate(sr.getDate()),
-                                                                                         ephemeris.propagate(sr.getDate())
-                                                                                     });
+            EstimatedMeasurementBase<InterSatellitesRange> estimated = sr.estimateWithoutDerivatives(0, 0,
+                                                                                                     new SpacecraftState[] {
+                                                                                                         p3.propagate(sr.getDate()),
+                                                                                                         ephemeris.propagate(sr.getDate())
+                                                                                                     });
             InterSatellitesRange ar = (InterSatellitesRange) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
             Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 2.0e-5);

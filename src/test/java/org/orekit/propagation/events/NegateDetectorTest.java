@@ -39,7 +39,7 @@ public class NegateDetectorTest {
     public void testInit() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(AbstractDetector.DEFAULT_MAXCHECK);
+        Mockito.when(a.getMaxCheckInterval()).thenReturn(s-> AbstractDetector.DEFAULT_MAXCHECK);
         Mockito.when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
         EventHandler c = Mockito.mock(EventHandler.class);
         NegateDetector detector = new NegateDetector(a).withHandler(c);
@@ -62,7 +62,7 @@ public class NegateDetectorTest {
     public void testG() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(AbstractDetector.DEFAULT_MAXCHECK);
+        Mockito.when(a.getMaxCheckInterval()).thenReturn(s-> AbstractDetector.DEFAULT_MAXCHECK);
         Mockito.when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
         NegateDetector detector = new NegateDetector(a);
         SpacecraftState s = Mockito.mock(SpacecraftState.class);
@@ -80,7 +80,7 @@ public class NegateDetectorTest {
     public void testCreate() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(AbstractDetector.DEFAULT_MAXCHECK);
+        Mockito.when(a.getMaxCheckInterval()).thenReturn(s-> AbstractDetector.DEFAULT_MAXCHECK);
         Mockito.when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
         NegateDetector detector = new NegateDetector(a);
 
@@ -88,7 +88,7 @@ public class NegateDetectorTest {
         NegateDetector actual = detector.withMaxCheck(100);
 
         //verify
-        MatcherAssert.assertThat(actual.getMaxCheckInterval(), CoreMatchers.is(100.0));
+        MatcherAssert.assertThat(actual.getMaxCheckInterval().currentInterval(null), CoreMatchers.is(100.0));
         Assertions.assertTrue(actual.getOriginal() == a);
     }
 }

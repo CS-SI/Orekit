@@ -85,15 +85,10 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      * @param stmName name of the state for State Transition Matrix
      * @param harvester matrix harvester as returned by
      * {@code propagator.setupMatricesComputation(stmName, null, null)}
-     * @param stmOrbitType orbit type used for the State Transition Matrix computation
-     * @param stmAngleType position angle used for State Transition Matrix computation (not used if stmOrbitType equals
-     * {@code CARTESIAN})
      * @param covInit initial state covariance
      */
     public StateCovarianceMatrixProvider(final String additionalName, final String stmName,
-                                         final MatricesHarvester harvester,
-                                         final OrbitType stmOrbitType, final PositionAngle stmAngleType,
-                                         final StateCovariance covInit) {
+                                         final MatricesHarvester harvester, final StateCovariance covInit) {
         // Initialize fields
         this.additionalName = additionalName;
         this.stmName = stmName;
@@ -101,8 +96,8 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
         this.covInit = covInit;
         this.covOrbitType = covInit.getOrbitType();
         this.covAngleType = covInit.getPositionAngle();
-        this.stmOrbitType = stmOrbitType;
-        this.stmAngleType = stmAngleType;
+        this.stmOrbitType = harvester.getOrbitType();
+        this.stmAngleType = harvester.getPositionAngle();
     }
 
     /** {@inheritDoc} */
@@ -131,7 +126,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      * </p>
      */
     @Override
-    public boolean yield(final SpacecraftState state) {
+    public boolean yields(final SpacecraftState state) {
         return !state.hasAdditionalState(stmName);
     }
 

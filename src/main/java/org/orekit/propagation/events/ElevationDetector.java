@@ -78,7 +78,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      */
     public ElevationDetector(final double maxCheck, final double threshold,
                              final TopocentricFrame topo) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER,
+        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER,
              new StopOnDecreasing(),
              0.0, null, null, topo);
     }
@@ -89,7 +89,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -98,7 +98,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      * @param refractionModel reference to refraction model
      * @param topo reference to a topocentric model
      */
-    protected ElevationDetector(final double maxCheck, final double threshold,
+    protected ElevationDetector(final AdaptableInterval maxCheck, final double threshold,
                                 final int maxIter, final EventHandler handler,
                                 final double minElevation, final ElevationMask mask,
                                 final AtmosphericRefractionModel refractionModel,
@@ -112,7 +112,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
 
     /** {@inheritDoc} */
     @Override
-    protected ElevationDetector create(final double newMaxCheck, final double newThreshold,
+    protected ElevationDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                        final int newMaxIter, final EventHandler newHandler) {
         return new ElevationDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                      minElevation, elevationMask, refractionModel, topo);

@@ -212,7 +212,8 @@ public class Range2Test {
 
                     // Values of the Range & errors
                     final double RangeObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
+                                                                                                         new SpacecraftState[] { state });
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assertions.assertEquals(2, participants.length);
@@ -352,7 +353,9 @@ public class Range2Test {
                     // Compute a reference value using finite differences
                     jacobianRef = Differentiation.differentiate(new StateFunction() {
                         public double[] value(final SpacecraftState state) {
-                            return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                            return measurement.
+                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                   getEstimatedValue();
                         }
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
                        OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
@@ -520,7 +523,9 @@ public class Range2Test {
                                             /** {@inheritDoc} */
                                             @Override
                                             public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
-                                                return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                                return measurement.
+                                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                       getEstimatedValue()[0];
                                             }
                                         }, 3, 20.0 * drivers[i].getScale());
                         final double ref = dMkdP.value(drivers[i], date);

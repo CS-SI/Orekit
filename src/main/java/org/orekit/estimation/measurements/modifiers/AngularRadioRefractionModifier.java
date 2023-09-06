@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.AngularAzEl;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.models.AtmosphericRefractionModel;
@@ -79,7 +79,7 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<AngularAzEl> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<AngularAzEl> estimated) {
         final AngularAzEl     measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
         final SpacecraftState state   = estimated.getStates()[0];
@@ -94,4 +94,5 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
         newValue[1] = newValue[1] + correction;
         estimated.setEstimatedValue(newValue[0], newValue[1]);
     }
+
 }

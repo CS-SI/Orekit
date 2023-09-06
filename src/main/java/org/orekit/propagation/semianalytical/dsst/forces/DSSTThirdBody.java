@@ -42,7 +42,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CjSjCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
@@ -155,7 +154,7 @@ public class DSSTThirdBody implements DSSTForceModel {
                                                  0.0, Double.POSITIVE_INFINITY));
 
         this.body = body;
-        this.Vns  = CoefficientsFactory.computeVnsCoefficients(MAX_POWER);
+        this.Vns  = CoefficientsFactory.computeVns(MAX_POWER);
         this.doesStaticContextNeedsInitialization = true;
 
         fieldShortPeriods  = new HashMap<>();
@@ -602,13 +601,6 @@ public class DSSTThirdBody implements DSSTForceModel {
             aoR3Pow[i] = aoR3.multiply(aoR3Pow[i - 1]);
         }
         return aoR3Pow;
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
-        return null;
     }
 
     /** {@inheritDoc} */

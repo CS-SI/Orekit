@@ -58,21 +58,21 @@ public class PolynomialThrustSegment {
         this.zThrust       = zThrust;
     }
 
-    /** Get thrust at a specified date.
+    /** Get thrust vector at a specified date.
      * @param date date to consider
      * @return thrust at {@code date} (N)
      */
-    public Vector3D getThrust(final AbsoluteDate date) {
+    public Vector3D getThrustVector(final AbsoluteDate date) {
         final double dt = date.durationFrom(referenceDate);
         return new Vector3D(xThrust.value(dt), yThrust.value(dt), zThrust.value(dt));
     }
 
-    /** Get thrust at a specified date.
+    /** Get thrust vector at a specified date.
      * @param <T> type of the field elements
      * @param date date to consider
      * @return thrust at {@code date} (N)
      */
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrust(final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final FieldAbsoluteDate<T> date) {
         final T dt = date.durationFrom(referenceDate);
         return new FieldVector3D<>(xThrust.value(dt), yThrust.value(dt), zThrust.value(dt));
     }

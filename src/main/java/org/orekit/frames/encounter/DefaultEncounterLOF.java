@@ -63,9 +63,9 @@ public class DefaultEncounterLOF extends AbstractEncounterLOF {
 
     /** {@inheritDoc} */
     @Override
-    public Rotation rotationFromInertial(final PVCoordinates origin, final PVCoordinates otherInstance) {
-        final Vector3D zAxis = otherInstance.getVelocity().subtract(origin.getVelocity()).normalize();
-        final Vector3D yAxis = zAxis.crossProduct(otherInstance.getPosition().subtract(origin.getPosition()));
+    public Rotation rotationFromInertial(final PVCoordinates origin, final PVCoordinates other) {
+        final Vector3D zAxis = other.getVelocity().subtract(origin.getVelocity()).normalize();
+        final Vector3D yAxis = zAxis.crossProduct(other.getPosition().subtract(origin.getPosition()));
 
         return new Rotation(yAxis, zAxis, Vector3D.PLUS_J, Vector3D.PLUS_K);
     }
@@ -82,11 +82,11 @@ public class DefaultEncounterLOF extends AbstractEncounterLOF {
 
     /** {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
-                                                                                        final FieldPVCoordinates<T> origin,
-                                                                                        final FieldPVCoordinates<T> otherInstance) {
-        final FieldVector3D<T> otherVelocity = otherInstance.getVelocity();
-        final FieldVector3D<T> otherPosition = otherInstance.getPosition();
+    public <T extends CalculusFieldElement<T>> FieldRotation<T> rotationFromInertial(final Field<T> field,
+                                                                                     final FieldPVCoordinates<T> origin,
+                                                                                     final FieldPVCoordinates<T> other) {
+        final FieldVector3D<T> otherVelocity = other.getVelocity();
+        final FieldVector3D<T> otherPosition = other.getPosition();
 
         final FieldVector3D<T> zAxis = otherVelocity.subtract(origin.getVelocity()).normalize();
         final FieldVector3D<T> yAxis = zAxis.crossProduct(otherPosition.subtract(origin.getPosition()));
@@ -102,5 +102,11 @@ public class DefaultEncounterLOF extends AbstractEncounterLOF {
     @Override
     public Vector3D getAxisNormalToCollisionPlane() {
         return Vector3D.PLUS_K;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getName() {
+        return "DEFAULT_ENCOUNTER_LOF";
     }
 }

@@ -79,7 +79,7 @@ public class EventShifter extends AbstractDetector<EventShifter> {
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -92,7 +92,7 @@ public class EventShifter extends AbstractDetector<EventShifter> {
      * @param decreasingTimeShift decreasing events time shift.
      * @since 6.1
      */
-    protected EventShifter(final double maxCheck, final double threshold,
+    protected EventShifter(final AdaptableInterval maxCheck, final double threshold,
                            final int maxIter, final EventHandler handler,
                            final EventDetector detector, final boolean useShiftedStates,
                            final double increasingTimeShift, final double decreasingTimeShift) {
@@ -105,7 +105,7 @@ public class EventShifter extends AbstractDetector<EventShifter> {
 
     /** {@inheritDoc} */
     @Override
-    protected EventShifter create(final double newMaxCheck, final double newThreshold,
+    protected EventShifter create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                   final int newMaxIter, final EventHandler newHandler) {
         return new EventShifter(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                 detector, useShiftedStates, -increasingOffset, -decreasingOffset);

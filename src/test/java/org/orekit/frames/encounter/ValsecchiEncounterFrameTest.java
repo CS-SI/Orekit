@@ -52,7 +52,7 @@ class ValsecchiEncounterFrameTest {
         final PVCoordinates otherPV = new PVCoordinates(new Vector3D(6378000. + 400000 + 1., 0., 0.),
                                                         new Vector3D(0., 0., 7668.63));
 
-        final LOF encounterFrame = new ValsecchiEncounterFrame(otherPV);
+        final EncounterLOF encounterFrame = new ValsecchiEncounterFrame(otherPV);
 
         // When
         final Rotation   computedRotation       = encounterFrame.rotationFromInertial(originPV);
@@ -81,7 +81,7 @@ class ValsecchiEncounterFrameTest {
         final PVCoordinates otherPV = new PVCoordinates(new Vector3D(6378000. + 400000 + 1., 0., 0.),
                                                         new Vector3D(0., 0., 7668.63));
 
-        final LOF encounterFrame = new ValsecchiEncounterFrame(otherPV);
+        final EncounterLOF encounterFrame = new ValsecchiEncounterFrame(otherPV);
 
         // When
         final FieldRotation<Binary64> computedRotation       = encounterFrame.rotationFromInertial(field, originPV);
@@ -180,6 +180,22 @@ class ValsecchiEncounterFrameTest {
 
         TestUtils.validateVector3D(expectedAxis, gottenAxis, 1e-15);
         TestUtils.validateFieldVector3D(expectedAxis, gottenFieldAxis, 1e-15);
+    }
+
+    @Test
+    void testReturnExpectedName() {
+        // GIVEN
+        final PVCoordinates pvMock = Mockito.mock(PVCoordinates.class);
+
+        final ValsecchiEncounterFrame encounterLOF = new ValsecchiEncounterFrame(pvMock);
+
+        // WHEN
+        final String name = encounterLOF.getName();
+
+        // THEN
+        final String expectedName = "VALSECCHI_ENCOUNTER_LOF";
+
+        Assertions.assertEquals(expectedName, name);
     }
 
 }

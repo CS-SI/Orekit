@@ -249,6 +249,9 @@
       <name>Paul Cefola</name>
     </contributor>
     <contributor>
+      <name>Elisabet Cid-Borobia</name>
+    </contributor>
+    <contributor>
       <name>Francesco Coccoluto</name>
     </contributor>
     <contributor>
@@ -268,6 +271,9 @@
     </contributor>
     <contributor>
       <name>Alberto Foss&#224;</name>
+    </contributor>
+    <contributor>
+      <name>Lucas Girodet</name>
     </contributor>
     <contributor>
       <name>Andrew Goetz</name>
@@ -469,6 +475,7 @@
           <showWarnings>true</showWarnings>
           <compilerArgs>
             <arg>-Xlint:deprecation</arg>
+            <arg>-Xlint:unchecked</arg>
             <arg>-Xplugin:dataContextPlugin</arg>
           </compilerArgs>
         </configuration>

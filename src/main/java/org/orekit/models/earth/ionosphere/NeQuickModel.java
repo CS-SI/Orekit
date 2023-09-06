@@ -47,8 +47,6 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * NeQuick ionospheric delay model.
@@ -146,8 +144,7 @@ public class NeQuickModel implements IonosphericModel {
         // Reference body shape
         final BodyShape ellipsoid = baseFrame.getParentShape();
         // Satellite geodetic coordinates
-        final TimeStampedPVCoordinates pv = state.getPVCoordinates(ellipsoid.getBodyFrame());
-        final GeodeticPoint satPoint = ellipsoid.transform(pv.getPosition(), ellipsoid.getBodyFrame(), state.getDate());
+        final GeodeticPoint satPoint = ellipsoid.transform(state.getPosition(ellipsoid.getBodyFrame()), ellipsoid.getBodyFrame(), state.getDate());
 
         // Total Electron Content
         final double tec = stec(date, recPoint, satPoint);
@@ -169,8 +166,7 @@ public class NeQuickModel implements IonosphericModel {
         // Reference body shape
         final BodyShape ellipsoid = baseFrame.getParentShape();
         // Satellite geodetic coordinates
-        final TimeStampedFieldPVCoordinates<T> pv = state.getPVCoordinates(ellipsoid.getBodyFrame());
-        final FieldGeodeticPoint<T> satPoint = ellipsoid.transform(pv.getPosition(), ellipsoid.getBodyFrame(), state.getDate());
+        final FieldGeodeticPoint<T> satPoint = ellipsoid.transform(state.getPosition(ellipsoid.getBodyFrame()), ellipsoid.getBodyFrame(), state.getDate());
 
         // Total Electron Content
         final T tec = stec(date, recPoint, satPoint);

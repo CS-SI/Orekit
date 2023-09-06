@@ -78,12 +78,20 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = false;
-        double refErrorsPMedian = 6.5e-10;
-        double refErrorsPMean = 4.1e-09;
-        double refErrorsPMax = 2.1e-07;
-        double refErrorsVMedian = 2.2e-04;
-        double refErrorsVMean = 6.2e-04;
-        double refErrorsVMax = 1.3e-02;
+//<<<<<<< HEAD
+//        double refErrorsPMedian = 6.5e-10;
+//        double refErrorsPMean = 4.1e-09;
+//        double refErrorsPMax = 2.1e-07;
+//        double refErrorsVMedian = 2.2e-04;
+//        double refErrorsVMean = 6.2e-04;
+//        double refErrorsVMax = 1.3e-02;
+//=======
+        double refErrorsPMedian = 6.0e-10;
+        double refErrorsPMean   = 3.0e-09;
+        double refErrorsPMax    = 1.0e-07;
+        double refErrorsVMedian = 2.1e-04;
+        double refErrorsVMean   = 1.3e-03;
+        double refErrorsVMax    = 5.2e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
                 refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                 refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -102,12 +110,21 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = true;
-        double refErrorsPMedian = 6.2e-10;
-        double refErrorsPMean = 3.8e-09;
-        double refErrorsPMax = 1.6e-07;
-        double refErrorsVMedian = 2.2e-04;
-        double refErrorsVMean = 6.2e-04;
-        double refErrorsVMax = 1.3e-02;
+//<<<<<<< HEAD
+//        double refErrorsPMedian = 6.2e-10;
+//        double refErrorsPMean = 3.8e-09;
+//        double refErrorsPMax = 1.6e-07;
+//        double refErrorsVMedian = 2.2e-04;
+//        double refErrorsVMean = 6.2e-04;
+//        double refErrorsVMax = 1.3e-02;
+//=======
+        double refErrorsPMedian = 7.5e-10;
+        double refErrorsPMean   = 3.2e-09;
+        double refErrorsPMax    = 9.2e-08;
+        double refErrorsVMedian = 2.1e-04;
+        double refErrorsVMean   = 1.3e-03;
+        double refErrorsVMax    = 5.2e-02;
+
         this.genericTestStateDerivatives(isModifier, printResults,
                 refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                 refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -234,8 +251,10 @@ public class RangeTest {
                     final SpacecraftState state = interpolator.getInterpolatedState(date);
 
                     // Values of the Range & errors
-                    final double RangeObserved = measurement.getObservedValue()[0];
-                    final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[]{state});
+                    final double RangeObserved  = measurement.getObservedValue()[0];
+                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
+                                                                                                         new SpacecraftState[] { state });
+
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assertions.assertEquals(3, participants.length);
@@ -307,11 +326,19 @@ public class RangeTest {
             System.out.println("Relative errors max   : " + relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, absErrorsMedian, 4.9e-8);
-        Assertions.assertEquals(0.0, absErrorsMin, 2.2e-7);
-        Assertions.assertEquals(0.0, absErrorsMax, 2.1e-7);
-        Assertions.assertEquals(0.0, relErrorsMedian, 1.0e-14);
-        Assertions.assertEquals(0.0, relErrorsMax, 2.6e-14);
+//<<<<<<< HEAD
+//        Assertions.assertEquals(0.0, absErrorsMedian, 4.9e-8);
+//        Assertions.assertEquals(0.0, absErrorsMin, 2.2e-7);
+//        Assertions.assertEquals(0.0, absErrorsMax, 2.1e-7);
+//        Assertions.assertEquals(0.0, relErrorsMedian, 1.0e-14);
+//        Assertions.assertEquals(0.0, relErrorsMax, 2.6e-14);
+//=======
+        Assertions.assertEquals(0.0, absErrorsMedian, 6.3e-8);
+        Assertions.assertEquals(0.0, absErrorsMin,    2.0e-7);
+        Assertions.assertEquals(0.0, absErrorsMax,    2.6e-7);
+        Assertions.assertEquals(0.0, relErrorsMedian, 8.5e-15);
+        Assertions.assertEquals(0.0, relErrorsMax,    2.9e-14);
+
 
         // Test measurement type
         Assertions.assertEquals(Range.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
@@ -374,11 +401,14 @@ public class RangeTest {
 
                     // Compute a reference value using finite differences
                     jacobianRef = Differentiation.differentiate(new StateFunction() {
-                                                                    public double[] value(final SpacecraftState state) {
-                                                                        return measurement.estimate(0, 0, new SpacecraftState[]{state}).getEstimatedValue();
-                                                                    }
-                                                                }, measurement.getDimension(), propagator.getAttitudeProvider(),
-                            OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
+                        public double[] value(final SpacecraftState state) {
+                            return measurement.
+                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                   getEstimatedValue();
+                        }
+                    }, measurement.getDimension(), propagator.getAttitudeProvider(),
+                       OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
+
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -500,8 +530,7 @@ public class RangeTest {
 
                 //  Play test if the measurement date is between interpolator previous and current date
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
-                        (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate()) <= 0.)
-                ) {
+                        (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate()) <= 0.)) {
 
                     // Add modifiers if test implies it
                     final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
@@ -542,13 +571,16 @@ public class RangeTest {
 
                         // Compute a reference value using finite differences
                         final ParameterFunction dMkdP =
-                                Differentiation.differentiate(new ParameterFunction() {
-                                    /** {@inheritDoc} */
-                                    @Override
-                                    public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
-                                        return measurement.estimate(0, 0, new SpacecraftState[]{state}).getEstimatedValue()[0];
-                                    }
-                                }, 3, 20.0 * drivers[i].getScale());
+                                        Differentiation.differentiate(new ParameterFunction() {
+                                            /** {@inheritDoc} */
+                                            @Override
+                                            public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
+                                                return measurement.
+                                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                       getEstimatedValue()[0];
+                                            }
+                                        }, 3, 20.0 * drivers[i].getScale());
+
                         final double ref = dMkdP.value(drivers[i], date);
 
                         if (printResults) {
@@ -680,13 +712,16 @@ public class RangeTest {
 
                         // Compute a reference value using finite differences
                         final ParameterFunction dMkdP =
-                                Differentiation.differentiate(new ParameterFunction() {
-                                    /** {@inheritDoc} */
-                                    @Override
-                                    public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
-                                        return measurement.estimate(0, 0, new SpacecraftState[]{state}).getEstimatedValue()[0];
-                                    }
-                                }, 3, 0.1 * drivers[i].getScale());
+                                        Differentiation.differentiate(new ParameterFunction() {
+                                            /** {@inheritDoc} */
+                                            @Override
+                                            public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
+                                                return measurement.
+                                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                       getEstimatedValue()[0];
+                                            }
+                                        }, 3, 0.1 * drivers[i].getScale());
+
                         final double ref = dMkdP.value(drivers[i], date);
 
                         if (printResults) {
@@ -695,7 +730,6 @@ public class RangeTest {
 
                         final double relError = FastMath.abs((ref - gradient[0]) / ref);
                         relErrorList.add(relError);
-//                        Assertions.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
                     }
                     if (printResults) {
                         System.out.format(Locale.US, "%n");

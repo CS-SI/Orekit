@@ -39,7 +39,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     public static final int DEFAULT_MAX_ITER = 100;
 
     /** Max check interval. */
-    private final double maxCheck;
+    private final AdaptableInterval maxCheck;
 
     /** Convergence threshold. */
     private final double threshold;
@@ -61,7 +61,18 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      */
     protected AbstractDetector(final double maxCheck, final double threshold, final int maxIter,
                                final EventHandler handler) {
-        checkStrictlyPositive(maxCheck);
+        this(s -> maxCheck, threshold, maxIter, handler);
+    }
+
+    /** Build a new instance.
+     * @param maxCheck maximum checking interval
+     * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
+     * @param handler event handler to call at event occurrences
+     * @since 12.0
+     */
+    protected AbstractDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
+                               final EventHandler handler) {
         checkStrictlyPositive(threshold);
         this.maxCheck  = maxCheck;
         this.threshold = threshold;
@@ -98,7 +109,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     public abstract double g(SpacecraftState s);
 
     /** {@inheritDoc} */
-    public double getMaxCheckInterval() {
+    public AdaptableInterval getMaxCheckInterval() {
         return maxCheck;
     }
 
@@ -122,6 +133,19 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @since 6.1
      */
     public T withMaxCheck(final double newMaxCheck) {
+        return withMaxCheck(s -> newMaxCheck);
+    }
+
+    /**
+     * Setup the maximum checking interval.
+     * <p>
+     * This will override a maximum checking interval if it has been configured previously.
+     * </p>
+     * @param newMaxCheck maximum checking interval (s)
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 12.0
+     */
+    public T withMaxCheck(final AdaptableInterval newMaxCheck) {
         return create(newMaxCheck, getThreshold(), getMaxIterationCount(), getHandler());
     }
 
@@ -177,7 +201,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @param newHandler event handler to call at event occurrences
      * @return a new instance of the appropriate sub-type
      */
-    protected abstract T create(double newMaxCheck, double newThreshold,
+    protected abstract T create(AdaptableInterval newMaxCheck, double newThreshold,
                                 int newMaxIter, EventHandler newHandler);
 
     /** Check if the current propagation is forward or backward.

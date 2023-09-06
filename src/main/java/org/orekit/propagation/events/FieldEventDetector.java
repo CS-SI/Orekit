@@ -82,7 +82,7 @@ public interface FieldEventDetector <T extends CalculusFieldElement<T>> {
     /** Get maximal time interval between switching function checks.
      * @return maximal time interval (s) between switching function checks
      */
-    T getMaxCheckInterval();
+    FieldAdaptableInterval<T> getMaxCheckInterval();
 
     /** Get maximal number of iterations in the event time search.
      * @return maximal number of iterations in the event time search
