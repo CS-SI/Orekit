@@ -17,12 +17,14 @@
 package org.orekit.files.sp3;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
@@ -48,6 +50,21 @@ public class SP3Writer {
 
     /** Constant additional parameters lines. */
     private static final String ADDITIONAL_PARAMETERS_LINE = "%i    0    0    0    0      0      0      0      0         0";
+
+    /** Format for one 2 digits integer field. */
+    private static final String TWO_DIGITS_INTEGER = "%2d";
+
+    /** Format for one 3 digits integer field. */
+    private static final String THREE_DIGITS_INTEGER = "%3d";
+
+    /** Format for one 14.6 digits float field. */
+    private static final String FOURTEEN_SIX_DIGITS_FLOAT = "%14.6f";
+
+    /** Format for three blanks field. */
+    private static final String THREE_BLANKS = "   ";
+
+    /** Format for six blanks field. */
+    private static final String SIX_BLANKS = "      ";
 
     /** Destination of generated output. */
     private final Appendable output;
@@ -79,17 +96,167 @@ public class SP3Writer {
         sp3.validate(false, outputName);
         writeHeader(sp3.getHeader());
 
-        final int[]          nextIndex   = new int[sp3.getSatelliteCount()];
-        final SP3Ephemeris[] ephemerides = new SP3Ephemeris[sp3.getSatelliteCount()];
+        // set up iterators for all satellites
+        final CoordinatesIterator[] iterators = new CoordinatesIterator[sp3.getSatelliteCount()];
         int k = 0;
         for (final Map.Entry<String, SP3Ephemeris> entry : sp3.getSatellites().entrySet()) {
-            ephemerides[k++] = entry.getValue();
+            iterators[k++] = new CoordinatesIterator(entry.getValue());
         }
 
-        for (int i = 0; i < sp3.getHeader().getNumberOfEpochs(); ++i) {
-            for (int j = 0; j < ephemerides.length; ++j) {
-                // TODO
+        final TimeScale timeScale  = sp3.getHeader().getTimeSystem().getTimeScale(timeScales);
+        for (AbsoluteDate date = earliest(iterators); !date.equals(AbsoluteDate.FUTURE_INFINITY); date = earliest(iterators)) {
+
+            // epoch
+            final DateTimeComponents dtc = date.getComponents(timeScale);
+            output.append(String.format(Locale.US, "*  %4d %2d %2d %2d %2d %11.8f%n",
+                                        dtc.getDate().getYear(),
+                                        dtc.getDate().getMonth(),
+                                        dtc.getDate().getDay(),
+                                        dtc.getTime().getHour(),
+                                        dtc.getTime().getMinute(),
+                                        dtc.getTime().getSecondsInLocalDay()));
+
+            for (final CoordinatesIterator iter : iterators) {
+
+                final SP3Coordinate coordinate;
+                if (iter.pending != null &&
+                    FastMath.abs(iter.pending.getDate().durationFrom(date)) <= 0.001 * sp3.getHeader().getEpochInterval()) {
+                    // the pending coordinate date matches current epoch
+                    coordinate = iter.pending;
+                    iter.advance();
+                } else {
+                    // the pending coordinate  does not match current epoch
+                    coordinate = SP3Coordinate.DUMMY;
+                }
+
+                // position
+                writePosition(sp3.getHeader(), iter.id, coordinate);
+
+                if (sp3.getHeader().getFilter() != CartesianDerivativesFilter.USE_P) {
+                    // velocity
+                    writeVelocity(sp3.getHeader(), iter.id, coordinate);
+                }
+
             }
+
+        }
+
+    }
+
+    /** Find earliest date in ephemerides.
+     * @param iterators ephemerides iterators
+     * @return earliest date in iterators
+     */
+    private AbsoluteDate earliest(final CoordinatesIterator[] iterators) {
+        AbsoluteDate date = AbsoluteDate.FUTURE_INFINITY;
+        for (final CoordinatesIterator iter : iterators) {
+            if (iter.pending != null && iter.pending.getDate().isBefore(date)) {
+                date = iter.pending.getDate();
+            }
+        }
+        return date;
+    }
+
+    /** Write position.
+     * @param header file header
+     * @param satId satellite id
+     * @param coordinate coordinate
+     * @exception IOException if an I/O error occurs.
+     */
+    private void writePosition(final SP3Header header, final String satId, final SP3Coordinate coordinate)
+        throws IOException {
+
+        // position
+        output.append(String.format(Locale.US, "P%3s%14.6f%14.6f%14.6f",
+                                    satId,
+                                    SP3Utils.POSITION_UNIT.fromSI(coordinate.getPosition().getX()),
+                                    SP3Utils.POSITION_UNIT.fromSI(coordinate.getPosition().getY()),
+                                    SP3Utils.POSITION_UNIT.fromSI(coordinate.getPosition().getZ())));
+
+        // clock
+        output.append(String.format(Locale.US, FOURTEEN_SIX_DIGITS_FLOAT,
+                                    SP3Utils.CLOCK_UNIT.fromSI(coordinate.getClockCorrection())));
+
+        // position accuracy
+        if (coordinate.getPositionAccuracy() == null) {
+            output.append(SIX_BLANKS);
+        } else {
+            output.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
+                                        SP3Utils.indexAccuracy(SP3Utils.POSITION_ACCURACY_UNIT, header.getPosVelBase(),
+                                                               coordinate.getPositionAccuracy().getX())));
+            output.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
+                                        SP3Utils.indexAccuracy(SP3Utils.POSITION_ACCURACY_UNIT, header.getPosVelBase(),
+                                                               coordinate.getPositionAccuracy().getY())));
+            output.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
+                                        SP3Utils.indexAccuracy(SP3Utils.POSITION_ACCURACY_UNIT, header.getPosVelBase(),
+                                                               coordinate.getPositionAccuracy().getZ())));
+        }
+
+        // clock accuracy
+        output.append(' ');
+        if (Double.isNaN(coordinate.getClockAccuracy())) {
+            output.append(THREE_BLANKS);
+        } else {
+            output.append(String.format(Locale.US, THREE_DIGITS_INTEGER,
+                                        satId,
+                                        SP3Utils.indexAccuracy(SP3Utils.CLOCK_ACCURACY_UNIT, header.getClockBase(),
+                                                               coordinate.getClockAccuracy())));
+        }
+
+        // events
+        output.append(' ');
+        output.append(coordinate.hasClockEvent()         ? 'E' : ' ');
+        output.append(coordinate.hasClockPrediction()    ? 'P' : ' ');
+        output.append(' ');
+        output.append(coordinate.hasOrbitManeuverEvent() ? 'M' : ' ');
+        output.append(coordinate.hasOrbitPrediction()    ? 'P' : ' ');
+
+    }
+
+    /** Write velocity.
+     * @param header file header
+     * @param satId satellite id
+     * @param coordinate coordinate
+     * @exception IOException if an I/O error occurs.
+     */
+    private void writeVelocity(final SP3Header header, final String satId, final SP3Coordinate coordinate)
+        throws IOException {
+
+        // velocity
+        output.append(String.format(Locale.US, "V%3s%14.6f%14.6f%14.6f",
+                                    satId,
+                                    SP3Utils.VELOCITY_UNIT.fromSI(coordinate.getVelocity().getX()),
+                                    SP3Utils.VELOCITY_UNIT.fromSI(coordinate.getVelocity().getY()),
+                                    SP3Utils.VELOCITY_UNIT.fromSI(coordinate.getVelocity().getZ())));
+
+        // clock rate
+        output.append(String.format(Locale.US, FOURTEEN_SIX_DIGITS_FLOAT,
+                                    SP3Utils.CLOCK_RATE_UNIT.fromSI(coordinate.getClockRateChange())));
+
+        // velocity accuracy
+        if (coordinate.getVelocityAccuracy() == null) {
+            output.append(SIX_BLANKS);
+        } else {
+            output.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
+                                        SP3Utils.indexAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT, header.getPosVelBase(),
+                                                               coordinate.getVelocityAccuracy().getX())));
+            output.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
+                                        SP3Utils.indexAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT, header.getPosVelBase(),
+                                                               coordinate.getVelocityAccuracy().getY())));
+            output.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
+                                        SP3Utils.indexAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT, header.getPosVelBase(),
+                                                               coordinate.getVelocityAccuracy().getZ())));
+        }
+
+        // clock rate accuracy
+        output.append(' ');
+        if (Double.isNaN(coordinate.getClockRateAccuracy())) {
+            output.append(THREE_BLANKS);
+        } else {
+            output.append(String.format(Locale.US, THREE_DIGITS_INTEGER,
+                                        satId,
+                                        SP3Utils.indexAccuracy(SP3Utils.CLOCK_RATE_ACCURACY_UNIT, header.getClockBase(),
+                                                               coordinate.getClockRateAccuracy())));
         }
 
     }
@@ -167,9 +334,8 @@ public class SP3Writer {
         remaining = satellites.size();
         for (final String satId : satellites) {
             final double accuracy    = header.getAccuracy(satId);
-            final int    accuracyExp = (int) FastMath.ceil(FastMath.log(SP3Constants.POSITION_ACCURACY_UNIT.fromSI(accuracy)) /
-                                                           FastMath.log(2.0));
-            output.append(String.format(Locale.US, "%3d", accuracyExp));
+            final int    accuracyExp = SP3Utils.indexAccuracy(SP3Utils.POSITION_ACCURACY_UNIT, SP3Utils.POS_VEL_BASE_ACCURACY, accuracy);
+            output.append(String.format(Locale.US, THREE_DIGITS_INTEGER, accuracyExp));
             --remaining;
             column += 3;
             if (column >= 60) {
@@ -213,6 +379,54 @@ public class SP3Writer {
             // add dummy comments to get at least the four comments specified for versions a, b and c
             ++count;
             output.append(COMMENT_LINE_PREFIX).append(EOL);
+        }
+
+    }
+
+    /** Iterator for coordinates. */
+    private static class CoordinatesIterator {
+
+        /** Satellite ID. */
+        private final String id;
+
+        /** Iterator over segments. */
+        private Iterator<SP3Segment> segmentsIterator;
+
+        /** Iterator over coordinates. */
+        private Iterator<SP3Coordinate> coordinatesIterator;
+
+        /** Pending coordinate. */
+        private SP3Coordinate pending;
+
+        /** Simple constructor.
+         * @param ephemeris underlying ephemeris
+         */
+        CoordinatesIterator(final SP3Ephemeris ephemeris) {
+            this.id                  = ephemeris.getId();
+            this.segmentsIterator    = ephemeris.getSegments().iterator();
+            this.coordinatesIterator = null;
+            advance();
+        }
+
+        /** Advance to next coordinates.
+         */
+        private void advance() {
+
+            while (coordinatesIterator == null || !coordinatesIterator.hasNext()) {
+                // we have exhausted previous segment
+                if (segmentsIterator != null && segmentsIterator.hasNext()) {
+                    coordinatesIterator = segmentsIterator.next().getCoordinates().iterator();
+                } else {
+                    // we have exhausted the ephemeris
+                    segmentsIterator = null;
+                    pending          = null;
+                    return;
+                }
+            }
+
+            // retrieve the next entry
+            pending = coordinatesIterator.next();
+
         }
 
     }

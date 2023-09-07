@@ -433,7 +433,10 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     if (sub.length() > 0) {
                         final int exponent = Integer.parseInt(sub);
                         // the accuracy is calculated as 2**exp (in mm)
-                        pi.file.getHeader().setAccuracy(pi.nbAccuracies++, SP3Constants.POSITION_ACCURACY_UNIT.toSI(2 << exponent));
+                        pi.file.getHeader().setAccuracy(pi.nbAccuracies++,
+                                                        SP3Utils.siAccuracy(SP3Utils.POSITION_ACCURACY_UNIT,
+                                                                            SP3Utils.POS_VEL_BASE_ACCURACY,
+                                                                            exponent));
                     }
                     startIdx += 3;
                 }
@@ -667,32 +670,36 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     final SP3Header header = pi.file.getHeader();
 
                     // the position values are in km and have to be converted to m
-                    pi.latestPosition = new Vector3D(SP3Constants.POSITION_UNIT.toSI(Double.parseDouble(line.substring(4, 18).trim())),
-                                                     SP3Constants.POSITION_UNIT.toSI(Double.parseDouble(line.substring(18, 32).trim())),
-                                                     SP3Constants.POSITION_UNIT.toSI(Double.parseDouble(line.substring(32, 46).trim())));
+                    pi.latestPosition = new Vector3D(SP3Utils.POSITION_UNIT.toSI(Double.parseDouble(line.substring(4, 18).trim())),
+                                                     SP3Utils.POSITION_UNIT.toSI(Double.parseDouble(line.substring(18, 32).trim())),
+                                                     SP3Utils.POSITION_UNIT.toSI(Double.parseDouble(line.substring(32, 46).trim())));
 
                     if (pi.latestPosition.getNorm() > 0) {
                         // clock (microsec)
                         pi.latestClock = line.trim().length() <= 46 ?
-                                                                     SP3Constants.DEFAULT_CLOCK_VALUE :
-                                                                         SP3Constants.CLOCK_UNIT.toSI(Double.parseDouble(line.substring(46, 60).trim()));
+                                         SP3Utils.DEFAULT_CLOCK_VALUE :
+                                         SP3Utils.CLOCK_UNIT.toSI(Double.parseDouble(line.substring(46, 60).trim()));
 
                         if (line.length() < 69 || line.substring(61, 69).trim().length() == 0) {
                             pi.latestPositionAccuracy = null;
                         } else {
-                            pi.latestPositionAccuracy = new Vector3D(SP3Constants.POSITION_ACCURACY_UNIT.toSI(FastMath.pow(header.getPosVelBase(),
-                                                                                                                           Integer.valueOf(line.substring(61, 63).trim()))),
-                                                                     SP3Constants.POSITION_ACCURACY_UNIT.toSI(FastMath.pow(header.getPosVelBase(),
-                                                                                                                           Integer.valueOf(line.substring(64, 66).trim()))),
-                                                                     SP3Constants.POSITION_ACCURACY_UNIT.toSI(FastMath.pow(header.getPosVelBase(),
-                                                                                                                           Integer.valueOf(line.substring(67, 69).trim()))));
+                            pi.latestPositionAccuracy = new Vector3D(SP3Utils.siAccuracy(SP3Utils.POSITION_ACCURACY_UNIT,
+                                                                                         header.getPosVelBase(),
+                                                                                         Integer.valueOf(line.substring(61, 63).trim())),
+                                                                     SP3Utils.siAccuracy(SP3Utils.POSITION_ACCURACY_UNIT,
+                                                                                         header.getPosVelBase(),
+                                                                                         Integer.valueOf(line.substring(64, 66).trim())),
+                                                                     SP3Utils.siAccuracy(SP3Utils.POSITION_ACCURACY_UNIT,
+                                                                                         header.getPosVelBase(),
+                                                                                         Integer.valueOf(line.substring(67, 69).trim())));
                         }
 
                         if (line.length() < 73 || line.substring(70, 73).trim().length() == 0) {
                             pi.latestClockAccuracy    = Double.NaN;
                         } else {
-                            pi.latestClockAccuracy    = SP3Constants.CLOCK_ACCURACY_UNIT.toSI(FastMath.pow(header.getClockBase(),
-                                                                                                           Integer.valueOf(line.substring(70, 73).trim())));
+                            pi.latestClockAccuracy    = SP3Utils.siAccuracy(SP3Utils.CLOCK_ACCURACY_UNIT,
+                                                                            header.getClockBase(),
+                                                                            Integer.valueOf(line.substring(70, 73).trim()));
                         }
 
                         pi.latestClockEvent         = line.length() < 75 ? false : line.substring(74, 75).equals("E");
@@ -753,33 +760,37 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     final SP3Header header = pi.file.getHeader();
 
                     // the velocity values are in dm/s and have to be converted to m/s
-                    final Vector3D velocity = new Vector3D(SP3Constants.VELOCITY_UNIT.toSI(Double.parseDouble(line.substring(4, 18).trim())),
-                                                           SP3Constants.VELOCITY_UNIT.toSI(Double.parseDouble(line.substring(18, 32).trim())),
-                                                           SP3Constants.VELOCITY_UNIT.toSI(Double.parseDouble(line.substring(32, 46).trim())));
+                    final Vector3D velocity = new Vector3D(SP3Utils.VELOCITY_UNIT.toSI(Double.parseDouble(line.substring(4, 18).trim())),
+                                                           SP3Utils.VELOCITY_UNIT.toSI(Double.parseDouble(line.substring(18, 32).trim())),
+                                                           SP3Utils.VELOCITY_UNIT.toSI(Double.parseDouble(line.substring(32, 46).trim())));
 
                     // clock rate in file is 1e-4 us / s
                     final double clockRateChange = line.trim().length() <= 46 ?
-                                                   SP3Constants.DEFAULT_CLOCK_VALUE :
-                                                   SP3Constants.CLOCK_RATE_UNIT.toSI(Double.parseDouble(line.substring(46, 60).trim()));
+                                                   SP3Utils.DEFAULT_CLOCK_VALUE :
+                                                   SP3Utils.CLOCK_RATE_UNIT.toSI(Double.parseDouble(line.substring(46, 60).trim()));
 
                     final Vector3D velocityAccuracy;
                     if (line.length() < 69 || line.substring(61, 69).trim().length() == 0) {
                         velocityAccuracy  = null;
                     } else {
-                        velocityAccuracy = new Vector3D(SP3Constants.VELOCITY_ACCURACY_UNIT.toSI(FastMath.pow(header.getPosVelBase(),
-                                                                                                              Integer.valueOf(line.substring(61, 63).trim()))),
-                                                        SP3Constants.VELOCITY_ACCURACY_UNIT.toSI(FastMath.pow(header.getPosVelBase(),
-                                                                                                              Integer.valueOf(line.substring(64, 66).trim()))),
-                                                        SP3Constants.VELOCITY_ACCURACY_UNIT.toSI(FastMath.pow(header.getPosVelBase(),
-                                                                                                              Integer.valueOf(line.substring(67, 69).trim()))));
+                        velocityAccuracy = new Vector3D(SP3Utils.siAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT,
+                                                                            header.getPosVelBase(),
+                                                                            Integer.valueOf(line.substring(61, 63).trim())),
+                                                        SP3Utils.siAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT,
+                                                                            header.getPosVelBase(),
+                                                                            Integer.valueOf(line.substring(64, 66).trim())),
+                                                        SP3Utils.siAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT,
+                                                                            header.getPosVelBase(),
+                                                                            Integer.valueOf(line.substring(67, 69).trim())));
                     }
 
                     final double clockRateAccuracy;
                     if (line.length() < 73 || line.substring(70, 73).trim().length() == 0) {
                         clockRateAccuracy = Double.NaN;
                     } else {
-                        clockRateAccuracy = SP3Constants.CLOCK_RATE_ACCURACY_UNIT.toSI(FastMath.pow(header.getClockBase(),
-                                                                                                    Integer.valueOf(line.substring(70, 73).trim())));
+                        clockRateAccuracy = SP3Utils.siAccuracy(SP3Utils.CLOCK_RATE_ACCURACY_UNIT,
+                                                                header.getClockBase(),
+                                                                Integer.valueOf(line.substring(70, 73).trim()));
                     }
 
                     final SP3Coordinate coord =

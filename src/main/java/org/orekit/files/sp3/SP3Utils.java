@@ -16,16 +16,20 @@
  */
 package org.orekit.files.sp3;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.utils.units.Unit;
 
 /** Constants for SP3 files.
  * @since 12.0
  * @author Luc Maisonobe
  */
-public class SP3Constants {
+public class SP3Utils {
 
     /** Bad or absent clock values are to be set to 999999.999999. */
     public static final double DEFAULT_CLOCK_VALUE = 999999.999999;
+
+    /** Base for general position/velocity accuracy. */
+    public static final double POS_VEL_BASE_ACCURACY = 2.0;
 
     /** Position unit. */
     public static final Unit POSITION_UNIT = Unit.parse("km");
@@ -33,7 +37,7 @@ public class SP3Constants {
     /** Position accuracy unit. */
     public static final Unit POSITION_ACCURACY_UNIT = Unit.parse("mm");
 
-    /** Velocity unit. */
+   /** Velocity unit. */
     public static final Unit VELOCITY_UNIT = Unit.parse("dm/s");
 
     /** Velocity accuracy unit. */
@@ -53,8 +57,28 @@ public class SP3Constants {
 
     /** Private constructor for utility class.
      */
-    private SP3Constants() {
+    private SP3Utils() {
         // nothing to do
+    }
+
+    /** Convert an accuracy to SI units.
+     * @param unit accuracy unit
+     * @param base base
+     * @param accuracyIndex index of accuracy
+     * @return accuracy in SI units
+     */
+    public static double siAccuracy(final Unit unit, final double base, final int accuracyIndex) {
+        return unit.toSI(FastMath.pow(base, accuracyIndex));
+    }
+
+    /** Convert an accuracy from SI units.
+     * @param unit accuracy unit
+     * @param base base
+     * @param accuracy in SI units
+     * @return accuracyIndex index of accuracy
+     */
+    public static int indexAccuracy(final Unit unit, final double base, final double accuracy) {
+        return (int) FastMath.ceil(FastMath.log(unit.fromSI(accuracy)) / FastMath.log(base));
     }
 
 }

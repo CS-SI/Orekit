@@ -28,6 +28,12 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class SP3Coordinate extends TimeStampedPVCoordinates {
 
+    /** Dummy coordinate with all fields set to 0.0. */
+    public static final SP3Coordinate DUMMY = new SP3Coordinate(AbsoluteDate.ARBITRARY_EPOCH,
+                                                                Vector3D.ZERO, null, Vector3D.ZERO, null,
+                                                                0.0, 0.0, 0.0, 0.0,
+                                                                false, false, false, false);
+
     /** Serializable UID. */
     private static final long serialVersionUID = 20230903L;
 
