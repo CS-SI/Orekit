@@ -101,13 +101,14 @@ public enum DataUsed {
     /** Parse the string to get the data used.
      * @param s string to parse
      * @param fileName file name to generate the error message
+     * @param version format version
      * @return the data used corresponding to the string
      * @exception IllegalArgumentException if the string does not correspond to a data used
      */
-    public static DataUsed parse(final String s, final String fileName) {
+    public static DataUsed parse(final String s, final String fileName, final char version) {
         final DataUsed dataUsed = MAP.get(s);
         if (dataUsed == null) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.SP3_INVALID_HEADER_ENTRY, "data used", s, fileName);
+            throw new OrekitIllegalArgumentException(OrekitMessages.SP3_INVALID_HEADER_ENTRY, "data used", s, fileName, version);
         }
         return dataUsed;
     }

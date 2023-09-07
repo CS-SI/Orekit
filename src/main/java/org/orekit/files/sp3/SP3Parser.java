@@ -38,7 +38,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
-import org.orekit.files.sp3.SP3.SP3Coordinate;
 import org.orekit.frames.Frame;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
@@ -64,6 +63,9 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  */
 public class SP3Parser implements EphemerisFileParser<SP3> {
+
+    /** String representation of the center of ephemeris coordinate system. **/
+    public static final String SP3_FRAME_CENTER_STRING = "EARTH";
 
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
@@ -132,10 +134,10 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                      final int interpolationSamples,
                      final Function<? super String, ? extends Frame> frameBuilder,
                      final TimeScales timeScales) {
-        this.mu = mu;
+        this.mu                   = mu;
         this.interpolationSamples = interpolationSamples;
-        this.frameBuilder = frameBuilder;
-        this.timeScales = timeScales;
+        this.frameBuilder         = frameBuilder;
+        this.timeScales           = timeScales;
     }
 
     /**
@@ -284,7 +286,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
         protected ParseInfo(final String fileName) {
             this.fileName      = fileName;
             this.timeScales    = SP3Parser.this.timeScales;
-            file               = new SP3(mu, interpolationSamples, frameBuilder);
+            file               = new SP3(mu, interpolationSamples, frameBuilder.apply(SP3_FRAME_CENTER_STRING));
             latestEpoch        = null;
             latestPosition     = null;
             latestClock        = 0.0;
@@ -312,12 +314,12 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     scanner.skip("#");
                     final String v = scanner.next();
 
-                    pi.file.setVersion(v.substring(0, 1).toLowerCase().charAt(0));
+                    pi.file.getHeader().setVersion(v.substring(0, 1).toLowerCase().charAt(0));
 
                     pi.hasVelocityEntries = "V".equals(v.substring(1, 2));
-                    pi.file.setFilter(pi.hasVelocityEntries ?
-                                      CartesianDerivativesFilter.USE_PV :
-                                      CartesianDerivativesFilter.USE_P);
+                    pi.file.getHeader().setFilter(pi.hasVelocityEntries ?
+                                                  CartesianDerivativesFilter.USE_PV :
+                                                  CartesianDerivativesFilter.USE_P);
 
                     final int    year   = Integer.parseInt(v.substring(2));
                     final int    month  = scanner.nextInt();
@@ -330,19 +332,19 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                                                       hour, minute, second);
 
                     final int numEpochs = scanner.nextInt();
-                    pi.file.setNumberOfEpochs(numEpochs);
+                    pi.file.getHeader().setNumberOfEpochs(numEpochs);
 
                     // data used indicator
                     final String fullSpec = scanner.next();
                     final List<DataUsed> dataUsed = new ArrayList<>();
                     for (final String specifier : fullSpec.split("\\+")) {
-                        dataUsed.add(DataUsed.parse(specifier, pi.fileName));
+                        dataUsed.add(DataUsed.parse(specifier, pi.fileName, pi.file.getHeader().getVersion()));
                     }
-                    pi.file.setDataUsed(dataUsed);
+                    pi.file.getHeader().setDataUsed(dataUsed);
 
-                    pi.file.setCoordinateSystem(scanner.next());
-                    pi.file.setOrbitTypeKey(scanner.next());
-                    pi.file.setAgency(scanner.next());
+                    pi.file.getHeader().setCoordinateSystem(scanner.next());
+                    pi.file.getHeader().setOrbitTypeKey(scanner.next());
+                    pi.file.getHeader().setAgency(scanner.next());
                 }
             }
 
@@ -366,15 +368,15 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     scanner.skip("##");
 
                     // gps week
-                    pi.file.setGpsWeek(scanner.nextInt());
+                    pi.file.getHeader().setGpsWeek(scanner.nextInt());
                     // seconds of week
-                    pi.file.setSecondsOfWeek(scanner.nextDouble());
+                    pi.file.getHeader().setSecondsOfWeek(scanner.nextDouble());
                     // epoch interval
-                    pi.file.setEpochInterval(scanner.nextDouble());
+                    pi.file.getHeader().setEpochInterval(scanner.nextDouble());
                     // modified julian day
-                    pi.file.setModifiedJulianDay(scanner.nextInt());
+                    pi.file.getHeader().setModifiedJulianDay(scanner.nextInt());
                     // day fraction
-                    pi.file.setDayFraction(scanner.nextDouble());
+                    pi.file.getHeader().setDayFraction(scanner.nextDouble());
                 }
             }
 
@@ -431,7 +433,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     if (sub.length() > 0) {
                         final int exponent = Integer.parseInt(sub);
                         // the accuracy is calculated as 2**exp (in mm)
-                        pi.file.getEphemeris(pi.nbAccuracies++).setAccuracy(SP3Constants.POSITION_ACCURACY_UNIT.toSI(2 << exponent));
+                        pi.file.getHeader().setAccuracy(pi.nbAccuracies++, SP3Constants.POSITION_ACCURACY_UNIT.toSI(2 << exponent));
                     }
                     startIdx += 3;
                 }
@@ -452,9 +454,9 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
             @Override
             public void parse(final String line, final ParseInfo pi) {
 
-                if (pi.file.getType() == null) {
+                if (pi.file.getHeader().getType() == null) {
                     // this the first custom fields line, the only one really used
-                    pi.file.setType(SP3FileType.parse(line.substring(3, 5).trim()));
+                    pi.file.getHeader().setType(SP3FileType.parse(line.substring(3, 5).trim()));
 
                     // now identify the time system in use
                     final String tsStr = line.substring(9, 12).trim();
@@ -464,11 +466,11 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     } else {
                         ts = TimeSystem.valueOf(tsStr);
                     }
-                    pi.file.setTimeSystem(ts);
+                    pi.file.getHeader().setTimeSystem(ts);
                     pi.timeScale = ts.getTimeScale(pi.timeScales);
 
                     // now we know the time scale used, we can set the file epoch
-                    pi.file.setEpoch(new AbsoluteDate(pi.epoch, pi.timeScale));
+                    pi.file.getHeader().setEpoch(new AbsoluteDate(pi.epoch, pi.timeScale));
                 }
 
             }
@@ -490,13 +492,13 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                 final double posVelBase = Double.valueOf(line.substring(3, 13).trim());
                 if (posVelBase != 0.0) {
                     // (mm or 10⁻⁴ mm/s)
-                    pi.file.setPosVelBase(posVelBase);
+                    pi.file.getHeader().setPosVelBase(posVelBase);
                 }
 
                 final double clockBase = Double.valueOf(line.substring(14, 26).trim());
                 if (clockBase != 0.0) {
                     // (ps or 10⁻⁴ ps/s)
-                    pi.file.setClockBase(clockBase);
+                    pi.file.getHeader().setClockBase(clockBase);
                 }
             }
 
@@ -531,7 +533,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                pi.file.addComment(line.substring(line.indexOf('*') + 1).trim());
+                pi.file.getHeader().addComment(line.substring(line.indexOf('*') + 1).trim());
             }
 
             /** {@inheritDoc} */
@@ -607,11 +609,11 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                 }
                 addCandidate(candidates, dc, h, m, s, pi.timeScale);
                 final AbsoluteDate expected = pi.latestEpoch == null ?
-                                              pi.file.getEpoch() :
-                                                  pi.latestEpoch.shiftedBy(pi.file.getEpochInterval());
+                                              pi.file.getHeader().getEpoch() :
+                                              pi.latestEpoch.shiftedBy(pi.file.getHeader().getEpochInterval());
                 pi.latestEpoch = null;
                 for (final AbsoluteDate candidate : candidates) {
-                    if (FastMath.abs(candidate.durationFrom(expected)) < 0.01 * pi.file.getEpochInterval()) {
+                    if (FastMath.abs(candidate.durationFrom(expected)) < 0.01 * pi.file.getHeader().getEpochInterval()) {
                         pi.latestEpoch = candidate;
                     }
                 }
@@ -659,52 +661,56 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                 final String satelliteId = line.substring(1, 4).trim();
 
                 if (!pi.file.containsSatellite(satelliteId)) {
-                    pi.latestPosition = null;
+                    pi.latestPosition = Vector3D.ZERO;
                 } else {
+
+                    final SP3Header header = pi.file.getHeader();
 
                     // the position values are in km and have to be converted to m
                     pi.latestPosition = new Vector3D(SP3Constants.POSITION_UNIT.toSI(Double.parseDouble(line.substring(4, 18).trim())),
                                                      SP3Constants.POSITION_UNIT.toSI(Double.parseDouble(line.substring(18, 32).trim())),
                                                      SP3Constants.POSITION_UNIT.toSI(Double.parseDouble(line.substring(32, 46).trim())));
 
-                    // clock (microsec)
-                    pi.latestClock = line.trim().length() <= 46 ?
-                                     SP3Constants.DEFAULT_CLOCK_VALUE :
-                                     SP3Constants.CLOCK_UNIT.toSI(Double.parseDouble(line.substring(46, 60).trim()));
+                    if (pi.latestPosition.getNorm() > 0) {
+                        // clock (microsec)
+                        pi.latestClock = line.trim().length() <= 46 ?
+                                                                     SP3Constants.DEFAULT_CLOCK_VALUE :
+                                                                         SP3Constants.CLOCK_UNIT.toSI(Double.parseDouble(line.substring(46, 60).trim()));
 
-                    if (line.length() < 69 || line.substring(61, 69).trim().length() == 0) {
-                        pi.latestPositionAccuracy = null;
-                    } else {
-                        pi.latestPositionAccuracy = new Vector3D(SP3Constants.POSITION_ACCURACY_UNIT.toSI(FastMath.pow(pi.file.getPosVelBase(),
-                                                                                                                       Integer.valueOf(line.substring(61, 63).trim()))),
-                                                                 SP3Constants.POSITION_ACCURACY_UNIT.toSI(FastMath.pow(pi.file.getPosVelBase(),
-                                                                                                                       Integer.valueOf(line.substring(64, 66).trim()))),
-                                                                 SP3Constants.POSITION_ACCURACY_UNIT.toSI(FastMath.pow(pi.file.getPosVelBase(),
-                                                                                                                       Integer.valueOf(line.substring(67, 69).trim()))));
-                    }
+                        if (line.length() < 69 || line.substring(61, 69).trim().length() == 0) {
+                            pi.latestPositionAccuracy = null;
+                        } else {
+                            pi.latestPositionAccuracy = new Vector3D(SP3Constants.POSITION_ACCURACY_UNIT.toSI(FastMath.pow(header.getPosVelBase(),
+                                                                                                                           Integer.valueOf(line.substring(61, 63).trim()))),
+                                                                     SP3Constants.POSITION_ACCURACY_UNIT.toSI(FastMath.pow(header.getPosVelBase(),
+                                                                                                                           Integer.valueOf(line.substring(64, 66).trim()))),
+                                                                     SP3Constants.POSITION_ACCURACY_UNIT.toSI(FastMath.pow(header.getPosVelBase(),
+                                                                                                                           Integer.valueOf(line.substring(67, 69).trim()))));
+                        }
 
-                    if (line.length() < 73 || line.substring(70, 73).trim().length() == 0) {
-                        pi.latestClockAccuracy    = Double.NaN;
-                    } else {
-                        pi.latestClockAccuracy    = SP3Constants.CLOCK_ACCURACY_UNIT.toSI(FastMath.pow(pi.file.getClockBase(),
-                                                                                                       Integer.valueOf(line.substring(70, 73).trim())));
-                    }
+                        if (line.length() < 73 || line.substring(70, 73).trim().length() == 0) {
+                            pi.latestClockAccuracy    = Double.NaN;
+                        } else {
+                            pi.latestClockAccuracy    = SP3Constants.CLOCK_ACCURACY_UNIT.toSI(FastMath.pow(header.getClockBase(),
+                                                                                                           Integer.valueOf(line.substring(70, 73).trim())));
+                        }
 
-                    pi.latestClockEvent         = line.length() < 75 ? false : line.substring(74, 75).equals("E");
-                    pi.latestClockPrediction    = line.length() < 76 ? false : line.substring(75, 76).equals("P");
-                    pi.latestOrbitManeuverEvent = line.length() < 79 ? false : line.substring(78, 79).equals("M");
-                    pi.latestOrbitPrediction    = line.length() < 80 ? false : line.substring(79, 80).equals("P");
+                        pi.latestClockEvent         = line.length() < 75 ? false : line.substring(74, 75).equals("E");
+                        pi.latestClockPrediction    = line.length() < 76 ? false : line.substring(75, 76).equals("P");
+                        pi.latestOrbitManeuverEvent = line.length() < 79 ? false : line.substring(78, 79).equals("M");
+                        pi.latestOrbitPrediction    = line.length() < 80 ? false : line.substring(79, 80).equals("P");
 
-                    if (!pi.hasVelocityEntries) {
-                        final SP3Coordinate coord =
-                                new SP3Coordinate(pi.latestEpoch,
-                                                  pi.latestPosition,           pi.latestPositionAccuracy,
-                                                  Vector3D.ZERO,               null,
-                                                  pi.latestClock,              Double.NaN,
-                                                  0.0,                         Double.NaN,
-                                                  pi.latestClockEvent,         pi.latestClockPrediction,
-                                                  pi.latestOrbitManeuverEvent, pi.latestOrbitPrediction);
-                        pi.file.addSatelliteCoordinate(satelliteId, coord);
+                        if (!pi.hasVelocityEntries) {
+                            final SP3Coordinate coord =
+                                            new SP3Coordinate(pi.latestEpoch,
+                                                              pi.latestPosition,           pi.latestPositionAccuracy,
+                                                              Vector3D.ZERO,               null,
+                                                              pi.latestClock,              Double.NaN,
+                                                              0.0,                         Double.NaN,
+                                                              pi.latestClockEvent,         pi.latestClockPrediction,
+                                                              pi.latestOrbitManeuverEvent, pi.latestOrbitPrediction);
+                            pi.file.getEphemeris(satelliteId).addCoordinate(coord, header.getEpochInterval());
+                        }
                     }
                 }
             }
@@ -742,7 +748,9 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
             public void parse(final String line, final ParseInfo pi) {
                 final String satelliteId = line.substring(1, 4).trim();
 
-                if (pi.file.containsSatellite(satelliteId)) {
+                if (pi.file.containsSatellite(satelliteId) && pi.latestPosition.getNorm() > 0) {
+
+                    final SP3Header header = pi.file.getHeader();
 
                     // the velocity values are in dm/s and have to be converted to m/s
                     final Vector3D velocity = new Vector3D(SP3Constants.VELOCITY_UNIT.toSI(Double.parseDouble(line.substring(4, 18).trim())),
@@ -758,11 +766,11 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     if (line.length() < 69 || line.substring(61, 69).trim().length() == 0) {
                         velocityAccuracy  = null;
                     } else {
-                        velocityAccuracy = new Vector3D(SP3Constants.VELOCITY_ACCURACY_UNIT.toSI(FastMath.pow(pi.file.getPosVelBase(),
+                        velocityAccuracy = new Vector3D(SP3Constants.VELOCITY_ACCURACY_UNIT.toSI(FastMath.pow(header.getPosVelBase(),
                                                                                                               Integer.valueOf(line.substring(61, 63).trim()))),
-                                                        SP3Constants.VELOCITY_ACCURACY_UNIT.toSI(FastMath.pow(pi.file.getPosVelBase(),
+                                                        SP3Constants.VELOCITY_ACCURACY_UNIT.toSI(FastMath.pow(header.getPosVelBase(),
                                                                                                               Integer.valueOf(line.substring(64, 66).trim()))),
-                                                        SP3Constants.VELOCITY_ACCURACY_UNIT.toSI(FastMath.pow(pi.file.getPosVelBase(),
+                                                        SP3Constants.VELOCITY_ACCURACY_UNIT.toSI(FastMath.pow(header.getPosVelBase(),
                                                                                                               Integer.valueOf(line.substring(67, 69).trim()))));
                     }
 
@@ -770,7 +778,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     if (line.length() < 73 || line.substring(70, 73).trim().length() == 0) {
                         clockRateAccuracy = Double.NaN;
                     } else {
-                        clockRateAccuracy = SP3Constants.CLOCK_RATE_ACCURACY_UNIT.toSI(FastMath.pow(pi.file.getClockBase(),
+                        clockRateAccuracy = SP3Constants.CLOCK_RATE_ACCURACY_UNIT.toSI(FastMath.pow(header.getClockBase(),
                                                                                                     Integer.valueOf(line.substring(70, 73).trim())));
                     }
 
@@ -782,7 +790,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                                               clockRateChange,             clockRateAccuracy,
                                               pi.latestClockEvent,         pi.latestClockPrediction,
                                               pi.latestOrbitManeuverEvent, pi.latestOrbitPrediction);
-                    pi.file.addSatelliteCoordinate(satelliteId, coord);
+                    pi.file.getEphemeris(satelliteId).addCoordinate(coord, header.getEpochInterval());
                 }
             }
 

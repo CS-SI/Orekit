@@ -391,7 +391,7 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = la órbita tiene una excentricidad ({0}
 # unsupported sp3 file version "{0}"
 SP3_UNSUPPORTED_VERSION = versión de formato sp3 "{0}" no reconocida
 
-# invalid header entry {0} "{1}" in file {2}
+# invalid header entry {0} "{1}" in file {2} (format version {3})
 SP3_INVALID_HEADER_ENTRY = <MISSING TRANSLATION>
 
 # version "{0}" supports only up to {1} satellites, found {2} in file {3}
@@ -405,9 +405,6 @@ SP3_INCOMPATIBLE_FILE_METADATA = imposible de adjuntar los ficheros sp3 teniendo
 
 # cannot splice sp3 files with incompatible satellite metadata for satellite {0}
 SP3_INCOMPATIBLE_SATELLITE_MEDATADA = imposible de adjuntar los ficheros sp3 teniendo metadata del satéllite {0} diferente 
-
-# cannot splice sp3 files with large gap for satellite {0} ({1} s)
-SP3_TOO_LARGE_GAP_FOR_SPLICING = imposible de adjuntar los ficheros sp3 separados de {1} s para el satéllite {0} 
 
 # STK coordinate system "{0}" is invalid or not yet supported
 STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = el sistema de coordenadas "{0}" de STK es inválido o no aún implementado

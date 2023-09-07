@@ -17,12 +17,12 @@
 package org.orekit.files.sp3;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.files.sp3.SP3.SP3Ephemeris;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
@@ -77,29 +77,33 @@ public class SP3Writer {
     public void write(final SP3 sp3)
         throws IOException {
         sp3.validate(false, outputName);
-        writeHeader(sp3);
+        writeHeader(sp3.getHeader());
 
         final int[]          nextIndex   = new int[sp3.getSatelliteCount()];
         final SP3Ephemeris[] ephemerides = new SP3Ephemeris[sp3.getSatelliteCount()];
-        int i = 0;
+        int k = 0;
         for (final Map.Entry<String, SP3Ephemeris> entry : sp3.getSatellites().entrySet()) {
-            ephemerides[i++] = entry.getValue();
+            ephemerides[k++] = entry.getValue();
         }
 
-        // TODO: write orbit data
+        for (int i = 0; i < sp3.getHeader().getNumberOfEpochs(); ++i) {
+            for (int j = 0; j < ephemerides.length; ++j) {
+                // TODO
+            }
+        }
 
     }
 
     /** Write header.
-     * @param sp3 SP3 file containing the header to write
+     * @param header SP3 header to write
      * @exception IOException if an I/O error occurs.
      */
-    private void writeHeader(final SP3 sp3)
+    private void writeHeader(final SP3Header header)
         throws IOException {
-        final TimeScale timeScale = sp3.getTimeSystem().getTimeScale(timeScales);
-        final DateTimeComponents dtc = sp3.getEpoch().getComponents(timeScale);
+        final TimeScale timeScale = header.getTimeSystem().getTimeScale(timeScales);
+        final DateTimeComponents dtc = header.getEpoch().getComponents(timeScale);
         final StringBuilder dataUsedBuilder = new StringBuilder();
-        for (final DataUsed du : sp3.getDataUsed()) {
+        for (final DataUsed du : header.getDataUsed()) {
             if (dataUsedBuilder.length() > 0) {
                 dataUsedBuilder.append('+');
             }
@@ -111,34 +115,35 @@ public class SP3Writer {
 
         // header first line: version, epoch...
         output.append(String.format(Locale.US, "#%c%c%4d %02d %02d %02d %02d %11.8f %7d %5s %5s %3s %4s%n",
-                                    sp3.getVersion(),
-                                    sp3.getFilter() == CartesianDerivativesFilter.USE_P ? 'P' : 'V',
+                                    header.getVersion(),
+                                    header.getFilter() == CartesianDerivativesFilter.USE_P ? 'P' : 'V',
                                     dtc.getDate().getYear(),
                                     dtc.getDate().getMonth(),
                                     dtc.getDate().getDay(),
                                     dtc.getTime().getHour(),
                                     dtc.getTime().getMinute(),
                                     dtc.getTime().getSecondsInLocalDay(),
-                                    sp3.getNumberOfEpochs(),
+                                    header.getNumberOfEpochs(),
                                     dataUsed,
-                                    sp3.getCoordinateSystem(),
-                                    sp3.getOrbitTypeKey(),
-                                    sp3.getAgency()));
+                                    header.getCoordinateSystem(),
+                                    header.getOrbitTypeKey(),
+                                    header.getAgency()));
 
         // header second line : dates
         output.append(String.format(Locale.US, "## %4d %15.8f %14.8f %5d %15.13%n",
-                                    sp3.getGpsWeek(),
-                                    sp3.getSecondsOfWeek(),
-                                    sp3.getEpochInterval(),
-                                    sp3.getModifiedJulianDay(),
-                                    sp3.getDayFraction()));
+                                    header.getGpsWeek(),
+                                    header.getSecondsOfWeek(),
+                                    header.getEpochInterval(),
+                                    header.getModifiedJulianDay(),
+                                    header.getDayFraction()));
 
         // list of satellites
-        output.append(String.format(Locale.US, "+   %2d   ", sp3.getSatelliteCount()));
+        final List<String> satellites = header.getSatIds();
+        output.append(String.format(Locale.US, "+   %2d   ", satellites.size()));
         int column = 9;
-        int remaining = sp3.getSatelliteCount();
-        for (final Map.Entry<String, SP3Ephemeris> entry : sp3.getSatellites().entrySet()) {
-            output.append(String.format(Locale.US, "%3s", entry.getKey()));
+        int remaining = satellites.size();
+        for (final String satId : satellites) {
+            output.append(String.format(Locale.US, "%3s", satId));
             --remaining;
             column += 3;
             if (column >= 60) {
@@ -159,9 +164,9 @@ public class SP3Writer {
         // general accuracy
         output.append(ACCURACY_LINE_PREFIX);
         column = 9;
-        remaining = sp3.getSatelliteCount();
-        for (final Map.Entry<String, SP3Ephemeris> entry : sp3.getSatellites().entrySet()) {
-            final double accuracy = entry.getValue().getAccuracy();
+        remaining = satellites.size();
+        for (final String satId : satellites) {
+            final double accuracy    = header.getAccuracy(satId);
             final int    accuracyExp = (int) FastMath.ceil(FastMath.log(SP3Constants.POSITION_ACCURACY_UNIT.fromSI(accuracy)) /
                                                            FastMath.log(2.0));
             output.append(String.format(Locale.US, "%3d", accuracyExp));
@@ -184,13 +189,13 @@ public class SP3Writer {
 
         // type
         output.append(String.format(Locale.US, "%%c %1s  cc %3s ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc%n",
-                                    sp3.getType().getKey(),
-                                    sp3.getTimeSystem().getKey()));
+                                    header.getType().getKey(),
+                                    header.getTimeSystem().getKey()));
         output.append("%c cc cc ccc ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc").append(EOL);
 
         // entries accuracy
         output.append(String.format(Locale.US, ACCURACY_BASE_FORMAT,
-                                    sp3.getPosVelBase(), sp3.getClass(), 0.0, 0.0));
+                                    header.getPosVelBase(), header.getClass(), 0.0, 0.0));
         output.append(String.format(Locale.US, ACCURACY_BASE_FORMAT,
                                     0.0, 0.0, 0.0, 0.0));
 
@@ -200,7 +205,7 @@ public class SP3Writer {
 
         // comments
         int count = 0;
-        for (final String comment : sp3.getComments()) {
+        for (final String comment : header.getComments()) {
             ++count;
             output.append(COMMENT_LINE_PREFIX).append(comment).append(EOL);
         }
