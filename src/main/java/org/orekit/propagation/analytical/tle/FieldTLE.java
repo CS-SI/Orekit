@@ -179,7 +179,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      * DataContext#getDefault() default data context}.
      *
      * <p>The static method {@link #isFormatOK(String, String)} should be called
-     * before trying to build this object.<p>
+     * before trying to build this object.</p>
      * @param field field utilized by default
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)
@@ -195,7 +195,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
      *<p>This method uses the {@link DataContext#getDefault() default data context}.
      *
      * <p>The static method {@link #isFormatOK(String, String)} should be called
-     * before trying to build this object.<p>
+     * before trying to build this object.</p>
      * @param field field utilized by default
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)

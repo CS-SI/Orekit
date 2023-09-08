@@ -584,15 +584,15 @@ public class CdmRelativeMetadata {
         this.maxCollisionProbabilityMethod = pocMethodFacade;
     }
 
-    /**
-     * @return the sefiCollisionProbability
+    /** Get the Space Environment Fragmentation Impact probability.
+     * @return the Space Environment Fragmentation Impact probability
      */
     public double getSefiCollisionProbability() {
         return sefiCollisionProbability;
     }
 
-    /**
-     * @param sefiCollisionProbability the sefiCollisionProbability to set
+    /** Set the Space Environment Fragmentation Impact probability.
+     * @param sefiCollisionProbability the Space Environment Fragmentation Impact probability to set
      */
     public void setSefiCollisionProbability(final double sefiCollisionProbability) {
         this.sefiCollisionProbability = sefiCollisionProbability;

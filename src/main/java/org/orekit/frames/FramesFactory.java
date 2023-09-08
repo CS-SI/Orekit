@@ -494,7 +494,7 @@ public class FramesFactory {
     }
 
     /** Get the VEIS 1950 reference frame.
-     * <p>Its parent frame is the GTOD frame with IERS 1996 conventions without EOP corrections.<p>
+     * <p>Its parent frame is the GTOD frame with IERS 1996 conventions without EOP corrections.</p>
      * @return the selected reference frame singleton.
      */
     @DefaultDataContext

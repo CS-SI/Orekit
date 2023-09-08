@@ -631,33 +631,46 @@ public class ShortTermEncounter2DDefinition {
         return tca;
     }
 
-    /** @return reference's orbit at time of closest approach */
+    /** Get reference's orbit at time of closest approach.
+     * @return reference's orbit at time of closest approach
+     */
     public Orbit getReferenceAtTCA() {
         return referenceAtTCA;
     }
 
-    /** @return other's orbit at time of closest approach */
+    /** Get other's orbit at time of closest approach.
+     *  @return other's orbit at time of closest approach
+     */
     public Orbit getOtherAtTCA() {
         return otherAtTCA;
     }
 
-    /** @return reference's covariance */
+    /** Get reference's covariance.
+     * @return reference's covariance
+     */
     public StateCovariance getReferenceCovariance() {
         return referenceCovariance;
     }
 
-    /** @return other's covariance */
+    /** Get other's covariance.
+     * @return other's covariance
+     */
     public StateCovariance getOtherCovariance() {
         return otherCovariance;
     }
 
-    /** @return combined radius (m) */
+    /** Get combined radius.
+     * @return combined radius (m)
+     */
     public double getCombinedRadius() {
         return combinedRadius;
     }
 
-    /** @return encounter local orbital frame */
+    /** Get encounter local orbital frame.
+     * @return encounter local orbital frame
+     */
     public EncounterLOF getEncounterFrame() {
         return encounterFrame;
     }
+
 }

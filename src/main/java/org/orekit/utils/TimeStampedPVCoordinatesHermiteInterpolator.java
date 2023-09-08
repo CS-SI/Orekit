@@ -108,7 +108,9 @@ public class TimeStampedPVCoordinatesHermiteInterpolator extends AbstractTimeInt
         this.filter = filter;
     }
 
-    /** @return filter for derivatives from the sample to use in interpolation */
+    /** Get filter for derivatives from the sample to use in interpolation.
+     * @return filter for derivatives from the sample to use in interpolation
+     */
     public CartesianDerivativesFilter getFilter() {
         return filter;
     }

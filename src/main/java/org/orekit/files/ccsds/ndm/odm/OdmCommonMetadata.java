@@ -73,7 +73,7 @@ public class OdmCommonMetadata extends OdmMetadata {
      * ODM standard enforces {@code TIME_SYSTEM} to appear *after*
      * {@code REF_FRAME_EPOCH}, despite it is needed to interpret it.
      * We have to wait until parsing end to finalize this date.
-     * <p>
+     * </p>
      * @param context context binding
      */
     public void finalizeMetadata(final ContextBinding context) {

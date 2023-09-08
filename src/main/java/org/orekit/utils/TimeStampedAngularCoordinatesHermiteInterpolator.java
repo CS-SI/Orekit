@@ -112,7 +112,9 @@ public class TimeStampedAngularCoordinatesHermiteInterpolator
         this.filter = filter;
     }
 
-    /** @return filter for derivatives from the sample to use in interpolation */
+    /** Get filter for derivatives from the sample to use in interpolation.
+     * @return filter for derivatives from the sample to use in interpolation
+     */
     public AngularDerivativesFilter getFilter() {
         return filter;
     }

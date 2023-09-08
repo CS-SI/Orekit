@@ -578,7 +578,9 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
                                                          .getEntry(0, 0);
     }
 
-    /** @return new encounter instance */
+    /** Get new encounter instance.
+     * @return new encounter instance
+     */
     public ShortTermEncounter2DDefinition toEncounter() {
         return new ShortTermEncounter2DDefinition(referenceAtTCA.toOrbit(), referenceCovariance.toStateCovariance(),
                                                   otherAtTCA.toOrbit(), otherCovariance.toStateCovariance(),

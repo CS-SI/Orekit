@@ -479,12 +479,14 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
 
     }
 
-    /** @return output frame */
+    /** Get output frame.
+     * @return output frame
+     */
     public Frame getOutputFrame() {
         return outputFrame;
     }
 
-    /**
+    /** Get orbit interpolator.
      * @return optional orbit interpolator
      *
      * @see Optional
@@ -493,7 +495,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
         return orbitInterpolator;
     }
 
-    /**
+    /** Get absolute position-velocity-acceleration interpolator.
      * @return optional absolute position-velocity-acceleration interpolator
      *
      * @see Optional
@@ -502,7 +504,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
         return absPVAInterpolator;
     }
 
-    /**
+    /** Get mass interpolator.
      * @return optional mass interpolator
      *
      * @see Optional
@@ -511,7 +513,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
         return massInterpolator;
     }
 
-    /**
+    /** Get attitude interpolator.
      * @return optional attitude interpolator
      *
      * @see Optional
@@ -520,7 +522,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
         return attitudeInterpolator;
     }
 
-    /**
+    /** Get additional state interpolator.
      * @return optional additional state interpolator
      *
      * @see Optional

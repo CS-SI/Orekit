@@ -253,7 +253,8 @@ public class StateCovarianceKeplerianHermiteInterpolator extends AbstractStateCo
         this.filter = filter;
     }
 
-    /**
+    /** Get Filter defining if only the state covariance value are used or if first or/and second Keplerian derivatives
+     * should be used.
      * @return Filter defining if only the state covariance value are used or if first or/and second Keplerian derivatives
      * should be used.
      */

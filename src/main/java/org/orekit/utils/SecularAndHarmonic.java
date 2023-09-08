@@ -111,7 +111,7 @@ public class SecularAndHarmonic {
     /** Add a fitting point.
      * <p>
      * The point weight is set to 1.0
-     * <p>
+     * </p>
      * @param date date of the point
      * @param osculatingValue osculating value
      * @see #addWeightedPoint(AbsoluteDate, double, double)
