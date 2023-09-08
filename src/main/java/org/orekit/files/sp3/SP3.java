@@ -148,11 +148,11 @@ public class SP3 implements EphemerisFile<SP3Coordinate, SP3Segment> {
      * <p>
      * Splicing SP3 files is intended to be used when continuous computation
      * covering more than one file is needed. The files should all have the exact same
-     * metadata: {@link #getType() type}, {@link #getTimeSystem() time system},
-     * {@link #getCoordinateSystem() coordinate system}, except for satellite accuracy
+     * metadata: {@link SP3Header#getType() type}, {@link SP3Header#getTimeSystem() time system},
+     * {@link SP3Header#getCoordinateSystem() coordinate system}, except for satellite accuracy
      * which can be different from one file to the next one, and some satellites may
      * be missing in some files… Once sorted (which is done internally), the gap between
-     * each file should not exceed the {@link #getEpochInterval() epoch interval}.
+     * each file should not exceed the {@link SP3Header#getEpochInterval() epoch interval}.
      * </p>
      * <p>
      * The spliced file only contains the satellites that were present in all files.
