@@ -388,23 +388,23 @@ DSST_SPR_SHADOW_INCONSISTENT = ikke-konsistent skyggeberegning: indgang = {0} og
 # The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
 DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Den aktuelle bane har en excentricitet ({0} > 0.5). DSST kræver en ikke implementeret tidsafhængig numerisk metode til at beregne de gennemsnitlige hastigheder
 
-# unsupported sp3 file version {0}
-SP3_UNSUPPORTED_VERSION = ikke-understøttet version {0} af sp3 fil
+# unsupported sp3 file version "{0}"
+SP3_UNSUPPORTED_VERSION = ikke-understøttet version "{0}" af sp3 fil
+
+# invalid header entry {0} "{1}" in file {2} (format version {3})
+SP3_INVALID_HEADER_ENTRY = <MISSING TRANSLATION>
+
+# version "{0}" supports only up to {1} satellites, found {2} in file {3}
+SP3_TOO_MANY_SATELLITES_FOR_VERSION = <MISSING TRANSLATION>
 
 # found {0} epochs in file {1}, expected {2}
 SP3_NUMBER_OF_EPOCH_MISMATCH = fandt {0} epoker i filen {1}, forventede {2}
-
-# unexpected end of file in sp3 file (after line {0})
-SP3_UNEXPECTED_END_OF_FILE = uventet ende på fil i sp3 fil (efter linje {0})
 
 # cannot splice sp3 files with incompatible metadata
 SP3_INCOMPATIBLE_FILE_METADATA = <MISSING TRANSLATION>
 
 # cannot splice sp3 files with incompatible satellite metadata for satellite {0}
 SP3_INCOMPATIBLE_SATELLITE_MEDATADA = <MISSING TRANSLATION>
-
-# cannot splice sp3 files with large gap for satellite {0} ({1} s)
-SP3_TOO_LARGE_GAP_FOR_SPLICING = <MISSING TRANSLATION>
 
 # STK coordinate system "{0}" is invalid or not yet supported
 STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
@@ -860,3 +860,6 @@ HEADER_ALREADY_WRITTEN = <MISSING TRANSLATION>
 
 # Cannot start the propagation from an infinitely far date
 CANNOT_START_PROPAGATION_FROM_INFINITY = <MISSING TRANSLATION>
+
+# invalid satellite id {0}
+INVALID_SATELLITE_ID = <MISSING TRANSLATION>

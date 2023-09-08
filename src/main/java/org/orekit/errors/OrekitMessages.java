@@ -204,12 +204,12 @@ public enum OrekitMessages implements Localizable {
     DSST_SPR_SHADOW_INCONSISTENT("inconsistent shadow computation: entry = {0} whereas exit = {1}"),
     DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD(
             "The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates"),
-    SP3_UNSUPPORTED_VERSION("unsupported sp3 file version {0}"),
+    SP3_UNSUPPORTED_VERSION("unsupported sp3 file version \"{0}\""),
+    SP3_INVALID_HEADER_ENTRY("invalid header entry {0} \"{1}\" in file {2} (format version {3})"),
+    SP3_TOO_MANY_SATELLITES_FOR_VERSION("version \"{0}\" supports only up to {1} satellites, found {2} in file {3}"),
     SP3_NUMBER_OF_EPOCH_MISMATCH("found {0} epochs in file {1}, expected {2}"),
-    SP3_UNEXPECTED_END_OF_FILE("unexpected end of sp3 file (after line {0})"),
     SP3_INCOMPATIBLE_FILE_METADATA("cannot splice sp3 files with incompatible metadata"),
     SP3_INCOMPATIBLE_SATELLITE_MEDATADA("cannot splice sp3 files with incompatible satellite metadata for satellite {0}"),
-    SP3_TOO_LARGE_GAP_FOR_SPLICING("cannot splice sp3 files with large gap for satellite {0} ({1} s)"),
     STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM("STK coordinate system \"{0}\" is invalid or not yet supported"),
     STK_UNMAPPED_COORDINATE_SYSTEM("STK coordinate system \"{0}\" has not been mapped to an Orekit frame"),
     STK_UNEXPECTED_END_OF_FILE("unexpected end of STK file (after line {0})"),
@@ -369,7 +369,8 @@ public enum OrekitMessages implements Localizable {
     MULTIPLE_INTERPOLATOR_USED("multiple interpolators are used so they may use different numbers of interpolation points"),
     HEADER_NOT_WRITTEN("header for file {0} has not been written yet"),
     HEADER_ALREADY_WRITTEN("header for file {0} has already been written"),
-    CANNOT_START_PROPAGATION_FROM_INFINITY("Cannot start the propagation from an infinitely far date");
+    CANNOT_START_PROPAGATION_FROM_INFINITY("Cannot start the propagation from an infinitely far date"),
+    INVALID_SATELLITE_ID("invalid satellite id {0}");
 
     // CHECKSTYLE: resume JavadocVariable check
 
