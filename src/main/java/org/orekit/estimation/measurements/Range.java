@@ -101,7 +101,7 @@ public class Range extends GroundReceiverMeasurement<Range> {
      * @param baseWeight base weight
      * @param satellite satellite related to this measurement
      * @param timeTagSpecificationType specify the timetag configuration of the provided range observation
-     * @since xx.xx
+     * @since 12.0
      */
     public Range(final GroundStation station, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight,
@@ -216,22 +216,30 @@ public class Range extends GroundReceiverMeasurement<Range> {
         // Range value
         final Gradient range;
 
-        if (isTwoWay()) {
+        // If measurement time-tag is "transit" then range is the geometrical distance between station and state
+        if (getTimeTagSpecificationType() == TimeTagSpecificationType.TRANSIT) {
 
-            // Two-way signal: total time of flight of the signal is (uplink delay + downlink delay) / 2
-            final Gradient tau = tauD.add(common.getTauU());
-            range = tau.multiply(0.5 * Constants.SPEED_OF_LIGHT);
+            range = common.getStationEstimationDate().getPosition().distance(common.getTransitPV().getPosition());
 
         } else {
+            // For other measurement time-tags, we use the signal time of flight to compute the range
+            if (isTwoWay()) {
 
-            // One-way signal: time of flight is downlink delay
-            // Add clock offsets
-            final ObservableSatellite satellite = getSatellites().get(0);
-            final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
-            final Gradient            dtg       = getStation().getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
+                // Two-way signal: total time of flight of the signal is (uplink delay + downlink delay) / 2
+                final Gradient tau = tauD.add(common.getTauU());
+                range = tau.multiply(0.5 * Constants.SPEED_OF_LIGHT);
 
-            // Range value
-            range = tauD.add(dtg).subtract(dts).multiply(Constants.SPEED_OF_LIGHT);
+            } else {
+
+                // One-way signal: time of flight is downlink delay
+                // Add clock offsets
+                final ObservableSatellite satellite = getSatellites().get(0);
+                final Gradient            dts       = satellite.getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
+                final Gradient            dtg       = getStation().getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
+
+                // Range value
+                range = tauD.add(dtg).subtract(dts).multiply(Constants.SPEED_OF_LIGHT);
+            }
         }
 
         // Set range value in estimated measurement

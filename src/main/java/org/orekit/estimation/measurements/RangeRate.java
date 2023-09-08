@@ -167,7 +167,7 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
         // -----------------------------
 
         // One-way downlink) range-rate for downlink leg
-        final EstimatedMeasurement<RangeRate> evalOneWay1 =
+        final EstimatedMeasurement<RangeRate> evalOneWayDownlink =
                         oneWayTheoreticalEvaluation(iteration, evaluation, true,
                                                     common.getStationDownlink(), transitPV,
                                                     transitState, common.getIndices(), nbParams);
@@ -177,7 +177,15 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
             // FIXME (MJ): Potential problem, Tommy Fryer original code said:
             // "In transit obs case, do not correct the value for motion during time of flight."
             // Not sure that it is working in the same way here
-            return evalOneWay1;
+
+            // If measurement time-tag is "transit", do not correct the value for motion during time of flight
+            if (getTimeTagSpecificationType() == TimeTagSpecificationType.TRANSIT) {
+                // Direct computation of range-rate when measurement time-tag is "transit"
+                final double transitRangeRate = getRangeRate(common.getStationEstimationDate().toTimeStampedPVCoordinates(),
+                                                             transitPV.toTimeStampedPVCoordinates());
+                evalOneWayDownlink.setEstimatedValue(transitRangeRate);
+            }
+            return evalOneWayDownlink;
 
         } else {
 
@@ -192,17 +200,25 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
                             common.getParticipants());
 
             // One way range-rate for uplink leg
-            final EstimatedMeasurement<RangeRate> evalOneWay2 =
+            final EstimatedMeasurement<RangeRate> evalOneWayUplink =
                             oneWayTheoreticalEvaluation(iteration, evaluation, false,
                                                         common.getStationUplink(), transitPV, transitState,
                                                         common.getIndices(), nbParams);
 
-            // Combine uplink and downlink values
-            estimated.setEstimatedValue(0.5 * (evalOneWay1.getEstimatedValue()[0] + evalOneWay2.getEstimatedValue()[0]));
+            // If measurement time-tag is "transit", do not correct the value for motion during time of flight
+            if (getTimeTagSpecificationType() == TimeTagSpecificationType.TRANSIT) {
+                // Direct computation of range-rate when measurement time-tag is "transit"
+                final double transitRangeRate = getRangeRate(common.getStationEstimationDate().toTimeStampedPVCoordinates(),
+                                                             transitPV.toTimeStampedPVCoordinates());
+                estimated.setEstimatedValue(transitRangeRate);
+            } else {
+                // Combine uplink and downlink values
+                estimated.setEstimatedValue(0.5 * (evalOneWayDownlink.getEstimatedValue()[0] + evalOneWayUplink.getEstimatedValue()[0]));
+            }
 
             // Combine uplink and downlink partial derivatives with respect to state
-            final double[][] sd1 = evalOneWay1.getStateDerivatives(0);
-            final double[][] sd2 = evalOneWay2.getStateDerivatives(0);
+            final double[][] sd1 = evalOneWayDownlink.getStateDerivatives(0);
+            final double[][] sd2 = evalOneWayUplink.getStateDerivatives(0);
             final double[][] sd = new double[sd1.length][sd1[0].length];
             for (int i = 0; i < sd.length; ++i) {
                 for (int j = 0; j < sd[0].length; ++j) {
@@ -212,10 +228,10 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
             estimated.setStateDerivatives(0, sd);
 
             // combine uplink and downlink partial derivatives with respect to parameters
-            evalOneWay1.getDerivativesDrivers().forEach(driver -> {
+            evalOneWayDownlink.getDerivativesDrivers().forEach(driver -> {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    final double[] pd1 = evalOneWay1.getParameterDerivatives(driver, span.getStart());
-                    final double[] pd2 = evalOneWay2.getParameterDerivatives(driver, span.getStart());
+                    final double[] pd1 = evalOneWayDownlink.getParameterDerivatives(driver, span.getStart());
+                    final double[] pd2 = evalOneWayUplink.getParameterDerivatives(driver, span.getStart());
                     final double[] pd = new double[pd1.length];
                     for (int i = 0; i < pd.length; ++i) {
                         pd[i] = 0.5 * (pd1[i] + pd2[i]);
@@ -253,21 +269,8 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
                                             downlink ? transitPV : stationPV,
                                             downlink ? stationPV : transitPV});
 
-        // range rate value
-        final Vector3D stationPosition  = stationPV.getPosition();
-        final Vector3D relativePosition = stationPosition.subtract(transitPV.getPosition());
-
-        final Vector3D stationVelocity  = stationPV.getVelocity();
-        final Vector3D relativeVelocity = stationVelocity.subtract(transitPV.getVelocity());
-
-        // radial direction
-        final Vector3D lineOfSight      = relativePosition.normalize();
-
-        // line of sight velocity
-        final double lineOfSightVelocity = Vector3D.dotProduct(relativeVelocity, lineOfSight);
-
-        // range rate
-        double rangeRate = lineOfSightVelocity;
+        // Get range rate value
+        double rangeRate = getRangeRate(stationPV, transitPV);
 
         if (!isTwoWay()) {
             // clock drifts, taken in account only in case of one way
@@ -295,7 +298,6 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
      * @param indices indices of the estimated parameters in derivatives computations
      * @param nbParams the number of estimated parameters in derivative computations
      * @return theoretical value
-     * @see #evaluate(SpacecraftStatet)
      */
     private EstimatedMeasurement<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int evaluation, final boolean downlink,
                                                                         final TimeStampedFieldPVCoordinates<Gradient> stationPV,
@@ -313,7 +315,7 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
                                             (downlink ? stationPV : transitPV).toTimeStampedPVCoordinates()});
 
         // range rate
-        Gradient rangeRate = getRangeRateValue(stationPV, transitPV);
+        Gradient rangeRate = getRangeRate(stationPV, transitPV);
 
         if (!isTwoWay()) {
             // clock drifts, taken in account only in case of one way
@@ -347,8 +349,36 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
 
     }
 
-    private static Gradient getRangeRateValue(final TimeStampedFieldPVCoordinates<Gradient> stationPV, final TimeStampedFieldPVCoordinates<Gradient> transitPV) {
-        // range rate value
+    /** Get range-rate value.
+     *
+     * @param stationPV station PV
+     * @param transitPV transit state PV
+     * @return range-rate value
+     */
+    private double getRangeRate(final TimeStampedPVCoordinates stationPV, final TimeStampedPVCoordinates transitPV) {
+
+        // Range rate value computation
+        final Vector3D stationPosition  = stationPV.getPosition();
+        final Vector3D relativePosition = stationPosition.subtract(transitPV.getPosition());
+
+        final Vector3D stationVelocity  = stationPV.getVelocity();
+        final Vector3D relativeVelocity = stationVelocity.subtract(transitPV.getVelocity());
+
+        // radial direction
+        final Vector3D lineOfSight      = relativePosition.normalize();
+
+        // line of sight velocity
+        return Vector3D.dotProduct(relativeVelocity, lineOfSight);
+    }
+
+    /** Get range-rate gradient.
+     *
+     * @param stationPV station PV
+     * @param transitPV transit state PV
+     * @return range-rate gradient
+     */
+    private Gradient getRangeRate(final TimeStampedFieldPVCoordinates<Gradient> stationPV, final TimeStampedFieldPVCoordinates<Gradient> transitPV) {
+        // Range rate gradient computation
         final FieldVector3D<Gradient> stationPosition  = stationPV.getPosition();
         final FieldVector3D<Gradient> relativePosition = stationPosition.subtract(transitPV.getPosition());
 

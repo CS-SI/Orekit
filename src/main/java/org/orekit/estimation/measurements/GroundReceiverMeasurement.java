@@ -39,6 +39,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Thierry Ceolin
  * @author Luc Maisonobe
  * @author Maxime Journot
+ * @author Tommy Fryer
  * @since 12.0
  */
 public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurement<T>> extends AbstractMeasurement<T> {
@@ -224,7 +225,19 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
      * @return common parameters with derivatives
      */
     protected GroundReceiverCommonParametersWithDerivatives computeCommonParametersWithDerivatives(final SpacecraftState state) {
+
+        // Derivatives are computed with respect to spacecraft state in inertial frame and station parameters
+        // ----------------------
+        //
+        // Parameters:
+        //  - 0..2 - Position of the spacecraft in inertial frame
+        //  - 3..5 - Velocity of the spacecraft in inertial frame
+        //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian, sat clock offset...)
+
+        // Cartesian orbital rbital parameters
         int nbParams = 6;
+
+        // Measurement parameters
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
@@ -261,7 +274,7 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
         final TimeStampedFieldPVCoordinates<Gradient> stationDownlink;
 
         // Uplink time and station PV
-        // (optional, in case of time-tag = transmission date or two-way signal)
+        // (optional, used in case of time-tag = transmission date, or for a two-way measurement)
         Optional<Gradient> optionalTauU = Optional.empty();
         Optional<TimeStampedFieldPVCoordinates<Gradient>> optionalStationUplink = Optional.empty();
 
@@ -271,7 +284,7 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
         // For transmit apparent the station at time of transmission is used.
         TimeStampedFieldPVCoordinates<Gradient> stationEstimationDate = stationObsDate;
 
-        if (getTimeTagSpecificationType() == TimeTagSpecificationType.TX || getTimeTagSpecificationType() == TimeTagSpecificationType.TXRX) {
+        if (timeTagSpecificationType == TimeTagSpecificationType.TX || timeTagSpecificationType == TimeTagSpecificationType.TXRX) {
 
             // Case time-tag = reception or transmit - receive apparent
             // -----
@@ -303,7 +316,7 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
             stationDownlink = stationUplink.shiftedBy(tauU.add(tauD));
 
             // If observation receive apparent, set station PV at estimation date to downlink
-            if (getTimeTagSpecificationType() == TimeTagSpecificationType.TXRX) {
+            if (timeTagSpecificationType == TimeTagSpecificationType.TXRX) {
                 stationEstimationDate = stationDownlink;
             }
 
@@ -313,7 +326,7 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
                 optionalTauU          = Optional.of(tauU);
             }
 
-        } else if (getTimeTagSpecificationType() == TimeTagSpecificationType.TRANSIT) {
+        } else if (timeTagSpecificationType == TimeTagSpecificationType.TRANSIT) {
 
             // Case time-tag = transit date
             // ----
