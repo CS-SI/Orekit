@@ -134,6 +134,11 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
         return rawDetector;
     }
 
+    /** @return filter type */
+    public FilterType getFilter() {
+        return filter;
+    }
+
     /**  {@inheritDoc} */
     public void init(final SpacecraftState s0,
                      final AbsoluteDate t) {

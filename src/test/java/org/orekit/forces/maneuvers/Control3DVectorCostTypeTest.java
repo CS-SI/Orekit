@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 Romain Serra
+/* Copyright 2022-2023 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,15 +25,16 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class ControlVector3DNormTypeTest {
+class Control3DVectorCostTypeTest {
 
     final Vector3D EXAMPLE_VECTOR = new Vector3D(-5., 2.4, -8.6);
 
     @Test
     public void testDoubleValue() {
-        Assertions.assertEquals(ControlVector3DNormType.NORM_1.evaluate(EXAMPLE_VECTOR), EXAMPLE_VECTOR.getNorm1());
-        Assertions.assertEquals(ControlVector3DNormType.NORM_2.evaluate(EXAMPLE_VECTOR), EXAMPLE_VECTOR.getNorm());
-        Assertions.assertEquals(ControlVector3DNormType.NORM_INF.evaluate(EXAMPLE_VECTOR), EXAMPLE_VECTOR.getNormInf());
+        Assertions.assertEquals(Control3DVectorCostType.NONE.evaluate(EXAMPLE_VECTOR), 0.);
+        Assertions.assertEquals(Control3DVectorCostType.ONE_NORM.evaluate(EXAMPLE_VECTOR), EXAMPLE_VECTOR.getNorm1());
+        Assertions.assertEquals(Control3DVectorCostType.TWO_NORM.evaluate(EXAMPLE_VECTOR), EXAMPLE_VECTOR.getNorm());
+        Assertions.assertEquals(Control3DVectorCostType.INF_NORM.evaluate(EXAMPLE_VECTOR), EXAMPLE_VECTOR.getNormInf());
     }
 
     @Test
@@ -49,15 +50,16 @@ class ControlVector3DNormTypeTest {
     }
 
     private <T extends CalculusFieldElement<T>> void testTemplateField(final Field<T> field) {
-        testTemplateNormField(field, ControlVector3DNormType.NORM_1);
-        testTemplateNormField(field, ControlVector3DNormType.NORM_2);
-        testTemplateNormField(field, ControlVector3DNormType.NORM_INF);
+        testTemplateNormField(field, Control3DVectorCostType.NONE);
+        testTemplateNormField(field, Control3DVectorCostType.ONE_NORM);
+        testTemplateNormField(field, Control3DVectorCostType.TWO_NORM);
+        testTemplateNormField(field, Control3DVectorCostType.INF_NORM);
     }
 
     private <T extends CalculusFieldElement<T>> void testTemplateNormField(final Field<T> field,
-                                                                           final ControlVector3DNormType controlVector3DNormType) {
+                                                                           final Control3DVectorCostType control3DVectorCostType) {
         final FieldVector3D<T> fieldVector3D = new FieldVector3D<>(field, EXAMPLE_VECTOR);
-        Assertions.assertEquals(controlVector3DNormType.evaluate(EXAMPLE_VECTOR), controlVector3DNormType.evaluate(fieldVector3D).getReal());
+        Assertions.assertEquals(control3DVectorCostType.evaluate(EXAMPLE_VECTOR), control3DVectorCostType.evaluate(fieldVector3D).getReal());
     }
 
 }

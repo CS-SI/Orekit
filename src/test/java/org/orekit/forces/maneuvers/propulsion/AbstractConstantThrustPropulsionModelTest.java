@@ -27,6 +27,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
@@ -37,8 +38,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-/** Test for AbstractConstantThrust class and its sub-classes. */
-public class AbstractConstantThrustTest {
+/** Test for AbstractConstantThrustPropulsionModel class and its sub-classes. */
+public class AbstractConstantThrustPropulsionModelTest {
 
     /** Test non-abstract methods of constant thrust model. */
     @Test
@@ -50,11 +51,12 @@ public class AbstractConstantThrustTest {
         final String name = "man";
 
         final Vector3D thrustVector = direction.scalarMultiply(thrust);
-        final double flowRate = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
+        final Control3DVectorCostType control3DVectorCostType = Control3DVectorCostType.INF_NORM;
+        final double flowRate = -control3DVectorCostType.evaluate(thrustVector) / (Constants.G0_STANDARD_GRAVITY * isp);
 
         // A simple model without any parameter driver
         final AbstractConstantThrustPropulsionModel model =
-                        new AbstractConstantThrustPropulsionModel(thrust, isp, direction, name) {
+                        new AbstractConstantThrustPropulsionModel(thrust, isp, direction, control3DVectorCostType, name) {
 
             @Override
             public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(T[] parameters) {
@@ -107,7 +109,7 @@ public class AbstractConstantThrustTest {
         Assertions.assertEquals(name, model.getName());
         Assertions.assertEquals(isp, model.getIsp(), 0.);
         Assertions.assertArrayEquals(direction.toArray(), model.getDirection().toArray(), 0.);
-        Assertions.assertEquals(thrust, model.getThrust(), 0.);
+        Assertions.assertEquals(thrust, model.getThrustMagnitude(), 0.);
 
         // Dummy spacecraft state
         Orbit orbit =  new CircularOrbit(new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_J),
@@ -148,13 +150,14 @@ public class AbstractConstantThrustTest {
         final String name = "man-1";
 
         // 1D constant thrust model
+        final Control3DVectorCostType control3DVectorCostType = Control3DVectorCostType.ONE_NORM;
         final BasicConstantThrustPropulsionModel model =
-                        new BasicConstantThrustPropulsionModel(thrust, isp, direction, name);
+                        new BasicConstantThrustPropulsionModel(thrust, isp, direction, control3DVectorCostType, name);
         List<ParameterDriver> drivers = model.getParametersDrivers();
 
         // References
         final Vector3D refThrustVector = direction.scalarMultiply(thrust);
-        final double refFlowRate = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
+        final double refFlowRate = -control3DVectorCostType.evaluate(refThrustVector) / (Constants.G0_STANDARD_GRAVITY * isp);
 
 
         // Thrust & flow rate
@@ -215,7 +218,8 @@ public class AbstractConstantThrustTest {
 
       // References
       final Vector3D refThrustVector = direction.scalarMultiply(thrust);
-      final double refFlowRate = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
+      final Control3DVectorCostType control3DVectorCostType = Control3DVectorCostType.TWO_NORM;
+      final double refFlowRate = -control3DVectorCostType.evaluate(refThrustVector) / (Constants.G0_STANDARD_GRAVITY * isp);
 
 
       // Thrust & flow rate
