@@ -135,7 +135,9 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
         return rawDetector;
     }
 
-    /** @return filter type */
+    /** Get filter type.
+     * @return filter type
+     */
     public FilterType getFilter() {
         return filter;
     }

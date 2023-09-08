@@ -107,7 +107,7 @@ public class Laas2015 extends AbstractShortTermEncounter2DPOCMethod {
         this(1.E-30, 37000);
     }
 
-    /**
+    /** Simple constructor.
      * @param absoluteAccuracy absolute accuracy of the result
      * @param maxNumberOfTerms max number of terms to compute
      */

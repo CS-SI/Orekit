@@ -137,17 +137,23 @@ public class IodGooding extends AbstractAnglesOnlyIod {
         this( mu, frame, rho1init, rho3init, 0, true);
     }
 
-    /** @return the range for observation (1) */
+    /** Get range for observation (1).
+     * @return the range for observation (1)
+     */
     public double getRange1() {
         return rho1 * R;
     }
 
-    /** @return the range for observation (2) */
+    /** Get range for observation (2).
+     * @return the range for observation (2)
+     */
     public double getRange2() {
         return rho2 * R;
     }
 
-    /** @return the range for observation (3) */
+    /** Get range for observation (3).
+     * @return the range for observation (3)
+     */
     public double getRange3() {
         return rho3 * R;
     }

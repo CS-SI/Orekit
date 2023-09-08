@@ -139,7 +139,9 @@ public abstract class AbstractStateCovarianceInterpolator
         return expressCovarianceInDesiredOutput(interpolatedOrbit, covarianceInOrbitFrame);
     }
 
-    /** @return output frame. Can be null. */
+    /** Get output frame.
+     * @return output frame. Can be null.
+     */
     public Frame getOutFrame() {
         return outFrame;
     }

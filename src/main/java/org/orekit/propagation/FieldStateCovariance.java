@@ -376,7 +376,9 @@ public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements 
 
     }
 
-    /** @return new state covariance instance. */
+    /** Get new state covariance instance.
+     * @return new state covariance instance.
+     */
     public StateCovariance toStateCovariance() {
 
         // Extract data

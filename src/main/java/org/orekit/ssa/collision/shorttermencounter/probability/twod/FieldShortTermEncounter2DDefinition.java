@@ -698,33 +698,46 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
         return tca;
     }
 
-    /** @return reference's orbit at time of closest approach */
+    /** Get reference's orbit at time of closest approach.
+     * @return reference's orbit at time of closest approach
+     */
     public FieldOrbit<T> getReferenceAtTCA() {
         return referenceAtTCA;
     }
 
-    /** @return other's orbit at time of closest approach */
+    /** Get other's orbit at time of closest approach.
+     *  @return other's orbit at time of closest approach
+     */
     public FieldOrbit<T> getOtherAtTCA() {
         return otherAtTCA;
     }
 
-    /** @return reference's covariance */
+    /** Get reference's covariance.
+     * @return reference's covariance
+     */
     public FieldStateCovariance<T> getReferenceCovariance() {
         return referenceCovariance;
     }
 
-    /** @return other's covariance */
+    /** Get other's covariance.
+     * @return other's covariance
+     */
     public FieldStateCovariance<T> getOtherCovariance() {
         return otherCovariance;
     }
 
-    /** @return combined radius (m) */
+    /** Get combined radius.
+     * @return combined radius (m)
+     */
     public T getCombinedRadius() {
         return combinedRadius;
     }
 
-    /** @return encounter local orbital frame */
+    /** Get encounter local orbital frame.
+     * @return encounter local orbital frame
+     */
     public EncounterLOF getEncounterFrame() {
         return encounterFrame;
     }
+
 }

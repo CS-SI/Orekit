@@ -137,7 +137,9 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
         this.pvaFilter = pvaFilter;
     }
 
-    /** @return filter for derivatives from the sample to use in position-velocity-acceleration interpolation */
+    /** Get filter for derivatives from the sample to use in position-velocity-acceleration interpolation.
+     * @return filter for derivatives from the sample to use in position-velocity-acceleration interpolation
+     */
     public CartesianDerivativesFilter getPVAFilter() {
         return pvaFilter;
     }

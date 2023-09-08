@@ -74,12 +74,16 @@ public class FieldTimeStampedPair<F extends FieldTimeStamped<KK>, S extends Fiel
         return first.getDate();
     }
 
-    /** @return first time stamped value */
+    /** Get first time stamped value.
+     * @return first time stamped value
+     */
     public F getFirst() {
         return first;
     }
 
-    /** @return second time stamped value */
+    /** Get second time stamped value.
+     * @return second time stamped value
+     */
     public S getSecond() {
         return second;
     }

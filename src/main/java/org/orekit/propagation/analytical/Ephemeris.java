@@ -462,17 +462,19 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         return null;
     }
 
-    /** @return state interpolator */
+    /** Get state interpolator.
+     * @return state interpolator
+     */
     public TimeInterpolator<SpacecraftState> getStateInterpolator() {
         return stateInterpolator;
     }
 
-    /**
+    /** Get covariance interpolator.
      * @return optional covariance interpolator
-     *
      * @see Optional
      */
     public Optional<TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>>> getCovarianceInterpolator() {
         return covarianceInterpolator;
     }
+
 }
