@@ -158,7 +158,7 @@ public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec>
         final TimeStampedFieldPVCoordinates<Gradient> stationEstimationDate = common.getStationEstimationDate();
 
         // Station-satellite vector expressed in inertial frame
-        final FieldVector3D<Gradient> staSatInertial = transitPV.getPosition().subtract(common.getStationDownlink().getPosition());
+        final FieldVector3D<Gradient> staSatInertial = transitPV.getPosition().subtract(stationEstimationDate.getPosition());
 
         // Field transform from inertial to reference frame at station estimation date
         final FieldTransform<Gradient> inertialToReferenceEstimationDate =
