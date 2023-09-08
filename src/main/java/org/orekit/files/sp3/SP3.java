@@ -151,8 +151,9 @@ public class SP3 implements EphemerisFile<SP3Coordinate, SP3Segment> {
      * metadata: {@link SP3Header#getType() type}, {@link SP3Header#getTimeSystem() time system},
      * {@link SP3Header#getCoordinateSystem() coordinate system}, except for satellite accuracy
      * which can be different from one file to the next one, and some satellites may
-     * be missing in some files… Once sorted (which is done internally), the gap between
-     * each file should not exceed the {@link SP3Header#getEpochInterval() epoch interval}.
+     * be missing in some files… Once sorted (which is done internally), if the gap between
+     * segments from two file is at most {@link SP3Header#getEpochInterval() epoch interval},
+     * then the segments are merged as one segment, otherwise the segments are kept separated.
      * </p>
      * <p>
      * The spliced file only contains the satellites that were present in all files.
