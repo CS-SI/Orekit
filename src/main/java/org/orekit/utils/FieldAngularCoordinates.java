@@ -779,7 +779,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
 
     /** Apply the rotation to a pv coordinates.
      * @param pv vector to apply the rotation to
-     * @return a new pv coordinates which is the image of u by the rotation
+     * @return a new pv coordinates which is the image of pv by the rotation
      */
     public FieldPVCoordinates<T> applyTo(final PVCoordinates pv) {
 
@@ -800,7 +800,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
 
     /** Apply the rotation to a pv coordinates.
      * @param pv vector to apply the rotation to
-     * @return a new pv coordinates which is the image of u by the rotation
+     * @return a new pv coordinates which is the image of pv by the rotation
      */
     public TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedPVCoordinates pv) {
 
@@ -821,7 +821,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
 
     /** Apply the rotation to a pv coordinates.
      * @param pv vector to apply the rotation to
-     * @return a new pv coordinates which is the image of u by the rotation
+     * @return a new pv coordinates which is the image of pv by the rotation
      * @since 9.0
      */
     public FieldPVCoordinates<T> applyTo(final FieldPVCoordinates<T> pv) {
@@ -843,7 +843,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
 
     /** Apply the rotation to a pv coordinates.
      * @param pv vector to apply the rotation to
-     * @return a new pv coordinates which is the image of u by the rotation
+     * @return a new pv coordinates which is the image of pv by the rotation
      * @since 9.0
      */
     public TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedFieldPVCoordinates<T> pv) {
