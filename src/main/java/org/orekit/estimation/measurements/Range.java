@@ -219,7 +219,7 @@ public class Range extends GroundReceiverMeasurement<Range> {
         // If measurement time-tag is "transit" then range is the geometrical distance between station and state
         if (getTimeTagSpecificationType() == TimeTagSpecificationType.TRANSIT) {
 
-            range = common.getStationEstimationDate().getPosition().distance(common.getTransitPV().getPosition());
+            range = common.getStationApparentDate().getPosition().distance(common.getTransitPV().getPosition());
 
         } else {
             // For other measurement time-tags, we use the signal time of flight to compute the range

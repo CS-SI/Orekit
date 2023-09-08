@@ -154,18 +154,18 @@ public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec>
         // Transit state PV
         final TimeStampedFieldPVCoordinates<Gradient> transitPV = common.getTransitPV();
 
-        // Station position at estimation date
-        final TimeStampedFieldPVCoordinates<Gradient> stationEstimationDate = common.getStationEstimationDate();
+        // Station position at apparent date
+        final TimeStampedFieldPVCoordinates<Gradient> stationApparentDate = common.getStationApparentDate();
 
         // Station-satellite vector expressed in inertial frame
-        final FieldVector3D<Gradient> staSatInertial = transitPV.getPosition().subtract(stationEstimationDate.getPosition());
+        final FieldVector3D<Gradient> staSatInertial = transitPV.getPosition().subtract(stationApparentDate.getPosition());
 
-        // Field transform from inertial to reference frame at station estimation date
-        final FieldTransform<Gradient> inertialToReferenceEstimationDate =
-                state.getFrame().getTransformTo(referenceFrame, stationEstimationDate.getDate());
+        // Field transform from inertial to reference frame at measurement apparent date
+        final FieldTransform<Gradient> inertialToReferenceApparentDate =
+                state.getFrame().getTransformTo(referenceFrame, stationApparentDate.getDate());
 
         // Station-satellite vector in reference frame
-        final FieldVector3D<Gradient> staSatReference = inertialToReferenceEstimationDate.transformVector(staSatInertial);
+        final FieldVector3D<Gradient> staSatReference = inertialToReferenceApparentDate.transformVector(staSatInertial);
 
         // Compute right ascension and declination
         final Gradient baseRightAscension = staSatReference.getAlpha();

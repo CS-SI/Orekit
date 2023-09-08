@@ -234,7 +234,7 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
         //  - 3..5 - Velocity of the spacecraft in inertial frame
         //  - 6..n - measurements parameters (clock offset, station offsets, pole, prime meridian, sat clock offset...)
 
-        // Cartesian orbital rbital parameters
+        // Cartesian orbital orbital parameters
         int nbParams = 6;
 
         // Measurement parameters
@@ -278,11 +278,12 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
         Optional<Gradient> optionalTauU = Optional.empty();
         Optional<TimeStampedFieldPVCoordinates<Gradient>> optionalStationUplink = Optional.empty();
 
-        // Station position for relative position vector calculation - set to downlink for transmit and transmit
-        // receive apparent (TXRX).
+        // Station position at apparent date.
+        // Used for relative position vector calculation - set to downlink for transmit and transmit receive apparent (TXRX).
         // For transit/bounce time tag specification we use the station at bounce time.
         // For transmit apparent the station at time of transmission is used.
-        TimeStampedFieldPVCoordinates<Gradient> stationEstimationDate = stationObsDate;
+        // Different from observation date only for transmit receive apparent (TXRX).
+        TimeStampedFieldPVCoordinates<Gradient> stationApparentDate = stationObsDate;
 
         if (timeTagSpecificationType == TimeTagSpecificationType.TX || timeTagSpecificationType == TimeTagSpecificationType.TXRX) {
 
@@ -315,9 +316,9 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
             // Station PV at reception date
             stationDownlink = stationUplink.shiftedBy(tauU.add(tauD));
 
-            // If observation receive apparent, set station PV at estimation date to downlink
+            // If observation is receive apparent, set station PV at apparent date to downlink
             if (timeTagSpecificationType == TimeTagSpecificationType.TXRX) {
-                stationEstimationDate = stationDownlink;
+                stationApparentDate = stationDownlink;
             }
 
             if (twoway) {
@@ -385,8 +386,8 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
             }
         }
 
-        final FieldTransform<Gradient> offsetToInertialEstimationDate =
-                        getStation().getOffsetToInertial(state.getFrame(), stationEstimationDate.getDate(), nbParams, indices);
+        final FieldTransform<Gradient> offsetToInertialApparentDate =
+                        getStation().getOffsetToInertial(state.getFrame(), stationApparentDate.getDate(), nbParams, indices);
 
 
         if (twoway) {
@@ -400,8 +401,8 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
 
             return new GroundReceiverCommonParametersWithDerivatives(state,
                                                                      indices,
-                                                                     offsetToInertialEstimationDate,
-                                                                     stationEstimationDate,
+                                                                     offsetToInertialApparentDate,
+                                                                     stationApparentDate,
                                                                      stationDownlink,
                                                                      tauD,
                                                                      optionalStationUplink.get(),
@@ -420,8 +421,8 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
 
             return new GroundReceiverCommonParametersWithDerivatives(state,
                                                                      indices,
-                                                                     offsetToInertialEstimationDate,
-                                                                     stationEstimationDate,
+                                                                     offsetToInertialApparentDate,
+                                                                     stationApparentDate,
                                                                      stationDownlink,
                                                                      tauD,
                                                                      transitState,

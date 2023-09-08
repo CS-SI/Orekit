@@ -134,18 +134,18 @@ public class AngularAzEl extends GroundReceiverMeasurement<AngularAzEl>
         // Transit state PV
         final TimeStampedFieldPVCoordinates<Gradient> transitPV = common.getTransitPV();
 
-        // Transform from station frame to state frame at estimation date
-        final FieldTransform<Gradient> offsetToInertialEstimationDate = common.getOffsetToInertialEstimationDate();
+        // Transform from station frame to state frame at measurement apparent date
+        final FieldTransform<Gradient> offsetToInertialApparentDate = common.getOffsetToInertialApparentDate();
 
         // Station topocentric frame (east-north-zenith) in inertial frame expressed as Gradient
         final GradientField field = common.getTauD().getField();
-        final FieldVector3D<Gradient> east   = offsetToInertialEstimationDate.transformVector(FieldVector3D.getPlusI(field));
-        final FieldVector3D<Gradient> north  = offsetToInertialEstimationDate.transformVector(FieldVector3D.getPlusJ(field));
-        final FieldVector3D<Gradient> zenith = offsetToInertialEstimationDate.transformVector(FieldVector3D.getPlusK(field));
+        final FieldVector3D<Gradient> east   = offsetToInertialApparentDate.transformVector(FieldVector3D.getPlusI(field));
+        final FieldVector3D<Gradient> north  = offsetToInertialApparentDate.transformVector(FieldVector3D.getPlusJ(field));
+        final FieldVector3D<Gradient> zenith = offsetToInertialApparentDate.transformVector(FieldVector3D.getPlusK(field));
 
         // Station-satellite vector expressed in inertial frame
-        final TimeStampedFieldPVCoordinates<Gradient> stationEstimationDate = common.getStationEstimationDate();
-        final FieldVector3D<Gradient> staSat = transitPV.getPosition().subtract(stationEstimationDate.getPosition());
+        final TimeStampedFieldPVCoordinates<Gradient> stationApparentDate = common.getStationApparentDate();
+        final FieldVector3D<Gradient> staSat = transitPV.getPosition().subtract(stationApparentDate.getPosition());
 
         // Compute azimuth/elevation
         final Gradient baseAzimuth = staSat.dotProduct(east).atan2(staSat.dotProduct(north));

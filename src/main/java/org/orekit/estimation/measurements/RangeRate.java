@@ -174,14 +174,10 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
 
         if (!isTwoWay()) {
             // If one-way, return downlink leg evaluation
-            // FIXME (MJ): Potential problem, Tommy Fryer original code said:
-            // "In transit obs case, do not correct the value for motion during time of flight."
-            // Not sure that it is working in the same way here
-
             // If measurement time-tag is "transit", do not correct the value for motion during time of flight
             if (getTimeTagSpecificationType() == TimeTagSpecificationType.TRANSIT) {
                 // Direct computation of range-rate when measurement time-tag is "transit"
-                final double transitRangeRate = getRangeRate(common.getStationEstimationDate().toTimeStampedPVCoordinates(),
+                final double transitRangeRate = getRangeRate(common.getStationApparentDate().toTimeStampedPVCoordinates(),
                                                              transitPV.toTimeStampedPVCoordinates());
                 evalOneWayDownlink.setEstimatedValue(transitRangeRate);
             }
@@ -190,9 +186,8 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
         } else {
 
             // FIXME (MJ): Potential problem: here the stationApproxUplink that was used in former versions of the
-            // code is not used anymore since we're supposed to have already computed the position
-            // of stationUplink in common parameters
-            // Is that correct?
+            // code is not used anymore, since stationUplink was already computed in common parameters
+            // Is that the correct way to do it ?
 
             // Prepare estimation for two-way case
             final EstimatedMeasurement<RangeRate> estimated = new EstimatedMeasurement<RangeRate>(this, iteration, evaluation,
@@ -208,7 +203,7 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
             // If measurement time-tag is "transit", do not correct the value for motion during time of flight
             if (getTimeTagSpecificationType() == TimeTagSpecificationType.TRANSIT) {
                 // Direct computation of range-rate when measurement time-tag is "transit"
-                final double transitRangeRate = getRangeRate(common.getStationEstimationDate().toTimeStampedPVCoordinates(),
+                final double transitRangeRate = getRangeRate(common.getStationApparentDate().toTimeStampedPVCoordinates(),
                                                              transitPV.toTimeStampedPVCoordinates());
                 estimated.setEstimatedValue(transitRangeRate);
             } else {

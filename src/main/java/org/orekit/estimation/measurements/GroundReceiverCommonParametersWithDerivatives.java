@@ -38,11 +38,11 @@ public class GroundReceiverCommonParametersWithDerivatives {
     /** Derivatives indices map. */
     private final Map<String, Integer> indices;
 
-    /** Transform between station and inertial frame at estimation date. */
-    private final FieldTransform<Gradient> offsetToInertialEstimationDate;
+    /** Transform between station and inertial frame at measurement's apparent date. */
+    private final FieldTransform<Gradient> offsetToInertialApparentDate;
 
-    /** Station position in inertial frame at estimation date. */
-    private final TimeStampedFieldPVCoordinates<Gradient> stationEstimationDate;
+    /** Station position in inertial frame at measurement's apparent date. */
+    private final TimeStampedFieldPVCoordinates<Gradient> stationApparentDate;
 
     /** Station position in inertial frame at end of the downlink leg (i.e. reception date). */
     private final TimeStampedFieldPVCoordinates<Gradient> stationDownlink;
@@ -68,8 +68,8 @@ public class GroundReceiverCommonParametersWithDerivatives {
     /** Constructor for two-way measurement (with uplink data).
      * @param state spacecraft state
      * @param indices derivatives indices map
-     * @param offsetToInertialEstimationDate transform between station and inertial frame at estimation date
-     * @param stationEstimationDate station position in inertial frame at estimation date
+     * @param offsetToInertialApparentDate transform between station and inertial frame at measurement's apparent date
+     * @param stationApparentDate station position in inertial frame at measurement's apparent date
      * @param stationDownlink station position in inertial frame at end of the downlink leg (i.e. reception time)
      * @param tauD downlink delay
      * @param stationUplink station position in inertial frame at beginning of the uplink leg (i.e. transmission time)
@@ -80,8 +80,8 @@ public class GroundReceiverCommonParametersWithDerivatives {
      */
     public GroundReceiverCommonParametersWithDerivatives(final SpacecraftState state,
                                                          final Map<String, Integer> indices,
-                                                         final FieldTransform<Gradient> offsetToInertialEstimationDate,
-                                                         final TimeStampedFieldPVCoordinates<Gradient> stationEstimationDate,
+                                                         final FieldTransform<Gradient> offsetToInertialApparentDate,
+                                                         final TimeStampedFieldPVCoordinates<Gradient> stationApparentDate,
                                                          final TimeStampedFieldPVCoordinates<Gradient> stationDownlink,
                                                          final Gradient tauD,
                                                          final TimeStampedFieldPVCoordinates<Gradient> stationUplink,
@@ -91,8 +91,8 @@ public class GroundReceiverCommonParametersWithDerivatives {
                                                          final TimeStampedPVCoordinates[] participants) {
         this.state                   = state;
         this.indices                 = indices;
-        this.offsetToInertialEstimationDate = offsetToInertialEstimationDate;
-        this.stationEstimationDate          = stationEstimationDate;
+        this.offsetToInertialApparentDate = offsetToInertialApparentDate;
+        this.stationApparentDate          = stationApparentDate;
         this.stationDownlink = stationDownlink;
         this.tauD            = tauD;
         this.stationUplink   = Optional.of(stationUplink);
@@ -105,8 +105,8 @@ public class GroundReceiverCommonParametersWithDerivatives {
     /** Constructor for one-way measurement (without uplink data).
      * @param state spacecraft state
      * @param indices derivatives indices map
-     * @param offsetToInertialEstimationDate transform between station and inertial frame at estimation date
-     * @param stationEstimationDate station position in inertial frame at estimation date
+     * @param offsetToInertialApparentDate transform between station and inertial frame at measurement's apparent date
+     * @param stationApparentDate station position in inertial frame at measurement's apparent date
      * @param stationDownlink station position in inertial frame at end of the downlink leg (i.e. reception time)
      * @param tauD downlink delay
      * @param transitState transit state
@@ -115,8 +115,8 @@ public class GroundReceiverCommonParametersWithDerivatives {
      */
     public GroundReceiverCommonParametersWithDerivatives(final SpacecraftState state,
                                                          final Map<String, Integer> indices,
-                                                         final FieldTransform<Gradient> offsetToInertialEstimationDate,
-                                                         final TimeStampedFieldPVCoordinates<Gradient> stationEstimationDate,
+                                                         final FieldTransform<Gradient> offsetToInertialApparentDate,
+                                                         final TimeStampedFieldPVCoordinates<Gradient> stationApparentDate,
                                                          final TimeStampedFieldPVCoordinates<Gradient> stationDownlink,
                                                          final Gradient tauD,
                                                          final SpacecraftState transitState,
@@ -124,8 +124,8 @@ public class GroundReceiverCommonParametersWithDerivatives {
                                                          final TimeStampedPVCoordinates[] participants) {
         this.state                   = state;
         this.indices                 = indices;
-        this.offsetToInertialEstimationDate = offsetToInertialEstimationDate;
-        this.stationEstimationDate          = stationEstimationDate;
+        this.offsetToInertialApparentDate = offsetToInertialApparentDate;
+        this.stationApparentDate          = stationApparentDate;
         this.stationDownlink = stationDownlink;
         this.tauD            = tauD;
         this.stationUplink   = Optional.ofNullable(null);
@@ -149,11 +149,11 @@ public class GroundReceiverCommonParametersWithDerivatives {
         return indices;
     }
 
-    /** Get transform between station and inertial frame.
-     * @return transform between station and inertial frame
+    /** Get transform between station and inertial frame at measurement's apparent date.
+     * @return transform between station and inertial frame at measurement's apparent date
      */
-    public FieldTransform<Gradient> getOffsetToInertialEstimationDate() {
-        return offsetToInertialEstimationDate;
+    public FieldTransform<Gradient> getOffsetToInertialApparentDate() {
+        return offsetToInertialApparentDate;
     }
 
     /** Get station position in inertial frame at end of the downlink leg.
@@ -184,11 +184,11 @@ public class GroundReceiverCommonParametersWithDerivatives {
         return transitPV;
     }
 
-    /** Getter for the stationEstimationDate.
-     * @return the stationEstimationDate
+    /** Getter for the stationApparentDate.
+     * @return the stationApparentDate
      */
-    public TimeStampedFieldPVCoordinates<Gradient> getStationEstimationDate() {
-        return stationEstimationDate;
+    public TimeStampedFieldPVCoordinates<Gradient> getStationApparentDate() {
+        return stationApparentDate;
     }
 
     /** Getter for the stationUplink.
