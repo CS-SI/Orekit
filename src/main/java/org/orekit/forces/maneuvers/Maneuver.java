@@ -43,9 +43,11 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 
-/** A generic model for maneuvers.
+/** A generic model for maneuvers with finite-valued acceleration magnitude, as opposed to instantaneous changes
+ * in the velocity vector which are defined via detectors (in {@link org.orekit.forces.maneuvers.ImpulseManeuver} and
+ * {@link org.orekit.forces.maneuvers.FieldImpulseManeuver}).
  * It contains:
- *  - An attitude override, this is the attitude used during the maneuver, it can be different than the one
+ *  - An attitude override, this is the attitude used during the maneuver, it can be different from the one
  *    used for propagation;
  *  - A maneuver triggers object from the trigger sub-package. It defines the triggers used to start and stop the maneuvers (dates or events for example).
  *  - A propulsion model from sub-package propulsion. It defines the thrust or ΔV, isp, flow rate etc..
@@ -103,6 +105,14 @@ public class Maneuver implements ForceModel {
      */
     public AttitudeProvider getAttitudeOverride() {
         return attitudeOverride;
+    }
+
+    /** Get the control vector's cost type.
+     * @return control cost type
+     * @since 12.0
+     */
+    public Control3DVectorCostType getControl3DVectorCostType() {
+        return propulsionModel.getControl3DVectorCostType();
     }
 
     /** Get the propulsion model.

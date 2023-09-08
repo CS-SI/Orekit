@@ -28,6 +28,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
+import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
@@ -58,16 +59,21 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
     /** Name fo the maneuver. */
     private final String name;
 
+    /** Type of norm linking thrust vector to mass flow rate. */
+    private final Control3DVectorCostType control3DVectorCostType;
+
     /** Generic constructor.
      * @param profile thrust profile (N)
      * @param isp specific impulse (s)
+     * @param control3DVectorCostType control vector's cost type
      * @param name name of the maneuver
      */
-    public ProfileThrustPropulsionModel(final TimeSpanMap<PolynomialThrustSegment> profile,
-                                        final double isp, final String name) {
+    public ProfileThrustPropulsionModel(final TimeSpanMap<PolynomialThrustSegment> profile, final double isp,
+                                        final Control3DVectorCostType control3DVectorCostType, final String name) {
         this.name    = name;
         this.isp     = isp;
         this.profile = profile;
+        this.control3DVectorCostType = control3DVectorCostType;
     }
 
     /** {@inheritDoc} */
@@ -78,15 +84,21 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
 
     /** {@inheritDoc} */
     @Override
+    public Control3DVectorCostType getControl3DVectorCostType() {
+        return control3DVectorCostType;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public Vector3D getThrustVector(final SpacecraftState s) {
         final PolynomialThrustSegment active = profile.get(s.getDate());
-        return active == null ? Vector3D.ZERO : active.getThrust(s.getDate());
+        return active == null ? Vector3D.ZERO : active.getThrustVector(s.getDate());
     }
 
     /** {@inheritDoc} */
     @Override
     public double getFlowRate(final SpacecraftState s) {
-        return -getThrustVector(s).getNorm() / (Constants.G0_STANDARD_GRAVITY * isp);
+        return -control3DVectorCostType.evaluate(getThrustVector(s)) / (Constants.G0_STANDARD_GRAVITY * isp);
     }
 
     /** {@inheritDoc}
@@ -116,7 +128,7 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final FieldSpacecraftState<T> s,
                                                                                 final T[] parameters) {
         final PolynomialThrustSegment active = profile.get(s.getDate().toAbsoluteDate());
-        return active == null ? FieldVector3D.getZero(s.getDate().getField()) : active.getThrust(s.getDate());
+        return active == null ? FieldVector3D.getZero(s.getDate().getField()) : active.getThrustVector(s.getDate());
     }
 
     /** {@inheritDoc}
@@ -125,7 +137,7 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
      * </p>
      */
     public <T extends CalculusFieldElement<T>> T getFlowRate(final FieldSpacecraftState<T> s, final T[] parameters) {
-        return getThrustVector(s, parameters).getNorm().divide(-Constants.G0_STANDARD_GRAVITY * isp);
+        return control3DVectorCostType.evaluate(getThrustVector(s, parameters)).divide(-Constants.G0_STANDARD_GRAVITY * isp);
     }
 
     /** {@inheritDoc}.

@@ -38,9 +38,8 @@ public interface ThrustPropulsionModel extends PropulsionModel {
      * @return specific impulse (s).
      */
     default double getIsp(SpacecraftState s) {
-        final double thrust   = getThrust(s);
         final double flowRate = getFlowRate(s);
-        return -thrust / (Constants.G0_STANDARD_GRAVITY * flowRate);
+        return -getControl3DVectorCostType().evaluate(getThrustVector(s)) / (Constants.G0_STANDARD_GRAVITY * flowRate);
     }
 
     /** Get the thrust direction in spacecraft frame.
@@ -56,14 +55,6 @@ public interface ThrustPropulsionModel extends PropulsionModel {
             return Vector3D.ZERO;
         }
         return thrustVector.scalarMultiply(1. / norm);
-    }
-
-    /** Get the thrust norm (N).
-     * @param s current spacecraft state
-     * @return thrust norm (N)
-     */
-    default double getThrust(SpacecraftState s) {
-        return getThrustVector(s).getNorm();
     }
 
     /** Get the thrust vector in spacecraft frame (N).
@@ -150,7 +141,7 @@ public interface ThrustPropulsionModel extends PropulsionModel {
         // It seems under-efficient to rotate direction and apply thrust
         // instead of just rotating the whole thrust vector itself.
         // However it has to be done that way to avoid numerical discrepancies with legacy tests.
-        return new FieldVector3D<>(s.getMass().reciprocal().multiply(thrust),
+        return new FieldVector3D<>(thrust.divide(s.getMass()),
                         maneuverAttitude.getRotation().applyInverseTo(direction));
     }
 

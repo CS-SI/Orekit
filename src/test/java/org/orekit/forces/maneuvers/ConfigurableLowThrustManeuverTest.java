@@ -833,8 +833,8 @@ public class ConfigurableLowThrustManeuverTest {
                         new ConfigurableLowThrustManeuver(attitudeProvider,
                                                           new StartStopNoField<>(maneuverStartDetector),
                                                           thrust, isp);
-        Assertions.assertEquals(isp, maneuver.getISP(), 1e-9);
-        Assertions.assertEquals(thrust, maneuver.getThrust(), 1e-9);
+        Assertions.assertEquals(isp, maneuver.getIsp(), 1e-9);
+        Assertions.assertEquals(thrust, maneuver.getThrustMagnitude(), 1e-9);
         Assertions.assertEquals(attitudeProvider, maneuver.getThrustDirectionProvider());
 
     }
