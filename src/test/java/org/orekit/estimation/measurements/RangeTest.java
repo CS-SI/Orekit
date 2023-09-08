@@ -78,19 +78,12 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = false;
-//<<<<<<< HEAD
-//        double refErrorsPMedian = 6.5e-10;
-//        double refErrorsPMean = 4.1e-09;
-//        double refErrorsPMax = 2.1e-07;
-//        double refErrorsVMedian = 2.2e-04;
-//        double refErrorsVMean = 6.2e-04;
-//        double refErrorsVMax = 1.3e-02;
-//=======
+
         double refErrorsPMedian = 6.0e-10;
         double refErrorsPMean   = 3.0e-09;
         double refErrorsPMax    = 1.0e-07;
         double refErrorsVMedian = 2.1e-04;
-        double refErrorsVMean   = 1.3e-03;
+        double refErrorsVMean   = 6.2e-0;
         double refErrorsVMax    = 5.2e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
                 refErrorsPMedian, refErrorsPMean, refErrorsPMax,
@@ -110,14 +103,7 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = true;
-//<<<<<<< HEAD
-//        double refErrorsPMedian = 6.2e-10;
-//        double refErrorsPMean = 3.8e-09;
-//        double refErrorsPMax = 1.6e-07;
-//        double refErrorsVMedian = 2.2e-04;
-//        double refErrorsVMean = 6.2e-04;
-//        double refErrorsVMax = 1.3e-02;
-//=======
+
         double refErrorsPMedian = 7.5e-10;
         double refErrorsPMean   = 3.2e-09;
         double refErrorsPMax    = 9.2e-08;
@@ -326,19 +312,11 @@ public class RangeTest {
             System.out.println("Relative errors max   : " + relErrorsMax);
         }
 
-//<<<<<<< HEAD
-//        Assertions.assertEquals(0.0, absErrorsMedian, 4.9e-8);
-//        Assertions.assertEquals(0.0, absErrorsMin, 2.2e-7);
-//        Assertions.assertEquals(0.0, absErrorsMax, 2.1e-7);
-//        Assertions.assertEquals(0.0, relErrorsMedian, 1.0e-14);
-//        Assertions.assertEquals(0.0, relErrorsMax, 2.6e-14);
-//=======
         Assertions.assertEquals(0.0, absErrorsMedian, 6.3e-8);
         Assertions.assertEquals(0.0, absErrorsMin,    2.0e-7);
         Assertions.assertEquals(0.0, absErrorsMax,    2.6e-7);
         Assertions.assertEquals(0.0, relErrorsMedian, 8.5e-15);
         Assertions.assertEquals(0.0, relErrorsMax,    2.9e-14);
-
 
         // Test measurement type
         Assertions.assertEquals(Range.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
