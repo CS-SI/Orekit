@@ -31,7 +31,10 @@ public class SP3Coordinate extends TimeStampedPVCoordinates {
     /** Dummy coordinate with all fields set to 0.0. */
     public static final SP3Coordinate DUMMY = new SP3Coordinate(AbsoluteDate.ARBITRARY_EPOCH,
                                                                 Vector3D.ZERO, null, Vector3D.ZERO, null,
-                                                                0.0, 0.0, 0.0, 0.0,
+                                                                SP3Utils.CLOCK_UNIT.toSI(SP3Utils.DEFAULT_CLOCK_VALUE),
+                                                                Double.NaN,
+                                                                SP3Utils.CLOCK_RATE_UNIT.toSI(SP3Utils.DEFAULT_CLOCK_RATE_VALUE),
+                                                                Double.NaN,
                                                                 false, false, false, false);
 
     /** Serializable UID. */

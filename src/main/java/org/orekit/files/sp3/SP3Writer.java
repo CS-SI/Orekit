@@ -23,7 +23,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
@@ -37,7 +36,7 @@ import org.orekit.utils.CartesianDerivativesFilter;
 public class SP3Writer {
 
     /** End Of Line. */
-    private static final String EOL = "%n";
+    private static final String EOL = System.lineSeparator();
 
     /** Prefix for accuracy lines. */
     private static final String ACCURACY_LINE_PREFIX = "++       ";
@@ -63,8 +62,8 @@ public class SP3Writer {
     /** Format for three blanks field. */
     private static final String THREE_BLANKS = "   ";
 
-    /** Format for six blanks field. */
-    private static final String SIX_BLANKS = "      ";
+    /** Time system default line. */
+    private static final String TIME_SYSTEM_DEFAULT = "%c cc cc ccc ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc";
 
     /** Destination of generated output. */
     private final Appendable output;
@@ -90,7 +89,6 @@ public class SP3Writer {
      * @param sp3 SP3 file to write
      * @exception IOException if an I/O error occurs.
      */
-    @DefaultDataContext
     public void write(final SP3 sp3)
         throws IOException {
         sp3.validate(false, outputName);
@@ -114,7 +112,7 @@ public class SP3Writer {
                                         dtc.getDate().getDay(),
                                         dtc.getTime().getHour(),
                                         dtc.getTime().getMinute(),
-                                        dtc.getTime().getSecondsInLocalDay()));
+                                        dtc.getTime().getSecond()));
 
             for (final CoordinatesIterator iter : iterators) {
 
@@ -140,6 +138,9 @@ public class SP3Writer {
             }
 
         }
+
+        output.append("EOF").
+               append(EOL);
 
     }
 
@@ -179,14 +180,19 @@ public class SP3Writer {
 
         // position accuracy
         if (coordinate.getPositionAccuracy() == null) {
-            output.append(SIX_BLANKS);
+            output.append(THREE_BLANKS).
+                   append(THREE_BLANKS).
+                   append(THREE_BLANKS);
         } else {
+            output.append(' ');
             output.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
                                         SP3Utils.indexAccuracy(SP3Utils.POSITION_ACCURACY_UNIT, header.getPosVelBase(),
                                                                coordinate.getPositionAccuracy().getX())));
+            output.append(' ');
             output.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
                                         SP3Utils.indexAccuracy(SP3Utils.POSITION_ACCURACY_UNIT, header.getPosVelBase(),
                                                                coordinate.getPositionAccuracy().getY())));
+            output.append(' ');
             output.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
                                         SP3Utils.indexAccuracy(SP3Utils.POSITION_ACCURACY_UNIT, header.getPosVelBase(),
                                                                coordinate.getPositionAccuracy().getZ())));
@@ -198,7 +204,6 @@ public class SP3Writer {
             output.append(THREE_BLANKS);
         } else {
             output.append(String.format(Locale.US, THREE_DIGITS_INTEGER,
-                                        satId,
                                         SP3Utils.indexAccuracy(SP3Utils.CLOCK_ACCURACY_UNIT, header.getClockBase(),
                                                                coordinate.getClockAccuracy())));
         }
@@ -208,8 +213,11 @@ public class SP3Writer {
         output.append(coordinate.hasClockEvent()         ? 'E' : ' ');
         output.append(coordinate.hasClockPrediction()    ? 'P' : ' ');
         output.append(' ');
+        output.append(' ');
         output.append(coordinate.hasOrbitManeuverEvent() ? 'M' : ' ');
         output.append(coordinate.hasOrbitPrediction()    ? 'P' : ' ');
+
+        output.append(EOL);
 
     }
 
@@ -235,14 +243,19 @@ public class SP3Writer {
 
         // velocity accuracy
         if (coordinate.getVelocityAccuracy() == null) {
-            output.append(SIX_BLANKS);
+            output.append(THREE_BLANKS).
+                   append(THREE_BLANKS).
+                   append(THREE_BLANKS);
         } else {
+            output.append(' ');
             output.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
                                         SP3Utils.indexAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT, header.getPosVelBase(),
                                                                coordinate.getVelocityAccuracy().getX())));
+            output.append(' ');
             output.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
                                         SP3Utils.indexAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT, header.getPosVelBase(),
                                                                coordinate.getVelocityAccuracy().getY())));
+            output.append(' ');
             output.append(String.format(Locale.US, TWO_DIGITS_INTEGER,
                                         SP3Utils.indexAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT, header.getPosVelBase(),
                                                                coordinate.getVelocityAccuracy().getZ())));
@@ -254,10 +267,11 @@ public class SP3Writer {
             output.append(THREE_BLANKS);
         } else {
             output.append(String.format(Locale.US, THREE_DIGITS_INTEGER,
-                                        satId,
                                         SP3Utils.indexAccuracy(SP3Utils.CLOCK_RATE_ACCURACY_UNIT, header.getClockBase(),
                                                                coordinate.getClockRateAccuracy())));
         }
+
+        output.append(EOL);
 
     }
 
@@ -281,7 +295,7 @@ public class SP3Writer {
                                 DataUsed.MIXED.getKey();
 
         // header first line: version, epoch...
-        output.append(String.format(Locale.US, "#%c%c%4d %02d %02d %02d %02d %11.8f %7d %5s %5s %3s %4s%n",
+        output.append(String.format(Locale.US, "#%c%c%4d %2d %2d %2d %2d %11.8f %7d %5s %5s %3s %4s%n",
                                     header.getVersion(),
                                     header.getFilter() == CartesianDerivativesFilter.USE_P ? 'P' : 'V',
                                     dtc.getDate().getYear(),
@@ -289,7 +303,7 @@ public class SP3Writer {
                                     dtc.getDate().getDay(),
                                     dtc.getTime().getHour(),
                                     dtc.getTime().getMinute(),
-                                    dtc.getTime().getSecondsInLocalDay(),
+                                    dtc.getTime().getSecond(),
                                     header.getNumberOfEpochs(),
                                     dataUsed,
                                     header.getCoordinateSystem(),
@@ -297,7 +311,7 @@ public class SP3Writer {
                                     header.getAgency()));
 
         // header second line : dates
-        output.append(String.format(Locale.US, "## %4d %15.8f %14.8f %5d %15.13%n",
+        output.append(String.format(Locale.US, "## %4d %15.8f %14.8f %5d %15.13f%n",
                                     header.getGpsWeek(),
                                     header.getSecondsOfWeek(),
                                     header.getEpochInterval(),
@@ -306,7 +320,8 @@ public class SP3Writer {
 
         // list of satellites
         final List<String> satellites = header.getSatIds();
-        output.append(String.format(Locale.US, "+   %2d   ", satellites.size()));
+        output.append(String.format(Locale.US, "+  %3d   ", satellites.size()));
+        int lines  = 0;
         int column = 9;
         int remaining = satellites.size();
         for (final String satId : satellites) {
@@ -316,6 +331,7 @@ public class SP3Writer {
             if (column >= 60) {
                 // finish line
                 output.append(EOL);
+                ++lines;
                 if (remaining > 0) {
                     // start new line
                     output.append("+        ");
@@ -324,12 +340,22 @@ public class SP3Writer {
             }
         }
         while (column < 60) {
-            output.append(' ');
+            output.append(' ').
+                   append(' ').
+                   append('0');
+            column += 3;
         }
         output.append(EOL);
+        ++lines;
+        while (lines++ < 5) {
+            // write extra lines to have at least 85 satellites
+            output.append("+          0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0").
+                   append(EOL);
+        }
 
         // general accuracy
         output.append(ACCURACY_LINE_PREFIX);
+        lines  = 0;
         column = 9;
         remaining = satellites.size();
         for (final String satId : satellites) {
@@ -341,6 +367,7 @@ public class SP3Writer {
             if (column >= 60) {
                 // finish line
                 output.append(EOL);
+                ++lines;
                 if (remaining > 0) {
                     // start new line
                     output.append(ACCURACY_LINE_PREFIX);
@@ -349,19 +376,32 @@ public class SP3Writer {
             }
         }
         while (column < 60) {
-            output.append(' ');
+            output.append(' ').
+                   append(' ').
+                   append('0');
+            column += 3;
         }
         output.append(EOL);
+        ++lines;
+        while (lines++ < 5) {
+            // write extra lines to have at least 85 satellites
+            output.append("++         0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0").
+                   append(EOL);
+        }
 
         // type
-        output.append(String.format(Locale.US, "%%c %1s  cc %3s ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc%n",
-                                    header.getType().getKey(),
-                                    header.getTimeSystem().getKey()));
-        output.append("%c cc cc ccc ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc").append(EOL);
+        if (header.getVersion() == 'a') {
+            output.append(TIME_SYSTEM_DEFAULT).append(EOL);
+        } else {
+            output.append(String.format(Locale.US, "%%c %1s  cc %3s ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc%n",
+                                        header.getType().getKey(),
+                                        header.getTimeSystem().getKey()));
+        }
+        output.append(TIME_SYSTEM_DEFAULT).append(EOL);
 
         // entries accuracy
         output.append(String.format(Locale.US, ACCURACY_BASE_FORMAT,
-                                    header.getPosVelBase(), header.getClass(), 0.0, 0.0));
+                                    header.getPosVelBase(), header.getClockBase(), 0.0, 0.0));
         output.append(String.format(Locale.US, ACCURACY_BASE_FORMAT,
                                     0.0, 0.0, 0.0, 0.0));
 

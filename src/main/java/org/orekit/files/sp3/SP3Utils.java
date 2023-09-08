@@ -28,6 +28,9 @@ public class SP3Utils {
     /** Bad or absent clock values are to be set to 999999.999999. */
     public static final double DEFAULT_CLOCK_VALUE = 999999.999999;
 
+    /** Bad or absent clock rate values are to be set to 999999.999999. */
+    public static final double DEFAULT_CLOCK_RATE_VALUE = 999999.999999;
+
     /** Base for general position/velocity accuracy. */
     public static final double POS_VEL_BASE_ACCURACY = 2.0;
 

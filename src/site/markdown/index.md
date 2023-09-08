@@ -287,10 +287,10 @@
 
   * Orbit file handling
   
-    * loading of SP3 orbit files (from version a to d)
+    * loading and writing of SP3 orbit files (from version a to d)
     * loading and writing of CCSDS Orbit Data Messages (OPM, OEM, OMM and OCM types are supported, in both KVN and XML formats, standalone or in combined NDM)
     * loading of SEM and YUMA files for GPS constellation
-    * exporting of ephemeris in CCSDS OEM file format
+    * exporting of ephemeris in CCSDS OEM and OCM file formats
     * loading of ILRS CPF orbit files
 
   * Earth models

@@ -571,8 +571,8 @@ public class SP3ParserTest {
         checkPVEntry(new PVCoordinates(new Vector3D(2228470.946, 7268265.924, 9581471.543),
                                        new Vector3D(-4485.6945000, 2432.1151000, -711.6222800)),
                      coord);
-        Assertions.assertEquals(999999.999999, coord.getClockCorrection(), 1.0e-6);
-        Assertions.assertEquals(999999.999999, coord.getClockRateChange(), 1.0e-6);
+        Assertions.assertEquals(0.999999999999,   coord.getClockCorrection(), 1.0e-12);
+        Assertions.assertEquals(9.99999999999e-5, coord.getClockRateChange(), 1.0e-16);
 
     }
 
@@ -603,8 +603,8 @@ public class SP3ParserTest {
         checkPVEntry(new PVCoordinates(new Vector3D(2228470.946, 7268265.924, 9581471.543),
                                        new Vector3D(-4485.6945000, 2432.1151000, -711.6222800)),
                      coord);
-        Assertions.assertEquals(999999.999999, coord.getClockCorrection(), 1.0e-6);
-        Assertions.assertEquals(999999.999999, coord.getClockRateChange(), 1.0e-6);
+        Assertions.assertEquals(0.999999999999,   coord.getClockCorrection(), 1.0e-12);
+        Assertions.assertEquals(9.99999999999e-5, coord.getClockRateChange(), 1.0e-16);
 
     }
 

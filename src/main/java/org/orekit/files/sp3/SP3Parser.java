@@ -674,11 +674,12 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                                                      SP3Utils.POSITION_UNIT.toSI(Double.parseDouble(line.substring(18, 32).trim())),
                                                      SP3Utils.POSITION_UNIT.toSI(Double.parseDouble(line.substring(32, 46).trim())));
 
+                    // clock (microsec)
+                    pi.latestClock = SP3Utils.CLOCK_UNIT.toSI(line.trim().length() <= 46 ?
+                                                              SP3Utils.DEFAULT_CLOCK_VALUE :
+                                                              Double.parseDouble(line.substring(46, 60).trim()));
+
                     if (pi.latestPosition.getNorm() > 0) {
-                        // clock (microsec)
-                        pi.latestClock = line.trim().length() <= 46 ?
-                                         SP3Utils.DEFAULT_CLOCK_VALUE :
-                                         SP3Utils.CLOCK_UNIT.toSI(Double.parseDouble(line.substring(46, 60).trim()));
 
                         if (line.length() < 69 || line.substring(61, 69).trim().length() == 0) {
                             pi.latestPositionAccuracy = null;
@@ -712,7 +713,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                                             new SP3Coordinate(pi.latestEpoch,
                                                               pi.latestPosition,           pi.latestPositionAccuracy,
                                                               Vector3D.ZERO,               null,
-                                                              pi.latestClock,              Double.NaN,
+                                                              pi.latestClock,              pi.latestClockAccuracy,
                                                               0.0,                         Double.NaN,
                                                               pi.latestClockEvent,         pi.latestClockPrediction,
                                                               pi.latestOrbitManeuverEvent, pi.latestOrbitPrediction);
@@ -765,9 +766,9 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                                                            SP3Utils.VELOCITY_UNIT.toSI(Double.parseDouble(line.substring(32, 46).trim())));
 
                     // clock rate in file is 1e-4 us / s
-                    final double clockRateChange = line.trim().length() <= 46 ?
-                                                   SP3Utils.DEFAULT_CLOCK_VALUE :
-                                                   SP3Utils.CLOCK_RATE_UNIT.toSI(Double.parseDouble(line.substring(46, 60).trim()));
+                    final double clockRateChange = SP3Utils.CLOCK_RATE_UNIT.toSI(line.trim().length() <= 46 ?
+                                                                                 SP3Utils.DEFAULT_CLOCK_RATE_VALUE :
+                                                                                 Double.parseDouble(line.substring(46, 60).trim()));
 
                     final Vector3D velocityAccuracy;
                     if (line.length() < 69 || line.substring(61, 69).trim().length() == 0) {
