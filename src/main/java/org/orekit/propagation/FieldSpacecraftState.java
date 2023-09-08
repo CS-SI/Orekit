@@ -72,6 +72,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
  * @author Vincent Mouraux
+ * @param <T> type of the field elements
  */
 public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     implements FieldTimeStamped<T>, FieldTimeShiftable<FieldSpacecraftState<T>, T> {

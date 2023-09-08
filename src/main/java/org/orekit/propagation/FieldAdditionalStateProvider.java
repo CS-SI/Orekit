@@ -71,6 +71,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @see org.orekit.propagation.FieldPropagator
  * @see org.orekit.propagation.integration.FieldAdditionalDerivativesProvider
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
 public interface FieldAdditionalStateProvider<T extends CalculusFieldElement<T>> {
 

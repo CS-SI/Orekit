@@ -37,6 +37,7 @@ import java.util.List;
  * @author Vincent Cucchietti
  * @see FieldHermiteInterpolator
  * @see FieldAbsolutePVCoordinates
+ * @param <KK> type of the field elements
  */
 public class FieldAbsolutePVCoordinatesHermiteInterpolator<KK extends CalculusFieldElement<KK>>
         extends AbstractFieldTimeInterpolator<FieldAbsolutePVCoordinates<KK>, KK> {

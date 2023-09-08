@@ -23,9 +23,10 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * This class is a container for the common "field" parameters used in {@link DSSTNewtonianAttraction}.
  * <p>
  * It performs parameters initialization at each integration step for the central body attraction.
- * <p>
+ * </p>
  * @author Bryan Cazabonne
  * @since 10.0
+ * @param <T> type of the field elements
  */
 public class FieldDSSTNewtonianAttractionContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 

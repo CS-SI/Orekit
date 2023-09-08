@@ -29,6 +29,7 @@ import org.orekit.orbits.OrbitType;
  * @author Luc Maisonobe
  * @author Vincent Cucchietti
  * @since 12.0
+ * @param <T> type of the field elements
  */
 public class LutherFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
         extends AbstractFixedStepFieldIntegratorBuilder<T> {

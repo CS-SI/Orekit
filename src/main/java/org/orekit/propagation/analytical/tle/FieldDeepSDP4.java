@@ -43,6 +43,7 @@ import org.orekit.utils.Constants;
  * @author Fabien Maussion (java translation)
  * @author Thomas Paulet (field translation)
  * @since 11.0
+ * @param <T> type of the field elements
  */
 public class FieldDeepSDP4<T extends CalculusFieldElement<T>> extends FieldSDP4<T> {
 

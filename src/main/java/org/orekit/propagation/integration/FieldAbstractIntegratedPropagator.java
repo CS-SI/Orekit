@@ -69,8 +69,8 @@ import org.orekit.utils.FieldArrayDictionary;
 
 /** Common handling of {@link org.orekit.propagation.FieldPropagator FieldPropagator}
  *  methods for both numerical and semi-analytical propagators.
- *  @param <T> the type of the field elements
- *  @author Luc Maisonobe
+ * @author Luc Maisonobe
+ * @param <T> type of the field element
  */
 public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractPropagator<T> {
 
@@ -676,7 +676,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     }
 
-    /** Differential equations for the main state (orbit, attitude and mass). */
+    /** Differential equations for the main state (orbit, attitude and mass).
+     * @param <T> type of the field element
+     */
     public interface MainStateEquations<T extends CalculusFieldElement<T>> {
 
         /**

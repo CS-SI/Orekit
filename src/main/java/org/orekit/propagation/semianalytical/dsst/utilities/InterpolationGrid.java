@@ -20,10 +20,11 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
  * <p>
  * An interpolation grid provides a grid of time points
  * that can be used for interpolation processes.
- * </p><p>
+ * </p>
+ * <p>
  * In the context of DSST propagation, an interpolation grid is used for the
  * computation through interpolation of short periodics coefficients
- * <p>
+ * </p>
  * @author Nicolas Bernard
  */
 public interface InterpolationGrid {

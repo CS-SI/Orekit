@@ -226,19 +226,26 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
             return central;
         }
 
-        /** @return interpolation date */
+        /** Get interpolation date.
+         * @return interpolation date
+         */
         public AbsoluteDate getInterpolationDate() {
             return interpolationDate;
         }
 
-        /** @return cached samples */
+        /** Get cached samples.
+         * @return cached samples
+         */
         public ImmutableTimeStampedCache<T> getCachedSamples() {
             return cachedSamples;
         }
 
-        /** @return neighbor list */
+        /** Get neighbor list.
+         * @return neighbor list
+         */
         public List<T> getNeighborList() {
             return neighborList;
         }
+
     }
 }

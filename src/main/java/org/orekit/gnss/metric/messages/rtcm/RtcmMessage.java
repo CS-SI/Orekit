@@ -27,6 +27,7 @@ import org.orekit.gnss.metric.messages.ParsedMessage;
  * @author Bryan Cazabonne
  * @since 11.0
  *
+ * @param <D> type of the data
  */
 public class RtcmMessage<D extends RtcmData> extends ParsedMessage {
 

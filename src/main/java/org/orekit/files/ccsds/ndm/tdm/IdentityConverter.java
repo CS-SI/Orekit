@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.ndm.tdm;
 import org.orekit.time.AbsoluteDate;
 
 /**
- * Identity converter for Range Units.<p>
+ * Identity converter for Range Units.
  * @author Luc Maisonobe
  * @since 11.0
  */

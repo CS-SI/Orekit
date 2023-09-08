@@ -58,12 +58,16 @@ public abstract class AbstractAnglesOnlyIod {
         this.outputFrame = outputFrame;
     }
 
-    /** @return gravitational Constant */
+    /** Get gravitational Constant.
+     * @return gravitational Constant
+     */
     public double getMu() {
         return mu;
     }
 
-    /** @return orbit output frame */
+    /** Get orbit output frame.
+     * @return orbit output frame
+     */
     public Frame getOutputFrame() {
         return outputFrame;
     }

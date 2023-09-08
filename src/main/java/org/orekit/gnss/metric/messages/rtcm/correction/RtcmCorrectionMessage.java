@@ -32,6 +32,8 @@ import org.orekit.gnss.metric.messages.rtcm.RtcmMessage;
  *
  * @author Bryan Cazabonne
  * @since 12.0
+ * @param <H> type of the header
+ * @param <D> type of the data
  *
  */
 public class RtcmCorrectionMessage<H extends RtcmCorrectionHeader, D extends RtcmCorrectionData> extends RtcmMessage<D> {

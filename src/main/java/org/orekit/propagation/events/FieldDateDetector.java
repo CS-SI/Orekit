@@ -45,6 +45,7 @@ import org.orekit.time.FieldTimeStamped;
  * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @author Luc Maisonobe
  * @author Pascal Parraud
+ * @param <T> type of the field elements
  */
 public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldDateDetector<T>, T>
     implements FieldTimeStamped<T> {

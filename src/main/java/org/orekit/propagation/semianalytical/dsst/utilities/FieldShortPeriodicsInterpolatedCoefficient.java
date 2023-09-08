@@ -34,7 +34,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * {@link #value}.
  * </p>
  * @author Nicolas Bernard
- *
+ * @param <T> type of the field elements
  */
 public class FieldShortPeriodicsInterpolatedCoefficient <T extends CalculusFieldElement<T>> {
 

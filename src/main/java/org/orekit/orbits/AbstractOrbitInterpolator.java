@@ -83,7 +83,9 @@ public abstract class AbstractOrbitInterpolator extends AbstractTimeInterpolator
         return super.interpolate(interpolationDate, sample);
     }
 
-    /** @return output inertial frame */
+    /** Get output inertial frame.
+     * @return output inertial frame
+     */
     public Frame getOutputInertialFrame() {
         return outputInertialFrame;
     }

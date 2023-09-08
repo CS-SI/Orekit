@@ -33,6 +33,7 @@ import org.orekit.time.FieldTimeStamped;
 /** Field implementation of AbsolutePVCoordinates.
  * @see AbsolutePVCoordinates
  * @author Vincent Mouraux
+ * @param <T> type of the field elements
  */
 public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> extends TimeStampedFieldPVCoordinates<T>
     implements FieldTimeStamped<T>, FieldPVCoordinatesProvider<T> {

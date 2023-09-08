@@ -39,6 +39,7 @@ import org.orekit.utils.Constants;
  * @author Fabien Maussion (java translation)
  * @author Thomas Paulet (field translation)
  * @since 11.0
+ * @param <T> type of the field elements
  */
 abstract class FieldSDP4<T extends CalculusFieldElement<T>>  extends FieldTLEPropagator<T> {
 

@@ -27,6 +27,7 @@ import org.orekit.time.FieldAbsoluteDate;
 
 /** This class maps between raw double elements and {@link FieldSpacecraftState} instances.
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
 public abstract class FieldStateMapper<T extends CalculusFieldElement<T>> {
 

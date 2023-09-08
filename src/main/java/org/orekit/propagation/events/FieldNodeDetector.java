@@ -45,6 +45,7 @@ import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
  * encountered during validation ...</p>
  * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
 public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldNodeDetector<T>, T> {
 

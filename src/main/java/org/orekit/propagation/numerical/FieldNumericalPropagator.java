@@ -143,6 +143,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Guylaine Prat
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
+ * @param <T> type of the field elements
  */
 public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractIntegratedPropagator<T> {
 

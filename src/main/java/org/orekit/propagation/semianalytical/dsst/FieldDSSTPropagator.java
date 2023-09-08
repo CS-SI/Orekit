@@ -123,6 +123,7 @@ import org.orekit.utils.TimeSpanMap;
  * @author Romain Di Costanzo
  * @author Pascal Parraud
  * @since 10.0
+ * @param <T> type of the field elements
  */
 public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractIntegratedPropagator<T>  {
 

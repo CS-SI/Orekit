@@ -315,11 +315,17 @@ public interface LOF {
      * @return rotation from inertial frame to local orbital frame
      */
     Rotation rotationFromInertial(AbsoluteDate date, PVCoordinates pv);
-    /** @return flag that indicates if current local orbital frame shall be treated as pseudo-inertial */
+
+    /** Get flag that indicates if current local orbital frame shall be treated as pseudo-inertial.
+     * @return flag that indicates if current local orbital frame shall be treated as pseudo-inertial
+     */
     default boolean isQuasiInertial() {
         return false;
     }
 
-    /** @return name of the local orbital frame */
+    /** Get name of the local orbital frame.
+     * @return name of the local orbital frame
+     */
     String getName();
+
 }

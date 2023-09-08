@@ -633,6 +633,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * <p>
      * This class is a rewrite of {@link IntegrableFunction} for field elements
      * </p>
+     * @param <T> type of the field elements
      */
     protected class FieldIntegrableFunction<T extends CalculusFieldElement<T>>
             implements CalculusFieldUnivariateVectorFunction<T> {
@@ -1677,6 +1678,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * </p>
      * @author Petre Bazavan
      * @author Lucian Barbulescu
+     * @param <T> type of the field elements
      */
     protected class FieldFourierCjSjCoefficients<T extends CalculusFieldElement<T>> {
 
@@ -2072,7 +2074,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * </p>
      * @author Petre Bazavan
      * @author Lucian Barbulescu
-     *
+     * @param <T> type of the field elements
      */
     protected static class FieldGaussianShortPeriodicCoefficients<T extends CalculusFieldElement<T>>
             implements FieldShortPeriodTerms<T> {
@@ -2648,6 +2650,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *
      * @author Petre Bazavan
      * @author Lucian Barbulescu
+     * @param <T> type of the field elements
      */
     protected static class FieldUijVijCoefficients<T extends CalculusFieldElement<T>> {
 
@@ -3036,7 +3039,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     }
 
-    /** Coefficients valid for one time slot. */
+    /** Coefficients valid for one time slot.
+     * @param <T> type of the field elements
+     */
     protected static class FieldSlot<T extends CalculusFieldElement<T>> {
 
         /**

@@ -67,7 +67,7 @@ import org.orekit.utils.ParameterDriver;
  * paper but not used due to the large memory requirements. Since 2002, even low end
  * computers and mobile devices do have sufficient memory so this caching has become
  * feasible nowadays.
- * <p>
+ * </p>
  * @author Luc Maisonobe
  * @since 6.0
  */

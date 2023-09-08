@@ -30,6 +30,7 @@ import org.hipparchus.util.MathArrays;
  * </p>
  * @since 11.0
  * @author Bryan Cazabonne
+ * @param <T> type of the field elements
  */
 public class FieldLegendrePolynomials<T extends CalculusFieldElement<T>> {
 

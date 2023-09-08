@@ -53,6 +53,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * retrograde).</p>
  * @see FieldOrbit
  * @author Guylaine Prat
+ * @param <T> type of the field elements
  */
 public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 

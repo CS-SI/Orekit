@@ -25,7 +25,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * <p>
  * It performs parameters initialization at each integration step for the Zonal contribution
  * to the central body gravitational perturbation.
- * <p>
+ * </p>
  * @author Bryan Cazabonne
  * @since 10.0
  */

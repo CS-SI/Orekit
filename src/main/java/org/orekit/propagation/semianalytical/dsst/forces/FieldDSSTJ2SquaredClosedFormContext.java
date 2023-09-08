@@ -27,9 +27,10 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * <p>
  * It performs parameters initialization at each integration step for the second-order J2-squared
  * contribution to the central body gravitational perturbation.
- * <p>
+ * </p>
  * @author Bryan Cazabonne
  * @since 12.0
+ * @param <T> type of the field elements
  */
 public class FieldDSSTJ2SquaredClosedFormContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 

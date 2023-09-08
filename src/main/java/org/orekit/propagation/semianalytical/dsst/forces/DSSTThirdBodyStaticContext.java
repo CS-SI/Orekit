@@ -28,7 +28,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
  * body attraction perturbation. These parameters are initialize as soon as
  * possible. In fact, they are initialized once with short period terms and
  * don't evolve during propagation.
- * <p>
+ * </p>
  * @author Bryan Cazabonne
  * @since 11.3.3
  */

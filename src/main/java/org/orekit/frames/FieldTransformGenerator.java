@@ -31,6 +31,7 @@ import org.orekit.utils.TimeStampedGenerator;
  * @see GenericTimeStampedCache
  * @since 9.0
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
 public class FieldTransformGenerator<T extends CalculusFieldElement<T>> implements TimeStampedGenerator<FieldTransform<T>> {
 

@@ -28,6 +28,7 @@ import org.orekit.time.FieldAbsoluteDate;
 /** This class gathers several {@link OrekitStepHandler} instances into one.
  *
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
 public class FieldStepHandlerMultiplexer<T extends CalculusFieldElement<T>> implements FieldOrekitStepHandler<T> {
 

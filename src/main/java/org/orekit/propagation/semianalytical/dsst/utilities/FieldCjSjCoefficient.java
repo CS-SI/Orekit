@@ -35,6 +35,7 @@ import org.hipparchus.exception.NullArgumentException;
  *  The C<sub>j</sub>(k, h) and the S<sub>j</sub>(k, h) elements are store as an
  *  {@link ArrayList} of {@link Complex} number, the C<sub>j</sub>(k, h) being
  *  represented by the real and the S<sub>j</sub>(k, h) by the imaginary part.
+ * @param <T> type of the field elements
  */
 public class FieldCjSjCoefficient <T extends CalculusFieldElement<T>> {
 

@@ -60,6 +60,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * propagation starting from some internally stored initial state up to the specified target date.
  * </p>
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
 
 public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractPropagator<T>

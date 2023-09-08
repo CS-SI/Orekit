@@ -42,7 +42,7 @@ import org.orekit.utils.PVCoordinates;
  * Since Orekit 10.3 the relativistic clock correction can be used as an {@link EstimationModifier}
  * in orbit determination applications to take into consideration this effect
  * in measurement modeling.
- * <p>
+ * </p>
  *
  * @author Luc Maisonobe
  * @since 9.3

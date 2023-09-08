@@ -37,6 +37,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
  * @author Petre Bazavan
  * @author Lucian Barbulescu
  * @author Bryan Cazabonne
+ * @param <T> type of the field elements
  */
 public class FieldHansenTesseralLinear <T extends CalculusFieldElement<T>> {
 

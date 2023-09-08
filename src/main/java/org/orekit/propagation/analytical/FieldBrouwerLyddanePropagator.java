@@ -83,6 +83,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Melina Vanel
  * @author Bryan Cazabonne
  * @since 11.1
+ * @param <T> type of the field elements
  */
 public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 

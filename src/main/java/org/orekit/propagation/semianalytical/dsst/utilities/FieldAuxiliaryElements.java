@@ -29,6 +29,7 @@ import org.orekit.time.FieldAbsoluteDate;
  *  Most of them are defined in Danielson paper at § 2.1.
  *  </p>
  *  @author Bryan Cazabonne
+ * @param <T> type of the field elements
  */
 public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
 

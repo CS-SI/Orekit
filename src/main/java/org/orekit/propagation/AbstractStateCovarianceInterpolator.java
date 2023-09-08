@@ -144,22 +144,30 @@ public abstract class AbstractStateCovarianceInterpolator
         return outFrame;
     }
 
-    /** @return output local orbital frame. Can be null. */
+    /** Get output local orbital frame.
+     * @return output local orbital frame. Can be null.
+     */
     public LOFType getOutLOF() {
         return outLOF;
     }
 
-    /** @return output orbit type. */
+    /** Get output orbit type.
+     * @return output orbit type.
+     */
     public OrbitType getOutOrbitType() {
         return outOrbitType;
     }
 
-    /** @return output position angle. */
+    /** Get output position angle.
+     * @return output position angle.
+     */
     public PositionAngle getOutPositionAngle() {
         return outPositionAngle;
     }
 
-    /** @return orbit interpolator. */
+    /** Get orbit interpolator.
+     * @return orbit interpolator.
+     */
     public TimeInterpolator<Orbit> getOrbitInterpolator() {
         return orbitInterpolator;
     }

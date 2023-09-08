@@ -24,7 +24,9 @@ import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 
-/** Compute the &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function from equation 2.7.1-(13). */
+/** Compute the &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function from equation 2.7.1-(13).
+ * @param <T> type of the field elements
+ */
 public class FieldGammaMnsFunction <T extends CalculusFieldElement<T>> {
 
     /** Factorial ratios. */

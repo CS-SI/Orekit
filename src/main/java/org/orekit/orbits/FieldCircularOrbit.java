@@ -68,6 +68,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @since 9.0
+ * @param <T> type of the field elements
  */
 
 public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>

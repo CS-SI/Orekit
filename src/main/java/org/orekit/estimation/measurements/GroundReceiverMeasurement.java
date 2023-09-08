@@ -39,6 +39,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  * @author Maxime Journot
  * @since 12.0
+ * @param <T> type of the measurement
  */
 public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurement<T>> extends AbstractMeasurement<T> {
 

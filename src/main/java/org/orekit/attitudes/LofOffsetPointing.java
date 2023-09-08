@@ -53,7 +53,7 @@ import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
  * <p>
  * The attitude pointing law is defined by an attitude provider and
  * the satellite axis vector chosen for pointing.
- * <p>
+ * </p>
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public class LofOffsetPointing extends GroundPointing {

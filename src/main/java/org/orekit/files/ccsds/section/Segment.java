@@ -20,6 +20,8 @@ package org.orekit.files.ccsds.section;
  * NDM segments are ({@link Metadata}, {@link Data}) pairs.
  * @author Luc Maisonobe
  * @since 11.0
+ * @param <M> type of the metadata
+ * @param <D> type of the data
  */
 public class Segment<M extends Metadata, D extends Data> {
 

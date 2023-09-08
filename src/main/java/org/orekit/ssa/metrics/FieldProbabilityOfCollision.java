@@ -32,6 +32,7 @@ import org.orekit.ssa.collision.shorttermencounter.probability.twod.Laas2015;
  *
  * @author Vincent Cucchietti
  * @since 12.0
+ * @param <T> type of the field elements
  */
 public class FieldProbabilityOfCollision<T extends CalculusFieldElement<T>> {
 

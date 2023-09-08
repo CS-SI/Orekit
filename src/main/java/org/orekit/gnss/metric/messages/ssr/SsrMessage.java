@@ -26,7 +26,8 @@ import org.orekit.gnss.metric.messages.ParsedMessage;
  *
  * @author Bryan Cazabonne
  * @since 11.0
- *
+ * @param <H> type of the header
+ * @param <D> type of the data
  */
 public class SsrMessage<H extends SsrHeader, D extends SsrData> extends ParsedMessage {
 

@@ -22,7 +22,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * This class is a container for the common parameters used in {@link DSSTNewtonianAttraction}.
  * <p>
  * It performs parameters initialization at each integration step for the central body attraction.
- * <p>
+ * </p>
  * @author Bryan Cazabonne
  * @since 10.0
  */

@@ -102,6 +102,7 @@ import org.orekit.utils.Constants;
  * @see TimeScale
  * @see TimeStamped
  * @see ChronologicalComparator
+ * @param <T> type of the field elements
  */
 public class FieldAbsoluteDate<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T>, TimeShiftable<FieldAbsoluteDate<T>>, Comparable<FieldAbsoluteDate<T>> {
 

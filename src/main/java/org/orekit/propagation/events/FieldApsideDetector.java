@@ -38,6 +38,7 @@ import org.orekit.utils.FieldPVCoordinates;
  * after the maneuver has been performed!</p>
  * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
 public class FieldApsideDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldApsideDetector<T>, T> {
 

@@ -71,6 +71,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Andrew Goetz
  * @since 9.0
+ * @param <T> type of the field elements
  */
 public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> {
 

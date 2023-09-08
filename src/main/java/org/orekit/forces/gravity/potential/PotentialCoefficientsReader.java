@@ -40,7 +40,7 @@ import org.orekit.time.TimeScale;
  *  interface represents all the methods that should be implemented by a reader.
  *  The proper way to use this interface is to call the {@link GravityFieldFactory}
  *  which will determine which reader to use with the selected potential
- *  coefficients file.<p>
+ *  coefficients file.</p>
  *
  * @see GravityFields
  * @author Fabien Maussion

@@ -27,6 +27,7 @@ import org.hipparchus.CalculusFieldElement;
  *  </p>
  *  @author Lucian Barbulescu
  *  @author Bryan Cazabonne (field translation)
+ * @param <T> type of the field elements
  */
 public class FieldGHIJjsPolynomials<T extends CalculusFieldElement<T>> {
 

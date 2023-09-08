@@ -249,32 +249,44 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
             return central;
         }
 
-        /** @return interpolation date */
+        /** Get interpolation date.
+         * @return interpolation date
+         */
         public FieldAbsoluteDate<KK> getInterpolationDate() {
             return interpolationDate;
         }
 
-        /** @return cached samples */
+        /** Get cached samples.
+         * @return cached samples
+         */
         public ImmutableFieldTimeStampedCache<T, KK> getCachedSamples() {
             return cachedSamples;
         }
 
-        /** @return neighbor list */
+        /** Get neighbor list.
+         * @return neighbor list
+         */
         public List<T> getNeighborList() {
             return neighborList;
         }
 
-        /** @return field */
+        /** Get field.
+         * @return field
+         */
         public Field<KK> getField() {
             return field;
         }
 
-        /** @return zero */
+        /** Get zero.
+         * @return zero
+         */
         public KK getZero() {
             return zero;
         }
 
-        /** @return one */
+        /** Get one.
+         * @return one
+         */
         public KK getOne() {
             return one;
         }

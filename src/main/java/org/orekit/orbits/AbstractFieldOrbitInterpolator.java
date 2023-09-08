@@ -70,7 +70,9 @@ public abstract class AbstractFieldOrbitInterpolator<KK extends CalculusFieldEle
         return super.interpolate(interpolationDate, sample);
     }
 
-    /** @return output inertial frame */
+    /** Get output inertial frame.
+     * @return output inertial frame
+     */
     public Frame getOutputInertialFrame() {
         return outputInertialFrame;
     }

@@ -47,6 +47,7 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  * @see     org.orekit.orbits.Orbit
  * @see AttitudeProvider
  * @author V&eacute;ronique Pommier-Maurussane
+ * @param <T> type of the field elements
  */
 
 public class FieldAttitude<T extends CalculusFieldElement<T>>

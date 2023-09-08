@@ -33,6 +33,7 @@ import java.util.List;
  * @author Vincent Cucchietti
  * @see FieldHermiteInterpolator
  * @see FieldTimeInterpolator
+ * @param <KK> type of the field elements
  */
 public class TimeStampedFieldHermiteInterpolator<KK extends CalculusFieldElement<KK>>
         extends AbstractFieldTimeInterpolator<TimeStampedField<KK>, KK> {

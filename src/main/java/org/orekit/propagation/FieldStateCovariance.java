@@ -53,6 +53,7 @@ import org.orekit.utils.CartesianDerivativesFilter;
  * @author Bryan Cazabonne
  * @author Vincent Cucchietti
  * @since 12.0
+ * @param <T> type of the field elements
  */
 public class FieldStateCovariance<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T> {
 

@@ -69,6 +69,7 @@ import org.orekit.utils.FieldPVCoordinates;
  *
  * @author Vincent Cucchietti
  * @since 12.0
+ * @param <T> type of the field elements
  */
 public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<T>> {
 

@@ -106,9 +106,13 @@ public interface FieldTimeInterpolator<T extends FieldTimeStamped<KK>, KK extend
      */
     List<FieldTimeInterpolator<? extends FieldTimeStamped<KK>, KK>> getSubInterpolators();
 
-    /** @return get the number of interpolation points. */
+    /** Get the number of interpolation points.
+     * @return the number of interpolation points.
+     */
     int getNbInterpolationPoints();
 
-    /** @return get the extrapolation threshold. */
+    /** Get the extrapolation threshold.
+     * @return get the extrapolation threshold.
+     */
     double getExtrapolationThreshold();
 }

@@ -72,6 +72,8 @@ import org.orekit.utils.FieldPVCoordinates;
  * @see org.orekit.forces.maneuvers.ImpulseManeuver
  * @author Romain Serra
  * @since 12.0
+ * @param <D> type of the detector
+ * @param <T> type of the field elements
  */
 public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>>
         extends FieldAbstractDetector<FieldImpulseManeuver<D, T>, T> {

@@ -29,6 +29,7 @@ import org.hipparchus.util.MathArrays;
  *
  * @author Luc Maisonobe
  * @since 7.1
+ * @param <T> type of the field elements
  */
 public class FieldMaxGapInterpolationGrid <T extends CalculusFieldElement<T>> implements FieldInterpolationGrid<T> {
 
