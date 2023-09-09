@@ -21,10 +21,9 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
+import org.hipparchus.geometry.euclidean.threed.*;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
@@ -33,6 +32,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -42,6 +42,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.TopocentricFrame;
@@ -68,12 +69,7 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.AngularDerivativesFilter;
-import org.orekit.utils.Constants;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.*;
 
 public class AttitudesSequenceTest {
 
@@ -638,6 +634,63 @@ public class AttitudesSequenceTest {
         Assertions.assertEquals(
                 after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ3(),
                 stateAfter.getAttitude().getRotation().getQ3(), 1.0E-16);
+    }
+
+    @Test
+    void testGetAttitudeRotation() {
+        // GIVEN
+        final AttitudeProvider attitudeProvider = new TestAttitudeProvider();
+        final AttitudesSequence attitudesSequence = new AttitudesSequence();
+        attitudesSequence.resetActiveProvider(attitudeProvider);
+        final Frame frame = FramesFactory.getGCRF();
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final PVCoordinatesProvider mockPvCoordinatesProvider = Mockito.mock(PVCoordinatesProvider.class);
+        // WHEN
+        final Rotation actualRotation = attitudesSequence.getAttitudeRotation(mockPvCoordinatesProvider, date, frame);
+        // THEN
+        final Attitude attitude = attitudesSequence.getAttitude(mockPvCoordinatesProvider, date, frame);
+        final Rotation expectedRotation = attitude.getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testGetAttitudeRotationFieldTest() {
+        // GIVEN
+        final GradientField field = GradientField.getField(1);
+        final AttitudeProvider attitudeProvider = new TestAttitudeProvider();
+        final AttitudesSequence attitudesSequence = new AttitudesSequence();
+        attitudesSequence.resetActiveProvider(attitudeProvider);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, date);
+        final FieldPVCoordinatesProvider<Gradient> pvCoordinatesProvider = Mockito.mock(FieldPVCoordinatesProvider.class);
+        final Frame mockFrame = Mockito.mock(Frame.class);
+        // WHEN
+        final FieldRotation<Gradient> actualRotation = attitudesSequence.getAttitudeRotation(pvCoordinatesProvider, fieldDate, mockFrame);
+        // THEN
+        final FieldAttitude<Gradient> attitude = attitudesSequence.getAttitude(pvCoordinatesProvider, fieldDate, mockFrame);
+        final FieldRotation<Gradient> expectedRotation = attitude.getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
+    }
+
+    private static class TestAttitudeProvider implements AttitudeProvider {
+
+        TestAttitudeProvider() {
+            // nothing to do
+        }
+
+        @Override
+        public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
+            return new Attitude(date, frame, new AngularCoordinates());
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
+                                                                                FieldAbsoluteDate<T> date, Frame frame) {
+            return new FieldAttitude<>(date.getField(), new Attitude(date.toAbsoluteDate(), frame,
+                    new AngularCoordinates()));
+        }
+
     }
 
     private static class Handler implements AttitudesSequence.SwitchHandler {

@@ -18,10 +18,9 @@ package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
-import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.analysis.differentiation.GradientField;
+import org.hipparchus.complex.ComplexField;
+import org.hipparchus.geometry.euclidean.threed.*;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
@@ -319,6 +318,42 @@ public class LofOffsetTest {
         Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
         Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
         Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
+    }
+
+    @Test
+    void testGetAttitudeRotation() {
+        // GIVEN
+        final AbsoluteDate date = orbit.getDate();
+        final LofOffset lofOffset = new LofOffset(orbit.getFrame(), LOFType.QSW);
+        // WHEN
+        final Rotation actualRotation = lofOffset.getAttitudeRotation(orbit, date, itrf);
+        // THEN
+        final Rotation expectedRotation = lofOffset.getAttitude(orbit, date, itrf).getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+    }
+
+    @Test
+    void testGetAttitudeRotationFieldComplex() {
+        final ComplexField complexField = ComplexField.getInstance();
+        templateTestGetRotationField(complexField);
+    }
+
+    @Test
+    void testGetAttitudeRotationFieldGradient() {
+        final GradientField gradientField = GradientField.getField(1);
+        templateTestGetRotationField(gradientField);
+    }
+
+    <T extends CalculusFieldElement<T>> void templateTestGetRotationField(final Field<T> field) {
+        // GIVEN
+        final LofOffset lofOffset = new LofOffset(orbit.getFrame(), LOFType.QSW);
+        final SpacecraftState state = new SpacecraftState(orbit);
+        final FieldSpacecraftState<T> fieldState = new FieldSpacecraftState<>(field, state);
+        // WHEN
+        final FieldRotation<T> actualRotation = lofOffset.getAttitudeRotation(fieldState.getOrbit(), fieldState.getDate(), itrf);
+        // THEN
+        final FieldRotation<T> expectedRotation = lofOffset.getAttitude(fieldState.getOrbit(), fieldState.getDate(), itrf).getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
     }
 
     @BeforeEach
