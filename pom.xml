@@ -500,6 +500,7 @@
             <configuration>
               <compilerArgs>
                 <arg>-Xlint:deprecation</arg>
+                <arg>-Xlint:unchecked</arg>
                 <!-- don't activate the compiler plugin for Orekit own tests -->
                 <!-- thousands of tests use intentionally the default context -->
               </compilerArgs>

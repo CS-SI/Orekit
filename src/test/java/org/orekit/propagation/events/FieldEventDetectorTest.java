@@ -345,6 +345,7 @@ public class FieldEventDetectorTest {
         doTestWrappedException(Binary64Field.getInstance());
     }
 
+    @SuppressWarnings("unchecked")
     private <T extends CalculusFieldElement<T>> void doTestWrappedException(Field<T> field) {
         final T zero = field.getZero();
         final Throwable dummyCause = new RuntimeException();
