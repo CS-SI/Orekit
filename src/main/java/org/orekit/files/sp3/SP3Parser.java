@@ -686,13 +686,13 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                         } else {
                             pi.latestPositionAccuracy = new Vector3D(SP3Utils.siAccuracy(SP3Utils.POSITION_ACCURACY_UNIT,
                                                                                          header.getPosVelBase(),
-                                                                                         Integer.parseString(line.substring(61, 63).trim())),
+                                                                                         Integer.parseInt(line.substring(61, 63).trim())),
                                                                      SP3Utils.siAccuracy(SP3Utils.POSITION_ACCURACY_UNIT,
                                                                                          header.getPosVelBase(),
-                                                                                         Integer.parseString(line.substring(64, 66).trim())),
+                                                                                         Integer.parseInt(line.substring(64, 66).trim())),
                                                                      SP3Utils.siAccuracy(SP3Utils.POSITION_ACCURACY_UNIT,
                                                                                          header.getPosVelBase(),
-                                                                                         Integer.parseString(line.substring(67, 69).trim())));
+                                                                                         Integer.parseInt(line.substring(67, 69).trim())));
                         }
 
                         if (line.length() < 73 || line.substring(70, 73).trim().length() == 0) {
@@ -700,7 +700,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                         } else {
                             pi.latestClockAccuracy    = SP3Utils.siAccuracy(SP3Utils.CLOCK_ACCURACY_UNIT,
                                                                             header.getClockBase(),
-                                                                            Integer.parseString(line.substring(70, 73).trim()));
+                                                                            Integer.parseInt(line.substring(70, 73).trim()));
                         }
 
                         pi.latestClockEvent         = line.length() < 75 ? false : line.substring(74, 75).equals("E");
@@ -776,13 +776,13 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     } else {
                         velocityAccuracy = new Vector3D(SP3Utils.siAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT,
                                                                             header.getPosVelBase(),
-                                                                            Integer.parseString(line.substring(61, 63).trim())),
+                                                                            Integer.parseInt(line.substring(61, 63).trim())),
                                                         SP3Utils.siAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT,
                                                                             header.getPosVelBase(),
-                                                                            Integer.parseString(line.substring(64, 66).trim())),
+                                                                            Integer.parseInt(line.substring(64, 66).trim())),
                                                         SP3Utils.siAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT,
                                                                             header.getPosVelBase(),
-                                                                            Integer.parseString(line.substring(67, 69).trim())));
+                                                                            Integer.parseInt(line.substring(67, 69).trim())));
                     }
 
                     final double clockRateAccuracy;
@@ -791,7 +791,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     } else {
                         clockRateAccuracy = SP3Utils.siAccuracy(SP3Utils.CLOCK_RATE_ACCURACY_UNIT,
                                                                 header.getClockBase(),
-                                                                Integer.parseString(line.substring(70, 73).trim()));
+                                                                Integer.parseInt(line.substring(70, 73).trim()));
                     }
 
                     final SP3Coordinate coord =
