@@ -17,12 +17,13 @@
 package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
+import org.orekit.frames.FieldTransform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -94,6 +95,7 @@ public class FrameAlignedProvider implements AttitudeProvider {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                 final AbsoluteDate date,
                                 final Frame frame) {
@@ -102,11 +104,26 @@ public class FrameAlignedProvider implements AttitudeProvider {
     }
 
     /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>>FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                                                            final FieldAbsoluteDate<T> date,
                                                                            final Frame frame) {
         final FieldTransform<T> t = frame.getTransformTo(satelliteFrame, date);
         return new FieldAttitude<>(date, frame, t.getRotation(), t.getRotationRate(), t.getRotationAcceleration());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+        return frame.getStaticTransformTo(satelliteFrame, date).getRotation();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                    final FieldAbsoluteDate<T> date,
+                                                                                    final Frame frame) {
+        return frame.getStaticTransformTo(satelliteFrame, date).getRotation();
     }
 
 }

@@ -17,11 +17,11 @@
 package org.orekit.forces.maneuvers;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldAbstractDetector;
@@ -247,17 +247,17 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
 
             final FieldImpulseManeuver<?, T> im = (FieldImpulseManeuver<?, T>) detector;
             final FieldAbsoluteDate<T> date = oldState.getDate();
-            final FieldAttitude<T> attitude;
+            final FieldRotation<T> rotation;
 
             if (im.getAttitudeOverride() == null) {
-                attitude = oldState.getAttitude();
+                rotation = oldState.getAttitude().getRotation();
             } else {
-                attitude = im.attitudeOverride.getAttitude(oldState.getOrbit(), date,
+                rotation = im.attitudeOverride.getAttitudeRotation(oldState.getOrbit(), date,
                         oldState.getFrame());
             }
 
             // convert velocity increment in inertial frame
-            final FieldVector3D<T> deltaV = attitude.getRotation().applyInverseTo(im.deltaVSat);
+            final FieldVector3D<T> deltaV = rotation.applyInverseTo(im.deltaVSat);
             final T one = oldState.getMu().getField().getOne();
             final T sign = (im.forward) ? one : one.negate();
 
@@ -275,7 +275,7 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
 
             // pack everything in a new state
             FieldSpacecraftState<T> newState = new FieldSpacecraftState<>(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),
-                    attitude, newMass);
+                    oldState.getAttitude(), newMass);
 
             for (final FieldArrayDictionary<T>.Entry entry : oldState.getAdditionalStatesValues().getData()) {
                 newState = newState.addAdditionalState(entry.getKey(), entry.getValue());

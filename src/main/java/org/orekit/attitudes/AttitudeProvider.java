@@ -17,6 +17,8 @@
 package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -48,6 +50,32 @@ public interface AttitudeProvider {
      * @since 9.0
      */
     <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
-                                                                 FieldAbsoluteDate<T> date,
-                                                                 Frame frame);
+                                                                     FieldAbsoluteDate<T> date,
+                                                                     Frame frame);
+
+    /** Compute the attitude-related rotation corresponding to an orbital state.
+     * @param pvProv local position-velocity provider around current date
+     * @param date current date
+     * @param frame reference frame from which attitude is computed
+     * @return attitude-related rotation on the specified date and position-velocity state
+     * @since 12.0
+     */
+    default Rotation getAttitudeRotation(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
+        return getAttitude(pvProv, date, frame).getRotation();
+    }
+
+    /** Compute the attitude-related rotation corresponding to an orbital state.
+     * @param pvProv local position-velocity provider around current date
+     * @param date current date
+     * @param frame reference frame from which attitude is computed
+     * @param <T> type of the field elements
+     * @return rotation on the specified date and position-velocity state
+     * @since 12.0
+     */
+    default <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(FieldPVCoordinatesProvider<T> pvProv,
+                                                                                     FieldAbsoluteDate<T> date,
+                                                                                     Frame frame) {
+        return getAttitude(pvProv, date, frame).getRotation();
+    }
+
 }

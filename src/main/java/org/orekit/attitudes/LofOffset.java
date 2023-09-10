@@ -17,6 +17,7 @@
 package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
@@ -114,6 +115,7 @@ public class LofOffset implements AttitudeProvider {
 
 
     /** {@inheritDoc} */
+    @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                 final AbsoluteDate date, final Frame frame) {
 
@@ -134,9 +136,10 @@ public class LofOffset implements AttitudeProvider {
     }
 
     /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                        final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame) {
+                                                                            final FieldAbsoluteDate<T> date,
+                                                                            final Frame frame) {
 
         // construction of the local orbital frame, using PV from inertial frame
         final FieldPVCoordinates<T> pv = pvProv.getPVCoordinates(date, inertialFrame);
@@ -152,5 +155,40 @@ public class LofOffset implements AttitudeProvider {
                                    FieldRotation.applyTo(offset, frameToLof.getRotationRate()),
                                    FieldRotation.applyTo(offset, frameToLof.getRotationAcceleration()));
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+        // construction of the local orbital frame, using PV from inertial frame
+        final PVCoordinates pv = pvProv.getPVCoordinates(date, inertialFrame);
+        final Rotation inertialToLof = lof.rotationFromInertial(date, pv);
+
+        // take into account the specified start frame (which may not be an inertial one)
+        final RotationConvention rotationConvention = RotationConvention.FRAME_TRANSFORM;
+        final Rotation frameToInertial = frame.getStaticTransformTo(inertialFrame, date).getRotation();
+        final Rotation frameToLof = frameToInertial.compose(inertialToLof, rotationConvention);
+
+        // compose with offset rotation
+        return frameToLof.compose(offset, rotationConvention);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                    final FieldAbsoluteDate<T> date,
+                                                                                    final Frame frame) {
+        // construction of the local orbital frame, using PV from inertial frame
+        final FieldPVCoordinates<T> pv = pvProv.getPVCoordinates(date, inertialFrame);
+        final Field<T> field = date.getField();
+        final FieldRotation<T> inertialToLof = lof.rotationFromInertial(field, date, pv);
+
+        // take into account the specified start frame (which may not be an inertial one)
+        final RotationConvention rotationConvention = RotationConvention.FRAME_TRANSFORM;
+        final FieldRotation<T> frameToInertial = frame.getStaticTransformTo(inertialFrame, date).getRotation();
+        final FieldRotation<T> frameToLof = frameToInertial.compose(inertialToLof, rotationConvention);
+
+        // compose with offset rotation
+        return frameToLof.compose(offset, rotationConvention);
     }
 }

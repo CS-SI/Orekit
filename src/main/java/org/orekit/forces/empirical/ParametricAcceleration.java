@@ -21,11 +21,11 @@ import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.FieldAttitude;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -165,15 +165,15 @@ public class ParametricAcceleration implements ForceModel {
             // the acceleration direction is already defined in the inertial frame
             inertialDirection = direction;
         } else {
-            final Attitude attitude;
+            final Rotation rotation;
             if (attitudeOverride == null) {
                 // the acceleration direction is defined in spacecraft frame as set by the propagator
-                attitude = state.getAttitude();
+                rotation = state.getAttitude().getRotation();
             } else {
                 // the acceleration direction is defined in a dedicated frame
-                attitude = attitudeOverride.getAttitude(state.getOrbit(), date, state.getFrame());
+                rotation = attitudeOverride.getAttitudeRotation(state.getOrbit(), date, state.getFrame());
             }
-            inertialDirection = attitude.getRotation().applyInverseTo(direction);
+            inertialDirection = rotation.applyInverseTo(direction);
         }
 
         // Call the acceleration model to compute the acceleration
@@ -194,15 +194,15 @@ public class ParametricAcceleration implements ForceModel {
             // the acceleration direction is already defined in the inertial frame
             inertialDirection = new FieldVector3D<>(date.getField(), direction);
         } else {
-            final FieldAttitude<T> attitude;
+            final FieldRotation<T> rotation;
             if (attitudeOverride == null) {
                 // the acceleration direction is defined in spacecraft frame as set by the propagator
-                attitude = state.getAttitude();
+                rotation = state.getAttitude().getRotation();
             } else {
                 // the acceleration direction is defined in a dedicated frame
-                attitude = attitudeOverride.getAttitude(state.getOrbit(), date, state.getFrame());
+                rotation = attitudeOverride.getAttitudeRotation(state.getOrbit(), date, state.getFrame());
             }
-            inertialDirection = attitude.getRotation().applyInverseTo(direction);
+            inertialDirection = rotation.applyInverseTo(direction);
         }
 
         // Call the acceleration model to compute the acceleration
