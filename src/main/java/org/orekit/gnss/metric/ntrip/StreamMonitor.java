@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -306,8 +307,8 @@ public class StreamMonitor extends AbstractEncodedMessage implements Runnable {
                     }
                 } catch (SocketTimeoutException ste) {
                     // ignore exception, it will be handled by reconnection attempt below
-                } catch (IOException ioe) {
-                    throw new OrekitException(ioe, OrekitMessages.CANNOT_PARSE_GNSS_DATA, client.getHost());
+                } catch (IOException | URISyntaxException e) {
+                    throw new OrekitException(e, OrekitMessages.CANNOT_PARSE_GNSS_DATA, client.getHost());
                 }
 
                 // manage reconnection
