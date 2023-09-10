@@ -736,7 +736,9 @@ public class FieldNumericalPropagatorTest {
 
         final FieldAbsoluteDate<T> stopDate = initDate.shiftedBy(1000);
         CheckingHandler<T> checking = new CheckingHandler<T>(Action.STOP);
-        propagator.addEventDetector(new FieldDateDetector<>(field, stopDate).withHandler(checking));
+        @SuppressWarnings("unchecked")
+        FieldDateDetector<T> detector = new FieldDateDetector<>(field, stopDate).withHandler(checking);
+        propagator.addEventDetector(detector);
         Assertions.assertEquals(1, propagator.getEventsDetectors().size());
         checking.assertEvent(false);
         final FieldSpacecraftState<T> finalState = propagator.propagate(initDate.shiftedBy(3200));
@@ -778,7 +780,9 @@ public class FieldNumericalPropagatorTest {
                 return new FieldSpacecraftState<>(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass().subtract(200.0));
             }
         };
-        propagator.addEventDetector(new FieldDateDetector<>(field, resetDate).withHandler(checking));
+        @SuppressWarnings("unchecked")
+        FieldDateDetector<T> detector = new FieldDateDetector<>(field, resetDate).withHandler(checking);
+        propagator.addEventDetector(detector);
         checking.assertEvent(false);
         final FieldSpacecraftState<T> finalState = propagator.propagate(initDate.shiftedBy(3200));
         checking.assertEvent(true);
@@ -812,7 +816,9 @@ public class FieldNumericalPropagatorTest {
         propagator.setInitialState(initialState);
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
         CheckingHandler<T> checking = new CheckingHandler<T>(Action.RESET_DERIVATIVES);
-        propagator.addEventDetector(new FieldDateDetector<>(field, resetDate).withHandler(checking));
+        @SuppressWarnings("unchecked")
+        FieldDateDetector<T> detector = new FieldDateDetector<>(field, resetDate).withHandler(checking);
+        propagator.addEventDetector(detector);
         final double dt = 3200;
         checking.assertEvent(false);
         Assertions.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate).getReal(), 1.0e-10);
@@ -861,7 +867,9 @@ public class FieldNumericalPropagatorTest {
 
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
         CheckingHandler<T> checking = new CheckingHandler<T>(Action.CONTINUE);
-        propagator.addEventDetector(new FieldDateDetector<>(field, resetDate).withHandler(checking));
+        @SuppressWarnings("unchecked")
+        FieldDateDetector<T> detector = new FieldDateDetector<>(field, resetDate).withHandler(checking);
+        propagator.addEventDetector(detector);
         final double dt = 3200;
         checking.assertEvent(false);
         Assertions.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate).getReal(), 1.0e-10);

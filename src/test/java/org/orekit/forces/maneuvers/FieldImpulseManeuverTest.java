@@ -120,6 +120,7 @@ public class FieldImpulseManeuverTest {
         final FieldVector3D<Complex> deltaV = new FieldVector3D<>(complexField, Vector3D.PLUS_I);
         final FieldAbsoluteDate<Complex> fieldAbsoluteDate = new FieldAbsoluteDate<>(complexField,
                 AbsoluteDate.ARBITRARY_EPOCH);
+        @SuppressWarnings("unchecked")
         final FieldDateDetector<Complex> dateDetector = new FieldDateDetector<>(complexField, fieldAbsoluteDate).withThreshold(zero.add(100.));
 
         // When
@@ -143,6 +144,7 @@ public class FieldImpulseManeuverTest {
         final FieldVector3D<Complex> deltaV = new FieldVector3D<>(complexField, Vector3D.PLUS_I);
         final FieldAbsoluteDate<Complex> fieldAbsoluteDate = new FieldAbsoluteDate<>(complexField,
                 AbsoluteDate.ARBITRARY_EPOCH);
+        @SuppressWarnings("unchecked")
         final FieldDateDetector<Complex> dateDetector = new FieldDateDetector<>(complexField, fieldAbsoluteDate);
 
         // When
@@ -211,8 +213,10 @@ public class FieldImpulseManeuverTest {
         final T fieldThreshold = field.getZero().add(detector.getThreshold());
         FieldAbstractDetector<?, T> fieldDetector;
         if (detector instanceof DateDetector) {
-            fieldDetector = new FieldDateDetector<>(field,
-                                                    new FieldAbsoluteDate<>(field, ((DateDetector) detector).getDate()));
+            @SuppressWarnings("unchecked")
+            FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field,
+                                                                        new FieldAbsoluteDate<>(field, ((DateDetector) detector).getDate()));
+            fieldDetector = dateDetector;
         } else if (detector instanceof LatitudeCrossingDetector) {
             fieldDetector = new FieldLatitudeCrossingDetector<>(field,
                     ((LatitudeCrossingDetector) detector).getBody(),
@@ -433,6 +437,7 @@ public class FieldImpulseManeuverTest {
         propagator.addEventDetector(dateDetector);
         propagator.setOrbitType(OrbitType.CARTESIAN);
         final Gradient zero = field.getZero();
+        @SuppressWarnings("unchecked")
         final FieldDateDetector<Gradient> fieldDateDetector =
                         new FieldDateDetector<>(field,
                                         new FieldAbsoluteDate<>(field, dateDetector.getDate()));

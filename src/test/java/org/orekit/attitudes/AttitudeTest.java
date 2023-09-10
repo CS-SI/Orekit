@@ -24,11 +24,13 @@ import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.Utils;
 
 public class AttitudeTest {
 
     @Test
     public void testZeroRate() {
+        //        Utils.setDataRoot("regular-data");
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          new Rotation(0.48, 0.64, 0.36, 0.48, false),
                                          Vector3D.ZERO, Vector3D.ZERO);
@@ -42,6 +44,7 @@ public class AttitudeTest {
 
     @Test
     public void testShift() {
+        //Utils.setDataRoot("regular-data");
         double rate = 2 * FastMath.PI / (12 * 60);
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          Rotation.IDENTITY,
@@ -64,6 +67,7 @@ public class AttitudeTest {
 
     @Test
     public void testSpin() {
+        //Utils.setDataRoot("regular-data");
         double rate = 2 * FastMath.PI / (12 * 60);
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          new Rotation(0.48, 0.64, 0.36, 0.48, false),

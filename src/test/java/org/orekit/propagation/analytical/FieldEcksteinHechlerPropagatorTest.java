@@ -817,7 +817,9 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
         final FieldAbsoluteDate<T> stopDate = date.shiftedBy(500.0);
-        propagator.addEventDetector(new FieldDateDetector<>(field, stopDate));
+        @SuppressWarnings("unchecked")
+        FieldDateDetector<T> detector = new FieldDateDetector<>(field, stopDate);
+        propagator.addEventDetector(detector);
         FieldAbsoluteDate<T> farTarget = date.shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
         Assertions.assertEquals(0, stopDate.durationFrom(propagated.getDate()).getReal(), 1.0e-10);

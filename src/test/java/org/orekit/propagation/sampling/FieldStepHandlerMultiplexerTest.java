@@ -238,44 +238,56 @@ public class FieldStepHandlerMultiplexerTest {
         double               add60      =  3.0;
         double               rem60      = 78.0;
         FieldFixedCounter    counter60  = new FieldFixedCounter();
-        propagator.addEventDetector(new FieldDateDetector<>(field, initDate.shiftedBy(add60)).
-                                    withHandler((s, d, i) -> {
-                                        multiplexer.add(zero.newInstance(60.0), counter60);
-                                        return Action.CONTINUE;
-                                    }));
-        propagator.addEventDetector(new FieldDateDetector<>(field, initDate.shiftedBy(rem60)).
-                                    withHandler((s, d, i) -> {
-                                        multiplexer.remove(counter60);
-                                        return Action.CONTINUE;
-                                    }));
+        @SuppressWarnings("unchecked")
+        FieldDateDetector<Binary64> d1 = new FieldDateDetector<>(field, initDate.shiftedBy(add60)).
+                                         withHandler((s, d, i) -> {
+                                             multiplexer.add(zero.newInstance(60.0), counter60);
+                                            return Action.CONTINUE;
+                                         });
+        propagator.addEventDetector(d1);
+        @SuppressWarnings("unchecked")
+        FieldDateDetector<Binary64> d2 = new FieldDateDetector<>(field, initDate.shiftedBy(rem60)).
+                                         withHandler((s, d, i) -> {
+                                             multiplexer.remove(counter60);
+                                             return Action.CONTINUE;
+                                         });
+        propagator.addEventDetector(d2);
 
         double               addVar     =  5.0;
         double               remVar     =  7.0;
         FieldVariableCounter counterVar = new FieldVariableCounter();
-        propagator.addEventDetector(new FieldDateDetector<>(field, initDate.shiftedBy(addVar)).
-                                    withHandler((s, d, i) -> {
-                                        multiplexer.add(counterVar);
-                                        return Action.CONTINUE;
-                                    }));
-        propagator.addEventDetector(new FieldDateDetector<>(field, initDate.shiftedBy(remVar)).
-                                    withHandler((s, d, i) -> {
-                                        multiplexer.remove(counterVar);
-                                        return Action.CONTINUE;
-                                    }));
+        @SuppressWarnings("unchecked")
+        FieldDateDetector<Binary64> d3 = new FieldDateDetector<>(field, initDate.shiftedBy(addVar)).
+                                         withHandler((s, d, i) -> {
+                                             multiplexer.add(counterVar);
+                                             return Action.CONTINUE;
+                                         });
+        propagator.addEventDetector(d3);
+        @SuppressWarnings("unchecked")
+        FieldDateDetector<Binary64> d4 = new FieldDateDetector<>(field, initDate.shiftedBy(remVar)).
+                                         withHandler((s, d, i) -> {
+                                             multiplexer.remove(counterVar);
+                                             return Action.CONTINUE;
+                                         });
+        propagator.addEventDetector(d4);
 
         double               add10      =  6.0;
         double               rem10      = 82.0;
         FieldFixedCounter    counter10  = new FieldFixedCounter();
-        propagator.addEventDetector(new FieldDateDetector<>(field, initDate.shiftedBy(add10)).
-                                    withHandler((s, d, i) -> {
-                                        multiplexer.add(zero.newInstance(10.0), counter10);
-                                        return Action.CONTINUE;
-                                    }));
-        propagator.addEventDetector(new FieldDateDetector<>(field, initDate.shiftedBy(rem10)).
-                                    withHandler((s, d, i) -> {
-                                        multiplexer.clear();
-                                        return Action.CONTINUE;
-                                    }));
+        @SuppressWarnings("unchecked")
+        FieldDateDetector<Binary64> d5 = new FieldDateDetector<>(field, initDate.shiftedBy(add10)).
+                                         withHandler((s, d, i) -> {
+                                             multiplexer.add(zero.newInstance(10.0), counter10);
+                                             return Action.CONTINUE;
+                                         });
+        propagator.addEventDetector(d5);
+        @SuppressWarnings("unchecked")
+        FieldDateDetector<Binary64> d6 = new FieldDateDetector<>(field, initDate.shiftedBy(rem10)).
+                                         withHandler((s, d, i) -> {
+                                             multiplexer.clear();
+                                             return Action.CONTINUE;
+                                         });
+        propagator.addEventDetector(d6);
 
         // full run, which will add and remove step handlers on the fly
         propagator.propagate(initDate.shiftedBy(90.0));

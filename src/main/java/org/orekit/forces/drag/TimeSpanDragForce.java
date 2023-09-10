@@ -332,6 +332,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         final AbsoluteDate[] transitionDates = getTransitionDates();
 
         // Initialize the date detector
+        @SuppressWarnings("unchecked")
         final FieldDateDetector<T> datesDetector =
                         new FieldDateDetector<>(field, new FieldAbsoluteDate<>(field, transitionDates[0])).
                         withMaxCheck(60.0).

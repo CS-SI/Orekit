@@ -155,6 +155,7 @@ public interface EventDetectorsProvider {
 
             // Initialize the date detector
             // Max check set to half the shortest duration between 2 consecutive dates
+            @SuppressWarnings("unchecked")
             final FieldDateDetector<T> datesDetector =
                             new FieldDateDetector<>(field, new FieldAbsoluteDate<>(field, transitionDates.get(0))).
                             withMaxCheck(0.5 * shortestDuration).
