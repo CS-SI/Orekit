@@ -23,6 +23,8 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.linear.FieldMatrixPreservingVisitor;
 import org.hipparchus.linear.MatrixUtils;
@@ -40,6 +42,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -247,6 +250,79 @@ public class FieldKeplerianOrbitTest {
     @Test
     public void testNormalize() {
         doTestNormalize(Binary64Field.getInstance());
+    }
+
+    @Test
+    void testFromKeplerianOrbitWithDerivatives() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final KeplerianOrbit expectedOrbit = createOrbitForTestFromKeplerianOrbit(true);
+        // WHEN
+        final FieldKeplerianOrbit<Complex> fieldOrbit = new FieldKeplerianOrbit<>(field, expectedOrbit);
+        // THEN
+        compareFieldOrbitToOrbit(fieldOrbit, expectedOrbit);
+    }
+
+    @Test
+    void testFromKeplerianOrbitWithoutDerivatives() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final KeplerianOrbit expectedOrbit = createOrbitForTestFromKeplerianOrbit(false);
+        // WHEN
+        final FieldKeplerianOrbit<Complex> fieldOrbit = new FieldKeplerianOrbit<>(field, expectedOrbit);
+        // THEN
+        compareFieldOrbitToOrbit(fieldOrbit, expectedOrbit);
+    }
+
+    private KeplerianOrbit createOrbitForTestFromKeplerianOrbit(final boolean withDerivatives) {
+        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame frame = FramesFactory.getEME2000();
+        final double a = 10000.e3;
+        final double e = 1e-4;
+        final double i = 1;
+        final double raan = 3.;
+        final double aop = -2;
+        final double f = 0.5;
+        if (withDerivatives) {
+            final double derivative = 0.;
+            return new KeplerianOrbit(a, e, i, aop, raan, f, derivative, derivative, derivative, derivative, derivative,
+                    derivative, positionAngle, frame, date, mu);
+        } else {
+            return new KeplerianOrbit(a, e, i, aop, raan, f, positionAngle, frame, date, mu);
+        }
+    }
+
+    private <T extends CalculusFieldElement<T>> void compareFieldOrbitToOrbit(final FieldKeplerianOrbit<T> fieldOrbit,
+                                                                              final KeplerianOrbit orbit) {
+        Assertions.assertEquals(orbit.getFrame(), fieldOrbit.getFrame());
+        Assertions.assertEquals(orbit.getMu(), fieldOrbit.getMu().getReal());
+        Assertions.assertEquals(orbit.getDate(), fieldOrbit.getDate().toAbsoluteDate());
+        Assertions.assertEquals(orbit.getA(), fieldOrbit.getA().getReal(), 1e-6);
+        Assertions.assertEquals(orbit.getE(), fieldOrbit.getE().getReal(), 1e-10);
+        final double toleranceAngle = 1e-10;
+        Assertions.assertEquals(orbit.getI(), fieldOrbit.getI().getReal(), toleranceAngle);
+        Assertions.assertEquals(orbit.getRightAscensionOfAscendingNode(),
+                fieldOrbit.getRightAscensionOfAscendingNode().getReal(), toleranceAngle);
+        Assertions.assertEquals(orbit.getPerigeeArgument(), fieldOrbit.getPerigeeArgument().getReal(), toleranceAngle);
+        Assertions.assertEquals(orbit.getTrueAnomaly(), fieldOrbit.getTrueAnomaly().getReal(), toleranceAngle);
+        Assertions.assertEquals(orbit.hasDerivatives(), fieldOrbit.hasDerivatives());
+        if (orbit.hasDerivatives()) {
+            Assertions.assertEquals(orbit.getADot(), fieldOrbit.getADot().getReal());
+            Assertions.assertEquals(orbit.getEDot(), fieldOrbit.getEDot().getReal());
+            Assertions.assertEquals(orbit.getIDot(), fieldOrbit.getIDot().getReal());
+            Assertions.assertEquals(orbit.getRightAscensionOfAscendingNodeDot(),
+                    fieldOrbit.getRightAscensionOfAscendingNodeDot().getReal());
+            Assertions.assertEquals(orbit.getPerigeeArgumentDot(), fieldOrbit.getPerigeeArgumentDot().getReal());
+            Assertions.assertEquals(orbit.getTrueAnomalyDot(), fieldOrbit.getTrueAnomalyDot().getReal());
+        } else {
+            Assertions.assertNull(fieldOrbit.getADot());
+            Assertions.assertNull(fieldOrbit.getEDot());
+            Assertions.assertNull(fieldOrbit.getIDot());
+            Assertions.assertNull(fieldOrbit.getRightAscensionOfAscendingNodeDot());
+            Assertions.assertNull(fieldOrbit.getPerigeeArgumentDot());
+            Assertions.assertNull(fieldOrbit.getTrueAnomalyDot());
+        }
     }
 
     private <T extends CalculusFieldElement<T>> void doTestKeplerianToKeplerian(final Field<T> field) {

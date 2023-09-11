@@ -19,6 +19,7 @@ package org.orekit.orbits;
 import java.util.Arrays;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -34,11 +35,11 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-/** Enumerate for {@link Orbit orbital} parameters types.
+/** Enumerate for {@link Orbit} and {@link FieldOrbit} parameters types.
  */
 public enum OrbitType {
 
-    /** Type for propagation in {@link CartesianOrbit Cartesian parameters}. */
+    /** Type for orbital representation in {@link CartesianOrbit} and {@link FieldCartesianOrbit} parameters. */
     CARTESIAN {
 
         /** {@inheritDoc} */
@@ -153,6 +154,13 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
+        public <T extends CalculusFieldElement<T>> FieldCartesianOrbit<T> convertToFieldOrbit(final Field<T> field,
+                                                                                              final Orbit orbit) {
+            return new FieldCartesianOrbit<>(field, CARTESIAN.convertType(orbit));
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type) {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
@@ -183,7 +191,7 @@ public enum OrbitType {
 
     },
 
-    /** Type for propagation in {@link CircularOrbit circular parameters}. */
+    /** Type for orbital representation in {@link CircularOrbit} and {@link FieldCircularOrbit} parameters. */
     CIRCULAR {
 
         /** {@inheritDoc} */
@@ -271,7 +279,7 @@ public enum OrbitType {
                     stateVectorDot[4] = circularOrbit.getRightAscensionOfAscendingNodeDot();
                     stateVectorDot[5] = circularOrbit.getAlphaDot(type);
                 } else {
-                    Arrays.fill(stateVectorDot, 0, 6, orbit.getDate().getField().getZero().add(Double.NaN));
+                    Arrays.fill(stateVectorDot, 0, 6, orbit.getZero().add(Double.NaN));
                 }
             }
 
@@ -296,6 +304,13 @@ public enum OrbitType {
                                                 stateVectorDot[3], stateVectorDot[4], stateVectorDot[5],
                                                 type, frame, date, mu);
             }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldCircularOrbit<T> convertToFieldOrbit(final Field<T> field,
+                                                                                             final Orbit orbit) {
+            return new FieldCircularOrbit<>(field, CIRCULAR.convertType(orbit));
         }
 
         /** {@inheritDoc} */
@@ -401,7 +416,7 @@ public enum OrbitType {
 
     },
 
-    /** Type for propagation in {@link EquinoctialOrbit equinoctial parameters}. */
+    /** Type for orbital representation in {@link EquinoctialOrbit} and {@link FieldEquinoctialOrbit} parameters. */
     EQUINOCTIAL {
 
         /** {@inheritDoc} */
@@ -491,7 +506,7 @@ public enum OrbitType {
                     stateVectorDot[4] = equinoctialOrbit.getHyDot();
                     stateVectorDot[5] = equinoctialOrbit.getLDot(type);
                 } else {
-                    Arrays.fill(stateVectorDot, 0, 6, orbit.getDate().getField().getZero().add(Double.NaN));
+                    Arrays.fill(stateVectorDot, 0, 6, orbit.getZero().add(Double.NaN));
                 }
             }
 
@@ -517,6 +532,13 @@ public enum OrbitType {
                                                    stateVectorDot[3], stateVectorDot[4], stateVectorDot[5],
                                                    type, frame, date, mu);
             }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> convertToFieldOrbit(final Field<T> field,
+                                                                                                final Orbit orbit) {
+            return new FieldEquinoctialOrbit<>(field, EQUINOCTIAL.convertType(orbit));
         }
 
         /** {@inheritDoc} */
@@ -622,7 +644,7 @@ public enum OrbitType {
 
     },
 
-    /** Type for propagation in {@link KeplerianOrbit Keplerian parameters}. */
+    /** Type for orbital representation in {@link KeplerianOrbit} and {@link FieldKeplerianOrbit} parameters. */
     KEPLERIAN {
 
         /** {@inheritDoc} */
@@ -711,7 +733,7 @@ public enum OrbitType {
                     stateVectorDot[4] = keplerianOrbit.getRightAscensionOfAscendingNodeDot();
                     stateVectorDot[5] = keplerianOrbit.getAnomalyDot(type);
                 } else {
-                    Arrays.fill(stateVectorDot, 0, 6, orbit.getDate().getField().getZero().add(Double.NaN));
+                    Arrays.fill(stateVectorDot, 0, 6, orbit.getZero().add(Double.NaN));
                 }
             }
 
@@ -737,6 +759,13 @@ public enum OrbitType {
                                                  stateVectorDot[3], stateVectorDot[4], stateVectorDot[5],
                                                  type, frame, date, mu);
             }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldKeplerianOrbit<T> convertToFieldOrbit(final Field<T> field,
+                                                                                              final Orbit orbit) {
+            return new FieldKeplerianOrbit<>(field, KEPLERIAN.convertType(orbit));
         }
 
         /** {@inheritDoc} */
@@ -958,7 +987,7 @@ public enum OrbitType {
      * @param frame frame in which integration is performed
      * @return orbit corresponding to the flat array as a space dynamics object
      */
-    public abstract Orbit mapArrayToOrbit(double[] array, double arrayDot[], PositionAngle type,
+    public abstract Orbit mapArrayToOrbit(double[] array, double[] arrayDot, PositionAngle type,
                                           AbsoluteDate date, double mu, Frame frame);
 
     /** Convert an orbit to the instance type.
@@ -988,7 +1017,7 @@ public enum OrbitType {
      * (it can be null if derivatives are not desired, and it can have more than 6 elements, extra elements are untouched)
      */
     public abstract <T extends CalculusFieldElement<T>>void mapOrbitToArray(FieldOrbit<T> orbit, PositionAngle type,
-                                                                        T[] stateVector, T[] stateVectorDot);
+                                                                            T[] stateVector, T[] stateVectorDot);
 
 
     /** Convert state array to orbital parameters.
@@ -1015,6 +1044,16 @@ public enum OrbitType {
                                                                                       FieldAbsoluteDate<T> date,
                                                                                       T mu, Frame frame);
 
+    /** Convert an orbit to the "Fielded" instance type.
+     * @param <T> CalculusFieldElement used
+     * @param field CalculusField
+     * @param orbit base orbit
+     * @return converted FieldOrbit with type guaranteed to match (so it can be cast safely)
+     * @since 12.0
+     */
+    public abstract <T extends CalculusFieldElement<T>> FieldOrbit<T> convertToFieldOrbit(Field<T> field,
+                                                                                           Orbit orbit);
+
     /** Get parameters drivers initialized from a reference orbit.
      * @param dP user specified position error
      * @param orbit reference orbit
@@ -1040,7 +1079,8 @@ public enum OrbitType {
      * @return normalized orbit (the type is guaranteed to match {@link OrbitType})
      * @since 11.1
      */
-    public abstract <T extends CalculusFieldElement<T>> FieldOrbit<T> normalize(FieldOrbit<T> orbit, FieldOrbit<T> reference);
+    public abstract <T extends CalculusFieldElement<T>> FieldOrbit<T> normalize(FieldOrbit<T> orbit,
+                                                                                FieldOrbit<T> reference);
 
     /** Normalize one orbit with respect to a reference one.
      * <p>

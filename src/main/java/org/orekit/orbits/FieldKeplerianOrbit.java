@@ -20,6 +20,7 @@ package org.orekit.orbits;
 import java.lang.reflect.Array;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
@@ -120,13 +121,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** Partial Cartesian coordinates (position and velocity are valid, acceleration may be missing). */
     private FieldPVCoordinates<T> partialPV;
 
-    /** Identity element. */
-    private final T one;
-
-    /** Zero element. */
-    private final T zero;
-
-    /** Third Canonical Vector. */
+    /** PThird Canonical Vector. */
     private final FieldVector3D<T> PLUS_K;
 
     /** Creates a new instance.
@@ -203,14 +198,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         this.raan    =    raan;
         this.raanDot =    raanDot;
 
-        /** Identity element. */
-        this.one = a.getField().getOne();
-
-        /** Zero element. */
-        this.zero = a.getField().getZero();
-
-        /**Third canonical vector. */
-        this.PLUS_K = FieldVector3D.getPlusK(a.getField());
+        this.PLUS_K = FieldVector3D.getPlusK(a.getField());  // third canonical vector
 
         if (hasDerivatives()) {
             final FieldUnivariateDerivative1<T> eUD        = new FieldUnivariateDerivative1<>(e, eDot);
@@ -312,14 +300,8 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         super(pvCoordinates, frame, mu);
 
-        // identity element
-        this.one = pvCoordinates.getPosition().getX().getField().getOne();
-
-        // zero element
-        this.zero = one.getField().getZero();
-
         // third canonical vector
-        this.PLUS_K = FieldVector3D.getPlusK(one.getField());
+        this.PLUS_K = FieldVector3D.getPlusK(getOne().getField());
 
         // compute inclination
         final FieldVector3D<T> momentum = pvCoordinates.getMomentum();
@@ -343,7 +325,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final T muA = a.multiply(mu);
 
         // compute true anomaly
-        if (a.getReal() > 0) {
+        if (isElliptical()) {
             // elliptic or circular orbit
             final T eSE = FieldVector3D.dotProduct(pvP, pvV).divide(muA.sqrt());
             final T eCE = rV2OnMu.subtract(1);
@@ -361,7 +343,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         checkParameterRangeInclusive(ECCENTRICITY, e.getReal(), 0.0, Double.POSITIVE_INFINITY);
 
         // compute perigee argument
-        final FieldVector3D<T> node = new FieldVector3D<>(raan, zero);
+        final FieldVector3D<T> node = new FieldVector3D<>(raan, getZero());
         final T px = FieldVector3D.dotProduct(pvP, node);
         final T py = FieldVector3D.dotProduct(pvP, FieldVector3D.crossProduct(momentum, node)).divide(m2.sqrt());
         pa = py.atan2(px).subtract(v);
@@ -436,6 +418,35 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      */
     public FieldKeplerianOrbit(final FieldOrbit<T> op) {
         this(op.getPVCoordinates(), op.getFrame(), op.getMu(), op.hasDerivatives());
+    }
+
+    /** Constructor from Field and KeplerianOrbit.
+     * <p>Build a FieldKeplerianOrbit from non-Field KeplerianOrbit.</p>
+     * @param field CalculusField to base object on
+     * @param op non-field orbit with only "constant" terms
+     * @since 12.0
+     */
+    public FieldKeplerianOrbit(final Field<T> field, final KeplerianOrbit op) {
+        this(field.getZero().add(op.getA()), field.getZero().add(op.getE()), field.getZero().add(op.getI()),
+                field.getZero().add(op.getPerigeeArgument()), field.getZero().add(op.getRightAscensionOfAscendingNode()),
+                field.getZero().add(op.getTrueAnomaly()),
+                (op.hasDerivatives()) ? field.getZero().add(op.getADot()) : null,
+                (op.hasDerivatives()) ? field.getZero().add(op.getEDot()) : null,
+                (op.hasDerivatives()) ? field.getZero().add(op.getIDot()) : null,
+                (op.hasDerivatives()) ? field.getZero().add(op.getPerigeeArgumentDot()) : null,
+                (op.hasDerivatives()) ? field.getZero().add(op.getRightAscensionOfAscendingNodeDot()) : null,
+                (op.hasDerivatives()) ? field.getZero().add(op.getTrueAnomalyDot()) : null, PositionAngle.TRUE,
+                op.getFrame(), new FieldAbsoluteDate<>(field, op.getDate()), field.getZero().add(op.getMu()));
+    }
+
+    /** Constructor from Field and Orbit.
+     * <p>Build a FieldKeplerianOrbit from any non-Field Orbit.</p>
+     * @param field CalculusField to base object on
+     * @param op non-field orbit with only "constant" terms
+     * @since 12.0
+     */
+    public FieldKeplerianOrbit(final Field<T> field, final Orbit op) {
+        this(field, new KeplerianOrbit(op));
     }
 
     /** {@inheritDoc} */
@@ -655,7 +666,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     public T getHx() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
-            return this.zero.add(Double.NaN);
+            return getZero().add(Double.NaN);
         }
         return  raan.cos().multiply(i.divide(2).tan());
     }
@@ -669,7 +680,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
-            return this.zero.add(Double.NaN);
+            return getZero().add(Double.NaN);
         }
 
         final FieldUnivariateDerivative1<T> iUD    = new FieldUnivariateDerivative1<>(i,    iDot);
@@ -682,7 +693,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     public T getHy() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
-            return this.zero.add(Double.NaN);
+            return getZero().add(Double.NaN);
         }
         return  raan.sin().multiply(i.divide(2).tan());
     }
@@ -696,7 +707,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
-            return this.zero.add(Double.NaN);
+            return getZero().add(Double.NaN);
         }
 
         final FieldUnivariateDerivative1<T> iUD    = new FieldUnivariateDerivative1<>(i,    iDot);
@@ -783,7 +794,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         final FieldVector3D<T>[] axes = referenceAxes();
 
-        if (a.getReal() > 0) {
+        if (isElliptical()) {
 
             // elliptical case
 
@@ -864,7 +875,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     protected FieldVector3D<T> initPosition() {
         final FieldVector3D<T>[] axes = referenceAxes();
 
-        if (a.getReal() > 0) {
+        if (isElliptical()) {
 
             // elliptical case
 
@@ -914,7 +925,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     public FieldKeplerianOrbit<T> shiftedBy(final double dt) {
-        return shiftedBy(getDate().getField().getZero().add(dt));
+        return shiftedBy(getZero().add(dt));
     }
 
     /** {@inheritDoc} */
@@ -932,15 +943,15 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
             // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
             keplerianShifted.computePVWithoutA();
-            final FieldVector3D<T> fixedP   = new FieldVector3D<>(one, keplerianShifted.partialPV.getPosition(),
+            final FieldVector3D<T> fixedP   = new FieldVector3D<>(getOne(), keplerianShifted.partialPV.getPosition(),
                                                                   dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
             final T   fixedR2 = fixedP.getNormSq();
             final T   fixedR  = fixedR2.sqrt();
-            final FieldVector3D<T> fixedV  = new FieldVector3D<>(one, keplerianShifted.partialPV.getVelocity(),
+            final FieldVector3D<T> fixedV  = new FieldVector3D<>(getOne(), keplerianShifted.partialPV.getVelocity(),
                                                                  dt, nonKeplerianAcceleration);
             final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(getMu().negate()),
                                                                  keplerianShifted.partialPV.getPosition(),
-                                                                 one, nonKeplerianAcceleration);
+                                                                 getOne(), nonKeplerianAcceleration);
 
             // build a new orbit, taking non-Keplerian acceleration into account
             return new FieldKeplerianOrbit<>(new TimeStampedFieldPVCoordinates<>(keplerianShifted.getDate(),
@@ -956,7 +967,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     protected T[][] computeJacobianMeanWrtCartesian() {
-        if (a.getReal() > 0) {
+        if (isElliptical()) {
             return computeJacobianMeanWrtCartesianElliptical();
         } else {
             return computeJacobianMeanWrtCartesianHyperbolic();
@@ -1020,8 +1031,8 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         // da
         final FieldVector3D<T> vectorAR = new FieldVector3D<>(a2.multiply(2).divide(r3), position);
         final FieldVector3D<T> vectorARDot = velocity.scalarMultiply(a2.multiply(mu.divide(2.).reciprocal()));
-        fillHalfRow(this.one, vectorAR,    jacobian[0], 0);
-        fillHalfRow(this.one, vectorARDot, jacobian[0], 3);
+        fillHalfRow(getOne(), vectorAR,    jacobian[0], 0);
+        fillHalfRow(getOne(), vectorARDot, jacobian[0], 3);
 
         // de
         final T factorER3 = pv.divide(twoA);
@@ -1031,8 +1042,8 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final FieldVector3D<T> vectorERDot = new FieldVector3D<>(sinE.divide(sqrtMuA), position,
                                                                  cosE.multiply(mu.divide(2.).reciprocal()).multiply(r), velocity,
                                                                  factorER3.negate().multiply(sinE).divide(sqrtMuA), vectorARDot);
-        fillHalfRow(this.one, vectorER,    jacobian[1], 0);
-        fillHalfRow(this.one, vectorERDot, jacobian[1], 3);
+        fillHalfRow(getOne(), vectorER,    jacobian[1], 0);
+        fillHalfRow(getOne(), vectorERDot, jacobian[1], 3);
 
         // dE / dr (Eccentric anomaly)
         final T coefE = cosE.divide(e.multiply(sqrtMuA));
@@ -1077,9 +1088,9 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final T i3 =  factorI1.multiply(mz).multiply(e).divide(oMe2);
         final T i4 = cosI.multiply(sinPA);
         final T i5 = cosI.multiply(cosPA);
-        fillHalfRow(i1, new FieldVector3D<>(vy, vx.negate(), this.zero), i2, vectorAR, i3, vectorER, i4, s, i5, t,
+        fillHalfRow(i1, new FieldVector3D<>(vy, vx.negate(), getZero()), i2, vectorAR, i3, vectorER, i4, s, i5, t,
                     jacobian[2], 0);
-        fillHalfRow(i1, new FieldVector3D<>(py.negate(), px, this.zero), i2, vectorARDot, i3, vectorERDot, i4, sDot, i5, tDot,
+        fillHalfRow(i1, new FieldVector3D<>(py.negate(), px, getZero()), i2, vectorARDot, i3, vectorERDot, i4, sDot, i5, tDot,
                     jacobian[2], 3);
 
         // dpa
@@ -1088,11 +1099,11 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         // dRaan
         final T factorRaanR = (a.multiply(mu).multiply(oMe2).multiply(sinI).multiply(sinI)).reciprocal();
-        fillHalfRow( factorRaanR.negate().multiply(my), new FieldVector3D<>(zero, vz, vy.negate()),
-                     factorRaanR.multiply(mx), new FieldVector3D<>(vz.negate(), zero,  vx),
+        fillHalfRow( factorRaanR.negate().multiply(my), new FieldVector3D<>(getZero(), vz, vy.negate()),
+                     factorRaanR.multiply(mx), new FieldVector3D<>(vz.negate(), getZero(),  vx),
                      jacobian[4], 0);
-        fillHalfRow(factorRaanR.negate().multiply(my), new FieldVector3D<>(zero, pz.negate(),  py),
-                     factorRaanR.multiply(mx), new FieldVector3D<>(pz, zero, px.negate()),
+        fillHalfRow(factorRaanR.negate().multiply(my), new FieldVector3D<>(getZero(), pz.negate(),  py),
+                     factorRaanR.multiply(mx), new FieldVector3D<>(pz, getZero(), px.negate()),
                      jacobian[4], 3);
 
         // dM
@@ -1149,18 +1160,18 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         // da
         final FieldVector3D<T> vectorAR = new FieldVector3D<>(a2.multiply(-2).divide(r3), position);
         final FieldVector3D<T> vectorARDot = velocity.scalarMultiply(a2.multiply(-2).divide(mu));
-        fillHalfRow(this.one.negate(), vectorAR,    jacobian[0], 0);
-        fillHalfRow(this.one.negate(), vectorARDot, jacobian[0], 3);
+        fillHalfRow(getOne().negate(), vectorAR,    jacobian[0], 0);
+        fillHalfRow(getOne().negate(), vectorARDot, jacobian[0], 3);
 
         // differentials of the momentum
         final T m      = momentum.getNorm();
         final T oOm    = m.reciprocal();
-        final FieldVector3D<T> dcXP = new FieldVector3D<>(this.zero, vz, vy.negate());
-        final FieldVector3D<T> dcYP = new FieldVector3D<>(vz.negate(),   this.zero,  vx);
-        final FieldVector3D<T> dcZP = new FieldVector3D<>( vy, vx.negate(),   this.zero);
-        final FieldVector3D<T> dcXV = new FieldVector3D<>(  this.zero,  z.negate(),   y);
-        final FieldVector3D<T> dcYV = new FieldVector3D<>(  z,   this.zero,  x.negate());
-        final FieldVector3D<T> dcZV = new FieldVector3D<>( y.negate(),   x,   this.zero);
+        final FieldVector3D<T> dcXP = new FieldVector3D<>(getZero(), vz, vy.negate());
+        final FieldVector3D<T> dcYP = new FieldVector3D<>(vz.negate(),   getZero(),  vx);
+        final FieldVector3D<T> dcZP = new FieldVector3D<>( vy, vx.negate(),   getZero());
+        final FieldVector3D<T> dcXV = new FieldVector3D<>(  getZero(),  z.negate(),   y);
+        final FieldVector3D<T> dcYV = new FieldVector3D<>(  z,   getZero(),  x.negate());
+        final FieldVector3D<T> dcZV = new FieldVector3D<>( y.negate(),   x,   getZero());
         final FieldVector3D<T> dCP  = new FieldVector3D<>(mx.multiply(oOm), dcXP, my.multiply(oOm), dcYP, mz.multiply(oOm), dcZP);
         final FieldVector3D<T> dCV  = new FieldVector3D<>(mx.multiply(oOm), dcXV, my.multiply(oOm), dcYV, mz.multiply(oOm), dcZV);
 
@@ -1191,7 +1202,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final T cP5     =  r2.multiply(sinI).multiply(sinI).negate().reciprocal();
         final T cP6     = z.multiply(cP5);
         final T cP7     = cP3.multiply(cP5);
-        final FieldVector3D<T> dacP  = new FieldVector3D<>(cP1, dcXP, cP2, dcYP, cP4, dCP, oOm, new FieldVector3D<>(my.negate(), mx, this.zero));
+        final FieldVector3D<T> dacP  = new FieldVector3D<>(cP1, dcXP, cP2, dcYP, cP4, dCP, oOm, new FieldVector3D<>(my.negate(), mx, getZero()));
         final FieldVector3D<T> dacV  = new FieldVector3D<>(cP1, dcXV, cP2, dcYV, cP4, dCV);
         final FieldVector3D<T> dpoP  = new FieldVector3D<>(cP6, dacP, cP7, this.PLUS_K);
         final FieldVector3D<T> dpoV  = new FieldVector3D<>(cP6, dacV);
@@ -1203,8 +1214,8 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final FieldVector3D<T> dreV  = new FieldVector3D<>(mOMu, position, pv.divide(mu), dCV);
         final FieldVector3D<T> davP  = new FieldVector3D<>(resOre2.negate(), dpP, recOre2, dreP, resOre2.divide(r), position);
         final FieldVector3D<T> davV  = new FieldVector3D<>(resOre2.negate(), dpV, recOre2, dreV);
-        fillHalfRow(this.one, dpoP, this.one.negate(), davP, jacobian[3], 0);
-        fillHalfRow(this.one, dpoV, this.one.negate(), davV, jacobian[3], 3);
+        fillHalfRow(getOne(), dpoP, getOne().negate(), davP, jacobian[3], 0);
+        fillHalfRow(getOne(), dpoV, getOne().negate(), davV, jacobian[3], 3);
 
         // dRAAN
         final T cO0 = cI1.multiply(cI1);
@@ -1223,8 +1234,8 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final FieldVector3D<T> dbuV = new FieldVector3D<>(oObux.multiply(mu.divide(2.)), vectorARDot, m.multiply(oObux), dCV);
         final FieldVector3D<T> dcuP = new FieldVector3D<>(oObux, velocity, scasbu.negate().multiply(oObux), dbuP);
         final FieldVector3D<T> dcuV = new FieldVector3D<>(oObux, position, scasbu.negate().multiply(oObux), dbuV);
-        fillHalfRow(this.one, dauP, e.negate().divide(rOa.add(1)), dcuP, jacobian[5], 0);
-        fillHalfRow(this.one, dauV, e.negate().divide(rOa.add(1)), dcuV, jacobian[5], 3);
+        fillHalfRow(getOne(), dauP, e.negate().divide(rOa.add(1)), dcuP, jacobian[5], 0);
+        fillHalfRow(getOne(), dauV, e.negate().divide(rOa.add(1)), dcuV, jacobian[5], 3);
 
         return jacobian;
 
@@ -1232,7 +1243,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     protected T[][] computeJacobianEccentricWrtCartesian() {
-        if (a.getReal() > 0) {
+        if (isElliptical()) {
             return computeJacobianEccentricWrtCartesianElliptical();
         } else {
             return computeJacobianEccentricWrtCartesianHyperbolic();
@@ -1306,7 +1317,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     protected T[][] computeJacobianTrueWrtCartesian() {
-        if (a.getReal() > 0) {
+        if (isElliptical()) {
             return computeJacobianTrueWrtCartesianElliptical();
         } else {
             return computeJacobianTrueWrtCartesianHyperbolic();

@@ -17,6 +17,7 @@
 package org.orekit.utils;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -89,6 +90,15 @@ public class TimeStampedFieldPVCoordinates<T extends CalculusFieldElement<T>>
               pv.getVelocity(),
               pv.getAcceleration());
         this.date = date;
+    }
+
+    /** Constructor from Field and TimeStampedPVCoordinates.
+     * <p>Build a TimeStampedFieldPVCoordinates from non-Field one.</p>
+     * @param field CalculusField to base object on
+     * @param pv non-field, time-stamped Position-Velocity coordinates
+     */
+    public TimeStampedFieldPVCoordinates(final Field<T> field, final TimeStampedPVCoordinates pv) {
+        this(pv.getDate(), new FieldPVCoordinates<T>(field, pv));
     }
 
     /** Multiplicative constructor
