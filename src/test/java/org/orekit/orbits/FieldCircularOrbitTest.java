@@ -23,6 +23,8 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.FieldMatrixPreservingVisitor;
@@ -40,6 +42,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -206,6 +209,78 @@ public class FieldCircularOrbitTest {
     @Test
     public void testNormalize() {
         doTestNormalize(Binary64Field.getInstance());
+    }
+
+    @Test
+    void testFromCircularOrbitWithDerivatives() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final CircularOrbit expectedOrbit = createOrbitTestFromCircularOrbit(true);
+        // WHEN
+        final FieldCircularOrbit<Complex> fieldOrbit = new FieldCircularOrbit<>(field, expectedOrbit);
+        // THEN
+        compareFieldOrbitToOrbit(expectedOrbit, fieldOrbit);
+    }
+
+    @Test
+    void testFromCircularOrbitWithoutDerivatives() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final CircularOrbit expectedOrbit = createOrbitTestFromCircularOrbit(false);
+        // WHEN
+        final FieldCircularOrbit<Complex> fieldOrbit = new FieldCircularOrbit<>(field, expectedOrbit);
+        // THEN
+        compareFieldOrbitToOrbit(expectedOrbit, fieldOrbit);
+    }
+
+    private CircularOrbit createOrbitTestFromCircularOrbit(final boolean withDerivatives) {
+        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame frame = FramesFactory.getEME2000();
+        final double a = 10000.e3;
+        final double ex = 1e-4;
+        final double ey = 1e-3;
+        final double i = 1.;
+        final double raan = -2.;
+        final double alphaV = 0.5;
+        if (withDerivatives) {
+            final double derivative = 0.;
+            return new CircularOrbit(a, ex, ey, i, raan, alphaV, derivative, derivative, derivative, derivative,
+                    derivative, derivative, positionAngle, frame, date, mu);
+        } else {
+            return new CircularOrbit(a, ex, ey, i, raan, alphaV, positionAngle, frame, date, mu);
+        }
+    }
+
+    private <T extends CalculusFieldElement<T>> void compareFieldOrbitToOrbit(final CircularOrbit orbit,
+                                                                              final FieldCircularOrbit<T> fieldOrbit) {
+        Assertions.assertEquals(orbit.getFrame(), fieldOrbit.getFrame());
+        Assertions.assertEquals(orbit.getMu(), fieldOrbit.getMu().getReal());
+        Assertions.assertEquals(orbit.getDate(), fieldOrbit.getDate().toAbsoluteDate());
+        Assertions.assertEquals(orbit.getA(), fieldOrbit.getA().getReal());
+        Assertions.assertEquals(orbit.getCircularEx(), fieldOrbit.getCircularEx().getReal());
+        Assertions.assertEquals(orbit.getCircularEy(), fieldOrbit.getCircularEy().getReal());
+        Assertions.assertEquals(orbit.getRightAscensionOfAscendingNode(),
+                fieldOrbit.getRightAscensionOfAscendingNode().getReal());
+        Assertions.assertEquals(orbit.getI(), fieldOrbit.getI().getReal());
+        Assertions.assertEquals(orbit.getAlphaV(), fieldOrbit.getAlphaV().getReal());
+        Assertions.assertEquals(orbit.hasDerivatives(), fieldOrbit.hasDerivatives());
+        if (orbit.hasDerivatives()) {
+            Assertions.assertEquals(orbit.getADot(), fieldOrbit.getADot().getReal());
+            Assertions.assertEquals(orbit.getCircularExDot(), fieldOrbit.getCircularExDot().getReal());
+            Assertions.assertEquals(orbit.getCircularEyDot(), fieldOrbit.getCircularEyDot().getReal());
+            Assertions.assertEquals(orbit.getRightAscensionOfAscendingNodeDot(),
+                    fieldOrbit.getRightAscensionOfAscendingNodeDot().getReal());
+            Assertions.assertEquals(orbit.getIDot(), fieldOrbit.getIDot().getReal());
+            Assertions.assertEquals(orbit.getAlphaVDot(), fieldOrbit.getAlphaVDot().getReal());
+        } else {
+            Assertions.assertNull(fieldOrbit.getADot());
+            Assertions.assertNull(fieldOrbit.getCircularExDot());
+            Assertions.assertNull(fieldOrbit.getCircularEyDot());
+            Assertions.assertNull(fieldOrbit.getRightAscensionOfAscendingNodeDot());
+            Assertions.assertNull(fieldOrbit.getIDot());
+            Assertions.assertNull(fieldOrbit.getAlphaVDot());
+        }
     }
 
     private <T extends CalculusFieldElement<T>> void doTestCircularToEquinoctialEll(Field<T> field) {

@@ -56,7 +56,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * nor circular. When orbit is either equatorial or circular, the equinoctial
  * parameters are still unambiguously defined whereas some Keplerian elements
  * (more precisely ω and Ω) become ambiguous. For this reason, equinoctial
- * parameters are the recommended way to represent orbits.
+ * parameters are the recommended way to represent orbits. Note however than
+ *  * the present implementation does not handle non-elliptical cases.
  * </p>
  * <p>
  * The instance <code>EquinoctialOrbit</code> is guaranteed to be immutable.
@@ -253,7 +254,10 @@ public class EquinoctialOrbit extends Orbit {
         final double V2      = pvV.getNormSq();
         final double rV2OnMu = r * V2 / mu;
 
-        if (rV2OnMu > 2) {
+        // compute semi-major axis
+        a = r / (2 - rV2OnMu);
+
+        if (!isElliptical()) {
             throw new OrekitIllegalArgumentException(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS,
                                                      getClass().getName());
         }
@@ -268,10 +272,6 @@ public class EquinoctialOrbit extends Orbit {
         final double cLv = (pvP.getX() - d * pvP.getZ() * w.getX()) / r;
         final double sLv = (pvP.getY() - d * pvP.getZ() * w.getY()) / r;
         lv = FastMath.atan2(sLv, cLv);
-
-
-        // compute semi-major axis
-        a = r / (2 - rV2OnMu);
 
         // compute eccentricity vector
         final double eSE = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(mu * a);

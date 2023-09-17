@@ -23,12 +23,19 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
@@ -341,6 +348,23 @@ public class TimeStampedFieldPVCoordinatesTest {
         Assertions.assertEquals(pv.getVelocity().getY().getValue(), shifted.getPosition().getY().getPartialDerivative(1), 1.0e-15);
         Assertions.assertEquals(pv.getVelocity().getZ().getValue(), shifted.getPosition().getZ().getPartialDerivative(1), 1.0e-15);
 
+    }
+
+    @Test
+    void testFromTimeStampedPVCoordinates() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final Vector3D position = Vector3D.MINUS_I;
+        final Vector3D velocity = Vector3D.PLUS_K;
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final TimeStampedPVCoordinates expectedPV = new TimeStampedPVCoordinates(date, position, velocity);
+        // WHEN
+        final TimeStampedFieldPVCoordinates<Complex> fieldPV = new TimeStampedFieldPVCoordinates<>(field, expectedPV);
+        // THEN
+        Assertions.assertEquals(expectedPV.getDate(), fieldPV.getDate().toAbsoluteDate());
+        Assertions.assertEquals(expectedPV.getPosition(), fieldPV.getPosition().toVector3D());
+        Assertions.assertEquals(expectedPV.getVelocity(), fieldPV.getVelocity().toVector3D());
+        Assertions.assertEquals(expectedPV.getAcceleration(), fieldPV.getAcceleration().toVector3D());
     }
 
     @Test
