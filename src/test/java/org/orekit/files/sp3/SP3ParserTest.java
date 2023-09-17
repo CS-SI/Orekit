@@ -847,6 +847,37 @@ public class SP3ParserTest {
     }
 
     @Test
+    public void testIssue1014() {
+
+        // Test issue 1014
+        final String    ex     = "/sp3/issue1014-days-increment.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3   file   = new SP3Parser().parse(source);
+
+        // Verify
+        Assertions.assertEquals(TimeSystem.UTC, file.getHeader().getTimeSystem());
+        Assertions.assertEquals(SP3FileType.LEO, file.getHeader().getType());
+        Assertions.assertEquals(1, file.getSatelliteCount());
+
+        final List<SP3Coordinate> coords = file.getSatellites().get("L51").getSegments().get(0).getCoordinates();
+        Assertions.assertEquals(62, coords.size());
+
+        final SP3Coordinate coord = coords.get(61);
+
+        // following date is completely wrong (2022 january 0th instead of 2021 december 31st)
+        // 2022  1  0  1  2  0.00000000
+        Assertions.assertEquals(new AbsoluteDate(2021, 12, 31, 1, 2, 0,
+                              TimeScalesFactory.getUTC()), coord.getDate());
+
+        // PL51  -5691.093473  -9029.216710  -5975.427658
+        // VL51 -39188.598237  -5856.539265  45893.223756
+        checkPVEntry(new PVCoordinates(new Vector3D(-5691093.473,  -9029216.710,  -5975427.658),
+                                       new Vector3D(-3918.8598237,  -585.6539265,  4589.3223756)),
+                     coord);
+
+    }
+
+    @Test
     public void testWrongPosVelBaseA() {
         doTestWrongHeaderEntry("/sp3/wrong-pos-vel-base-a.sp3", "pos/vel accuracy base");
     }

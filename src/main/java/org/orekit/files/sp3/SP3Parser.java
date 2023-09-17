@@ -553,14 +553,25 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
             /** {@inheritDoc} */
             @Override
             public void parse(final String line, final ParseInfo pi) {
-                final int    year   = Integer.parseInt(line.substring(3, 7).trim());
-                final int    month  = Integer.parseInt(line.substring(8, 10).trim());
-                final int    day    = Integer.parseInt(line.substring(11, 13).trim());
-                final int    hour   = Integer.parseInt(line.substring(14, 16).trim());
-                final int    minute = Integer.parseInt(line.substring(17, 19).trim());
-                final double second = Double.parseDouble(line.substring(20).trim());
+                final int    year;
+                final int    month;
+                final int    day;
+                final int    hour;
+                final int    minute;
+                final double second;
+                try (Scanner s1      = new Scanner(line);
+                     Scanner s2      = s1.useDelimiter(SPACES);
+                     Scanner scanner = s2.useLocale(Locale.US)) {
+                    scanner.skip("\\*");
+                    year   = scanner.nextInt();
+                    month  = scanner.nextInt();
+                    day    = scanner.nextInt();
+                    hour   = scanner.nextInt();
+                    minute = scanner.nextInt();
+                    second = scanner.nextDouble();
+                }
 
-                // some SP3 files have weird epochs as in the following two examples, where
+                // some SP3 files have weird epochs as in the following three examples, where
                 // the middle dates are wrong
                 //
                 // *  2016  7  6 16 58  0.00000000
@@ -583,6 +594,15 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                 // PL51   2744.983592  -9000.639164   7931.904779
                 // VL51 -21072.925764 -40899.633288 -38801.567078
                 //
+                // * 2021 12 31  0  0  0.00000000
+                // PL51   6578.459330   5572.231927  -8703.502054
+                // VL51  -5356.007694 -48869.881161 -35036.676469
+                // * 2022  1  0  0  2  0.00000000
+                // PL51   6499.035610   4978.263048  -9110.135595
+                // VL51  -7881.633197 -50092.564035 -32717.740919
+                // * 2022  1  0  0  4  0.00000000
+                // PL51   6389.313975   4370.794537  -9488.314264
+                // VL51 -10403.797055 -51119.231402 -30295.421935
                 // In the first case, the date should really be 2016  7  6 17  0  0.00000000,
                 // i.e as the minutes field overflows, the hours field should be incremented
                 // In the second case, the date should really be 2016  7  7  0  0  0.00000000,
@@ -590,7 +610,11 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                 // we cannot be sure how carry was managed when these bogus files were written
                 // so we try different options, incrementing or not previous field, and selecting
                 // the closest one to expected date
-                DateComponents dc = new DateComponents(year, month, day);
+                // In the third case, there are two different errors: the date is globally
+                // shifted to the left by one character, and the day is 0 instead of 1
+                DateComponents dc = day == 0 ?
+                                    new DateComponents(new DateComponents(year, month, 1), -1) :
+                                    new DateComponents(year, month, day);
                 final List<AbsoluteDate> candidates = new ArrayList<>();
                 int h = hour;
                 int m = minute;
