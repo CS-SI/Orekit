@@ -32,10 +32,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
-import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.CelestialBodyPointed;
-import org.orekit.attitudes.FrameAlignedProvider;
-import org.orekit.attitudes.LofOffset;
+import org.orekit.attitudes.*;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
@@ -44,6 +41,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
@@ -329,11 +327,13 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         // pos-vel (from a ZOOM ephemeris reference)
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
-        final SpacecraftState state =
-                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
-                                                       FramesFactory.getGCRF(),
-                                                       new AbsoluteDate(2005, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
-                                                       Constants.EIGEN5C_EARTH_MU));
+        final Frame frame = FramesFactory.getGCRF();
+        final AbsoluteDate date = new AbsoluteDate(2005, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI());
+        final CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(pos, vel), frame,
+                date, Constants.EIGEN5C_EARTH_MU);
+        final LofOffset lofOffset = new LofOffset(frame, LOFType.LVLH_CCSDS);
+        final Attitude attitude = lofOffset.getAttitude(orbit, date, frame);  // necessary for non-regression
+        final SpacecraftState state = new SpacecraftState(orbit, attitude);
 
         final HarmonicAccelerationModel accelerationModel = new HarmonicAccelerationModel("kT",
                                                                                           state.getDate().shiftedBy(-2.0),

@@ -279,12 +279,12 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      */
     public Vector3D getPosition(final Frame outputFrame) {
         // If output frame requested is the same as definition frame,
-        // PV coordinates are returned directly
+        // Position vector is returned directly
         if (outputFrame == frame) {
             return getPosition();
         }
 
-        // Else, PV coordinates are transformed to output frame
+        // Else, position vector is transformed to output frame
         final StaticTransform t = frame.getStaticTransformTo(outputFrame, getDate());
         return t.transformPosition(getPosition());
     }
