@@ -24,8 +24,11 @@
       <action dev="luc" type="fix" issue="1014" due-to="Li Rongwang">
         Added support for more weird dates in SP3 files.
       </action>
+      <action dev="serrof" type="update" issue="1192">
+        Cleaned (Field)SpacecraftState and changed default Attitude from LofOffset to FrameAlignedProvider.
+      </action>
       <action dev="serrof" type="add" issue="1185">
-          Added direct call to (Field)Rotation for AttitudeProviders.
+        Added direct call to (Field)Rotation for AttitudeProviders.
       </action>
       <action dev="luc" type="fix" issue="1191">
         Added SP3CoordinateHermiteInterpolator.

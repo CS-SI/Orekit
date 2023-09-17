@@ -465,12 +465,12 @@ public abstract class Orbit
         }
 
         // If output frame requested is the same as definition frame,
-        // PV coordinates are returned directly
+        // Position vector is returned directly
         if (outputFrame == frame) {
             return position;
         }
 
-        // Else, PV coordinates are transformed to output frame
+        // Else, position vector is transformed to output frame
         final StaticTransform t = frame.getStaticTransformTo(outputFrame, date);
         return t.transformPosition(position);
 
