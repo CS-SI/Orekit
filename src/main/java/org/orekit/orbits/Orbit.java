@@ -190,7 +190,7 @@ public abstract class Orbit
     }
 
     /** Returns true if and only if the orbit is elliptical i.e. has a non-negative semi-major axis.
-     * @return true if getA() > 0
+     * @return true if getA() is strictly greater than 0
      * @since 12.0
      */
     public boolean isElliptical() {
