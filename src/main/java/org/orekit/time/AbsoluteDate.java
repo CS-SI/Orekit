@@ -212,11 +212,11 @@ public class AbsoluteDate
             DataContext.getDefault().getTimeScales().getGlonassEpoch();
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC).
-     * @see #createJulianEpoch(double)
-     * @see #createBesselianEpoch(double)
      *
      * <p>This constant uses the {@link DataContext#getDefault() default data context}.
      *
+     * @see #createJulianEpoch(double)
+     * @see #createBesselianEpoch(double)
      * @see TimeScales#getJ2000Epoch()
      */
     @DefaultDataContext
