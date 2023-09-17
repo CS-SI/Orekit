@@ -189,6 +189,17 @@ public class StreamingOcmWriter implements AutoCloseable {
         /** Number of ascending nodes crossings. */
         private int crossings;
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public BlockWriter() {
+            // nothing to do
+        }
+
         /**
          * {@inheritDoc}
          *

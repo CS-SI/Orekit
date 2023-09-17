@@ -68,6 +68,17 @@ public class AttitudeEndpoints implements AttitudeBuilder {
     /** Flag for frames direction. */
     private Boolean a2b;
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public AttitudeEndpoints() {
+        // nothing to do
+    }
+
     /** Complain if a field is null.
      * @param field field to check
      * @param key key associated with the field

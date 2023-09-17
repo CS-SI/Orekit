@@ -33,6 +33,17 @@ import org.orekit.propagation.events.FieldEventDetector;
  */
 public class FieldStopOnIncreasing <T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public FieldStopOnIncreasing() {
+        // nothing to do
+    }
+
     /** Handle a detection event and choose what to do next.
      * <p>The implementation behavior is to {@link
      * Action#CONTINUE continue} propagation when descending and to

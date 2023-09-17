@@ -30,6 +30,18 @@ import org.orekit.propagation.events.FieldEventDetector;
  * @param <T> type of the field element
  */
 public class FieldContinueOnEvent <T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
+
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public FieldContinueOnEvent() {
+        // nothing to do
+    }
+
     /**
      * Specific implementation of the eventOccurred interface.
      *

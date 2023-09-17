@@ -33,6 +33,17 @@ import org.orekit.orbits.OrbitType;
 public abstract class AbstractFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
         implements FieldODEIntegratorBuilder<T> {
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public AbstractFieldIntegratorBuilder() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     public abstract AbstractFieldIntegrator<T> buildIntegrator(Field<T> field, Orbit orbit, OrbitType orbitType);
 
@@ -40,4 +51,5 @@ public abstract class AbstractFieldIntegratorBuilder<T extends CalculusFieldElem
     public AbstractFieldIntegrator<T> buildIntegrator(final FieldOrbit<T> orbit, final OrbitType orbitType) {
         return buildIntegrator(orbit.getA().getField(), orbit.toOrbit(), orbitType);
     }
+
 }

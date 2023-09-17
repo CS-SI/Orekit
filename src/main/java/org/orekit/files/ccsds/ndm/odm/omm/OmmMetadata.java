@@ -21,6 +21,10 @@ import java.util.regex.Pattern;
 
 import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 
+/** Metadata for Orbit Mean Messages.
+ * @author Luc Maisonobe
+ * @since 12.0
+ */
 public class OmmMetadata extends OdmCommonMetadata {
 
     /** Constant for SGP/SGP4 mean elements theory. */
@@ -40,6 +44,17 @@ public class OmmMetadata extends OdmCommonMetadata {
     /** Description of the Mean Element Theory. Indicates the proper method to employ
      * to propagate the state. */
     private String meanElementTheory;
+
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public OmmMetadata() {
+        // nothing to do
+    }
 
     /** Check if mean element theory in SGP or SDP.
      * @return true if mean element theory in SGP or SDP

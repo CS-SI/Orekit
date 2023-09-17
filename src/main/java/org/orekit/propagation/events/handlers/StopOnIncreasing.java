@@ -32,6 +32,17 @@ import org.orekit.propagation.events.EventDetector;
  */
 public class StopOnIncreasing implements EventHandler {
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public StopOnIncreasing() {
+        // nothing to do
+    }
+
     /** Handle a detection event and choose what to do next.
      * <p>The implementation behavior is to {@link
      * Action#CONTINUE continue} propagation when descending and to

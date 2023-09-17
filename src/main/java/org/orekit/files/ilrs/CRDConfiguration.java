@@ -298,6 +298,17 @@ public class CRDConfiguration {
         /** Configuration ID. */
         private String configurationId;
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public BaseConfiguration() {
+            // nothing to do
+        }
+
         /**
          * Get the configuration ID.
          * @return the configuration ID
@@ -448,6 +459,17 @@ public class CRDConfiguration {
 
         /** Number of pulses in outgoing semi-train. */
         private int pulseInOutgoingSemiTrain;
+
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public LaserConfiguration() {
+            // nothing to do
+        }
 
         /**
          * Get the laser configuration ID.
@@ -641,6 +663,17 @@ public class CRDConfiguration {
 
         /** Amplifier In Use. */
         private String amplifierInUse;
+
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public DetectorConfiguration() {
+            // nothing to do
+        }
 
         /**
          * Get the detector configuration ID.
@@ -944,6 +977,17 @@ public class CRDConfiguration {
         /** Epoch delay correction [s]. */
         private double epochDelayCorrection;
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public TimingSystemConfiguration() {
+            // nothing to do
+        }
+
         /**
          * Get the time source.
          * @return the time source
@@ -1083,6 +1127,17 @@ public class CRDConfiguration {
 
         /** Spacecraft time simplified flag. */
         private boolean isSpacecraftTimeSimplified;
+
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public TransponderConfiguration() {
+            // nothing to do
+        }
 
         /**
          * Get the transponder configuration ID.
@@ -1269,6 +1324,17 @@ public class CRDConfiguration {
         /** Processing software version(s). */
         private String[] processingSoftwareVersions;
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public SoftwareConfiguration() {
+            // nothing to do
+        }
+
         /**
          * Get the software configuration ID.
          * @return the software configuration ID.
@@ -1404,6 +1470,17 @@ public class CRDConfiguration {
 
         /** Humidity Sensor Serial Number. */
         private String humiSensorSerialNumber;
+
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public MeteorologicalConfiguration() {
+            // nothing to do
+        }
 
         /**
          * Get the meteorological configuration ID.
@@ -1609,6 +1686,17 @@ public class CRDConfiguration {
 
         /** Processing software version. */
         private String processingSoftwareVersion;
+
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public CalibrationTargetConfiguration() {
+            // nothing to do
+        }
 
         /**
          * Get the target name or ID.

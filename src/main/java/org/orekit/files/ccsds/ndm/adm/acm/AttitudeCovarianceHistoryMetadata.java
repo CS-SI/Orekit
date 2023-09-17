@@ -44,6 +44,17 @@ public class AttitudeCovarianceHistoryMetadata extends CommentsContainer {
     /** Covariance element set type. */
     private AttitudeCovarianceType covType;
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public AttitudeCovarianceHistoryMetadata() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {

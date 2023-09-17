@@ -964,6 +964,17 @@ public enum OrekitMessages implements Localizable {
      */
     public static class UTF8Control extends ResourceBundle.Control {
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public UTF8Control() {
+            // nothing to do
+        }
+
         /** {@inheritDoc} */
         @Override
         public ResourceBundle newBundle(final String baseName, final Locale locale, final String format,

@@ -33,6 +33,16 @@ import org.orekit.propagation.events.FieldEventDetector;
  */
 public class FieldStopOnDecreasing <T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public FieldStopOnDecreasing() {
+        // nothing to do
+    }
 
     /** Handle a detection event and choose what to do next.
      * <p>KKhe implementation behavior is to {@link

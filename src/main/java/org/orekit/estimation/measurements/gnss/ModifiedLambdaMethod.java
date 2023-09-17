@@ -33,6 +33,17 @@ import org.hipparchus.util.FastMath;
  */
 public class ModifiedLambdaMethod extends AbstractLambdaMethod {
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public ModifiedLambdaMethod() {
+        // nothing to do
+    }
+
     /** Compute the LᵀDL factorization with symmetric pivoting decomposition of Q
      * (symmetric definite positive matrix) with a minimum symmetric pivoting: Q = ZᵀLᵀDLZ.
      */

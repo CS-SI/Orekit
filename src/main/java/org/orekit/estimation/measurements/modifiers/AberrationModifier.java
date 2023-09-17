@@ -57,6 +57,17 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  */
 public class AberrationModifier implements EstimationModifier<AngularRaDec> {
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public AberrationModifier() {
+        // nothing to do
+    }
+
     /**
      * Natural to proper correction for aberration of light.
      *

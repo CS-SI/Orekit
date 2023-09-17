@@ -114,6 +114,17 @@ public class StreamingAemWriter implements AutoCloseable {
     /** A writer for a segment of an AEM. */
     public class SegmentWriter implements OrekitFixedStepHandler {
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public SegmentWriter() {
+            // nothing to do
+        }
+
         /**
          * {@inheritDoc}
          *

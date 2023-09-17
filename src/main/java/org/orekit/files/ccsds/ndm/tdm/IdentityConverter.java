@@ -25,6 +25,17 @@ import org.orekit.time.AbsoluteDate;
  */
 public class IdentityConverter implements RangeUnitsConverter {
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public IdentityConverter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public double ruToMeters(final TdmMetadata metadata, final AbsoluteDate date, final double range) {
