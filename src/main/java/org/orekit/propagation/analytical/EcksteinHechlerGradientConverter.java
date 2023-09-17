@@ -64,8 +64,8 @@ class EcksteinHechlerGradientConverter extends AbstractAnalyticalGradientConvert
         final Gradient mu = zero.add(propagator.getMu());
 
         // Return the "Field" propagator
-        return new FieldEcksteinHechlerPropagator<Gradient>(state.getOrbit(), provider, radius, mu,
-                                                            ck0[2], ck0[3], ck0[4], ck0[5], ck0[6]);
+        return new FieldEcksteinHechlerPropagator<>(state.getOrbit(), provider, radius, mu,
+                ck0[2], ck0[3], ck0[4], ck0[5], ck0[6]);
 
     }
 
