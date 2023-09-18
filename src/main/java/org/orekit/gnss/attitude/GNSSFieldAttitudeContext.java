@@ -19,8 +19,8 @@ package org.orekit.gnss.attitude;
 import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
-import org.hipparchus.analysis.differentiation.FDSFactory;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2Field;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -57,9 +57,6 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  */
 class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T> {
 
-    /** Derivation order. */
-    private static final int ORDER = 2;
-
     /** Constant Y axis. */
     private static final PVCoordinates PLUS_Y_PV =
             new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO);
@@ -70,9 +67,6 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
 
     /** Limit value below which we shoud use replace beta by betaIni. */
     private static final double BETA_SIGN_CHANGE_PROTECTION = FastMath.toRadians(0.07);
-
-    /** Time derivation factory. */
-    private final FDSFactory<T> factory;
 
     /** Constant Y axis. */
     private final FieldPVCoordinates<T> plusY;
@@ -87,7 +81,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
     private final FieldAbsoluteDate<T> date;
 
     /** Current date. */
-    private final FieldAbsoluteDate<FieldDerivativeStructure<T>> dateDS;
+    private final FieldAbsoluteDate<FieldUnivariateDerivative2<T>> dateDS;
 
     /** Provider for Sun position. */
     private final ExtendedPVCoordinatesProvider sun;
@@ -99,13 +93,13 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
     private final Frame inertialFrame;
 
     /** Cosine of the angle between spacecraft and Sun direction. */
-    private final FieldDerivativeStructure<T> svbCos;
+    private final FieldUnivariateDerivative2<T> svbCos;
 
     /** Morning/Evening half orbit indicator. */
     private final boolean morning;
 
     /** Relative orbit angle to turn center. */
-    private final FieldDerivativeStructure<T> delta;
+    private final FieldUnivariateDerivative2<T> delta;
 
     /** Spacecraft angular velocity. */
     private T muRate;
@@ -132,7 +126,6 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
                              final Frame inertialFrame,  final FieldTurnSpan<T> turnSpan) {
 
         final Field<T> field = date.getField();
-        factory  = new FDSFactory<>(field, 1, ORDER);
         plusY    = new FieldPVCoordinates<>(field, PLUS_Y_PV);
         minusZ   = new FieldPVCoordinates<>(field, MINUS_Z_PV);
 
@@ -142,11 +135,10 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
         this.sun           = sun;
         this.pvProv        = pvProv;
         this.inertialFrame = inertialFrame;
-        final FieldPVCoordinates<FieldDerivativeStructure<T>> sunPVDS = sun.getPVCoordinates(dateDS, inertialFrame);
+        final FieldPVCoordinates<FieldUnivariateDerivative2<T>> sunPVDS = sun.getPVCoordinates(dateDS, inertialFrame);
 
         final TimeStampedFieldPVCoordinates<T> svPV = pvProv.getPVCoordinates(date, inertialFrame);
-        final FieldPVCoordinates<FieldDerivativeStructure<T>> svPVDS  =
-                        svPV.toDerivativeStructurePV(factory.getCompiler().getOrder());
+        final FieldPVCoordinates<FieldUnivariateDerivative2<T>> svPVDS  = svPV.toUnivariateDerivative2PV();
         this.svbCos  = FieldVector3D.dotProduct(sunPVDS.getPosition(), svPVDS.getPosition()).
                        divide(sunPVDS.getPosition().getNorm().multiply(svPVDS.getPosition().getNorm()));
         this.morning = Vector3D.dotProduct(svPV.getVelocity().toVector3D(), sunPVDS.getPosition().toVector3D()) >= 0.0;
@@ -155,7 +147,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
 
         this.turnSpan = turnSpan;
 
-        final FieldDerivativeStructure<T> absDelta;
+        final FieldUnivariateDerivative2<T> absDelta;
         if (svbCos.getValue().getReal() <= 0) {
             // in eclipse turn mode
             absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos().negate().add(svbCos.getPi()));
@@ -171,9 +163,9 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
      * @param d date to convert
      * @return date without derivatives
      */
-    private FieldAbsoluteDate<T> removeDerivatives(final FieldAbsoluteDate<FieldDerivativeStructure<T>> d) {
-        final AbsoluteDate                dd     = d.toAbsoluteDate();
-        final FieldDerivativeStructure<T> offset = d.durationFrom(dd);
+    private FieldAbsoluteDate<T> removeDerivatives(final FieldAbsoluteDate<FieldUnivariateDerivative2<T>> d) {
+        final AbsoluteDate                  dd     = d.toAbsoluteDate();
+        final FieldUnivariateDerivative2<T> offset = d.durationFrom(dd);
         return new FieldAbsoluteDate<>(date.getField(), dd).shiftedBy(offset.getValue());
     }
 
@@ -181,10 +173,12 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
      * @param d date to convert
      * @return date without derivatives
      */
-    private FieldAbsoluteDate<FieldDerivativeStructure<T>> addDerivatives(final FieldAbsoluteDate<T> d) {
+    private FieldAbsoluteDate<FieldUnivariateDerivative2<T>> addDerivatives(final FieldAbsoluteDate<T> d) {
+        final Field<T>     field  = d.getField();
         final AbsoluteDate dd     = d.toAbsoluteDate();
         final T            offset = d.durationFrom(dd);
-        return new FieldAbsoluteDate<>(factory.getDerivativeField(), dd).shiftedBy(factory.variable(0, offset));
+        return new FieldAbsoluteDate<>(FieldUnivariateDerivative2Field.getUnivariateDerivative2Field(field), dd).
+                                       shiftedBy(new FieldUnivariateDerivative2<>(offset, field.getOne(), field.getZero()));
     }
 
     /** Compute nominal yaw steering.
@@ -216,10 +210,10 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
      * @param d computation date
      * @return Sun elevation
      */
-    private FieldDerivativeStructure<T> betaDS(final FieldAbsoluteDate<FieldDerivativeStructure<T>> d) {
-        final FieldPVCoordinates<FieldDerivativeStructure<T>> svPV =
+    private FieldUnivariateDerivative2<T> betaDS(final FieldAbsoluteDate<FieldUnivariateDerivative2<T>> d) {
+        final FieldPVCoordinates<FieldUnivariateDerivative2<T>> svPV =
                         pvProv.getPVCoordinates(removeDerivatives(d), inertialFrame).
-                        toDerivativeStructurePV(d.getField().getZero().getOrder());
+                        toUnivariateDerivative2PV();
         return FieldVector3D.angle(sun.getPosition(d, inertialFrame), svPV.getMomentum()).
                negate().
                add(svPV.getPosition().getX().getPi().multiply(0.5));
@@ -228,7 +222,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
     /** Compute Sun elevation.
      * @return Sun elevation
      */
-    public FieldDerivativeStructure<T> betaDS() {
+    public FieldUnivariateDerivative2<T> betaDS() {
         return betaDS(dateDS);
     }
 
@@ -335,7 +329,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
     /** Get the relative orbit angle to turn center.
      * @return relative orbit angle to turn center
      */
-    public FieldDerivativeStructure<T> getDeltaDS() {
+    public FieldUnivariateDerivative2<T> getDeltaDS() {
         return delta;
     }
 
@@ -402,7 +396,7 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
      * @param angle spacecraft/Sun angle (or spacecraft/opposite-of-Sun)
      * @return angle projected into orbital plane, always positive
      */
-    private FieldDerivativeStructure<T> inOrbitPlaneAbsoluteAngle(final FieldDerivativeStructure<T> angle) {
+    private FieldUnivariateDerivative2<T> inOrbitPlaneAbsoluteAngle(final FieldUnivariateDerivative2<T> angle) {
         return FastMath.acos(FastMath.cos(angle).divide(FastMath.cos(beta(getDate()))));
     }
 
@@ -468,14 +462,14 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
      * @return attitude with specified yaw
      */
     public TimeStampedFieldAngularCoordinates<T> turnCorrectedAttitude(final T yaw, final T yawDot) {
-        return turnCorrectedAttitude(factory.build(yaw, yawDot, yaw.getField().getZero()));
+        return turnCorrectedAttitude(new FieldUnivariateDerivative2<>(yaw, yawDot, yaw.getField().getZero()));
     }
 
     /** Generate an attitude with turn-corrected yaw.
      * @param yaw yaw value to apply
      * @return attitude with specified yaw
      */
-    public TimeStampedFieldAngularCoordinates<T> turnCorrectedAttitude(final FieldDerivativeStructure<T> yaw) {
+    public TimeStampedFieldAngularCoordinates<T> turnCorrectedAttitude(final FieldUnivariateDerivative2<T> yaw) {
 
         // Earth pointing (Z aligned with position) with linear yaw (momentum with known cos/sin in the X/Y plane)
         final FieldPVCoordinates<T> svPV          = pvProv.getPVCoordinates(date, inertialFrame);
@@ -489,10 +483,10 @@ class GNSSFieldAttitudeContext<T extends CalculusFieldElement<T>> implements Fie
         final FieldPVCoordinates<T> velocity      = new FieldPVCoordinates<>(v, a, keplerianJerk);
         final FieldPVCoordinates<T> momentum      = svPV.crossProduct(velocity);
 
-        final FieldSinCos<FieldDerivativeStructure<T>> sc = FastMath.sinCos(yaw);
-        final FieldDerivativeStructure<T> c = sc.cos().negate();
-        final FieldDerivativeStructure<T> s = sc.sin().negate();
-        final T                           z = yaw.getFactory().getValueField().getZero();
+        final FieldSinCos<FieldUnivariateDerivative2<T>> sc = FastMath.sinCos(yaw);
+        final FieldUnivariateDerivative2<T> c = sc.cos().negate();
+        final FieldUnivariateDerivative2<T> s = sc.sin().negate();
+        final T                             z = yaw.getValueField().getZero();
         final FieldVector3D<T> m0 = new FieldVector3D<>(s.getValue(),              c.getValue(),              z);
         final FieldVector3D<T> m1 = new FieldVector3D<>(s.getPartialDerivative(1), c.getPartialDerivative(1), z);
         final FieldVector3D<T> m2 = new FieldVector3D<>(s.getPartialDerivative(2), c.getPartialDerivative(2), z);

@@ -28,7 +28,7 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-GLONASS.txt", 7.8e-11, 9.3e-16, false);
+        doTestAxes("patched-eclips/beta-small-negative-GLONASS.txt", 7.8e-11, 9.8e-16, false);
     }
 
     @Test
@@ -53,7 +53,7 @@ public class GlonassTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testOriginalSmallNegativeBeta() {
-        doTestAxes("original-eclips/beta-small-negative-GLONASS.txt", 1.6e-4, 9.3e-16, false);
+        doTestAxes("original-eclips/beta-small-negative-GLONASS.txt", 1.6e-4, 9.8e-16, false);
     }
 
     @Test
