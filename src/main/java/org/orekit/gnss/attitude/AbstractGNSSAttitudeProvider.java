@@ -114,8 +114,8 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                        final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame) {
+                                                                            final FieldAbsoluteDate<T> date,
+                                                                            final Frame frame) {
 
         // compute yaw correction
         final FieldTurnSpan<T>                      turnSpan  = getTurnSpan(date);

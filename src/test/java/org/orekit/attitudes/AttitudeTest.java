@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
-import org.orekit.Utils;
 
 public class AttitudeTest {
 

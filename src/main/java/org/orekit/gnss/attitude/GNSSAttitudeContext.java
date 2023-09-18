@@ -17,8 +17,8 @@
 package org.orekit.gnss.attitude;
 
 import org.hipparchus.analysis.UnivariateFunction;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2Field;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -53,12 +53,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 class GNSSAttitudeContext implements TimeStamped {
 
-    /** Derivation order. */
-    private static final int ORDER = 2;
-
-    /** Time derivation factory. */
-    private static final DSFactory FACTORY = new DSFactory(1, ORDER);
-
     /** Constant Y axis. */
     private static final PVCoordinates PLUS_Y_PV =
             new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO);
@@ -74,7 +68,7 @@ class GNSSAttitudeContext implements TimeStamped {
     private final AbsoluteDate date;
 
     /** Current date. */
-    private final FieldAbsoluteDate<DerivativeStructure> dateDS;
+    private final FieldAbsoluteDate<UnivariateDerivative2> dateDS;
 
     /** Provider for Sun position. */
     private final ExtendedPVCoordinatesProvider sun;
@@ -86,13 +80,13 @@ class GNSSAttitudeContext implements TimeStamped {
     private final Frame inertialFrame;
 
     /** Cosine of the angle between spacecraft and Sun direction. */
-    private final DerivativeStructure svbCos;
+    private final UnivariateDerivative2 svbCos;
 
     /** Morning/Evening half orbit indicator. */
     private final boolean morning;
 
     /** Relative orbit angle to turn center. */
-    private final DerivativeStructure delta;
+    private final UnivariateDerivative2 delta;
 
     /** Spacecraft angular velocity. */
     private double muRate;
@@ -123,10 +117,10 @@ class GNSSAttitudeContext implements TimeStamped {
         this.sun           = sun;
         this.pvProv        = pvProv;
         this.inertialFrame = inertialFrame;
-        final FieldPVCoordinates<DerivativeStructure> sunPVDS = sun.getPVCoordinates(dateDS, inertialFrame);
+        final FieldPVCoordinates<UnivariateDerivative2> sunPVDS = sun.getPVCoordinates(dateDS, inertialFrame);
 
         final TimeStampedPVCoordinates svPV = pvProv.getPVCoordinates(date, inertialFrame);
-        final FieldPVCoordinates<DerivativeStructure> svPVDS  = svPV.toDerivativeStructurePV(FACTORY.getCompiler().getOrder());
+        final FieldPVCoordinates<UnivariateDerivative2> svPVDS  = svPV.toUnivariateDerivative2PV();
         this.svbCos  = FieldVector3D.dotProduct(sunPVDS.getPosition(), svPVDS.getPosition()).
                        divide(sunPVDS.getPosition().getNorm().multiply(svPVDS.getPosition().getNorm()));
         this.morning = Vector3D.dotProduct(svPV.getVelocity(), sunPVDS.getPosition().toVector3D()) >= 0.0;
@@ -135,7 +129,7 @@ class GNSSAttitudeContext implements TimeStamped {
 
         this.turnSpan = turnSpan;
 
-        final DerivativeStructure absDelta;
+        final UnivariateDerivative2 absDelta;
         if (svbCos.getValue() <= 0) {
             // night side
             absDelta = inOrbitPlaneAbsoluteAngle(svbCos.acos().negate().add(FastMath.PI));
@@ -151,7 +145,7 @@ class GNSSAttitudeContext implements TimeStamped {
      * @param d date to convert
      * @return date without derivatives
      */
-    private AbsoluteDate removeDerivatives(final FieldAbsoluteDate<DerivativeStructure> d) {
+    private AbsoluteDate removeDerivatives(final FieldAbsoluteDate<UnivariateDerivative2> d) {
         return d.toAbsoluteDate();
     }
 
@@ -159,9 +153,9 @@ class GNSSAttitudeContext implements TimeStamped {
      * @param d date to convert
      * @return date without derivatives
      */
-    private FieldAbsoluteDate<DerivativeStructure> addDerivatives(final AbsoluteDate d) {
-        return new FieldAbsoluteDate<>(FACTORY.getDerivativeField(), d).
-               shiftedBy(FACTORY.variable(0, 0.0));
+    private FieldAbsoluteDate<UnivariateDerivative2> addDerivatives(final AbsoluteDate d) {
+        return new FieldAbsoluteDate<>(UnivariateDerivative2Field.getInstance(), d).
+               shiftedBy(new UnivariateDerivative2(0.0, 1.0, 0.0));
     }
 
     /** Compute nominal yaw steering.
@@ -191,9 +185,9 @@ class GNSSAttitudeContext implements TimeStamped {
      * @param d computation date
      * @return Sun elevation
      */
-    private DerivativeStructure betaDS(final FieldAbsoluteDate<DerivativeStructure> d) {
+    private UnivariateDerivative2 betaDS(final FieldAbsoluteDate<UnivariateDerivative2> d) {
         final TimeStampedPVCoordinates svPV = pvProv.getPVCoordinates(removeDerivatives(d), inertialFrame);
-        final FieldPVCoordinates<DerivativeStructure> svPVDS  = svPV.toDerivativeStructurePV(FACTORY.getCompiler().getOrder());
+        final FieldPVCoordinates<UnivariateDerivative2> svPVDS  = svPV.toUnivariateDerivative2PV();
         return FieldVector3D.angle(sun.getPosition(d, inertialFrame), svPVDS.getMomentum()).
                negate().
                add(0.5 * FastMath.PI);
@@ -202,7 +196,7 @@ class GNSSAttitudeContext implements TimeStamped {
     /** Compute Sun elevation.
      * @return Sun elevation
      */
-    public DerivativeStructure betaDS() {
+    public UnivariateDerivative2 betaDS() {
         return betaDS(dateDS);
     }
 
@@ -308,7 +302,7 @@ class GNSSAttitudeContext implements TimeStamped {
     /** Get the relative orbit angle to turn center.
      * @return relative orbit angle to turn center
      */
-    public DerivativeStructure getDeltaDS() {
+    public UnivariateDerivative2 getDeltaDS() {
         return delta;
     }
 
@@ -375,7 +369,7 @@ class GNSSAttitudeContext implements TimeStamped {
      * @param angle spacecraft/Sun angle (or spacecraft/opposite-of-Sun)
      * @return angle projected into orbital plane, always positive
      */
-    private DerivativeStructure inOrbitPlaneAbsoluteAngle(final DerivativeStructure angle) {
+    private UnivariateDerivative2 inOrbitPlaneAbsoluteAngle(final UnivariateDerivative2 angle) {
         return FastMath.acos(FastMath.cos(angle).divide(FastMath.cos(beta(getDate()))));
     }
 
@@ -443,14 +437,14 @@ class GNSSAttitudeContext implements TimeStamped {
      * @return attitude with specified yaw
      */
     public TimeStampedAngularCoordinates turnCorrectedAttitude(final double yaw, final double yawDot) {
-        return turnCorrectedAttitude(FACTORY.build(yaw, yawDot, 0.0));
+        return turnCorrectedAttitude(new UnivariateDerivative2(yaw, yawDot, 0.0));
     }
 
     /** Generate an attitude with turn-corrected yaw.
      * @param yaw yaw value to apply
      * @return attitude with specified yaw
      */
-    public TimeStampedAngularCoordinates turnCorrectedAttitude(final DerivativeStructure yaw) {
+    public TimeStampedAngularCoordinates turnCorrectedAttitude(final UnivariateDerivative2 yaw) {
 
         // Earth pointing (Z aligned with position) with linear yaw (momentum with known cos/sin in the X/Y plane)
         final PVCoordinates svPV          = pvProv.getPVCoordinates(date, inertialFrame);
@@ -463,9 +457,9 @@ class GNSSAttitudeContext implements TimeStamped {
         final PVCoordinates velocity      = new PVCoordinates(v, a, keplerianJerk);
         final PVCoordinates momentum      = PVCoordinates.crossProduct(svPV, velocity);
 
-        final FieldSinCos<DerivativeStructure> sc = FastMath.sinCos(yaw);
-        final DerivativeStructure c = sc.cos().negate();
-        final DerivativeStructure s = sc.sin().negate();
+        final FieldSinCos<UnivariateDerivative2> sc = FastMath.sinCos(yaw);
+        final UnivariateDerivative2 c = sc.cos().negate();
+        final UnivariateDerivative2 s = sc.sin().negate();
         final Vector3D m0 = new Vector3D(s.getValue(),              c.getValue(),              0.0);
         final Vector3D m1 = new Vector3D(s.getPartialDerivative(1), c.getPartialDerivative(1), 0.0);
         final Vector3D m2 = new Vector3D(s.getPartialDerivative(2), c.getPartialDerivative(2), 0.0);
