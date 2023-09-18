@@ -433,7 +433,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     public FieldCartesianOrbit<T> shiftedBy(final T dt) {
-        final FieldPVCoordinates<T> shiftedPV = (isElliptical()) ? shiftPVElliptic(dt) : shiftPVHyperbolic(dt);
+        final FieldPVCoordinates<T> shiftedPV = isElliptical() ? shiftPVElliptic(dt) : shiftPVHyperbolic(dt);
         return new FieldCartesianOrbit<>(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 

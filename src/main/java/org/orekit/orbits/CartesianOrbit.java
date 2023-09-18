@@ -397,7 +397,7 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public CartesianOrbit shiftedBy(final double dt) {
-        final PVCoordinates shiftedPV = (isElliptical()) ? shiftPVElliptic(dt) : shiftPVHyperbolic(dt);
+        final PVCoordinates shiftedPV = isElliptical() ? shiftPVElliptic(dt) : shiftPVHyperbolic(dt);
         return new CartesianOrbit(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 

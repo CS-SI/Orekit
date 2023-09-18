@@ -408,7 +408,7 @@ public abstract class Orbit
      */
     public double getKeplerianPeriod() {
         final double a = getA();
-        return (isElliptical()) ? 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu) : Double.POSITIVE_INFINITY;
+        return isElliptical() ? 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu) : Double.POSITIVE_INFINITY;
     }
 
     /** Get the Keplerian mean motion.

@@ -408,8 +408,9 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      */
     public T getKeplerianPeriod() {
         final T a = getA();
-        return (isElliptical()) ? a.multiply(a.getPi().multiply(2.0)).multiply(a.divide(mu).sqrt()) :
-                zero.add(Double.POSITIVE_INFINITY);
+        return isElliptical() ?
+               a.multiply(a.getPi().multiply(2.0)).multiply(a.divide(mu).sqrt()) :
+               zero.add(Double.POSITIVE_INFINITY);
     }
 
     /** Get the Keplerian mean motion.
