@@ -189,6 +189,14 @@ public abstract class Orbit
         }
     }
 
+    /** Returns true if and only if the orbit is elliptical i.e. has a non-negative semi-major axis.
+     * @return true if getA() is strictly greater than 0
+     * @since 12.0
+     */
+    public boolean isElliptical() {
+        return getA() > 0.;
+    }
+
     /** Get the orbit type.
      * @return orbit type
      */
@@ -400,7 +408,7 @@ public abstract class Orbit
      */
     public double getKeplerianPeriod() {
         final double a = getA();
-        return (a < 0) ? Double.POSITIVE_INFINITY : 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
+        return isElliptical() ? 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu) : Double.POSITIVE_INFINITY;
     }
 
     /** Get the Keplerian mean motion.

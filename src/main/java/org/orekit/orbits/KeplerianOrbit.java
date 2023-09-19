@@ -314,7 +314,7 @@ public class KeplerianOrbit extends Orbit {
         final double muA = mu * a;
 
         // compute true anomaly
-        if (a > 0) {
+        if (isElliptical()) {
             // elliptic or circular orbit
             final double eSE = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(muA);
             final double eCE = rV2OnMu - 1;
@@ -693,7 +693,7 @@ public class KeplerianOrbit extends Orbit {
 
         final Vector3D[] axes = referenceAxes();
 
-        if (a > 0) {
+        if (isElliptical()) {
 
             // elliptical case
 
@@ -768,7 +768,7 @@ public class KeplerianOrbit extends Orbit {
 
         final Vector3D[] axes = referenceAxes();
 
-        if (a > 0) {
+        if (isElliptical()) {
 
             // elliptical case
 
@@ -854,7 +854,7 @@ public class KeplerianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     protected double[][] computeJacobianMeanWrtCartesian() {
-        if (a > 0) {
+        if (isElliptical()) {
             return computeJacobianMeanWrtCartesianElliptical();
         } else {
             return computeJacobianMeanWrtCartesianHyperbolic();
@@ -1129,7 +1129,7 @@ public class KeplerianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     protected double[][] computeJacobianEccentricWrtCartesian() {
-        if (a > 0) {
+        if (isElliptical()) {
             return computeJacobianEccentricWrtCartesianElliptical();
         } else {
             return computeJacobianEccentricWrtCartesianHyperbolic();
@@ -1202,7 +1202,7 @@ public class KeplerianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     protected double[][] computeJacobianTrueWrtCartesian() {
-        if (a > 0) {
+        if (isElliptical()) {
             return computeJacobianTrueWrtCartesianElliptical();
         } else {
             return computeJacobianTrueWrtCartesianHyperbolic();

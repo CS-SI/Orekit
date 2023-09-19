@@ -301,13 +301,12 @@ public class CircularOrbit
         final double r  = FastMath.sqrt(r2);
         final double V2 = pvV.getNormSq();
         final double rV2OnMu = r * V2 / mu;
+        a = r / (2 - rV2OnMu);
 
-        if (rV2OnMu > 2) {
+        if (!isElliptical()) {
             throw new OrekitIllegalArgumentException(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS,
                                                      getClass().getName());
         }
-
-        a = r / (2 - rV2OnMu);
 
         // compute inclination
         final Vector3D momentum = pvCoordinates.getMomentum();
