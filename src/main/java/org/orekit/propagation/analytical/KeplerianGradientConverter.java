@@ -62,7 +62,7 @@ class KeplerianGradientConverter extends AbstractAnalyticalGradientConverter {
         final Gradient mu = zero.add(propagator.getInitialState().getMu());
 
         // Return the "Field" propagator
-        return new FieldKeplerianPropagator<Gradient>(state.getOrbit(), provider, mu);
+        return new FieldKeplerianPropagator<>(state.getOrbit(), provider, mu);
 
     }
 
