@@ -92,7 +92,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
             if (context.inTurnTimeRange()) {
 
                 // handling both noon and midnight turns at once
-                final UnivariateDerivative2              beta     = context.betaDS();
+                final UnivariateDerivative2              beta     = context.betaD2();
                 final FieldSinCos<UnivariateDerivative2> scBeta   = FastMath.sinCos(beta);
                 final UnivariateDerivative2              cosBeta  = scBeta.cos();
                 final UnivariateDerivative2              sinBeta  = scBeta.sin();
@@ -135,7 +135,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
             if (context.inTurnTimeRange()) {
 
                 // handling both noon and midnight turns at once
-                final FieldUnivariateDerivative2<T>              beta    = context.betaDS();
+                final FieldUnivariateDerivative2<T>              beta    = context.betaD2();
                 final FieldSinCos<FieldUnivariateDerivative2<T>> scBeta  = FastMath.sinCos(beta);
                 final FieldUnivariateDerivative2<T>              cosBeta = scBeta.cos();
                 final FieldUnivariateDerivative2<T>              sinBeta = scBeta.sin();

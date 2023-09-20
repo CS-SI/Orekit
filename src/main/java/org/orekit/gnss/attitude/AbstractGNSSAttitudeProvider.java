@@ -182,6 +182,21 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
 
     }
 
+    /** Get provider for Sun position.
+     * @return provider for Sun position
+     * @since 12.0
+     */
+    protected ExtendedPVCoordinatesProvider getSun() {
+        return sun;
+    }
+
+    /** Get inertial frame where velocity are computed.
+     * @return inertial frame where velocity are computed
+     */
+    protected Frame getInertialFrame() {
+        return inertialFrame;
+    }
+
     /** Select the
     /** Compute GNSS attitude with midnight/noon yaw turn correction.
      * @param context context data for attitude computation
