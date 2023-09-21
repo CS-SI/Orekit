@@ -27,6 +27,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.MatricesHarvester;
@@ -47,6 +48,7 @@ import org.orekit.utils.AbsolutePVCoordinatesTest;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -311,8 +313,7 @@ class OrbitBlenderTest {
         orbitSample.add(nextTabulatedOrbit);
 
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
-        final TimeInterpolator<Orbit> orbitBlender =
-                new OrbitBlender(blendingFunction, propagator, outputFrame);
+        final TimeInterpolator<Orbit> orbitBlender = new OrbitBlender(blendingFunction, propagator, outputFrame);
 
         // When & Then
         final double epsilon = 1e-8; // 10 nm
@@ -360,13 +361,15 @@ class OrbitBlenderTest {
     void testErrorThrownWhenUsingNonInertialFrame() {
         // Given
         final SmoothStepFactory.SmoothStepFunction blendingFunctionMock = Mockito.mock(
-                SmoothStepFactory.SmoothStepFunction.class);
+              SmoothStepFactory.SmoothStepFunction.class);
 
         final AbstractAnalyticalPropagator propagatorMock =
-                Mockito.mock(AbstractAnalyticalPropagator.class);
+              Mockito.mock(AbstractAnalyticalPropagator.class);
 
         final Frame nonInertialFrame = Mockito.mock(Frame.class);
+        final String frameName = "frameName";
         Mockito.when(nonInertialFrame.isPseudoInertial()).thenReturn(false);
+        Mockito.when(nonInertialFrame.getName()).thenReturn(frameName);
 
         // When & Then
         Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
@@ -374,7 +377,8 @@ class OrbitBlenderTest {
                                                                           propagatorMock,
                                                                           nonInertialFrame));
 
-        Assertions.assertEquals("non pseudo-inertial frame \"null\"", thrown.getMessage());
+        Assertions.assertEquals(MessageFormat.format(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME.getSourceString(), frameName),
+                                thrown.getMessage());
     }
 
     @Test
@@ -384,10 +388,10 @@ class OrbitBlenderTest {
 
         // Create blender
         final SmoothStepFactory.SmoothStepFunction blendingFunctionMock = Mockito.mock(
-                SmoothStepFactory.SmoothStepFunction.class);
+              SmoothStepFactory.SmoothStepFunction.class);
 
         final AbstractAnalyticalPropagator propagatorMock =
-                Mockito.mock(AbstractAnalyticalPropagator.class);
+              Mockito.mock(AbstractAnalyticalPropagator.class);
 
         final Frame inertialFrame = Mockito.mock(Frame.class);
         Mockito.when(inertialFrame.isPseudoInertial()).thenReturn(true);
@@ -400,8 +404,11 @@ class OrbitBlenderTest {
         final Orbit orbit1Mock = Mockito.mock(Orbit.class);
         final Orbit orbit2Mock = Mockito.mock(Orbit.class);
 
-        Mockito.when(orbit1Mock.getMu()).thenReturn(1.);
-        Mockito.when(orbit2Mock.getMu()).thenReturn(2.);
+        final double firstMu  = 1.;
+        final double secondMu = 2.;
+
+        Mockito.when(orbit1Mock.getMu()).thenReturn(firstMu);
+        Mockito.when(orbit2Mock.getMu()).thenReturn(secondMu);
 
         sample.add(orbit1Mock);
         sample.add(orbit2Mock);
@@ -410,7 +417,8 @@ class OrbitBlenderTest {
         Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
                                                    () -> interpolator.interpolate(new AbsoluteDate(), sample));
 
-        Assertions.assertEquals("first orbit mu 1 does not match second orbit mu 2", thrown.getMessage());
+        Assertions.assertEquals(MessageFormat.format(OrekitMessages.ORBITS_MUS_MISMATCH.getSourceString(), firstMu, secondMu),
+                                thrown.getMessage());
     }
 
 }

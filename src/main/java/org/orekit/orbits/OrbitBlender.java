@@ -19,6 +19,7 @@ package org.orekit.orbits;
 import org.hipparchus.analysis.polynomials.SmoothStepFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -33,42 +34,60 @@ import java.util.List;
  * "Efficient Covariance Interpolation using Blending of Approximate State Error Transitions" by Sergei Tanygin, and applying
  * it to orbit states instead of covariances.
  * <p>
- * It propagates tabulated values to the interpolating time using given analytical propagator and then blend each propagated
+ * It propagates tabulated values to the interpolating time using given propagator and then blend each propagated
  * states using a smoothstep function. It gives especially good results as explained
  * <a href="https://orekit.org/doc/technical-notes/Implementation_of_covariance_interpolation_in_Orekit.pdf">here</a>
  * compared to Hermite interpolation when time steps between tabulated values get significant (In LEO, &gt; 10 mn for
  * example).
+ * <p>
+ * <b>In most cases, an analytical propagator would be used to quickly fill the gap between tabulated values and recreate
+ * a dense ephemeris</b>.
+ * <p>
+ * However, a fully configured and accurate numerical propagator can be used to recreate an even
+ * more precise ephemeris in case the initial tabulated values were obtained from an external source.
+ * <p>
+ * Note that in the current implementation, the returned blended orbit is necessarily Cartesian.
  *
  * @author Vincent Cucchietti
  * @see org.hipparchus.analysis.polynomials.SmoothStepFactory
  * @see org.hipparchus.analysis.polynomials.SmoothStepFactory.SmoothStepFunction
+ * @see Propagator
+ * @see AbstractAnalyticalPropagator
+ *
+ * @since 12.0
  */
 public class OrbitBlender extends AbstractOrbitInterpolator {
 
-    /** Analytical propagator used to propagate tabulated orbits to interpolating time. */
-    private final AbstractAnalyticalPropagator analyticalPropagator;
+    /** Propagator used to propagate tabulated orbits to interpolating time. */
+    private final Propagator blendingPropagator;
 
     /** Blending function. */
     private final SmoothStepFactory.SmoothStepFunction blendingFunction;
 
     /**
      * Default constructor.
+     * <p>
+     * <b>In most cases, an analytical propagator would be used to quickly fill the gap between tabulated values and recreate
+     * a dense ephemeris</b>.
+     * <p>
+     * However, a fully configured and accurate numerical propagator can be used to recreate an even
+     * more precise ephemeris in case the initial tabulated values were obtained from an external source.
      *
      * @param blendingFunction
      * {@link org.hipparchus.analysis.polynomials.SmoothStepFactory.SmoothStepFunction smoothstep function} used for
      * blending
-     * @param analyticalPropagator analytical propagator used to propagate tabulated orbits to interpolating time
+     * @param blendingPropagator propagator used to propagate tabulated orbits to interpolating time
      * @param outputInertialFrame output inertial frame
      *
      * @throws OrekitException if output frame is not inertial
      * @see org.hipparchus.analysis.polynomials.SmoothStepFactory.SmoothStepFunction
      */
     public OrbitBlender(final SmoothStepFactory.SmoothStepFunction blendingFunction,
-                        final AbstractAnalyticalPropagator analyticalPropagator,
+                        final Propagator blendingPropagator,
                         final Frame outputInertialFrame) {
         super(DEFAULT_INTERPOLATION_POINTS, 0., outputInertialFrame);
-        this.blendingFunction     = blendingFunction;
-        this.analyticalPropagator = analyticalPropagator;
+        this.blendingFunction   = blendingFunction;
+        this.blendingPropagator = blendingPropagator;
     }
 
     /** {@inheritDoc} */
@@ -82,8 +101,8 @@ public class OrbitBlender extends AbstractOrbitInterpolator {
 
         // Propagate orbits
         final AbsoluteDate interpolationDate = interpolationData.getInterpolationDate();
-        final Orbit forwardedOrbit  = propagateOrbitAnalytically(previousOrbit, interpolationDate);
-        final Orbit backwardedOrbit = propagateOrbitAnalytically(nextOrbit, interpolationDate);
+        final Orbit forwardedOrbit  = propagateOrbit(previousOrbit, interpolationDate);
+        final Orbit backwardedOrbit = propagateOrbit(nextOrbit, interpolationDate);
 
         // Extract position-velocity-acceleration coordinates
         final PVCoordinates forwardedPV  = forwardedOrbit.getPVCoordinates(outputInertialFrame);
@@ -100,16 +119,16 @@ public class OrbitBlender extends AbstractOrbitInterpolator {
     }
 
     /**
-     * Propagate orbit using predefined {@link AbstractAnalyticalPropagator analytical propagator}.
+     * Propagate orbit using predefined {@link Propagator propagator}.
      *
      * @param tabulatedOrbit tabulated orbit to propagate
      * @param propagationDate propagation date
      *
      * @return orbit propagated to propagation date
      */
-    private Orbit propagateOrbitAnalytically(final Orbit tabulatedOrbit,
-                                             final AbsoluteDate propagationDate) {
-        analyticalPropagator.resetInitialState(new SpacecraftState(tabulatedOrbit));
-        return analyticalPropagator.propagate(propagationDate).getOrbit();
+    private Orbit propagateOrbit(final Orbit tabulatedOrbit,
+                                 final AbsoluteDate propagationDate) {
+        blendingPropagator.resetInitialState(new SpacecraftState(tabulatedOrbit));
+        return blendingPropagator.propagate(propagationDate).getOrbit();
     }
 }

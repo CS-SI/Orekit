@@ -21,8 +21,11 @@
   </properties>
   <body>
   <release version="12.0" date="TBD" description="TBD">
+      <action dev="vincent" type="update" issue="1195">
+        Updated OrbitBlender API and improved javadoc.
+      </action>
       <action dev="serrof" type="add" issue="1197">
-          Use of FieldOrbit in gradient converters only when applicable.
+        Use of FieldOrbit in gradient converters only when applicable.
       </action>
       <action dev="luc" type="update" >
         Improved (a lot) performance of GNSS attitude models.
@@ -31,7 +34,7 @@
         Replaced {Field}DerivativeStructure by {Field}UnivariateDerivative2 in GNSS attitude context.
       </action>
       <action dev="serrof" type="add" issue="1194">
-          Added ways to create FieldOrbit from Orbit.
+        Added ways to create FieldOrbit from Orbit.
       </action>
       <action dev="luc" type="fix" issue="1014" due-to="Li Rongwang">
         Added support for more weird dates in SP3 files.
