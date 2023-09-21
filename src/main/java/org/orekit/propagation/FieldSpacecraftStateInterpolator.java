@@ -70,31 +70,26 @@ import java.util.stream.Collectors;
 public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK>>
         extends AbstractFieldTimeInterpolator<FieldSpacecraftState<KK>, KK> {
 
-    // CHECKSTYLE: stop VisibilityModifier check
     /**
      * Output frame.
      * <p><b>Must be inertial</b> if interpolating spacecraft states defined by orbit</p>
      */
-    protected final Frame outputFrame;
+    private final Frame outputFrame;
 
     /** Orbit interpolator. */
-    protected final Optional<FieldTimeInterpolator<FieldOrbit<KK>, KK>> orbitInterpolator;
+    private final FieldTimeInterpolator<FieldOrbit<KK>, KK> orbitInterpolator;
 
     /** Absolute position-velocity-acceleration interpolator. */
-    protected final Optional<FieldTimeInterpolator<FieldAbsolutePVCoordinates<KK>, KK>> absPVAInterpolator;
+    private final FieldTimeInterpolator<FieldAbsolutePVCoordinates<KK>, KK> absPVAInterpolator;
 
     /** Mass interpolator. */
-    protected final Optional<FieldTimeInterpolator<TimeStampedField<KK>, KK>> massInterpolator;
+    private final FieldTimeInterpolator<TimeStampedField<KK>, KK> massInterpolator;
 
     /** Attitude interpolator. */
-    protected final Optional<FieldTimeInterpolator<FieldAttitude<KK>, KK>> attitudeInterpolator;
+    private final FieldTimeInterpolator<FieldAttitude<KK>, KK> attitudeInterpolator;
 
     /** Additional state interpolator. */
-    protected final Optional<FieldTimeInterpolator<TimeStampedField<KK>, KK>> additionalStateInterpolator;
-
-    /** Flag specifying if spacecraft states are defined using an orbit or an absolute position-velocity-acceleration. */
-    protected boolean areOrbitDefined;
-    // CHECKSTYLE: resume VisibilityModifier check
+    private final FieldTimeInterpolator<TimeStampedField<KK>, KK> additionalStateInterpolator;
 
     /**
      * Simplest constructor to create a default Hermite interpolator for every spacecraft state field.
@@ -258,11 +253,11 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
         super(DEFAULT_INTERPOLATION_POINTS, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC);
         checkAtLeastOneInterpolator(orbitInterpolator, absPVAInterpolator);
         this.outputFrame                 = outputFrame;
-        this.orbitInterpolator           = Optional.ofNullable(orbitInterpolator);
-        this.absPVAInterpolator          = Optional.ofNullable(absPVAInterpolator);
-        this.massInterpolator            = Optional.ofNullable(massInterpolator);
-        this.attitudeInterpolator        = Optional.ofNullable(attitudeInterpolator);
-        this.additionalStateInterpolator = Optional.ofNullable(additionalStateInterpolator);
+        this.orbitInterpolator           = orbitInterpolator;
+        this.absPVAInterpolator          = absPVAInterpolator;
+        this.massInterpolator            = massInterpolator;
+        this.attitudeInterpolator        = attitudeInterpolator;
+        this.additionalStateInterpolator = additionalStateInterpolator;
     }
 
     /**
@@ -300,8 +295,8 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
 
             // Check interpolator and sample consistency
             SpacecraftStateInterpolator.checkSampleAndInterpolatorConsistency(nonFieldSampleList,
-                                                                              orbitInterpolator.isPresent(),
-                                                                              absPVAInterpolator.isPresent());
+                                                                              orbitInterpolator != null,
+                                                                              absPVAInterpolator != null);
         }
 
         return super.interpolate(interpolationDate, sample);
@@ -344,8 +339,8 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
         final FieldAbsoluteDate<KK> interpolationDate = interpolationData.getInterpolationDate();
 
         // Get first state definition
-        final FieldSpacecraftState<KK> earliestState = interpolationData.getNeighborList().get(0);
-        this.areOrbitDefined = earliestState.isOrbitDefined();
+        final FieldSpacecraftState<KK> earliestState   = interpolationData.getNeighborList().get(0);
+        final boolean                  areOrbitDefined = earliestState.isOrbitDefined();
 
         // Prepare samples
         final List<FieldAttitude<KK>> attitudes = new ArrayList<>();
@@ -379,16 +374,16 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
             }
 
             // Add mass sample
-            if (massInterpolator.isPresent()) {
+            if (massInterpolator != null) {
                 masses.add(new TimeStampedField<>(state.getMass(), state.getDate()));
             }
 
             // Add attitude sample if it is interpolated
-            if (attitudeInterpolator.isPresent()) {
+            if (attitudeInterpolator != null) {
                 attitudes.add(state.getAttitude());
             }
 
-            if (additionalStateInterpolator.isPresent()) {
+            if (additionalStateInterpolator != null) {
 
                 // Add all additional state values if they are interpolated
                 for (final Map.Entry<String, List<Pair<FieldAbsoluteDate<KK>, KK[]>>> entry : additionalSample.entrySet()) {
@@ -406,8 +401,8 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
         // Interpolate mass
         final KK one = interpolationData.getOne();
         final KK interpolatedMass;
-        if (massInterpolator.isPresent()) {
-            interpolatedMass = massInterpolator.get().interpolate(interpolationDate, masses).getValue();
+        if (massInterpolator != null) {
+            interpolatedMass = massInterpolator.interpolate(interpolationDate, masses).getValue();
         }
         else {
             interpolatedMass = one.multiply(SpacecraftState.DEFAULT_MASS);
@@ -416,7 +411,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
         // Interpolate additional states and derivatives
         final FieldArrayDictionary<KK> interpolatedAdditional;
         final FieldArrayDictionary<KK> interpolatedAdditionalDot;
-        if (additionalStateInterpolator.isPresent()) {
+        if (additionalStateInterpolator != null) {
             interpolatedAdditional    = interpolateAdditionalState(interpolationDate, additionalSample);
             interpolatedAdditionalDot = interpolateAdditionalState(interpolationDate, additionalDotSample);
         }
@@ -426,9 +421,9 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
         }
 
         // Interpolate orbit
-        if (areOrbitDefined && orbitInterpolator.isPresent()) {
+        if (areOrbitDefined && orbitInterpolator != null) {
             final FieldOrbit<KK> interpolatedOrbit =
-                    orbitInterpolator.get().interpolate(interpolationDate, orbitSample);
+                    orbitInterpolator.interpolate(interpolationDate, orbitSample);
 
             final FieldAttitude<KK> interpolatedAttitude =
                     interpolateAttitude(interpolationDate, attitudes, interpolatedOrbit);
@@ -437,10 +432,10 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
                                               interpolatedAdditional, interpolatedAdditionalDot);
         }
         // Interpolate absolute position-velocity-acceleration
-        else if (!areOrbitDefined && absPVAInterpolator.isPresent()) {
+        else if (!areOrbitDefined && absPVAInterpolator != null) {
 
             final FieldAbsolutePVCoordinates<KK> interpolatedAbsPva =
-                    absPVAInterpolator.get().interpolate(interpolationDate, absPVASample);
+                    absPVAInterpolator.interpolate(interpolationDate, absPVASample);
 
             final FieldAttitude<KK> interpolatedAttitude =
                     interpolateAttitude(interpolationDate, attitudes, interpolatedAbsPva);
@@ -468,7 +463,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
      * @see Optional
      */
     public Optional<FieldTimeInterpolator<FieldOrbit<KK>, KK>> getOrbitInterpolator() {
-        return orbitInterpolator;
+        return Optional.ofNullable(orbitInterpolator);
     }
 
     /** Get absolute position-velocity-acceleration interpolator.
@@ -477,7 +472,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
      * @see Optional
      */
     public Optional<FieldTimeInterpolator<FieldAbsolutePVCoordinates<KK>, KK>> getAbsPVAInterpolator() {
-        return absPVAInterpolator;
+        return Optional.ofNullable(absPVAInterpolator);
     }
 
     /** Get mass interpolator.
@@ -486,7 +481,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
      * @see Optional
      */
     public Optional<FieldTimeInterpolator<TimeStampedField<KK>, KK>> getMassInterpolator() {
-        return massInterpolator;
+        return Optional.ofNullable(massInterpolator);
     }
 
     /** Get attitude interpolator.
@@ -495,7 +490,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
      * @see Optional
      */
     public Optional<FieldTimeInterpolator<FieldAttitude<KK>, KK>> getAttitudeInterpolator() {
-        return attitudeInterpolator;
+        return Optional.ofNullable(attitudeInterpolator);
     }
 
     /** Get additional state interpolator.
@@ -504,7 +499,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
      * @see Optional
      */
     public Optional<FieldTimeInterpolator<TimeStampedField<KK>, KK>> getAdditionalStateInterpolator() {
-        return additionalStateInterpolator;
+        return Optional.ofNullable(additionalStateInterpolator);
     }
 
     /**
@@ -580,7 +575,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
 
                     // Interpolate
                     currentInterpolatedAdditional[i] =
-                            additionalStateInterpolator.get().interpolate(interpolationDate, currentValueSample).getValue();
+                            additionalStateInterpolator.interpolate(interpolationDate, currentValueSample).getValue();
                 }
 
                 interpolatedAdditional.put(entry.getKey(), currentInterpolatedAdditional);
@@ -608,7 +603,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
             return attitudeProvider.getAttitude(pvProvider, interpolationDate, outputFrame);
         }
         else {
-            return attitudeInterpolator.get().interpolate(interpolationDate, attitudes);
+            return attitudeInterpolator.interpolate(interpolationDate, attitudes);
         }
     }
 }

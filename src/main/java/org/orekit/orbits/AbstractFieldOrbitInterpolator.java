@@ -37,10 +37,8 @@ import java.util.stream.Collectors;
 public abstract class AbstractFieldOrbitInterpolator<KK extends CalculusFieldElement<KK>>
         extends AbstractFieldTimeInterpolator<FieldOrbit<KK>, KK> {
 
-    // CHECKSTYLE: stop VisibilityModifier check
     /** Output inertial frame. */
-    protected final Frame outputInertialFrame;
-    // CHECKSTYLE: resume VisibilityModifier check
+    private final Frame outputInertialFrame;
 
     /**
      * Constructor.

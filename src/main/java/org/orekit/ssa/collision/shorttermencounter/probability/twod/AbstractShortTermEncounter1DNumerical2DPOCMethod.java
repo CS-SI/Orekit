@@ -49,13 +49,11 @@ import org.orekit.utils.Fieldifier;
 public abstract class AbstractShortTermEncounter1DNumerical2DPOCMethod
         extends AbstractShortTermEncounter2DPOCMethod {
 
-    // CHECKSTYLE: stop VisibilityModifier check
     /** Default univariate function numerical integrator. */
-    protected final UnivariateIntegrator integrator;
+    private final UnivariateIntegrator integrator;
 
     /** Default maximum number of function evaluation when integrating. */
-    protected final int maxNbOfEval;
-    // CHECKSTYLE: resume VisibilityModifier check
+    private final int maxNbOfEval;
 
     /**
      * Customizable constructor.
@@ -188,7 +186,7 @@ public abstract class AbstractShortTermEncounter1DNumerical2DPOCMethod
         final ShortTermEncounter2DDefinition encounterDefinition = new ShortTermEncounter2DDefinition(
                 primaryAtTCA, primaryCovariance, primaryRadius,
                 secondaryAtTCA, secondaryCovariance, secondaryRadius,
-                EncounterLOFType.DEFAULT, tcaTolerance);
+                EncounterLOFType.DEFAULT, DEFAULT_TCA_DIFFERENCE_TOLERANCE);
 
         return compute(encounterDefinition, customIntegrator, customMaxNbOfEval, zeroThreshold);
     }
@@ -226,7 +224,7 @@ public abstract class AbstractShortTermEncounter1DNumerical2DPOCMethod
                 new FieldShortTermEncounter2DDefinition<>(
                         primaryAtTCA, primaryCovariance, primaryRadius,
                         secondaryAtTCA, secondaryCovariance, secondaryRadius,
-                        EncounterLOFType.DEFAULT, tcaTolerance);
+                        EncounterLOFType.DEFAULT, DEFAULT_TCA_DIFFERENCE_TOLERANCE);
 
         return compute(encounterDefinition, customIntegrator, customMaxNbOfEval, zeroThreshold);
     }

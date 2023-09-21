@@ -31,21 +31,19 @@ import org.orekit.utils.PVCoordinates;
  */
 public abstract class AbstractEncounterLOF implements EncounterLOF {
 
-    // CHECKSTYLE: stop VisibilityModifier check
     /**
      * Other position and velocity of the encounter frame. Can be null.
      * <p>
-     * <b>BEWARE: This will not be the origin of the encounter local orbital frame !</b>
+     * <b>BEWARE: This is not the origin of the encounter local orbital frame !</b>
      */
-    protected PVCoordinates other;
+    private PVCoordinates other;
 
     /**
      * Other position and velocity of the encounter frame. Can be null.
      * <p>
-     * <b>BEWARE: This will not be the origin of the encounter local orbital frame !</b>
+     * <b>BEWARE: This is not the origin of the encounter local orbital frame !</b>
      */
-    protected FieldPVCoordinates<?> fieldOther;
-    // CHECKSTYLE: resume VisibilityModifier check
+    private FieldPVCoordinates<?> fieldOther;
 
     /**
      * Constructor with {@link PVCoordinates}.

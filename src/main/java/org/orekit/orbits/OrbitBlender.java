@@ -105,8 +105,8 @@ public class OrbitBlender extends AbstractOrbitInterpolator {
         final Orbit backwardedOrbit = propagateOrbit(nextOrbit, interpolationDate);
 
         // Extract position-velocity-acceleration coordinates
-        final PVCoordinates forwardedPV  = forwardedOrbit.getPVCoordinates(outputInertialFrame);
-        final PVCoordinates backwardedPV = backwardedOrbit.getPVCoordinates(outputInertialFrame);
+        final PVCoordinates forwardedPV  = forwardedOrbit.getPVCoordinates(getOutputInertialFrame());
+        final PVCoordinates backwardedPV = backwardedOrbit.getPVCoordinates(getOutputInertialFrame());
 
         // Blend PV coordinates
         final double timeParameter = getTimeParameter(interpolationDate, previousOrbit.getDate(), nextOrbit.getDate());
@@ -115,7 +115,7 @@ public class OrbitBlender extends AbstractOrbitInterpolator {
         final PVCoordinates blendedPV = forwardedPV.blendArithmeticallyWith(backwardedPV, blendingValue);
 
         // Output new blended instance
-        return new CartesianOrbit(blendedPV, outputInertialFrame, interpolationDate, previousOrbit.getMu());
+        return new CartesianOrbit(blendedPV, getOutputInertialFrame(), interpolationDate, previousOrbit.getMu());
     }
 
     /**

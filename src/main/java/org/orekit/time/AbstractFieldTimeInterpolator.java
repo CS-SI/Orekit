@@ -26,7 +26,6 @@ import org.orekit.utils.ImmutableFieldTimeStampedCache;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,13 +46,11 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
     /** Default number of interpolation points. */
     public static final int DEFAULT_INTERPOLATION_POINTS = 2;
 
-    // CHECKSTYLE: stop VisibilityModifier check
     /** The extrapolation threshold beyond which the propagation will fail. */
-    protected final double extrapolationThreshold;
+    private final double extrapolationThreshold;
 
     /** Neighbor size. */
-    protected final int interpolationPoints;
-    // CHECKSTYLE: resume VisibilityModifier check
+    private final int interpolationPoints;
 
     /**
      * Constructor.
@@ -118,20 +115,17 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
     /**
      * Add all lowest level sub interpolators to the sub interpolator list.
      *
-     * @param optionalSubInterpolator optional sub interpolator to add
+     * @param subInterpolator optional sub interpolator to add
      * @param subInterpolators list of sub interpolators
      * @param <S> type of the field element
      */
     protected <S extends CalculusFieldElement<S>> void addOptionalSubInterpolatorIfDefined(
-            final Optional<? extends FieldTimeInterpolator<? extends FieldTimeStamped<S>, S>> optionalSubInterpolator,
+            final FieldTimeInterpolator<? extends FieldTimeStamped<S>, S> subInterpolator,
             final List<FieldTimeInterpolator<? extends FieldTimeStamped<S>, S>> subInterpolators) {
-
         // Add all lowest level sub interpolators
-        if (optionalSubInterpolator.isPresent()) {
-            final FieldTimeInterpolator<? extends FieldTimeStamped<S>, S> subInterpolator = optionalSubInterpolator.get();
+        if (subInterpolator != null) {
             subInterpolators.addAll(subInterpolator.getSubInterpolators());
         }
-
     }
 
     /**
@@ -165,7 +159,7 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
      * <p>
      * It makes the interpolator thread safe.
      */
-    protected class InterpolationData {
+    public class InterpolationData {
 
         /** Interpolation date. */
         private final FieldAbsoluteDate<KK> interpolationDate;
