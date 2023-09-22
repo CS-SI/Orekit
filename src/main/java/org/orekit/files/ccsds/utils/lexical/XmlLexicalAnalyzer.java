@@ -178,7 +178,7 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
                 // it is the end tag of a leaf element, so we just store the characters
                 // and will either use them or drop them when this next tag is seen
                 currentLineNumber = locator.getLineNumber();
-                currentContent    = new String(ch, start, length);
+                this.currentContent = this.currentContent + new String(ch, start, length);
             }
         }
 
@@ -188,7 +188,7 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
 
             currentElementName = qName;
             currentLineNumber  = locator.getLineNumber();
-            currentContent     = null;
+            currentContent     = "";
 
             // save attributes in separate map, to avoid overriding during parsing
             if (attributes.getLength() == 0) {
@@ -201,8 +201,8 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
             }
 
             for (final ParseToken token : getBuilder(qName).
-                                          buildTokens(true, false, qName, currentContent, currentAttributes,
-                                          currentLineNumber, source.getName())) {
+                                          buildTokens(true, false, qName, getContent(), currentAttributes,
+                                                      currentLineNumber, source.getName())) {
                 messageParser.process(token);
             }
             lastQname    = qName;
@@ -210,11 +210,15 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
 
         }
 
+        private String getContent() {
+            return currentContent.isEmpty() ? null : currentContent;
+        }
+
         /** {@inheritDoc} */
         @Override
         public void endElement(final String uri, final String localName, final String qName) {
 
-            if (currentContent == null) {
+            if (currentContent == null || currentContent.isEmpty()) {
                 // for an end tag without content, we keep the line number of the end tag itself
                 currentLineNumber = locator.getLineNumber();
             }
@@ -223,7 +227,7 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
             final boolean isLeaf = lastWasStart && qName.equals(lastQname);
 
             for (final ParseToken token : getBuilder(qName).
-                                          buildTokens(false, isLeaf, qName, currentContent, currentAttributes,
+                                          buildTokens(false, isLeaf, qName, getContent(), currentAttributes,
                                                       currentLineNumber, source.getName())) {
                 messageParser.process(token);
             }
@@ -233,7 +237,7 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
             currentElementName = null;
             currentAttributes  = null;
             currentLineNumber  = -1;
-            currentContent     = null;
+            currentContent     = "";
 
         }
 
