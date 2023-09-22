@@ -21,6 +21,15 @@
   </properties>
   <body>
   <release version="12.0" date="TBD" description="TBD">
+      <action dev="vincent" type="update" issue="1169">
+        Refactored MarshallSolarActivityFutureEstimation so that it follows the same architecture as CssiSpaceWeatherData
+      </action>
+      <action dev="vincent" type="fix" issue="1168">
+        Fixed Marshall Solar Activity website link in MarshallSolarActivityFutureEstimation javadoc
+      </action>
+      <action dev="vincent" type="fix" issue="1072">
+        Fixed thread interference using CssiSpaceWeatherData and MarshallSolarActivityFutureEstimation
+      </action>
       <action dev="vincent" type="update" issue="1195">
         Updated OrbitBlender API and improved javadoc.
       </action>
