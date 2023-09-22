@@ -170,9 +170,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
             }
         }
 
-        for (final ParameterDriver driver : model.getParametersDrivers()) {
-            addSupportedParameter(driver);
-        }
+        addSupportedParameters(model.getParametersDrivers());
     }
 
     /** Get the mass.

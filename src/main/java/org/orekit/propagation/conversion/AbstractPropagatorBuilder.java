@@ -362,11 +362,13 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         }
     }
 
-    /** Add a supported parameter.
-     * @param driver driver for the parameter
+    /**
+     * Add supported parameters.
+     *
+     * @param drivers drivers for the parameters
      */
-    protected void addSupportedParameter(final ParameterDriver driver) {
-        propagationDrivers.add(driver);
+    protected void addSupportedParameters(final List<ParameterDriver> drivers) {
+        drivers.forEach(propagationDrivers::add);
         propagationDrivers.sort();
     }
 

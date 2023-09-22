@@ -19,7 +19,6 @@ package org.orekit.propagation.conversion;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -212,9 +211,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
             }
         }
 
-        for (final ParameterDriver driver : model.getParametersDrivers()) {
-            addSupportedParameter(driver);
-        }
+        addSupportedParameters(model.getParametersDrivers());
     }
 
     /** Reset the orbit in the propagator builder.
