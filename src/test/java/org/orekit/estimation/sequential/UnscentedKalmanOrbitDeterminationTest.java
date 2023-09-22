@@ -39,9 +39,7 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataFilter;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DataSource;
 import org.orekit.data.GzipFilter;
 import org.orekit.data.UnixCompressFilter;
@@ -378,8 +376,6 @@ public class UnscentedKalmanOrbitDeterminationTest {
             final MarshallSolarActivityFutureEstimation msafe =
                             new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
                                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-            final DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
-            manager.feed(msafe.getSupportedNames(), msafe);
             final Atmosphere atmosphere = new NRLMSISE00(msafe, CelestialBodyFactory.getSun(), centralBody);
 
             // Drag force

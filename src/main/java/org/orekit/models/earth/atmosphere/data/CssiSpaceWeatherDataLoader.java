@@ -17,11 +17,16 @@
 
 package org.orekit.models.earth.atmosphere.data;
 
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.TimeScale;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.HashSet;
@@ -30,39 +35,176 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.orekit.data.DataLoader;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeStamped;
-
 /**
- * This class reads solar activity data from CSSI Space Weather files for the
- * class {@link CssiSpaceWeatherData}.
+ * This class reads solar activity data from CSSI Space Weather files for the class {@link CssiSpaceWeatherData}.
  * <p>
- * The data are retrieved through space weather files offered by CSSI/AGI. The
- * data can be retrieved on the AGI
+ * The data are retrieved through space weather files offered by CSSI/AGI. The data can be retrieved on the AGI
  * <a href="ftp://ftp.agi.com/pub/DynamicEarthData/SpaceWeather-All-v1.2.txt">
- * FTP</a>. This file is updated several times a day by using several sources
- * mentioned in the <a href="http://celestrak.com/SpaceData/SpaceWx-format.php">
- * Celestrak space weather data documentation</a>.
+ * FTP</a>. This file is updated several times a day by using several sources mentioned in the <a
+ * href="http://celestrak.com/SpaceData/SpaceWx-format.php"> Celestrak space weather data documentation</a>.
  * </p>
  *
  * @author Clément Jonglez
  * @since 10.2
  */
-public class CssiSpaceWeatherDataLoader implements DataLoader {
+public class CssiSpaceWeatherDataLoader extends AbstractSolarActivityDataLoader<CssiSpaceWeatherDataLoader.LineParameters> {
+
+    /** Date of last data before the prediction starts. */
+    private AbsoluteDate lastObservedDate;
+
+    /** Date of last daily prediction before the monthly prediction starts. */
+    private AbsoluteDate lastDailyPredictedDate;
+
+    /** Data set. */
+    private final SortedSet<LineParameters> set;
+
+    /**
+     * Constructor.
+     *
+     * @param utc UTC time scale
+     */
+    public CssiSpaceWeatherDataLoader(final TimeScale utc) {
+        super(utc);
+        this.lastDailyPredictedDate = null;
+        this.lastObservedDate       = null;
+        this.set                    = new TreeSet<>(new ChronologicalComparator());
+    }
+
+    /**
+     * Checks if the string contains a floating point number.
+     *
+     * @param strNum string to check
+     *
+     * @return true if string contains a valid floating point number, else false
+     */
+    private static boolean isNumeric(final String strNum) {
+        if (strNum == null) {
+            return false;
+        }
+        try {
+            Double.parseDouble(strNum);
+        }
+        catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    public void loadData(final InputStream input, final String name) throws IOException, ParseException, OrekitException {
+
+        int                     lineNumber   = 0;
+        String                  line         = null;
+        final Set<AbsoluteDate> parsedEpochs = new HashSet<>();
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
+
+            final CommonLineReader reader = new CommonLineReader(br);
+
+            for (line = reader.readLine(); line != null; line = reader.readLine()) {
+                lineNumber++;
+
+                line = line.trim();
+                if (!line.isEmpty()) {
+
+                    if (line.equals("BEGIN DAILY_PREDICTED")) {
+                        lastObservedDate = set.last().getDate();
+                    }
+
+                    if (line.equals("BEGIN MONTHLY_FIT")) {
+                        lastDailyPredictedDate = set.last().getDate();
+                    }
+
+                    if (line.length() == 130 && isNumeric(line.substring(0, 4))) {
+                        // extract the data from the line
+                        final int          year  = Integer.parseInt(line.substring(0, 4));
+                        final int          month = Integer.parseInt(line.substring(5, 7));
+                        final int          day   = Integer.parseInt(line.substring(8, 10));
+                        final AbsoluteDate date  = new AbsoluteDate(year, month, day, getUTC());
+
+                        if (parsedEpochs.add(date)) { // Checking if entry doesn't exist yet
+                            final double[] threeHourlyKp = new double[8];
+                            /* Kp is written as an integer where a unit equals 0.1, the conversion is
+                             * Kp_double = 0.1 * double(Kp_integer) */
+                            for (int i = 0; i < 8; i++) {
+                                threeHourlyKp[i] = 0.1 * Double.parseDouble(line.substring(19 + 3 * i, 21 + 3 * i));
+                            }
+                            final double kpSum = 0.1 * Double.parseDouble(line.substring(43, 46));
+
+                            final double[] threeHourlyAp = new double[8];
+                            for (int i = 0; i < 8; i++) {
+                                threeHourlyAp[i] = Double.parseDouble(line.substring(47 + 4 * i, 50 + 4 * i));
+                            }
+                            final double apAvg = Double.parseDouble(line.substring(79, 82));
+
+                            final double f107Adj = Double.parseDouble(line.substring(93, 98));
+
+                            final int fluxQualifier = Integer.parseInt(line.substring(99, 100));
+
+                            final double ctr81Adj = Double.parseDouble(line.substring(101, 106));
+
+                            final double lst81Adj = Double.parseDouble(line.substring(107, 112));
+
+                            final double f107Obs = Double.parseDouble(line.substring(113, 118));
+
+                            final double ctr81Obs = Double.parseDouble(line.substring(119, 124));
+
+                            final double lst81Obs = Double.parseDouble(line.substring(125, 130));
+
+                            set.add(new LineParameters(date, threeHourlyKp, kpSum, threeHourlyAp, apAvg, f107Adj,
+                                                       fluxQualifier, ctr81Adj, lst81Adj, f107Obs, ctr81Obs, lst81Obs));
+                        }
+                    }
+                }
+            }
+        }
+        catch (NumberFormatException nfe) {
+            throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, name, line);
+        }
+
+        try {
+            setMinDate(set.first().getDate());
+            setMaxDate(set.last().getDate());
+        }
+        catch (NoSuchElementException nse) {
+            throw new OrekitException(nse, OrekitMessages.NO_DATA_IN_FILE, name);
+        }
+
+    }
+
+    /**
+     * Getter for the data set.
+     *
+     * @return the data set
+     */
+    @Override
+    public SortedSet<LineParameters> getDataSet() {
+        return set;
+    }
+
+    /**
+     * Gets the day (at data start) of the last daily data entry.
+     *
+     * @return the last daily predicted date
+     */
+    public AbsoluteDate getLastDailyPredictedDate() {
+        return lastDailyPredictedDate;
+    }
+
+    /**
+     * Gets the day (at data start) of the last observed data entry.
+     *
+     * @return the last observed date
+     */
+    public AbsoluteDate getLastObservedDate() {
+        return lastObservedDate;
+    }
 
     /** Container class for Solar activity indexes. */
-    public static class LineParameters implements TimeStamped, Serializable {
+    public static class LineParameters extends AbstractSolarActivityDataLoader.LineParameters {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 8151260459653484163L;
-
-        /** Entry date. */
-        private final AbsoluteDate date;
 
         /** Array of 8 three-hourly Kp indices for this entry. */
         private final double[] threeHourlyKp;
@@ -101,6 +243,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
 
         /**
          * Constructor.
+         *
          * @param date entry date
          * @param threeHourlyKp array of 8 three-hourly Kp indices for this entry
          * @param kpSum sum of the 8 Kp indices for the day expressed to the nearest third of a unit
@@ -115,39 +258,28 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
          * @param lst81Obs last 81-day arithmetic average of F10.7 (observed)
          */
         public LineParameters(final AbsoluteDate date, final double[] threeHourlyKp, final double kpSum,
-                final double[] threeHourlyAp, final double apAvg, final double f107Adj, final int fluxQualifier,
-                final double ctr81Adj, final double lst81Adj, final double f107Obs, final double ctr81Obs,
-                final double lst81Obs) {
-            this.date = date;
+                              final double[] threeHourlyAp, final double apAvg, final double f107Adj,
+                              final int fluxQualifier, final double ctr81Adj, final double lst81Adj,
+                              final double f107Obs, final double ctr81Obs, final double lst81Obs) {
+            super(date);
             this.threeHourlyKp = threeHourlyKp.clone();
-            this.kpSum = kpSum;
+            this.kpSum         = kpSum;
             this.threeHourlyAp = threeHourlyAp.clone();
-            this.apAvg = apAvg;
-            this.f107Adj = f107Adj;
+            this.apAvg         = apAvg;
+            this.f107Adj       = f107Adj;
             this.fluxQualifier = fluxQualifier;
-            this.ctr81Adj = ctr81Adj;
-            this.lst81Adj = lst81Adj;
-            this.f107Obs = f107Obs;
-            this.ctr81Obs = ctr81Obs;
-            this.lst81Obs = lst81Obs;
-        }
-
-        @Override
-        public AbsoluteDate getDate() {
-            return date;
-        }
-
-        /**
-         * Gets the array of the eight three-hourly Kp indices for the current entry.
-         * @return the array of eight three-hourly Kp indices
-         */
-        public double[] getThreeHourlyKp() {
-            return threeHourlyKp.clone();
+            this.ctr81Adj      = ctr81Adj;
+            this.lst81Adj      = lst81Adj;
+            this.f107Obs       = f107Obs;
+            this.ctr81Obs      = ctr81Obs;
+            this.lst81Obs      = lst81Obs;
         }
 
         /**
          * Gets the three-hourly Kp index at index i from the threeHourlyKp array.
+         *
          * @param i index of the Kp index to retrieve [0-7]
+         *
          * @return the three hourly Kp index at index i
          */
         public double getThreeHourlyKp(final int i) {
@@ -155,7 +287,28 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
         }
 
         /**
+         * Gets the three-hourly Ap index at index i from the threeHourlyAp array.
+         *
+         * @param i index of the Ap to retrieve [0-7]
+         *
+         * @return the three hourly Ap index at index i
+         */
+        public double getThreeHourlyAp(final int i) {
+            return threeHourlyAp[i];
+        }
+
+        /**
+         * Gets the array of the eight three-hourly Kp indices for the current entry.
+         *
+         * @return the array of eight three-hourly Kp indices
+         */
+        public double[] getThreeHourlyKp() {
+            return threeHourlyKp.clone();
+        }
+
+        /**
          * Gets the sum of all eight Kp indices for the current entry.
+         *
          * @return the sum of all eight Kp indices
          */
         public double getKpSum() {
@@ -164,6 +317,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
 
         /**
          * Gets the array of the eight three-hourly Ap indices for the current entry.
+         *
          * @return the array of eight three-hourly Ap indices
          */
         public double[] getThreeHourlyAp() {
@@ -171,16 +325,8 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
         }
 
         /**
-         * Gets the three-hourly Ap index at index i from the threeHourlyAp array.
-         * @param i index of the Ap to retrieve [0-7]
-         * @return the three hourly Ap index at index i
-         */
-        public double getThreeHourlyAp(final int i) {
-            return threeHourlyAp[i];
-        }
-
-        /**
          * Gets the arithmetic average of all eight Ap indices for the current entry.
+         *
          * @return the average of all eight Ap indices
          */
         public double getApAvg() {
@@ -189,6 +335,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
 
         /**
          * Gets the last 81-day arithmetic average of F10.7 (observed).
+         *
          * @return the last 81-day arithmetic average of F10.7 (observed)
          */
         public double getLst81Obs() {
@@ -197,6 +344,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
 
         /**
          * Gets the centered 81-day arithmetic average of F10.7 (observed).
+         *
          * @return the centered 81-day arithmetic average of F10.7 (observed)
          */
         public double getCtr81Obs() {
@@ -205,6 +353,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
 
         /**
          * Gets the observed (unadjusted) value of F10.7.
+         *
          * @return the observed (unadjusted) value of F10.7
          */
         public double getF107Obs() {
@@ -213,6 +362,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
 
         /**
          * Gets the last 81-day arithmetic average of F10.7 (adjusted).
+         *
          * @return the last 81-day arithmetic average of F10.7 (adjusted)
          */
         public double getLst81Adj() {
@@ -221,6 +371,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
 
         /**
          * Gets the centered 81-day arithmetic average of F10.7 (adjusted).
+         *
          * @return the centered 81-day arithmetic average of F10.7 (adjusted)
          */
         public double getCtr81Adj() {
@@ -229,6 +380,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
 
         /**
          * Gets the Flux Qualifier.
+         *
          * @return the Flux Qualifier
          */
         public int getFluxQualifier() {
@@ -237,6 +389,7 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
 
         /**
          * Gets the 10.7-cm Solar Radio Flux (F10.7) Adjusted to 1 AU.
+         *
          * @return the 10.7-cm Solar Radio Flux (F10.7) Adjusted to 1 AU
          */
         public double getF107Adj() {
@@ -244,181 +397,4 @@ public class CssiSpaceWeatherDataLoader implements DataLoader {
         }
     }
 
-    /** UTC time scale. */
-    private final TimeScale utc;
-
-    /** First available date. */
-    private AbsoluteDate firstDate;
-
-    /** Date of last data before the prediction starts. */
-    private AbsoluteDate lastObservedDate;
-
-    /** Date of last daily prediction before the monthly prediction starts. */
-    private AbsoluteDate lastDailyPredictedDate;
-
-    /** Last available date. */
-    private AbsoluteDate lastDate;
-
-    /** Data set. */
-    private SortedSet<LineParameters> set;
-
-    /**
-     * Constructor.
-     * @param utc UTC time scale
-     */
-    public CssiSpaceWeatherDataLoader(final TimeScale utc) {
-        this.utc = utc;
-        firstDate = null;
-        lastDailyPredictedDate = null;
-        lastDate = null;
-        lastObservedDate = null;
-        set = new TreeSet<>(new ChronologicalComparator());
-    }
-
-    /**
-     * Getter for the data set.
-     * @return the data set
-     */
-    public SortedSet<LineParameters> getDataSet() {
-        return set;
-    }
-
-    /**
-     * Gets the available data range minimum date.
-     * @return the minimum date.
-     */
-    public AbsoluteDate getMinDate() {
-        return firstDate;
-    }
-
-    /**
-     * Gets the available data range maximum date.
-     * @return the maximum date.
-     */
-    public AbsoluteDate getMaxDate() {
-        return lastDate;
-    }
-
-    /**
-     * Gets the day (at data start) of the last daily data entry.
-     * @return the last daily predicted date
-     */
-    public AbsoluteDate getLastDailyPredictedDate() {
-        return lastDailyPredictedDate;
-    }
-
-    /**
-     * Gets the day (at data start) of the last observed data entry.
-     * @return the last observed date
-     */
-    public AbsoluteDate getLastObservedDate() {
-        return lastObservedDate;
-    }
-
-    /**
-     * Checks if the string contains a floating point number.
-     *
-     * @param strNum string to check
-     * @return true if string contains a valid floating point number, else false
-     */
-    private static boolean isNumeric(final String strNum) {
-        if (strNum == null) {
-            return false;
-        }
-        try {
-            Double.parseDouble(strNum);
-        } catch (NumberFormatException nfe) {
-            return false;
-        }
-        return true;
-    }
-
-    /** {@inheritDoc} */
-    public void loadData(final InputStream input, final String name)
-            throws IOException, ParseException, OrekitException {
-
-        // read the data
-        int lineNumber = 0;
-        String line = null;
-        final Set<AbsoluteDate> parsedEpochs = new HashSet<>();
-
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
-
-            final CommonLineReader reader = new CommonLineReader(br);
-
-            for (line = reader.readLine(); line != null; line = reader.readLine()) {
-                lineNumber++;
-
-                line = line.trim();
-                if (line.length() > 0) {
-
-                    if (line.equals("BEGIN DAILY_PREDICTED")) {
-                        lastObservedDate = set.last().getDate();
-                    }
-
-                    if (line.equals("BEGIN MONTHLY_FIT")) {
-                        lastDailyPredictedDate = set.last().getDate();
-                    }
-
-                    if (line.length() == 130 && isNumeric(line.substring(0, 4))) {
-                        // extract the data from the line
-                        final int year = Integer.parseInt(line.substring(0, 4));
-                        final int month = Integer.parseInt(line.substring(5, 7));
-                        final int day = Integer.parseInt(line.substring(8, 10));
-                        final AbsoluteDate date = new AbsoluteDate(year, month, day, this.utc);
-
-                        if (parsedEpochs.add(date)) { // Checking if entry doesn't exist yet
-                            final double[] threeHourlyKp = new double[8];
-                            /**
-                             * Kp is written as an integer where a unit equals 0.1, the conversion is
-                             * Kp_double = 0.1 * double(Kp_integer)
-                             */
-                            for (int i = 0; i < 8; i++) {
-                                threeHourlyKp[i] = 0.1 * Double.parseDouble(line.substring(19 + 3 * i, 21 + 3 * i));
-                            }
-                            final double kpSum = 0.1 * Double.parseDouble(line.substring(43, 46));
-
-                            final double[] threeHourlyAp = new double[8];
-                            for (int i = 0; i < 8; i++) {
-                                threeHourlyAp[i] = Double.parseDouble(line.substring(47 + 4 * i, 50 + 4 * i));
-                            }
-                            final double apAvg = Double.parseDouble(line.substring(79, 82));
-
-                            final double f107Adj = Double.parseDouble(line.substring(93, 98));
-
-                            final int fluxQualifier = Integer.parseInt(line.substring(99, 100));
-
-                            final double ctr81Adj = Double.parseDouble(line.substring(101, 106));
-
-                            final double lst81Adj = Double.parseDouble(line.substring(107, 112));
-
-                            final double f107Obs = Double.parseDouble(line.substring(113, 118));
-
-                            final double ctr81Obs = Double.parseDouble(line.substring(119, 124));
-
-                            final double lst81Obs = Double.parseDouble(line.substring(125, 130));
-
-                            set.add(new LineParameters(date, threeHourlyKp, kpSum, threeHourlyAp, apAvg, f107Adj,
-                                    fluxQualifier, ctr81Adj, lst81Adj, f107Obs, ctr81Obs, lst81Obs));
-                        }
-                    }
-                }
-            }
-        } catch (NumberFormatException nfe) {
-            throw new OrekitException(nfe, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, name, line);
-        }
-
-        try {
-            firstDate = set.first().getDate();
-            lastDate = set.last().getDate();
-        } catch (NoSuchElementException nse) {
-            throw new OrekitException(nse, OrekitMessages.NO_DATA_IN_FILE, name);
-        }
-
-    }
-
-    /** {@inheritDoc} */
-    public boolean stillAcceptsData() {
-        return true;
-    }
 }
