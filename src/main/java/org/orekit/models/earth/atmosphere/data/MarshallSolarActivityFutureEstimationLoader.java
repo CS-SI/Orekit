@@ -276,6 +276,46 @@ public class MarshallSolarActivityFutureEstimationLoader
             this.ap       = ap;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public int compareTo(final AbstractSolarActivityDataLoader.LineParameters lineParameters) {
+            return getDate().compareTo(lineParameters.getDate());
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean equals(final Object otherInstance) {
+            if (this == otherInstance) {
+                return true;
+            }
+            if (otherInstance == null || getClass() != otherInstance.getClass()) {
+                return false;
+            }
+
+            final LineParameters msafeParams = (LineParameters) otherInstance;
+
+            if (Double.compare(getF107(), msafeParams.getF107()) != 0) {
+                return false;
+            }
+            if (Double.compare(getAp(), msafeParams.getAp()) != 0) {
+                return false;
+            }
+            return getFileDate().equals(msafeParams.getFileDate());
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int hashCode() {
+            int  result;
+            long temp;
+            result = getFileDate().hashCode();
+            temp   = Double.doubleToLongBits(getF107());
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            temp   = Double.doubleToLongBits(getAp());
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            return result;
+        }
+
         /**
          * Get the file date.
          *

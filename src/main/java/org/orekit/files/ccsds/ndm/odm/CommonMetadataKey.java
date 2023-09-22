@@ -40,7 +40,7 @@ public enum CommonMetadataKey {
     REF_FRAME_EPOCH((token, context, container) -> token.processAsUppercaseString(container::setFrameEpochString));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

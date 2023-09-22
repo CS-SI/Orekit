@@ -92,7 +92,7 @@ public abstract class AbstractSolarActivityDataLoader<L extends AbstractSolarAct
     }
 
     /** Container class for Solar activity indexes. */
-    public static class LineParameters implements TimeStamped, Comparable<LineParameters>, Serializable {
+    public abstract static class LineParameters implements TimeStamped, Comparable<LineParameters>, Serializable {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 6607862001953526475L;
@@ -111,9 +111,20 @@ public abstract class AbstractSolarActivityDataLoader<L extends AbstractSolarAct
 
         /** {@inheritDoc} */
         @Override
-        public int compareTo(final LineParameters lineParameters) {
-            return this.getDate().compareTo(lineParameters.getDate());
-        }
+        public abstract int compareTo(LineParameters lineParameters);
+
+        /** Check if the instance represents the same parameters as given line parameters.
+         * @param lineParameters other line parameters
+         * @return true if the instance and the other line parameter contain the same parameters
+         */
+        @Override
+        public abstract boolean equals(Object lineParameters);
+
+        /** Get a hashcode for this date.
+         * @return hashcode
+         */
+        @Override
+        public abstract int hashCode();
 
         /** @return entry date */
         @Override

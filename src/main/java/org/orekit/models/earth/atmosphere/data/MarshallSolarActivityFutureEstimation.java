@@ -101,7 +101,7 @@ public class MarshallSolarActivityFutureEstimation
     private final StrengthLevel strengthLevel;
 
     /** Cache dedicated to average flux. */
-    private final GenericTimeStampedCache<TimeStampedDouble> averageFluxCache;
+    private final transient GenericTimeStampedCache<TimeStampedDouble> averageFluxCache;
 
     /**
      * Simple constructor. This constructor uses the {@link DataContext#getDefault() default data context}.

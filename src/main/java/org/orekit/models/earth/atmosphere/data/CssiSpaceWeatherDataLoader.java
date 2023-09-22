@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -273,6 +274,84 @@ public class CssiSpaceWeatherDataLoader extends AbstractSolarActivityDataLoader<
             this.f107Obs       = f107Obs;
             this.ctr81Obs      = ctr81Obs;
             this.lst81Obs      = lst81Obs;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int compareTo(final AbstractSolarActivityDataLoader.LineParameters lineParameters) {
+            return getDate().compareTo(lineParameters.getDate());
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            final LineParameters that = (LineParameters) o;
+
+            if (Double.compare(getKpSum(), that.getKpSum()) != 0) {
+                return false;
+            }
+            if (Double.compare(getApAvg(), that.getApAvg()) != 0) {
+                return false;
+            }
+            if (Double.compare(getF107Adj(), that.getF107Adj()) != 0) {
+                return false;
+            }
+            if (getFluxQualifier() != that.getFluxQualifier()) {
+                return false;
+            }
+            if (Double.compare(getCtr81Adj(), that.getCtr81Adj()) != 0) {
+                return false;
+            }
+            if (Double.compare(getLst81Adj(), that.getLst81Adj()) != 0) {
+                return false;
+            }
+            if (Double.compare(getF107Obs(), that.getF107Obs()) != 0) {
+                return false;
+            }
+            if (Double.compare(getCtr81Obs(), that.getCtr81Obs()) != 0) {
+                return false;
+            }
+            if (Double.compare(getLst81Obs(), that.getLst81Obs()) != 0) {
+                return false;
+            }
+            if (!Arrays.equals(getThreeHourlyKp(), that.getThreeHourlyKp())) {
+                return false;
+            }
+            return Arrays.equals(getThreeHourlyAp(), that.getThreeHourlyAp());
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int hashCode() {
+            int  result;
+            long temp;
+            result = Arrays.hashCode(getThreeHourlyKp());
+            temp   = Double.doubleToLongBits(getKpSum());
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            result = 31 * result + Arrays.hashCode(getThreeHourlyAp());
+            temp   = Double.doubleToLongBits(getApAvg());
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            temp   = Double.doubleToLongBits(getF107Adj());
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            result = 31 * result + getFluxQualifier();
+            temp   = Double.doubleToLongBits(getCtr81Adj());
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            temp   = Double.doubleToLongBits(getLst81Adj());
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            temp   = Double.doubleToLongBits(getF107Obs());
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            temp   = Double.doubleToLongBits(getCtr81Obs());
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            temp   = Double.doubleToLongBits(getLst81Obs());
+            result = 31 * result + (int) (temp ^ (temp >>> 32));
+            return result;
         }
 
         /**
