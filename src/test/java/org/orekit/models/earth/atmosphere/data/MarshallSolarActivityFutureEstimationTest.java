@@ -573,7 +573,6 @@ public class MarshallSolarActivityFutureEstimationTest {
     @Test
     public void testExtraData() {
         Assertions.assertThrows(OrekitException.class, () -> {
-            MarshallSolarActivityFutureEstimation msafe =
                     new MarshallSolarActivityFutureEstimation("Jan2011F10-extra-data\\.txt",
                             MarshallSolarActivityFutureEstimation.StrengthLevel.STRONG);
         });
