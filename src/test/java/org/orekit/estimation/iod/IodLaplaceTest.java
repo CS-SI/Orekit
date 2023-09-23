@@ -165,10 +165,10 @@ public class IodLaplaceTest extends AbstractIodTest {
                                                      new ObservableSatellite(0));
 
         // IOD method
-        final IodLaplace laplace = new IodLaplace(Constants.EGM96_EARTH_MU, gcrf);
+        final IodLaplace laplace = new IodLaplace(Constants.EGM96_EARTH_MU);
 
         // Estimate orbit
-        final Orbit orbit = laplace.estimate(raDec1, raDec2, raDec3);
+        final Orbit orbit = laplace.estimate(gcrf, raDec1, raDec2, raDec3);
         final TimeStampedPVCoordinates ref = prop.getPVCoordinates(raDec2.getDate(), gcrf);
 
         // Verify
@@ -195,8 +195,8 @@ public class IodLaplaceTest extends AbstractIodTest {
 
         // Estimate the orbit using the classical Laplace method
         final TimeStampedPVCoordinates truth = prop.getPVCoordinates(obsDate2, gcrf);
-        final Orbit estOrbit = new IodLaplace(Constants.EGM96_EARTH_MU, gcrf)
-            .estimate(obsPva,gcrf, obsDate1, los1, obsDate2, los2, obsDate3, los3);
+        final Orbit estOrbit = new IodLaplace(Constants.EGM96_EARTH_MU)
+            .estimate(gcrf, obsPva, obsDate1, los1, obsDate2, los2, obsDate3, los3);
         return(new Result(truth, estOrbit));
     }
 

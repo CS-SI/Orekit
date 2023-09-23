@@ -22,21 +22,19 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.frames.StaticTransform;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** Class modeling an Right Ascension - Declination measurement from a ground point (station, telescope).
+/** Class modeling a Right Ascension - Declination measurement from a ground point (station, telescope).
  * The angles are given in an inertial reference frame.
  * The motion of the spacecraft during the signal flight time is taken into
  * account. The date of the measurement corresponds to the reception on
@@ -190,33 +188,30 @@ public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec> {
 
     }
 
-    /** Calculate the Line Of Sight of the given Radec.
-     * @return Vector3D the line of Sight of the Radec
+    /** Calculate the Line Of Sight of the given measurement.
+     * @param outputFrame output frame of the line of sight vector
+     * @return Vector3D the line of Sight of the measurement
+     * @since 12.0
      */
-    public Vector3D getLineOfSight() {
-        return new Vector3D(this.getObservedValue()[0], this.getObservedValue()[1]);
+    public Vector3D getObservedLineOfSight(final Frame outputFrame) {
+        return referenceFrame.getStaticTransformTo(outputFrame, getDate())
+            .transformVector(new Vector3D(getObservedValue()[0], getObservedValue()[1]));
     }
 
-    /** Calculate the estimated Line Of Sight of the Radec at a given date.
+    /** Calculate the estimated Line Of Sight of the measurement at a given date.
      *
-     * @param prop the propagator for the estimation
-     * @param date the AbsoluteDate to use for the propagation
-     *
-     * @return Vector3D the estimate line of Sight of the Radec at the propagate date.
+     * @param provider provider for satellite coordinates
+     * @param date the date for which the line of sight must be computed
+     * @param gcrf GCRF frame
+     * @return the estimate line of Sight of the measurement at the given date.
+     * @since 12.0
      */
-    @DefaultDataContext
-    public Vector3D getEstimatedLOS(final Propagator prop, final AbsoluteDate date) {
-        final Frame                    gcrf        = FramesFactory.getGCRF();
-        final TimeStampedPVCoordinates satPV       = prop.getPVCoordinates(date, gcrf);
+    public Vector3D getEstimatedLineOfSight(final PVCoordinatesProvider provider, final AbsoluteDate date, final Frame gcrf) {
+        final TimeStampedPVCoordinates satPV       = provider.getPVCoordinates(date, gcrf);
         final AbsolutePVCoordinates    satPVInGCRF = new AbsolutePVCoordinates(gcrf, satPV);
         final SpacecraftState[]        satState    = new SpacecraftState[] { new SpacecraftState(satPVInGCRF) };
         final double[]                 angular     = this.estimateWithoutDerivatives(0, 0, satState).getEstimatedValue();
-
-        final double ra = angular[0];
-        final double dec = angular[1];
-
-        return new Vector3D(ra, dec);
-
+        return new Vector3D(angular[0], angular[1]);
     }
 
 }

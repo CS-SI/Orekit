@@ -87,7 +87,7 @@ public abstract class AbstractIodTest {
         final AngularRaDec raDec = new AngularRaDec(observer, gcrf, date, new double[] { 0.0, 0.0 },
                                                     new double[] { 1.0, 1.0 },
                                                     new double[] { 1.0, 1.0 }, new ObservableSatellite(0));
-        return (raDec.getEstimatedLOS(prop, date));
+        return (raDec.getEstimatedLineOfSight(prop, date, gcrf));
     }
 
     protected double getRelativeRangeError(final Orbit estimatedGauss, final Orbit orbitRef) {

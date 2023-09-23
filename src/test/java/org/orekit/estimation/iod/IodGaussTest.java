@@ -80,26 +80,14 @@ public class IodGaussTest extends AbstractIodTest {
         final Vector3D los3 = new Vector3D(ang3[0], ang3[1]);
 
         // Computation of the observer coordinates at the 3 dates, based on the values of the Vallado example 7.2
-        final TimeStampedPVCoordinates obsPva = new TimeStampedPVCoordinates(obsDate1,
-                                                                             new Vector3D(4054880.1594,
-                                                                                          2748194.4767,
-                                                                                          4074236.1653),
-                                                                             Vector3D.ZERO);
-        final TimeStampedPVCoordinates obsPva2 = new TimeStampedPVCoordinates(obsDate2,
-                                                                              new Vector3D(3956223.5179,
-                                                                                           2888232.0864,
-                                                                                           4074363.4118),
-                                                                              Vector3D.ZERO);
-        final TimeStampedPVCoordinates obsPva3 = new TimeStampedPVCoordinates(obsDate3,
-                                                                              new Vector3D(3905072.3452,
-                                                                                           2956934.5902,
-                                                                                           4074429.3009),
-                                                                              Vector3D.ZERO);
+        final Vector3D obsP1 = new Vector3D(4054880.1594, 2748194.4767, 4074236.1653);
+        final Vector3D obsP2 = new Vector3D(3956223.5179, 2888232.0864, 4074363.4118);
+        final Vector3D obsP3 = new Vector3D(3905072.3452, 2956934.5902, 4074429.3009);
 
         // computation of the estimated orbit based on Gauss method
-        final IodGauss iodgauss = new IodGauss(mu, eme2000);
-        final Orbit estimatedOrbit = iodgauss.estimate(obsPva, obsDate1, los1,
-                                                       obsPva2, obsDate2, los2, obsPva3, obsDate3, los3);
+        final IodGauss iodgauss = new IodGauss(mu);
+        final Orbit estimatedOrbit = iodgauss.estimate(eme2000, obsP1, obsDate1, los1,
+                                                       obsP2, obsDate2, los2, obsP3, obsDate3, los3);
 
         // Expected results from Vallado example, with Orekit EOP (difference existing from the Vallado example)
         final PVCoordinates pvOrbit = estimatedOrbit.getPVCoordinates();
@@ -113,8 +101,9 @@ public class IodGaussTest extends AbstractIodTest {
     }
 
     /** Non-regression test case based on LEO-1 case:
-    * "On the performance analysis of Initial Orbit Determination algorithms" with unnoisy data. We have better
-    * results on 10^-1 order of magnitude compared to the relative error results of the paper. */
+     * "On the performance analysis of Initial Orbit Determination algorithms" with unnoisy data. We have better
+     * results on 10^-1 order of magnitude compared to the relative error results of the paper.
+     */
     @Test
     public void testGaussLeoSSO() {
 
@@ -154,7 +143,8 @@ public class IodGaussTest extends AbstractIodTest {
 
     /**   Non-regression test case based on MEO case:
      *   "On the performance analysis of Initial Orbit Determination algorithms" with unnoisy data. We have better
-     *   results on 10^-1 order of magnitude compared to the relative error results of the paper. */
+     *   results on 10^-1 order of magnitude compared to the relative error results of the paper.
+     */
     @Test
     public void testGaussMEO() {
 
@@ -191,8 +181,9 @@ public class IodGaussTest extends AbstractIodTest {
     }
 
     /** Non-regression test case based on GEO-1 case:
-    * "On the performance analysis of Initial Orbit Determination algorithms" with unnoisy data. We have better
-    * results on 10^-1 order of magnitude compared to the relative error results of the paper. */
+     * "On the performance analysis of Initial Orbit Determination algorithms" with unnoisy data. We have better
+     * results on 10^-1 order of magnitude compared to the relative error results of the paper.
+     */
     @Test
     public void testGaussGEO() {
 
@@ -229,8 +220,9 @@ public class IodGaussTest extends AbstractIodTest {
     }
 
     /** Non-regression test case comparing the results between the different IOD methods. The relative error taking as
-    * a reference the other IOD is giving an error of the position and velocity with an approximation < 10^-2. Gooding
-    * was not made due to not having good tuning parameters */
+     * a reference the other IOD is giving an error of the position and velocity with an approximation < 10^-2. Gooding
+     * was not made due to not having good tuning parameters
+     */
     @Test
     public void testGaussComparisonLeoSSO() {
         final DateComponents dateComp = new DateComponents(DateComponents.FIFTIES_EPOCH, 21915);
@@ -248,21 +240,21 @@ public class IodGaussTest extends AbstractIodTest {
 
         // Computation of the LOS angles
         // Computation of the observer coordinates
-        final TimeStampedPVCoordinates obsPva  = observer.getBaseFrame().getPVCoordinates(obsDate1, gcrf);
-        final TimeStampedPVCoordinates obsPva2 = observer.getBaseFrame().getPVCoordinates(obsDate2, gcrf);
-        final TimeStampedPVCoordinates obsPva3 = observer.getBaseFrame().getPVCoordinates(obsDate3, gcrf);
+        final Vector3D obsP1 = observer.getBaseFrame().getPosition(obsDate1, gcrf);
+        final TimeStampedPVCoordinates obsP2 = observer.getBaseFrame().getPVCoordinates(obsDate2, gcrf);
+        final Vector3D obsP3 = observer.getBaseFrame().getPosition(obsDate3, gcrf);
 
         final Vector3D los1 = getLOSAngles(propRef, obsDate1);
         final Vector3D los2 = getLOSAngles(propRef, obsDate2);
         final Vector3D los3 = getLOSAngles(propRef, obsDate3);
 
         // Computation of the estimated orbit with iod gauss
-        final IodGauss iodgauss = new IodGauss(mu, eme2000);
-        final Orbit estimatedGauss = iodgauss.estimate(obsPva, obsDate1, los1,
-                                                       obsPva2, obsDate2, los2, obsPva3, obsDate3, los3);
+        final IodGauss iodgauss = new IodGauss(mu);
+        final Orbit estimatedGauss = iodgauss.estimate(eme2000, obsP1, obsDate1, los1,
+                                                       obsP2.getPosition(), obsDate2, los2, obsP3, obsDate3, los3);
         // Computation of the estimated orbit with iod laplace
-        final IodLaplace iodLaplace = new IodLaplace(Constants.WGS84_EARTH_MU, eme2000);
-        final Orbit estimatedLaplace = iodLaplace.estimate(obsPva, gcrf, obsDate1,
+        final IodLaplace iodLaplace = new IodLaplace(Constants.WGS84_EARTH_MU);
+        final Orbit estimatedLaplace = iodLaplace.estimate(eme2000, obsP2, obsDate1,
                                                            los1, obsDate2, los2, obsDate3, los3);
         // Computation of the estimated orbit with iod lambert
         final IodLambert iodLambert = new IodLambert(Constants.WGS84_EARTH_MU);
@@ -322,13 +314,13 @@ public class IodGaussTest extends AbstractIodTest {
         final Vector3D los3 = getLOSAngles(prop, obsDate3);
 
         // Computation of the observer coordinates at the 3 times of measurements
-        final TimeStampedPVCoordinates obsPva  = observer.getBaseFrame().getPVCoordinates(obsDate1, gcrf);
-        final TimeStampedPVCoordinates obsPva2 = observer.getBaseFrame().getPVCoordinates(obsDate2, gcrf);
-        final TimeStampedPVCoordinates obsPva3 = observer.getBaseFrame().getPVCoordinates(obsDate3, gcrf);
+        final Vector3D obsPva  = observer.getBaseFrame().getPosition(obsDate1, gcrf);
+        final Vector3D obsPva2 = observer.getBaseFrame().getPosition(obsDate2, gcrf);
+        final Vector3D obsPva3 = observer.getBaseFrame().getPosition(obsDate3, gcrf);
 
         // Gauss estimation
-        final IodGauss iodgauss = new IodGauss(mu, frameEstimation);
-        return iodgauss.estimate(obsPva, obsDate1, los1, obsPva2, obsDate2, los2, obsPva3, obsDate3, los3);
+        final IodGauss iodgauss = new IodGauss(mu);
+        return iodgauss.estimate(gcrf, obsPva, obsDate1, los1, obsPva2, obsDate2, los2, obsPva3, obsDate3, los3);
 
     }
 
