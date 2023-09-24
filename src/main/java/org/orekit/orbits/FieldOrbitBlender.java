@@ -91,8 +91,8 @@ public class FieldOrbitBlender<KK extends CalculusFieldElement<KK>> extends Abst
         final FieldOrbit<KK> backwardedOrbit = propagateOrbitAnalytically(nextOrbit, interpolationDate);
 
         // Extract position-velocity-acceleration coordinates
-        final FieldPVCoordinates<KK> forwardedPV  = forwardedOrbit.getPVCoordinates(outputInertialFrame);
-        final FieldPVCoordinates<KK> backwardedPV = backwardedOrbit.getPVCoordinates(outputInertialFrame);
+        final FieldPVCoordinates<KK> forwardedPV  = forwardedOrbit.getPVCoordinates(getOutputInertialFrame());
+        final FieldPVCoordinates<KK> backwardedPV = backwardedOrbit.getPVCoordinates(getOutputInertialFrame());
 
         // Blend PV coordinates
         final KK timeParameter = getTimeParameter(interpolationDate, previousOrbit.getDate(), nextOrbit.getDate());
@@ -101,7 +101,7 @@ public class FieldOrbitBlender<KK extends CalculusFieldElement<KK>> extends Abst
         final FieldPVCoordinates<KK> blendedPV = forwardedPV.blendArithmeticallyWith(backwardedPV, blendingValue);
 
         // Output new blended instance
-        return new FieldCartesianOrbit<>(blendedPV, outputInertialFrame, interpolationDate, previousOrbit.getMu());
+        return new FieldCartesianOrbit<>(blendedPV, getOutputInertialFrame(), interpolationDate, previousOrbit.getMu());
     }
 
     /**

@@ -101,9 +101,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
               positionAngle, positionScale, false, FrameAlignedProvider.of(dataContext.getFrames().getTEME()));
 
         // Supported parameters: Bstar
-        for (final ParameterDriver driver : templateTLE.getParametersDrivers()) {
-            addSupportedParameter(driver);
-        }
+        addSupportedParameters(templateTLE.getParametersDrivers());
 
         this.templateTLE         = templateTLE;
         this.dataContext         = dataContext;

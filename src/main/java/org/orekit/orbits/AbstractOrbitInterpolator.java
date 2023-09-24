@@ -33,10 +33,8 @@ import java.util.List;
  */
 public abstract class AbstractOrbitInterpolator extends AbstractTimeInterpolator<Orbit> {
 
-    // CHECKSTYLE: stop VisibilityModifier check
     /** Output inertial frame. */
-    protected final Frame outputInertialFrame;
-    // CHECKSTYLE: resume VisibilityModifier check
+    private final Frame outputInertialFrame;
 
     /**
      * Constructor.

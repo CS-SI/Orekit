@@ -16,9 +16,8 @@
  */
 package org.orekit.propagation.conversion;
 
-
+import java.util.Collections;
 import java.util.List;
-
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -218,7 +217,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
         final ParameterDriver M2Driver = new ParameterDriver(BrouwerLyddanePropagator.M2_NAME, M2, SCALE,
                                                              Double.NEGATIVE_INFINITY,
                                                              Double.POSITIVE_INFINITY);
-        addSupportedParameter(M2Driver);
+        addSupportedParameters(Collections.singletonList(M2Driver));
     }
 
     /** Override central attraction coefficient.

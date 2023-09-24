@@ -41,16 +41,14 @@ import java.util.stream.Stream;
 public abstract class AbstractStateCovarianceInterpolator
         extends AbstractTimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> {
 
-    // CHECKSTYLE: stop VisibilityModifier check
     /** Default position angle for covariance expressed in Cartesian elements. */
-    protected static final PositionAngle DEFAULT_POSITION_ANGLE = PositionAngle.MEAN;
+    public static final PositionAngle DEFAULT_POSITION_ANGLE = PositionAngle.MEAN;
 
     /** Default column dimension for position-velocity state covariance. */
-    protected static final int COLUMN_DIM = 6;
+    public static final int COLUMN_DIM = 6;
 
     /** Default row dimension for position-velocity state covariance. */
-    protected static final int ROW_DIM = 6;
-    // CHECKSTYLE: resume VisibilityModifier check
+    public static final int ROW_DIM = 6;
 
     /** Output frame. */
     private final Frame outFrame;

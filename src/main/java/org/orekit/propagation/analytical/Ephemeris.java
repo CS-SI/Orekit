@@ -38,7 +38,6 @@ import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeStampedPair;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,13 +70,13 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     private final transient List<SpacecraftState> states;
 
     /** List of covariances. **/
-    private final transient Optional<List<StateCovariance>> covariances;
+    private final transient List<StateCovariance> covariances;
 
     /** Spacecraft state interpolator. */
     private final transient TimeInterpolator<SpacecraftState> stateInterpolator;
 
     /** State covariance interpolator. */
-    private final transient Optional<TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>>> covarianceInterpolator;
+    private final transient TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceInterpolator;
 
     /** Flag defining if states are defined using an orbit or an absolute position-velocity-acceleration. */
     private final transient boolean statesAreOrbitDefined;
@@ -218,8 +217,8 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         this.states            = states;
         this.stateInterpolator = stateInterpolator;
 
-        this.covariances            = Optional.ofNullable(covariances);
-        this.covarianceInterpolator = Optional.ofNullable(covarianceInterpolator);
+        this.covariances            = covariances;
+        this.covarianceInterpolator = covarianceInterpolator;
 
         this.statesAreOrbitDefined = s0.isOrbitDefined();
 
@@ -239,22 +238,20 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
                                              final TimeInterpolator<SpacecraftState> stateInterpolator,
                                              final List<StateCovariance> covariances,
                                              final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceInterpolator) {
-
+        // Checks to perform is states are provided
         if (!states.isEmpty()) {
-
             // Check given that given states definition are consistent
             // (all defined by either orbits or absolute position-velocity-acceleration coordinates)
             SpacecraftStateInterpolator.checkStatesDefinitionsConsistency(states);
 
-            // Check tha every interpolator used in the state interpolator are compatible with the sample size
+            // Check that every interpolator used in the state interpolator are compatible with the sample size
             AbstractTimeInterpolator.checkInterpolatorCompatibilityWithSampleSize(stateInterpolator, states.size());
 
+            // Additional checks if covariances are provided
             if (!covariances.isEmpty()) {
-
-                // Check tha every interpolator used in the state covariance interpolator are compatible with the sample size
+                // Check that every interpolator used in the state covariance interpolator are compatible with the sample size
                 AbstractTimeInterpolator.checkInterpolatorCompatibilityWithSampleSize(covarianceInterpolator,
                                                                                       covariances.size());
-
                 // Check states and covariances consistency
                 checkStatesAndCovariancesConsistency(states, covariances);
             }
@@ -328,14 +325,14 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * @see Optional
      */
     public Optional<StateCovariance> getCovariance(final AbsoluteDate date) {
-        if (covarianceInterpolator.isPresent() && statesAreOrbitDefined) {
+        if (covarianceInterpolator != null && statesAreOrbitDefined) {
 
             // Build list of time stamped pair of orbits and their associated covariances
             final List<TimeStampedPair<Orbit, StateCovariance>> sample = buildOrbitAndCovarianceSample();
 
             // Interpolate
             final TimeStampedPair<Orbit, StateCovariance> interpolatedOrbitAndCovariance =
-                    covarianceInterpolator.get().interpolate(date, sample);
+                    covarianceInterpolator.interpolate(date, sample);
 
             return Optional.of(interpolatedOrbitAndCovariance.getSecond());
         }
@@ -350,7 +347,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         final List<TimeStampedPair<Orbit, StateCovariance>> sample = new ArrayList<>();
 
         for (int i = 0; i < states.size(); i++) {
-            sample.add(new TimeStampedPair<>(states.get(i).getOrbit(), covariances.get().get(i)));
+            sample.add(new TimeStampedPair<>(states.get(i).getOrbit(), covariances.get(i)));
         }
 
         return sample;
@@ -394,11 +391,6 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     /** {@inheritDoc} */
     protected double getMass(final AbsoluteDate date) {
         return basicPropagate(date).getMass();
-    }
-
-    /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame f) {
-        return propagate(date).getPVCoordinates(f);
     }
 
     /**
@@ -474,7 +466,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * @see Optional
      */
     public Optional<TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>>> getCovarianceInterpolator() {
-        return covarianceInterpolator;
+        return Optional.ofNullable(covarianceInterpolator);
     }
 
 }

@@ -182,7 +182,7 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
 
         // Create time stamped position-velocity-acceleration Hermite interpolator
         final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
-                new TimeStampedPVCoordinatesHermiteInterpolator(interpolationPoints, extrapolationThreshold,
+                new TimeStampedPVCoordinatesHermiteInterpolator(getNbInterpolationPoints(), getExtrapolationThreshold(),
                                                                 pvaFilter);
 
         // Convert sample to stream
@@ -197,7 +197,7 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
         // Use first entry gravitational parameter
         final double mu = sample.get(0).getMu();
 
-        return new CartesianOrbit(interpolated, outputInertialFrame, interpolationDate, mu);
+        return new CartesianOrbit(interpolated, getOutputInertialFrame(), interpolationDate, mu);
     }
 
     /**
@@ -230,21 +230,21 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
                                          interpolated[0][3], interpolated[0][4], interpolated[0][5],
                                          interpolated[1][0], interpolated[1][1], interpolated[1][2],
                                          interpolated[1][3], interpolated[1][4], interpolated[1][5],
-                                         PositionAngle.MEAN, outputInertialFrame, interpolationDate, mu);
+                                         PositionAngle.MEAN, getOutputInertialFrame(), interpolationDate, mu);
             case KEPLERIAN:
                 interpolated = interpolateKeplerian(interpolationDate, orbits, useDerivatives);
                 return new KeplerianOrbit(interpolated[0][0], interpolated[0][1], interpolated[0][2],
                                           interpolated[0][3], interpolated[0][4], interpolated[0][5],
                                           interpolated[1][0], interpolated[1][1], interpolated[1][2],
                                           interpolated[1][3], interpolated[1][4], interpolated[1][5],
-                                          PositionAngle.MEAN, outputInertialFrame, interpolationDate, mu);
+                                          PositionAngle.MEAN, getOutputInertialFrame(), interpolationDate, mu);
             case EQUINOCTIAL:
                 interpolated = interpolateEquinoctial(interpolationDate, orbits, useDerivatives);
                 return new EquinoctialOrbit(interpolated[0][0], interpolated[0][1], interpolated[0][2],
                                             interpolated[0][3], interpolated[0][4], interpolated[0][5],
                                             interpolated[1][0], interpolated[1][1], interpolated[1][2],
                                             interpolated[1][3], interpolated[1][4], interpolated[1][5],
-                                            PositionAngle.MEAN, outputInertialFrame, interpolationDate, mu);
+                                            PositionAngle.MEAN, getOutputInertialFrame(), interpolationDate, mu);
             default:
                 // Should never happen
                 throw new OrekitInternalError(null);
