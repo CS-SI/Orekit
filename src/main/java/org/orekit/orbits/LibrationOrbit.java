@@ -17,7 +17,7 @@
 package org.orekit.orbits;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.linear.EigenDecomposition;
+import org.hipparchus.linear.EigenDecompositionSymmetric;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.orekit.bodies.CR3BPSystem;
@@ -110,7 +110,7 @@ public abstract class LibrationOrbit {
 
         // Get Normalize eigen vector linked to the stability of the manifold
         final RealMatrix phi         = new STMEquations(syst).getStateTransitionMatrix(s);
-        final RealVector eigenVector = new EigenDecomposition(phi).getEigenvector(1).unitVector();
+        final RealVector eigenVector = new EigenDecompositionSymmetric(phi).getEigenvector(1).unitVector();
 
         // New PVCoordinates following the manifold
         return new PVCoordinates(s.getPosition()
@@ -137,7 +137,7 @@ public abstract class LibrationOrbit {
 
         // Get Normalize eigen vector linked to the stability of the manifold
         final RealMatrix phi         = new STMEquations(syst).getStateTransitionMatrix(s);
-        final RealVector eigenVector = new EigenDecomposition(phi).getEigenvector(0).unitVector();
+        final RealVector eigenVector = new EigenDecompositionSymmetric(phi).getEigenvector(0).unitVector();
 
         // New PVCoordinates following the manifold
         return new PVCoordinates(s.getPosition()

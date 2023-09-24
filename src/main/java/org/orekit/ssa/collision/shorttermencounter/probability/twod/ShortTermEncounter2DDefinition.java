@@ -19,8 +19,8 @@ package org.orekit.ssa.collision.shorttermencounter.probability.twod;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.EigenDecompositionSymmetric;
 import org.hipparchus.linear.LUDecomposition;
-import org.hipparchus.linear.OrderedEigenDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -293,7 +293,11 @@ public class ShortTermEncounter2DDefinition {
      * @return combined covariance matrix diagonalized and projected onto the collision plane
      */
     public RealMatrix computeProjectedAndDiagonalizedCombinedPositionalCovarianceMatrix() {
-        return new OrderedEigenDecomposition(computeProjectedCombinedPositionalCovarianceMatrix()).getD();
+        final RealMatrix covariance = computeProjectedCombinedPositionalCovarianceMatrix();
+        final EigenDecompositionSymmetric ed = new EigenDecompositionSymmetric(covariance,
+                                                                               EigenDecompositionSymmetric.DEFAULT_EPSILON,
+                                                                               false);
+        return ed.getD();
     }
 
     /**
