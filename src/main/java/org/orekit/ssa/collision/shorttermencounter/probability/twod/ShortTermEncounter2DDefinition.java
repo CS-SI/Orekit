@@ -71,6 +71,9 @@ public class ShortTermEncounter2DDefinition {
     /** Default threshold below which values are considered equal to zero. */
     private static final double DEFAULT_ZERO_THRESHOLD = 1e-15;
 
+    /** Default epsilon when checking covariance matrix symmetry. */
+    private static final double DEFAULT_SYMMETRY_EPSILON = 1e-8;
+
     /**
      * Time of closest approach.
      * <p>
@@ -294,9 +297,7 @@ public class ShortTermEncounter2DDefinition {
      */
     public RealMatrix computeProjectedAndDiagonalizedCombinedPositionalCovarianceMatrix() {
         final RealMatrix covariance = computeProjectedCombinedPositionalCovarianceMatrix();
-        final EigenDecompositionSymmetric ed = new EigenDecompositionSymmetric(covariance,
-                                                                               EigenDecompositionSymmetric.DEFAULT_EPSILON,
-                                                                               false);
+        final EigenDecompositionSymmetric ed = new EigenDecompositionSymmetric(covariance, DEFAULT_SYMMETRY_EPSILON, false);
         return ed.getD();
     }
 
