@@ -107,7 +107,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Type of orbit to output (mean or osculating) <br/>
      * <p>
-     * This is used only in the case of semianalitical propagators where there is a clear separation between
+     * This is used only in the case of semi-analytical propagators where there is a clear separation between
      * mean and short periodic elements. It is ignored by the Numerical propagator.
      * </p>
      */
@@ -146,6 +146,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Initialize the mapper. */
     protected void initMapper() {
         stateMapper = createMapper(null, Double.NaN, null, null, null, null);
+    }
+
+    /** Get the integrator's name.
+     * @return name of underlying integrator
+     * @since 12.0
+     */
+    public String getIntegratorName() {
+        return integrator.getName();
     }
 
     /**  {@inheritDoc} */
@@ -452,7 +460,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // convert space flight dynamics API to math API
             final SpacecraftState initialIntegrationState = getInitialIntegrationState();
             final ODEState mathInitialState = createInitialState(initialIntegrationState);
-            final ExpandableODE mathODE = createODE(integrator, mathInitialState);
+            final ExpandableODE mathODE = createODE(integrator);
 
             // mathematical integration
             final ODEStateAndDerivative mathFinalState;
@@ -574,11 +582,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Create an ODE with all equations.
      * @param integ numerical integrator to use for propagation.
-     * @param mathInitialState initial state
      * @return a new ode
      */
-    private ExpandableODE createODE(final ODEIntegrator integ,
-                                    final ODEState mathInitialState) {
+    private ExpandableODE createODE(final ODEIntegrator integ) {
 
         final ExpandableODE ode =
                 new ExpandableODE(new ConvertedMainStateEquations(getMainStateEquations(integ)));
@@ -1217,11 +1223,11 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // reset event handlers
             integrator.clearEventDetectors();
-            detectors.forEach(c -> integrator.addEventDetector(c));
+            detectors.forEach(integrator::addEventDetector);
 
             // reset step handlers
             integrator.clearStepHandlers();
-            stepHandlers.forEach(stepHandler -> integrator.addStepHandler(stepHandler));
+            stepHandlers.forEach(integrator::addStepHandler);
 
         }
 

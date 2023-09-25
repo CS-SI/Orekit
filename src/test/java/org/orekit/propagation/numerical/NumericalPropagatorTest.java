@@ -46,6 +46,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
@@ -1633,6 +1634,19 @@ public class NumericalPropagatorTest {
         // Check that the expected final state was reached
         Assertions.assertEquals(60, finalState.getDate().durationFrom(initialState.getDate()), convergenceThreshold);
 
+    }
+
+    @Test
+    void getIntegratorNameTest() {
+        // GIVEN
+        final String expectedName = "Name";
+        final ODEIntegrator mockedIntegrator = Mockito.mock(ODEIntegrator.class);
+        Mockito.when(mockedIntegrator.getName()).thenReturn(expectedName);
+        // WHEN
+        final NumericalPropagator numericalPropagator = new NumericalPropagator(mockedIntegrator);
+        final String actualName = numericalPropagator.getIntegratorName();
+        // THEN
+        Assertions.assertEquals(expectedName, actualName);
     }
 
     /** Record the dates treated by the handler.
