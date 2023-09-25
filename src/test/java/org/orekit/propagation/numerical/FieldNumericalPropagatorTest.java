@@ -22,6 +22,8 @@ import java.util.stream.IntStream;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
@@ -35,6 +37,7 @@ import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -1778,6 +1781,22 @@ public class FieldNumericalPropagatorTest {
         // Check that the expected final state was reached
         Assertions.assertEquals(60, finalState.getDate().durationFrom(propagator.getInitialState().getDate()).getReal(), convergenceThreshold.getReal());
 
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void getIntegratorNameTest() {
+        // GIVEN
+        final GradientField field = GradientField.getField(1);
+        final String expectedName = "Name";
+        final FieldODEIntegrator<Gradient> mockedIntegrator = Mockito.mock(FieldODEIntegrator.class);
+        Mockito.when(mockedIntegrator.getName()).thenReturn(expectedName);
+        // WHEN
+        final FieldNumericalPropagator<Gradient> fieldNumericalPropagator = new FieldNumericalPropagator<>(field,
+                mockedIntegrator);
+        final String actualName = fieldNumericalPropagator.getIntegratorName();
+        // THEN
+        Assertions.assertEquals(expectedName, actualName);
     }
 
     private static <T extends CalculusFieldElement<T>> void doTestShift(final FieldCartesianOrbit<T> orbit, final OrbitType orbitType,

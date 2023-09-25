@@ -109,7 +109,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     /** Type of orbit to output (mean or osculating) <br/>
      * <p>
-     * This is used only in the case of semianalitical propagators where there is a clear separation between
+     * This is used only in the case of semi-analytical propagators where there is a clear separation between
      * mean and short periodic elements. It is ignored by the Numerical propagator.
      * </p>
      */
@@ -155,6 +155,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         stateMapper = createMapper(null, zero.add(Double.NaN), null, null, null, null);
     }
 
+    /** Get the integrator's name.
+     * @return name of underlying integrator
+     * @since 12.0
+     */
+    public String getIntegratorName() {
+        return integrator.getName();
+    }
+
     /**  {@inheritDoc} */
     public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
         super.setAttitudeProvider(attitudeProvider);
@@ -179,7 +187,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         return stateMapper.getOrbitType();
     }
 
-    /** Check if only the mean elements should be used in a semianalitical propagation.
+    /** Check if only the mean elements should be used in a semi-analytical propagation.
      * @return {@link PropagationType MEAN} if only mean elements have to be used or
      *         {@link PropagationType OSCULATING} if osculating elements have to be also used.
      */
@@ -450,7 +458,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             // convert space flight dynamics API to math API
             final FieldSpacecraftState<T> initialIntegrationState = getInitialIntegrationState();
             final FieldODEState<T> mathInitialState = createInitialState(initialIntegrationState);
-            final FieldExpandableODE<T> mathODE = createODE(integrator, mathInitialState);
+            final FieldExpandableODE<T> mathODE = createODE(integrator);
 
             // mathematical integration
             final FieldODEStateAndDerivative<T> mathFinalState;
@@ -573,11 +581,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     /** Create an ODE with all equations.
      * @param integ numerical integrator to use for propagation.
-     * @param mathInitialState initial state
      * @return a new ode
      */
-    private FieldExpandableODE<T> createODE(final FieldODEIntegrator<T> integ,
-                                    final FieldODEState<T> mathInitialState) {
+    private FieldExpandableODE<T> createODE(final FieldODEIntegrator<T> integ) {
 
         final FieldExpandableODE<T> ode =
                 new FieldExpandableODE<>(new ConvertedMainStateEquations(getMainStateEquations(integ)));
@@ -1210,11 +1216,11 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
             // reset event handlers
             integrator.clearEventDetectors();
-            detectors.forEach(c -> integrator.addEventDetector(c));
+            detectors.forEach(integrator::addEventDetector);
 
             // reset step handlers
             integrator.clearStepHandlers();
-            stepHandlers.forEach(stepHandler -> integrator.addStepHandler(stepHandler));
+            stepHandlers.forEach(integrator::addStepHandler);
 
         }
 
