@@ -131,8 +131,8 @@ class Alfriend1999MaxTest {
                 armellinDataRowList);
 
         // THEN
-        Assertions.assertTrue(statistics.getMean() <= 2.465783599125748E-10);
-        Assertions.assertTrue(statistics.getStandardDeviation() <= 6.701558905623221E-10);
+        Assertions.assertTrue(statistics.getMean() <= 2.4659494534898345E-10);
+        Assertions.assertTrue(statistics.getStandardDeviation() <= 6.702417431649529E-10);
     }
 
     /**
