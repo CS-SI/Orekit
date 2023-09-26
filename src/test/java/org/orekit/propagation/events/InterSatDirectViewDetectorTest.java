@@ -29,7 +29,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.CircularOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -50,12 +50,12 @@ public class InterSatDirectViewDetectorTest {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final CircularOrbit o1 = new CircularOrbit(7200000.0, 1.0e-3, 2.0e-4,
                                                    FastMath.toRadians(98.7), FastMath.toRadians(134.0),
-                                                   FastMath.toRadians(21.0), PositionAngle.MEAN, FramesFactory.getGCRF(),
+                                                   FastMath.toRadians(21.0), PositionAngleType.MEAN, FramesFactory.getGCRF(),
                                                    new AbsoluteDate("2003-02-14T01:02:03.000", utc),
                                                    Constants.EIGEN5C_EARTH_MU);
         final CircularOrbit o2 = new CircularOrbit(o1.getA(), 2.0e-4, 1.0e-3,
                                                    o1.getI() + 1.0e-6, o1.getRightAscensionOfAscendingNode() - 3.5e-7,
-                                                   o1.getAlphaM() + 2.2e-6, PositionAngle.MEAN, o1.getFrame(),
+                                                   o1.getAlphaM() + 2.2e-6, PositionAngleType.MEAN, o1.getFrame(),
                                                    o1.getDate(),
                                                    Constants.EIGEN5C_EARTH_MU);
         Assertions.assertEquals(o1.getKeplerianPeriod(), o2.getKeplerianPeriod(), 1.0e-10);
@@ -81,12 +81,12 @@ public class InterSatDirectViewDetectorTest {
         TimeScale utc = TimeScalesFactory.getUTC();
         CircularOrbit o1 = new CircularOrbit(7200000.0, 1.0e-3, 2.0e-4,
                                              FastMath.toRadians(50.0), FastMath.toRadians(134.0),
-                                             FastMath.toRadians(21.0), PositionAngle.MEAN, FramesFactory.getGCRF(),
+                                             FastMath.toRadians(21.0), PositionAngleType.MEAN, FramesFactory.getGCRF(),
                                              new AbsoluteDate("2003-02-14T01:02:03.000", utc),
                                              Constants.EIGEN5C_EARTH_MU);
         final CircularOrbit o2 = new CircularOrbit(29600000.0, 2.0e-4, 1.0e-3,
                                                    FastMath.toRadians(56.0), FastMath.toRadians(111.0),
-                                                   o1.getAlphaM() + 2.2e-6, PositionAngle.MEAN, o1.getFrame(),
+                                                   o1.getAlphaM() + 2.2e-6, PositionAngleType.MEAN, o1.getFrame(),
                                                    o1.getDate(),
                                                    Constants.EIGEN5C_EARTH_MU);
 

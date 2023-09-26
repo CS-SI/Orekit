@@ -45,7 +45,7 @@ import org.orekit.frames.TransformProvider;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.models.earth.displacement.TidalDisplacement;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
@@ -185,7 +185,7 @@ public class TLEEstimationTestUtils {
 
         // override orbital parameters
         double[] orbitArray = new double[6];
-        initialOrbit.getType().mapOrbitToArray(initialOrbit, PositionAngle.MEAN, orbitArray, null);
+        initialOrbit.getType().mapOrbitToArray(initialOrbit, PositionAngleType.MEAN, orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
         	// here orbital paramaters drivers have only 1 estimated values on the all time period for orbit determination
             propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i], initialOrbit.getDate());
@@ -300,12 +300,12 @@ public class TLEEstimationTestUtils {
      */
     public static void checkKalmanFit(final TLEContext context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
-                                      final Orbit refOrbit, final PositionAngle positionAngle,
+                                      final Orbit refOrbit, final PositionAngleType positionAngleType,
                                       final double expectedDeltaPos, final double posEps,
                                       final double expectedDeltaVel, final double velEps) {
         checkKalmanFit(context, kalman, measurements,
                        new Orbit[] { refOrbit },
-                       new PositionAngle[] { positionAngle },
+                       new PositionAngleType[] {positionAngleType},
                        new double[] { expectedDeltaPos }, new double[] { posEps },
                        new double[] { expectedDeltaVel }, new double[] { velEps });
     }
@@ -323,7 +323,7 @@ public class TLEEstimationTestUtils {
      */
     public static void checkKalmanFit(final TLEContext context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
-                                      final Orbit[] refOrbit, final PositionAngle[] positionAngle,
+                                      final Orbit[] refOrbit, final PositionAngleType[] positionAngleType,
                                       final double[] expectedDeltaPos, final double[] posEps,
                                       final double[] expectedDeltaVel, final double []velEps) {
 
@@ -345,7 +345,7 @@ public class TLEEstimationTestUtils {
             // Convert the orbital part to Cartesian formalism
             // Assuming all 6 orbital parameters are estimated by the filter
             final double[][] dCdY = new double[6][6];
-            estimatedOrbit.getJacobianWrtParameters(positionAngle[k], dCdY);
+            estimatedOrbit.getJacobianWrtParameters(positionAngleType[k], dCdY);
             final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
             final RealMatrix estimatedCartesianP =
                             Jacobian.

@@ -566,7 +566,7 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final double gm,
+    public void addKeplerContribution(final PositionAngleType type, final double gm,
                                       final double[] pDot) {
 
         final PVCoordinates pv = getPVCoordinates();

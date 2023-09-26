@@ -25,6 +25,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
@@ -249,7 +250,7 @@ public interface Propagator extends PVCoordinatesProvider {
      * </p>
      * <p>
      * The arguments for initial matrices <em>must</em> be compatible with the {@link org.orekit.orbits.OrbitType
-     * orbit type} and {@link org.orekit.orbits.PositionAngle position angle} that will be used by the propagator.
+     * orbit type} and {@link PositionAngleType position angle} that will be used by the propagator.
      * </p>
      * <p>
      * The default implementation throws an exception as the method is not supported by all propagators.

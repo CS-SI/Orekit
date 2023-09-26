@@ -53,7 +53,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldAbstractPropagator;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
@@ -212,7 +212,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
-    protected void setPositionAngleType(final PositionAngle positionAngleType) {
+    protected void setPositionAngleType(final PositionAngleType positionAngleType) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
                                    stateMapper.getOrbitType(), positionAngleType,
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());
@@ -221,7 +221,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
-    protected PositionAngle getPositionAngleType() {
+    protected PositionAngleType getPositionAngleType() {
         return stateMapper.getPositionAngleType();
     }
 
@@ -366,7 +366,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * @return new mapper
      */
     protected abstract FieldStateMapper<T> createMapper(FieldAbsoluteDate<T> referenceDate, T mu,
-                                                        OrbitType orbitType, PositionAngle positionAngleType,
+                                                        OrbitType orbitType, PositionAngleType positionAngleType,
                                                         AttitudeProvider attitudeProvider, Frame frame);
 
     /** Get the differential equations to integrate (for main state only).

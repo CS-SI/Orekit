@@ -43,7 +43,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -193,7 +193,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
         Frame EME = FramesFactory.getEME2000();
 
         FieldKeplerianOrbit<Gradient> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                      PositionAngle.MEAN,
+                                                                      PositionAngleType.MEAN,
                                                                       EME,
                                                                       J2000,
                                                                       mu);
@@ -226,7 +226,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
         NP.addForceModel(relativity);
 
         // Do the test
-        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1005., NP, FNP,
+        checkRealFieldPropagationGradient(FKO, PositionAngleType.MEAN, 1005., NP, FNP,
                                   1.0e-15, 1.3e-2, 2.9e-4, 1.4e-3,
                                   1, false);
     }
@@ -261,7 +261,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
         double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);

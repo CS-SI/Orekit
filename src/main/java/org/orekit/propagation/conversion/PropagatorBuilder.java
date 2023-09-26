@@ -24,7 +24,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriversList;
@@ -80,7 +80,7 @@ public interface PropagatorBuilder {
      * @see #getOrbitType()
      * @since 7.1
      */
-    PositionAngle getPositionAngle();
+    PositionAngleType getPositionAngle();
 
     /** Get the date of the initial orbit.
      * @return date of the initial orbit

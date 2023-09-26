@@ -74,7 +74,7 @@ import org.orekit.models.earth.atmosphere.NRLMSISE00;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -322,7 +322,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final PropagatorBuilder builder;
 
         // Initialize the numerical builder
-        final NumericalPropagatorBuilder propagator = new NumericalPropagatorBuilder(orbit, integrator, PositionAngle.MEAN, 10.0);
+        final NumericalPropagatorBuilder propagator = new NumericalPropagatorBuilder(orbit, integrator, PositionAngleType.MEAN, 10.0);
 
         // Add force models to the numerical propagator
         addNumericalForceModels(propagator, orbit, centralBody, gravityField, convention, simpleEop, surface, useDrag, useSrp, useSun, useMoon, useTides);

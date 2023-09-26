@@ -20,7 +20,7 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.frames.LOFType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.StateCovariance;
 
@@ -31,7 +31,7 @@ import org.orekit.propagation.StateCovariance;
  * The method {@link #getProcessNoiseMatrix} then square the values so that they are consistent with a covariance matrix.
  * <p>
  * The orbital parameters evolutions are provided in LOF frame and Cartesian (PV);
- * then converted in inertial frame and current {@link org.orekit.orbits.OrbitType} and {@link PositionAngle}
+ * then converted in inertial frame and current {@link org.orekit.orbits.OrbitType} and {@link PositionAngleType}
  * when method {@link #getProcessNoiseMatrix} is called.
  * </p>
  * <p>
@@ -67,7 +67,7 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
     private final LOFType lofType;
 
     /** Position angle for the orbital process noise matrix. */
-    private final PositionAngle positionAngle;
+    private final PositionAngleType positionAngleType;
 
     /** Array of univariate functions for the six orbital parameters process noise evolution in LOF frame and Cartesian formalism. */
     private final UnivariateFunction[] lofCartesianOrbitalParametersEvolution;
@@ -81,24 +81,24 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
     /** Simple constructor.
      * @param initialCovarianceMatrix initial covariance matrix
      * @param lofType the LOF type used
-     * @param positionAngle the position angle used for the computation of the process noise
+     * @param positionAngleType the position angle used for the computation of the process noise
      * @param lofCartesianOrbitalParametersEvolution Array of univariate functions for the six orbital parameters process noise evolution in LOF frame and Cartesian orbit type
      * @param propagationParametersEvolution Array of univariate functions for the propagation parameters process noise evolution
      */
     public UnivariateProcessNoise(final RealMatrix initialCovarianceMatrix,
                                   final LOFType lofType,
-                                  final PositionAngle positionAngle,
+                                  final PositionAngleType positionAngleType,
                                   final UnivariateFunction[] lofCartesianOrbitalParametersEvolution,
                                   final UnivariateFunction[] propagationParametersEvolution) {
 
         // Call the new constructor with an empty array for measurements parameters
-        this(initialCovarianceMatrix, lofType, positionAngle, lofCartesianOrbitalParametersEvolution, propagationParametersEvolution, new UnivariateFunction[0]);
+        this(initialCovarianceMatrix, lofType, positionAngleType, lofCartesianOrbitalParametersEvolution, propagationParametersEvolution, new UnivariateFunction[0]);
     }
 
     /** Simple constructor.
      * @param initialCovarianceMatrix initial covariance matrix
      * @param lofType the LOF type used
-     * @param positionAngle the position angle used for the computation of the process noise
+     * @param positionAngleType the position angle used for the computation of the process noise
      * @param lofCartesianOrbitalParametersEvolution Array of univariate functions for the six orbital parameters process noise evolution in LOF frame and Cartesian orbit type
      * @param propagationParametersEvolution Array of univariate functions for the propagation parameters process noise evolution
      * @param measurementsParametersEvolution Array of univariate functions for the measurements parameters process noise evolution
@@ -106,14 +106,14 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
      */
     public UnivariateProcessNoise(final RealMatrix initialCovarianceMatrix,
                                   final LOFType lofType,
-                                  final PositionAngle positionAngle,
+                                  final PositionAngleType positionAngleType,
                                   final UnivariateFunction[] lofCartesianOrbitalParametersEvolution,
                                   final UnivariateFunction[] propagationParametersEvolution,
                                   final UnivariateFunction[] measurementsParametersEvolution) {
 
         super(initialCovarianceMatrix);
         this.lofType = lofType;
-        this.positionAngle = positionAngle;
+        this.positionAngleType = positionAngleType;
         this.lofCartesianOrbitalParametersEvolution  = lofCartesianOrbitalParametersEvolution.clone();
         this.propagationParametersEvolution = propagationParametersEvolution.clone();
         this.measurementsParametersEvolution = measurementsParametersEvolution.clone();
@@ -129,8 +129,8 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
     /** Getter for the positionAngle.
      * @return the positionAngle
      */
-    public PositionAngle getPositionAngle() {
-        return positionAngle;
+    public PositionAngleType getPositionAngle() {
+        return positionAngleType;
     }
 
     /** Getter for the lofCartesianOrbitalParametersEvolution.
@@ -228,7 +228,7 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
         // Convert to current orbit type and position angle
         final StateCovariance inertialOrbitalProcessNoiseCov =
                         inertialCartesianProcessNoiseCov.changeCovarianceType(current.getOrbit(),
-                                                                              current.getOrbit().getType(), positionAngle);
+                                                                              current.getOrbit().getType(), positionAngleType);
         // Return inertial orbital covariance matrix
         return inertialOrbitalProcessNoiseCov.getMatrix();
     }

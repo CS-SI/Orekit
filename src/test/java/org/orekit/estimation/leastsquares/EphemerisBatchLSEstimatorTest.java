@@ -40,7 +40,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.SpacecraftStateInterpolator;
@@ -82,7 +82,7 @@ public class EphemerisBatchLSEstimatorTest {
         double mu  = 3.9860047e14;
         inertialFrame = FramesFactory.getEME2000();
 
-        Orbit initialState = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+        Orbit initialState = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                             inertialFrame, initDate, mu);
         propagator = new KeplerianPropagator(initialState);
 

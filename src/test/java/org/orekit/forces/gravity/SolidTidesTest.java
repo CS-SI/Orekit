@@ -47,7 +47,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
@@ -118,7 +118,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         AbsoluteDate date = new AbsoluteDate(1970, 07, 01, 13, 59, 27.816, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
+                                         0, PositionAngleType.MEAN, eme2000, date,
                                          gravityField.getMu());
 
         AbsoluteDate target = date.shiftedBy(7 * Constants.JULIAN_DAY);
@@ -149,7 +149,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
+                                         0, PositionAngleType.MEAN, eme2000, date,
                                          Constants.EIGEN5C_EARTH_MU);
         doTestTideEffect(orbit, IERSConventions.IERS_1996, 44.09481, 0.00000);
     }
@@ -161,7 +161,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         AbsoluteDate date = new AbsoluteDate(1969, 07, 01, 13, 59, 27.816, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
+                                         0, PositionAngleType.MEAN, eme2000, date,
                                          Constants.EIGEN5C_EARTH_MU);
         doTestTideEffect(orbit, IERSConventions.IERS_2003, 73.14011, 0.87360);
     }
@@ -173,7 +173,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
+                                         0, PositionAngleType.MEAN, eme2000, date,
                                          Constants.EIGEN5C_EARTH_MU);
         doTestTideEffect(orbit, IERSConventions.IERS_2003, 44.24999, 0.61752);
     }
@@ -185,7 +185,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
+                                         0, PositionAngleType.MEAN, eme2000, date,
                                          Constants.EIGEN5C_EARTH_MU);
         doTestTideEffect(orbit, IERSConventions.IERS_2010, 44.25001, 0.70710);
     }
@@ -197,7 +197,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
+                                         0, PositionAngleType.MEAN, eme2000, date,
                                          Constants.EIGEN5C_EARTH_MU);
         doTestTideEffect(orbit, IERSConventions.IERS_2010, 24.02815, 30.37047);
     }
@@ -210,7 +210,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
+                                         0, PositionAngleType.MEAN, eme2000, date,
                                          Constants.EIGEN5C_EARTH_MU);
         Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
@@ -239,7 +239,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
+                                         0, PositionAngleType.MEAN, eme2000, date,
                                          Constants.EIGEN5C_EARTH_MU);
         Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
@@ -268,7 +268,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
+                                         0, PositionAngleType.MEAN, eme2000, date,
                                          Constants.EIGEN5C_EARTH_MU);
         Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
@@ -296,7 +296,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
+                                         0, PositionAngleType.MEAN, eme2000, date,
                                          Constants.EIGEN5C_EARTH_MU);
         Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
@@ -324,7 +324,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
+                                         0, PositionAngleType.MEAN, eme2000, date,
                                          Constants.EIGEN5C_EARTH_MU);
         Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
@@ -351,7 +351,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
+                                         0, PositionAngleType.MEAN, eme2000, date,
                                          Constants.EIGEN5C_EARTH_MU);
         Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
@@ -378,7 +378,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
+                                         0, PositionAngleType.MEAN, eme2000, date,
                                          Constants.EIGEN5C_EARTH_MU);
         Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
@@ -405,7 +405,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
+                                         0, PositionAngleType.MEAN, eme2000, date,
                                          Constants.EIGEN5C_EARTH_MU);
         Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);

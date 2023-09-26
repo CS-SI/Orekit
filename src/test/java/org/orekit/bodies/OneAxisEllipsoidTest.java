@@ -41,7 +41,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -495,7 +495,7 @@ public class OneAxisEllipsoidTest {
         final double mu = 3.9860047e14;
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., FastMath.toRadians(90.), FastMath.toRadians(60.),
-                                   FastMath.toRadians(90.), PositionAngle.MEAN,
+                                   FastMath.toRadians(90.), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
@@ -533,7 +533,7 @@ public class OneAxisEllipsoidTest {
         // ********************************
         circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., FastMath.toRadians(1.e-4), FastMath.toRadians(0.),
-                                   FastMath.toRadians(0.), PositionAngle.MEAN,
+                                   FastMath.toRadians(0.), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
@@ -575,7 +575,7 @@ public class OneAxisEllipsoidTest {
         // *************************
         circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., FastMath.toRadians(50.), FastMath.toRadians(0.),
-                                   FastMath.toRadians(90.), PositionAngle.MEAN,
+                                   FastMath.toRadians(90.), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B

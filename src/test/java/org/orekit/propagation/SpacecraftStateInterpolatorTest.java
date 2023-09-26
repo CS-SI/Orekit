@@ -42,7 +42,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -95,7 +95,7 @@ class SpacecraftStateInterpolatorTest {
                                                  TimeComponents.H00,
                                                  TimeScalesFactory.getUTC());
             final Frame frame = FramesFactory.getEME2000();
-            orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE, frame, date, mu);
+            orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE, frame, date, mu);
             OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                           Constants.WGS84_EARTH_FLATTENING,
                                                           FramesFactory.getITRF(IERSConventions.IERS_2010, true));

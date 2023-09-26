@@ -64,7 +64,7 @@ import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
@@ -285,7 +285,7 @@ public class FieldNumericalPropagatorTest {
         FieldAbsoluteDate<T> endDate = new FieldAbsoluteDate<>(field, "2015-07-04", tai);
         Frame eci = FramesFactory.getGCRF();
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS), zero, zero, zero, zero, zero,
-                                                                 PositionAngle.TRUE, eci, initialDate, zero.add(mu));
+                                                                 PositionAngleType.TRUE, eci, initialDate, zero.add(mu));
         OrbitType type = OrbitType.CARTESIAN;
         double[][] tol = NumericalPropagator.tolerances(1e-3, orbit.toOrbit(), type);
         FieldNumericalPropagator<T> prop = new FieldNumericalPropagator<>(field,
@@ -333,7 +333,7 @@ public class FieldNumericalPropagatorTest {
         FieldAbsoluteDate<T> endDate = new FieldAbsoluteDate<>(field, "2015-07-04", tai);
         Frame eci = FramesFactory.getGCRF();
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS), zero, zero, zero, zero, zero,
-                                                                 PositionAngle.TRUE, eci, initialDate, zero.add(mu));
+                                                                 PositionAngleType.TRUE, eci, initialDate, zero.add(mu));
         OrbitType type = OrbitType.CARTESIAN;
         double[][] tol = NumericalPropagator.tolerances(1e-3, orbit.toOrbit(), type);
         FieldNumericalPropagator<T> prop = new FieldNumericalPropagator<>(field,
@@ -536,20 +536,20 @@ public class FieldNumericalPropagatorTest {
         final T dP = zero.add(0.001);
         final T dV = pv.getPosition().getNormSq().multiply(pv.getVelocity().getNorm()).reciprocal().multiply(dP.multiply(initialState.getMu()));
 
-        final FieldPVCoordinates<T> pvcM = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngle.MEAN, propagator);
-        final FieldPVCoordinates<T> pviM = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngle.MEAN, propagator);
-        final FieldPVCoordinates<T> pveM = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngle.MEAN, propagator);
-        final FieldPVCoordinates<T> pvkM = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngle.MEAN, propagator);
+        final FieldPVCoordinates<T> pvcM = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngleType.MEAN, propagator);
+        final FieldPVCoordinates<T> pviM = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngleType.MEAN, propagator);
+        final FieldPVCoordinates<T> pveM = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN, propagator);
+        final FieldPVCoordinates<T> pvkM = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngleType.MEAN, propagator);
 
-        final FieldPVCoordinates<T> pvcE = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngle.ECCENTRIC, propagator);
-        final FieldPVCoordinates<T> pviE = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngle.ECCENTRIC, propagator);
-        final FieldPVCoordinates<T> pveE = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, propagator);
-        final FieldPVCoordinates<T> pvkE = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngle.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pvcE = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngleType.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pviE = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngleType.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pveE = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngleType.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pvkE = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngleType.ECCENTRIC, propagator);
 
-        final FieldPVCoordinates<T> pvcT = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngle.TRUE, propagator);
-        final FieldPVCoordinates<T> pviT = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngle.TRUE, propagator);
-        final FieldPVCoordinates<T> pveT = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE, propagator);
-        final FieldPVCoordinates<T> pvkT = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngle.TRUE, propagator);
+        final FieldPVCoordinates<T> pvcT = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngleType.TRUE, propagator);
+        final FieldPVCoordinates<T> pviT = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngleType.TRUE, propagator);
+        final FieldPVCoordinates<T> pveT = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, propagator);
+        final FieldPVCoordinates<T> pvkT = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngleType.TRUE, propagator);
         Assertions.assertEquals(0, pvcM.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 3.0);
         Assertions.assertEquals(0, pvcM.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 2.0);
         Assertions.assertEquals(0, pviM.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.6);
@@ -606,7 +606,7 @@ public class FieldNumericalPropagatorTest {
 
         FieldSpacecraftState<T> state =
             new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(-10000000.0), zero.add(2.5), zero.add(0.3), zero, zero, zero,
-                                                                 PositionAngle.TRUE,
+                                                                 PositionAngleType.TRUE,
                                                                  FramesFactory.getEME2000(), initDate,
                                                                  zero.add(mu)));
 
@@ -621,14 +621,14 @@ public class FieldNumericalPropagatorTest {
         final T dV = dP.multiply(state.getMu()).divide(
                           pv.getPosition().getNormSq().multiply(pv.getVelocity().getNorm()));
 
-        final FieldPVCoordinates<T> pvcM = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngle.MEAN, propagator);
-        final FieldPVCoordinates<T> pvkM = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngle.MEAN, propagator);
+        final FieldPVCoordinates<T> pvcM = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngleType.MEAN, propagator);
+        final FieldPVCoordinates<T> pvkM = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngleType.MEAN, propagator);
 
-        final FieldPVCoordinates<T> pvcE = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, propagator);
-        final FieldPVCoordinates<T> pvkE = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pvcE = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pvkE = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, propagator);
 
-        final FieldPVCoordinates<T> pvcT = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngle.TRUE, propagator);
-        final FieldPVCoordinates<T> pvkT = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngle.TRUE, propagator);
+        final FieldPVCoordinates<T> pvcT = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngleType.TRUE, propagator);
+        final FieldPVCoordinates<T> pvkT = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngleType.TRUE, propagator);
 
         Assertions.assertEquals(0, pvcM.getPosition().subtract(pvkT.getPosition()).getNorm().getReal() / dP.getReal(), 0.3);
         Assertions.assertEquals(0, pvcM.getVelocity().subtract(pvkT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.4);
@@ -644,7 +644,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> propagateInType(FieldSpacecraftState<T> state, T dP,
-                                          OrbitType type , PositionAngle angle, FieldNumericalPropagator<T> propagator)
+                                                                                      OrbitType type , PositionAngleType angle, FieldNumericalPropagator<T> propagator)
         {
         T zero = dP.getField().getZero();
         final T dt = zero.add(3200);
@@ -1260,7 +1260,7 @@ public class FieldNumericalPropagatorTest {
                                                             field.getZero().add(0),
                                                             field.getZero().add(FastMath.PI),
                                                             field.getZero().add(0),
-                                                            PositionAngle.MEAN,
+                                                            PositionAngleType.MEAN,
                                                             FramesFactory.getTOD(false),
                                                             new FieldAbsoluteDate<>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
                                                             field.getZero().add(Constants.EIGEN5C_EARTH_MU));
@@ -1318,7 +1318,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianEllipticTrueWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.TRUE, false,
+        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1328,7 +1328,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianEllipticTrueWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1338,7 +1338,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianEllipticEccentricWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, false,
+        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1348,7 +1348,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianEllipticEcentricWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, true,
+        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1358,7 +1358,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianEllipticMeanWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.MEAN, false,
+        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1368,7 +1368,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianEllipticMeanWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.MEAN, true,
+        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1378,7 +1378,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianHyperbolicTrueWithoutDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.TRUE, false,
+        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.TRUE, false,
                     0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
@@ -1388,7 +1388,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianHyperbolicTrueWithDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
@@ -1398,7 +1398,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianHyperbolicEccentricWithoutDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, false,
+        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, false,
                     0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
@@ -1408,7 +1408,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianHyperbolicEcentricWithDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, true,
+        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
@@ -1418,7 +1418,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianHyperbolicMeanWithoutDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.MEAN, false,
+        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.MEAN, false,
                     0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
@@ -1428,7 +1428,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftKeplerianHyperbolicMeanWithDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.MEAN, true,
+        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngleType.MEAN, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
@@ -1438,7 +1438,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianEllipticTrueWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.TRUE, false,
+        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngleType.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1448,7 +1448,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianEllipticTrueWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.TRUE, true,
+        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngleType.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1458,7 +1458,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianEllipticEccentricWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, false,
+        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1468,7 +1468,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianEllipticEcentricWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, true,
+        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1478,7 +1478,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianEllipticMeanWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.MEAN, false,
+        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngleType.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1488,7 +1488,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianEllipticMeanWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.MEAN, true,
+        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngleType.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1498,7 +1498,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianHyperbolicTrueWithoutDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.TRUE, false,
+        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngleType.TRUE, false,
                     0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
@@ -1508,7 +1508,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianHyperbolicTrueWithDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.TRUE, true,
+        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngleType.TRUE, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
@@ -1518,7 +1518,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianHyperbolicEccentricWithoutDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, false,
+        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, false,
                     0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
@@ -1528,7 +1528,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianHyperbolicEcentricWithDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, true,
+        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
@@ -1538,7 +1538,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianHyperbolicMeanWithoutDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.MEAN, false,
+        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngleType.MEAN, false,
                     0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
@@ -1548,7 +1548,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCartesianHyperbolicMeanWithDerivatives(final Field<T> field) {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.MEAN, true,
+        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngleType.MEAN, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
@@ -1558,7 +1558,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCircularTrueWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.TRUE, false,
+        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngleType.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1568,7 +1568,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCircularTrueWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.TRUE, true,
+        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngleType.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1578,7 +1578,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCircularEccentricWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, false,
+        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngleType.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1588,7 +1588,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCircularEcentricWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, true,
+        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngleType.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1598,7 +1598,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCircularMeanWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.MEAN, false,
+        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngleType.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1608,7 +1608,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftCircularMeanWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.MEAN, true,
+        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngleType.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1618,7 +1618,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftEquinoctialTrueWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1628,7 +1628,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftEquinoctialTrueWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.TRUE, true,
+        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1638,7 +1638,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftEquinoctialEccentricWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, false,
+        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngleType.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1648,7 +1648,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTtestShiftEquinoctialEcentricWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, true,
+        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngleType.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1658,7 +1658,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftEquinoctialMeanWithoutDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.MEAN, false,
+        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngleType.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
@@ -1668,7 +1668,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends CalculusFieldElement<T>> void doTestShiftEquinoctialMeanWithDerivatives(final Field<T> field) {
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.MEAN, true,
+        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngleType.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
@@ -1690,7 +1690,7 @@ public class FieldNumericalPropagatorTest {
                                                                      field.getZero().newInstance(2.44),
                                                                      field.getZero().newInstance(0.21),
                                                                      field.getZero().newInstance(-1.05),
-                                                                     PositionAngle.MEAN,
+                                                                     PositionAngleType.MEAN,
                                            eme2000,
                                            date, field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU));
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field,
@@ -1800,10 +1800,10 @@ public class FieldNumericalPropagatorTest {
     }
 
     private static <T extends CalculusFieldElement<T>> void doTestShift(final FieldCartesianOrbit<T> orbit, final OrbitType orbitType,
-                                                                    final PositionAngle angleType, final boolean withDerivatives,
-                                                                    final double error60s, final double error120s,
-                                                                    final double error300s, final double error600s,
-                                                                    final double error900s) {
+                                                                        final PositionAngleType angleType, final boolean withDerivatives,
+                                                                        final double error60s, final double error120s,
+                                                                        final double error300s, final double error600s,
+                                                                        final double error900s) {
 
         Field<T> field = orbit.getDate().getField();
         T zero = field.getZero();
@@ -1838,7 +1838,7 @@ public class FieldNumericalPropagatorTest {
 
         private final boolean           withDerivatives;
         private final OrbitType         orbitType;
-        private final PositionAngle     angleType;
+        private final PositionAngleType angleType;
         private final double            error60s;
         private final double            error120s;
         private final double            error300s;
@@ -1847,7 +1847,7 @@ public class FieldNumericalPropagatorTest {
         private FieldSpacecraftState<T> referenceState;
 
         ShiftChecker(final boolean withDerivatives, final OrbitType orbitType,
-                     final PositionAngle angleType, final double error60s,
+                     final PositionAngleType angleType, final double error60s,
                      final double error120s, final double error300s,
                      final double error600s, final double error900s) {
             this.withDerivatives = withDerivatives;
@@ -1913,7 +1913,7 @@ public class FieldNumericalPropagatorTest {
 
     private static <T extends CalculusFieldElement<T>> FieldNumericalPropagator<T> createPropagator(FieldSpacecraftState<T> spacecraftState,
                                                                                                 OrbitType orbitType,
-                                                                                                PositionAngle angleType)
+                                                                                                PositionAngleType angleType)
         {
 
         final Field<T> field                          = spacecraftState.getDate().getField();

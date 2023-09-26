@@ -37,7 +37,7 @@ import org.orekit.gnss.Frequency;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -159,7 +159,7 @@ public class InterSatellitesPhaseBuilderTest {
      public void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-         propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+         propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                                    1.0e-6, 300.0, 0.001, Force.POTENTIAL,
                                                    Force.THIRD_BODY_SUN, Force.THIRD_BODY_MOON);
      }

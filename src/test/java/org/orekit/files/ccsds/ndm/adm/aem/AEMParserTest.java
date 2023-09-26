@@ -54,7 +54,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -561,7 +561,7 @@ public class AEMParserTest {
 
         final CircularOrbit o = new CircularOrbit(6992992, -5e-04, 1.2e-03,
                                                   FastMath.toRadians(97.83), FastMath.toRadians(80.95),
-                                                  FastMath.toRadians(179.86), PositionAngle.MEAN,
+                                                  FastMath.toRadians(179.86), PositionAngleType.MEAN,
                                                   FramesFactory.getEME2000(),
                                                   new AbsoluteDate("2021-04-15T13:31:22.000", tai),
                                                   Constants.EIGEN5C_EARTH_MU);
@@ -569,7 +569,7 @@ public class AEMParserTest {
                         new FieldCircularOrbit<>(new Binary64(o.getA()),
                                                  new Binary64(o.getCircularEx()), new Binary64(o.getCircularEy()),
                                                  new Binary64(o.getI()), new Binary64(o.getRightAscensionOfAscendingNode()),
-                                                 new Binary64(o.getAlphaM()), PositionAngle.MEAN,
+                                                 new Binary64(o.getAlphaM()), PositionAngleType.MEAN,
                                                  o.getFrame(), new FieldAbsoluteDate<>(Binary64Field.getInstance(), o.getDate()),
                                                  new Binary64(o.getMu()));
         final AemSatelliteEphemeris ephemeris = file.getSatellites().get("2020-012A");

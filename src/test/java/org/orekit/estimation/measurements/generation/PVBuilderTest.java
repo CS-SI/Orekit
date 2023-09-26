@@ -34,7 +34,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -151,7 +151,7 @@ public class PVBuilderTest {
      public void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-         propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+         propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                                    1.0e-6, 300.0, 0.001, Force.POTENTIAL,
                                                    Force.THIRD_BODY_SUN, Force.THIRD_BODY_MOON);
      }

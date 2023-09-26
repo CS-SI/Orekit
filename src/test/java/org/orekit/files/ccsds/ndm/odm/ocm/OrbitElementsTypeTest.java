@@ -30,7 +30,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -162,7 +162,7 @@ public class OrbitElementsTypeTest {
     @Test
     public void testRoundTrip() {
         final KeplerianOrbit orbit = new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 1.00681, 3.10686,
-                                                        0.048363, PositionAngle.MEAN,
+                                                        0.048363, PositionAngleType.MEAN,
                                                         FramesFactory.getEME2000(),
                                                         AbsoluteDate.ARBITRARY_EPOCH, Constants.EIGEN5C_EARTH_MU);
         for (final OrbitElementsType type : OrbitElementsType.values()) {

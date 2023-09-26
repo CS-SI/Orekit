@@ -26,7 +26,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
@@ -55,7 +55,7 @@ public abstract class CloseEventsAbstractTest {
     public static final Frame eci = FramesFactory.getGCRF();
     public static final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, eci);
     public static final KeplerianOrbit initialOrbit = new KeplerianOrbit(
-            6378137 + 500e3, 0, 0, 0, 0, 0, PositionAngle.TRUE,
+            6378137 + 500e3, 0, 0, 0, 0, 0, PositionAngleType.TRUE,
             eci, epoch, mu);
 
     @BeforeAll
@@ -238,7 +238,7 @@ public abstract class CloseEventsAbstractTest {
         Propagator propagator = getPropagator(10);
         List<Event> events = new ArrayList<>();
         SpacecraftState newState = new SpacecraftState(new KeplerianOrbit(
-                42e6, 0, 0, 0, 0, 0, PositionAngle.TRUE, eci, epoch.shiftedBy(t), mu));
+                42e6, 0, 0, 0, 0, 0, PositionAngleType.TRUE, eci, epoch.shiftedBy(t), mu));
 
         TimeDetector resetDetector = new TimeDetector(t)
                 .withHandler(new ResetHandler(events, newState))
@@ -664,7 +664,7 @@ public abstract class CloseEventsAbstractTest {
         double t1 = 15.0;
         SpacecraftState newState = new SpacecraftState(new KeplerianOrbit(
                 6378137 + 500e3, 0, FastMath.PI / 2, 0, 0,
-                FastMath.PI / 2, PositionAngle.TRUE, eci, epoch.shiftedBy(t1), mu));
+                FastMath.PI / 2, PositionAngleType.TRUE, eci, epoch.shiftedBy(t1), mu));
         // shared event list so we know the order in which they occurred
         List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
@@ -1669,7 +1669,7 @@ public abstract class CloseEventsAbstractTest {
         double t1 = -15.0;
         SpacecraftState newState = new SpacecraftState(new KeplerianOrbit(
                 6378137 + 500e3, 0, FastMath.PI / 2, 0, 0,
-                FastMath.PI / 2, PositionAngle.TRUE, eci, epoch.shiftedBy(t1), mu));
+                FastMath.PI / 2, PositionAngleType.TRUE, eci, epoch.shiftedBy(t1), mu));
         // shared event list so we know the order in which they occurred
         List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
@@ -2144,7 +2144,7 @@ public abstract class CloseEventsAbstractTest {
     private SpacecraftState state(double t) {
         return new SpacecraftState(
                 new KeplerianOrbit(6378137 + 500e3, 0, 0, 0, 0, 0,
-                        PositionAngle.TRUE, eci, epoch.shiftedBy(t),
+                        PositionAngleType.TRUE, eci, epoch.shiftedBy(t),
                         mu));
     }
 

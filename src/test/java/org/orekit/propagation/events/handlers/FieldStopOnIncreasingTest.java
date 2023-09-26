@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -52,7 +52,7 @@ public class FieldStopOnIncreasingTest {
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(0.7311),
                                                                                          zero.add(0.122138),   zero.add(3.10686),
                                                                                          zero.add(1.00681), zero.add(0.048363),
-                                                                                         PositionAngle.MEAN,
+                                                                                         PositionAngleType.MEAN,
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
                                                                                          zero.add(Constants.EIGEN5C_EARTH_MU)));
@@ -65,7 +65,7 @@ public class FieldStopOnIncreasingTest {
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(0.7311),
                                                                                          zero.add(0.122138),   zero.add(3.10686),
                                                                                          zero.add(1.00681), zero.add(0.048363),
-                                                                                         PositionAngle.MEAN,
+                                                                                         PositionAngleType.MEAN,
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
                                                                                          zero.add(Constants.EIGEN5C_EARTH_MU)));
@@ -78,7 +78,7 @@ public class FieldStopOnIncreasingTest {
         FieldSpacecraftState<T> s = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(0.7311),
                                                                                          zero.add(0.122138),   zero.add(3.10686),
                                                                                          zero.add(1.00681), zero.add(0.048363),
-                                                                                         PositionAngle.MEAN,
+                                                                                         PositionAngleType.MEAN,
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
                                                                                          zero.add(Constants.EIGEN5C_EARTH_MU)));

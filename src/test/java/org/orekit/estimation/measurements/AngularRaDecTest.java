@@ -34,7 +34,7 @@ import org.orekit.estimation.measurements.generation.AngularRaDecBuilder;
 import org.orekit.frames.*;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -54,7 +54,7 @@ public class AngularRaDecTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect right-ascension/declination measurements
@@ -103,7 +103,7 @@ public class AngularRaDecTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect right-ascension/declination measurements
@@ -158,7 +158,7 @@ public class AngularRaDecTest {
                                getEstimatedValue();
                     }
                 }, measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
-                   PositionAngle.TRUE, 250.0, 4).value(state);
+                   PositionAngleType.TRUE, 250.0, 4).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -212,7 +212,7 @@ public class AngularRaDecTest {
         Context context = EstimationTestUtils.geoStationnaryContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect right-ascension/declination measurements

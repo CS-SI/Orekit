@@ -107,7 +107,7 @@ class OrbitBlenderTest {
         // Initialize state covariance matrix provider
         final StateCovariance sergeiCovariance =
                 new StateCovariance(sergeiCovarianceMatrix, sergeiState.getDate(), sergeiState.getFrame(),
-                                    OrbitType.CARTESIAN, PositionAngle.MEAN);
+                                    OrbitType.CARTESIAN, PositionAngleType.MEAN);
 
         final StateCovarianceMatrixProvider stateCovarianceMatrixProvider =
                 new StateCovarianceMatrixProvider("covariance", "harvester", harvester, sergeiCovariance);

@@ -38,7 +38,7 @@ import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.KeplerianPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
@@ -56,7 +56,7 @@ public class KeplerianBatchLSEstimatorTest {
 
         KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        final KeplerianPropagatorBuilder propagatorBuilder = context.createBuilder(PositionAngle.MEAN, true, 1.0);
+        final KeplerianPropagatorBuilder propagatorBuilder = context.createBuilder(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect PV measurements
         final Propagator propagator = KeplerianEstimationTestUtils.createPropagator(context.initialOrbit,
@@ -98,7 +98,7 @@ public class KeplerianBatchLSEstimatorTest {
         KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final KeplerianPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngle.MEAN, true, 1.0);
+                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect PV measurements
         final Propagator propagator = KeplerianEstimationTestUtils.createPropagator(context.initialOrbit,
@@ -143,7 +143,7 @@ public class KeplerianBatchLSEstimatorTest {
         KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final KeplerianPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngle.MEAN, true, 1.0);
+                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect range measurements
         final Propagator propagator = KeplerianEstimationTestUtils.createPropagator(context.initialOrbit,
@@ -180,7 +180,7 @@ public class KeplerianBatchLSEstimatorTest {
         KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final KeplerianPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngle.MEAN, true, 1.0);
+                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
         propagatorBuilder.setAttitudeProvider(new LofOffset(propagatorBuilder.getFrame(), LOFType.LVLH));
         final Vector3D antennaPhaseCenter = new Vector3D(-1.2, 2.3, -0.7);
 
@@ -226,7 +226,7 @@ public class KeplerianBatchLSEstimatorTest {
         KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final KeplerianPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngle.MEAN, true, 1.0);
+                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect range rate measurements
         final Propagator propagator = KeplerianEstimationTestUtils.createPropagator(context.initialOrbit,
@@ -267,7 +267,7 @@ public class KeplerianBatchLSEstimatorTest {
         KeplerianContext context = KeplerianEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final KeplerianPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngle.MEAN, true, 1.0);
+                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
 
         // create perfect range measurements
         final Propagator propagator = KeplerianEstimationTestUtils.createPropagator(context.initialOrbit,

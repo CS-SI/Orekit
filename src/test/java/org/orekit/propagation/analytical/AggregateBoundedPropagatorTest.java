@@ -33,7 +33,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.SpacecraftState;
@@ -314,7 +314,7 @@ public class AggregateBoundedPropagatorTest {
                                                double v) {
         double gm = Constants.EGM96_EARTH_MU;
         KeplerianPropagator propagator = new KeplerianPropagator(new KeplerianOrbit(
-                6778137, 0, 0, 0, 0, v, PositionAngle.TRUE, frame, start, gm));
+                6778137, 0, 0, 0, 0, v, PositionAngleType.TRUE, frame, start, gm));
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(start, end);
         return generator.getGeneratedEphemeris();

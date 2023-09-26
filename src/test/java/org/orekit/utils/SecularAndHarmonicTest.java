@@ -55,7 +55,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -101,7 +101,7 @@ public class SecularAndHarmonicTest {
                                   0.0, 0.0010289683741791197,
                                   FastMath.toRadians(98.5680307986701),
                                   FastMath.toRadians(-189.6132856166402),
-                                  FastMath.PI, PositionAngle.TRUE,
+                                  FastMath.PI, PositionAngleType.TRUE,
                                   FramesFactory.getEME2000(),
                                   new AbsoluteDate(2003, 4, 5, utc),
                                   gravityField.getMu());
@@ -116,7 +116,7 @@ public class SecularAndHarmonicTest {
                                   -3.908629707615073E-4, 0.0013502004064500472,
                                   FastMath.toRadians(98.56430772945006),
                                   FastMath.toRadians(-189.61151932993425),
-                                  FastMath.PI, PositionAngle.TRUE,
+                                  FastMath.PI, PositionAngleType.TRUE,
                                   FramesFactory.getEME2000(),
                                   new AbsoluteDate(2003, 4, 5, utc),
                                   gravityField.getMu());

@@ -30,7 +30,7 @@ import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -71,7 +71,7 @@ public class ManeuverTriggersTest {
         };
 
         SpacecraftState state = new SpacecraftState(new KeplerianOrbit(7e6, 0.1, 0.2, 0.3, 0.4, 0.5,
-                                                                       PositionAngle.MEAN, FramesFactory.getGCRF(),
+                                                                       PositionAngleType.MEAN, FramesFactory.getGCRF(),
                                                                        AbsoluteDate.J2000_EPOCH,
                                                                        Constants.EIGEN5C_EARTH_MU));
         dummy.init(state, state.getDate().shiftedBy(60));

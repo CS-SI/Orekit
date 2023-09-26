@@ -47,7 +47,7 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -110,7 +110,7 @@ public class FrameAlignedProviderTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngle.MEAN,
+                              FastMath.toRadians(30.), PositionAngleType.MEAN,
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);
@@ -293,7 +293,7 @@ public class FrameAlignedProviderTest {
                                   TimeScalesFactory.getUTC());
             orbit0 =
                 new KeplerianOrbit(12345678.9, 0.001, 2.3, 0.1, 3.04, 2.4,
-                                   PositionAngle.TRUE, FramesFactory.getEME2000(),
+                                   PositionAngleType.TRUE, FramesFactory.getEME2000(),
                                    t0, 3.986004415e14);
         } catch (OrekitException oe) {
             Assertions.fail(oe.getMessage());

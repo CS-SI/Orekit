@@ -63,7 +63,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
@@ -101,7 +101,7 @@ public class StateTransitionMatrixGeneratorTest {
 
         // first propagation, covering the maneuver
         DateBasedManeuverTriggers triggers1 = new DateBasedManeuverTriggers("MAN_0", firing, duration);
-        final NumericalPropagator propagator1  = buildPropagator(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, 20,
+        final NumericalPropagator propagator1  = buildPropagator(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, 20,
                                                                  firing, duration, triggers1);
         propagator1.
         getAllForceModels().
@@ -118,7 +118,7 @@ public class StateTransitionMatrixGeneratorTest {
 
         // second propagation, interrupted during maneuver
         DateBasedManeuverTriggers triggers2 = new DateBasedManeuverTriggers("MAN_0", firing, duration);
-                final NumericalPropagator propagator2  = buildPropagator(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, 20,
+                final NumericalPropagator propagator2  = buildPropagator(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, 20,
                                                                          firing, duration, triggers2);
         propagator2.
         getAllForceModels().
@@ -217,14 +217,14 @@ public class StateTransitionMatrixGeneratorTest {
         ForceModel gravityField =
             new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
         Orbit initialOrbit =
-                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
+                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                    provider.getMu());
 
         double dt = 900;
         double dP = 0.001;
         for (OrbitType orbitType : OrbitType.values()) {
-            for (PositionAngle angleType : PositionAngle.values()) {
+            for (PositionAngleType angleType : PositionAngleType.values()) {
 
                 // compute state Jacobian using StateTransitionMatrixGenerator
                 NumericalPropagator propagator =
@@ -266,7 +266,7 @@ public class StateTransitionMatrixGeneratorTest {
         double dt = 900;
         double dP = 0.001;
         for (OrbitType orbitType : new OrbitType[] { OrbitType.KEPLERIAN, OrbitType.CARTESIAN }) {
-            for (PositionAngle angleType : PositionAngle.values()) {
+            for (PositionAngleType angleType : PositionAngleType.values()) {
 
                 // compute state Jacobian using StateTransitionMatrixGenerator
                 NumericalPropagator propagator =
@@ -300,12 +300,12 @@ public class StateTransitionMatrixGeneratorTest {
         ParameterDriver gmDriver = newton.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
         gmDriver.setSelected(true);
         Orbit initialOrbit =
-                        new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
+                        new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngleType.TRUE,
                                            FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                            provider.getMu());
 
         NumericalPropagator propagator =
-                        setUpPropagator(initialOrbit, 0.001, OrbitType.EQUINOCTIAL, PositionAngle.MEAN,
+                        setUpPropagator(initialOrbit, 0.001, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN,
                                         newton);
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         propagator.setInitialState(initialState);
@@ -334,12 +334,12 @@ public class StateTransitionMatrixGeneratorTest {
         gmDriver.setSelected(true);
         ForceModel newton = new NewtonianAttraction(provider.getMu());
         Orbit initialOrbit =
-                        new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
+                        new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngleType.TRUE,
                                            FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                            provider.getMu());
 
         NumericalPropagator propagator =
-                        setUpPropagator(initialOrbit, 0.001, OrbitType.EQUINOCTIAL, PositionAngle.MEAN,
+                        setUpPropagator(initialOrbit, 0.001, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN,
                                         gravityField, newton);
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         propagator.setInitialState(initialState);
@@ -363,18 +363,18 @@ public class StateTransitionMatrixGeneratorTest {
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Orbit initialOrbitA =
-                        new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
+                        new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngleType.TRUE,
                                            FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                            provider.getMu());
         Orbit initialOrbitB =
-                        new KeplerianOrbit(7900000.0, 0.015, 0.04, 0.7, 0, 1.2, PositionAngle.TRUE,
+                        new KeplerianOrbit(7900000.0, 0.015, 0.04, 0.7, 0, 1.2, PositionAngleType.TRUE,
                                            FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                            provider.getMu());
 
         double dt = 900;
         double dP = 0.001;
         for (OrbitType orbitType : OrbitType.values()) {
-            for (PositionAngle angleType : PositionAngle.values()) {
+            for (PositionAngleType angleType : PositionAngleType.values()) {
 
                 // compute state Jacobian using StateTransitionMatrixGenerator
                 NumericalPropagator propagatorA1 = setUpPropagator(initialOrbitA, dP, orbitType, angleType,
@@ -434,7 +434,7 @@ public class StateTransitionMatrixGeneratorTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                  TimeComponents.H00,
                                                  TimeScalesFactory.getUTC());
-        Orbit orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+        Orbit orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                          FramesFactory.getEME2000(), date, Constants.EIGEN5C_EARTH_MU);
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(120.0);
@@ -461,13 +461,13 @@ public class StateTransitionMatrixGeneratorTest {
     @Test
     public void testNotInitialized() {
         Orbit initialOrbit =
-                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
+                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                    Constants.EIGEN5C_EARTH_MU);
 
         double dP = 0.001;
         NumericalPropagator propagator =
-                setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE);
+                setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngleType.TRUE);
         StateTransitionMatrixGenerator stmGenerator = new StateTransitionMatrixGenerator("stm",
                                                                                          propagator.getAllForceModels(),
                                                                                          propagator.getAttitudeProvider());
@@ -478,13 +478,13 @@ public class StateTransitionMatrixGeneratorTest {
     @Test
     public void testMismatchedDimensions() {
         Orbit initialOrbit =
-                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
+                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                    Constants.EIGEN5C_EARTH_MU);
 
         double dP = 0.001;
         NumericalPropagator propagator =
-                setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE);
+                setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngleType.TRUE);
         StateTransitionMatrixGenerator stmGenerator = new StateTransitionMatrixGenerator("stm",
                                                                                          propagator.getAllForceModels(),
                                                                                          propagator.getAttitudeProvider());
@@ -518,7 +518,7 @@ public class StateTransitionMatrixGeneratorTest {
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, PositionAngle angleType, double h,
+                                    OrbitType orbitType, PositionAngleType angleType, double h,
                                     SpacecraftState sM4h, SpacecraftState sM3h,
                                     SpacecraftState sM2h, SpacecraftState sM1h,
                                     SpacecraftState sP1h, SpacecraftState sP2h,
@@ -539,7 +539,7 @@ public class StateTransitionMatrixGeneratorTest {
         }
     }
 
-    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
+    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
                                        double delta, int column) {
 
         double[][] array = stateToArray(state, orbitType, angleType);
@@ -550,13 +550,13 @@ public class StateTransitionMatrixGeneratorTest {
 
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngle angleType) {
+    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType) {
         double[][] array = new double[2][6];
         orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
         return array;
     }
 
-    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngle angleType,
+    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngleType angleType,
                                          Frame frame, AbsoluteDate date, double mu,
                                          Attitude attitude) {
         Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
@@ -564,7 +564,7 @@ public class StateTransitionMatrixGeneratorTest {
     }
 
     private NumericalPropagator setUpPropagator(Orbit orbit, double dP,
-                                                OrbitType orbitType, PositionAngle angleType,
+                                                OrbitType orbitType, PositionAngleType angleType,
                                                 ForceModel... models) {
 
         final double minStep = 0.001;
@@ -581,7 +581,7 @@ public class StateTransitionMatrixGeneratorTest {
         return propagator;
     }
 
-    private double[][] finiteDifferencesStm(final Orbit initialOrbit, final OrbitType orbitType, final PositionAngle angleType,
+    private double[][] finiteDifferencesStm(final Orbit initialOrbit, final OrbitType orbitType, final PositionAngleType angleType,
                                             final double dP, final double dt, ForceModel... models) {
 
         // compute reference state Jacobian using finite differences
@@ -614,7 +614,7 @@ public class StateTransitionMatrixGeneratorTest {
 
     }
 
-    private NumericalPropagator buildPropagator(final OrbitType orbitType, final PositionAngle positionAngle,
+    private NumericalPropagator buildPropagator(final OrbitType orbitType, final PositionAngleType positionAngleType,
                                                 final int degree, final AbsoluteDate firing, final double duration,
                                                 final DateBasedManeuverTriggers triggers) {
 
@@ -631,7 +631,7 @@ public class StateTransitionMatrixGeneratorTest {
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
 
         propagator.setOrbitType(orbitType);
-        propagator.setPositionAngleType(positionAngle);
+        propagator.setPositionAngleType(positionAngleType);
         propagator.setAttitudeProvider(attitudeProvider);
         if (degree > 0) {
             propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
@@ -664,7 +664,7 @@ public class StateTransitionMatrixGeneratorTest {
 
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 1, 1), new TimeComponents(23, 30, 00.000),
                                                        TimeScalesFactory.getUTC());
-        final Orbit        orbit    = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+        final Orbit        orbit    = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                                          FramesFactory.getEME2000(), initDate, Constants.EIGEN5C_EARTH_MU);
         return new SpacecraftState(orbit, attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
     }

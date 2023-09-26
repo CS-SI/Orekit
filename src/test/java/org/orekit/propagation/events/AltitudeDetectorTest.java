@@ -27,7 +27,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.StopOnEvent;
@@ -51,7 +51,7 @@ public class AltitudeDetectorTest {
 
 
         // initial state is at apogee
-        final Orbit initialOrbit = new KeplerianOrbit(a, e, 0, 0, 0, FastMath.PI, PositionAngle.MEAN, EME2000,
+        final Orbit initialOrbit = new KeplerianOrbit(a, e, 0, 0, 0, FastMath.PI, PositionAngleType.MEAN, EME2000,
                                                       initialDate, CelestialBodyFactory.getEarth().getGM());
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         final KeplerianPropagator kepPropagator = new KeplerianPropagator(initialOrbit);

@@ -36,7 +36,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -77,7 +77,7 @@ public class DSSTSolarRadiationPressureTest {
                                                  -5.69711879850274E-6,
                                                  6.61038518895005E-6,
                                                  8.56084687583949,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  earthFrame,
                                                  initDate,
                                                  mu);
@@ -143,7 +143,7 @@ public class DSSTSolarRadiationPressureTest {
                                                  -1.002996107003202,
                                                  0.570979900577994,
                                                  2.62038786211518,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  FramesFactory.getEME2000(),
                                                  initDate,
                                                  3.986004415E14);

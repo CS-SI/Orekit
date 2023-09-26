@@ -47,7 +47,7 @@ import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
@@ -76,7 +76,7 @@ public class GroundStationTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -147,7 +147,7 @@ public class GroundStationTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -288,7 +288,7 @@ public class GroundStationTest {
                                 1.0e-15);
         }
         final NumericalPropagatorBuilder linearPropagatorBuilder =
-                        linearEOPContext.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        linearEOPContext.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -319,7 +319,7 @@ public class GroundStationTest {
 
         // create orbit estimator
         final NumericalPropagatorBuilder zeroPropagatorBuilder =
-                        linearEOPContext.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        linearEOPContext.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 zeroPropagatorBuilder);

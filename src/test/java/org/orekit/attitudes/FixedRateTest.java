@@ -34,7 +34,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
@@ -120,7 +120,7 @@ public class FixedRateTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngle.MEAN,
+                              FastMath.toRadians(30.), PositionAngleType.MEAN,
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);
@@ -241,7 +241,7 @@ public class FixedRateTest {
                                       zero.add(FastMath.toRadians(50.)),
                                       zero.add(FastMath.toRadians(10.)),
                                       zero.add(FastMath.toRadians(20.)),
-                                      zero.add(FastMath.toRadians(30.)), PositionAngle.MEAN,
+                                      zero.add(FastMath.toRadians(30.)), PositionAngleType.MEAN,
                                       FramesFactory.getEME2000(), date, zero.add(3.986004415e14));
 
         FieldPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit, law);

@@ -50,7 +50,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.conversion.ClassicalRungeKuttaIntegratorBuilder;
@@ -138,7 +138,7 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
         final double[][] dYdC = new double[6][6];
-        orbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
+        orbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
 
         // Equinoctial initial covariance matrix

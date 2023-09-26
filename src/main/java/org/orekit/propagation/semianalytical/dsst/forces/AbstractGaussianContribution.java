@@ -43,7 +43,7 @@ import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
@@ -688,9 +688,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             this.context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements, this.parameters);
             // remove derivatives from state
             final T[] stateVector = MathArrays.buildArray(field, 6);
-            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateVector, null);
+            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngleType.TRUE, stateVector, null);
             final FieldOrbit<T> fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null,
-                    PositionAngle.TRUE, state.getDate(), context.getMu(), state.getFrame());
+                    PositionAngleType.TRUE, state.getDate(), context.getMu(), state.getFrame());
             this.state = new FieldSpacecraftState<>(fixedOrbit, state.getAttitude(), state.getMass());
         }
 
@@ -731,7 +731,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // Recompose an orbit with time held fixed to be compliant with DSST theory
             final FieldOrbit<T> recomposedOrbit = new FieldEquinoctialOrbit<>(shiftedOrbit.getA(),
                     shiftedOrbit.getEquinoctialEx(), shiftedOrbit.getEquinoctialEy(), shiftedOrbit.getHx(),
-                    shiftedOrbit.getHy(), shiftedOrbit.getLv(), PositionAngle.TRUE, shiftedOrbit.getFrame(),
+                    shiftedOrbit.getHy(), shiftedOrbit.getLv(), PositionAngleType.TRUE, shiftedOrbit.getFrame(),
                     state.getDate(), context.getMu());
 
             // Get the corresponding attitude
@@ -966,8 +966,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             this.context = new AbstractGaussianContributionContext(auxiliaryElements, this.parameters);
             // remove derivatives from state
             final double[] stateVector = new double[6];
-            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateVector, null);
-            final Orbit fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngleType.TRUE, stateVector, null);
+            final Orbit fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null, PositionAngleType.TRUE,
                     state.getDate(), context.getMu(), state.getFrame());
             this.state = new SpacecraftState(fixedOrbit, state.getAttitude(), state.getMass());
         }
@@ -1004,7 +1004,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // Recompose an orbit with time held fixed to be compliant with DSST theory
             final Orbit recomposedOrbit = new EquinoctialOrbit(shiftedOrbit.getA(), shiftedOrbit.getEquinoctialEx(),
                     shiftedOrbit.getEquinoctialEy(), shiftedOrbit.getHx(), shiftedOrbit.getHy(), shiftedOrbit.getLv(),
-                    PositionAngle.TRUE, shiftedOrbit.getFrame(), state.getDate(), context.getMu());
+                    PositionAngleType.TRUE, shiftedOrbit.getFrame(), state.getDate(), context.getMu());
 
             // Get the corresponding attitude
             final Attitude recomposedAttitude = attitudeProvider.getAttitude(recomposedOrbit, recomposedOrbit.getDate(),

@@ -20,7 +20,7 @@ import org.orekit.propagation.SpacecraftState;
 
 /** Interface representing the Jacobian of a vector function depending on {@link SpacecraftState}.
  * @see Differentiation#differentiate(StateFunction, int, org.orekit.attitudes.AttitudeProvider,
- * org.orekit.orbits.OrbitType, org.orekit.orbits.PositionAngle, double, int)
+ * org.orekit.orbits.OrbitType, org.orekit.orbits.PositionAngleType, double, int)
  * @see StateFunction
  * @author Luc Maisonobe
  * @since 8.0
@@ -29,7 +29,7 @@ public interface StateJacobian {
 
     /** Evaluate the Jacobian of the function.
      * @param state spacecraft state as the sole free parameter of the function.
-     * @return Jacobian matric
+     * @return Jacobian matrix
       */
     double[][] value(SpacecraftState state);
 

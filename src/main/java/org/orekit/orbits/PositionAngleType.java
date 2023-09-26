@@ -21,9 +21,12 @@ package org.orekit.orbits;
  * @see KeplerianOrbit
  * @see CircularOrbit
  * @see EquinoctialOrbit
+ * @see FieldKeplerianOrbit
+ * @see FieldCircularOrbit
+ * @see FieldEquinoctialOrbit
  * @author Luc Maisonobe
  */
-public enum PositionAngle {
+public enum PositionAngleType {
 
     /** Mean angle. */
     MEAN,

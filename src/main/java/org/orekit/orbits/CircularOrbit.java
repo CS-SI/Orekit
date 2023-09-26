@@ -137,7 +137,7 @@ public class CircularOrbit
      */
     public CircularOrbit(final double a, final double ex, final double ey,
                          final double i, final double raan, final double alpha,
-                         final PositionAngle type,
+                         final PositionAngleType type,
                          final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         this(a, ex, ey, i, raan, alpha,
@@ -170,7 +170,7 @@ public class CircularOrbit
                          final double i, final double raan, final double alpha,
                          final double aDot, final double exDot, final double eyDot,
                          final double iDot, final double raanDot, final double alphaDot,
-                         final PositionAngle type,
+                         final PositionAngleType type,
                          final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
@@ -346,7 +346,7 @@ public class CircularOrbit
             // we have a relevant acceleration, we can compute derivatives
 
             final double[][] jacobian = new double[6][6];
-            getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+            getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
 
             final Vector3D keplerianAcceleration    = new Vector3D(-mu / (r * r2), pvP);
             final Vector3D nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
@@ -630,9 +630,9 @@ public class CircularOrbit
      * @param type type of the angle
      * @return latitude argument (rad)
      */
-    public double getAlpha(final PositionAngle type) {
-        return (type == PositionAngle.MEAN) ? getAlphaM() :
-                                              ((type == PositionAngle.ECCENTRIC) ? getAlphaE() :
+    public double getAlpha(final PositionAngleType type) {
+        return (type == PositionAngleType.MEAN) ? getAlphaM() :
+                                              ((type == PositionAngleType.ECCENTRIC) ? getAlphaE() :
                                                                                    getAlphaV());
     }
 
@@ -644,9 +644,9 @@ public class CircularOrbit
      * @return latitude argument derivative (rad/s)
      * @since 9.0
      */
-    public double getAlphaDot(final PositionAngle type) {
-        return (type == PositionAngle.MEAN) ? getAlphaMDot() :
-                                              ((type == PositionAngle.ECCENTRIC) ? getAlphaEDot() :
+    public double getAlphaDot(final PositionAngleType type) {
+        return (type == PositionAngleType.MEAN) ? getAlphaMDot() :
+                                              ((type == PositionAngleType.ECCENTRIC) ? getAlphaEDot() :
                                                                                    getAlphaVDot());
     }
 
@@ -858,7 +858,7 @@ public class CircularOrbit
     private Vector3D nonKeplerianAcceleration() {
 
         final double[][] dCdP = new double[6][6];
-        getJacobianWrtParameters(PositionAngle.MEAN, dCdP);
+        getJacobianWrtParameters(PositionAngleType.MEAN, dCdP);
 
         final double nonKeplerianMeanMotion = getAlphaMDot() - getKeplerianMeanMotion();
         final double nonKeplerianAx = dCdP[3][0] * aDot    + dCdP[3][1] * exDot   + dCdP[3][2] * eyDot   +
@@ -940,7 +940,7 @@ public class CircularOrbit
         // use Keplerian-only motion
         final CircularOrbit keplerianShifted = new CircularOrbit(a, ex, ey, i, raan,
                                                                  getAlphaM() + getKeplerianMeanMotion() * dt,
-                                                                 PositionAngle.MEAN, getFrame(),
+                                                                 PositionAngleType.MEAN, getFrame(),
                                                                  getDate().shiftedBy(dt), getMu());
 
         if (hasDerivatives()) {
@@ -1177,7 +1177,7 @@ public class CircularOrbit
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final double gm,
+    public void addKeplerContribution(final PositionAngleType type, final double gm,
                                       final double[] pDot) {
         final double oMe2;
         final double ksi;
@@ -1326,11 +1326,11 @@ public class CircularOrbit
                 case 15 : // date + mu + orbit + derivatives
                     return new CircularOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
                                              d[ 9], d[10], d[11], d[12], d[13], d[14],
-                                             PositionAngle.TRUE,
+                                             PositionAngleType.TRUE,
                                              frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                              d[2]);
                 default : // date + mu + orbit
-                    return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngle.TRUE,
+                    return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngleType.TRUE,
                                              frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                              d[2]);
 

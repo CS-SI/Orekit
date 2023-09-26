@@ -46,7 +46,7 @@ import org.orekit.models.earth.GeoMagneticField;
 import org.orekit.models.earth.GeoMagneticFieldFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -231,7 +231,7 @@ public class LocalMagneticFieldFrameTest {
 
             // get orbit, attitude and magnetic field at equator
             KeplerianOrbit orbit = new KeplerianOrbit(6866719.5237, 0.003, FastMath.toRadians(89.7),
-                                                      0, 0, 0, PositionAngle.TRUE, frame, date, 3.986004415e14);
+                                                      0, 0, 0, PositionAngleType.TRUE, frame, date, 3.986004415e14);
             Attitude        equatorialAttitude        = bdotPointing.getAttitude(orbit, date, frame);
             SpacecraftState spacecraftStateEquatorial = new SpacecraftState(orbit, equatorialAttitude);
 

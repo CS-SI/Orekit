@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -55,7 +55,7 @@ public class FieldStopOnDecreasingTest {
                                                                                          zero.add(3.10686),
                                                                                          zero.add(1.00681),
                                                                                          zero.add(0.048363),
-                                                                                         PositionAngle.MEAN,
+                                                                                         PositionAngleType.MEAN,
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
                                                                                          zero.add(Constants.EIGEN5C_EARTH_MU)));
@@ -71,7 +71,7 @@ public class FieldStopOnDecreasingTest {
                                                                                          zero.add(3.10686),
                                                                                          zero.add(1.00681),
                                                                                          zero.add(0.048363),
-                                                                                         PositionAngle.MEAN,
+                                                                                         PositionAngleType.MEAN,
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
                                                                                          zero.add(Constants.EIGEN5C_EARTH_MU)));
@@ -88,7 +88,7 @@ public class FieldStopOnDecreasingTest {
                                                                                          zero.add(3.10686),
                                                                                          zero.add(1.00681),
                                                                                          zero.add(0.048363),
-                                                                                         PositionAngle.MEAN,
+                                                                                         PositionAngleType.MEAN,
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
                                                                                          zero.add(Constants.EIGEN5C_EARTH_MU)));

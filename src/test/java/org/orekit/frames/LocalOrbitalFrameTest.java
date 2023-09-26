@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -707,7 +707,7 @@ public class LocalOrbitalFrameTest {
         inertialFrame = FramesFactory.getGCRF();
         initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         initialOrbit =
-                new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9, 6.2, PositionAngle.TRUE,
+                new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9, 6.2, PositionAngleType.TRUE,
                                    inertialFrame, initDate, 3.986004415e14);
         provider = new KeplerianPropagator(initialOrbit);
 

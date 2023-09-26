@@ -131,7 +131,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>>
      */
     public FieldCircularOrbit(final T a, final T ex, final T ey,
                               final T i, final T raan,
-                              final T alpha, final PositionAngle type,
+                              final T alpha, final PositionAngleType type,
                               final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         this(a, ex, ey, i, raan, alpha,
@@ -164,7 +164,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>>
                               final T i, final T raan, final T alpha,
                               final T aDot, final T exDot, final T eyDot,
                               final T iDot, final T raanDot, final T alphaDot,
-                              final PositionAngle type,
+                              final PositionAngleType type,
                               final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
@@ -300,7 +300,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>>
             // we have a relevant acceleration, we can compute derivatives
 
             final T[][] jacobian = MathArrays.buildArray(a.getField(), 6, 6);
-            getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+            getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
 
             final FieldVector3D<T> keplerianAcceleration    = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(mu.negate()), pvP);
             final FieldVector3D<T> nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
@@ -654,9 +654,9 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>>
      * @param type type of the angle
      * @return latitude argument (rad)
      */
-    public T getAlpha(final PositionAngle type) {
-        return (type == PositionAngle.MEAN) ? getAlphaM() :
-                                              ((type == PositionAngle.ECCENTRIC) ? getAlphaE() :
+    public T getAlpha(final PositionAngleType type) {
+        return (type == PositionAngleType.MEAN) ? getAlphaM() :
+                                              ((type == PositionAngleType.ECCENTRIC) ? getAlphaE() :
                                                                                    getAlphaV());
     }
 
@@ -664,9 +664,9 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>>
      * @param type type of the angle
      * @return latitude argument derivative (rad/s)
      */
-    public T getAlphaDot(final PositionAngle type) {
-        return (type == PositionAngle.MEAN) ? getAlphaMDot() :
-                                              ((type == PositionAngle.ECCENTRIC) ? getAlphaEDot() :
+    public T getAlphaDot(final PositionAngleType type) {
+        return (type == PositionAngleType.MEAN) ? getAlphaMDot() :
+                                              ((type == PositionAngleType.ECCENTRIC) ? getAlphaEDot() :
                                                                                    getAlphaVDot());
     }
 
@@ -890,7 +890,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>>
     private FieldVector3D<T> nonKeplerianAcceleration() {
 
         final T[][] dCdP = MathArrays.buildArray(a.getField(), 6, 6);
-        getJacobianWrtParameters(PositionAngle.MEAN, dCdP);
+        getJacobianWrtParameters(PositionAngleType.MEAN, dCdP);
 
         final T nonKeplerianMeanMotion = getAlphaMDot().subtract(getKeplerianMeanMotion());
         final T nonKeplerianAx =     dCdP[3][0].multiply(aDot).
@@ -990,7 +990,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>>
         // use Keplerian-only motion
         final FieldCircularOrbit<T> keplerianShifted = new FieldCircularOrbit<>(a, ex, ey, i, raan,
                                                                                 getAlphaM().add(getKeplerianMeanMotion().multiply(dt)),
-                                                                                PositionAngle.MEAN, getFrame(),
+                                                                                PositionAngleType.MEAN, getFrame(),
                                                                                 getDate().shiftedBy(dt), getMu());
 
         if (hasDerivatives()) {
@@ -1256,7 +1256,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final T gm,
+    public void addKeplerContribution(final PositionAngleType type, final T gm,
                                       final T[] pDot) {
         final T oMe2;
         final T ksi;
@@ -1302,12 +1302,12 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>>
                                      i.getReal(), raan.getReal(), alphaV.getReal(),
                                      aDot.getReal(), exDot.getReal(), eyDot.getReal(),
                                      iDot.getReal(), raanDot.getReal(), alphaVDot.getReal(),
-                                     PositionAngle.TRUE, getFrame(),
+                                     PositionAngleType.TRUE, getFrame(),
                                      getDate().toAbsoluteDate(), getMu().getReal());
         } else {
             return new CircularOrbit(a.getReal(), ex.getReal(), ey.getReal(),
                                      i.getReal(), raan.getReal(), alphaV.getReal(),
-                                     PositionAngle.TRUE, getFrame(),
+                                     PositionAngleType.TRUE, getFrame(),
                                      getDate().toAbsoluteDate(), getMu().getReal());
         }
     }

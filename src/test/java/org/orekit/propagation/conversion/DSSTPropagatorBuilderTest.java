@@ -33,7 +33,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
@@ -349,7 +349,7 @@ public class DSSTPropagatorBuilderTest {
                                      0.15995912655021305,
                                      -0.5969755874197339,
                                      15.47576793123677,
-                                     PositionAngle.MEAN,
+                                     PositionAngleType.MEAN,
                                      earthFrame,
                                      initDate,
                                      mu);

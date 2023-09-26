@@ -27,7 +27,7 @@ import org.orekit.estimation.TLEContext;
 import org.orekit.estimation.TLEEstimationTestUtils;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
@@ -78,7 +78,7 @@ public class TLEPVTest {
                     }
                                                   }, measurement.getDimension(),
                                                   propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
-                                                  PositionAngle.TRUE, 1.0, 3).value(state);
+                                                  PositionAngleType.TRUE, 1.0, 3).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);

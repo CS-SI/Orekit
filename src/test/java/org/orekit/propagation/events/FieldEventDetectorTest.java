@@ -44,7 +44,7 @@ import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
@@ -433,7 +433,7 @@ public class FieldEventDetectorTest {
                                                                                         field.getZero().add(0.3),
                                                                                         field.getZero().add(0),
                                                                                         field.getZero().add(0),
-                                                                                        field.getZero().add(0), PositionAngle.TRUE,
+                                                                                        field.getZero().add(0), PositionAngleType.TRUE,
                                                                                         FramesFactory.getEME2000(),
                                                                                         FieldAbsoluteDate.getJ2000Epoch(field),
                                                                                         field.getZero().add(Constants.EIGEN5C_EARTH_MU)));

@@ -25,7 +25,7 @@ import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFun
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -90,14 +90,14 @@ public class Differentiation {
      * @param dimension dimension of the vector value of the function
      * @param provider attitude provider to use for modified states
      * @param orbitType type used to map the orbit to a one dimensional array
-     * @param positionAngle type of the position angle used for orbit mapping to array
+     * @param positionAngleType type of the position angle used for orbit mapping to array
      * @param dP user specified position error, used for step size computation for finite differences
      * @param nbPoints number of points used for finite differences
      * @return matrix function evaluating to the Jacobian of the original function
      */
     public static StateJacobian differentiate(final StateFunction function, final int dimension,
                                               final AttitudeProvider provider,
-                                              final OrbitType orbitType, final PositionAngle positionAngle,
+                                              final OrbitType orbitType, final PositionAngleType positionAngleType,
                                               final double dP, final int nbPoints) {
         return new StateJacobian() {
 
@@ -111,7 +111,7 @@ public class Differentiation {
                     // compute partial derivatives with respect to state component j
                     final UnivariateVectorFunction componentJ =
                             new StateComponentFunction(j, function, provider, state,
-                                                       orbitType, positionAngle);
+                                                       orbitType, positionAngleType);
                     final FiniteDifferencesDifferentiator differentiator =
                             new FiniteDifferencesDifferentiator(nbPoints, tolerances[j]);
                     final UnivariateDifferentiableVectorFunction differentiatedJ =
@@ -147,7 +147,7 @@ public class Differentiation {
         private final OrbitType       orbitType;
 
         /** Tpe of the position angle used for orbit mapping to array. */
-        private final PositionAngle   positionAngle;
+        private final PositionAngleType positionAngleType;
 
         /** Base state, of which only one component will change. */
         private final SpacecraftState baseState;
@@ -161,16 +161,16 @@ public class Differentiation {
          * @param provider attitude provider to use for modified states
          * @param baseState base state, of which only one component will change
          * @param orbitType type used to map the orbit to a one dimensional array
-         * @param positionAngle type of the position angle used for orbit mapping to array
+         * @param positionAngleType type of the position angle used for orbit mapping to array
          */
         StateComponentFunction(final int index, final StateFunction f,
                                final AttitudeProvider provider, final SpacecraftState baseState,
-                               final OrbitType orbitType, final PositionAngle positionAngle) {
+                               final OrbitType orbitType, final PositionAngleType positionAngleType) {
             this.index         = index;
             this.f             = f;
             this.provider      = provider;
             this.orbitType     = orbitType;
-            this.positionAngle = positionAngle;
+            this.positionAngleType = positionAngleType;
             this.baseState     = baseState;
         }
 
@@ -179,10 +179,10 @@ public class Differentiation {
         public double[] value(final double x) {
             final double[] array = new double[6];
             final double[] arrayDot = new double[6];
-            orbitType.mapOrbitToArray(baseState.getOrbit(), positionAngle, array, arrayDot);
+            orbitType.mapOrbitToArray(baseState.getOrbit(), positionAngleType, array, arrayDot);
             array[index] += x;
             final Orbit orbit = orbitType.mapArrayToOrbit(array, arrayDot,
-                                                          positionAngle,
+                    positionAngleType,
                                                           baseState.getDate(),
                                                           baseState.getMu(),
                                                           baseState.getFrame());

@@ -44,7 +44,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -329,7 +329,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
                                                            new TimeComponents(23, 30, 00.000),
                                                            TimeScalesFactory.getUTC());
             initialOrbit =
-                            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+                            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                                FramesFactory.getEME2000(), initDate, Constants.EIGEN5C_EARTH_MU);
         } catch (OrekitException oe) {
             Assertions.fail(oe.getLocalizedMessage());

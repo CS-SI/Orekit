@@ -30,7 +30,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -59,7 +59,7 @@ public class BackAndForthDetectorTest {
         final double raan = FastMath.toRadians(12.5);
         final double lM = FastMath.toRadians(60.);
         Orbit iniOrb = new KeplerianOrbit(a, e, i, w, raan, lM,
-                                          PositionAngle.MEAN, FramesFactory.getEME2000(), date0,
+                                          PositionAngleType.MEAN, FramesFactory.getEME2000(), date0,
                                           Constants.WGS84_EARTH_MU);
 
         // Propagator

@@ -39,7 +39,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
@@ -374,7 +374,7 @@ public class TopocentricFrameTest {
         // ***************************
         final CircularOrbit orbit =
             new CircularOrbit(7178000.0, 0.5e-8, -0.5e-8, FastMath.toRadians(50.), FastMath.toRadians(120.),
-                                   FastMath.toRadians(90.), PositionAngle.MEAN,
+                                   FastMath.toRadians(90.), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Transform satellite position to position/velocity parameters in body frame
@@ -432,7 +432,7 @@ public class TopocentricFrameTest {
         final FieldCircularOrbit<T> orbit =
             new FieldCircularOrbit<>(zero.add(7178000.0), zero.add(0.5e-8), zero.add(-0.5e-8),
                                      zero.add(FastMath.toRadians(50.)), zero.add(FastMath.toRadians(120.)),
-                                     zero.add(FastMath.toRadians(90.)), PositionAngle.MEAN,
+                                     zero.add(FastMath.toRadians(90.)), PositionAngleType.MEAN,
                                      FramesFactory.getEME2000(), fieldDate, zero.add(mu));
 
         // Transform satellite position to position/velocity parameters in body frame

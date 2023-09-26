@@ -25,7 +25,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -48,11 +48,11 @@ public class EcksteinHechlerPropagatorBuilderTest {
                 Mockito.mock(UnnormalizedSphericalHarmonicsProvider.class);
         Mockito.when(harmonicsProvider.getMu()).thenReturn(Constants.EIGEN5C_EARTH_MU);
 
-        final PositionAngle positionAngle = null;
+        final PositionAngleType positionAngleType = null;
         final double        positionScale = 10;
 
         final EcksteinHechlerPropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(orbit, harmonicsProvider,
-                                                                                              positionAngle, positionScale);
+                positionAngleType, positionScale);
 
         // When
         final EcksteinHechlerPropagatorBuilder copyBuilder = builder.copy();

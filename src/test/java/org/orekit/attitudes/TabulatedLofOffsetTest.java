@@ -41,7 +41,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -214,7 +214,7 @@ public class TabulatedLofOffsetTest {
             //  Satellite position
             orbit =
                 new CircularOrbit(7178000.0, 0.5e-8, -0.5e-8, FastMath.toRadians(50.), FastMath.toRadians(150.),
-                                       FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                       FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                        FramesFactory.getEME2000(), date, mu);
             pvSatEME2000 = orbit.getPVCoordinates();
 

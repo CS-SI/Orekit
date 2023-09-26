@@ -25,7 +25,7 @@ import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.utils.ParameterDriversList;
@@ -48,15 +48,15 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
      * </p>
      *
      * @param templateOrbit reference orbit from which real orbits will be built
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @since 8.0
-     * @see #KeplerianPropagatorBuilder(Orbit, PositionAngle, double, AttitudeProvider)
+     * @see #KeplerianPropagatorBuilder(Orbit, PositionAngleType, double, AttitudeProvider)
      */
-    public KeplerianPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
+    public KeplerianPropagatorBuilder(final Orbit templateOrbit, final PositionAngleType positionAngleType,
                                       final double positionScale) {
-        this(templateOrbit, positionAngle, positionScale,
+        this(templateOrbit, positionAngleType, positionScale,
              FrameAlignedProvider.of(templateOrbit.getFrame()));
     }
 
@@ -70,17 +70,17 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
      * callers of this builder to the real orbital parameters.
      * </p>
      * @param templateOrbit reference orbit from which real orbits will be built
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @param attitudeProvider attitude law to use.
      * @since 10.1
      */
     public KeplerianPropagatorBuilder(final Orbit templateOrbit,
-                                      final PositionAngle positionAngle,
+                                      final PositionAngleType positionAngleType,
                                       final double positionScale,
                                       final AttitudeProvider attitudeProvider) {
-        super(templateOrbit, positionAngle, positionScale, true, attitudeProvider);
+        super(templateOrbit, positionAngleType, positionScale, true, attitudeProvider);
     }
 
     /** {@inheritDoc} */

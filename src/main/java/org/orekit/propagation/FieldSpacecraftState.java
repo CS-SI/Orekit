@@ -33,7 +33,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeShiftable;
 import org.orekit.time.FieldTimeStamped;
@@ -245,8 +245,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         if (state.isOrbitDefined()) {
             final double[] stateD    = new double[6];
             final double[] stateDotD = state.getOrbit().hasDerivatives() ? new double[6] : null;
-            final PositionAngle positionAngle = PositionAngle.TRUE;
-            state.getOrbit().getType().mapOrbitToArray(state.getOrbit(), positionAngle, stateD, stateDotD);
+            final PositionAngleType positionAngleType = PositionAngleType.TRUE;
+            state.getOrbit().getType().mapOrbitToArray(state.getOrbit(), positionAngleType, stateD, stateDotD);
             final T[] stateF    = MathArrays.buildArray(field, 6);
             for (int i = 0; i < stateD.length; ++i) {
                 stateF[i]    = field.getZero().add(stateD[i]);
@@ -263,7 +263,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
             final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, state.getDate());
 
-            this.orbit    = state.getOrbit().getType().mapArrayToOrbit(stateF, stateDotF, positionAngle, dateF,
+            this.orbit    = state.getOrbit().getType().mapArrayToOrbit(stateF, stateDotF, positionAngleType, dateF,
                                                                        field.getZero().add(state.getMu()), state.getFrame());
             this.absPva   = null;
 

@@ -28,7 +28,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.units.Unit;
@@ -145,7 +145,7 @@ public enum OrbitElementsType {
             }
             return new EquinoctialOrbit(elements[0], elements[1], elements[2],
                                         elements[5], elements[4], // BEWARE! the inversion here is intentional
-                                        elements[3], PositionAngle.MEAN,
+                                        elements[3], PositionAngleType.MEAN,
                                         FramesFactory.getGCRF(), date, mu).
                             getPVCoordinates();
         }
@@ -178,7 +178,7 @@ public enum OrbitElementsType {
             final double oMe2 = 1.0 - (elements[1] * elements[1] + elements[2] * elements[2]);
             return new EquinoctialOrbit(elements[0] / oMe2, elements[1], elements[2],
                                         elements[5], elements[4], // BEWARE! the inversion here is intentional
-                                        elements[3], PositionAngle.TRUE,
+                                        elements[3], PositionAngleType.TRUE,
                                         FramesFactory.getGCRF(), date, mu).
                             getPVCoordinates();
         }
@@ -211,7 +211,7 @@ public enum OrbitElementsType {
         public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
             return new KeplerianOrbit(elements[0], elements[1], elements[2],
                                       elements[4], elements[3], // BEWARE! the inversion here is intentional
-                                      elements[5], PositionAngle.TRUE,
+                                      elements[5], PositionAngleType.TRUE,
                                       FramesFactory.getGCRF(), date, mu).
                    getPVCoordinates();
         }
@@ -239,7 +239,7 @@ public enum OrbitElementsType {
         public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
             return new KeplerianOrbit(elements[0], elements[1], elements[2],
                                       elements[4], elements[3], // BEWARE! the inversion here is intentional
-                                      elements[5], PositionAngle.MEAN,
+                                      elements[5], PositionAngleType.MEAN,
                                       FramesFactory.getGCRF(), date, mu).
                    getPVCoordinates();
         }

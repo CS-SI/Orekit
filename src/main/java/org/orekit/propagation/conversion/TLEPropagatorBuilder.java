@@ -27,7 +27,7 @@ import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -63,17 +63,17 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
      * parameters used by the callers of this builder to the real orbital parameters.
      * </p>
      * @param templateTLE reference TLE from which real orbits will be built
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @param generationAlgorithm TLE generation algorithm
      * @since 12.0
-     * @see #TLEPropagatorBuilder(TLE, PositionAngle, double, DataContext, TleGenerationAlgorithm)
+     * @see #TLEPropagatorBuilder(TLE, PositionAngleType, double, DataContext, TleGenerationAlgorithm)
      */
     @DefaultDataContext
-    public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngle positionAngle,
+    public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngleType positionAngleType,
                                 final double positionScale, final TleGenerationAlgorithm generationAlgorithm) {
-        this(templateTLE, positionAngle, positionScale, DataContext.getDefault(), generationAlgorithm);
+        this(templateTLE, positionAngleType, positionScale, DataContext.getDefault(), generationAlgorithm);
     }
 
     /** Build a new instance.
@@ -87,18 +87,18 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
      * The default attitude provider is aligned with the orbit's inertial frame.
      * </p>
      * @param templateTLE reference TLE from which real orbits will be built
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @param dataContext used to access frames and time scales.
      * @param generationAlgorithm TLE generation algorithm
      * @since 12.0
      */
-    public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngle positionAngle,
+    public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngleType positionAngleType,
                                 final double positionScale, final DataContext dataContext,
                                 final TleGenerationAlgorithm generationAlgorithm) {
         super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames().getTEME()).getInitialState().getOrbit(),
-              positionAngle, positionScale, false, FrameAlignedProvider.of(dataContext.getFrames().getTEME()));
+                positionAngleType, positionScale, false, FrameAlignedProvider.of(dataContext.getFrames().getTEME()));
 
         // Supported parameters: Bstar
         addSupportedParameters(templateTLE.getParametersDrivers());

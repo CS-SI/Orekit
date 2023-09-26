@@ -39,7 +39,7 @@ import org.orekit.models.earth.atmosphere.SimpleExponentialAtmosphere;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
@@ -77,7 +77,7 @@ public class NumericalConverterTest {
         final NumericalPropagatorBuilder builder =
                         new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
                                                        dp54Builder,
-                                                       PositionAngle.TRUE, 1.0);
+                                                       PositionAngleType.TRUE, 1.0);
         builder.addForceModel(gravity);
         // Verify that there is no Newtonian attraction force model
         Assertions.assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
@@ -95,7 +95,7 @@ public class NumericalConverterTest {
         NumericalPropagatorBuilder builder =
                         new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
                                                        new LutherIntegratorBuilder(100.0),
-                                                       PositionAngle.TRUE, 1.0);
+                                                       PositionAngleType.TRUE, 1.0);
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
         try {
@@ -216,7 +216,7 @@ public class NumericalConverterTest {
         final NumericalPropagatorBuilder builder =
                         new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
                                                        dp54Builder,
-                                                       PositionAngle.TRUE, 1.0);
+                                                       PositionAngleType.TRUE, 1.0);
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
 
@@ -270,7 +270,7 @@ public class NumericalConverterTest {
         final NumericalPropagatorBuilder builder =
                         new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
                                                        dp54Builder,
-                                                       PositionAngle.TRUE, 1.0);
+                                                       PositionAngleType.TRUE, 1.0);
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
             Assertions.assertTrue(driver.isSelected());
         }
@@ -289,7 +289,7 @@ public class NumericalConverterTest {
         NumericalPropagatorBuilder builder =
                         new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit),
                                                        new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                                       PositionAngle.TRUE, dP);
+                                                       PositionAngleType.TRUE, dP);
 
         ForceModel guessedDrag = drag;
         ForceModel guessedGravity = gravity;
@@ -360,7 +360,7 @@ public class NumericalConverterTest {
 
         NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit),
                                                                             foiBuilder,
-                                                                            PositionAngle.TRUE,
+                                                                            PositionAngleType.TRUE,
                                                                             1.0);
 
         builder.addForceModel(drag);

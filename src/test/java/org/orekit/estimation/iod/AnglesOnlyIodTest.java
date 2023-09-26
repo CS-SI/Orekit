@@ -26,7 +26,7 @@ import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -66,7 +66,7 @@ public class AnglesOnlyIodTest extends AbstractIodTest {
         // creating the propagator
         final KeplerianOrbit kepOrbitRef = new KeplerianOrbit(7197934.0, 0., FastMath.toRadians(98.71),
                                                               0., FastMath.toRadians(100.41), 0.,
-                                                              PositionAngle.MEAN, gcrf, obsDate2,
+                                                              PositionAngleType.MEAN, gcrf, obsDate2,
                                                               Constants.WGS84_EARTH_MU);
         this.propRef = new KeplerianPropagator(kepOrbitRef);
     }

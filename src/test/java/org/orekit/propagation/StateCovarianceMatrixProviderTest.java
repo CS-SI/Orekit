@@ -38,7 +38,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -123,7 +123,7 @@ public class StateCovarianceMatrixProviderTest {
         // Numerical propagator
         final String              stmName    = "STM";
         final OrbitType           propType   = OrbitType.CARTESIAN;
-        final PositionAngle       angleType  = PositionAngle.MEAN;
+        final PositionAngleType angleType  = PositionAngleType.MEAN;
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         // Add a force model
         final NormalizedSphericalHarmonicsProvider gravity = GravityFieldFactory.getNormalizedProvider(2, 0);
@@ -138,7 +138,7 @@ public class StateCovarianceMatrixProviderTest {
         // Create additional state
         final String     additionalName = "cartCov";
         final RealMatrix initialCov     = MatrixUtils.createRealMatrix(initCov);
-        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngle.MEAN);
+        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
         final StateCovarianceMatrixProvider provider =
                 new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovariance);
         propagator.setInitialState(initialState);
@@ -197,7 +197,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Define a new output frame
         final OrbitType     outOrbitType = OrbitType.KEPLERIAN;
-        final PositionAngle outAngleType = PositionAngle.MEAN;
+        final PositionAngleType outAngleType = PositionAngleType.MEAN;
 
         // Transformation using getStateJacobian() method
         RealMatrix transformedCovC = provider.getStateCovariance(propagated, outOrbitType, outAngleType).getMatrix();
@@ -239,7 +239,7 @@ public class StateCovarianceMatrixProviderTest {
         // Create additional state
         final String     additionalName = "cartCov";
         final RealMatrix initialCov     = MatrixUtils.createRealMatrix(initCov);
-        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngle.MEAN);
+        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
         final StateCovarianceMatrixProvider provider =
                 new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovariance);
         propagator.setInitialState(initialState);
@@ -296,7 +296,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Define a new output frame
         final OrbitType     outOrbitType = OrbitType.KEPLERIAN;
-        final PositionAngle outAngleType = PositionAngle.MEAN;
+        final PositionAngleType outAngleType = PositionAngleType.MEAN;
 
         // Transformation using getStateJacobian() method
         RealMatrix transformedCovC = provider.getStateCovariance(propagated, outOrbitType, outAngleType).getMatrix();
@@ -341,8 +341,8 @@ public class StateCovarianceMatrixProviderTest {
         // Create additional state
         final String     additionalName = "cartCov";
         final RealMatrix initialCov     = MatrixUtils.createRealMatrix(initCov);
-        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngle.MEAN);
-        final StateCovariance initialStateCovarianceInKep = initialStateCovariance.changeCovarianceType(initialState.getOrbit(), OrbitType.KEPLERIAN, PositionAngle.MEAN);
+        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
+        final StateCovariance initialStateCovarianceInKep = initialStateCovariance.changeCovarianceType(initialState.getOrbit(), OrbitType.KEPLERIAN, PositionAngleType.MEAN);
         final StateCovarianceMatrixProvider provider =
                 new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovarianceInKep);
         propagator.setInitialState(initialState);
@@ -353,7 +353,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Get the propagated covariance
         final StateCovariance propagatedStateCov = provider.getStateCovariance(propagated);
-        final StateCovariance propagatedStateCovInCart = propagatedStateCov.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN);
+        final StateCovariance propagatedStateCovInCart = propagatedStateCov.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
         final RealMatrix propagatedCovInCart = propagatedStateCovInCart.getMatrix();
 
         // Reference (computed using a different solution)
@@ -400,7 +400,7 @@ public class StateCovarianceMatrixProviderTest {
         // Create additional state
         final String     additionalName = "cartCov";
         final RealMatrix initialCov     = MatrixUtils.createRealMatrix(initCov);
-        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngle.MEAN);
+        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
         final StateCovarianceMatrixProvider provider =
                 new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovariance);
         propagator.addAdditionalStateProvider(provider);
@@ -456,7 +456,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Define a new output frame
         final OrbitType     outOrbitType = OrbitType.KEPLERIAN;
-        final PositionAngle outAngleType = PositionAngle.MEAN;
+        final PositionAngleType outAngleType = PositionAngleType.MEAN;
 
         // Transformation using getStateJacobian() method
         RealMatrix transformedCovC = provider.getStateCovariance(propagated, outOrbitType, outAngleType).getMatrix();
@@ -498,7 +498,7 @@ public class StateCovarianceMatrixProviderTest {
         // Create additional state
         final String     additionalName = "cartCov";
         final RealMatrix initialCov     = MatrixUtils.createRealMatrix(initCov);
-        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngle.MEAN);
+        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
         final StateCovarianceMatrixProvider provider =
                 new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovariance);
         propagator.setInitialState(initialState);
@@ -555,7 +555,7 @@ public class StateCovarianceMatrixProviderTest {
         // Create additional state
         final String     additionalName = "cartCov";
         final RealMatrix initialCov     = MatrixUtils.createRealMatrix(initCov);
-        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngle.MEAN);
+        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
         final StateCovarianceMatrixProvider provider =
                 new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovariance);
         propagator.addAdditionalStateProvider(provider);

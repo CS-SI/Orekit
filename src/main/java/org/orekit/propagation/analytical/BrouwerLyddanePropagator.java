@@ -36,7 +36,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
@@ -761,7 +761,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
                                                      current.mean.getPerigeeArgument() + deltaOmega,
                                                      current.mean.getRightAscensionOfAscendingNode() + deltaRAAN,
                                                      current.mean.getMeanAnomaly() + deltaAnom,
-                                                     PositionAngle.MEAN,
+                                                     PositionAngleType.MEAN,
                                                      current.mean.getFrame(),
                                                      current.mean.getDate(), mu),
                                   mass, referenceRadius, mu, ck0);
@@ -1435,7 +1435,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
                                       g.getValue(), h.getValue(), l.getValue(),
                                       a.getFirstDerivative(), e.getFirstDerivative(), i.getFirstDerivative(),
                                       g.getFirstDerivative(), h.getFirstDerivative(), l.getFirstDerivative(),
-                                      PositionAngle.MEAN, mean.getFrame(), date, mu);
+                                      PositionAngleType.MEAN, mean.getFrame(), date, mu);
 
         }
 

@@ -30,7 +30,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -88,7 +88,7 @@ public class EcksteinHechlerConverterTest {
                                                                          harmonics.getUnnormalizedCnm(5, 0),
                                                                          harmonics.getUnnormalizedCnm(6, 0),
                                                                          OrbitType.CIRCULAR,
-                                                                         PositionAngle.TRUE,
+                                                                         PositionAngleType.TRUE,
                                                                          1.0);
 
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder,

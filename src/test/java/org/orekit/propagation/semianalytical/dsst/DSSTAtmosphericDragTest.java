@@ -41,7 +41,7 @@ import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.HarrisPriester;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
@@ -86,7 +86,7 @@ public class DSSTAtmosphericDragTest {
                                                  0.847841707880348,
                                                  0.7998014061193262,
                                                  3.897842092486239,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  earthFrame,
                                                  initDate,
                                                  mu);
@@ -147,7 +147,7 @@ public class DSSTAtmosphericDragTest {
                                                  -1.002996107003202,
                                                  0.570979900577994,
                                                  2.62038786211518,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  FramesFactory.getEME2000(),
                                                  initDate,
                                                  3.986004415E14);

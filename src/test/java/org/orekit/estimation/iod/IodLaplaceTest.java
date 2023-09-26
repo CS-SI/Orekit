@@ -30,7 +30,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -66,7 +66,7 @@ public class IodLaplaceTest extends AbstractIodTest {
         final AbsoluteDate date = new AbsoluteDate(2019, 9, 29, 22, 0, 2.0, TimeScalesFactory.getUTC());
         final KeplerianOrbit kep = new KeplerianOrbit(6798938.970424857, 0.0021115522920270016, 0.9008866630545347,
                                   1.8278985811406743, -2.7656136723308524,
-                                  0.8823034512437679, PositionAngle.MEAN, gcrf,
+                                  0.8823034512437679, PositionAngleType.MEAN, gcrf,
                                   date, Constants.EGM96_EARTH_MU);
         final KeplerianPropagator prop = new KeplerianPropagator(kep);
 
@@ -82,7 +82,7 @@ public class IodLaplaceTest extends AbstractIodTest {
         final AbsoluteDate date = new AbsoluteDate(2019, 9, 29, 22, 0, 2.0, TimeScalesFactory.getUTC());
         final KeplerianOrbit kep = new KeplerianOrbit(42165414.60406032, 0.00021743441091199163, 0.0019139259842569903,
                                   1.8142608912728584, 1.648821262690012,
-                                  0.11710513241172144, PositionAngle.MEAN, gcrf,
+                                  0.11710513241172144, PositionAngleType.MEAN, gcrf,
                                   date, Constants.EGM96_EARTH_MU);
         final KeplerianPropagator prop = new KeplerianPropagator(kep);
 
@@ -146,7 +146,7 @@ public class IodLaplaceTest extends AbstractIodTest {
         final AbsoluteDate date = new AbsoluteDate(2019, 9, 29, 22, 0, 2.0, TimeScalesFactory.getUTC());
         final KeplerianOrbit kep = new KeplerianOrbit(6798938.970424857, 0.0021115522920270016, 0.9008866630545347,
                                   1.8278985811406743, -2.7656136723308524,
-                                  0.8823034512437679, PositionAngle.MEAN, gcrf,
+                                  0.8823034512437679, PositionAngleType.MEAN, gcrf,
                                   date, Constants.EGM96_EARTH_MU);
         final KeplerianPropagator prop = new KeplerianPropagator(kep);
 

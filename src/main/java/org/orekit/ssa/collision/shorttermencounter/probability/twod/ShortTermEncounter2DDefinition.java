@@ -34,7 +34,7 @@ import org.orekit.frames.encounter.EncounterLOF;
 import org.orekit.frames.encounter.EncounterLOFType;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.StateCovariance;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -546,7 +546,7 @@ public class ShortTermEncounter2DDefinition {
 
         final StateCovariance otherCovarianceInReferenceInertial = new StateCovariance(
                 otherCovarianceMatrixInReferenceInertial, tca, referenceAtTCA.getFrame(),
-                OrbitType.CARTESIAN, PositionAngle.MEAN);
+                OrbitType.CARTESIAN, PositionAngleType.MEAN);
 
         // Express other covariance in reference TNW local orbital frame
         final RealMatrix otherCovarianceMatrixInReferenceTNW = otherCovarianceInReferenceInertial.changeCovarianceFrame(

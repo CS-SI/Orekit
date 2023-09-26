@@ -34,7 +34,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -91,7 +91,7 @@ public class BrouwerLyddanePropagatorTest {
         // ------------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(6767924.41, .0005,  1.7, 2.1, 2.9,
-                6.2, PositionAngle.TRUE,
+                6.2, PositionAngleType.TRUE,
                 FramesFactory.getEME2000(), initDate, provider.getMu());
 
         BrouwerLyddanePropagator extrapolator =
@@ -199,7 +199,7 @@ public class BrouwerLyddanePropagatorTest {
         final double omega = FastMath.toRadians(180); // perigee argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
-        final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.TRUE,
+        final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.TRUE,
                                                       inertialFrame, initDate, provider.getMu());
         // Initial state definition
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
@@ -269,7 +269,7 @@ public class BrouwerLyddanePropagatorTest {
         final double omega = FastMath.toRadians(180); // perigee argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
-        final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.TRUE,
+        final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.TRUE,
                                                       inertialFrame, initDate, provider.getMu());
         // Initial state definition
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
@@ -365,7 +365,7 @@ public class BrouwerLyddanePropagatorTest {
         final double omega = FastMath.toRadians(180); // perigee argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
-        final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.TRUE,
+        final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.TRUE,
                                                       inertialFrame, initDate, provider.getMu());
 
 
@@ -439,7 +439,7 @@ public class BrouwerLyddanePropagatorTest {
         final double omega = FastMath.toRadians(180); // perigee argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
-        final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.TRUE,
+        final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.TRUE,
                                                       inertialFrame, initDate, provider.getMu());
         // Initial state definition
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
@@ -456,7 +456,7 @@ public class BrouwerLyddanePropagatorTest {
         //_______________________________________________________________________________________________
 
         BrouwerLyddanePropagator BLextrapolator2 =
-                new BrouwerLyddanePropagator( new KeplerianOrbit(a + 3000, e + 0.001, i - FastMath.toRadians(12.0), omega, raan, lM, PositionAngle.TRUE,
+                new BrouwerLyddanePropagator( new KeplerianOrbit(a + 3000, e + 0.001, i - FastMath.toRadians(12.0), omega, raan, lM, PositionAngleType.TRUE,
                         inertialFrame, initDate, provider.getMu()),DEFAULT_LAW, Propagator.DEFAULT_MASS, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
         // Reset BL2 with BL1 initial state
         BLextrapolator2.resetInitialState(initialState);
@@ -493,7 +493,7 @@ public class BrouwerLyddanePropagatorTest {
         final double omega = FastMath.toRadians(180); // perigee argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
-        final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.TRUE,
+        final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.TRUE,
                                                       inertialFrame, initDate, provider.getMu());
 
 
@@ -564,7 +564,7 @@ public class BrouwerLyddanePropagatorTest {
             // for an eccentricity too big for the model
             AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
             Orbit initialOrbit = new KeplerianOrbit(67679244.0, 1.0,  1.85850, 2.1, 2.9,
-                    6.2, PositionAngle.TRUE, FramesFactory.getEME2000(),
+                    6.2, PositionAngleType.TRUE, FramesFactory.getEME2000(),
                     initDate, provider.getMu());
             // Extrapolator definition
             // -----------------------
@@ -594,7 +594,7 @@ public class BrouwerLyddanePropagatorTest {
         final double lM = 0; // mean anomaly
 
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
-        final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.TRUE,
+        final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.TRUE,
                                                       inertialFrame, initDate, provider.getMu());
 
         // Extrapolator definition
@@ -627,7 +627,7 @@ public class BrouwerLyddanePropagatorTest {
             // for an eccentricity too big for the model
             AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
             Orbit initialOrbit = new KeplerianOrbit( provider.getAe()-1000.0, 0.01, FastMath.toRadians(10.0), 2.1, 2.9,
-                    6.2, PositionAngle.TRUE, FramesFactory.getEME2000(),
+                    6.2, PositionAngleType.TRUE, FramesFactory.getEME2000(),
                     initDate, provider.getMu());
             // Extrapolator definition
             // -----------------------
@@ -657,7 +657,7 @@ public class BrouwerLyddanePropagatorTest {
             final double omega = FastMath.toRadians(180); // perigee argument
             final double raan = FastMath.toRadians(261); // right ascention of ascending node
             final double lM = FastMath.toRadians(0); // mean anomaly
-            final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.TRUE,
+            final Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.TRUE,
                     inertialFrame, initDate, provider.getMu());
             // Extrapolator definition
             // -----------------------
@@ -675,7 +675,7 @@ public class BrouwerLyddanePropagatorTest {
     @Test
     public void testMeanOrbit() {
         final KeplerianOrbit initialOsculating =
-                        new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
+                        new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngleType.TRUE,
                                            FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                            provider.getMu());
         final UnnormalizedSphericalHarmonicsProvider ushp = GravityFieldFactory.getUnnormalizedProvider(provider);

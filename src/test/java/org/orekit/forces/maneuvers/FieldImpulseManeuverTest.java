@@ -314,11 +314,11 @@ public class FieldImpulseManeuverTest {
         final Orbit orbit = state.getOrbit();
         final FieldOrbit<T> fieldOrbit = fieldState.getOrbit();
         final double[] orbitAsArray = new double[6];
-        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final OrbitType orbitType = OrbitType.CARTESIAN;
-        orbitType.mapOrbitToArray(orbit, positionAngle, orbitAsArray, orbitAsArray.clone());
+        orbitType.mapOrbitToArray(orbit, positionAngleType, orbitAsArray, orbitAsArray.clone());
         final double[] fieldRealOrbitAsArray = orbitAsArray.clone();
-        orbitType.mapOrbitToArray(fieldOrbit.toOrbit(), positionAngle, fieldRealOrbitAsArray, fieldRealOrbitAsArray.clone());
+        orbitType.mapOrbitToArray(fieldOrbit.toOrbit(), positionAngleType, fieldRealOrbitAsArray, fieldRealOrbitAsArray.clone());
         final double tolPos = 5e-2;
         final double tolVel = 3e-5;
         for (int i = 0; i < 3; i++) {

@@ -30,7 +30,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.LazyLoadedFrames;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -105,7 +105,7 @@ public class ExceptionalDataContextTest {
         double a = 6378e3 + 500e3;
         Orbit orbit = new KeplerianOrbit(
                 a, 0, 0, 0, 0, 0,
-                PositionAngle.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU);
+                PositionAngleType.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU);
         AttitudeProvider attitude = new FrameAlignedProvider(eci);
         Propagator propagator = new KeplerianPropagator(orbit, attitude);
         SpacecraftState state = propagator.propagate(date.shiftedBy(86400));

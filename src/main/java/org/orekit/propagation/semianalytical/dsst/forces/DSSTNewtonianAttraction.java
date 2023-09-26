@@ -27,7 +27,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
@@ -128,7 +128,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
 
         final double[] yDot = new double[7];
         final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());
-        orbit.addKeplerContribution(PositionAngle.MEAN, context.getGM(), yDot);
+        orbit.addKeplerContribution(PositionAngleType.MEAN, context.getGM(), yDot);
 
         return yDot;
 
@@ -147,7 +147,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
 
         final T[] yDot = MathArrays.buildArray(field, 7);
         final FieldEquinoctialOrbit<T> orbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());
-        orbit.addKeplerContribution(PositionAngle.MEAN, context.getGM(), yDot);
+        orbit.addKeplerContribution(PositionAngleType.MEAN, context.getGM(), yDot);
 
         return yDot;
     }

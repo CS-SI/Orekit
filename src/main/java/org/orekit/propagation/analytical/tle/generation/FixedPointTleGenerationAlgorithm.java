@@ -34,7 +34,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.FieldTLE;
@@ -202,7 +202,7 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
             hy  += scale * deltaHy;
             lv  += scale * deltaLv;
             final EquinoctialOrbit newEquinoctialOrbit =
-                                    new EquinoctialOrbit(sma, ex, ey, hx, hy, lv, PositionAngle.TRUE,
+                                    new EquinoctialOrbit(sma, ex, ey, hx, hy, lv, PositionAngleType.TRUE,
                                                          equinoctialOrbit.getFrame(), equinoctialOrbit.getDate(), equinoctialOrbit.getMu());
             final KeplerianOrbit newKeplerianOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(newEquinoctialOrbit);
 
@@ -282,7 +282,7 @@ public class FixedPointTleGenerationAlgorithm implements TleGenerationAlgorithm 
             hy  = hy.add(deltaHy.multiply(scale));
             lv  = lv.add(deltaLv.multiply(scale));
             final FieldEquinoctialOrbit<T> newEquinoctialOrbit =
-                                    new FieldEquinoctialOrbit<>(sma, ex, ey, hx, hy, lv, PositionAngle.TRUE,
+                                    new FieldEquinoctialOrbit<>(sma, ex, ey, hx, hy, lv, PositionAngleType.TRUE,
                                     equinoctialOrbit.getFrame(), equinoctialOrbit.getDate(), equinoctialOrbit.getMu());
             final FieldKeplerianOrbit<T> newKeplerianOrbit = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(newEquinoctialOrbit);
 

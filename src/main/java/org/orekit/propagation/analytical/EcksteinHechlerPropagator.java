@@ -35,7 +35,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
@@ -696,7 +696,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                                     current.mean.getI()          + deltaI,
                                                     current.mean.getRightAscensionOfAscendingNode() + deltaRAAN,
                                                     current.mean.getAlphaM()     + deltaAlphaM,
-                                                    PositionAngle.MEAN,
+                                                    PositionAngleType.MEAN,
                                                     current.mean.getFrame(),
                                                     current.mean.getDate(), mu),
                                   mass, referenceRadius, mu, ck0);

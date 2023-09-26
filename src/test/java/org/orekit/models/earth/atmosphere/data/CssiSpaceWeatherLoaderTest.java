@@ -65,7 +65,7 @@ import org.orekit.models.earth.atmosphere.data.CssiSpaceWeatherDataLoader.LinePa
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitStepHandler;
@@ -303,7 +303,7 @@ public class CssiSpaceWeatherLoaderTest {
         AbsoluteDate date = new AbsoluteDate(2004, 1, 1, utc);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                 Constants.WGS84_EARTH_FLATTENING, ecef);
-        Orbit orbit = new KeplerianOrbit(6378137 + 400e3, 1e-3, FastMath.toRadians(50), 0, 0, 0, PositionAngle.TRUE,
+        Orbit orbit = new KeplerianOrbit(6378137 + 400e3, 1e-3, FastMath.toRadians(50), 0, 0, 0, PositionAngleType.TRUE,
                 eci, date, Constants.EIGEN5C_EARTH_MU);
         final SpacecraftState ic = new SpacecraftState(orbit);
 

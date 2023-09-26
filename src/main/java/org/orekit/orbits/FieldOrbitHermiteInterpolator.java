@@ -258,21 +258,21 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
                                                 interpolated[0][3], interpolated[0][4], interpolated[0][5],
                                                 interpolated[1][0], interpolated[1][1], interpolated[1][2],
                                                 interpolated[1][3], interpolated[1][4], interpolated[1][5],
-                                                PositionAngle.MEAN, getOutputInertialFrame(), interpolationDate, mu);
+                                                PositionAngleType.MEAN, getOutputInertialFrame(), interpolationDate, mu);
             case KEPLERIAN:
                 interpolated = interpolateKeplerian(interpolationDate, orbits, useDerivatives);
                 return new FieldKeplerianOrbit<>(interpolated[0][0], interpolated[0][1], interpolated[0][2],
                                                  interpolated[0][3], interpolated[0][4], interpolated[0][5],
                                                  interpolated[1][0], interpolated[1][1], interpolated[1][2],
                                                  interpolated[1][3], interpolated[1][4], interpolated[1][5],
-                                                 PositionAngle.MEAN, getOutputInertialFrame(), interpolationDate, mu);
+                                                 PositionAngleType.MEAN, getOutputInertialFrame(), interpolationDate, mu);
             case EQUINOCTIAL:
                 interpolated = interpolateEquinoctial(interpolationDate, orbits, useDerivatives);
                 return new FieldEquinoctialOrbit<>(interpolated[0][0], interpolated[0][1], interpolated[0][2],
                                                    interpolated[0][3], interpolated[0][4], interpolated[0][5],
                                                    interpolated[1][0], interpolated[1][1], interpolated[1][2],
                                                    interpolated[1][3], interpolated[1][4], interpolated[1][5],
-                                                   PositionAngle.MEAN, getOutputInertialFrame(), interpolationDate, mu);
+                                                   PositionAngleType.MEAN, getOutputInertialFrame(), interpolationDate, mu);
             default:
                 // Should never happen
                 throw new OrekitInternalError(null);

@@ -138,7 +138,7 @@ public class KeplerianOrbit extends Orbit {
      */
     public KeplerianOrbit(final double a, final double e, final double i,
                           final double pa, final double raan, final double anomaly,
-                          final PositionAngle type,
+                          final PositionAngleType type,
                           final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         this(a, e, i, pa, raan, anomaly,
@@ -173,7 +173,7 @@ public class KeplerianOrbit extends Orbit {
                           final double pa, final double raan, final double anomaly,
                           final double aDot, final double eDot, final double iDot,
                           final double paDot, final double raanDot, final double anomalyDot,
-                          final PositionAngle type,
+                          final PositionAngleType type,
                           final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
@@ -343,7 +343,7 @@ public class KeplerianOrbit extends Orbit {
             // we have a relevant acceleration, we can compute derivatives
 
             final double[][] jacobian = new double[6][6];
-            getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+            getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
 
             final Vector3D keplerianAcceleration    = new Vector3D(-mu / (r * r2), pvP);
             final Vector3D nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
@@ -542,9 +542,9 @@ public class KeplerianOrbit extends Orbit {
      * @param type type of the angle
      * @return anomaly (rad)
      */
-    public double getAnomaly(final PositionAngle type) {
-        return (type == PositionAngle.MEAN) ? getMeanAnomaly() :
-                                              ((type == PositionAngle.ECCENTRIC) ? getEccentricAnomaly() :
+    public double getAnomaly(final PositionAngleType type) {
+        return (type == PositionAngleType.MEAN) ? getMeanAnomaly() :
+                                              ((type == PositionAngleType.ECCENTRIC) ? getEccentricAnomaly() :
                                                                                    getTrueAnomaly());
     }
 
@@ -553,9 +553,9 @@ public class KeplerianOrbit extends Orbit {
      * @return anomaly derivative (rad/s)
      * @since 9.0
      */
-    public double getAnomalyDot(final PositionAngle type) {
-        return (type == PositionAngle.MEAN) ? getMeanAnomalyDot() :
-                                              ((type == PositionAngle.ECCENTRIC) ? getEccentricAnomalyDot() :
+    public double getAnomalyDot(final PositionAngleType type) {
+        return (type == PositionAngleType.MEAN) ? getMeanAnomalyDot() :
+                                              ((type == PositionAngleType.ECCENTRIC) ? getEccentricAnomalyDot() :
                                                                                    getTrueAnomalyDot());
     }
 
@@ -749,7 +749,7 @@ public class KeplerianOrbit extends Orbit {
     private Vector3D nonKeplerianAcceleration() {
 
         final double[][] dCdP = new double[6][6];
-        getJacobianWrtParameters(PositionAngle.MEAN, dCdP);
+        getJacobianWrtParameters(PositionAngleType.MEAN, dCdP);
 
         final double nonKeplerianMeanMotion = getMeanAnomalyDot() - getKeplerianMeanMotion();
         final double nonKeplerianAx = dCdP[3][0] * aDot    + dCdP[3][1] * eDot    + dCdP[3][2] * iDot    +
@@ -821,7 +821,7 @@ public class KeplerianOrbit extends Orbit {
         // use Keplerian-only motion
         final KeplerianOrbit keplerianShifted = new KeplerianOrbit(a, e, i, pa, raan,
                                                                    getMeanAnomaly() + getKeplerianMeanMotion() * dt,
-                                                                   PositionAngle.MEAN, getFrame(),
+                                                                   PositionAngleType.MEAN, getFrame(),
                                                                    getDate().shiftedBy(dt), getMu());
 
         if (hasDerivatives()) {
@@ -1286,7 +1286,7 @@ public class KeplerianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final double gm,
+    public void addKeplerContribution(final PositionAngleType type, final double gm,
                                       final double[] pDot) {
         final double oMe2;
         final double ksi;
@@ -1413,12 +1413,12 @@ public class KeplerianOrbit extends Orbit {
                 // we have derivatives
                 return new KeplerianOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
                                           d[ 9], d[10], d[11], d[12], d[13], d[14],
-                                          PositionAngle.TRUE,
+                                          PositionAngleType.TRUE,
                                           frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                           d[2]);
             } else {
                 // we don't have derivatives
-                return new KeplerianOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngle.TRUE,
+                return new KeplerianOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngleType.TRUE,
                                           frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                           d[2]);
             }

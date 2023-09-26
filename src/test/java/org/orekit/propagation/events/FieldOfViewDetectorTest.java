@@ -46,7 +46,7 @@ import org.orekit.geometry.fov.PolygonalFieldOfView.DefiningConeType;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -215,7 +215,7 @@ public class FieldOfViewDetectorTest {
         //iss like orbit
         KeplerianOrbit orbit = new KeplerianOrbit(
                 6378137 + 400e3, 0, FastMath.toRadians(51.65), 0, 0, 0,
-                PositionAngle.TRUE, eci, date, Constants.EGM96_EARTH_MU);
+                PositionAngleType.TRUE, eci, date, Constants.EGM96_EARTH_MU);
         AttitudeProvider attitude = new NadirPointing(eci, earth);
 
         //action

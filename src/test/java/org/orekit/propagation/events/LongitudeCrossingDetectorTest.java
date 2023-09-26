@@ -32,7 +32,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -126,7 +126,7 @@ public class LongitudeCrossingDetectorTest {
 
         KeplerianOrbit orbit =
                         new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
-                                           0.048363, PositionAngle.MEAN,
+                                           0.048363, PositionAngleType.MEAN,
                                            FramesFactory.getEME2000(),
                                            AbsoluteDate.J2000_EPOCH,
                                            Constants.EIGEN5C_EARTH_MU);

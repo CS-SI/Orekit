@@ -36,7 +36,7 @@ import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
@@ -71,7 +71,7 @@ public class TLEKalmanEstimatorTest {
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final PositionAngle positionAngle = PositionAngle.MEAN;
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
@@ -116,7 +116,7 @@ public class TLEKalmanEstimatorTest {
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 7.86e-5; // With numerical propagator: 2.28e-11;
         TLEEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
     }
@@ -132,7 +132,7 @@ public class TLEKalmanEstimatorTest {
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final PositionAngle positionAngle = PositionAngle.MEAN;
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
@@ -182,7 +182,7 @@ public class TLEKalmanEstimatorTest {
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 7.45e-5; // With numerical propagator: 7.93e-8;
         TLEEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
     }
@@ -198,7 +198,7 @@ public class TLEKalmanEstimatorTest {
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final PositionAngle positionAngle = PositionAngle.MEAN;
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
@@ -263,7 +263,7 @@ public class TLEKalmanEstimatorTest {
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 2.69e-4; // With numerical propagator: 7.29e-6;
         TLEEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
     }
@@ -278,7 +278,7 @@ public class TLEKalmanEstimatorTest {
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final PositionAngle positionAngle = PositionAngle.MEAN;
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
@@ -337,7 +337,7 @@ public class TLEKalmanEstimatorTest {
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 1.86e-4; // With numerical propagator: 4.2e-10;
         TLEEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
     }
@@ -352,7 +352,7 @@ public class TLEKalmanEstimatorTest {
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final double        minStep       = 1.e-6;
         final double        maxStep       = 60.;
         final double        dP            = 1.;
@@ -381,7 +381,7 @@ public class TLEKalmanEstimatorTest {
         try {
             // Filter the measurements and expect an exception to occur
             TLEEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                               initialOrbit, positionAngle,
+                                               initialOrbit, positionAngleType,
                                                0., 0.,
                                                0., 0.);
         } catch (DummyException de) {
