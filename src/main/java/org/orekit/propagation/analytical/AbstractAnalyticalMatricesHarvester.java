@@ -279,7 +279,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
 
     /** {@inheritDoc} */
     @Override
-    public PositionAngleType getPositionAngle() {
+    public PositionAngleType getPositionAngleType() {
         // Irrelevant: set a default value
         return PositionAngleType.MEAN;
     }

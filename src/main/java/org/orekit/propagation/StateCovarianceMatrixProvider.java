@@ -95,9 +95,9 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
         this.harvester = harvester;
         this.covInit = covInit;
         this.covOrbitType = covInit.getOrbitType();
-        this.covAngleType = covInit.getPositionAngle();
+        this.covAngleType = covInit.getPositionAngleType();
         this.stmOrbitType = harvester.getOrbitType();
-        this.stmAngleType = harvester.getPositionAngle();
+        this.stmAngleType = harvester.getPositionAngleType();
     }
 
     /** {@inheritDoc} */

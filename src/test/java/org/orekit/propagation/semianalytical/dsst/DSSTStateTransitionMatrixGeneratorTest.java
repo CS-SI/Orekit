@@ -337,7 +337,7 @@ public class DSSTStateTransitionMatrixGeneratorTest {
             Assertions.assertEquals(0.0, dYdPMEAN.getEntry(i, 0), 1e-9);
         }
         Assertions.assertEquals(OrbitType.EQUINOCTIAL, harvesterMEAN.getOrbitType());
-        Assertions.assertEquals(PositionAngleType.MEAN, harvesterMEAN.getPositionAngle());
+        Assertions.assertEquals(PositionAngleType.MEAN, harvesterMEAN.getPositionAngleType());
 
         // FIXME With the addition of the Extended Semi-analytical Kalman Filter, the following
         //       test doesn't work.

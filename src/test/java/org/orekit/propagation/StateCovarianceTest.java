@@ -83,7 +83,7 @@ public class StateCovarianceTest {
         final Frame        initialInertialFrame = FramesFactory.getGCRF();
     	final StateCovariance stateCovariance = new StateCovariance(getValladoInitialCovarianceMatrix(), initialDate, initialInertialFrame, OrbitType.CARTESIAN, PositionAngleType.MEAN);
     	Assertions.assertEquals(OrbitType.CARTESIAN, stateCovariance.getOrbitType());
-    	Assertions.assertEquals(PositionAngleType.MEAN, stateCovariance.getPositionAngle());
+    	Assertions.assertEquals(PositionAngleType.MEAN, stateCovariance.getPositionAngleType());
     	Assertions.assertEquals(initialInertialFrame, stateCovariance.getFrame());
     	Assertions.assertNull(stateCovariance.getLOF());
     	Assertions.assertEquals(initialDate, stateCovariance.getDate());

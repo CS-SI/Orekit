@@ -169,7 +169,7 @@ public class StateCovariance implements TimeStamped {
      * Get the covariance angle type.
      * @return the covariance angle type
      */
-    public PositionAngleType getPositionAngle() {
+    public PositionAngleType getPositionAngleType() {
         return angleType;
     }
 

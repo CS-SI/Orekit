@@ -86,7 +86,7 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
     /** {@inheritDoc} */
     @Override
     public KeplerianPropagatorBuilder copy() {
-        return new KeplerianPropagatorBuilder(createInitialOrbit(), getPositionAngle(),
+        return new KeplerianPropagatorBuilder(createInitialOrbit(), getPositionAngleType(),
                                               getPositionScale(), getAttitudeProvider());
     }
 

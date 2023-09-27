@@ -379,7 +379,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
         // Calculate the predicted osculating elements
         final double[] osculating = computeOsculatingElements(predictedFilterCorrection);
-        final Orbit osculatingOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(osculating, null, builder.getPositionAngle(),
+        final Orbit osculatingOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(osculating, null, builder.getPositionAngleType(),
                                                                             currentDate, nominalMeanSpacecraftState.getMu(),
                                                                             nominalMeanSpacecraftState.getFrame());
 
@@ -448,7 +448,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         previousNominalMeanSpacecraftState = nominalMeanSpacecraftState;
         // Calculate the corrected osculating elements
         final double[] osculating = computeOsculatingElements(correctedFilterCorrection);
-        final Orbit osculatingOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(osculating, null, builder.getPositionAngle(),
+        final Orbit osculatingOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(osculating, null, builder.getPositionAngleType(),
                                                                             currentDate, nominalMeanSpacecraftState.getMu(),
                                                                             nominalMeanSpacecraftState.getFrame());
 
@@ -783,7 +783,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         final int nbOrb  = getNumberSelectedOrbitalDrivers();
         final int nbProp = getNumberSelectedPropagationDrivers();
         final double[][] aCY = new double[nbOrb][nbOrb];
-        predictedOrbit.getJacobianWrtParameters(builder.getPositionAngle(), aCY);
+        predictedOrbit.getJacobianWrtParameters(builder.getPositionAngleType(), aCY);
         final RealMatrix dCdY = new Array2DRowRealMatrix(aCY, false);
 
         // Jacobian of the measurement with respect to current Cartesian coordinates
@@ -894,7 +894,7 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
 
         // Nominal mean elements
         final double[] nominalMeanElements = new double[nbOrb];
-        OrbitType.EQUINOCTIAL.mapOrbitToArray(nominalMeanSpacecraftState.getOrbit(), builder.getPositionAngle(), nominalMeanElements, null);
+        OrbitType.EQUINOCTIAL.mapOrbitToArray(nominalMeanSpacecraftState.getOrbit(), builder.getPositionAngleType(), nominalMeanElements, null);
 
         // Ref [1] Eq. 3.6
         final double[] osculatingElements = new double[nbOrb];

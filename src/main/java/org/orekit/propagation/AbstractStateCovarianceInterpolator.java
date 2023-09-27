@@ -59,7 +59,7 @@ public abstract class AbstractStateCovarianceInterpolator
     /** Output orbit type. */
     private final OrbitType outOrbitType;
 
-    /** Output position angle. */
+    /** Output position angle type. */
     private final PositionAngleType outPositionAngleType;
 
     /** Orbit interpolator. */
@@ -158,10 +158,10 @@ public abstract class AbstractStateCovarianceInterpolator
         return outOrbitType;
     }
 
-    /** Get output position angle.
+    /** Get output position angle type.
      * @return output position angle.
      */
-    public PositionAngleType getOutPositionAngle() {
+    public PositionAngleType getOutPositionAngleType() {
         return outPositionAngleType;
     }
 

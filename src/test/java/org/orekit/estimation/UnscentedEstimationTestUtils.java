@@ -233,7 +233,7 @@ public class UnscentedEstimationTestUtils {
 
 		// override orbital parameters
 		double[] orbitArray = new double[6];
-		propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit, propagatorBuilder.getPositionAngle(), orbitArray,
+		propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit, propagatorBuilder.getPositionAngleType(), orbitArray,
 				null);
 		for (int i = 0; i < orbitArray.length; ++i) {
 			propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);

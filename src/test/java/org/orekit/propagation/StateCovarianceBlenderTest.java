@@ -329,7 +329,7 @@ class StateCovarianceBlenderTest {
         Assertions.assertNull(covarianceInterpolator.getOutFrame());
         Assertions.assertEquals(DEFAULT_LOFTYPE, covarianceInterpolator.getOutLOF());
         Assertions.assertEquals(OrbitType.CARTESIAN, covarianceInterpolator.getOutOrbitType());
-        Assertions.assertEquals(PositionAngleType.MEAN, covarianceInterpolator.getOutPositionAngle());
+        Assertions.assertEquals(PositionAngleType.MEAN, covarianceInterpolator.getOutPositionAngleType());
         Assertions.assertEquals(orbitInterpolator, covarianceInterpolator.getOrbitInterpolator());
 
     }

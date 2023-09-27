@@ -109,7 +109,7 @@ public class AbstractPropagatorBuilderTest {
         Assertions.assertEquals(expected.getMu(), actual.getMu());
         Assertions.assertEquals(expected.getAttitudeProvider(), actual.getAttitudeProvider());
         Assertions.assertEquals(expected.getOrbitType(), actual.getOrbitType());
-        Assertions.assertEquals(expected.getPositionAngle(), actual.getPositionAngle());
+        Assertions.assertEquals(expected.getPositionAngleType(), actual.getPositionAngleType());
         Assertions.assertEquals(expected.getPositionScale(), actual.getPositionScale());
         Assertions.assertEquals(expected.getInitialOrbitDate(), actual.getInitialOrbitDate());
         Assertions.assertEquals(expected.getAdditionalDerivativesProviders(), actual.getAdditionalDerivativesProviders());

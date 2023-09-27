@@ -90,6 +90,6 @@ public interface MatricesHarvester {
      * </p>
      * @return the position angle used for the matrix computation
      */
-    PositionAngleType getPositionAngle();
+    PositionAngleType getPositionAngleType();
 
 }

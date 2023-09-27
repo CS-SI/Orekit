@@ -165,7 +165,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
     /** Get the type of position angle.
      * @return type of position angle
      */
-    public PositionAngleType getPositionAngle() {
+    public PositionAngleType getPositionAngleType() {
         return positionAngleType;
     }
 

@@ -102,7 +102,7 @@ class NumericalPropagationHarvester extends AbstractMatricesHarvester {
 
     /** {@inheritDoc} */
     @Override
-    public PositionAngleType getPositionAngle() {
+    public PositionAngleType getPositionAngleType() {
         return propagator.getPositionAngleType();
     }
 

@@ -982,7 +982,7 @@ class FieldStateCovarianceTest {
         final Frame                       gottenFrame         = stateCovariance.getFrame();
         final LOF                         gottenLOF           = stateCovariance.getLOF();
         final OrbitType                   gottenOrbitType     = stateCovariance.getOrbitType();
-        final PositionAngleType gottenPositionAngleType = stateCovariance.getPositionAngle();
+        final PositionAngleType gottenPositionAngleType = stateCovariance.getPositionAngleType();
 
         // Then
         Assertions.assertEquals(initialDate, gottenDate);
@@ -1064,7 +1064,7 @@ class FieldStateCovarianceTest {
         Assertions.assertEquals(orbitType, stateCovariance.getOrbitType());
 
         // Assert position angle type
-        Assertions.assertEquals(positionAngleType, stateCovariance.getPositionAngle());
+        Assertions.assertEquals(positionAngleType, stateCovariance.getPositionAngleType());
 
     }
 

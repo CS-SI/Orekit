@@ -601,7 +601,7 @@ public class KalmanModel implements KalmanEstimation, NonLinearProcess<Measureme
 
             // Partial derivatives of the current Cartesian coordinates with respect to current orbital state
             final double[][] aCY = new double[6][6];
-            predictedOrbit.getJacobianWrtParameters(builders.get(p).getPositionAngle(), aCY);   //dC/dY
+            predictedOrbit.getJacobianWrtParameters(builders.get(p).getPositionAngleType(), aCY);   //dC/dY
             final RealMatrix dCdY = new Array2DRowRealMatrix(aCY, false);
 
             // Jacobian of the measurement with respect to current Cartesian coordinates

@@ -68,7 +68,7 @@ public interface PropagatorBuilder {
      * {@link #buildPropagator(double[])}.
      * @return orbit type to use in {@link #buildPropagator(double[])}
      * @see #buildPropagator(double[])
-     * @see #getPositionAngle()
+     * @see #getPositionAngleType()
      * @since 7.1
      */
     OrbitType getOrbitType();
@@ -80,7 +80,7 @@ public interface PropagatorBuilder {
      * @see #getOrbitType()
      * @since 7.1
      */
-    PositionAngleType getPositionAngle();
+    PositionAngleType getPositionAngleType();
 
     /** Get the date of the initial orbit.
      * @return date of the initial orbit

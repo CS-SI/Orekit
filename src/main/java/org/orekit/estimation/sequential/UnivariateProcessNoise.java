@@ -129,7 +129,7 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
     /** Getter for the positionAngle.
      * @return the positionAngle
      */
-    public PositionAngleType getPositionAngle() {
+    public PositionAngleType getPositionAngleType() {
         return positionAngleType;
     }
 

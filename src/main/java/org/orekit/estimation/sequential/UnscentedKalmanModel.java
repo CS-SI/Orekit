@@ -212,7 +212,7 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         angleTypes = new PositionAngleType[builders.size()];
         orbitTypes = new OrbitType[builders.size()];
         for (int k = 0; k < builders.size(); k++) {
-            angleTypes[k] = builders.get(k).getPositionAngle();
+            angleTypes[k] = builders.get(k).getPositionAngleType();
             orbitTypes[k] = builders.get(k).getOrbitType();
         }
 

@@ -109,7 +109,7 @@ public class KeplerianEstimationTestUtils {
         // override orbital parameters
         double[] orbitArray = new double[6];
         propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
-                                                         propagatorBuilder.getPositionAngle(),
+                                                         propagatorBuilder.getPositionAngleType(),
                                                          orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
         	// here orbital paramaters drivers have only 1 estimated values on the all time period for orbit determination

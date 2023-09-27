@@ -329,7 +329,7 @@ public class PositionAngleDetectorTest {
         Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-10, d.getThreshold(), 1.0e-15);
         Assertions.assertEquals(orbitType, d.getOrbitType());
-        Assertions.assertEquals(positionAngleType, d.getPositionAngle());
+        Assertions.assertEquals(positionAngleType, d.getPositionAngleType());
         Assertions.assertEquals(angle, d.getAngle(), 1.0e-14);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
 

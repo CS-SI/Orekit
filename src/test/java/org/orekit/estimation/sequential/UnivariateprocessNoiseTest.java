@@ -90,7 +90,7 @@ public class UnivariateprocessNoiseTest {
                                                                                measurementsParametersEvolution);
 
         Assertions.assertEquals(LOFType.TNW, processNoise.getLofType());
-        Assertions.assertEquals(PositionAngleType.TRUE, processNoise.getPositionAngle());
+        Assertions.assertEquals(PositionAngleType.TRUE, processNoise.getPositionAngleType());
         Assertions.assertEquals(initialCovarianceMatrix,
                                 processNoise.getInitialCovarianceMatrix(new SpacecraftState(context.initialOrbit)));
         Assertions.assertArrayEquals(lofCartesianOrbitalParametersEvolution, processNoise.getLofCartesianOrbitalParametersEvolution());
@@ -104,7 +104,7 @@ public class UnivariateprocessNoiseTest {
                                                                                   propagationParametersEvolution);
 
         Assertions.assertEquals(LOFType.TNW, processNoiseOld.getLofType());
-        Assertions.assertEquals(PositionAngleType.TRUE, processNoiseOld.getPositionAngle());
+        Assertions.assertEquals(PositionAngleType.TRUE, processNoiseOld.getPositionAngleType());
         Assertions.assertEquals(initialCovarianceMatrix,
                                 processNoiseOld.getInitialCovarianceMatrix(new SpacecraftState(context.initialOrbit)));
         Assertions.assertArrayEquals(lofCartesianOrbitalParametersEvolution, processNoiseOld.getLofCartesianOrbitalParametersEvolution());
@@ -368,7 +368,7 @@ public class UnivariateprocessNoiseTest {
 
         // Jacobian of Cartesian parameters with respect to orbital parameters
         final double[][] dCdY = new double[6][6];
-        current.getOrbit().getJacobianWrtParameters(univariateProcessNoise.getPositionAngle(), dCdY);
+        current.getOrbit().getJacobianWrtParameters(univariateProcessNoise.getPositionAngleType(), dCdY);
         final RealMatrix jacdCdY = MatrixUtils.createRealMatrix(dCdY);
 
         // Transform orbital part to Cartesian
@@ -772,7 +772,7 @@ public class UnivariateprocessNoiseTest {
 
         // Jacobian from parameters to Cartesian
         final double[][] dCdY = new double[6][6];
-        current.getOrbit().getJacobianWrtParameters(univariateProcessNoise.getPositionAngle(), dCdY);
+        current.getOrbit().getJacobianWrtParameters(univariateProcessNoise.getPositionAngleType(), dCdY);
         final RealMatrix jacOrbToCar = new Array2DRowRealMatrix(dCdY, false);
 
         // Jacobian from inertial to LOF

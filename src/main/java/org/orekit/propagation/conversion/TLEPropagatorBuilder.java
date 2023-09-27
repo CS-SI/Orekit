@@ -111,7 +111,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
     /** {@inheritDoc} */
     @Override
     public TLEPropagatorBuilder copy() {
-        return new TLEPropagatorBuilder(templateTLE, getPositionAngle(), getPositionScale(),
+        return new TLEPropagatorBuilder(templateTLE, getPositionAngleType(), getPositionScale(),
                                         dataContext, generationAlgorithm);
     }
 

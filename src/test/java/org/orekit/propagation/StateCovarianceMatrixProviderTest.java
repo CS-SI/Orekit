@@ -575,7 +575,7 @@ public class StateCovarianceMatrixProviderTest {
         compareCovariance(propagatedCov, shiftedCov, 4.0e-12);
         Assertions.assertEquals(propagatedStateCov.getDate(), shiftedStateCov.getDate());
         Assertions.assertEquals(propagatedStateCov.getOrbitType(), shiftedStateCov.getOrbitType());
-        Assertions.assertEquals(propagatedStateCov.getPositionAngle(), shiftedStateCov.getPositionAngle());
+        Assertions.assertEquals(propagatedStateCov.getPositionAngleType(), shiftedStateCov.getPositionAngleType());
 
     }
 

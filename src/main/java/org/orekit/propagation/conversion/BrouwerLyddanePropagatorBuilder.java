@@ -252,7 +252,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
             }
         }
 
-        return new BrouwerLyddanePropagatorBuilder(createInitialOrbit(), provider, getPositionAngle(),
+        return new BrouwerLyddanePropagatorBuilder(createInitialOrbit(), provider, getPositionAngleType(),
                                                    getPositionScale(), getAttitudeProvider(), m2);
     }
 

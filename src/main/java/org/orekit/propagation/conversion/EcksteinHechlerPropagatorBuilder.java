@@ -218,7 +218,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
     /** {@inheritDoc} */
     @Override
     public EcksteinHechlerPropagatorBuilder copy() {
-        return new EcksteinHechlerPropagatorBuilder(createInitialOrbit(), provider, getPositionAngle(),
+        return new EcksteinHechlerPropagatorBuilder(createInitialOrbit(), provider, getPositionAngleType(),
                                                     getPositionScale(), getAttitudeProvider());
     }
 }

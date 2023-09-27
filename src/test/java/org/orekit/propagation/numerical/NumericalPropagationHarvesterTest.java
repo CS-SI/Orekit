@@ -141,7 +141,7 @@ public class NumericalPropagationHarvesterTest {
         RealMatrix stm = harvester.getStateTransitionMatrix(s);
         Assertions.assertEquals(deltaId, stm.subtract(MatrixUtils.createRealIdentityMatrix(6)).getNorm1(), 1.0e-3);
         Assertions.assertEquals(type, harvester.getOrbitType());
-        Assertions.assertEquals(angle, harvester.getPositionAngle());
+        Assertions.assertEquals(angle, harvester.getPositionAngleType());
     }
 
     @BeforeEach

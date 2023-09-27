@@ -115,7 +115,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         final NumericalPropagatorBuilder copyBuilder =
                         new NumericalPropagatorBuilder(createInitialOrbit(),
                                                        builder,
-                                                       getPositionAngle(),
+                                                       getPositionAngleType(),
                                                        getPositionScale(),
                                                        getAttitudeProvider());
         copyBuilder.setMass(mass);
@@ -202,7 +202,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
                 builder.buildIntegrator(orbit, getOrbitType()),
                 getAttitudeProvider());
         propagator.setOrbitType(getOrbitType());
-        propagator.setPositionAngleType(getPositionAngle());
+        propagator.setPositionAngleType(getPositionAngleType());
 
         // Configure force models
         if (!hasNewtonianAttraction()) {

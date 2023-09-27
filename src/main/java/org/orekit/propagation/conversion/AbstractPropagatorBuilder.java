@@ -194,7 +194,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     }
 
     /** {@inheritDoc} */
-    public PositionAngleType getPositionAngle() {
+    public PositionAngleType getPositionAngleType() {
         return positionAngleType;
     }
 
@@ -379,7 +379,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
         // Map the new orbit in an array of double
         final double[] orbitArray = new double[6];
-        orbitType.mapOrbitToArray(newOrbit, getPositionAngle(), orbitArray, null);
+        orbitType.mapOrbitToArray(newOrbit, getPositionAngleType(), orbitArray, null);
 
         // Update all the orbital drivers, selected or unselected
         // Reset values and reference values

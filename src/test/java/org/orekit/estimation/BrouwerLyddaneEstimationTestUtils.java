@@ -123,7 +123,7 @@ public class BrouwerLyddaneEstimationTestUtils {
         // override orbital parameters
         double[] orbitArray = new double[6];
         propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
-                                                         propagatorBuilder.getPositionAngle(),
+                                                         propagatorBuilder.getPositionAngleType(),
                                                          orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
             propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i], initialOrbit.getDate());
