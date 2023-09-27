@@ -49,7 +49,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.DateDetector;
@@ -314,7 +314,7 @@ public class SpacecraftStateTest {
         // Build orbit
         AbsoluteDate date0 = new AbsoluteDate(2000, 1, 1, TimeScalesFactory.getUTC());
         Orbit orbit = new KeplerianOrbit(7.1E6, 0, 0, 0, 0, 0,
-                                         PositionAngle.TRUE, FramesFactory.getGCRF(), date0,
+                                         PositionAngleType.TRUE, FramesFactory.getGCRF(), date0,
                                          Constants.WGS84_EARTH_MU);
 
         // Build propagator
@@ -363,7 +363,7 @@ public class SpacecraftStateTest {
         // Build orbit
         AbsoluteDate date0 = new AbsoluteDate(2000, 1, 1, TimeScalesFactory.getUTC());
         Orbit orbit = new KeplerianOrbit(7.1E6, 0, 0, 0, 0, 0,
-                                         PositionAngle.TRUE, FramesFactory.getGCRF(), date0,
+                                         PositionAngleType.TRUE, FramesFactory.getGCRF(), date0,
                                          Constants.WGS84_EARTH_MU);
 
         // Build propagator
@@ -747,7 +747,7 @@ public class SpacecraftStateTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                  TimeComponents.H00,
                                                  TimeScalesFactory.getUTC());
-        orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+        orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,

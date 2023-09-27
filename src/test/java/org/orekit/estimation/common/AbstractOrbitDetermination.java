@@ -146,7 +146,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -1211,9 +1211,9 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
 
         // Orbit definition
-        PositionAngle angleType = PositionAngle.MEAN;
+        PositionAngleType angleType = PositionAngleType.MEAN;
         if (parser.containsKey(ParameterKey.ORBIT_ANGLE_TYPE)) {
-            angleType = PositionAngle.valueOf(parser.getString(ParameterKey.ORBIT_ANGLE_TYPE).toUpperCase());
+            angleType = PositionAngleType.valueOf(parser.getString(ParameterKey.ORBIT_ANGLE_TYPE).toUpperCase());
         }
         if (parser.containsKey(ParameterKey.ORBIT_KEPLERIAN_A)) {
             return new KeplerianOrbit(parser.getDouble(ParameterKey.ORBIT_KEPLERIAN_A),

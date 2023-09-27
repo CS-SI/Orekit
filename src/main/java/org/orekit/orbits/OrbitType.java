@@ -50,7 +50,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
+        public void mapOrbitToArray(final Orbit orbit, final PositionAngleType type,
                                     final double[] stateVector, final double[] stateVectorDot) {
 
             final PVCoordinates pv = orbit.getPVCoordinates();
@@ -78,7 +78,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public CartesianOrbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
+        public CartesianOrbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngleType type,
                                               final AbsoluteDate date, final double mu, final Frame frame) {
 
             final Vector3D p = new Vector3D(stateVector[0], stateVector[1], stateVector[2]);
@@ -104,7 +104,7 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
-                                                                        final PositionAngle type,
+                                                                        final PositionAngleType type,
                                                                         final T[] stateVector,
                                                                         final T[] stateVectorDot) {
 
@@ -135,7 +135,7 @@ public enum OrbitType {
         @Override
         public <T extends CalculusFieldElement<T>> FieldCartesianOrbit<T> mapArrayToOrbit(final T[] stateVector,
                                                                                           final T[] stateVectorDot,
-                                                                                          final PositionAngle type,
+                                                                                          final PositionAngleType type,
                                                                                           final FieldAbsoluteDate<T> date,
                                                                                           final T mu, final Frame frame) {
             final FieldVector3D<T> p = new FieldVector3D<>(stateVector[0], stateVector[1], stateVector[2]);
@@ -161,7 +161,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type) {
+        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngleType type) {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
             mapOrbitToArray(orbit, type, array, null);
@@ -202,7 +202,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
+        public void mapOrbitToArray(final Orbit orbit, final PositionAngleType type,
                                     final double[] stateVector, final double[] stateVectorDot) {
 
             final CircularOrbit circularOrbit = (CircularOrbit) OrbitType.CIRCULAR.convertType(orbit);
@@ -231,7 +231,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public CircularOrbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
+        public CircularOrbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngleType type,
                                              final AbsoluteDate date, final double mu, final Frame frame) {
             if (stateVectorDot == null) {
                 // we don't have orbit derivatives
@@ -257,7 +257,7 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
-                                                                        final PositionAngle type,
+                                                                        final PositionAngleType type,
                                                                         final T[] stateVector,
                                                                         final T[] stateVectorDot) {
 
@@ -288,7 +288,7 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> FieldCircularOrbit<T> mapArrayToOrbit(final T[] stateVector,
-                                                                                         final T[] stateVectorDot, final PositionAngle type,
+                                                                                         final T[] stateVectorDot, final PositionAngleType type,
                                                                                          final FieldAbsoluteDate<T> date,
                                                                                          final T mu, final Frame frame) {
             if (stateVectorDot == null) {
@@ -315,14 +315,14 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type) {
+        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngleType type) {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
             mapOrbitToArray(orbit, type, array, null);
             final double[] scale = scale(dP, orbit);
-            final String name = type == PositionAngle.MEAN ?
+            final String name = type == PositionAngleType.MEAN ?
                                     MEAN_LAT_ARG :
-                                    type == PositionAngle.ECCENTRIC ? ECC_LAT_ARG : TRUE_LAT_ARG;
+                                    type == PositionAngleType.ECCENTRIC ? ECC_LAT_ARG : TRUE_LAT_ARG;
             drivers.add(new ParameterDriver(A,    array[0], scale[0],  0.0, Double.POSITIVE_INFINITY));
             drivers.add(new ParameterDriver(E_X,  array[1], scale[1], -1.0, 1.0));
             drivers.add(new ParameterDriver(E_Y,  array[2], scale[2], -1.0, 1.0));
@@ -354,7 +354,7 @@ public enum OrbitType {
                                          cO.getIDot(),
                                          cO.getRightAscensionOfAscendingNodeDot(),
                                          cO.getAlphaVDot(),
-                                         PositionAngle.TRUE,
+                                         PositionAngleType.TRUE,
                                          cO.getFrame(),
                                          cO.getDate(),
                                          cO.getMu());
@@ -365,7 +365,7 @@ public enum OrbitType {
                                          cO.getI(),
                                          MathUtils.normalizeAngle(cO.getRightAscensionOfAscendingNode(), cR.getRightAscensionOfAscendingNode()),
                                          MathUtils.normalizeAngle(cO.getAlphaV(), cR.getAlphaV()),
-                                         PositionAngle.TRUE,
+                                         PositionAngleType.TRUE,
                                          cO.getFrame(),
                                          cO.getDate(),
                                          cO.getMu());
@@ -395,7 +395,7 @@ public enum OrbitType {
                                                 cO.getIDot(),
                                                 cO.getRightAscensionOfAscendingNodeDot(),
                                                 cO.getAlphaVDot(),
-                                                PositionAngle.TRUE,
+                                                PositionAngleType.TRUE,
                                                 cO.getFrame(),
                                                 cO.getDate(),
                                                 cO.getMu());
@@ -406,7 +406,7 @@ public enum OrbitType {
                                                 cO.getI(),
                                                 MathUtils.normalizeAngle(cO.getRightAscensionOfAscendingNode(), cR.getRightAscensionOfAscendingNode()),
                                                 MathUtils.normalizeAngle(cO.getAlphaV(), cR.getAlphaV()),
-                                                PositionAngle.TRUE,
+                                                PositionAngleType.TRUE,
                                                 cO.getFrame(),
                                                 cO.getDate(),
                                                 cO.getMu());
@@ -427,7 +427,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
+        public void mapOrbitToArray(final Orbit orbit, final PositionAngleType type,
                                     final double[] stateVector, final double[] stateVectorDot) {
 
             final EquinoctialOrbit equinoctialOrbit =
@@ -457,7 +457,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public EquinoctialOrbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
+        public EquinoctialOrbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngleType type,
                                                 final AbsoluteDate date, final double mu, final Frame frame) {
             if (stateVectorDot == null) {
                 // we don't have orbit derivatives
@@ -483,7 +483,7 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
-                                                                        final PositionAngle type,
+                                                                        final PositionAngleType type,
                                                                         final T[] stateVector,
                                                                         final T[] stateVectorDot) {
 
@@ -516,7 +516,7 @@ public enum OrbitType {
         @Override
         public <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> mapArrayToOrbit(final T[] stateVector,
                                                                                             final T[] stateVectorDot,
-                                                                                            final PositionAngle type,
+                                                                                            final PositionAngleType type,
                                                                                             final FieldAbsoluteDate<T> date,
                                                                                             final T mu, final Frame frame) {
             if (stateVectorDot == null) {
@@ -543,14 +543,14 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type) {
+        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngleType type) {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
             mapOrbitToArray(orbit, type, array, null);
             final double[] scale = scale(dP, orbit);
-            final String name = type == PositionAngle.MEAN ?
+            final String name = type == PositionAngleType.MEAN ?
                                     MEAN_LON_ARG :
-                                    type == PositionAngle.ECCENTRIC ? ECC_LON_ARG : TRUE_LON_ARG;
+                                    type == PositionAngleType.ECCENTRIC ? ECC_LON_ARG : TRUE_LON_ARG;
             drivers.add(new ParameterDriver(A,    array[0], scale[0],  0.0, Double.POSITIVE_INFINITY));
             drivers.add(new ParameterDriver(E_X,  array[1], scale[1], -1.0, 1.0));
             drivers.add(new ParameterDriver(E_Y,  array[2], scale[2], -1.0, 1.0));
@@ -582,7 +582,7 @@ public enum OrbitType {
                                             eO.getHxDot(),
                                             eO.getHyDot(),
                                             eO.getLvDot(),
-                                            PositionAngle.TRUE,
+                                            PositionAngleType.TRUE,
                                             eO.getFrame(),
                                             eO.getDate(),
                                             eO.getMu());
@@ -593,7 +593,7 @@ public enum OrbitType {
                                             eO.getHx(),
                                             eO.getHy(),
                                             MathUtils.normalizeAngle(eO.getLv(), eR.getLv()),
-                                            PositionAngle.TRUE,
+                                            PositionAngleType.TRUE,
                                             eO.getFrame(),
                                             eO.getDate(),
                                             eO.getMu());
@@ -623,7 +623,7 @@ public enum OrbitType {
                                                    eO.getHxDot(),
                                                    eO.getHyDot(),
                                                    eO.getLvDot(),
-                                                   PositionAngle.TRUE,
+                                                   PositionAngleType.TRUE,
                                                    eO.getFrame(),
                                                    eO.getDate(),
                                                    eO.getMu());
@@ -634,7 +634,7 @@ public enum OrbitType {
                                                    eO.getHx(),
                                                    eO.getHy(),
                                                    MathUtils.normalizeAngle(eO.getLv(), eR.getLv()),
-                                                   PositionAngle.TRUE,
+                                                   PositionAngleType.TRUE,
                                                    eO.getFrame(),
                                                    eO.getDate(),
                                                    eO.getMu());
@@ -655,7 +655,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
+        public void mapOrbitToArray(final Orbit orbit, final PositionAngleType type,
                                     final double[] stateVector, final double[] stateVectorDot) {
 
             final KeplerianOrbit keplerianOrbit =
@@ -685,7 +685,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public KeplerianOrbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
+        public KeplerianOrbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngleType type,
                                               final AbsoluteDate date, final double mu, final Frame frame) {
             if (stateVectorDot == null) {
                 // we don't have orbit derivatives
@@ -711,7 +711,7 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public <T extends CalculusFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
-                                                                        final PositionAngle type,
+                                                                        final PositionAngleType type,
                                                                         final T[] stateVector,
                                                                         final T[] stateVectorDot) {
             final FieldKeplerianOrbit<T> keplerianOrbit =
@@ -743,7 +743,7 @@ public enum OrbitType {
         @Override
         public <T extends CalculusFieldElement<T>> FieldKeplerianOrbit<T> mapArrayToOrbit(final T[] stateVector,
                                                                                           final T[] stateVectorDot,
-                                                                                          final PositionAngle type,
+                                                                                          final PositionAngleType type,
                                                                                           final FieldAbsoluteDate<T> date,
                                                                                           final T mu, final Frame frame) {
             if (stateVectorDot == null) {
@@ -770,14 +770,14 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type) {
+        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngleType type) {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
             mapOrbitToArray(orbit, type, array, null);
             final double[] scale = scale(dP, orbit);
-            final String name = type == PositionAngle.MEAN ?
+            final String name = type == PositionAngleType.MEAN ?
                                     MEAN_ANOM :
-                                    type == PositionAngle.ECCENTRIC ? ECC_ANOM : TRUE_ANOM;
+                                    type == PositionAngleType.ECCENTRIC ? ECC_ANOM : TRUE_ANOM;
             drivers.add(new ParameterDriver(A,    array[0], scale[0],  0.0, Double.POSITIVE_INFINITY));
             drivers.add(new ParameterDriver(ECC,  array[1], scale[1],  0.0, 1.0));
             drivers.add(new ParameterDriver(INC,  array[2], scale[2],  0.0, FastMath.PI));
@@ -809,7 +809,7 @@ public enum OrbitType {
                                           kO.getPerigeeArgumentDot(),
                                           kO.getRightAscensionOfAscendingNodeDot(),
                                           kO.getTrueAnomalyDot(),
-                                          PositionAngle.TRUE,
+                                          PositionAngleType.TRUE,
                                           kO.getFrame(),
                                           kO.getDate(),
                                           kO.getMu());
@@ -820,7 +820,7 @@ public enum OrbitType {
                                           MathUtils.normalizeAngle(kO.getPerigeeArgument(), kR.getPerigeeArgument()),
                                           MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(), kR.getRightAscensionOfAscendingNode()),
                                           MathUtils.normalizeAngle(kO.getTrueAnomaly(), kR.getTrueAnomaly()),
-                                          PositionAngle.TRUE,
+                                          PositionAngleType.TRUE,
                                           kO.getFrame(),
                                           kO.getDate(),
                                           kO.getMu());
@@ -850,7 +850,7 @@ public enum OrbitType {
                                                  kO.getPerigeeArgumentDot(),
                                                  kO.getRightAscensionOfAscendingNodeDot(),
                                                  kO.getTrueAnomalyDot(),
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  kO.getFrame(),
                                                  kO.getDate(),
                                                  kO.getMu());
@@ -861,7 +861,7 @@ public enum OrbitType {
                                                  MathUtils.normalizeAngle(kO.getPerigeeArgument(), kR.getPerigeeArgument()),
                                                  MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(), kR.getRightAscensionOfAscendingNode()),
                                                  MathUtils.normalizeAngle(kO.getTrueAnomaly(), kR.getTrueAnomaly()),
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  kO.getFrame(),
                                                  kO.getDate(),
                                                  kO.getMu());
@@ -957,7 +957,7 @@ public enum OrbitType {
      * <p>
      * Note that all implementations of this method <em>must</em> be consistent with the
      * implementation of the {@link org.orekit.orbits.Orbit#getJacobianWrtCartesian(
-     * org.orekit.orbits.PositionAngle, double[][]) Orbit.getJacobianWrtCartesian}
+     * PositionAngleType, double[][]) Orbit.getJacobianWrtCartesian}
      * method for the corresponding orbit type in terms of parameters order and meaning.
      * </p>
      * @param orbit orbit to map
@@ -967,13 +967,13 @@ public enum OrbitType {
      * @param stateVectorDot flat array into which the state vector derivative should be mapped
      * (it can be null if derivatives are not desired, and it can have more than 6 elements, extra elements are untouched)
      */
-    public abstract void mapOrbitToArray(Orbit orbit, PositionAngle type, double[] stateVector, double[] stateVectorDot);
+    public abstract void mapOrbitToArray(Orbit orbit, PositionAngleType type, double[] stateVector, double[] stateVectorDot);
 
      /** Convert state array to orbital parameters.
      * <p>
      * Note that all implementations of this method <em>must</em> be consistent with the
      * implementation of the {@link org.orekit.orbits.Orbit#getJacobianWrtCartesian(
-     * org.orekit.orbits.PositionAngle, double[][]) Orbit.getJacobianWrtCartesian}
+     * PositionAngleType, double[][]) Orbit.getJacobianWrtCartesian}
      * method for the corresponding orbit type in terms of parameters order and meaning.
      * </p>
      * @param array state as a flat array
@@ -987,7 +987,7 @@ public enum OrbitType {
      * @param frame frame in which integration is performed
      * @return orbit corresponding to the flat array as a space dynamics object
      */
-    public abstract Orbit mapArrayToOrbit(double[] array, double[] arrayDot, PositionAngle type,
+    public abstract Orbit mapArrayToOrbit(double[] array, double[] arrayDot, PositionAngleType type,
                                           AbsoluteDate date, double mu, Frame frame);
 
     /** Convert an orbit to the instance type.
@@ -1005,7 +1005,7 @@ public enum OrbitType {
      * <p>
      * Note that all implementations of this method <em>must</em> be consistent with the
      * implementation of the {@link org.orekit.orbits.Orbit#getJacobianWrtCartesian(
-     * org.orekit.orbits.PositionAngle, double[][]) Orbit.getJacobianWrtCartesian}
+     * PositionAngleType, double[][]) Orbit.getJacobianWrtCartesian}
      * method for the corresponding orbit type in terms of parameters order and meaning.
      * </p>
      * @param <T> CalculusFieldElement used
@@ -1016,7 +1016,7 @@ public enum OrbitType {
      * @param stateVectorDot flat array into which the state vector derivative should be mapped
      * (it can be null if derivatives are not desired, and it can have more than 6 elements, extra elements are untouched)
      */
-    public abstract <T extends CalculusFieldElement<T>>void mapOrbitToArray(FieldOrbit<T> orbit, PositionAngle type,
+    public abstract <T extends CalculusFieldElement<T>>void mapOrbitToArray(FieldOrbit<T> orbit, PositionAngleType type,
                                                                             T[] stateVector, T[] stateVectorDot);
 
 
@@ -1024,7 +1024,7 @@ public enum OrbitType {
      * <p>
      * Note that all implementations of this method <em>must</em> be consistent with the
      * implementation of the {@link org.orekit.orbits.Orbit#getJacobianWrtCartesian(
-     * org.orekit.orbits.PositionAngle, double[][]) Orbit.getJacobianWrtCartesian}
+     * PositionAngleType, double[][]) Orbit.getJacobianWrtCartesian}
      * method for the corresponding orbit type in terms of parameters order and meaning.
      * </p>
      * @param <T> CalculusFieldElement used
@@ -1040,7 +1040,7 @@ public enum OrbitType {
      */
     public abstract <T extends CalculusFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(T[] array,
                                                                                       T[] arrayDot,
-                                                                                      PositionAngle type,
+                                                                                      PositionAngleType type,
                                                                                       FieldAbsoluteDate<T> date,
                                                                                       T mu, Frame frame);
 
@@ -1061,7 +1061,7 @@ public enum OrbitType {
      * @return parameters drivers initialized from reference orbit
      */
     public abstract ParameterDriversList getDrivers(double dP, Orbit orbit,
-                                                    PositionAngle type);
+                                                    PositionAngleType type);
 
     /** Normalize one orbit with respect to a reference one.
      * <p>
@@ -1129,7 +1129,7 @@ public enum OrbitType {
         // convert the orbit to the desired type
         final double[][] jacobian = new double[6][6];
         final Orbit converted = convertType(orbit);
-        converted.getJacobianWrtCartesian(PositionAngle.TRUE, jacobian);
+        converted.getJacobianWrtCartesian(PositionAngleType.TRUE, jacobian);
 
         for (int i = 0; i < 6; ++i) {
             final double[] row = jacobian[i];

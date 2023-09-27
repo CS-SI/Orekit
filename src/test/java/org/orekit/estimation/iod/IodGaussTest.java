@@ -27,7 +27,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -123,7 +123,7 @@ public class IodGaussTest extends AbstractIodTest {
         // taking the value of the LEO-1 case, and doing a keplerian propagation
         final KeplerianOrbit kepOrbitRef = new KeplerianOrbit(7197934.7, 0., FastMath.toRadians(98.71),
                                                               0., FastMath.toRadians(100.41), 0.,
-                                                              PositionAngle.MEAN, gcrf, obsDate2, Constants.WGS84_EARTH_MU);
+                                                              PositionAngleType.MEAN, gcrf, obsDate2, Constants.WGS84_EARTH_MU);
         final KeplerianPropagator propRef = new KeplerianPropagator(kepOrbitRef);
 
         final Frame veis = FramesFactory.getVeis1950();
@@ -162,7 +162,7 @@ public class IodGaussTest extends AbstractIodTest {
         final AbsoluteDate   obsDate2 = new AbsoluteDate(dateComp, TimeScalesFactory.getUTC());
         final KeplerianOrbit kepOrbitRef = new KeplerianOrbit(29600136., 0., FastMath.toRadians(56.),
                                                               0., FastMath.toRadians(55.41), 0.,
-                                                              PositionAngle.MEAN, gcrf, obsDate2, Constants.WGS84_EARTH_MU);
+                                                              PositionAngleType.MEAN, gcrf, obsDate2, Constants.WGS84_EARTH_MU);
         // taking the value of the MEO case, and doing a keplerian propagation
         final KeplerianPropagator propRef = new KeplerianPropagator(kepOrbitRef);
 
@@ -199,7 +199,7 @@ public class IodGaussTest extends AbstractIodTest {
         final DateComponents dateComp = new DateComponents(DateComponents.FIFTIES_EPOCH, 21915);
         final AbsoluteDate   obsDate2 = new AbsoluteDate(dateComp, TimeScalesFactory.getUTC());
         final KeplerianOrbit kepOrbitRef = new KeplerianOrbit(42164000., 0., 0., 0.,
-                                                              FastMath.toRadians(107.33), 0., PositionAngle.MEAN, gcrf,
+                                                              FastMath.toRadians(107.33), 0., PositionAngleType.MEAN, gcrf,
                                                               obsDate2, mu);
         // taking the value of the GEO case, and doing a keplerian propagation
         final KeplerianPropagator propRef    = new KeplerianPropagator(kepOrbitRef);
@@ -237,7 +237,7 @@ public class IodGaussTest extends AbstractIodTest {
         final AbsoluteDate   obsDate2 = new AbsoluteDate(dateComp, TimeScalesFactory.getUTC());
         final KeplerianOrbit kepOrbitRef = new KeplerianOrbit(7197934.0, 0., FastMath.toRadians(98.71),
                                                               0., FastMath.toRadians(100.41), 0.,
-                                                              PositionAngle.MEAN, gcrf, obsDate2, Constants.WGS84_EARTH_MU);
+                                                              PositionAngleType.MEAN, gcrf, obsDate2, Constants.WGS84_EARTH_MU);
         final KeplerianPropagator propRef    = new KeplerianPropagator(kepOrbitRef);
 
         // Date of the 1st measurement, according to 2nd measurement

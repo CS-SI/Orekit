@@ -543,7 +543,7 @@ public abstract class Orbit
      * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix
      * is larger than 6x6, only the 6x6 upper left corner will be modified
      */
-    public void getJacobianWrtCartesian(final PositionAngle type, final double[][] jacobian) {
+    public void getJacobianWrtCartesian(final PositionAngleType type, final double[][] jacobian) {
 
         final double[][] cachedJacobian;
         synchronized (this) {
@@ -591,7 +591,7 @@ public abstract class Orbit
      * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix
      * is larger than 6x6, only the 6x6 upper left corner will be modified
      */
-    public void getJacobianWrtParameters(final PositionAngle type, final double[][] jacobian) {
+    public void getJacobianWrtParameters(final PositionAngleType type, final double[][] jacobian) {
 
         final double[][] cachedJacobian;
         synchronized (this) {
@@ -633,7 +633,7 @@ public abstract class Orbit
      * @param type type of the position angle to use
      * @return inverse Jacobian
      */
-    private double[][] createInverseJacobian(final PositionAngle type) {
+    private double[][] createInverseJacobian(final PositionAngleType type) {
 
         // get the direct Jacobian
         final double[][] directJacobian = new double[6][6];
@@ -702,7 +702,7 @@ public abstract class Orbit
      * part must be <em>added</em> to the array components, as the array may already
      * contain some non-zero elements corresponding to non-Keplerian parts)
      */
-    public abstract void addKeplerContribution(PositionAngle type, double gm, double[] pDot);
+    public abstract void addKeplerContribution(PositionAngleType type, double gm, double[] pDot);
 
         /** Fill a Jacobian half row with a single vector.
      * @param a coefficient of the vector

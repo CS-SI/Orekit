@@ -43,7 +43,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
@@ -315,7 +315,7 @@ public class DSSTJ2SquaredClosedFormTest {
         final double raan = FastMath.toRadians(40.0);
         final double aop  = FastMath.toRadians(120.0);
         final double anom = 0.0;
-        final PositionAngle angleType = PositionAngle.MEAN;
+        final PositionAngleType angleType = PositionAngleType.MEAN;
 
         // Keplerian
         final KeplerianOrbit kep = new KeplerianOrbit(sma, ecc, inc, aop, raan, anom, angleType, frame, epoch, provider.getMu());
@@ -344,7 +344,7 @@ public class DSSTJ2SquaredClosedFormTest {
         final double raan = FastMath.toRadians(40.0);
         final double aop  = FastMath.toRadians(120.0);
         final double anom = 0.0;
-        final PositionAngle angleType = PositionAngle.MEAN;
+        final PositionAngleType angleType = PositionAngleType.MEAN;
 
         // Keplerian
         final FieldKeplerianOrbit<Binary64> fieldKep = new FieldKeplerianOrbit<Binary64>(zero.add(sma), zero.add(ecc), zero.add(inc),
@@ -386,14 +386,14 @@ public class DSSTJ2SquaredClosedFormTest {
 
     private double[][] stateToArray(SpacecraftState state, OrbitType orbitType) {
           double[][] array = new double[2][6];
-          orbitType.mapOrbitToArray(state.getOrbit(), PositionAngle.MEAN, array[0], array[1]);
+          orbitType.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, array[0], array[1]);
           return array;
       }
 
     private SpacecraftState arrayToState(double[][] array, OrbitType orbitType,
                                            Frame frame, AbsoluteDate date, double mu,
                                            Attitude attitude) {
-          EquinoctialOrbit orbit = (EquinoctialOrbit) orbitType.mapArrayToOrbit(array[0], array[1], PositionAngle.MEAN, date, mu, frame);
+          EquinoctialOrbit orbit = (EquinoctialOrbit) orbitType.mapArrayToOrbit(array[0], array[1], PositionAngleType.MEAN, date, mu, frame);
           return new SpacecraftState(orbit, attitude);
     }
 

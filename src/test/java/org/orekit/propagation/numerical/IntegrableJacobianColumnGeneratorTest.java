@@ -50,7 +50,7 @@ import org.orekit.models.earth.atmosphere.HarrisPriester;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -97,7 +97,7 @@ public class IntegrableJacobianColumnGeneratorTest {
         ForceModel gravityField =
             new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
         Orbit baseOrbit =
-                new KeplerianOrbit(7000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
+                new KeplerianOrbit(7000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                    provider.getMu());
 
@@ -105,7 +105,7 @@ public class IntegrableJacobianColumnGeneratorTest {
         double dP = 1.0;
         for (OrbitType orbitType : orbitTypes) {
             final Orbit initialOrbit = orbitType.convertType(baseOrbit);
-            for (PositionAngle angleType : PositionAngle.values()) {
+            for (PositionAngleType angleType : PositionAngleType.values()) {
 
                 NumericalPropagator propagator =
                                 setUpPropagator(initialOrbit, dP, orbitType, angleType, drag, gravityField);
@@ -243,7 +243,7 @@ public class IntegrableJacobianColumnGeneratorTest {
                                                        new TimeComponents(23, 30, 00.000),
                                                        TimeScalesFactory.getUTC());
         final Orbit orbit =
-            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                FramesFactory.getEME2000(), initDate, mu);
         SpacecraftState initialState =
             new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
@@ -271,7 +271,7 @@ public class IntegrableJacobianColumnGeneratorTest {
         selected.setSelected(true);
 
         final OrbitType orbitType = OrbitType.CARTESIAN;
-        final PositionAngle angleType = PositionAngle.TRUE;
+        final PositionAngleType angleType = PositionAngleType.TRUE;
         propagator.setOrbitType(orbitType);
         StateTransitionMatrixGenerator stmGenerator =
                         new StateTransitionMatrixGenerator("stm",
@@ -292,7 +292,7 @@ public class IntegrableJacobianColumnGeneratorTest {
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, PositionAngle angleType, double h,
+                                    OrbitType orbitType, PositionAngleType angleType, double h,
                                     SpacecraftState sM4h, SpacecraftState sM3h,
                                     SpacecraftState sM2h, SpacecraftState sM1h,
                                     SpacecraftState sP1h, SpacecraftState sP2h,
@@ -314,7 +314,7 @@ public class IntegrableJacobianColumnGeneratorTest {
         }
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
+    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
                                   boolean withMass) {
         double[][] array = new double[2][withMass ? 7 : 6];
         orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
@@ -324,7 +324,7 @@ public class IntegrableJacobianColumnGeneratorTest {
         return array;
     }
 
-    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngle angleType,
+    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngleType angleType,
                                          Frame frame, AbsoluteDate date, double mu,
                                          Attitude attitude) {
         Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
@@ -334,7 +334,7 @@ public class IntegrableJacobianColumnGeneratorTest {
     }
 
     private NumericalPropagator setUpPropagator(Orbit orbit, double dP,
-                                                OrbitType orbitType, PositionAngle angleType,
+                                                OrbitType orbitType, PositionAngleType angleType,
                                                 ForceModel... models)
         {
 

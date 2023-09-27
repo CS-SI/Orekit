@@ -21,7 +21,7 @@ import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 
 class FieldifierTest {
@@ -43,7 +43,7 @@ class FieldifierTest {
 
         final CircularOrbit initialOrbit =
                 new CircularOrbit(6778000, 0.1, 0.2, FastMath.toRadians(10), FastMath.toRadians(20),
-                                  FastMath.toRadians(30), 1, 2, 3, 4, 5, 6, PositionAngle.MEAN,
+                                  FastMath.toRadians(30), 1, 2, 3, 4, 5, 6, PositionAngleType.MEAN,
                                   frame, date, mu);
 
         // WHEN
@@ -119,7 +119,7 @@ class FieldifierTest {
 
         final KeplerianOrbit initialOrbit =
                 new KeplerianOrbit(6778000, 0.1, FastMath.toRadians(10), FastMath.toRadians(20),
-                                   FastMath.toRadians(30), FastMath.toRadians(40), 1, 2, 3, 4, 5, 6, PositionAngle.MEAN,
+                                   FastMath.toRadians(30), FastMath.toRadians(40), 1, 2, 3, 4, 5, 6, PositionAngleType.MEAN,
                                    frame, date, mu);
 
         // WHEN
@@ -158,7 +158,7 @@ class FieldifierTest {
 
         final EquinoctialOrbit initialOrbit =
                 new EquinoctialOrbit(6778000, 0.1, 0.2, 0.3, 0.4, FastMath.toRadians(40),
-                                     1, 2, 3, 4, 5, 6, PositionAngle.MEAN,
+                                     1, 2, 3, 4, 5, 6, PositionAngleType.MEAN,
                                      frame, date, mu);
 
         // WHEN

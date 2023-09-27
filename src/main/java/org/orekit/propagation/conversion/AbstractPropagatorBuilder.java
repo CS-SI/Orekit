@@ -28,7 +28,7 @@ import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -71,7 +71,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     private final OrbitType orbitType;
 
     /** Position angle type to use. */
-    private final PositionAngle positionAngle;
+    private final PositionAngleType positionAngleType;
 
     /** Position scale to use for the orbital drivers. */
     private final double positionScale;
@@ -103,18 +103,18 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
      * {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
      * </p>
      * @param templateOrbit reference orbit from which real orbits will be built
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @param addDriverForCentralAttraction if true, a {@link ParameterDriver} should
      * be set up for central attraction coefficient
      * @since 8.0
-     * @see #AbstractPropagatorBuilder(Orbit, PositionAngle, double, boolean,
+     * @see #AbstractPropagatorBuilder(Orbit, PositionAngleType, double, boolean,
      * AttitudeProvider)
      */
-    protected AbstractPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
+    protected AbstractPropagatorBuilder(final Orbit templateOrbit, final PositionAngleType positionAngleType,
                                         final double positionScale, final boolean addDriverForCentralAttraction) {
-        this(templateOrbit, positionAngle, positionScale, addDriverForCentralAttraction,
+        this(templateOrbit, positionAngleType, positionScale, addDriverForCentralAttraction,
              new FrameAlignedProvider(templateOrbit.getFrame()));
     }
 
@@ -136,17 +136,17 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
      * {@link ParameterDriver#setSelected(boolean) setSelected(false)}.
      * </p>
      * @param templateOrbit reference orbit from which real orbits will be built
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @param addDriverForCentralAttraction if true, a {@link ParameterDriver} should
      * be set up for central attraction coefficient
      * @param attitudeProvider for the propagator.
      * @since 10.1
-     * @see #AbstractPropagatorBuilder(Orbit, PositionAngle, double, boolean)
+     * @see #AbstractPropagatorBuilder(Orbit, PositionAngleType, double, boolean)
      */
     protected AbstractPropagatorBuilder(final Orbit templateOrbit,
-                                        final PositionAngle positionAngle,
+                                        final PositionAngleType positionAngleType,
                                         final double positionScale,
                                         final boolean addDriverForCentralAttraction,
                                         final AttitudeProvider attitudeProvider) {
@@ -156,9 +156,9 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         this.mu                  = templateOrbit.getMu();
         this.propagationDrivers  = new ParameterDriversList();
         this.orbitType           = templateOrbit.getType();
-        this.positionAngle       = positionAngle;
+        this.positionAngleType = positionAngleType;
         this.positionScale       = positionScale;
-        this.orbitalDrivers      = orbitType.getDrivers(positionScale, templateOrbit, positionAngle);
+        this.orbitalDrivers      = orbitType.getDrivers(positionScale, templateOrbit, positionAngleType);
         this.attitudeProvider = attitudeProvider;
         for (final DelegatingDriver driver : orbitalDrivers.getDrivers()) {
             driver.setSelected(true);
@@ -194,8 +194,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     }
 
     /** {@inheritDoc} */
-    public PositionAngle getPositionAngle() {
-        return positionAngle;
+    public PositionAngleType getPositionAngle() {
+        return positionAngleType;
     }
 
     /** {@inheritDoc} */
@@ -316,7 +316,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         for (int i = 0; i < unNormalized.length; ++i) {
             unNormalized[i] = orbitalDrivers.getDrivers().get(i).getValue(initialOrbitDate);
         }
-        return getOrbitType().mapArrayToOrbit(unNormalized, null, positionAngle, initialOrbitDate, mu, frame);
+        return getOrbitType().mapArrayToOrbit(unNormalized, null, positionAngleType, initialOrbitDate, mu, frame);
     }
 
     /** Set the selected parameters.

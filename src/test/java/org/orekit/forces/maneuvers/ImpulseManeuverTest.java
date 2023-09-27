@@ -38,7 +38,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -61,7 +61,7 @@ public class ImpulseManeuverTest {
     public void testInclinationManeuver() {
         final Orbit initialOrbit =
             new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0 + 4 * FastMath.PI,
-                               PositionAngle.MEAN, FramesFactory.getEME2000(),
+                               PositionAngleType.MEAN, FramesFactory.getEME2000(),
                                new AbsoluteDate(new DateComponents(2008, 06, 23),
                                                 new TimeComponents(14, 18, 37),
                                                 TimeScalesFactory.getUTC()),
@@ -138,7 +138,7 @@ public class ImpulseManeuverTest {
         final AbsoluteDate iniDate = new AbsoluteDate(2003, 5, 1, 17, 30, 0.0, TimeScalesFactory.getUTC());
         final Orbit initialOrbit = new KeplerianOrbit(7e6, 1.0e-4, FastMath.toRadians(98.5),
                                           FastMath.toRadians(87.0), FastMath.toRadians(216.1807),
-                                          FastMath.toRadians(319.779), PositionAngle.MEAN,
+                                          FastMath.toRadians(319.779), PositionAngleType.MEAN,
                                           FramesFactory.getEME2000(), iniDate,
                                           Constants.EIGEN5C_EARTH_MU);
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit,
@@ -168,7 +168,7 @@ public class ImpulseManeuverTest {
         final AbsoluteDate iniDate = new AbsoluteDate(2003, 5, 1, 17, 30, 0.0, TimeScalesFactory.getUTC());
         final Orbit pastOrbit = new KeplerianOrbit(7e6, 1.0e-4, FastMath.toRadians(98.5),
                                                    FastMath.toRadians(87.0), FastMath.toRadians(216.1807),
-                                                   FastMath.toRadians(319.779), PositionAngle.MEAN,
+                                                   FastMath.toRadians(319.779), PositionAngleType.MEAN,
                                                    FramesFactory.getEME2000(), iniDate, mu);
         final double pastMass = 2500.0;
         DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(600));
@@ -319,7 +319,7 @@ public class ImpulseManeuverTest {
         // Initial orbit
         final Orbit initialOrbit =
                         new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0,
-                                           PositionAngle.MEAN, FramesFactory.getEME2000(),
+                                           PositionAngleType.MEAN, FramesFactory.getEME2000(),
                                            new AbsoluteDate(new DateComponents(2008, 06, 23),
                                                             new TimeComponents(14, 18, 37),
                                                             TimeScalesFactory.getUTC()),
@@ -355,12 +355,12 @@ public class ImpulseManeuverTest {
         final double        pa            = 0.;
         final double        raan          = 6.;
         final double        anomaly       = 1.;
-        final PositionAngle positionAngle = PositionAngle.MEAN;
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final Frame gcrf                  = FramesFactory.getGCRF();
         final AbsoluteDate  date          = AbsoluteDate.ARBITRARY_EPOCH;
         final double        mu            = Constants.EGM96_EARTH_MU;
 
-        final KeplerianOrbit orbit = new KeplerianOrbit(a, e, i, pa, raan, anomaly, positionAngle, gcrf, date, mu);
+        final KeplerianOrbit orbit = new KeplerianOrbit(a, e, i, pa, raan, anomaly, positionAngleType, gcrf, date, mu);
 
         // Thrust configuration
         final DateDetector     dateDetector       = new DateDetector(date.shiftedBy(1000.));

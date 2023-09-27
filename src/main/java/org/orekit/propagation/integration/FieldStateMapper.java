@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.time.FieldAbsoluteDate;
@@ -38,7 +38,7 @@ public abstract class FieldStateMapper<T extends CalculusFieldElement<T>> {
     private final OrbitType orbitType;
 
     /** Position angle type. */
-    private final PositionAngle angleType;
+    private final PositionAngleType angleType;
 
     /** Attitude provider. */
     private final AttitudeProvider attitudeProvider;
@@ -64,7 +64,7 @@ public abstract class FieldStateMapper<T extends CalculusFieldElement<T>> {
      * @param frame inertial frame
      */
     protected FieldStateMapper(final FieldAbsoluteDate<T> referenceDate, final T mu,
-                          final OrbitType orbitType, final PositionAngle positionAngleType,
+                          final OrbitType orbitType, final PositionAngleType positionAngleType,
                           final AttitudeProvider attitudeProvider, final Frame frame) {
         this.referenceDate    = referenceDate;
         this.mu               = mu;
@@ -96,7 +96,7 @@ public abstract class FieldStateMapper<T extends CalculusFieldElement<T>> {
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
-    public PositionAngle getPositionAngleType() {
+    public PositionAngleType getPositionAngleType() {
         return angleType;
     }
 

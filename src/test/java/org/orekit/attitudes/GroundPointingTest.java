@@ -35,7 +35,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.*;
@@ -188,7 +188,7 @@ class GroundPointingTest {
         final AbsoluteDate epoch = AbsoluteDate.ARBITRARY_EPOCH;
         final double semiMajorAxis = 45000.e3;
         final double mu = Constants.EGM96_EARTH_MU;
-        return new EquinoctialOrbit(semiMajorAxis, 0., 0., 0., 0., 0., PositionAngle.ECCENTRIC, INERTIAL_FRAME, epoch, mu);
+        return new EquinoctialOrbit(semiMajorAxis, 0., 0., 0., 0., 0., PositionAngleType.ECCENTRIC, INERTIAL_FRAME, epoch, mu);
     }
 
     private <T extends CalculusFieldElement<T>> FieldEquinoctialOrbit<T> convertToField(final Field<T> field,
@@ -196,10 +196,10 @@ class GroundPointingTest {
         final T zero = field.getZero();
         final T fieldSemiMajorAxis = zero.add(orbit.getA());
         final FieldAbsoluteDate<T> fieldDate = new FieldAbsoluteDate<T>(field, orbit.getDate());
-        final PositionAngle positionAngle = PositionAngle.MEAN;
-        final T fieldAngle = zero.add(orbit.getL(positionAngle));
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
+        final T fieldAngle = zero.add(orbit.getL(positionAngleType));
         return new FieldEquinoctialOrbit<>(fieldSemiMajorAxis, zero, zero, zero, zero, fieldAngle,
-                positionAngle, orbit.getFrame(), fieldDate, zero.add(orbit.getMu()));
+                positionAngleType, orbit.getFrame(), fieldDate, zero.add(orbit.getMu()));
     }
 
 }

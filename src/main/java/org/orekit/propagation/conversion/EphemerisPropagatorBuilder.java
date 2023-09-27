@@ -23,7 +23,7 @@ import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.StateCovariance;
@@ -126,7 +126,7 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder {
                                       final List<StateCovariance> covariances,
                                       final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceInterpolator,
                                       final AttitudeProvider attitudeProvider) {
-        super(states.get(0).getOrbit(), PositionAngle.TRUE, DEFAULT_SCALE, false, attitudeProvider);
+        super(states.get(0).getOrbit(), PositionAngleType.TRUE, DEFAULT_SCALE, false, attitudeProvider);
         deselectDynamicParameters();
 
         // Check input consistency the same way Ephemeris is checking consistency

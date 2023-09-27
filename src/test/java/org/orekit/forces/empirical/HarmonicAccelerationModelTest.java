@@ -48,7 +48,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -351,7 +351,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     public void testCoefficientsDetermination() {
 
         final double mass = 2500;
-        final Orbit orbit = new CircularOrbit(7500000.0, 1.0e-4, 1.0e-3, 1.7, 0.3, 0.5, PositionAngle.TRUE,
+        final Orbit orbit = new CircularOrbit(7500000.0, 1.0e-4, 1.0e-3, 1.7, 0.3, 0.5, PositionAngleType.TRUE,
                                         FramesFactory.getEME2000(),
                                         new AbsoluteDate(new DateComponents(2004, 2, 3), TimeComponents.H00,
                                                          TimeScalesFactory.getUTC()),
@@ -404,7 +404,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
         final NumericalPropagatorBuilder propagatorBuilder =
                         new NumericalPropagatorBuilder(orbit,
                                                        new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                                       PositionAngle.TRUE, dP);
+                                                       PositionAngleType.TRUE, dP);
         propagatorBuilder.addForceModel(new ParametricAcceleration(Vector3D.PLUS_I, true,
                                                                    new HarmonicAccelerationModel("X1", null, period, 1)));
         propagatorBuilder.addForceModel(new ParametricAcceleration(Vector3D.PLUS_J, true,
@@ -484,7 +484,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
                                                            new TimeComponents(23, 30, 00.000),
                                                            TimeScalesFactory.getUTC());
             initialOrbit =
-                            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+                            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                                FramesFactory.getEME2000(), initDate, Constants.EIGEN5C_EARTH_MU);
         } catch (OrekitException oe) {
             Assertions.fail(oe.getLocalizedMessage());

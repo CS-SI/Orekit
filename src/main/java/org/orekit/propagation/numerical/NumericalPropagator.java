@@ -48,7 +48,7 @@ import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.MatricesHarvester;
@@ -90,9 +90,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   {@link #removeForceModels()})</li>
  *   <li>the {@link OrbitType type} of orbital parameters to be used for propagation
  *   ({@link #setOrbitType(OrbitType)}),</li>
- *   <li>the {@link PositionAngle type} of position angle to be used in orbital parameters
+ *   <li>the {@link PositionAngleType type} of position angle to be used in orbital parameters
  *   to be used for propagation where it is relevant ({@link
- *   #setPositionAngleType(PositionAngle)}),</li>
+ *   #setPositionAngleType(PositionAngleType)}),</li>
  *   <li>whether {@link MatricesHarvester state transition matrices and Jacobians matrices}
  *   should be propagated along with orbital state ({@link
  *   #setupMatricesComputation(String, RealMatrix, DoubleArrayDictionary)}),</li>
@@ -106,7 +106,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * </ul>
  * <p>From these configuration parameters, only the initial state is mandatory. The default
  * propagation settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
- * {@link PositionAngle#TRUE true} longitude argument. If the central attraction coefficient
+ * {@link PositionAngleType#TRUE true} longitude argument. If the central attraction coefficient
  * is not explicitly specified, the one used to define the initial orbit will be used.
  * However, specifying only the initial state and perhaps the central attraction coefficient
  * would mean the propagator would use only Keplerian forces. In this case, the simpler {@link
@@ -188,8 +188,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * called after creation, the integrated orbit will follow a Keplerian
      * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
      * for {@link #setOrbitType(OrbitType) propagation
-     * orbit type} and {@link PositionAngle#TRUE} for {@link
-     * #setPositionAngleType(PositionAngle) position angle type}.
+     * orbit type} and {@link PositionAngleType#TRUE} for {@link
+     * #setPositionAngleType(PositionAngleType) position angle type}.
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
@@ -209,8 +209,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * called after creation, the integrated orbit will follow a Keplerian
      * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
      * for {@link #setOrbitType(OrbitType) propagation
-     * orbit type} and {@link PositionAngle#TRUE} for {@link
-     * #setPositionAngleType(PositionAngle) position angle type}.
+     * orbit type} and {@link PositionAngleType#TRUE} for {@link
+     * #setPositionAngleType(PositionAngleType) position angle type}.
      * @param integrator numerical integrator to use for propagation.
      * @param attitudeProvider the attitude law.
      * @since 10.1
@@ -224,7 +224,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         setAttitudeProvider(attitudeProvider);
         clearStepHandlers();
         setOrbitType(OrbitType.EQUINOCTIAL);
-        setPositionAngleType(PositionAngle.TRUE);
+        setPositionAngleType(PositionAngleType.TRUE);
     }
 
     /** Set the flag to ignore or not the creation of a {@link NewtonianAttraction}.
@@ -378,14 +378,14 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
-    public void setPositionAngleType(final PositionAngle positionAngleType) {
+    public void setPositionAngleType(final PositionAngleType positionAngleType) {
         super.setPositionAngleType(positionAngleType);
     }
 
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
-    public PositionAngle getPositionAngleType() {
+    public PositionAngleType getPositionAngleType() {
         return super.getPositionAngleType();
     }
 
@@ -800,7 +800,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     /** {@inheritDoc} */
     @Override
     protected StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,
-                                       final OrbitType orbitType, final PositionAngle positionAngleType,
+                                       final OrbitType orbitType, final PositionAngleType positionAngleType,
                                        final AttitudeProvider attitudeProvider, final Frame frame) {
         return new OsculatingMapper(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
     }
@@ -823,7 +823,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
          * @param frame inertial frame
          */
         OsculatingMapper(final AbsoluteDate referenceDate, final double mu,
-                         final OrbitType orbitType, final PositionAngle positionAngleType,
+                         final OrbitType orbitType, final PositionAngleType positionAngleType,
                          final AttitudeProvider attitudeProvider, final Frame frame) {
             super(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
         }
@@ -1116,7 +1116,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             // convert the orbit to the desired type
             final double[][] jacobian = new double[6][6];
             final Orbit converted = type.convertType(orbit);
-            converted.getJacobianWrtCartesian(PositionAngle.TRUE, jacobian);
+            converted.getJacobianWrtCartesian(PositionAngleType.TRUE, jacobian);
 
             for (int i = 0; i < 6; ++i) {
                 final double[] row = jacobian[i];

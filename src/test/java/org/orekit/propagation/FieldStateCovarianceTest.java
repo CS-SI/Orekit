@@ -39,7 +39,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -82,7 +82,7 @@ class FieldStateCovarianceTest {
 
         final FieldStateCovariance<Binary64> stateCovariance =
                 new FieldStateCovariance<>(initialCovarianceInInertialFrame, initialDate, initialInertialFrame,
-                                           OrbitType.CARTESIAN, PositionAngle.MEAN);
+                                           OrbitType.CARTESIAN, PositionAngleType.MEAN);
         // When
         final FieldMatrix<Binary64> covarianceMatrixInRTN =
                 stateCovariance.changeCovarianceFrame(initialOrbit, LOFType.QSW_INERTIAL).getMatrix();
@@ -120,7 +120,7 @@ class FieldStateCovarianceTest {
 
         final FieldStateCovariance<Binary64> stateCovariance =
                 new FieldStateCovariance<>(initialCovarianceMatrix, initialDate, initialInertialFrame,
-                                           OrbitType.CARTESIAN, PositionAngle.MEAN);
+                                           OrbitType.CARTESIAN, PositionAngleType.MEAN);
         // When
         final FieldMatrix<Binary64> convertedCovarianceMatrixInMOD =
                 stateCovariance.changeCovarianceFrame(initialOrbit, outputFrame).getMatrix();
@@ -174,7 +174,7 @@ class FieldStateCovarianceTest {
 
         final FieldStateCovariance<Binary64> stateCovariance =
                 new FieldStateCovariance<>(initialCovarianceMatrix, initialDate, initialInertialFrame,
-                                           OrbitType.CARTESIAN, PositionAngle.MEAN);
+                                           OrbitType.CARTESIAN, PositionAngleType.MEAN);
         // When
         final FieldMatrix<Binary64> convertedCovarianceMatrixInNTW =
                 stateCovariance.changeCovarianceFrame(initialOrbit, LOFType.NTW_INERTIAL).getMatrix();
@@ -227,7 +227,7 @@ class FieldStateCovarianceTest {
 
         final FieldStateCovariance<Binary64> stateCovariance =
                 new FieldStateCovariance<>(initialCovarianceMatrix, initialDate, initialInertialFrame,
-                                           OrbitType.CARTESIAN, PositionAngle.MEAN);
+                                           OrbitType.CARTESIAN, PositionAngleType.MEAN);
 
         // When
         final FieldMatrix<Binary64> convertedCovarianceMatrixInNTW =
@@ -292,7 +292,7 @@ class FieldStateCovarianceTest {
         final FieldStateCovariance<Binary64> stateCovariance =
                 new FieldStateCovariance<>(initialCovarianceMatrix, initialDate, initialInertialFrame,
                                            OrbitType.CARTESIAN,
-                                           PositionAngle.MEAN);
+                                           PositionAngleType.MEAN);
         // When
         final FieldMatrix<Binary64> convertedCovarianceMatrixInITRF =
                 stateCovariance.changeCovarianceFrame(initialOrbit, outputFrame).getMatrix();
@@ -354,7 +354,7 @@ class FieldStateCovarianceTest {
         final FieldStateCovariance<Binary64> stateCovariance =
                 new FieldStateCovariance<>(initialCovarianceMatrix, initialDate, initialInertialFrame,
                                            OrbitType.CARTESIAN,
-                                           PositionAngle.MEAN);
+                                           PositionAngleType.MEAN);
         // When
         final FieldMatrix<Binary64> convertedCovarianceMatrixInRTN =
                 stateCovariance.changeCovarianceFrame(initialOrbit, LOFType.QSW_INERTIAL).getMatrix();
@@ -409,7 +409,7 @@ class FieldStateCovarianceTest {
         final FieldStateCovariance<Binary64> stateCovariance =
                 new FieldStateCovariance<>(initialCovarianceMatrix, initialDate, initialInertialFrame,
                                            OrbitType.CARTESIAN,
-                                           PositionAngle.MEAN);
+                                           PositionAngleType.MEAN);
         // When
         final FieldMatrix<Binary64> convertedCovarianceMatrixInRTN =
                 stateCovariance.changeCovarianceFrame(initialOrbit, LOFType.QSW).getMatrix();
@@ -481,7 +481,7 @@ class FieldStateCovarianceTest {
         // State covariance
         final FieldStateCovariance<Binary64> stateCovariance =
                 new FieldStateCovariance<>(initialCovarianceMatrixInPEF, initialDate, inputFrame, OrbitType.CARTESIAN,
-                                           PositionAngle.MEAN);
+                                           PositionAngleType.MEAN);
 
         // When
         final FieldMatrix<Binary64> convertedCovarianceMatrixInECI =
@@ -642,7 +642,7 @@ class FieldStateCovarianceTest {
 
         final FieldStateCovariance<Binary64> stateCovariance =
                 new FieldStateCovariance<>(initialCovarianceInInertialFrame, initialDate, initialInertialFrame,
-                                           OrbitType.CARTESIAN, PositionAngle.MEAN);
+                                           OrbitType.CARTESIAN, PositionAngleType.MEAN);
 
         // When
         final FieldMatrix<Binary64> convertedCovarianceMatrixInRTN =
@@ -704,7 +704,7 @@ class FieldStateCovarianceTest {
 
         final FieldStateCovariance<Binary64> stateCovariance =
                 new FieldStateCovariance<>(initialCovarianceMatrixInGCRF, initialDate, initialInertialFrame,
-                                           OrbitType.CARTESIAN, PositionAngle.MEAN);
+                                           OrbitType.CARTESIAN, PositionAngleType.MEAN);
 
         // When
         // GCRF -> TEME
@@ -767,11 +767,11 @@ class FieldStateCovarianceTest {
         // Initializing initial covariance matrix common to all
         final FieldStateCovariance<Binary64> initialCovarianceInCartesian =
                 new FieldStateCovariance<>(getValladoInitialCovarianceMatrix(), initialDate, inertialFrame,
-                                           OrbitType.CARTESIAN, PositionAngle.MEAN);
+                                           OrbitType.CARTESIAN, PositionAngleType.MEAN);
 
         final FieldStateCovariance<Binary64> covarianceInEquinoctial =
                 initialCovarianceInCartesian.changeCovarianceType(initialOrbit, OrbitType.EQUINOCTIAL,
-                                                                  PositionAngle.MEAN);
+                                                                  PositionAngleType.MEAN);
 
         final FieldStateCovariance<Binary64> covarianceInCartesianInLOF =
                 initialCovarianceInCartesian.changeCovarianceFrame(initialOrbit, LOFType.QSW);
@@ -784,7 +784,7 @@ class FieldStateCovarianceTest {
                 covarianceInEquinoctial.shiftedBy(field, initialOrbit, timeShift);
         final FieldMatrix<Binary64> shiftedCovarianceInEquinoctialBackToInitial =
                 shiftedCovarianceInEquinoctial.changeCovarianceType(initialOrbit.shiftedBy(timeShift),
-                                                                    OrbitType.CARTESIAN, PositionAngle.MEAN)
+                                                                    OrbitType.CARTESIAN, PositionAngleType.MEAN)
                                               .getMatrix();
 
         final FieldStateCovariance<Binary64> shiftedCovarianceInCartesianInLOF =
@@ -810,14 +810,14 @@ class FieldStateCovarianceTest {
 
         final FieldStateCovariance<Binary64> initialCovarianceInKeplerian =
                 initialCovarianceInCartesian.changeCovarianceType(initialOrbit, OrbitType.KEPLERIAN,
-                                                                  PositionAngle.MEAN);
+                                                                  PositionAngleType.MEAN);
         final FieldMatrix<Binary64> referenceCovarianceMatrixInKeplerian =
                 stm.multiply(initialCovarianceInKeplerian.getMatrix().multiplyTransposed(stm));
 
         final FieldMatrix<Binary64> referenceCovarianceMatrixInCartesian =
                 new FieldStateCovariance<>(referenceCovarianceMatrixInKeplerian, initialDate.shiftedBy(timeShift),
-                                           inertialFrame, OrbitType.KEPLERIAN, PositionAngle.MEAN).changeCovarianceType(
-                        initialOrbit.shiftedBy(timeShift), OrbitType.CARTESIAN, PositionAngle.MEAN).getMatrix();
+                                           inertialFrame, OrbitType.KEPLERIAN, PositionAngleType.MEAN).changeCovarianceType(
+                        initialOrbit.shiftedBy(timeShift), OrbitType.CARTESIAN, PositionAngleType.MEAN).getMatrix();
 
         // Compare with results
         compareCovariance(referenceCovarianceMatrixInCartesian, shiftedCovarianceInEquinoctialBackToInitial, 1e-7);
@@ -872,33 +872,33 @@ class FieldStateCovarianceTest {
         Assertions.assertThrows(OrekitException.class,
                                 () -> new FieldStateCovariance<>(randomCovarianceMatrix, initialDate, nonInertialFrame,
                                                                  OrbitType.CIRCULAR,
-                                                                 PositionAngle.MEAN).changeCovarianceFrame(initialOrbit,
+                                                                 PositionAngleType.MEAN).changeCovarianceFrame(initialOrbit,
                                                                                                            inertialFrame));
 
         Assertions.assertThrows(OrekitException.class,
                                 () -> new FieldStateCovariance<>(randomCovarianceMatrix, initialDate, nonInertialFrame,
                                                                  OrbitType.EQUINOCTIAL,
-                                                                 PositionAngle.MEAN).changeCovarianceFrame(initialOrbit,
+                                                                 PositionAngleType.MEAN).changeCovarianceFrame(initialOrbit,
                                                                                                            LOFType.QSW));
 
         Assertions.assertThrows(OrekitException.class,
                                 () -> new FieldStateCovariance<>(randomCovarianceMatrix, initialDate, nonInertialFrame,
                                                                  OrbitType.EQUINOCTIAL,
-                                                                 PositionAngle.MEAN).changeCovarianceType(initialOrbit,
+                                                                 PositionAngleType.MEAN).changeCovarianceType(initialOrbit,
                                                                                                           OrbitType.KEPLERIAN,
-                                                                                                          PositionAngle.MEAN));
+                                                                                                          PositionAngleType.MEAN));
 
         Assertions.assertThrows(OrekitException.class,
                                 () -> new FieldStateCovariance<>(randomCovarianceMatrix, initialDate,
                                                                  LOFType.QSW).changeCovarianceType(
-                                        initialOrbit, OrbitType.KEPLERIAN, PositionAngle.MEAN));
+                                        initialOrbit, OrbitType.KEPLERIAN, PositionAngleType.MEAN));
 
         Assertions.assertThrows(OrekitException.class,
                                 () -> new FieldStateCovariance<>(randomCovarianceMatrix, initialDate, nonInertialFrame,
                                                                  OrbitType.CARTESIAN,
-                                                                 PositionAngle.MEAN).changeCovarianceType(initialOrbit,
+                                                                 PositionAngleType.MEAN).changeCovarianceType(initialOrbit,
                                                                                                           OrbitType.KEPLERIAN,
-                                                                                                          PositionAngle.MEAN));
+                                                                                                          PositionAngleType.MEAN));
 
     }
 
@@ -975,21 +975,21 @@ class FieldStateCovarianceTest {
 
         final FieldStateCovariance<Binary64> stateCovariance =
                 new FieldStateCovariance<>(initialCovarianceMatrixInGCRF, initialDate, initialFrame,
-                                           OrbitType.CARTESIAN, PositionAngle.MEAN);
+                                           OrbitType.CARTESIAN, PositionAngleType.MEAN);
 
         // When
         final FieldAbsoluteDate<Binary64> gottenDate          = stateCovariance.getDate();
         final Frame                       gottenFrame         = stateCovariance.getFrame();
         final LOF                         gottenLOF           = stateCovariance.getLOF();
         final OrbitType                   gottenOrbitType     = stateCovariance.getOrbitType();
-        final PositionAngle               gottenPositionAngle = stateCovariance.getPositionAngle();
+        final PositionAngleType gottenPositionAngleType = stateCovariance.getPositionAngle();
 
         // Then
         Assertions.assertEquals(initialDate, gottenDate);
         Assertions.assertEquals(initialFrame, gottenFrame);
         Assertions.assertNull(gottenLOF);
         Assertions.assertEquals(OrbitType.CARTESIAN, gottenOrbitType);
-        Assertions.assertEquals(PositionAngle.MEAN, gottenPositionAngle);
+        Assertions.assertEquals(PositionAngleType.MEAN, gottenPositionAngleType);
 
     }
 
@@ -1037,7 +1037,7 @@ class FieldStateCovarianceTest {
         final FieldAbsoluteDate<Binary64> fieldDate         = new FieldAbsoluteDate<>(field);
         final Frame                       frameMock         = Mockito.mock(Frame.class);
         final OrbitType                   orbitType         = OrbitType.CARTESIAN;
-        final PositionAngle               positionAngleType = PositionAngle.MEAN;
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
 
         final FieldStateCovariance<Binary64> fieldStateCovariance =
                 new FieldStateCovariance<>(matrix, fieldDate, frameMock, orbitType, positionAngleType);

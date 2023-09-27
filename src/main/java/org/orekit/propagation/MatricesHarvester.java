@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 
 /** Interface for extracting State Transition Matrices and Jacobians matrices from {@link SpacecraftState spacecraft state}.
  * <p>
@@ -90,6 +90,6 @@ public interface MatricesHarvester {
      * </p>
      * @return the position angle used for the matrix computation
      */
-    PositionAngle getPositionAngle();
+    PositionAngleType getPositionAngle();
 
 }

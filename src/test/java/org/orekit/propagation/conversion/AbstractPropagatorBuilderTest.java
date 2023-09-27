@@ -27,7 +27,7 @@ import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.utils.ParameterDriversList;
@@ -46,7 +46,7 @@ public class AbstractPropagatorBuilderTest {
         // Use a Cartesian orbit so the parameters are changed sufficiently when shifting the orbit of a minute
         final Orbit initialOrbit = new CartesianOrbit(context.initialOrbit);
 
-        final AbstractPropagatorBuilder propagatorBuilder = new AbstractPropagatorBuilder(initialOrbit, PositionAngle.TRUE, 10., true) {
+        final AbstractPropagatorBuilder propagatorBuilder = new AbstractPropagatorBuilder(initialOrbit, PositionAngleType.TRUE, 10., true) {
 
             @Override
             public PropagatorBuilder copy() {
@@ -78,7 +78,7 @@ public class AbstractPropagatorBuilderTest {
         // Check that the new orbit was properly set in the builder and
         Assertions.assertEquals(0., propagatorBuilder.getInitialOrbitDate().durationFrom(newOrbit.getDate()), 0.);
         final double[] stateVector = new double[6];
-        propagatorBuilder.getOrbitType().mapOrbitToArray(newOrbit, PositionAngle.TRUE, stateVector, null);
+        propagatorBuilder.getOrbitType().mapOrbitToArray(newOrbit, PositionAngleType.TRUE, stateVector, null);
         int i = 0;
         for (DelegatingDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
             final double expectedValue = stateVector[i++];

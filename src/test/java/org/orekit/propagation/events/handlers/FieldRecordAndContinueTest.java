@@ -25,7 +25,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.handlers.FieldRecordAndContinue.Event;
@@ -58,7 +58,7 @@ public class FieldRecordAndContinueTest {
         Frame eci = FramesFactory.getGCRF();
         FieldOrbit<Binary64> orbit = new FieldKeplerianOrbit<>(
                 v(6378137 + 500e3), v(0), v(0), v(0), v(0), v(0),
-                PositionAngle.TRUE, eci, date, zero.add(Constants.EIGEN5C_EARTH_MU));
+                PositionAngleType.TRUE, eci, date, zero.add(Constants.EIGEN5C_EARTH_MU));
         FieldSpacecraftState<Binary64> s1 = new FieldSpacecraftState<>(orbit);
         FieldSpacecraftState<Binary64> s2 = s1.shiftedBy(-10);
         FieldSpacecraftState<Binary64> s3 = s2.shiftedBy(1);

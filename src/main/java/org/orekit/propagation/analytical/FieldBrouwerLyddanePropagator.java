@@ -36,7 +36,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.tle.FieldTLE;
@@ -755,7 +755,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                                      current.mean.getPerigeeArgument()              .add(deltaOmega),
                                                      current.mean.getRightAscensionOfAscendingNode().add(deltaRAAN),
                                                      current.mean.getMeanAnomaly()                  .add(deltaAnom),
-                                                     PositionAngle.MEAN,
+                                                     PositionAngleType.MEAN,
                                                      current.mean.getFrame(),
                                                      current.mean.getDate(), mu),
                                   mass, referenceRadius, mu, ck0);
@@ -1397,7 +1397,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                              g.getValue(), h.getValue(), l.getValue(),
                                              a.getFirstDerivative(), e.getFirstDerivative(), i.getFirstDerivative(),
                                              g.getFirstDerivative(), h.getFirstDerivative(), l.getFirstDerivative(),
-                                             PositionAngle.MEAN, mean.getFrame(), date, this.mu);
+                                             PositionAngleType.MEAN, mean.getFrame(), date, this.mu);
 
         }
     }

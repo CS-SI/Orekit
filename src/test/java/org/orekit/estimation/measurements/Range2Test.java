@@ -30,7 +30,7 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.models.earth.troposphere.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -173,7 +173,7 @@ public class Range2Test {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -302,7 +302,7 @@ public class Range2Test {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -358,7 +358,7 @@ public class Range2Test {
                                    getEstimatedValue();
                         }
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
-                       OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
+                       OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -449,7 +449,7 @@ public class Range2Test {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements

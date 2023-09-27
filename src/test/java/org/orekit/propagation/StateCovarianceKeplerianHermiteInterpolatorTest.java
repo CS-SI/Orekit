@@ -67,7 +67,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitBlender;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -134,7 +134,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // Initialize state covariance matrix provider
         final StateCovariance sergeiCovariance =
                 new StateCovariance(sergeiCovarianceMatrix, sergeiState.getDate(), sergeiState.getFrame(),
-                                    OrbitType.CARTESIAN, PositionAngle.MEAN);
+                                    OrbitType.CARTESIAN, PositionAngleType.MEAN);
 
         final StateCovarianceMatrixProvider stateCovarianceMatrixProvider =
                 new StateCovarianceMatrixProvider("covariance", "harvester", harvester, sergeiCovariance);
@@ -231,7 +231,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // Initialize state covariance matrix provider
         final StateCovariance sergeiCovariance =
                 new StateCovariance(sergeiCovarianceMatrix, sergeiState.getDate(), sergeiState.getFrame(),
-                                    OrbitType.CARTESIAN, PositionAngle.MEAN);
+                                    OrbitType.CARTESIAN, PositionAngleType.MEAN);
 
         final StateCovarianceMatrixProvider stateCovarianceMatrixProvider =
                 new StateCovarianceMatrixProvider("covariance", "harvester", harvester, sergeiCovariance);
@@ -601,7 +601,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
         final StateCovarianceKeplerianHermiteInterpolator covarianceInterpolator =
                 new StateCovarianceKeplerianHermiteInterpolator(orbitInterpolator, sergeiFrame, OrbitType.CARTESIAN,
-                                                                PositionAngle.MEAN);
+                                                                PositionAngleType.MEAN);
 
         // Create state interpolator
         final TimeInterpolator<SpacecraftState> stateInterpolator =
@@ -660,7 +660,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
                 new StateCovarianceKeplerianHermiteInterpolator(DEFAULT_SERGEI_INTERPOLATION_POINTS, orbitInterpolator,
                                                                 CartesianDerivativesFilter.USE_PV, sergeiFrame,
                                                                 OrbitType.CARTESIAN,
-                                                                PositionAngle.MEAN);
+                                                                PositionAngleType.MEAN);
 
         // Create state interpolator
         final TimeInterpolator<SpacecraftState> stateInterpolator =
@@ -718,7 +718,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
                 new StateCovarianceKeplerianHermiteInterpolator(DEFAULT_SERGEI_INTERPOLATION_POINTS, orbitInterpolator,
                                                                 CartesianDerivativesFilter.USE_P, sergeiFrame,
                                                                 OrbitType.CARTESIAN,
-                                                                PositionAngle.MEAN);
+                                                                PositionAngleType.MEAN);
 
         // Create state interpolator
         final TimeInterpolator<SpacecraftState> stateInterpolator =

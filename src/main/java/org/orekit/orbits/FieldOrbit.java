@@ -564,7 +564,7 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix
      * is larger than 6x6, only the 6x6 upper left corner will be modified
      */
-    public void getJacobianWrtCartesian(final PositionAngle type, final T[][] jacobian) {
+    public void getJacobianWrtCartesian(final PositionAngleType type, final T[][] jacobian) {
 
         final T[][] cachedJacobian;
         synchronized (this) {
@@ -612,7 +612,7 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix
      * is larger than 6x6, only the 6x6 upper left corner will be modified
      */
-    public void getJacobianWrtParameters(final PositionAngle type, final T[][] jacobian) {
+    public void getJacobianWrtParameters(final PositionAngleType type, final T[][] jacobian) {
 
         final T[][] cachedJacobian;
         synchronized (this) {
@@ -654,7 +654,7 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * @param type type of the position angle to use
      * @return inverse Jacobian
      */
-    private T[][] createInverseJacobian(final PositionAngle type) {
+    private T[][] createInverseJacobian(final PositionAngleType type) {
 
         // get the direct Jacobian
         final T[][] directJacobian = MathArrays.buildArray(getA().getField(), 6, 6);
@@ -714,7 +714,7 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * part must be <em>added</em> to the array components, as the array may already
      * contain some non-zero elements corresponding to non-Keplerian parts)
      */
-    public abstract void addKeplerContribution(PositionAngle type, T gm, T[] pDot);
+    public abstract void addKeplerContribution(PositionAngleType type, T gm, T[] pDot);
 
         /** Fill a Jacobian half row with a single vector.
      * @param a coefficient of the vector

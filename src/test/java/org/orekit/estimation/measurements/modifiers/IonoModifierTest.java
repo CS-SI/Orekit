@@ -57,7 +57,7 @@ import org.orekit.gnss.Frequency;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -90,7 +90,7 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -161,7 +161,7 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -233,7 +233,7 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -298,7 +298,7 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -346,7 +346,7 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect turn-around measurements
@@ -417,7 +417,7 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -468,7 +468,7 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -521,7 +521,7 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -573,7 +573,7 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -621,7 +621,7 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements

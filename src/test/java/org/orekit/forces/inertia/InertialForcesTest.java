@@ -46,7 +46,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -140,7 +140,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final AbsolutePVCoordinates pva = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getPVCoordinates());
         final InertialForces forceModel = new InertialForces(pva.getFrame());
@@ -160,7 +160,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final AbsolutePVCoordinates pva = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getPVCoordinates());
         final InertialForces forceModel = new InertialForces(pva.getFrame());
@@ -356,7 +356,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
             double omega = FastMath.toRadians(93.0);
             double OMEGA = FastMath.toRadians(15.0 * 22.5);
             Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                             0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                             0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                              Constants.EIGEN5C_EARTH_MU);
             final AbsolutePVCoordinates pva = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getPVCoordinates());
             final InertialForces forceModel = new InertialForces(pva.getFrame());

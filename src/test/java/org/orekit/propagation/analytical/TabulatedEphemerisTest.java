@@ -34,7 +34,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.SpacecraftStateInterpolator;
@@ -107,7 +107,7 @@ public class TabulatedEphemerisTest {
 
         final Frame frame =  FramesFactory.getEME2000();
 
-        Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+        Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                             frame, initDate, mu);
 
         int nbIntervals = 720;
@@ -252,7 +252,7 @@ public class TabulatedEphemerisTest {
         AbsoluteDate date = AbsoluteDate.JULIAN_EPOCH;
         // create ephemeris with 2 arbitrary points
         SpacecraftState state = new SpacecraftState(
-                new KeplerianOrbit(1e9, 0.01, 1, 1, 1, 1, PositionAngle.TRUE, frame, date, mu));
+                new KeplerianOrbit(1e9, 0.01, 1, 1, 1, 1, PositionAngleType.TRUE, frame, date, mu));
 
         final TimeInterpolator<SpacecraftState> interpolator =
                 new SpacecraftStateInterpolator(2, frame, frame);

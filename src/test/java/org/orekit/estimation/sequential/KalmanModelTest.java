@@ -37,7 +37,7 @@ import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -65,7 +65,7 @@ public class KalmanModelTest {
     private final OrbitType orbitType = OrbitType.CARTESIAN;
 
     /** Position angle for propagation. */
-    private final PositionAngle positionAngle = PositionAngle.TRUE;
+    private final PositionAngleType positionAngleType = PositionAngleType.TRUE;
 
     /** Initial orbit. */
     private Orbit orbit0;
@@ -122,7 +122,7 @@ public class KalmanModelTest {
         ObservableSatellite sat = new ObservableSatellite(0);
 
         // Create propagator builder
-        this.propagatorBuilder = context.createBuilder(orbitType, positionAngle, true,
+        this.propagatorBuilder = context.createBuilder(orbitType, positionAngleType, true,
                                                        1.0e-6, 60.0, 10., Force.SOLAR_RADIATION_PRESSURE);
 
         // Create PV at t0
@@ -302,7 +302,7 @@ public class KalmanModelTest {
         final RealVector x = model.getPhysicalEstimatedState();
         final RealVector expX = MatrixUtils.createRealVector(M);
         final double[] orbitState0 = new double[6];
-        orbitType.mapOrbitToArray(orbit0, positionAngle, orbitState0, null);
+        orbitType.mapOrbitToArray(orbit0, positionAngleType, orbitState0, null);
         expX.setSubVector(0, MatrixUtils.createRealVector(orbitState0));
         expX.setEntry(6, srpCoefDriver.getReferenceValue());
         expX.setEntry(7, satRangeBiasDriver.getReferenceValue());
@@ -423,7 +423,7 @@ public class KalmanModelTest {
 
         // Predicted state
         final double[] orbitPredState = new double[6];
-        orbitPred.getType().mapOrbitToArray(orbitPred, PositionAngle.TRUE, orbitPredState, null);
+        orbitPred.getType().mapOrbitToArray(orbitPred, PositionAngleType.TRUE, orbitPredState, null);
         final RealVector expXpred = MatrixUtils.createRealVector(M);
         for (int i = 0; i < 6; i++) {
             expXpred.setEntry(i, orbitPredState[i]);

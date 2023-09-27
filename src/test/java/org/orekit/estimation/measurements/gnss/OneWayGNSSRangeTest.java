@@ -36,7 +36,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
@@ -121,7 +121,7 @@ public class OneWayGNSSRangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect inter-satellites range measurements
@@ -252,7 +252,7 @@ public class OneWayGNSSRangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect one-way GNSS range measurements
@@ -316,7 +316,7 @@ public class OneWayGNSSRangeTest {
                             return measurement.estimateWithoutDerivatives(0, 0, s).getEstimatedValue();
                         }
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
-                       OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(states[index]);
+                       OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(states[index]);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -406,7 +406,7 @@ public class OneWayGNSSRangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect one-way GNSS range measurements

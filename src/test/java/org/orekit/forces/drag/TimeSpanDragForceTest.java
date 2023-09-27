@@ -51,7 +51,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -499,7 +499,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
         double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
@@ -927,7 +927,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit refOrbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                            0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                            0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                             Constants.EIGEN5C_EARTH_MU);
         CelestialBody sun = CelestialBodyFactory.getSun();
 
@@ -998,7 +998,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit refOrbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                            0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                            0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                             Constants.EIGEN5C_EARTH_MU);
         CelestialBody sun = CelestialBodyFactory.getSun();
         AttitudeProvider defaultLaw = Utils.defaultLaw();
@@ -1070,7 +1070,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit refOrbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                            0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                            0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                             Constants.EIGEN5C_EARTH_MU);
         CelestialBody sun = CelestialBodyFactory.getSun();
         AttitudeProvider defaultLaw = Utils.defaultLaw();
@@ -1136,7 +1136,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit refOrbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                            0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                            0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                             Constants.EIGEN5C_EARTH_MU);
         CelestialBody sun = CelestialBodyFactory.getSun();
         AttitudeProvider defaultLaw = Utils.defaultLaw();
@@ -1200,7 +1200,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
         double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
@@ -1291,7 +1291,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
         // Create initial field Keplerian orbit
         FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
+                                                                                 PositionAngleType.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
@@ -1351,21 +1351,21 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // -----------
 
         // Propagate inside 1st drag model
-        checkRealFieldPropagation(FKO, PositionAngle.MEAN, 0.9 * dt, NP, FNP,
+        checkRealFieldPropagation(FKO, PositionAngleType.MEAN, 0.9 * dt, NP, FNP,
                                   1.0e-30, 6.0e-09, 2.0e-10, 5.0e-11,
                                   1, false);
 
         // Propagate to 2nd drag model (reset propagator first)
         FNP.resetInitialState(initialState);
         NP.resetInitialState(iSR);
-        checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1.1 * dt, NP, FNP,
+        checkRealFieldPropagation(FKO, PositionAngleType.MEAN, 1.1 * dt, NP, FNP,
                                   1.0e-30, 2.0e-08, 8.0e-11, 1.0e-10,
                                   1, false);
 
         // Propagate to 3rd drag model  (reset propagator first)
         FNP.resetInitialState(initialState);
         NP.resetInitialState(iSR);
-        checkRealFieldPropagation(FKO, PositionAngle.MEAN, -1.1 * dt, NP, FNP,
+        checkRealFieldPropagation(FKO, PositionAngleType.MEAN, -1.1 * dt, NP, FNP,
                                   1.0e-15, 2.0e-08, 2.0e-09, 2.0e-09,
                                   1, false);
     }
@@ -1397,7 +1397,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
         // Create initial field Keplerian orbit
         FieldKeplerianOrbit<Gradient> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                      PositionAngle.MEAN,
+                                                                      PositionAngleType.MEAN,
                                                                       EME,
                                                                       J2000,
                                                                       zero.add(Constants.EIGEN5C_EARTH_MU));
@@ -1457,21 +1457,21 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // -----------
 
         // Propagate inside 1st drag model
-        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 0.9 * dt, NP, FNP,
+        checkRealFieldPropagationGradient(FKO, PositionAngleType.MEAN, 0.9 * dt, NP, FNP,
                                   1.0e-30, 2.5e-02, 7.7e-2, 1.9e-4,
                                   1, false);
 
         // Propagate to 2nd drag model (reset propagator first)
         FNP.resetInitialState(initialState);
         NP.resetInitialState(iSR);
-        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1.1 * dt, NP, FNP,
+        checkRealFieldPropagationGradient(FKO, PositionAngleType.MEAN, 1.1 * dt, NP, FNP,
                                   1.0e-30, 4.4e-02, 7.6e-5, 4.1e-4,
                                   1, false);
 
         // Propagate to 3rd drag model  (reset propagator first)
         FNP.resetInitialState(initialState);
         NP.resetInitialState(iSR);
-        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, -1.1 * dt, NP, FNP,
+        checkRealFieldPropagationGradient(FKO, PositionAngleType.MEAN, -1.1 * dt, NP, FNP,
                                   1.0e-8, 2.4e-02, 2.3e-04, 3.9e-04,
                                   1, false);
     }
@@ -1503,7 +1503,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
         // Create initial field Keplerian orbit
         FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
+                                                                                 PositionAngleType.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));

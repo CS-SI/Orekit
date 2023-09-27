@@ -56,7 +56,7 @@ import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -180,7 +180,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // -----------------------------------------------------------
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(7209668.0), zero.add(0.5e-4), zero.add(1.7), zero.add( 2.1), zero.add( 2.9),
-                                                               zero.add(6.2), PositionAngle.TRUE,
+                                                               zero.add(6.2), PositionAngleType.TRUE,
                                                                FramesFactory.getEME2000(), initDate, zero.add(provider.getMu()));
 
         // Extrapolator definition
@@ -397,7 +397,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // -----------------------------------------------------------
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(7209668.0), zero.add(0.5e-4), zero.add(1.7), zero.add(2.1), zero.add(2.9),
-                                                               zero.add(6.2), PositionAngle.TRUE,
+                                                               zero.add(6.2), PositionAngleType.TRUE,
                                                                FramesFactory.getEME2000(), initDate, zero.add(provider.getMu()));
 
         // Extrapolator definition
@@ -514,7 +514,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         FieldAbsoluteDate<T> initDate = date;
         FieldOrbit<T> initialOrbit = new FieldCircularOrbit<>(zero.add(7000000), zero.add(1.0e-4), zero.add(-1.5e-4),
-                                                              zero, zero.add(1.2), zero.add(2.3), PositionAngle.MEAN,
+                                                              zero, zero.add(1.2), zero.add(2.3), PositionAngleType.MEAN,
                                                               FramesFactory.getEME2000(),
                                                               initDate, zero.add(provider.getMu()));
         try {
@@ -608,7 +608,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldKeplerianOrbit<T> hyperbolic =
-            new FieldKeplerianOrbit<>(zero.add(-1.0e10), zero.add(2), zero, zero, zero, zero, PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(-1.0e10), zero.add(2), zero, zero, zero, zero, PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         try {
             FieldEcksteinHechlerPropagator<T> propagator =
@@ -629,7 +629,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(1.0e10), zero.add(1.0e-4), zero.add(1.0e-2), zero, zero, zero, PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(1.0e10), zero.add(1.0e-4), zero.add(1.0e-2), zero, zero, zero, PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         final DummyLocalizable gasp = new DummyLocalizable("gasp");
         AttitudeProvider wrongLaw = new AttitudeProvider() {
@@ -668,7 +668,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
@@ -696,7 +696,7 @@ public class FieldEcksteinHechlerPropagatorTest {
                                          propagated.getCircularEy(),
                                          propagated.getI(),
                                          propagated.getRightAscensionOfAscendingNode(),
-                                         propagated.getAlphaM(), PositionAngle.MEAN,
+                                         propagated.getAlphaM(), PositionAngleType.MEAN,
                                          propagated.getFrame(),
                                          propagated.getDate(),
                                          propagated.getMu());
@@ -735,7 +735,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
@@ -768,7 +768,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
@@ -789,7 +789,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
@@ -812,7 +812,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
@@ -837,7 +837,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
@@ -867,7 +867,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
@@ -986,7 +986,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         final FieldKeplerianOrbit<T> initialOsculating =
             new FieldKeplerianOrbit<>(zero.newInstance(7.8e6), zero.newInstance(0.032), zero.newInstance(0.4),
                                       zero.newInstance(0.1), zero.newInstance(0.2), zero.newInstance(0.3),
-                                      PositionAngle.TRUE,
+                                      PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         final UnnormalizedSphericalHarmonics ush = provider.onDate(initialOsculating.getDate().toAbsoluteDate());
 

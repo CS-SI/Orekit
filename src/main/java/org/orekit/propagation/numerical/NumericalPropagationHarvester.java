@@ -21,7 +21,7 @@ import java.util.List;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.DoubleArrayDictionary;
@@ -42,7 +42,7 @@ class NumericalPropagationHarvester extends AbstractMatricesHarvester {
     /** Simple constructor.
      * <p>
      * The arguments for initial matrices <em>must</em> be compatible with the {@link org.orekit.orbits.OrbitType orbit type}
-     * and {@link org.orekit.orbits.PositionAngle position angle} that will be used by propagator
+     * and {@link PositionAngleType position angle} that will be used by propagator
      * </p>
      * @param propagator propagator bound to this harvester
      * @param stmName State Transition Matrix state name
@@ -102,7 +102,7 @@ class NumericalPropagationHarvester extends AbstractMatricesHarvester {
 
     /** {@inheritDoc} */
     @Override
-    public PositionAngle getPositionAngle() {
+    public PositionAngleType getPositionAngle() {
         return propagator.getPositionAngleType();
     }
 

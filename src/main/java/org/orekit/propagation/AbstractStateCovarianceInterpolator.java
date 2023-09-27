@@ -20,7 +20,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
@@ -42,7 +42,7 @@ public abstract class AbstractStateCovarianceInterpolator
         extends AbstractTimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> {
 
     /** Default position angle for covariance expressed in Cartesian elements. */
-    public static final PositionAngle DEFAULT_POSITION_ANGLE = PositionAngle.MEAN;
+    public static final PositionAngleType DEFAULT_POSITION_ANGLE = PositionAngleType.MEAN;
 
     /** Default column dimension for position-velocity state covariance. */
     public static final int COLUMN_DIM = 6;
@@ -60,7 +60,7 @@ public abstract class AbstractStateCovarianceInterpolator
     private final OrbitType outOrbitType;
 
     /** Output position angle. */
-    private final PositionAngle outPositionAngle;
+    private final PositionAngleType outPositionAngleType;
 
     /** Orbit interpolator. */
     private final TimeInterpolator<Orbit> orbitInterpolator;
@@ -75,7 +75,7 @@ public abstract class AbstractStateCovarianceInterpolator
      *
      * @see Frame
      * @see OrbitType
-     * @see PositionAngle
+     * @see PositionAngleType
      */
     public AbstractStateCovarianceInterpolator(final int interpolationPoints, final double extrapolationThreshold,
                                                final TimeInterpolator<Orbit> orbitInterpolator,
@@ -85,7 +85,7 @@ public abstract class AbstractStateCovarianceInterpolator
         this.outLOF            = outLOF;
         this.outFrame          = null;
         this.outOrbitType      = OrbitType.CARTESIAN;
-        this.outPositionAngle  = DEFAULT_POSITION_ANGLE;
+        this.outPositionAngleType = DEFAULT_POSITION_ANGLE;
     }
 
     /**
@@ -95,24 +95,24 @@ public abstract class AbstractStateCovarianceInterpolator
      * @param extrapolationThreshold extrapolation threshold beyond which the propagation will fail
      * @param orbitInterpolator orbit interpolator
      * @param outFrame desired output covariance frame
-     * @param outPositionAngle desired output position angle
+     * @param outPositionAngleType desired output position angle
      * @param outOrbitType desired output orbit type
      *
      * @see Frame
      * @see OrbitType
-     * @see PositionAngle
+     * @see PositionAngleType
      */
     public AbstractStateCovarianceInterpolator(final int interpolationPoints, final double extrapolationThreshold,
                                                final TimeInterpolator<Orbit> orbitInterpolator,
                                                final Frame outFrame,
                                                final OrbitType outOrbitType,
-                                               final PositionAngle outPositionAngle) {
+                                               final PositionAngleType outPositionAngleType) {
         super(interpolationPoints, extrapolationThreshold);
         this.orbitInterpolator = orbitInterpolator;
         this.outLOF            = null;
         this.outFrame          = outFrame;
         this.outOrbitType      = outOrbitType;
-        this.outPositionAngle  = outPositionAngle;
+        this.outPositionAngleType = outPositionAngleType;
     }
 
     /**
@@ -161,8 +161,8 @@ public abstract class AbstractStateCovarianceInterpolator
     /** Get output position angle.
      * @return output position angle.
      */
-    public PositionAngle getOutPositionAngle() {
-        return outPositionAngle;
+    public PositionAngleType getOutPositionAngle() {
+        return outPositionAngleType;
     }
 
     /** Get orbit interpolator.
@@ -223,7 +223,7 @@ public abstract class AbstractStateCovarianceInterpolator
                         covarianceInOrbitFrame.changeCovarianceFrame(interpolatedOrbit, outFrame);
 
                 covarianceOutput =
-                        covarianceInOutputFrame.changeCovarianceType(interpolatedOrbit, outOrbitType, outPositionAngle);
+                        covarianceInOutputFrame.changeCovarianceType(interpolatedOrbit, outOrbitType, outPositionAngleType);
             }
             // Output frame is not pseudo inertial
             else {

@@ -12,7 +12,7 @@ import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
@@ -33,7 +33,7 @@ public class FieldStepHandlerMultiplexerTest {
         Binary64        zero  = field.getZero();
         initDate = new FieldAbsoluteDate<>(field, 2020, 2, 28, 16, 15, 0.0, TimeScalesFactory.getUTC());
         FieldOrbit<Binary64> ic = new FieldKeplerianOrbit<>(zero.add(6378137 + 500e3), zero.add(1e-3), zero, zero, zero, zero,
-                                                             PositionAngle.TRUE, FramesFactory.getGCRF(), initDate,
+                                                             PositionAngleType.TRUE, FramesFactory.getGCRF(), initDate,
                                                              zero.add(Constants.WGS84_EARTH_MU));
         propagator = new FieldKeplerianPropagator<>(ic);
     }

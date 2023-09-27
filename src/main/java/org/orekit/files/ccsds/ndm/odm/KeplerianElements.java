@@ -21,7 +21,7 @@ import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 
 /** Container for Keplerian elements.
@@ -59,7 +59,7 @@ public class KeplerianElements extends CommentsContainer implements Data {
     private double anomaly;
 
     /** Orbit anomaly type (mean or true). */
-    private PositionAngle anomalyType;
+    private PositionAngleType anomalyType;
 
     /** Gravitational coefficient. */
     private double mu;
@@ -216,14 +216,14 @@ public class KeplerianElements extends CommentsContainer implements Data {
     /** Get the type of anomaly (true or mean).
      * @return the type of anomaly
      */
-    public PositionAngle getAnomalyType() {
+    public PositionAngleType getAnomalyType() {
         return anomalyType;
     }
 
     /** Set the type of anomaly.
      * @param anomalyType the type of anomaly to be set
      */
-    public void setAnomalyType(final PositionAngle anomalyType) {
+    public void setAnomalyType(final PositionAngleType anomalyType) {
         refuseFurtherComments();
         this.anomalyType = anomalyType;
     }

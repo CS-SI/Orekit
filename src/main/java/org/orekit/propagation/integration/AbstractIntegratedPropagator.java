@@ -51,7 +51,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
@@ -201,7 +201,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
-    protected void setPositionAngleType(final PositionAngle positionAngleType) {
+    protected void setPositionAngleType(final PositionAngleType positionAngleType) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
                                    stateMapper.getOrbitType(), positionAngleType,
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());
@@ -210,7 +210,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
-    protected PositionAngle getPositionAngleType() {
+    protected PositionAngleType getPositionAngleType() {
         return stateMapper.getPositionAngleType();
     }
 
@@ -356,7 +356,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @return new mapper
      */
     protected abstract StateMapper createMapper(AbsoluteDate referenceDate, double mu,
-                                                OrbitType orbitType, PositionAngle positionAngleType,
+                                                OrbitType orbitType, PositionAngleType positionAngleType,
                                                 AttitudeProvider attitudeProvider, Frame frame);
 
     /** Get the differential equations to integrate (for main state only).

@@ -48,7 +48,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
@@ -103,9 +103,9 @@ public class ConfigurableLowThrustManeuverTest {
         /** */
         private double halfArcLength;
         /** */
-        private final PositionAngle type;
+        private final PositionAngleType type;
 
-        public EquinoctialLongitudeIntervalDetector(final double halfArcLength, final PositionAngle type,
+        public EquinoctialLongitudeIntervalDetector(final double halfArcLength, final PositionAngleType type,
                                                     final AdaptableInterval maxCheck, final double threshold, final int maxIter,
                                                     final EventHandler handler) {
             super(maxCheck, threshold, maxIter, handler);
@@ -151,7 +151,7 @@ public class ConfigurableLowThrustManeuverTest {
             return halfArcLength;
         }
 
-        public PositionAngle getType() {
+        public PositionAngleType getType() {
             return type;
         }
 
@@ -160,14 +160,14 @@ public class ConfigurableLowThrustManeuverTest {
     private class PerigeeCenteredIntervalDetector
             extends EquinoctialLongitudeIntervalDetector<PerigeeCenteredIntervalDetector> {
 
-        protected PerigeeCenteredIntervalDetector(final double halfArcLength, final PositionAngle type,
+        protected PerigeeCenteredIntervalDetector(final double halfArcLength, final PositionAngleType type,
                                                   final AdaptableInterval maxCheck, final double threshold, final int maxIter,
                                                   final EventHandler handler) {
 
             super(halfArcLength, type, maxCheck, threshold, maxIter, handler);
         }
 
-        public PerigeeCenteredIntervalDetector(final double halfArcLength, final PositionAngle type,
+        public PerigeeCenteredIntervalDetector(final double halfArcLength, final PositionAngleType type,
                 final EventHandler handler) {
 
             super(halfArcLength, type, s -> maxCheck, maxThreshold, DEFAULT_MAX_ITER, handler);
@@ -195,14 +195,14 @@ public class ConfigurableLowThrustManeuverTest {
     private class ApogeeCenteredIntervalDetector
             extends EquinoctialLongitudeIntervalDetector<ApogeeCenteredIntervalDetector> {
 
-        protected ApogeeCenteredIntervalDetector(final double halfArcLength, final PositionAngle type,
+        protected ApogeeCenteredIntervalDetector(final double halfArcLength, final PositionAngleType type,
                                                  final AdaptableInterval maxCheck, final double threshold, final int maxIter,
                                                  final EventHandler handler) {
 
             super(halfArcLength, type, maxCheck, threshold, maxIter, handler);
         }
 
-        public ApogeeCenteredIntervalDetector(final double halfArcLength, final PositionAngle type, final EventHandler handler) {
+        public ApogeeCenteredIntervalDetector(final double halfArcLength, final PositionAngleType type, final EventHandler handler) {
             super(halfArcLength, type, s -> maxCheck, maxThreshold, DEFAULT_MAX_ITER, handler);
         }
 
@@ -437,7 +437,7 @@ public class ConfigurableLowThrustManeuverTest {
         final double pa = FastMath.toRadians(0);
         final double raan = 0.;
 
-        final KeplerianOrbit kep = new KeplerianOrbit(sma, ecc, inc, pa, raan, anomaly, PositionAngle.MEAN,
+        final KeplerianOrbit kep = new KeplerianOrbit(sma, ecc, inc, pa, raan, anomaly, PositionAngleType.MEAN,
                 FramesFactory.getCIRF(IERSConventions.IERS_2010, true), date, Constants.EGM96_EARTH_MU);
         return kep;
     }
@@ -453,7 +453,7 @@ public class ConfigurableLowThrustManeuverTest {
     private ConfigurableLowThrustManeuver buildApogeeManeuver() {
 
         final ApogeeCenteredIntervalDetector maneuverStartDetector = new ApogeeCenteredIntervalDetector(halfThrustArc,
-                PositionAngle.MEAN, new ContinueOnEvent());
+                PositionAngleType.MEAN, new ContinueOnEvent());
 
         // thrust in velocity direction to increase semi-major-axis
         return new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
@@ -464,7 +464,7 @@ public class ConfigurableLowThrustManeuverTest {
     private ConfigurableLowThrustManeuver buildPerigeeManeuver() {
 
         final PerigeeCenteredIntervalDetector maneuverStartDetector = new PerigeeCenteredIntervalDetector(halfThrustArc,
-                PositionAngle.MEAN, new ContinueOnEvent());
+                PositionAngleType.MEAN, new ContinueOnEvent());
 
         // thrust in velocity direction to increase semi-major-axis
         return new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
@@ -475,7 +475,7 @@ public class ConfigurableLowThrustManeuverTest {
     private ConfigurableLowThrustManeuver buildPsoManeuver() {
 
         final PositionAngleDetector maneuverStartDetector = new PositionAngleDetector(OrbitType.EQUINOCTIAL,
-                                                                                      PositionAngle.MEAN, FastMath.toRadians(0.0));
+                                                                                      PositionAngleType.MEAN, FastMath.toRadians(0.0));
 
         // thrust in velocity direction to increase semi-major-axis
         return new ConfigurableLowThrustManeuver(buildVelocityThrustDirectionProvider(),
@@ -558,7 +558,7 @@ public class ConfigurableLowThrustManeuverTest {
         final Orbit orbit =
             new KeplerianOrbit(24396159, 0.72831215, FastMath.toRadians(7),
                                FastMath.toRadians(180), FastMath.toRadians(261),
-                               FastMath.toRadians(0.0), PositionAngle.MEAN,
+                               FastMath.toRadians(0.0), PositionAngleType.MEAN,
                                FramesFactory.getEME2000(),
                                new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                 new TimeComponents(23, 30, 00.000),
@@ -603,7 +603,7 @@ public class ConfigurableLowThrustManeuverTest {
         final Orbit orbit =
             new KeplerianOrbit(24396159, 0.72831215, FastMath.toRadians(7),
                                FastMath.toRadians(180), FastMath.toRadians(261),
-                               FastMath.toRadians(0.0), PositionAngle.MEAN,
+                               FastMath.toRadians(0.0), PositionAngleType.MEAN,
                                FramesFactory.getEME2000(),
                                new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                 new TimeComponents(23, 30, 00.000),
@@ -826,7 +826,7 @@ public class ConfigurableLowThrustManeuverTest {
     @Test
     public void testGetters() {
         final ApogeeCenteredIntervalDetector maneuverStartDetector = new ApogeeCenteredIntervalDetector(halfThrustArc,
-                PositionAngle.MEAN, new ContinueOnEvent());
+                PositionAngleType.MEAN, new ContinueOnEvent());
 
         final ThrustDirectionAndAttitudeProvider attitudeProvider = buildVelocityThrustDirectionProvider();
         final ConfigurableLowThrustManeuver maneuver =

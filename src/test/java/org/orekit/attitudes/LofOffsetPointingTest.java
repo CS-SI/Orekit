@@ -36,7 +36,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -74,7 +74,7 @@ public class LofOffsetPointingTest {
         //  Satellite position
         final CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Create lof aligned law
@@ -103,7 +103,7 @@ public class LofOffsetPointingTest {
     public void testMiss() {
         final CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
         final LofOffset upsideDown = new LofOffset(circ.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYX, FastMath.PI, 0, 0);
         final LofOffsetPointing pointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, upsideDown, Vector3D.PLUS_K);
@@ -124,7 +124,7 @@ public class LofOffsetPointingTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngle.MEAN,
+                              FastMath.toRadians(30.), PositionAngleType.MEAN,
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         final AttitudeProvider law =
@@ -168,7 +168,7 @@ public class LofOffsetPointingTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngle.MEAN,
+                              FastMath.toRadians(30.), PositionAngleType.MEAN,
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         for (final LOFType type : LOFType.values()) {
@@ -237,7 +237,7 @@ public class LofOffsetPointingTest {
         // GIVEN
         final CircularOrbit circ =
                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
-                        FastMath.toRadians(5.300), PositionAngle.MEAN,
+                        FastMath.toRadians(5.300), PositionAngleType.MEAN,
                         FramesFactory.getEME2000(), date, mu);
         final LofOffset upsideDown = new LofOffset(circ.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYX, FastMath.PI, 0, 0);
         final LofOffsetPointing pointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, upsideDown, Vector3D.PLUS_K);

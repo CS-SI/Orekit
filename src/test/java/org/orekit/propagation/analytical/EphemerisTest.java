@@ -49,7 +49,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitBlender;
 import org.orekit.orbits.OrbitHermiteInterpolator;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -582,11 +582,11 @@ public class EphemerisTest {
 
         final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceBlender =
                 new StateCovarianceBlender(blendingFunction, orbitBlender, inertialFrame, OrbitType.CARTESIAN,
-                                           PositionAngle.MEAN);
+                                           PositionAngleType.MEAN);
 
         final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceHermite =
                 new StateCovarianceKeplerianHermiteInterpolator(2, orbitBlender, CartesianDerivativesFilter.USE_PVA,
-                                                                inertialFrame, OrbitType.CARTESIAN, PositionAngle.MEAN);
+                                                                inertialFrame, OrbitType.CARTESIAN, PositionAngleType.MEAN);
 
         Ephemeris ephemerisUsingBlender = new Ephemeris(states, stateInterpolator, covariances, covarianceBlender);
         Ephemeris ephemerisUsingHermite = new Ephemeris(states, stateInterpolator, covariances, covarianceHermite);
@@ -649,7 +649,7 @@ public class EphemerisTest {
                                                                                  { 0, 0, 0, 0, 1e-3, 0 },
                                                                                  { 0, 0, 0, 0, 0, 1e-3 }, });
 
-        return new StateCovariance(covarianceMatrix, date, frame, OrbitType.CARTESIAN, PositionAngle.MEAN);
+        return new StateCovariance(covarianceMatrix, date, frame, OrbitType.CARTESIAN, PositionAngleType.MEAN);
     }
 
     @Test
@@ -840,7 +840,7 @@ public class EphemerisTest {
         double mu    = 3.9860047e14;
         inertialFrame = FramesFactory.getEME2000();
 
-        initialState = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+        initialState = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                           inertialFrame, initDate, mu);
         propagator   = new KeplerianPropagator(initialState);
 

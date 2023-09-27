@@ -40,7 +40,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
@@ -66,7 +66,7 @@ public class AdapterPropagatorTest {
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
                                       FastMath.toRadians(98.0),
                                       FastMath.toRadians(123.456),
-                                      0.0, PositionAngle.MEAN,
+                                      0.0, PositionAngleType.MEAN,
                                       FramesFactory.getEME2000(),
                                       new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
@@ -128,7 +128,7 @@ public class AdapterPropagatorTest {
         Orbit heo = new KeplerianOrbit(90000000.0, 0.92, FastMath.toRadians(98.0),
                                        FastMath.toRadians(12.3456),
                                        FastMath.toRadians(123.456),
-                                       FastMath.toRadians(1.23456), PositionAngle.MEAN,
+                                       FastMath.toRadians(1.23456), PositionAngleType.MEAN,
                                        FramesFactory.getEME2000(),
                                        new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                         new TimeComponents(23, 30, 00.000),
@@ -189,7 +189,7 @@ public class AdapterPropagatorTest {
 
         Orbit leo = new CircularOrbit(7204319.233600575, 4.434564637450575E-4, 0.0011736728299091088,
                                       1.7211611441767323, 5.5552084166959474,
-                                      24950.321259193086, PositionAngle.TRUE,
+                                      24950.321259193086, PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(),
                                       new AbsoluteDate(new DateComponents(2003, 9, 16),
                                                        new TimeComponents(23, 11, 20.264),

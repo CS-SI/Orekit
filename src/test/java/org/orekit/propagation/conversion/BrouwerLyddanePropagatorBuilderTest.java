@@ -34,7 +34,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -73,7 +73,7 @@ public class BrouwerLyddanePropagatorBuilderTest {
                                                                                       harmonics.getUnnormalizedCnm(4, 0),
                                                                                       harmonics.getUnnormalizedCnm(5, 0),
                                                                                       OrbitType.KEPLERIAN,
-                                                                                      PositionAngle.TRUE,
+                                                                                      PositionAngleType.TRUE,
                                                                                       1.0,
                                                                                       BrouwerLyddanePropagator.M2);
 
@@ -109,7 +109,7 @@ public class BrouwerLyddanePropagatorBuilderTest {
                                                                                       harmonics.getUnnormalizedCnm(4, 0),
                                                                                       harmonics.getUnnormalizedCnm(5, 0),
                                                                                       OrbitType.KEPLERIAN,
-                                                                                      PositionAngle.TRUE,
+                                                                                      PositionAngleType.TRUE,
                                                                                       1.0,
                                                                                       M2);
 
@@ -154,7 +154,7 @@ public class BrouwerLyddanePropagatorBuilderTest {
         final double omega = FastMath.toRadians(180); // perigee argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
-        orbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.TRUE, inertialFrame, initDate, mu);
+        orbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.TRUE, inertialFrame, initDate, mu);
     }
 
     @Test
@@ -170,12 +170,12 @@ public class BrouwerLyddanePropagatorBuilderTest {
                 Mockito.mock(UnnormalizedSphericalHarmonicsProvider.class);
         Mockito.when(harmonicsProvider.getMu()).thenReturn(Constants.EIGEN5C_EARTH_MU);
 
-        final PositionAngle positionAngle = PositionAngle.MEAN;
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final double        positionScale = 10;
         final double        m2            = 0;
 
         final BrouwerLyddanePropagatorBuilder builder = new BrouwerLyddanePropagatorBuilder(orbit, harmonicsProvider,
-                                                                                            positionAngle, positionScale,
+                positionAngleType, positionScale,
                                                                                             m2);
 
         // When

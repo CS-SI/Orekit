@@ -232,7 +232,7 @@ class FieldOrbitTest {
         }
 
         @Override
-        public void addKeplerContribution(PositionAngle type, Complex gm, Complex[] pDot) {
+        public void addKeplerContribution(PositionAngleType type, Complex gm, Complex[] pDot) {
 
         }
 

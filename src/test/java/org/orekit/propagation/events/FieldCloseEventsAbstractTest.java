@@ -28,7 +28,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -72,7 +72,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         this.field = field;
         this.epoch = new FieldAbsoluteDate<>(field, AbsoluteDate.J2000_EPOCH);
         this.initialOrbit = new FieldKeplerianOrbit<>(
-            v(6378137 + 500e3), v(0), v(0), v(0), v(0), v(0), PositionAngle.TRUE,
+            v(6378137 + 500e3), v(0), v(0), v(0), v(0), v(0), PositionAngleType.TRUE,
             eci, epoch, v(mu));
     }
 
@@ -251,7 +251,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         FieldPropagator<T> propagator = getPropagator(10);
         List<FieldRecordAndContinue.Event<T>> events = new ArrayList<>();
         FieldSpacecraftState<T> newState = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(
-                v(42e6), v(0), v(0), v(0), v(0), v(0), PositionAngle.TRUE, eci, epoch.shiftedBy(t), v(mu)));
+                v(42e6), v(0), v(0), v(0), v(0), v(0), PositionAngleType.TRUE, eci, epoch.shiftedBy(t), v(mu)));
 
         TimeDetector resetDetector = new TimeDetector(t)
                 .withHandler(new ResetHandler<>(events, newState))
@@ -687,7 +687,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double t1 = 15.0;
         FieldSpacecraftState<T> newState = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(
                 v(6378137 + 500e3), v(0), v(FastMath.PI / 2), v(0), v(0),
-                v(FastMath.PI / 2), PositionAngle.TRUE, eci, epoch.shiftedBy(t1), v(mu)));
+                v(FastMath.PI / 2), PositionAngleType.TRUE, eci, epoch.shiftedBy(t1), v(mu)));
         // shared event list so we know the order in which they occurred
         List<Event<T>> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
@@ -1280,7 +1280,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         FieldPropagator<T> propagator = getPropagator(10);
         List<FieldRecordAndContinue.Event<T>> events = new ArrayList<>();
         FieldSpacecraftState<T> newState = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(
-                v(42e6), v(0), v(0), v(0), v(0), v(0), PositionAngle.TRUE, eci, epoch.shiftedBy(t), v(mu)));
+                v(42e6), v(0), v(0), v(0), v(0), v(0), PositionAngleType.TRUE, eci, epoch.shiftedBy(t), v(mu)));
 
         TimeDetector resetDetector = new TimeDetector(t)
                 .withHandler(new ResetHandler<>(events, newState))
@@ -1707,7 +1707,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double t1 = -15.0;
         FieldSpacecraftState<T> newState = new FieldSpacecraftState<T>(new FieldKeplerianOrbit<T>(
                 v(6378137 + 500e3), v(0), v(FastMath.PI / 2), v(0), v(0),
-                v(FastMath.PI / 2), PositionAngle.TRUE, eci, epoch.shiftedBy(t1), v(mu)));
+                v(FastMath.PI / 2), PositionAngleType.TRUE, eci, epoch.shiftedBy(t1), v(mu)));
         // shared event list so we know the order in which they occurred
         List<Event<T>> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
@@ -2356,7 +2356,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
     private FieldSpacecraftState<T> state(double t) {
         return new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(
                 v(6378137 + 500e3), v(0), v(0), v(0), v(0), v(0),
-                PositionAngle.TRUE, eci, epoch.shiftedBy(t),
+                PositionAngleType.TRUE, eci, epoch.shiftedBy(t),
                 v(mu)));
     }
 

@@ -38,7 +38,7 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
@@ -220,7 +220,7 @@ public abstract class AbstractForceModelTest {
 
         double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(state -> forceModel.acceleration(state, forceModel.getParameters(state0.getDate())).toArray(),
-                                                      3, provider, OrbitType.CARTESIAN, PositionAngle.MEAN,
+                                                      3, provider, OrbitType.CARTESIAN, PositionAngleType.MEAN,
                                                       dP, 5).
                         value(state0);
 
@@ -317,7 +317,7 @@ public abstract class AbstractForceModelTest {
 
         double[][] finiteDifferencesJacobian =
                         Differentiation.differentiate(state -> forceModel.acceleration(state, forceModel.getParameters(state0.getDate())).toArray(),
-                                                      3, provider, OrbitType.CARTESIAN, PositionAngle.MEAN,
+                                                      3, provider, OrbitType.CARTESIAN, PositionAngleType.MEAN,
                                                       dP, 5).
                         value(state0);
 
@@ -468,7 +468,7 @@ public abstract class AbstractForceModelTest {
      *  - Then shift initial state of numerical propagator and compare its final propagated state
      *    with a state obtained through Taylor expansion of the field numerical propagated "real" initial state
      * @param initialOrbit initial Keplerian orbit
-     * @param positionAngle position angle for the anomaly
+     * @param positionAngleType position angle for the anomaly
      * @param duration duration of the propagation
      * @param propagator numerical propagator
      * @param fieldpropagator field numerical propagator
@@ -479,7 +479,7 @@ public abstract class AbstractForceModelTest {
      * @param print if true, print the results of the test
      */
     protected void checkRealFieldPropagation(final FieldKeplerianOrbit<DerivativeStructure> initialOrbit,
-                                             final PositionAngle positionAngle,
+                                             final PositionAngleType positionAngleType,
                                              final double duration,
                                              final NumericalPropagator propagator,
                                              final FieldNumericalPropagator<DerivativeStructure> fieldpropagator,
@@ -534,7 +534,7 @@ public abstract class AbstractForceModelTest {
         double i_R = initialOrbit.getI().getReal();
         double R_R = initialOrbit.getPerigeeArgument().getReal();
         double O_R = initialOrbit.getRightAscensionOfAscendingNode().getReal();
-        double n_R = initialOrbit.getAnomaly(positionAngle).getReal();
+        double n_R = initialOrbit.getAnomaly(positionAngleType).getReal();
 
         // Max P, V, A values initialization
         double maxP = 0.;
@@ -554,7 +554,7 @@ public abstract class AbstractForceModelTest {
             double n_shift = n_R + rand_next[5];
 
             KeplerianOrbit shiftedOrb = new KeplerianOrbit(a_shift, e_shift, i_shift, R_shift, O_shift, n_shift,
-                                                           PositionAngle.MEAN,
+                                                           PositionAngleType.MEAN,
                                                            initialOrbit.getFrame(),
                                                            initialOrbit.getDate().toAbsoluteDate(),
                                                            Constants.EIGEN5C_EARTH_MU
@@ -645,7 +645,7 @@ public abstract class AbstractForceModelTest {
      *  - Then shift initial state of numerical propagator and compare its final propagated state
      *    with a state obtained through Taylor expansion of the field numerical propagated "real" initial state
      * @param initialOrbit initial Keplerian orbit
-     * @param positionAngle position angle for the anomaly
+     * @param positionAngleType position angle for the anomaly
      * @param duration duration of the propagation
      * @param propagator numerical propagator
      * @param fieldpropagator field numerical propagator
@@ -656,7 +656,7 @@ public abstract class AbstractForceModelTest {
      * @param print if true, print the results of the test
      */
     protected void checkRealFieldPropagationGradient(final FieldKeplerianOrbit<Gradient> initialOrbit,
-                                                     final PositionAngle positionAngle,
+                                                     final PositionAngleType positionAngleType,
                                                      final double duration,
                                                      final NumericalPropagator propagator,
                                                      final FieldNumericalPropagator<Gradient> fieldpropagator,
@@ -711,7 +711,7 @@ public abstract class AbstractForceModelTest {
         double i_R = initialOrbit.getI().getReal();
         double R_R = initialOrbit.getPerigeeArgument().getReal();
         double O_R = initialOrbit.getRightAscensionOfAscendingNode().getReal();
-        double n_R = initialOrbit.getAnomaly(positionAngle).getReal();
+        double n_R = initialOrbit.getAnomaly(positionAngleType).getReal();
 
         // Max P, V, A values initialization
         double maxP = 0.;
@@ -731,7 +731,7 @@ public abstract class AbstractForceModelTest {
             double n_shift = n_R + rand_next[5];
 
             KeplerianOrbit shiftedOrb = new KeplerianOrbit(a_shift, e_shift, i_shift, R_shift, O_shift, n_shift,
-                                                           PositionAngle.MEAN,
+                                                           PositionAngleType.MEAN,
                                                            initialOrbit.getFrame(),
                                                            initialOrbit.getDate().toAbsoluteDate(),
                                                            Constants.EIGEN5C_EARTH_MU
@@ -833,7 +833,7 @@ public abstract class AbstractForceModelTest {
                                            final AbsoluteDate targetDate,
                                            final int index, final double h) {
         OrbitType orbitType = propagator.getOrbitType();
-        PositionAngle angleType = propagator.getPositionAngleType();
+        PositionAngleType angleType = propagator.getPositionAngleType();
         double[] a = new double[6];
         double[] aDot = new double[6];
         orbitType.mapOrbitToArray(state0.getOrbit(), angleType, a, aDot);

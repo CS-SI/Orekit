@@ -31,7 +31,7 @@ import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.TimeScale;
@@ -72,7 +72,7 @@ public class Context implements StationDataProvider {
     // value/second = secondary station associated
     public Pair<GroundStation, GroundStation>    FDOAstations;
 
-    public NumericalPropagatorBuilder createBuilder(final OrbitType orbitType, final PositionAngle positionAngle,
+    public NumericalPropagatorBuilder createBuilder(final OrbitType orbitType, final PositionAngleType positionAngleType,
                                                     final boolean perfectStart,
                                                     final double minStep, final double maxStep, final double dP,
                                                     final Force... forces) {
@@ -95,7 +95,7 @@ public class Context implements StationDataProvider {
         final NumericalPropagatorBuilder propagatorBuilder =
                         new NumericalPropagatorBuilder(orbitType.convertType(startOrbit),
                                                        new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                                       positionAngle, dP);
+                                positionAngleType, dP);
         for (Force force : forces) {
             propagatorBuilder.addForceModel(force.getForceModel(this));
         }

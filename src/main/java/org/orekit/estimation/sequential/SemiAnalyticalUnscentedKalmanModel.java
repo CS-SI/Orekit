@@ -33,7 +33,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
@@ -73,7 +73,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
     private final CovarianceMatrixProvider measurementProcessNoiseMatrix;
 
     /** Position angle type used during orbit determination. */
-    private final PositionAngle angleType;
+    private final PositionAngleType angleType;
 
     /** Orbit type used during orbit determination. */
     private final OrbitType orbitType;

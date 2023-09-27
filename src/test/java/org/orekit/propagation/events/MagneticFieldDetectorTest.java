@@ -40,7 +40,7 @@ import org.orekit.models.earth.GeoMagneticFieldFactory;
 import org.orekit.models.earth.GeoMagneticFieldFactory.FieldModel;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -103,7 +103,7 @@ public class MagneticFieldDetectorTest {
     private void initializePropagator() {
         double a = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + 600000; // 600 km altitude
         double i = FastMath.toRadians(80); // 80° inclination
-        Orbit initialOrbit = new CircularOrbit(a, 0, 0, i, 0, 0, PositionAngle.TRUE, eme2000, initialDate, Constants.WGS84_EARTH_MU);
+        Orbit initialOrbit = new CircularOrbit(a, 0, 0, i, 0, 0, PositionAngleType.TRUE, eme2000, initialDate, Constants.WGS84_EARTH_MU);
         propagator = new KeplerianPropagator(initialOrbit);
     }
 

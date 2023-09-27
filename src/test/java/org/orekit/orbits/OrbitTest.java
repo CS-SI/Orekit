@@ -214,7 +214,7 @@ class OrbitTest {
         }
 
         @Override
-        public void addKeplerContribution(PositionAngle type, double gm, double[] pDot) {
+        public void addKeplerContribution(PositionAngleType type, double gm, double[] pDot) {
 
         }
     }

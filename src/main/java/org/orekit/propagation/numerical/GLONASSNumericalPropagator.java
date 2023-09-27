@@ -33,7 +33,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GLONASSAlmanac;
@@ -182,7 +182,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         setAttitudeProvider(provider);
         setOrbitType(OrbitType.CARTESIAN);
         // It is not meaningful for propagation in Cartesian parameters
-        setPositionAngleType(PositionAngle.TRUE);
+        setPositionAngleType(PositionAngleType.TRUE);
         setMu(GNSSConstants.GLONASS_MU);
 
         // As recommended by GLONASS ICD (2016), the direction cosines and distance
@@ -575,7 +575,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
 
     @Override
     protected StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,
-                                       final OrbitType orbitType, final PositionAngle positionAngleType,
+                                       final OrbitType orbitType, final PositionAngleType positionAngleType,
                                        final AttitudeProvider attitudeProvider, final Frame frame) {
         return new Mapper(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
     }
@@ -594,7 +594,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
          * @param frame inertial frame
          */
         Mapper(final AbsoluteDate referenceDate, final double mu,
-               final OrbitType orbitType, final PositionAngle positionAngleType,
+               final OrbitType orbitType, final PositionAngleType positionAngleType,
                final AttitudeProvider attitudeProvider, final Frame frame) {
             super(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
         }

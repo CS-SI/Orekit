@@ -22,7 +22,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -129,8 +129,8 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
                                      final DoubleArrayDictionary additionalStatesDerivatives) {
         final OrbitType type = orbit.getType();
         final double[] stateVector = new double[6];
-        type.mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
-        final Orbit fixedOrbit = type.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+        type.mapOrbitToArray(orbit, PositionAngleType.TRUE, stateVector, null);
+        final Orbit fixedOrbit = type.mapArrayToOrbit(stateVector, null, PositionAngleType.TRUE,
                                                       orbit.getDate(), mu, orbit.getFrame());
         SpacecraftState fixedState = new SpacecraftState(fixedOrbit, attitude, mass);
         if (additionalStates != null) {

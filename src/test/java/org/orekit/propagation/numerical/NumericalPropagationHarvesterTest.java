@@ -35,7 +35,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -128,7 +128,7 @@ public class NumericalPropagationHarvesterTest {
     }
 
     private void doTestInitialStm(OrbitType type, double deltaId) {
-        PositionAngle angle = PositionAngle.TRUE;
+        PositionAngleType angle = PositionAngleType.TRUE;
         NumericalPropagationHarvester harvester =
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm", null, null);
         propagator.setOrbitType(type);
@@ -147,7 +147,7 @@ public class NumericalPropagationHarvesterTest {
     @BeforeEach
     public void setUp() {
         Orbit initialOrbit =
-                        new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
+                        new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngleType.TRUE,
                                            FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                            Constants.EIGEN5C_EARTH_MU);
         double minStep = 0.0001;

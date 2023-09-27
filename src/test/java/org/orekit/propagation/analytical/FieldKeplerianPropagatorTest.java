@@ -53,7 +53,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldPropagator;
@@ -93,7 +93,7 @@ public class FieldKeplerianPropagatorTest {
 
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         KeplerianOrbit k0 = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                                6.2, PositionAngle.TRUE,
+                                                6.2, PositionAngleType.TRUE,
                                                 FramesFactory.getEME2000(), initDate, mu);
         TimeStampedPVCoordinates pv0 = k0.getPVCoordinates();
         TimeStampedPVCoordinates pv1 = new TimeStampedPVCoordinates(pv0.getDate(),
@@ -107,7 +107,7 @@ public class FieldKeplerianPropagatorTest {
                                                   new Tuple(k0.getPerigeeArgument(),               k1.getPerigeeArgument()),
                                                   new Tuple(k0.getRightAscensionOfAscendingNode(), k1.getRightAscensionOfAscendingNode()),
                                                   new Tuple(k0.getMeanAnomaly(),                   k1.getMeanAnomaly()),
-                                                  PositionAngle.MEAN,
+                                                  PositionAngleType.MEAN,
                                                   FramesFactory.getEME2000(),
                                                   new FieldAbsoluteDate<>(initDate, new Tuple(0.0, 0.0)),
                                                   new Tuple(mu, mu));
@@ -317,7 +317,7 @@ public class FieldKeplerianPropagatorTest {
         //-----------------------------------------------------------
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field).shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(7209668.0), zero.add(0.5e-4), zero.add(1.7), zero.add(2.1), zero.add(2.9),
-                                                               zero.add(6.2), PositionAngle.TRUE,
+                                                               zero.add(6.2), PositionAngleType.TRUE,
                                                                FramesFactory.getEME2000(), initDate, zero.add(mu));
 
         // Extrapolator definition
@@ -450,7 +450,7 @@ public class FieldKeplerianPropagatorTest {
         //-----------------------------------------------------------
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field).shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(7209668.0), zero.add(0.5e-4), zero.add(1.7), zero.add(2.1), zero.add(2.9),
-                                                               zero.add(6.2), PositionAngle.TRUE,
+                                                               zero.add(6.2), PositionAngleType.TRUE,
                                                                FramesFactory.getEME2000(), initDate, zero.add(mu));
 
         // Extrapolator definition
@@ -537,7 +537,7 @@ public class FieldKeplerianPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestWrongAttitude(Field<T> field) {
         T zero = field.getZero();
         FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(1.0e10), zero.add(1.0e-4), zero.add(1.0e-2), zero, zero, zero, PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(1.0e10), zero.add(1.0e-4), zero.add(1.0e-2), zero, zero, zero, PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         AttitudeProvider wrongLaw = new AttitudeProvider() {
             @Override
@@ -558,7 +558,7 @@ public class FieldKeplerianPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestStepException(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         FieldStepHandlerMultiplexer<T> multiplexer = new FieldStepHandlerMultiplexer<>();
@@ -583,7 +583,7 @@ public class FieldKeplerianPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestWrappedAttitudeException(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit,
                         new AttitudeProvider() {
@@ -604,7 +604,7 @@ public class FieldKeplerianPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestAscendingNode(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         propagator.addEventDetector(new FieldNodeDetector<>(orbit, FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
@@ -620,7 +620,7 @@ public class FieldKeplerianPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestStopAtTargetDate(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -633,7 +633,7 @@ public class FieldKeplerianPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestPerigee(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         propagator.addEventDetector(new FieldApsideDetector<>(orbit));
@@ -648,7 +648,7 @@ public class FieldKeplerianPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestAltitude(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         BodyShape bodyShape =
@@ -670,7 +670,7 @@ public class FieldKeplerianPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestDate(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         final FieldAbsoluteDate<T> stopDate = new FieldAbsoluteDate<>(field).shiftedBy(500.0);
@@ -685,7 +685,7 @@ public class FieldKeplerianPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestSetting(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         final OneAxisEllipsoid earthShape =
@@ -710,7 +710,7 @@ public class FieldKeplerianPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestFixedStep(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         final T step = zero.add(100.0);
@@ -743,7 +743,7 @@ public class FieldKeplerianPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestVariableStep(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         final T step = orbit.getKeplerianPeriod().divide(100);
@@ -776,7 +776,7 @@ public class FieldKeplerianPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestEphemeris(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field), zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
@@ -791,7 +791,7 @@ public class FieldKeplerianPropagatorTest {
         T zero = field.getZero();
         FieldAbsoluteDate<T> initDate = FieldAbsoluteDate.getGPSEpoch(field);
         FieldOrbit<T> ic = new FieldKeplerianOrbit<>(zero.newInstance(6378137 + 500e3), zero.newInstance(1e-3),
-                                                     zero, zero, zero, zero, PositionAngle.TRUE,
+                                                     zero, zero, zero, zero, PositionAngleType.TRUE,
                                                      FramesFactory.getGCRF(), initDate, zero.newInstance(mu));
         FieldPropagator<T> propagator = new FieldKeplerianPropagator<>(ic);
         FieldSpacecraftState<T> initialState = propagator.getInitialState().addAdditionalState("myState", zero.newInstance(4.2));
@@ -811,7 +811,7 @@ public class FieldKeplerianPropagatorTest {
         T zero = field.getZero();
         FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field);
         final FieldKeplerianOrbit<T> initialOrbit =
-            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), initialDate, zero.add(3.986004415e14));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(initialOrbit);
 
@@ -858,11 +858,11 @@ public class FieldKeplerianPropagatorTest {
     private <T extends CalculusFieldElement<T>> void doTestMu(Field<T> field) {
         T zero = field.getZero();
         final FieldKeplerianOrbit<T> orbit1 =
-                new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+                new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                           FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field),
                                           zero.add(Constants.WGS84_EARTH_MU));
         final FieldKeplerianOrbit<T> orbit2 =
-                new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
+                new FieldKeplerianOrbit<>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngleType.TRUE,
                                           FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field),
                                           zero.add(Constants.EIGEN5C_EARTH_MU));
         final FieldAbsoluteDate<T> target = orbit1.getDate().shiftedBy(10000.0);

@@ -30,7 +30,7 @@ import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.utils.ParameterDriver;
@@ -93,20 +93,20 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
      * (note that the mu from this orbit will be overridden with the mu from the
      * {@code provider})
      * @param provider for un-normalized zonal coefficients
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #BrouwerLyddanePropagatorBuilder(Orbit,
-     * UnnormalizedSphericalHarmonicsProvider, PositionAngle, double, AttitudeProvider, double)
+     * UnnormalizedSphericalHarmonicsProvider, PositionAngleType, double, AttitudeProvider, double)
      */
     public BrouwerLyddanePropagatorBuilder(final Orbit templateOrbit,
                                            final UnnormalizedSphericalHarmonicsProvider provider,
-                                           final PositionAngle positionAngle,
+                                           final PositionAngleType positionAngleType,
                                            final double positionScale,
                                            final double M2) {
-        this(templateOrbit, provider, positionAngle, positionScale,
+        this(templateOrbit, provider, positionAngleType, positionScale,
              FrameAlignedProvider.of(templateOrbit.getFrame()), M2);
     }
 
@@ -131,13 +131,13 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param orbitType orbit type to use
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #BrouwerLyddanePropagatorBuilder(Orbit,
-     * UnnormalizedSphericalHarmonicsProvider, PositionAngle, double, AttitudeProvider, double)
+     * UnnormalizedSphericalHarmonicsProvider, PositionAngleType, double, AttitudeProvider, double)
      */
     public BrouwerLyddanePropagatorBuilder(final Orbit templateOrbit,
                                            final double referenceRadius,
@@ -148,7 +148,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
                                            final double c40,
                                            final double c50,
                                            final OrbitType orbitType,
-                                           final PositionAngle positionAngle,
+                                           final PositionAngleType positionAngleType,
                                            final double positionScale,
                                            final double M2) {
         this(templateOrbit,
@@ -182,7 +182,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
                                                                  0
                                                              }
                                                          }),
-             positionAngle, positionScale, M2);
+                positionAngleType, positionScale, M2);
     }
 
     /** Build a new instance.
@@ -198,7 +198,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
      * (note that the mu from this orbit will be overridden with the mu from the
      * {@code provider})
      * @param provider for un-normalized zonal coefficients
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @param attitudeProvider attitude law to use
@@ -207,11 +207,11 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
      */
     public BrouwerLyddanePropagatorBuilder(final Orbit templateOrbit,
                                            final UnnormalizedSphericalHarmonicsProvider provider,
-                                           final PositionAngle positionAngle,
+                                           final PositionAngleType positionAngleType,
                                            final double positionScale,
                                            final AttitudeProvider attitudeProvider,
                                            final double M2) {
-        super(overrideMu(templateOrbit, provider, positionAngle), positionAngle, positionScale, true, attitudeProvider);
+        super(overrideMu(templateOrbit, provider, positionAngleType), positionAngleType, positionScale, true, attitudeProvider);
         this.provider = provider;
         // initialize M2 driver
         final ParameterDriver M2Driver = new ParameterDriver(BrouwerLyddanePropagator.M2_NAME, M2, SCALE,
@@ -223,16 +223,16 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
     /** Override central attraction coefficient.
      * @param templateOrbit template orbit
      * @param provider gravity field provider
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @return orbit with overridden central attraction coefficient
      */
     private static Orbit overrideMu(final Orbit templateOrbit,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
-                                    final PositionAngle positionAngle) {
+                                    final PositionAngleType positionAngleType) {
         final double[] parameters    = new double[6];
         final double[] parametersDot = templateOrbit.hasDerivatives() ? new double[6] : null;
-        templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngle, parameters, parametersDot);
-        return templateOrbit.getType().mapArrayToOrbit(parameters, parametersDot, positionAngle,
+        templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngleType, parameters, parametersDot);
+        return templateOrbit.getType().mapArrayToOrbit(parameters, parametersDot, positionAngleType,
                                                        templateOrbit.getDate(),
                                                        provider.getMu(),
                                                        templateOrbit.getFrame());

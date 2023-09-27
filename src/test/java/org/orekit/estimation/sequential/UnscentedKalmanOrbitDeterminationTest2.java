@@ -57,7 +57,7 @@ import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.time.TimeScalesFactory;
@@ -90,7 +90,7 @@ public class UnscentedKalmanOrbitDeterminationTest2 extends AbstractOrbitDetermi
     protected NumericalPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                                  final ODEIntegratorBuilder builder,
                                                                  final double positionScale) {
-        return new NumericalPropagatorBuilder(referenceOrbit, builder, PositionAngle.MEAN,
+        return new NumericalPropagatorBuilder(referenceOrbit, builder, PositionAngleType.MEAN,
                                               positionScale);
     }
 

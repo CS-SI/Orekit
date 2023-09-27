@@ -47,7 +47,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -104,7 +104,7 @@ class FieldSpacecraftStateInterpolatorTest {
                                                                        TimeScalesFactory.getUTC());
             final Frame frame = FramesFactory.getEME2000();
 
-            orbit = new FieldKeplerianOrbit<>(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+            orbit = new FieldKeplerianOrbit<>(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                               frame, date, mu);
             OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                           Constants.WGS84_EARTH_FLATTENING,

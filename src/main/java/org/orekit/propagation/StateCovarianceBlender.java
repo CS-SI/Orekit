@@ -22,7 +22,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeStampedPair;
@@ -67,7 +67,7 @@ public class StateCovarianceBlender extends AbstractStateCovarianceInterpolator 
      *
      * @see Frame
      * @see OrbitType
-     * @see PositionAngle
+     * @see PositionAngleType
      */
     public StateCovarianceBlender(final SmoothStepFactory.SmoothStepFunction blendingFunction,
                                   final TimeInterpolator<Orbit> orbitInterpolator,
@@ -82,19 +82,19 @@ public class StateCovarianceBlender extends AbstractStateCovarianceInterpolator 
      * @param blendingFunction blending function
      * @param orbitInterpolator orbit interpolator
      * @param outFrame desired output covariance frame
-     * @param outPositionAngle desired output position angle
+     * @param outPositionAngleType desired output position angle
      * @param outOrbitType desired output orbit type
      *
      * @see Frame
      * @see OrbitType
-     * @see PositionAngle
+     * @see PositionAngleType
      */
     public StateCovarianceBlender(final SmoothStepFactory.SmoothStepFunction blendingFunction,
                                   final TimeInterpolator<Orbit> orbitInterpolator,
                                   final Frame outFrame,
                                   final OrbitType outOrbitType,
-                                  final PositionAngle outPositionAngle) {
-        super(DEFAULT_INTERPOLATION_POINTS, 0., orbitInterpolator, outFrame, outOrbitType, outPositionAngle);
+                                  final PositionAngleType outPositionAngleType) {
+        super(DEFAULT_INTERPOLATION_POINTS, 0., orbitInterpolator, outFrame, outOrbitType, outPositionAngleType);
         this.blendingFunction = blendingFunction;
     }
 

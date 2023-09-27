@@ -142,7 +142,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      */
     public FieldKeplerianOrbit(final T a, final T e, final T i,
                                final T pa, final T raan,
-                               final T anomaly, final PositionAngle type,
+                               final T anomaly, final PositionAngleType type,
                                final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         this(a, e, i, pa, raan, anomaly,
@@ -176,7 +176,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                                final T pa, final T raan, final T anomaly,
                                final T aDot, final T eDot, final T iDot,
                                final T paDot, final T raanDot, final T anomalyDot,
-                               final PositionAngle type,
+                               final PositionAngleType type,
                                final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
@@ -354,7 +354,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             // we have a relevant acceleration, we can compute derivatives
 
             final T[][] jacobian = MathArrays.buildArray(a.getField(), 6, 6);
-            getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+            getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
 
             final FieldVector3D<T> keplerianAcceleration    = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(mu.negate()), pvP);
             final FieldVector3D<T> nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
@@ -435,7 +435,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                 (op.hasDerivatives()) ? field.getZero().add(op.getIDot()) : null,
                 (op.hasDerivatives()) ? field.getZero().add(op.getPerigeeArgumentDot()) : null,
                 (op.hasDerivatives()) ? field.getZero().add(op.getRightAscensionOfAscendingNodeDot()) : null,
-                (op.hasDerivatives()) ? field.getZero().add(op.getTrueAnomalyDot()) : null, PositionAngle.TRUE,
+                (op.hasDerivatives()) ? field.getZero().add(op.getTrueAnomalyDot()) : null, PositionAngleType.TRUE,
                 op.getFrame(), new FieldAbsoluteDate<>(field, op.getDate()), field.getZero().add(op.getMu()));
     }
 
@@ -599,9 +599,9 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @param type type of the angle
      * @return anomaly (rad)
      */
-    public T getAnomaly(final PositionAngle type) {
-        return (type == PositionAngle.MEAN) ? getMeanAnomaly() :
-                                              ((type == PositionAngle.ECCENTRIC) ? getEccentricAnomaly() :
+    public T getAnomaly(final PositionAngleType type) {
+        return (type == PositionAngleType.MEAN) ? getMeanAnomaly() :
+                                              ((type == PositionAngleType.ECCENTRIC) ? getEccentricAnomaly() :
                                                                                    getTrueAnomaly());
     }
 
@@ -612,9 +612,9 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @param type type of the angle
      * @return anomaly derivative (rad/s)
      */
-    public T getAnomalyDot(final PositionAngle type) {
-        return (type == PositionAngle.MEAN) ? getMeanAnomalyDot() :
-                                              ((type == PositionAngle.ECCENTRIC) ? getEccentricAnomalyDot() :
+    public T getAnomalyDot(final PositionAngleType type) {
+        return (type == PositionAngleType.MEAN) ? getMeanAnomalyDot() :
+                                              ((type == PositionAngleType.ECCENTRIC) ? getEccentricAnomalyDot() :
                                                                                    getTrueAnomalyDot());
     }
 
@@ -845,7 +845,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     private FieldVector3D<T> nonKeplerianAcceleration() {
 
         final T[][] dCdP = MathArrays.buildArray(a.getField(), 6, 6);
-        getJacobianWrtParameters(PositionAngle.MEAN, dCdP);
+        getJacobianWrtParameters(PositionAngleType.MEAN, dCdP);
 
         final T nonKeplerianMeanMotion = getMeanAnomalyDot().subtract(getKeplerianMeanMotion());
         final T nonKeplerianAx =     dCdP[3][0].multiply(aDot).
@@ -934,7 +934,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         // use Keplerian-only motion
         final FieldKeplerianOrbit<T> keplerianShifted = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
                                                                                   getKeplerianMeanMotion().multiply(dt).add(getMeanAnomaly()),
-                                                                                  PositionAngle.MEAN, getFrame(), getDate().shiftedBy(dt), getMu());
+                                                                                  PositionAngleType.MEAN, getFrame(), getDate().shiftedBy(dt), getMu());
 
         if (hasDerivatives()) {
 
@@ -1399,7 +1399,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final T gm,
+    public void addKeplerContribution(final PositionAngleType type, final T gm,
                                       final T[] pDot) {
         final T oMe2;
         final T ksi;
@@ -1468,12 +1468,12 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                                       pa.getReal(), raan.getReal(), v.getReal(),
                                       aDot.getReal(), eDot.getReal(), iDot.getReal(),
                                       paDot.getReal(), raanDot.getReal(), vDot.getReal(),
-                                      PositionAngle.TRUE,
+                                      PositionAngleType.TRUE,
                                       getFrame(), getDate().toAbsoluteDate(), getMu().getReal());
         } else {
             return new KeplerianOrbit(a.getReal(), e.getReal(), i.getReal(),
                                       pa.getReal(), raan.getReal(), v.getReal(),
-                                      PositionAngle.TRUE,
+                                      PositionAngleType.TRUE,
                                       getFrame(), getDate().toAbsoluteDate(), getMu().getReal());
         }
     }

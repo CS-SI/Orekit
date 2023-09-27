@@ -145,8 +145,8 @@ class OrbitHermiteInterpolatorTest {
             if (!useDerivatives) {
                 // remove derivatives
                 double[] stateVector = new double[6];
-                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
-                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+                orbit.getType().mapOrbitToArray(orbit, PositionAngleType.TRUE, stateVector, null);
+                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngleType.TRUE,
                                                         orbit.getDate(), orbit.getMu(), orbit.getFrame());
             }
             sample.add(orbit);
@@ -253,8 +253,8 @@ class OrbitHermiteInterpolatorTest {
             if (!useDerivatives) {
                 // remove derivatives
                 double[] stateVector = new double[6];
-                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
-                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+                orbit.getType().mapOrbitToArray(orbit, PositionAngleType.TRUE, stateVector, null);
+                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngleType.TRUE,
                                                         orbit.getDate(), orbit.getMu(), orbit.getFrame());
             }
             sample.add(orbit);
@@ -339,8 +339,8 @@ class OrbitHermiteInterpolatorTest {
             if (!useDerivatives) {
                 // remove derivatives
                 double[] stateVector = new double[6];
-                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
-                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+                orbit.getType().mapOrbitToArray(orbit, PositionAngleType.TRUE, stateVector, null);
+                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngleType.TRUE,
                                                         orbit.getDate(), orbit.getMu(), orbit.getFrame());
             }
             sample.add(orbit);
@@ -430,8 +430,8 @@ class OrbitHermiteInterpolatorTest {
             if (!useDerivatives) {
                 // remove derivatives
                 double[] stateVector = new double[6];
-                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
-                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+                orbit.getType().mapOrbitToArray(orbit, PositionAngleType.TRUE, stateVector, null);
+                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngleType.TRUE,
                                                         orbit.getDate(), orbit.getMu(), orbit.getFrame());
             }
             sample.add(orbit);

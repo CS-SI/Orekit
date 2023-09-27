@@ -34,7 +34,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -156,7 +156,7 @@ public class SlewingPanelTest {
         // respect to orbit plane roughly evolving roughly from 15 to 15.2 degrees in the test range
         Orbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(280),
-                                   FastMath.toRadians(10.0), PositionAngle.MEAN,
+                                   FastMath.toRadians(10.0), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
         propagator =
             new EcksteinHechlerPropagator(circ,

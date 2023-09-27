@@ -615,7 +615,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final T gm,
+    public void addKeplerContribution(final PositionAngleType type, final T gm,
                                       final T[] pDot) {
 
         final FieldPVCoordinates<T> pv = getPVCoordinates();

@@ -42,7 +42,7 @@ import org.orekit.frames.Transform;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -274,7 +274,7 @@ public class BodyCenterPointingTest {
                                                            TimeScalesFactory.getUTC());
         // Orbit
         FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
-                                                                m, PositionAngle.MEAN,
+                                                                m, PositionAngleType.MEAN,
                                                                 FramesFactory.getEME2000(), date, mu);
         // WGS84 Earth model
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -313,7 +313,7 @@ public class BodyCenterPointingTest {
                                                            TimeScalesFactory.getUTC());
         // Orbit
         FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
-                                                                m, PositionAngle.MEAN,
+                                                                m, PositionAngleType.MEAN,
                                                                 FramesFactory.getEME2000(), date, mu);
 
         // WGS84 Earth model
@@ -380,7 +380,7 @@ public class BodyCenterPointingTest {
                                                                 TimeScalesFactory.getUTC());
         // Orbit
         FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
-                                                                m, PositionAngle.MEAN,
+                                                                m, PositionAngleType.MEAN,
                                                                 FramesFactory.getEME2000(), date_comp, ehMu);
         // WGS84 Earth model
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -465,7 +465,7 @@ public class BodyCenterPointingTest {
                                                               TimeScalesFactory.getUTC());
         // Orbit
         FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
-                                                                m, PositionAngle.MEAN,
+                                                                m, PositionAngleType.MEAN,
                                                                 FramesFactory.getEME2000(), date_R, ehMu);
         // WGS84 Earth model
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -529,7 +529,7 @@ public class BodyCenterPointingTest {
             final double raan = 270.;
             circ =
                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(raan),
-                                       FastMath.toRadians(5.300 - raan), PositionAngle.MEAN,
+                                       FastMath.toRadians(5.300 - raan), PositionAngleType.MEAN,
                                        FramesFactory.getEME2000(), date, mu);
 
 

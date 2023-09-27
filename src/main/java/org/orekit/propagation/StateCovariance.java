@@ -26,7 +26,7 @@ import org.orekit.frames.LOF;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -41,7 +41,7 @@ import org.orekit.utils.CartesianDerivativesFilter;
  * Flight Dynamics Operations</i> by David A. SVallado.
  * <p>
  * Finally, covariance orbit type can be changed using the
- * {@link #changeCovarianceType(Orbit, OrbitType, PositionAngle)} method.
+ * {@link #changeCovarianceType(Orbit, OrbitType, PositionAngleType)} method.
  *
  * @author Bryan Cazabonne
  * @author Vincent Cucchietti
@@ -53,7 +53,7 @@ public class StateCovariance implements TimeStamped {
     public static final int STATE_DIMENSION = 6;
 
     /** Default position angle for covariance expressed in Cartesian elements. */
-    private static final PositionAngle DEFAULT_POSITION_ANGLE = PositionAngle.TRUE;
+    private static final PositionAngleType DEFAULT_POSITION_ANGLE = PositionAngleType.TRUE;
 
     /** Orbital covariance [6x6]. */
     private final RealMatrix orbitalCovariance;
@@ -71,7 +71,7 @@ public class StateCovariance implements TimeStamped {
     private final OrbitType orbitType;
 
     /** Covariance position angle type (not used if orbitType is CARTESIAN). */
-    private final PositionAngle angleType;
+    private final PositionAngleType angleType;
 
     /**
      * Constructor.
@@ -93,7 +93,7 @@ public class StateCovariance implements TimeStamped {
      */
     public StateCovariance(final RealMatrix orbitalCovariance, final AbsoluteDate epoch,
                            final Frame covarianceFrame,
-                           final OrbitType orbitType, final PositionAngle angleType) {
+                           final OrbitType orbitType, final PositionAngleType angleType) {
         this(orbitalCovariance, epoch, covarianceFrame, null, orbitType, angleType);
     }
 
@@ -108,7 +108,7 @@ public class StateCovariance implements TimeStamped {
      */
     private StateCovariance(final RealMatrix orbitalCovariance, final AbsoluteDate epoch,
                             final Frame covarianceFrame, final LOF lof,
-                            final OrbitType orbitType, final PositionAngle angleType) {
+                            final OrbitType orbitType, final PositionAngleType angleType) {
 
         checkFrameAndOrbitTypeConsistency(covarianceFrame, orbitType);
 
@@ -169,7 +169,7 @@ public class StateCovariance implements TimeStamped {
      * Get the covariance angle type.
      * @return the covariance angle type
      */
-    public PositionAngle getPositionAngle() {
+    public PositionAngleType getPositionAngle() {
         return angleType;
     }
 
@@ -212,7 +212,7 @@ public class StateCovariance implements TimeStamped {
      * @see #changeCovarianceFrame(Orbit, Frame)
      */
     public StateCovariance changeCovarianceType(final Orbit orbit, final OrbitType outOrbitType,
-                                                final PositionAngle outAngleType) {
+                                                final PositionAngleType outAngleType) {
 
         // Handle case where the covariance is already expressed in the output type
         if (outOrbitType == orbitType && (outAngleType == angleType || outOrbitType == OrbitType.CARTESIAN)) {
@@ -332,7 +332,7 @@ public class StateCovariance implements TimeStamped {
 
                 // Convert covariance in STM type (i.e., Equinoctial elements)
                 final StateCovariance inStmType = changeTypeAndCreate(orbit, epoch, frame, orbitType, angleType,
-                                                                      OrbitType.EQUINOCTIAL, PositionAngle.MEAN,
+                                                                      OrbitType.EQUINOCTIAL, PositionAngleType.MEAN,
                                                                       orbitalCovariance);
 
                 // Shift covariance by applying the STM
@@ -340,7 +340,7 @@ public class StateCovariance implements TimeStamped {
 
                 // Restore the initial covariance type
                 return changeTypeAndCreate(shifted, shifted.getDate(), frame,
-                                           OrbitType.EQUINOCTIAL, PositionAngle.MEAN,
+                                           OrbitType.EQUINOCTIAL, PositionAngleType.MEAN,
                                            orbitType, angleType, shiftedCov);
             }
 
@@ -395,8 +395,8 @@ public class StateCovariance implements TimeStamped {
      */
     private static StateCovariance changeTypeAndCreate(final Orbit orbit, final AbsoluteDate date,
                                                        final Frame covFrame,
-                                                       final OrbitType inOrbitType, final PositionAngle inAngleType,
-                                                       final OrbitType outOrbitType, final PositionAngle outAngleType,
+                                                       final OrbitType inOrbitType, final PositionAngleType inAngleType,
+                                                       final OrbitType outOrbitType, final PositionAngleType outAngleType,
                                                        final RealMatrix inputCov) {
 
         // Notations:
@@ -492,7 +492,7 @@ public class StateCovariance implements TimeStamped {
                                                         final Frame frameIn, final LOF lofOut,
                                                         final RealMatrix inputCov,
                                                         final OrbitType covOrbitType,
-                                                        final PositionAngle covAngleType) {
+                                                        final PositionAngleType covAngleType) {
 
         // Input frame is inertial
         if (frameIn.isPseudoInertial()) {
@@ -500,7 +500,7 @@ public class StateCovariance implements TimeStamped {
             // Convert input matrix to Cartesian parameters in input frame
             final RealMatrix cartesianCovarianceIn =
                     changeTypeAndCreate(orbit, date, frameIn, covOrbitType, covAngleType,
-                                        OrbitType.CARTESIAN, PositionAngle.MEAN,
+                                        OrbitType.CARTESIAN, PositionAngleType.MEAN,
                                         inputCov).getMatrix();
 
             // Builds the matrix to perform covariance transformation
@@ -525,11 +525,11 @@ public class StateCovariance implements TimeStamped {
             // Compute rotation matrix from frameIn to orbit inertial frame
             final RealMatrix cartesianCovarianceInOrbitFrame =
                    changeFrameAndCreate(orbit, date, frameIn, orbitInertialFrame, inputCov,
-                                         OrbitType.CARTESIAN, PositionAngle.MEAN).getMatrix();
+                                         OrbitType.CARTESIAN, PositionAngleType.MEAN).getMatrix();
 
             // Convert from orbit inertial frame to lofOut
             return changeFrameAndCreate(orbit, date, orbitInertialFrame, lofOut, cartesianCovarianceInOrbitFrame,
-                                        OrbitType.CARTESIAN, PositionAngle.MEAN);
+                                        OrbitType.CARTESIAN, PositionAngleType.MEAN);
 
         }
 
@@ -588,7 +588,7 @@ public class StateCovariance implements TimeStamped {
 
             // Get the Cartesian covariance matrix converted to frameOut
             return changeFrameAndCreate(orbit, date, orbit.getFrame(), frameOut, cartesianCovarianceInOrbitFrame,
-                                        OrbitType.CARTESIAN, PositionAngle.MEAN);
+                                        OrbitType.CARTESIAN, PositionAngleType.MEAN);
         }
 
     }
@@ -627,7 +627,7 @@ public class StateCovariance implements TimeStamped {
                                                         final Frame frameIn, final Frame frameOut,
                                                         final RealMatrix inputCov,
                                                         final OrbitType covOrbitType,
-                                                        final PositionAngle covAngleType) {
+                                                        final PositionAngleType covAngleType) {
 
         // Get the transform from the covariance frame to the output frame
         final Transform inToOut = frameIn.getTransformTo(frameOut, orbit.getDate());
@@ -641,7 +641,7 @@ public class StateCovariance implements TimeStamped {
             // Convert input matrix to Cartesian parameters in input frame
             final RealMatrix cartesianCovarianceIn =
                     changeTypeAndCreate(orbit, date, frameIn, covOrbitType, covAngleType,
-                                        OrbitType.CARTESIAN, PositionAngle.MEAN,
+                                        OrbitType.CARTESIAN, PositionAngleType.MEAN,
                                         inputCov).getMatrix();
 
             // Get the Cartesian covariance matrix converted to frameOut
@@ -651,7 +651,7 @@ public class StateCovariance implements TimeStamped {
             if (frameOut.isPseudoInertial()) {
 
                 // Convert output Cartesian matrix to initial orbit type and position angle
-                return changeTypeAndCreate(orbit, date, frameOut, OrbitType.CARTESIAN, PositionAngle.MEAN,
+                return changeTypeAndCreate(orbit, date, frameOut, OrbitType.CARTESIAN, PositionAngleType.MEAN,
                                            covOrbitType, covAngleType, cartesianCovarianceOut);
 
             }

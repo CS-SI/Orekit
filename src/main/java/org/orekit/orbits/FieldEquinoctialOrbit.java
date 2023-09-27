@@ -130,7 +130,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      */
     public FieldEquinoctialOrbit(final T a, final T ex, final T ey,
                                  final T hx, final T hy, final T l,
-                                 final PositionAngle type,
+                                 final PositionAngleType type,
                                  final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         this(a, ex, ey, hx, hy, l,
@@ -163,7 +163,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
                                  final T hx, final T hy, final T l,
                                  final T aDot, final T exDot, final T eyDot,
                                  final T hxDot, final T hyDot, final T lDot,
-                                 final PositionAngle type,
+                                 final PositionAngleType type,
                                  final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
@@ -287,7 +287,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
             // we have a relevant acceleration, we can compute derivatives
 
             final T[][] jacobian = MathArrays.buildArray(a.getField(), 6, 6);
-            getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+            getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
 
             final FieldVector3D<T> keplerianAcceleration    = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(mu.negate()), pvP);
             final FieldVector3D<T> nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
@@ -519,9 +519,9 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @param type type of the angle
      * @return longitude argument (rad)
      */
-    public T getL(final PositionAngle type) {
-        return (type == PositionAngle.MEAN) ? getLM() :
-                                              ((type == PositionAngle.ECCENTRIC) ? getLE() :
+    public T getL(final PositionAngleType type) {
+        return (type == PositionAngleType.MEAN) ? getLM() :
+                                              ((type == PositionAngleType.ECCENTRIC) ? getLE() :
                                                                                    getLv());
     }
 
@@ -529,9 +529,9 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @param type type of the angle
      * @return longitude argument derivative (rad/s)
      */
-    public T getLDot(final PositionAngle type) {
-        return (type == PositionAngle.MEAN) ? getLMDot() :
-                                              ((type == PositionAngle.ECCENTRIC) ? getLEDot() :
+    public T getLDot(final PositionAngleType type) {
+        return (type == PositionAngleType.MEAN) ? getLMDot() :
+                                              ((type == PositionAngleType.ECCENTRIC) ? getLEDot() :
                                                                                    getLvDot());
     }
 
@@ -723,7 +723,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     private FieldVector3D<T> nonKeplerianAcceleration() {
 
         final T[][] dCdP = MathArrays.buildArray(a.getField(), 6, 6);
-        getJacobianWrtParameters(PositionAngle.MEAN, dCdP);
+        getJacobianWrtParameters(PositionAngleType.MEAN, dCdP);
 
         final T nonKeplerianMeanMotion = getLMDot().subtract(getKeplerianMeanMotion());
         final T nonKeplerianAx =     dCdP[3][0].multiply(aDot).
@@ -821,7 +821,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         // use Keplerian-only motion
         final FieldEquinoctialOrbit<T> keplerianShifted = new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy,
                                                                                       getLM().add(getKeplerianMeanMotion().multiply(dt)),
-                                                                                      PositionAngle.MEAN, getFrame(),
+                                                                                      PositionAngleType.MEAN, getFrame(),
                                                                                       getDate().shiftedBy(dt), getMu());
 
         if (hasDerivatives()) {
@@ -1017,7 +1017,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final T gm,
+    public void addKeplerContribution(final PositionAngleType type, final T gm,
                                       final T[] pDot) {
         final T oMe2;
         final T ksi;
@@ -1062,12 +1062,12 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
                                         hx.getReal(), hy.getReal(), lv.getReal(),
                                         aDot.getReal(), exDot.getReal(), eyDot.getReal(),
                                         hxDot.getReal(), hyDot.getReal(), lvDot.getReal(),
-                                        PositionAngle.TRUE, getFrame(),
+                                        PositionAngleType.TRUE, getFrame(),
                                         getDate().toAbsoluteDate(), getMu().getReal());
         } else {
             return new EquinoctialOrbit(a.getReal(), ex.getReal(), ey.getReal(),
                                         hx.getReal(), hy.getReal(), lv.getReal(),
-                                        PositionAngle.TRUE, getFrame(),
+                                        PositionAngleType.TRUE, getFrame(),
                                         getDate().toAbsoluteDate(), getMu().getReal());
         }
     }

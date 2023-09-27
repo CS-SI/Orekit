@@ -189,7 +189,7 @@ public class CartesianOrbitTest {
 
         for (double lv = 0; lv <= 2 * FastMath.PI; lv += 2 * FastMath.PI/100.) {
             p = new EquinoctialOrbit(p.getA(), p.getEquinoctialEx(), p.getEquinoctialEy(),
-                                          p.getHx(), p.getHy(), lv, PositionAngle.TRUE, p.getFrame(), date, mu);
+                                          p.getHx(), p.getHy(), lv, PositionAngleType.TRUE, p.getFrame(), date, mu);
             position = p.getPosition();
 
             // test if the norm of the position is in the range [perigee radius, apogee radius]
@@ -214,7 +214,7 @@ public class CartesianOrbitTest {
     @Test
     public void testHyperbola1() {
         CartesianOrbit orbit = new CartesianOrbit(new KeplerianOrbit(-10000000.0, 2.5, 0.3, 0, 0, 0.0,
-                                                                     PositionAngle.TRUE,
+                                                                     PositionAngleType.TRUE,
                                                                      FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                                                      mu));
         Vector3D perigeeP  = orbit.getPosition();
@@ -236,10 +236,10 @@ public class CartesianOrbitTest {
     @Test
     public void testHyperbola2() {
         CartesianOrbit orbit = new CartesianOrbit(new KeplerianOrbit(-10000000.0, 1.2, 0.3, 0, 0, -1.75,
-                                                                     PositionAngle.MEAN,
+                                                                     PositionAngleType.MEAN,
                                                                      FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                                                      mu));
-        Vector3D perigeeP  = new KeplerianOrbit(-10000000.0, 1.2, 0.3, 0, 0, 0.0, PositionAngle.TRUE, orbit.getFrame(),
+        Vector3D perigeeP  = new KeplerianOrbit(-10000000.0, 1.2, 0.3, 0, 0, 0.0, PositionAngleType.TRUE, orbit.getFrame(),
                                                 orbit.getDate(), orbit.getMu()).getPosition();
         Vector3D u = perigeeP.normalize();
         Vector3D focus1 = Vector3D.ZERO;
@@ -491,7 +491,7 @@ public class CartesianOrbitTest {
         CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
         double[][] jacobian = new double[6][6];
-        orbit.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+        orbit.getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
 
         for (int i = 0; i < jacobian.length; i++) {
             double[] row    = jacobian[i];
@@ -501,7 +501,7 @@ public class CartesianOrbitTest {
         }
 
         double[][] invJacobian = new double[6][6];
-        orbit.getJacobianWrtParameters(PositionAngle.MEAN, invJacobian);
+        orbit.getJacobianWrtParameters(PositionAngleType.MEAN, invJacobian);
         MatrixUtils.createRealMatrix(jacobian).
                         multiply(MatrixUtils.createRealMatrix(invJacobian)).
         walkInRowOrder(new RealMatrixPreservingVisitor() {
