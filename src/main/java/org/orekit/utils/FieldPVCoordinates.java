@@ -29,7 +29,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldBlendable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.TimeShiftable;
+import org.orekit.time.FieldTimeShiftable;
 
 /** Simple container for Position/Velocity pairs, using {@link CalculusFieldElement}.
  * <p>
@@ -48,7 +48,7 @@ import org.orekit.time.TimeShiftable;
  * @see PVCoordinates
  */
 public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
-    implements TimeShiftable<FieldPVCoordinates<T>>, FieldBlendable<FieldPVCoordinates<T>, T> {
+    implements FieldTimeShiftable<FieldPVCoordinates<T>, T>, FieldBlendable<FieldPVCoordinates<T>, T> {
 
     /** The position. */
     private final FieldVector3D<T> position;
@@ -626,6 +626,7 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
+    @Override
     public FieldPVCoordinates<T> shiftedBy(final double dt) {
         return new FieldPVCoordinates<>(new FieldVector3D<>(1, position, dt, velocity, 0.5 * dt * dt, acceleration),
                                         new FieldVector3D<>(1, velocity, dt, acceleration),
@@ -642,6 +643,7 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
+    @Override
     public FieldPVCoordinates<T> shiftedBy(final T dt) {
         final T one = dt.getField().getOne();
         return new FieldPVCoordinates<>(positionShiftedBy(dt),
