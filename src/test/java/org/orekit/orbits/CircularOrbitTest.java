@@ -1070,6 +1070,29 @@ public class CircularOrbitTest {
     }
 
     @Test
+    void testRemoveRates() {
+        // GIVEN
+        final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        final PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
+        final CircularOrbit orbit = new CircularOrbit(pvCoordinates, FramesFactory.getGCRF(), date, mu);
+        // WHEN
+        final CircularOrbit orbitWithoutRates = orbit.removeRates();
+        // THEN
+        Assertions.assertFalse(orbitWithoutRates.hasRates());
+        Assertions.assertEquals(orbit.getMu(), orbitWithoutRates.getMu());
+        Assertions.assertEquals(orbit.getDate(), orbitWithoutRates.getDate());
+        Assertions.assertEquals(orbit.getFrame(), orbitWithoutRates.getFrame());
+        Assertions.assertEquals(orbit.getA(), orbitWithoutRates.getA());
+        Assertions.assertEquals(orbit.getCircularEx(), orbitWithoutRates.getCircularEx());
+        Assertions.assertEquals(orbit.getCircularEy(), orbitWithoutRates.getCircularEy());
+        Assertions.assertEquals(orbit.getRightAscensionOfAscendingNode(),
+                orbitWithoutRates.getRightAscensionOfAscendingNode());
+        Assertions.assertEquals(orbit.getI(), orbitWithoutRates.getI());
+        Assertions.assertEquals(orbit.getAlphaV(), orbitWithoutRates.getAlphaV());
+    }
+
+    @Test
     public void testCopyNonKeplerianAcceleration() {
 
         final Frame eme2000     = FramesFactory.getEME2000();

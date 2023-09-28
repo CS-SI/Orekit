@@ -72,8 +72,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class CircularOrbit
-    extends Orbit {
+public class CircularOrbit extends Orbit implements PositionAngleBased {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20170414L;
@@ -1213,6 +1212,26 @@ public class CircularOrbit
                                   append(", raan: ").append(FastMath.toDegrees(raan)).
                                   append(", alphaV: ").append(FastMath.toDegrees(alphaV)).
                                   append(";}").toString();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PositionAngleType getCachedPositionAngleType() {
+        return PositionAngleType.TRUE;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasRates() {
+        return hasDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CircularOrbit removeRates() {
+        final PositionAngleType positionAngleType = getCachedPositionAngleType();
+        return new CircularOrbit(getA(), getCircularEx(), getCircularEy(), getI(), getRightAscensionOfAscendingNode(),
+                getAlpha(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
     }
 
     /** Replace the instance with a data transfer object for serialization.

@@ -212,6 +212,22 @@ public class FieldCircularOrbitTest {
     }
 
     @Test
+    void testRemoveRates() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final CircularOrbit expectedOrbit = createOrbitTestFromCircularOrbit(true);
+        final FieldCircularOrbit<Complex> fieldOrbit = new FieldCircularOrbit<>(field, expectedOrbit);
+        // WHEN
+        final FieldCircularOrbit<Complex> actualFieldOrbit = fieldOrbit.removeRates();
+        // THEN
+        Assertions.assertFalse(actualFieldOrbit.hasRates());
+        Assertions.assertEquals(fieldOrbit.getMu(), actualFieldOrbit.getMu());
+        Assertions.assertEquals(fieldOrbit.getDate(), actualFieldOrbit.getDate());
+        Assertions.assertEquals(fieldOrbit.getFrame(), actualFieldOrbit.getFrame());
+        Assertions.assertEquals(fieldOrbit.getPosition(), actualFieldOrbit.getPosition());
+    }
+
+    @Test
     void testFromCircularOrbitWithDerivatives() {
         // GIVEN
         final ComplexField field = ComplexField.getInstance();

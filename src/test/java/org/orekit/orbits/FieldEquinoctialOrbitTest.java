@@ -185,6 +185,22 @@ public class FieldEquinoctialOrbitTest {
     }
 
     @Test
+    void testRemoveRates() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final EquinoctialOrbit expectedOrbit = createOrbitTestFromEquinoctialOrbit(true);
+        final FieldEquinoctialOrbit<Complex> fieldOrbit = new FieldEquinoctialOrbit<>(field, expectedOrbit);
+        // WHEN
+        final FieldEquinoctialOrbit<Complex> actualFieldOrbit = fieldOrbit.removeRates();
+        // THEN
+        Assertions.assertFalse(actualFieldOrbit.hasRates());
+        Assertions.assertEquals(fieldOrbit.getMu(), actualFieldOrbit.getMu());
+        Assertions.assertEquals(fieldOrbit.getDate(), actualFieldOrbit.getDate());
+        Assertions.assertEquals(fieldOrbit.getFrame(), actualFieldOrbit.getFrame());
+        Assertions.assertEquals(fieldOrbit.getPosition(), actualFieldOrbit.getPosition());
+    }
+
+    @Test
     void testFromEquinoctialOrbitWithDerivatives() {
         // GIVEN
         final ComplexField field = ComplexField.getInstance();

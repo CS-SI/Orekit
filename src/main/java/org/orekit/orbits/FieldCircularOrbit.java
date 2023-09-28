@@ -72,8 +72,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @param <T> type of the field elements
  */
 
-public class FieldCircularOrbit<T extends CalculusFieldElement<T>>
-    extends FieldOrbit<T> {
+public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> implements PositionAngleBased {
 
     /** Semi-major axis (m). */
     private final T a;
@@ -1292,6 +1291,27 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>>
                                   append(", raan: ").append(FastMath.toDegrees(raan.getReal())).
                                   append(", alphaV: ").append(FastMath.toDegrees(alphaV.getReal())).
                                   append(";}").toString();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PositionAngleType getCachedPositionAngleType() {
+        return PositionAngleType.TRUE;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasRates() {
+        return hasDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldCircularOrbit<T> removeRates() {
+        final PositionAngleType positionAngleType = getCachedPositionAngleType();
+        return new FieldCircularOrbit<>(getA(), getCircularEx(), getCircularEy(),
+                getI(), getRightAscensionOfAscendingNode(), getAlpha(positionAngleType),
+                positionAngleType, getFrame(), getDate(), getMu());
     }
 
     /** {@inheritDoc} */
