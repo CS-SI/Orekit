@@ -104,7 +104,8 @@ import org.orekit.utils.Constants;
  * @see ChronologicalComparator
  * @param <T> type of the field elements
  */
-public class FieldAbsoluteDate<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T>, TimeShiftable<FieldAbsoluteDate<T>>, Comparable<FieldAbsoluteDate<T>> {
+public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
+        implements FieldTimeStamped<T>, FieldTimeShiftable<FieldAbsoluteDate<T>, T>, Comparable<FieldAbsoluteDate<T>> {
 
     /** Reference epoch in seconds from 2000-01-01T12:00:00 TAI.
      * <p>Beware, it is not {@link #getJ2000Epoch(Field)} since it is in TAI and not in TT.</p> */
@@ -411,7 +412,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>> implements Fie
                 this.epoch  = epoch + dl;
             } else {
                 // very rare case, the offset is just before a whole second
-                // we will loose some bits of accuracy when adding 1 second
+                // we will lose some bits of accuracy when adding 1 second
                 // but this will ensure the offset remains in the [0.0; 1.0) interval
                 this.offset = regularOffset.add(1.0);
                 this.epoch  = epoch + dl - 1;
@@ -1138,11 +1139,12 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>> implements Fie
      * </p>
      * @param dt time shift in seconds
      * @return a new date, shifted with respect to instance (which is immutable)
-     * @see org.orekit.utils.PVCoordinates#shiftedBy(double)
-     * @see org.orekit.attitudes.Attitude#shiftedBy(double)
-     * @see org.orekit.orbits.Orbit#shiftedBy(double)
-     * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
+     * @see org.orekit.utils.FieldPVCoordinates#shiftedBy(double)
+     * @see org.orekit.attitudes.FieldAttitude#shiftedBy(double)
+     * @see org.orekit.orbits.FieldOrbit#shiftedBy(double)
+     * @see org.orekit.propagation.FieldSpacecraftState#shiftedBy(double)
      */
+    @Override
     public FieldAbsoluteDate<T> shiftedBy(final T dt) {
         return new FieldAbsoluteDate<>(this, dt);
     }
@@ -1356,6 +1358,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>> implements Fie
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldAbsoluteDate<T> getDate() {
         return this;
     }
@@ -1627,16 +1630,15 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>> implements Fie
 
     /** Get a time-shifted date.
      * <p>
-     * Calling this method is equivalent to call <code>new AbsoluteDate(this, dt)</code>.
+     * Calling this method is equivalent to call <code>new FieldAbsoluteDate(this, dt)</code>.
      * </p>
      * @param dt time shift in seconds
      * @return a new date, shifted with respect to instance (which is immutable)
-     * @see org.orekit.utils.PVCoordinates#shiftedBy(double)
-     * @see org.orekit.attitudes.Attitude#shiftedBy(double)
-     * @see org.orekit.orbits.Orbit#shiftedBy(double)
-     * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
+     * @see org.orekit.utils.FieldPVCoordinates#shiftedBy(double)
+     * @see org.orekit.attitudes.FieldAttitude#shiftedBy(double)
+     * @see org.orekit.orbits.FieldOrbit#shiftedBy(double)
+     * @see org.orekit.propagation.FieldSpacecraftState#shiftedBy(double)
      */
-
     @Override
     public FieldAbsoluteDate<T> shiftedBy(final double dt) {
         return new FieldAbsoluteDate<>(this, dt);

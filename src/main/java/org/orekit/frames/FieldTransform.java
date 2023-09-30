@@ -30,8 +30,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
-import org.orekit.time.TimeShiftable;
-import org.orekit.time.TimeStamped;
+import org.orekit.time.FieldTimeShiftable;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldAngularCoordinates;
@@ -44,7 +43,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
-/** Transformation class in three dimensional space.
+/** Transformation class in three-dimensional space.
  *
  * <p>This class represents the transformation engine between {@link Frame frames}.
  * It is used both to define the relationship between each frame and its
@@ -102,7 +101,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 9.0
  */
 public class FieldTransform<T extends CalculusFieldElement<T>>
-    implements TimeStamped, TimeShiftable<FieldTransform<T>>, FieldStaticTransform<T> {
+    implements FieldTimeShiftable<FieldTransform<T>, T>, FieldStaticTransform<T> {
 
     /** Date of the transform. */
     private final FieldAbsoluteDate<T> date;
@@ -372,6 +371,7 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbsoluteDate getDate() {
         return aDate;
     }
@@ -384,6 +384,7 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
+    @Override
     public FieldTransform<T> shiftedBy(final double dt) {
         return new FieldTransform<>(date.shiftedBy(dt), aDate.shiftedBy(dt),
                                     cartesian.shiftedBy(dt), angular.shiftedBy(dt));

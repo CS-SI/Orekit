@@ -237,11 +237,6 @@ class FieldOrbitTest {
         }
 
         @Override
-        public Complex durationFrom(FieldTimeStamped<Complex> other) {
-            return super.durationFrom(other);
-        }
-
-        @Override
         public FieldVector3D<Complex> getPosition(FieldAbsoluteDate<Complex> date, Frame frame) {
             return super.getPosition(date, frame);
         }
