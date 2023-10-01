@@ -18,6 +18,7 @@ package org.orekit.estimation.iod;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
@@ -130,7 +131,57 @@ public class IodGooding {
     }
 
     /** Estimate orbit from three angular observations.
+     * <p>
+     * This signature assumes there was less than an half revolution between start and final date
+     * </p>
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
+     * @param azEl1 first angular observation
+     * @param azEl2 second angular observation
+     * @param azEl3 third angular observation
+     * @param rho1init initial guess of the range problem. range 1, in meters
+     * @param rho3init initial guess of the range problem. range 3, in meters
+     * @return an estimate of the Keplerian orbit at the central date
+     *         (i.e., date of the second angular observation)
+     * @since 12.0
+     */
+    public Orbit estimate(final Frame outputFrame, final AngularAzEl azEl1,
+                          final AngularAzEl azEl2, final AngularAzEl azEl3,
+                          final double rho1init, final double rho3init) {
+        return estimate(outputFrame, azEl1, azEl2, azEl3, rho1init, rho3init, 0, true);
+    }
+
+    /** Estimate orbit from three angular observations.
      *
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
+     * @param azEl1 first angular observation
+     * @param azEl2 second angular observation
+     * @param azEl3 third angular observation
+     * @param rho1init initial guess of the range problem. range 1, in meters
+     * @param rho3init initial guess of the range problem. range 3, in meters
+     * @param nRev number of complete revolutions between observation 1 and 3
+     * @param direction true if posigrade (short way)
+     * @return an estimate of the Keplerian orbit at the central date
+     *         (i.e., date of the second angular observation)
+     * @since 11.0
+     */
+    public Orbit estimate(final Frame outputFrame, final AngularAzEl azEl1,
+                          final AngularAzEl azEl2, final AngularAzEl azEl3,
+                          final double rho1init, final double rho3init,
+                          final int nRev, final boolean direction) {
+        return estimate(outputFrame,
+                        azEl1.getGroundStationPosition(outputFrame),
+                        azEl2.getGroundStationPosition(outputFrame),
+                        azEl3.getGroundStationPosition(outputFrame),
+                        azEl1.getObservedLineOfSight(outputFrame), azEl1.getDate(),
+                        azEl2.getObservedLineOfSight(outputFrame), azEl2.getDate(),
+                        azEl3.getObservedLineOfSight(outputFrame), azEl3.getDate(),
+                        rho1init, rho3init, nRev, direction);
+    }
+
+    /** Estimate orbit from three angular observations.
+     * <p>
+     * This signature assumes there was less than an half revolution between start and final date
+     * </p>
      * @param outputFrame inertial frame for observer coordinates and orbit estimate
      * @param raDec1 first angular observation
      * @param raDec2 second angular observation

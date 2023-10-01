@@ -22,8 +22,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
+import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -115,12 +114,10 @@ public class IodGaussTest extends AbstractIodTest {
                                                               PositionAngleType.MEAN, gcrf, obsDate2, Constants.WGS84_EARTH_MU);
         final KeplerianPropagator propRef = new KeplerianPropagator(kepOrbitRef);
 
-        final Frame veis = FramesFactory.getVeis1950();
-
         // computation of the estimated orbits for 3 different time of propagation
-        final Orbit estimatedOrbit1 = getGaussEstimation(-4, 4, obsDate2, propRef, veis);
-        final Orbit estimatedOrbit2 = getGaussEstimation(-37, 37, obsDate2, propRef, veis);
-        final Orbit estimatedOrbit3 = getGaussEstimation(-90, 90, obsDate2, propRef, veis);
+        final Orbit estimatedOrbit1 = getGaussEstimation(-4, 4, obsDate2, propRef);
+        final Orbit estimatedOrbit2 = getGaussEstimation(-37, 37, obsDate2, propRef);
+        final Orbit estimatedOrbit3 = getGaussEstimation(-90, 90, obsDate2, propRef);
 
         //  Computation of the relative errors
         final double relativeRangeError1    = getRelativeRangeError(estimatedOrbit1, kepOrbitRef);
@@ -157,9 +154,9 @@ public class IodGaussTest extends AbstractIodTest {
         final KeplerianPropagator propRef = new KeplerianPropagator(kepOrbitRef);
 
         // computation of the estimated orbits for 3 different time of propagation
-        final Orbit estimatedOrbit1 = getGaussEstimation(-35, 35, obsDate2, propRef, eme2000);
-        final Orbit estimatedOrbit2 = getGaussEstimation(-305, 305, obsDate2, propRef, eme2000);
-        final Orbit estimatedOrbit3 = getGaussEstimation(-760, 760, obsDate2, propRef, eme2000);
+        final Orbit estimatedOrbit1 = getGaussEstimation(-35, 35, obsDate2, propRef);
+        final Orbit estimatedOrbit2 = getGaussEstimation(-305, 305, obsDate2, propRef);
+        final Orbit estimatedOrbit3 = getGaussEstimation(-760, 760, obsDate2, propRef);
 
         // computation of the relative errors
         final double relativeRangeError1    = getRelativeRangeError(estimatedOrbit1, kepOrbitRef);
@@ -196,9 +193,9 @@ public class IodGaussTest extends AbstractIodTest {
         final KeplerianPropagator propRef    = new KeplerianPropagator(kepOrbitRef);
 
         // computation of the estimated orbits for 3 different time of propagation
-        final Orbit estimatedOrbit1 = getGaussEstimation(-60, 60, obsDate2, propRef, eme2000);
-        final Orbit estimatedOrbit2 = getGaussEstimation(-520, 520, obsDate2, propRef, eme2000);
-        final Orbit estimatedOrbit3 = getGaussEstimation(-1300, 1300, obsDate2, propRef, eme2000);
+        final Orbit estimatedOrbit1 = getGaussEstimation(-60, 60, obsDate2, propRef);
+        final Orbit estimatedOrbit2 = getGaussEstimation(-520, 520, obsDate2, propRef);
+        final Orbit estimatedOrbit3 = getGaussEstimation(-1300, 1300, obsDate2, propRef);
 
         // computation of the relative errors
         final double relativeRangeError1    = getRelativeRangeError(estimatedOrbit1, kepOrbitRef);
@@ -300,9 +297,33 @@ public class IodGaussTest extends AbstractIodTest {
 
     }
 
+    @Test
+    public void testLaplaceKeplerianWithAzEl() {
+        // Settings
+        final AbsoluteDate date = new AbsoluteDate(2019, 9, 29, 22, 0, 2.0, TimeScalesFactory.getUTC());
+        final KeplerianOrbit kep = new KeplerianOrbit(6798938.970424857, 0.0021115522920270016, 0.9008866630545347,
+            1.8278985811406743, -2.7656136723308524,
+            0.8823034512437679, PositionAngleType.MEAN, gcrf,
+            date, Constants.EGM96_EARTH_MU);
+        final KeplerianPropagator prop = new KeplerianPropagator(kep);
+
+        // Measurements
+        final AngularAzEl azEl1 = getAzEl(prop, date);
+        final AngularAzEl azEl2 = getAzEl(prop, date.shiftedBy(5.0));
+        final AngularAzEl azEl3 = getAzEl(prop, date.shiftedBy(10.0));
+
+        // With only 3 measurements, we can expect ~400 meters error in position and ~1 m/s in velocity
+        final Orbit estOrbit = new IodGauss(Constants.EGM96_EARTH_MU).estimate(gcrf, azEl1, azEl2, azEl3);
+
+        // Verify
+        final TimeStampedPVCoordinates truth = prop.getPVCoordinates(azEl2.getDate(), gcrf);
+        Assertions.assertEquals(0.0, Vector3D.distance(truth.getPosition(), estOrbit.getPosition()), 262.0);
+        Assertions.assertEquals(0.0, Vector3D.distance(truth.getVelocity(), estOrbit.getPVCoordinates().getVelocity()), 0.3);
+    }
+
     // Private method to have a gauss estimated orbit
     private Orbit getGaussEstimation(final double deltaT1, final double deltaT3, final AbsoluteDate obsDate2,
-                                     final Propagator prop, final Frame frameEstimation) {
+                                     final Propagator prop) {
 
         // Date of the 1st measurement and 3rd, according to 2nd measurement
         final AbsoluteDate obsDate1 = obsDate2.shiftedBy(deltaT1);

@@ -25,6 +25,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.measurements.AngularAzEl;
+import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.AngularRaDecMeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -171,6 +173,57 @@ public class IodGoodingTest extends AbstractIodTest {
                                                          raDec2.getObservedLineOfSight(frame), raDec2.getDate(),
                                                          raDec3.getObservedLineOfSight(frame), raDec3.getDate(),
                                                          rhoInit1, rhoInit3));
+
+        Assertions.assertEquals(orbit1.getA(), orbit2.getA(), 1.0e-6 * orbit2.getA());
+        Assertions.assertEquals(orbit1.getE(), orbit2.getE(), 1.0e-6 * orbit2.getE());
+        Assertions.assertEquals(orbit1.getI(), orbit2.getI(), 1.0e-6 * orbit2.getI());
+        Assertions.assertEquals(orbit1.getRightAscensionOfAscendingNode(), orbit2.getRightAscensionOfAscendingNode(), 1.0e-6 * orbit2.getRightAscensionOfAscendingNode());
+        Assertions.assertEquals(orbit1.getPerigeeArgument(), orbit2.getPerigeeArgument(), FastMath.abs(1.0e-6 * orbit2.getPerigeeArgument()));
+        Assertions.assertEquals(orbit1.getMeanAnomaly(), orbit2.getMeanAnomaly(), 1.0e-6 * orbit2.getMeanAnomaly());
+        Assertions.assertEquals(orbit1.getMeanAnomaly(), orbit2.getMeanAnomaly(), 1.0e-6 * orbit2.getMeanAnomaly());
+    }
+
+    @Test
+    public void testIssue1216() {
+        final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        final double mu = context.initialOrbit.getMu();
+        final Frame frame = context.initialOrbit.getFrame();
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+            context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
+                1.0e-6, 60.0, 0.001);
+
+        // create perfect range measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+            propagatorBuilder);
+
+        final List<ObservedMeasurement<?>> measurements =
+            EstimationTestUtils.createMeasurements(propagator,
+                new AngularAzElMeasurementCreator(context),
+                0.0, 1.0, 60.0);
+
+        // Angular measurements
+        final AngularAzEl azEl1 = (AngularAzEl) measurements.get(0);
+        final AngularAzEl azEl2 = (AngularAzEl) measurements.get(20);
+        final AngularAzEl azEl3 = (AngularAzEl) measurements.get(40);
+
+        // Range estimations
+        final double rhoInit1 = 1.3127847998082995E7;
+        final double rhoInit3 = 1.3950296648518201E7;
+
+        // instantiate the IOD method
+        final IodGooding iod = new IodGooding(mu);
+
+        final KeplerianOrbit orbit1 = new KeplerianOrbit(iod.estimate(frame, azEl1, azEl2, azEl3, rhoInit1, rhoInit3));
+        final KeplerianOrbit orbit2 = new KeplerianOrbit(iod.estimate(frame,
+            azEl1.getGroundStationPosition(frame),
+            azEl2.getGroundStationPosition(frame),
+            azEl3.getGroundStationPosition(frame),
+            azEl1.getObservedLineOfSight(frame), azEl1.getDate(),
+            azEl2.getObservedLineOfSight(frame), azEl2.getDate(),
+            azEl3.getObservedLineOfSight(frame), azEl3.getDate(),
+            rhoInit1, rhoInit3));
 
         Assertions.assertEquals(orbit1.getA(), orbit2.getA(), 1.0e-6 * orbit2.getA());
         Assertions.assertEquals(orbit1.getE(), orbit2.getE(), 1.0e-6 * orbit2.getE());

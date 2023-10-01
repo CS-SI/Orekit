@@ -24,6 +24,7 @@ import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
+import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
@@ -65,10 +66,28 @@ public class IodGauss {
      * Estimate and orbit based on Gauss Intial Orbit Determination method.
      *
      * @param outputFrame inertial frame for observer coordinates and orbit estimate
+     * @param azEl1 first angular observation
+     * @param azEl2 second angular observation
+     * @param azEl3 third angular observation
+     * @return an estimate of the orbit at the central date or null if
+     *         no estimate is possible with the given data
+     */
+    public Orbit estimate(final Frame outputFrame, final AngularAzEl azEl1,
+                          final AngularAzEl azEl2, final AngularAzEl azEl3) {
+        return estimate(outputFrame,
+                        azEl1.getGroundStationPosition(outputFrame), azEl1.getDate(), azEl1.getObservedLineOfSight(outputFrame),
+                        azEl2.getGroundStationPosition(outputFrame), azEl2.getDate(), azEl2.getObservedLineOfSight(outputFrame),
+                        azEl3.getGroundStationPosition(outputFrame), azEl3.getDate(), azEl3.getObservedLineOfSight(outputFrame));
+    }
+
+    /**
+     * Estimate and orbit based on Gauss Intial Orbit Determination method.
+     *
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
      * @param raDec1 first angular observation
      * @param raDec2 second angular observation
      * @param raDec3 third angular observation
-     * @return an estimate of the orbit at the central date obsDate2 or null if
+     * @return an estimate of the orbit at the central date or null if
      *         no estimate is possible with the given data
      */
     public Orbit estimate(final Frame outputFrame, final AngularRaDec raDec1,

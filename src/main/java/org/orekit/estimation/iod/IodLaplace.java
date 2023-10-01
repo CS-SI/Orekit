@@ -22,6 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.util.FastMath;
+import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
@@ -60,10 +61,29 @@ public class IodLaplace {
     /** Estimate the orbit from three angular observations at the same location.
      *
      * @param outputFrame Observer coordinates at time of raDec2
+     * @param azEl1 first angular observation
+     * @param azEl2 second angular observation
+     * @param azEl3 third angular observation
+     * @return estimate of the orbit at the central date or null if
+     *         no estimate is possible with the given data
+     * @since 12.0
+     */
+    public Orbit estimate(final Frame outputFrame,
+                          final AngularAzEl azEl1, final AngularAzEl azEl2,
+                          final AngularAzEl azEl3) {
+        return estimate(outputFrame, azEl2.getGroundStationCoordinates(outputFrame),
+                        azEl1.getDate(), azEl1.getObservedLineOfSight(outputFrame),
+                        azEl2.getDate(), azEl2.getObservedLineOfSight(outputFrame),
+                        azEl3.getDate(), azEl3.getObservedLineOfSight(outputFrame));
+    }
+
+    /** Estimate the orbit from three angular observations at the same location.
+     *
+     * @param outputFrame Observer coordinates at time of raDec2
      * @param raDec1 first angular observation
      * @param raDec2 second angular observation
      * @param raDec3 third angular observation
-     * @return estimate of the orbit at the central date obsDate2 or null if
+     * @return estimate of the orbit at the central date or null if
      *         no estimate is possible with the given data
      * @since 11.0
      */
