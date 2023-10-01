@@ -24,7 +24,8 @@ import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
-import org.orekit.annotation.DefaultDataContext;
+import org.orekit.estimation.measurements.AngularAzEl;
+import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
@@ -32,34 +33,91 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 /**
- * Gauss initial orbit determination. Works best when the separation between observation is less than about 60°, and better
- * for is separated by 10° or less. An orbit is determined from three position vectors. References: Vallado, D., Fundamentals
- * of Astrodynamics and Applications Curtis, Orbital Mechanics for Engineering Students
+ * Gauss angles-only Initial Orbit Determination (IOD) algorithm.
+ * <p>
+ * The algorithm works best when the separation between observation is less than about 60°.
+ * The method performs remarkably well when the data is separated by 10° or less.
  *
+ * An orbit is determined from three lines of sight w.r.t. their respective observers
+ * inertial positions vectors.
+ * </p><p>
+ * References:
+ *   Vallado, D., Fundamentals of Astrodynamics and Applications
+ *   Curtis, Orbital Mechanics for Engineering Students
+ * </p>
  * @author Julien Asquier
  * @since 12.0
  */
-public class IodGauss extends AbstractAnglesOnlyIod {
+public class IodGauss {
+
+    /** Gravitational constant. */
+    private final double mu;
 
     /**
      * Constructor.
      *
      * @param mu gravitational constant
-     * @param outputFrame output frame for final Orbit estimation
      */
-    @DefaultDataContext
-    public IodGauss(final double mu, final Frame outputFrame) {
-        super(mu, outputFrame);
+    public IodGauss(final double mu) {
+        this.mu = mu;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public Orbit estimate(final PVCoordinates obsPva1, final AbsoluteDate obsDate1, final Vector3D los1,
-                          final PVCoordinates obsPva2, final AbsoluteDate obsDate2, final Vector3D los2,
-                          final PVCoordinates obsPva3, final AbsoluteDate obsDate3, final Vector3D los3) {
+    /**
+     * Estimate and orbit based on Gauss Intial Orbit Determination method.
+     *
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
+     * @param azEl1 first angular observation
+     * @param azEl2 second angular observation
+     * @param azEl3 third angular observation
+     * @return an estimate of the orbit at the central date or null if
+     *         no estimate is possible with the given data
+     */
+    public Orbit estimate(final Frame outputFrame, final AngularAzEl azEl1,
+                          final AngularAzEl azEl2, final AngularAzEl azEl3) {
+        return estimate(outputFrame,
+                        azEl1.getGroundStationPosition(outputFrame), azEl1.getDate(), azEl1.getObservedLineOfSight(outputFrame),
+                        azEl2.getGroundStationPosition(outputFrame), azEl2.getDate(), azEl2.getObservedLineOfSight(outputFrame),
+                        azEl3.getGroundStationPosition(outputFrame), azEl3.getDate(), azEl3.getObservedLineOfSight(outputFrame));
+    }
 
-        final double mu          = getMu();
-        final Frame  outputFrame = getOutputFrame();
+    /**
+     * Estimate and orbit based on Gauss Intial Orbit Determination method.
+     *
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
+     * @param raDec1 first angular observation
+     * @param raDec2 second angular observation
+     * @param raDec3 third angular observation
+     * @return an estimate of the orbit at the central date or null if
+     *         no estimate is possible with the given data
+     */
+    public Orbit estimate(final Frame outputFrame, final AngularRaDec raDec1,
+                          final AngularRaDec raDec2, final AngularRaDec raDec3) {
+        return estimate(outputFrame,
+                        raDec1.getGroundStationPosition(outputFrame), raDec1.getDate(), raDec1.getObservedLineOfSight(outputFrame),
+                        raDec2.getGroundStationPosition(outputFrame), raDec2.getDate(), raDec2.getObservedLineOfSight(outputFrame),
+                        raDec3.getGroundStationPosition(outputFrame), raDec3.getDate(), raDec3.getObservedLineOfSight(outputFrame));
+    }
+
+    /**
+     * Estimate and orbit based on Gauss Intial Orbit Determination method.
+     *
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
+     * @param obsP1 observer position at obsDate1
+     * @param obsDate1 date of the 1st observation
+     * @param los1 line of sight unit vector at obsDate1
+     * @param obsP2 observer position at obsDate2
+     * @param obsDate2 date of the 2nd observation
+     * @param los2 line of sight unit vector at obsDate2
+     * @param obsP3 observer position at obsDate3
+     * @param obsDate3 date of the 3rd observation
+     * @param los3 line of sight unit vector at obsDate3
+     * @return an estimate of the orbit at the central date obsDate2 or null if
+     *         no estimate is possible with the given data
+     */
+    public Orbit estimate(final Frame outputFrame,
+                          final Vector3D obsP1, final AbsoluteDate obsDate1, final Vector3D los1,
+                          final Vector3D obsP2, final AbsoluteDate obsDate2, final Vector3D los2,
+                          final Vector3D obsP3, final AbsoluteDate obsDate3, final Vector3D los3) {
 
         // Getting the difference of time between 1st and 3rd observation with 2nd observation
         final double tau1 = obsDate1.getDate().durationFrom(obsDate2.getDate());
@@ -83,19 +141,19 @@ public class IodGauss extends AbstractAnglesOnlyIod {
 
         // Creating the position of observations matrix
         final RealMatrix rSite = new Array2DRowRealMatrix(3, 3);
-        rSite.setColumn(0, obsPva1.getPosition().toArray());
-        rSite.setColumn(1, obsPva2.getPosition().toArray());
-        rSite.setColumn(2, obsPva3.getPosition().toArray());
+        rSite.setColumn(0, obsP1.toArray());
+        rSite.setColumn(1, obsP2.toArray());
+        rSite.setColumn(2, obsP3.toArray());
 
         // mathematical matrix and coefficients, see Vallado 7.3.2
         final RealMatrix m = invertedLosMatrix.multiply(rSite);
 
         final double d1 = m.getEntry(1, 0) * a1 - m.getEntry(1, 1) + m.getEntry(1, 2) * a3;
         final double d2 = m.getEntry(1, 0) * a1u + m.getEntry(1, 2) * a3u;
-        final double C  = los2.dotProduct(obsPva2.getPosition());
+        final double C  = los2.dotProduct(obsP2);
 
         // norm of the position of the second observation
-        final double r2Norm = obsPva2.getPosition().getNorm();
+        final double r2Norm = obsP2.getNorm();
 
         // Coefficients of the 8th order polynomial we need to solve to determine "r"
         final double[] coeff = new double[] { -mu * mu * d2 * d2, 0., 0., -2. * mu * (C * d2 + d1 * d2), 0.,
@@ -169,6 +227,6 @@ public class IodGauss extends AbstractAnglesOnlyIod {
         final Vector3D p2Vector3D = new Vector3D(p2.toArray());
         final Vector3D v2Vector3D = new Vector3D(v2.toArray());
         return new CartesianOrbit(new PVCoordinates(p2Vector3D, v2Vector3D), outputFrame, obsDate2, mu);
-
     }
+
 }

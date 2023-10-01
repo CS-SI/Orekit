@@ -23,7 +23,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.frames.Frame;
@@ -31,9 +33,10 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 public abstract class AbstractIodTest {
     /**
@@ -87,7 +90,17 @@ public abstract class AbstractIodTest {
         final AngularRaDec raDec = new AngularRaDec(observer, gcrf, date, new double[] { 0.0, 0.0 },
                                                     new double[] { 1.0, 1.0 },
                                                     new double[] { 1.0, 1.0 }, new ObservableSatellite(0));
-        return (raDec.getEstimatedLOS(prop, date));
+        return (raDec.getEstimatedLineOfSight(prop, date, gcrf));
+    }
+
+    protected AngularAzEl getAzEl(final Propagator prop, final AbsoluteDate date) {
+        ObservableSatellite satellite = new ObservableSatellite(0);
+        final AngularAzEl azEl = new AngularAzEl(observer, date, new double[] { 0.0, 0.0 },
+                                                 new double[] { 1.0, 1.0 }, new double[] { 1.0, 1.0 },
+                                                 satellite);
+        EstimatedMeasurementBase<AngularAzEl> estimated = azEl.estimateWithoutDerivatives(0, 0, new SpacecraftState[] {prop.propagate(date)});
+        return new AngularAzEl(observer, date, estimated.getEstimatedValue(), azEl.getBaseWeight(),
+                               azEl.getTheoreticalStandardDeviation(), satellite);
     }
 
     protected double getRelativeRangeError(final Orbit estimatedGauss, final Orbit orbitRef) {

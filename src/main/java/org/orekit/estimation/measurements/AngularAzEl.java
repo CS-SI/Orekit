@@ -24,6 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -167,6 +168,15 @@ public class AngularAzEl extends GroundReceiverMeasurement<AngularAzEl> {
 
         return estimated;
 
+    }
+
+    /** Calculate the Line Of Sight of the given measurement.
+     * @param outputFrame output frame of the line of sight vector
+     * @return Vector3D the line of Sight of the measurement
+     */
+    public Vector3D getObservedLineOfSight(final Frame outputFrame) {
+        return getStation().getBaseFrame().getStaticTransformTo(outputFrame, getDate())
+            .transformVector(new Vector3D(MathUtils.SEMI_PI - getObservedValue()[0], getObservedValue()[1]));
     }
 
 }
