@@ -30,6 +30,9 @@ import org.orekit.files.ccsds.ndm.cdm.Cdm;
 import org.orekit.ssa.metrics.FieldProbabilityOfCollision;
 import org.orekit.ssa.metrics.ProbabilityOfCollision;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 class Laas2015Test {
 
     /** Systems analysis and architecture laboratory's method to compute probability of collision. */
@@ -436,9 +439,9 @@ class Laas2015Test {
     void testComputeProbabilityFromACdm() {
 
         // GIVEN
-        final String cdmPath   = "/collision-resources/ION_SCV8_vs_STARLINK_1233.txt";
-        final DataSource  data = new DataSource(cdmPath, () -> Thread.currentThread().getClass().getResourceAsStream(cdmPath));
-        final Cdm         cdm  = new ParserBuilder().buildCdmParser().parseMessage(data);
+        final String     cdmPath = "/ccsds/cdm/ION_SCV8_vs_STARLINK_1233.txt";
+        final DataSource data    = new DataSource(cdmPath, () -> getClass().getResourceAsStream(cdmPath));
+        final Cdm        cdm     = new ParserBuilder().buildCdmParser().parseMessage(data);
 
         // Radii taken from comments in the conjunction data message
         final double primaryRadius   = 5;
@@ -847,9 +850,9 @@ class Laas2015Test {
     void testReturnExpectedProbabilityFromACdmField() {
 
         // GIVEN
-        final String cdmPath   = "/collision-resources/ION_SCV8_vs_STARLINK_1233.txt";
-        final DataSource  data = new DataSource(cdmPath, () -> Thread.currentThread().getClass().getResourceAsStream(cdmPath));
-        final Cdm         cdm  = new ParserBuilder().buildCdmParser().parseMessage(data);
+        final String     cdmPath = "/ccsds/cdm/ION_SCV8_vs_STARLINK_1233.txt";
+        final DataSource data    = new DataSource(cdmPath, () -> getClass().getResourceAsStream(cdmPath));
+        final Cdm        cdm     = new ParserBuilder().buildCdmParser().parseMessage(data);
 
         // Radii taken from comments in the conjunction data message
         final Binary64 primaryRadius   = new Binary64(5);

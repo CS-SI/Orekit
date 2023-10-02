@@ -56,9 +56,15 @@ public class Patera2005 extends AbstractShortTermEncounter1DNumerical2DPOCMethod
     /** Default threshold defining if miss-distance and combined radius are considered equal (+- 10 cm). */
     private static final double DEFAULT_EQUALITY_THRESHOLD = 1e-1;
 
-    /** Default constructor built with a trapezoid integrator and a maximum number of evaluation of 5000. */
+    /**
+     * Default constructor built with the following trapezoid integrator:
+     * <ul>
+     *     <li>Minimal iteration count of 5</li>
+     *     <li>Maximum iteration count of 50000</li>
+     * </ul>.
+     */
     public Patera2005() {
-        this(new TrapezoidIntegrator(), 5000);
+        this(new TrapezoidIntegrator(5, TrapezoidIntegrator.TRAPEZOID_MAX_ITERATIONS_COUNT), 50000);
     }
 
     /**
