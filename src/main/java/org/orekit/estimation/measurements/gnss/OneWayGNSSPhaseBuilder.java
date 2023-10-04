@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2023 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,73 +14,75 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.generation;
+package org.orekit.estimation.measurements.gnss;
 
 import java.util.Map;
+import java.util.function.ToDoubleFunction;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
+import org.orekit.estimation.measurements.generation.AbstractMeasurementBuilder;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 
-/** Builder for {@link InterSatellitesPhase} measurements.
- * @author Bryan Cazabonne
- * @since 10.3
+/** Builder for {@link OneWayGNSSPhase} measurements.
+ * @author Luc Maisonobe
+ * @since 12.0
  */
-public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<InterSatellitesPhase> {
+public class OneWayGNSSPhaseBuilder extends AbstractMeasurementBuilder<OneWayGNSSPhase> {
 
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
 
-    /** Satellite which receives the signal and performs the measurement.
-     * @since 12.0
-     */
+    /** Satellite which receives the signal and performs the measurement. */
     private final ObservableSatellite local;
 
-    /** Satellite which simply emits the signal in the one-way case,
-     * or reflects the signal in the two-way case.
-     * @since 12.0
-     */
+    /** Satellite which simply emits the signal. */
     private final ObservableSatellite remote;
+
+    /** Clock model of the remote satellite that provides clock offset. */
+    private ToDoubleFunction<AbsoluteDate> remoteClockModel;
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param local satellite which receives the signal and performs the measurement
-     * @param remote satellite which simply emits the signal in the one-way case,
-     * or reflects the signal in the two-way case
+     * @param remote satellite which simply emits the signal
+     * @param remoteClockModel clock model of the remote satellite that provides clock offset
      * @param wavelength phase observed value wavelength (m)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      */
-    public InterSatellitesPhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
-                                       final ObservableSatellite local, final ObservableSatellite remote,
-                                       final double wavelength, final double sigma, final double baseWeight) {
+    public OneWayGNSSPhaseBuilder(final CorrelatedRandomVectorGenerator noiseSource,
+                                  final ObservableSatellite local, final ObservableSatellite remote,
+                                  final ToDoubleFunction<AbsoluteDate> remoteClockModel,
+                                  final double wavelength, final double sigma, final double baseWeight) {
         super(noiseSource, sigma, baseWeight, local, remote);
-        this.wavelength = wavelength;
-        this.local      = local;
-        this.remote     = remote;
+        this.wavelength       = wavelength;
+        this.local            = local;
+        this.remote           = remote;
+        this.remoteClockModel = remoteClockModel;
     }
 
     /** {@inheritDoc} */
     @Override
-    public InterSatellitesPhase build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+    public OneWayGNSSPhase build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
 
-        final double sigma                     = getTheoreticalStandardDeviation()[0];
-        final double baseWeight                = getBaseWeight()[0];
-        final SpacecraftState[] relevant       = new SpacecraftState[] {
+        final double sigma               = getTheoreticalStandardDeviation()[0];
+        final double baseWeight          = getBaseWeight()[0];
+        final SpacecraftState[] relevant = new SpacecraftState[] {
             interpolators.get(local).getInterpolatedState(date),
             interpolators.get(remote).getInterpolatedState(date)
         };
+        final double offset              = remoteClockModel.applyAsDouble(date);
 
         // create a dummy measurement
-        final InterSatellitesPhase dummy = new InterSatellitesPhase(local, remote, relevant[0].getDate(),
-                                                                    Double.NaN, wavelength, sigma, baseWeight);
-        for (final EstimationModifier<InterSatellitesPhase> modifier : getModifiers()) {
+        final OneWayGNSSPhase dummy = new OneWayGNSSPhase(interpolators.get(remote), offset, date,
+                                                          Double.NaN, wavelength, sigma, baseWeight, local);
+        for (final EstimationModifier<OneWayGNSSPhase> modifier : getModifiers()) {
             dummy.addModifier(modifier);
         }
 
@@ -103,9 +105,9 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
         }
 
         // generate measurement
-        final InterSatellitesPhase measurement = new InterSatellitesPhase(local, remote, relevant[0].getDate(),
-                                                                          phase, wavelength, sigma, baseWeight);
-        for (final EstimationModifier<InterSatellitesPhase> modifier : getModifiers()) {
+        final OneWayGNSSPhase measurement = new OneWayGNSSPhase(interpolators.get(remote), offset, date,
+                                                                phase, wavelength, sigma, baseWeight, local);
+        for (final EstimationModifier<OneWayGNSSPhase> modifier : getModifiers()) {
             measurement.addModifier(modifier);
         }
         return measurement;
