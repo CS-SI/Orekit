@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.0" date="TBD" description="TBD">
+      <action dev="luc" type="add"  issue="1219">
+          Added builders for OneWayGNSSPhase and OneWayGNSSRange.
+      </action>
       <action dev="luc" type="add"  issue="1220">
           Use step interpolators for measurements generation requiring time shifts.
       </action>
