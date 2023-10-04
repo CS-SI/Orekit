@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.gnss;
+package org.orekit.estimation.measurements.generation;
 
 import java.util.SortedSet;
 
@@ -33,12 +33,9 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.generation.EventBasedScheduler;
-import org.orekit.estimation.measurements.generation.GatheringSubscriber;
-import org.orekit.estimation.measurements.generation.Generator;
-import org.orekit.estimation.measurements.generation.MeasurementBuilder;
-import org.orekit.estimation.measurements.generation.SignSemantic;
+import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.gnss.Frequency;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -53,22 +50,23 @@ import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
-public class OneWayGNSSRangeBuilderTest {
+public class OneWayGNSSPhaseBuilderTest {
 
     private static final double SIGMA =  0.5;
     private static final double BIAS  = -0.01;
+    private static final double WAVELENGTH = Frequency.G01.getWavelength();
 
-    private MeasurementBuilder<OneWayGNSSRange> getBuilder(final RandomGenerator random,
+    private MeasurementBuilder<OneWayGNSSPhase> getBuilder(final RandomGenerator random,
                                                            final ObservableSatellite receiver,
                                                            final ObservableSatellite remote) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
-        MeasurementBuilder<OneWayGNSSRange> b =
-                        new OneWayGNSSRangeBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
+        MeasurementBuilder<OneWayGNSSPhase> b =
+                        new OneWayGNSSPhaseBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
                                                                                                                1.0e-10,
                                                                                                                new GaussianRandomGenerator(random)),
                                                    receiver, remote,
                                                    date -> 1.0e-16,
-                                                   SIGMA, 1.0);
+                                                   WAVELENGTH, SIGMA, 1.0);
         b.addModifier(new Bias<>(new String[] { "bias" },
                          new double[] { BIAS },
                          new double[] { 1.0 },
@@ -79,12 +77,12 @@ public class OneWayGNSSRangeBuilderTest {
 
     @Test
     public void testForward() {
-        doTest(0x6f44484882311d49l, 0.0, 1.2, 2.9 * SIGMA);
+        doTest(0x812bfe784826bab3l, 0.0, 1.2, 3.4 * SIGMA);
     }
 
     @Test
     public void testBackward() {
-        doTest(0x486b1353daa9f73el, 0.0, -1.0, 3.6 * SIGMA);
+        doTest(0xb54896c361d88441l, 0.0, -1.0, 2.8 * SIGMA);
     }
 
     private Propagator buildPropagator() {
