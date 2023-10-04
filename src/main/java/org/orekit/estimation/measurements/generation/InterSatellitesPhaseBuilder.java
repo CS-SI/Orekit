@@ -42,8 +42,7 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
      */
     private final ObservableSatellite local;
 
-    /** Satellite which simply emits the signal in the one-way case,
-     * or reflects the signal in the two-way case.
+    /** Satellite which simply emits the signal.
      * @since 12.0
      */
     private final ObservableSatellite remote;
@@ -51,8 +50,7 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param local satellite which receives the signal and performs the measurement
-     * @param remote satellite which simply emits the signal in the one-way case,
-     * or reflects the signal in the two-way case
+     * @param remote satellite which simply emits the signal
      * @param wavelength phase observed value wavelength (m)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
