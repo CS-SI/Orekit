@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -25,7 +23,6 @@ import java.util.TreeSet;
 
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DatesSelector;
@@ -92,24 +89,7 @@ public abstract class AbstractScheduler<T extends ObservedMeasurement<T>> implem
         for (final AbsoluteDate date : dates) {
             if (measurementIsFeasible(date)) {
                 // a measurement is feasible at this date
-
-                if (interpolators.size() == 1) {
-                    // single satellite case
-                    measurements.add(getBuilder().build(Collections.singletonMap(first.getKey(),
-                                                                                 first.getValue().getInterpolatedState(date))));
-                } else {
-                    // multiple satellites case
-
-                    // interpolate states at measurement date
-                    final Map<ObservableSatellite, SpacecraftState> map = new HashMap<>(interpolators.size());
-                    for (final Map.Entry<ObservableSatellite, OrekitStepInterpolator> entry : interpolators.entrySet()) {
-                        map.put(entry.getKey(), entry.getValue().getInterpolatedState(date));
-                    }
-
-                    // generate measurement
-                    measurements.add(getBuilder().build(map));
-                }
-
+                measurements.add(getBuilder().build(date, interpolators));
             }
         }
 

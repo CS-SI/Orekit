@@ -23,6 +23,7 @@ import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
@@ -67,13 +68,13 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
 
     /** {@inheritDoc} */
     @Override
-    public InterSatellitesPhase build(final Map<ObservableSatellite, SpacecraftState> states) {
+    public InterSatellitesPhase build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
 
         final double sigma                     = getTheoreticalStandardDeviation()[0];
         final double baseWeight                = getBaseWeight()[0];
         final SpacecraftState[] relevant       = new SpacecraftState[] {
-            states.get(local),
-            states.get(remote)
+            interpolators.get(local).getInterpolatedState(date),
+            interpolators.get(remote).getInterpolatedState(date)
         };
 
         // create a dummy measurement
