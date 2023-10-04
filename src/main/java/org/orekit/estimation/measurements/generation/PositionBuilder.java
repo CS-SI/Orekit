@@ -24,6 +24,7 @@ import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
@@ -54,11 +55,11 @@ public class PositionBuilder extends AbstractMeasurementBuilder<Position> {
 
     /** {@inheritDoc} */
     @Override
-    public Position build(final Map<ObservableSatellite, SpacecraftState> states) {
+    public Position build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
 
         final double sigma                  = getTheoreticalStandardDeviation()[0];
         final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState[] relevant    = new SpacecraftState[] { states.get(satellite) };
+        final SpacecraftState[] relevant    = new SpacecraftState[] { interpolators.get(satellite).getInterpolatedState(date) };
 
         // create a dummy measurement
         final Position dummy = new Position(relevant[0].getDate(), Vector3D.NaN, sigma, baseWeight, satellite);

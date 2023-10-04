@@ -24,6 +24,7 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
@@ -65,11 +66,11 @@ public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroun
 
     /** {@inheritDoc} */
     @Override
-    public TurnAroundRange build(final Map<ObservableSatellite, SpacecraftState> states) {
+    public TurnAroundRange build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
 
         final double sigma                  = getTheoreticalStandardDeviation()[0];
         final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState[] relevant    = new SpacecraftState[] { states.get(satellite) };
+        final SpacecraftState[] relevant    = new SpacecraftState[] { interpolators.get(satellite).getInterpolatedState(date) };
 
         // create a dummy measurement
         final TurnAroundRange dummy = new TurnAroundRange(primaryStation, secondaryStation, relevant[0].getDate(),

@@ -24,6 +24,7 @@ import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
@@ -60,11 +61,11 @@ public class AngularAzElBuilder extends AbstractMeasurementBuilder<AngularAzEl> 
 
     /** {@inheritDoc} */
     @Override
-    public AngularAzEl build(final Map<ObservableSatellite, SpacecraftState> states) {
+    public AngularAzEl build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
 
         final double[] sigma                = getTheoreticalStandardDeviation();
         final double[] baseWeight           = getBaseWeight();
-        final SpacecraftState[] relevant    = new SpacecraftState[] { states.get(satellite) };
+        final SpacecraftState[] relevant    = new SpacecraftState[] { interpolators.get(satellite).getInterpolatedState(date) };
 
         // create a dummy measurement
         final AngularAzEl dummy = new AngularAzEl(station, relevant[0].getDate(),

@@ -238,14 +238,12 @@ public class FieldStepHandlerMultiplexerTest {
         double               add60      =  3.0;
         double               rem60      = 78.0;
         FieldFixedCounter    counter60  = new FieldFixedCounter();
-        @SuppressWarnings("unchecked")
         FieldDateDetector<Binary64> d1 = new FieldDateDetector<>(field, initDate.shiftedBy(add60)).
                                          withHandler((s, d, i) -> {
                                              multiplexer.add(zero.newInstance(60.0), counter60);
                                             return Action.CONTINUE;
                                          });
         propagator.addEventDetector(d1);
-        @SuppressWarnings("unchecked")
         FieldDateDetector<Binary64> d2 = new FieldDateDetector<>(field, initDate.shiftedBy(rem60)).
                                          withHandler((s, d, i) -> {
                                              multiplexer.remove(counter60);
@@ -256,14 +254,12 @@ public class FieldStepHandlerMultiplexerTest {
         double               addVar     =  5.0;
         double               remVar     =  7.0;
         FieldVariableCounter counterVar = new FieldVariableCounter();
-        @SuppressWarnings("unchecked")
         FieldDateDetector<Binary64> d3 = new FieldDateDetector<>(field, initDate.shiftedBy(addVar)).
                                          withHandler((s, d, i) -> {
                                              multiplexer.add(counterVar);
                                              return Action.CONTINUE;
                                          });
         propagator.addEventDetector(d3);
-        @SuppressWarnings("unchecked")
         FieldDateDetector<Binary64> d4 = new FieldDateDetector<>(field, initDate.shiftedBy(remVar)).
                                          withHandler((s, d, i) -> {
                                              multiplexer.remove(counterVar);
@@ -274,14 +270,12 @@ public class FieldStepHandlerMultiplexerTest {
         double               add10      =  6.0;
         double               rem10      = 82.0;
         FieldFixedCounter    counter10  = new FieldFixedCounter();
-        @SuppressWarnings("unchecked")
         FieldDateDetector<Binary64> d5 = new FieldDateDetector<>(field, initDate.shiftedBy(add10)).
                                          withHandler((s, d, i) -> {
                                              multiplexer.add(zero.newInstance(10.0), counter10);
                                              return Action.CONTINUE;
                                          });
         propagator.addEventDetector(d5);
-        @SuppressWarnings("unchecked")
         FieldDateDetector<Binary64> d6 = new FieldDateDetector<>(field, initDate.shiftedBy(rem10)).
                                          withHandler((s, d, i) -> {
                                              multiplexer.clear();
@@ -382,6 +376,8 @@ public class FieldStepHandlerMultiplexerTest {
 
         @Override
         public void handleStep(FieldOrekitStepInterpolator<Binary64> interpolator) {
+            Assertions.assertNotNull(interpolator.getPosition(interpolator.getCurrentState().getDate(),
+                                                              interpolator.getCurrentState().getFrame()));
             ++handleCount;
         }
 

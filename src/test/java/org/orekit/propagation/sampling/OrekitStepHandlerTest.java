@@ -132,6 +132,7 @@ public class OrekitStepHandlerTest {
         propagator.setStepHandler(interpolator -> {
             Assertions.assertEquals(expected.poll(), interpolator.isPreviousStateInterpolated());
             Assertions.assertEquals(expected.poll(), interpolator.isCurrentStateInterpolated());
+            Assertions.assertNotNull(interpolator.getPosition(date, eci));
         });
         final AbsoluteDate end = date.shiftedBy(120);
         Assertions.assertEquals(end, propagator.propagate(end).getDate());
