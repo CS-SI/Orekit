@@ -62,7 +62,7 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
 
     /** Constructor.
      * @param local satellite which receives the signal and performs the measurement
-     * @param remote emote satellite which simply emits the signal
+     * @param remote remote satellite which simply emits the signal
      * @param date date of the measurement
      * @param phase observed value (cycles)
      * @param wavelength phase observed value wavelength (m)
