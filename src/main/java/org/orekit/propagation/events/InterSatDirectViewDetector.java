@@ -78,6 +78,11 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
     /** 1 minus flatness squared. */
     private final double g2;
 
+    /** Skimming altitude.
+     * @since 12.0
+     */
+    private final double skimmingAltitude;
+
     /** Coordinates provider for the secondary satellite. */
     private final PVCoordinatesProvider secondary;
 
@@ -87,29 +92,33 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
      * @param secondary provider for the secondary satellite
      */
     public InterSatDirectViewDetector(final OneAxisEllipsoid body, final PVCoordinatesProvider secondary) {
-        this(body, secondary, s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+        this(body, 0.0, secondary, s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new ContinueOnEvent());
     }
 
     /** Private constructor.
      * @param body central body
+     * @param skimmingAltitude skimming altitude at which events are triggered
      * @param secondary provider for the secondary satellite
      * @param maxCheck  maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
+     * @since 12.0
      */
-    protected InterSatDirectViewDetector(final OneAxisEllipsoid body,
-                                         final PVCoordinatesProvider secondary,
-                                         final AdaptableInterval maxCheck,
-                                         final double threshold,
-                                         final int maxIter,
-                                         final EventHandler handler) {
+    private InterSatDirectViewDetector(final OneAxisEllipsoid body,
+                                       final double skimmingAltitude,
+                                       final PVCoordinatesProvider secondary,
+                                       final AdaptableInterval maxCheck,
+                                       final double threshold,
+                                       final int maxIter,
+                                       final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
-        this.body  = body;
-        this.ae2   = body.getEquatorialRadius() * body.getEquatorialRadius();
-        this.g2    = (1.0 - body.getFlattening()) * (1.0 - body.getFlattening());
-        this.secondary = secondary;
+        this.body             = body;
+        this.ae2              = body.getEquatorialRadius() * body.getEquatorialRadius();
+        this.g2               = (1.0 - body.getFlattening()) * (1.0 - body.getFlattening());
+        this.skimmingAltitude = skimmingAltitude;
+        this.secondary        = secondary;
     }
 
     /** Get the central body.
@@ -117,6 +126,14 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
      */
     public OneAxisEllipsoid getCentralBody() {
         return body;
+    }
+
+    /** Get the skimming altitude.
+     * @return skimming altitude at which events are triggered
+     * @since 12.0
+     */
+    public double getSkimmingAltitude() {
+        return skimmingAltitude;
     }
 
     /** Get the provider for the secondary satellite.
@@ -132,7 +149,26 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
                                                 final double newThreshold,
                                                 final int newMaxIter,
                                                 final EventHandler newHandler) {
-        return new InterSatDirectViewDetector(body, secondary, newMaxCheck, newThreshold, newMaxIter, newHandler);
+        return new InterSatDirectViewDetector(body, skimmingAltitude, secondary,
+                                              newMaxCheck, newThreshold, newMaxIter, newHandler);
+    }
+
+    /**
+     * Setup the skimming altitude.
+     * <p>
+     * The skimming altitude is the lowest altitude of the path between satellites
+     * at which events should be triggered. If set to 0.0, events are triggered
+     * exactly when the path passes just at central body limb.
+     * </p>
+     * @param newSkimmingAltitude skimming altitude (m)
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @see #getSkimmingAltitude()
+     * @since 12.0
+     */
+    public InterSatDirectViewDetector withSkimmingAltitude(final double newSkimmingAltitude) {
+        return new InterSatDirectViewDetector(body, newSkimmingAltitude, secondary,
+                                              getMaxCheckInterval(), getThreshold(),
+                                              getMaxIterationCount(), getHandler());
     }
 
     /** {@inheritDoc}
@@ -146,10 +182,12 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
     public double g(final SpacecraftState state) {
 
         // get the line between primary and secondary in body frame
-        final AbsoluteDate date    = state.getDate();
-        final Frame        frame   = body.getBodyFrame();
-        final Vector3D     pPrimary = state.getPosition(frame);
-        final Vector3D     pSecondary  = secondary.getPosition(date, frame);
+        final AbsoluteDate date       = state.getDate();
+        final Frame        frame      = body.getBodyFrame();
+        final Vector3D     pPrimary   = state.getPosition(frame);
+        final Vector3D     pSecondary = secondary.getPosition(date, frame);
+
+        // TODO: redesign using skimmingAltitude
 
         // points along the primary/secondary lines are defined as
         // xk = x + k * dx, yk = y + k * dy, zk = z + k * dz
