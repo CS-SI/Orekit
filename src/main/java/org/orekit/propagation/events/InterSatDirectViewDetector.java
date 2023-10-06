@@ -16,8 +16,11 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.function.DoubleFunction;
+
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.PropagatorsParallelizer;
@@ -72,11 +75,10 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
     /** Central body. */
     private final OneAxisEllipsoid body;
 
-    /** Equatorial radius squared. */
-    private final double ae2;
-
-    /** 1 minus flatness squared. */
-    private final double g2;
+    /** Skimming altitude.
+     * @since 12.0
+     */
+    private final double skimmingAltitude;
 
     /** Coordinates provider for the secondary satellite. */
     private final PVCoordinatesProvider secondary;
@@ -87,29 +89,31 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
      * @param secondary provider for the secondary satellite
      */
     public InterSatDirectViewDetector(final OneAxisEllipsoid body, final PVCoordinatesProvider secondary) {
-        this(body, secondary, s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+        this(body, 0.0, secondary, s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
              new ContinueOnEvent());
     }
 
     /** Private constructor.
      * @param body central body
+     * @param skimmingAltitude skimming altitude at which events are triggered
      * @param secondary provider for the secondary satellite
      * @param maxCheck  maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
+     * @since 12.0
      */
-    protected InterSatDirectViewDetector(final OneAxisEllipsoid body,
-                                         final PVCoordinatesProvider secondary,
-                                         final AdaptableInterval maxCheck,
-                                         final double threshold,
-                                         final int maxIter,
-                                         final EventHandler handler) {
+    private InterSatDirectViewDetector(final OneAxisEllipsoid body,
+                                       final double skimmingAltitude,
+                                       final PVCoordinatesProvider secondary,
+                                       final AdaptableInterval maxCheck,
+                                       final double threshold,
+                                       final int maxIter,
+                                       final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
-        this.body  = body;
-        this.ae2   = body.getEquatorialRadius() * body.getEquatorialRadius();
-        this.g2    = (1.0 - body.getFlattening()) * (1.0 - body.getFlattening());
-        this.secondary = secondary;
+        this.body             = body;
+        this.skimmingAltitude = skimmingAltitude;
+        this.secondary        = secondary;
     }
 
     /** Get the central body.
@@ -117,6 +121,14 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
      */
     public OneAxisEllipsoid getCentralBody() {
         return body;
+    }
+
+    /** Get the skimming altitude.
+     * @return skimming altitude at which events are triggered
+     * @since 12.0
+     */
+    public double getSkimmingAltitude() {
+        return skimmingAltitude;
     }
 
     /** Get the provider for the secondary satellite.
@@ -132,64 +144,84 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
                                                 final double newThreshold,
                                                 final int newMaxIter,
                                                 final EventHandler newHandler) {
-        return new InterSatDirectViewDetector(body, secondary, newMaxCheck, newThreshold, newMaxIter, newHandler);
+        return new InterSatDirectViewDetector(body, skimmingAltitude, secondary,
+                                              newMaxCheck, newThreshold, newMaxIter, newHandler);
+    }
+
+    /**
+     * Setup the skimming altitude.
+     * <p>
+     * The skimming altitude is the lowest altitude of the path between satellites
+     * at which events should be triggered. If set to 0.0, events are triggered
+     * exactly when the path passes just at central body limb.
+     * </p>
+     * @param newSkimmingAltitude skimming altitude (m)
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @see #getSkimmingAltitude()
+     * @since 12.0
+     */
+    public InterSatDirectViewDetector withSkimmingAltitude(final double newSkimmingAltitude) {
+        return new InterSatDirectViewDetector(body, newSkimmingAltitude, secondary,
+                                              getMaxCheckInterval(), getThreshold(),
+                                              getMaxIterationCount(), getHandler());
     }
 
     /** {@inheritDoc}
      * <p>
-     * The {@code g} function of this detector is positive when satellites can see
-     * each other directly and negative when the central body limb is in between and
-     * blocks the direct view.
+     * The {@code g} function of this detector is the difference between the minimum
+     * altitude of intermediate points along the line of sight between satellites and the
+     * {@ling #getSkimmingAltitude() skimming altitude}. It is therefore positive when
+     * all intermediate points are above the skimming altitude, meaning satellites can see
+     * each other and it is negative when some intermediate points (which may be either
+     * endpoints) dive below this altitude, meaning satellites cannot see each other.
      * </p>
      */
     @Override
     public double g(final SpacecraftState state) {
 
         // get the line between primary and secondary in body frame
-        final AbsoluteDate date    = state.getDate();
-        final Frame        frame   = body.getBodyFrame();
-        final Vector3D     pPrimary = state.getPosition(frame);
-        final Vector3D     pSecondary  = secondary.getPosition(date, frame);
+        final AbsoluteDate date       = state.getDate();
+        final Frame        frame      = body.getBodyFrame();
+        final Vector3D     pPrimary   = state.getPosition(frame);
+        final Vector3D     pSecondary = secondary.getPosition(date, frame);
+        final Vector3D     los        = pSecondary.subtract(pPrimary);
 
-        // points along the primary/secondary lines are defined as
-        // xk = x + k * dx, yk = y + k * dy, zk = z + k * dz
-        // so k is 0 at primary and 1 at secondary
-        final double x  = pPrimary.getX();
-        final double y  = pPrimary.getY();
-        final double z  = pPrimary.getZ();
-        final double dx = pSecondary.getX() - x;
-        final double dy = pSecondary.getY() - y;
-        final double dz = pSecondary.getZ() - z;
+        // function computing intermediate point above ellipsoid (lambda varying between 0 and 1)
+        final DoubleFunction<GeodeticPoint> intermediate = lambda -> body.transform(new Vector3D(1 - lambda, pPrimary,
+                                                                                                 lambda, pSecondary),
+                                                                                    frame, date);
 
-        // intersection between line and central body surface
-        // is a root of a 2nd degree polynomial :
-        // a k^2 - 2 b k + c = 0
-        final double a =   g2 * (dx * dx + dy * dy) + dz * dz;
-        final double b = -(g2 * (x * dx + y * dy) + z * dz);
-        final double c =   g2 * (x * x + y * y - ae2) + z * z;
-        final double s = b * b - a * c;
-        if (s < 0) {
-            // the quadratic has no solution, the line between primary and secondary
-            // doesn't crosses central body limb, direct view is possible
-            // return a positive value, preserving continuity across zero crossing
-            return -s;
-        }
+        // primary point
+        final GeodeticPoint gpPrimary = intermediate.apply(0.0);
 
-        // the quadratic has two solutions (degenerated to one if s = 0)
-        // direct view is blocked when one of these solutions is between 0 and 1
-        final double k1 = (b < 0) ? (b - FastMath.sqrt(s)) / a : c / (b + FastMath.sqrt(s));
-        final double k2 = c / (a * k1);
-        if (FastMath.max(k1, k2) < 0.0 || FastMath.min(k1, k2) > 1.0) {
-            // the intersections are either behind primary or farther away than secondary
-            // along the line, direct view is possible
-            // return a positive value, preserving continuity across zero crossing
-            return s;
+        if (Vector3D.dotProduct(los, gpPrimary.getZenith()) >= 0) {
+            // the line of sight is going away from central body
+            // the minimum altitude is reached at primary point
+            return gpPrimary.getAltitude() - skimmingAltitude;
         } else {
-            // part of the central body is between primary and secondary
-            // this includes unrealistic cases where primary, secondary or both are inside the central body ;-)
-            // in all these cases, direct view is blocked
-            // return a negative value, preserving continuity across zero crossing
-            return -s;
+            // the line of sight is closing the central body
+
+            // secondary point
+            final GeodeticPoint gpSecondary = intermediate.apply(1.0);
+
+            if (Vector3D.dotProduct(los, gpSecondary.getZenith()) <= 0) {
+                // the line of sight is still decreasing when reaching secondary point
+                // the minimum altitude is reached at secondary point
+                return gpSecondary.getAltitude() - skimmingAltitude;
+            } else {
+                // the line of sight reaches a minimum between primary and secondary points
+
+                // compute minimum altitude solver tolerance so it is several orders of magnitude
+                // smaller than the event detector tolerance
+                final double dP = state.getPVCoordinates(frame).getVelocity().getNorm() * getThreshold();
+                final double tol = 1.0e-3 * dP / Vector3D.distance(pPrimary, pSecondary);
+
+                final double lambdaMin = new BracketingNthOrderBrentSolver(tol, 5).
+                                         solve(getMaxIterationCount(),
+                                               lambda -> Vector3D.dotProduct(los, intermediate.apply(lambda).getZenith()),
+                                               0.0, 1.0);
+                return intermediate.apply(lambdaMin).getAltitude() - skimmingAltitude;
+            }
         }
 
     }
