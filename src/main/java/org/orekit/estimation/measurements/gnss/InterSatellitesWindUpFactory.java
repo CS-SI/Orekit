@@ -44,12 +44,16 @@ public class InterSatellitesWindUpFactory {
     /** Get a modifier for an emitter/receiver pair.
      * @param emitterSystem system the emitter satellite belongs to
      * @param emitterPrnNumber emitter satellite PRN number
+     * @param emitterDipole emitter dipole
      * @param receiverSystem system the receiver satellite belongs to
      * @param receiverPrnNumber receiver satellite PRN number
+     * @param receiverDipole receiver dipole
      * @return modifier for the emitter/receiver pair
      */
     public InterSatellitesWindUp getWindUp(final SatelliteSystem emitterSystem,  final int emitterPrnNumber,
-                                           final SatelliteSystem receiverSystem, final int receiverPrnNumber) {
+                                           final Dipole emitterDipole,
+                                           final SatelliteSystem receiverSystem, final int receiverPrnNumber,
+                                           final Dipole receiverDipole) {
 
         // select emitter satellite system
         Map<Integer, Map<SatelliteSystem, Map<Integer, InterSatellitesWindUp>>> emitterSystemModifiers =
@@ -82,7 +86,7 @@ public class InterSatellitesWindUpFactory {
         InterSatellitesWindUp receiverSatelliteModifier = receiverSystemModifiers.get(receiverPrnNumber);
         if (receiverSatelliteModifier == null) {
             // build a new wind-up modifier
-            receiverSatelliteModifier = new InterSatellitesWindUp();
+            receiverSatelliteModifier = new InterSatellitesWindUp(emitterDipole, receiverDipole);
             receiverSystemModifiers.put(receiverPrnNumber, receiverSatelliteModifier);
         }
 

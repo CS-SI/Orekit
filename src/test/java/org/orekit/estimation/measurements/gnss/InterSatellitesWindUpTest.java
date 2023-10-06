@@ -175,7 +175,9 @@ public class InterSatellitesWindUpTest {
         Assertions.assertEquals(120, measurements.size());
 
         InterSatellitesWindUp windUp  = new InterSatellitesWindUpFactory().getWindUp(emitterSystem,  emitterPrn,
-                                                                                     SatelliteSystem.USER_DEFINED_V, 89);
+                                                                                     Dipole.CANONICAL_I_J,
+                                                                                     SatelliteSystem.USER_DEFINED_V, 89,
+                                                                                     Dipole.CANONICAL_I_J);
         Propagator emitterPropagator  = new KeplerianPropagator(emitterOrbit,  emitterAttitudeProvider);
         Propagator receiverPropagator = new KeplerianPropagator(receiverOrbit, receiverAttitudeProvider);
         double min = Double.POSITIVE_INFINITY;
