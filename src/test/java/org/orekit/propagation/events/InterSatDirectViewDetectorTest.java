@@ -33,6 +33,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -94,8 +95,8 @@ public class InterSatDirectViewDetectorTest {
         Propagator pA = new KeplerianPropagator(o1);
         EventsLogger loggerA = new EventsLogger();
         pA.addEventDetector(loggerA.monitorDetector(new InterSatDirectViewDetector(earth, o2).
-                                                  withMaxCheck(10.0).
-                                                  withHandler(new GrazingHandler())));
+                                                    withMaxCheck(10.0).
+                                                    withHandler(new GrazingHandler())));
         pA.propagate(o1.getDate().shiftedBy(4 * o1.getKeplerianPeriod()));
         Assertions.assertEquals(7, loggerA.getLoggedEvents().size());
 
@@ -103,10 +104,60 @@ public class InterSatDirectViewDetectorTest {
         Propagator pB = new KeplerianPropagator(o2);
         EventsLogger loggerB = new EventsLogger();
         pB.addEventDetector(loggerB.monitorDetector(new InterSatDirectViewDetector(earth, o1).
-                                                  withMaxCheck(10.0).
-                                                  withHandler(new GrazingHandler())));
+                                                    withMaxCheck(10.0).
+                                                    withHandler(new GrazingHandler())));
         pB.propagate(o1.getDate().shiftedBy(4 * o1.getKeplerianPeriod()));
         Assertions.assertEquals(7, loggerB.getLoggedEvents().size());
+
+    }
+
+    @Test
+    public void testSkimmingAltitude() {
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        TimeScale utc = TimeScalesFactory.getUTC();
+        CircularOrbit o1 = new CircularOrbit(7200000.0, 1.0e-3, 2.0e-4,
+                                             FastMath.toRadians(50.0), FastMath.toRadians(134.0),
+                                             FastMath.toRadians(21.0), PositionAngleType.MEAN, FramesFactory.getGCRF(),
+                                             new AbsoluteDate("2003-02-14T01:02:03.000", utc),
+                                             Constants.EIGEN5C_EARTH_MU);
+        final CircularOrbit o2 = new CircularOrbit(29600000.0, 2.0e-4, 1.0e-3,
+                                                   FastMath.toRadians(56.0), FastMath.toRadians(111.0),
+                                                   o1.getAlphaM() + 2.2e-6, PositionAngleType.MEAN, o1.getFrame(),
+                                                   o1.getDate(),
+                                                   Constants.EIGEN5C_EARTH_MU);
+
+        // skimming altitude on ground
+        Propagator pA = new KeplerianPropagator(o1);
+        EventsLogger loggerA = new EventsLogger();
+        pA.addEventDetector(loggerA.monitorDetector(new InterSatDirectViewDetector(earth, o2).
+                                                    withMaxCheck(10.0)));
+        pA.propagate(o1.getDate().shiftedBy(4 * o1.getKeplerianPeriod()));
+        Assertions.assertEquals(7, loggerA.getLoggedEvents().size());
+
+        // skimming altitude at 500km
+        Propagator pB = new KeplerianPropagator(o2);
+        EventsLogger loggerB = new EventsLogger();
+        pB.addEventDetector(loggerB.monitorDetector(new InterSatDirectViewDetector(earth, o1).
+                                                    withMaxCheck(10.0).
+                                                    withSkimmingAltitude(500000.0)));
+        pB.propagate(o1.getDate().shiftedBy(4 * o1.getKeplerianPeriod()));
+        Assertions.assertEquals(7, loggerB.getLoggedEvents().size());
+
+        for (int i = 0; i < loggerA.getLoggedEvents().size(); ++i) {
+            final LoggedEvent leA = loggerA.getLoggedEvents().get(i);
+            final LoggedEvent leB = loggerB.getLoggedEvents().get(i);
+            if (leA.isIncreasing()) {
+                // this is an inter-visibility start
+                // it should start earlier with skimming altitude at 0km
+                Assertions.assertTrue(leA.getDate().isBefore(leB));
+            } else {
+                // this is an inter-visibility end
+                // it should end earlier with skimming altitude at 500km
+                Assertions.assertTrue(leB.getDate().isBefore(leA));                
+            }
+        }
 
     }
 
