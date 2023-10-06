@@ -436,11 +436,21 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      * </p>
      * <p>
      * Some changes have been added to the original method:
+     * </p>
      * <ul>
      *   <li>in order to handle more accurately corner cases near the pole</li>
      *   <li>in order to handle properly corner cases near the equatorial plane, even far inside the ellipsoid</li>
      *   <li>in order to handle very flat ellipsoids</li>
      * </ul>
+     * <p>
+     * In some rare cases (for example very flat ellipsoid, or points close to ellipsoid center), the loop
+     * may fail to converge. As this seems to happen only in degenerate cases, a design choice was to return
+     * an approximate point corresponding to last iteration. This point may be incorrect and fail to give the
+     * initial point back if doing roundtrip by calling {@link #transform(GeodeticPoint)}. This design choice
+     * was made to avoid NaNs appearing for example in inter-satellites visibility checks when two satellites
+     * are almost on opposite sides of Earth. The intermediate points far within the Earth should not prevent
+     * the detection algorithm to find visibility start/end.
+     * </p>
      */
     public GeodeticPoint transform(final Vector3D point, final Frame frame, final AbsoluteDate date) {
 
@@ -501,7 +511,11 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
             double bn  = 0;
             phi = Double.POSITIVE_INFINITY;
             h   = Double.POSITIVE_INFINITY;
-            for (int i = 0; i < 10; ++i) { // this usually converges in 2 iterations
+            for (int i = 0; i < 1000; ++i) {
+                // this usually converges in 2 iterations, but in rare cases it can take much more
+                // see https://gitlab.orekit.org/orekit/orekit/-/issues/1224 for examples
+                // with points near Earth center which need 137 iterations for the first example
+                // and 1150 iterations for the second example
                 final double oldSn  = sn;
                 final double oldCn  = cn;
                 final double oldPhi = phi;
@@ -541,6 +555,13 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                 }
 
             }
+
+            if (Double.isInfinite(phi)) {
+                // we did not converge, the point is probably within the ellipsoid
+                // we just compute the "best" phi we can to avoid NaN
+                phi = FastMath.copySign(FastMath.atan(sn / (g * cn)), z);
+            }
+
         }
 
         return new GeodeticPoint(phi, lambda, h);
@@ -561,6 +582,15 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      *   <li>in order to handle properly corner cases near the equatorial plane, even far inside the ellipsoid</li>
      *   <li>in order to handle very flat ellipsoids</li>
      * </ul>
+     * <p>
+     * In some rare cases (for example very flat ellipsoid, or points close to ellipsoid center), the loop
+     * may fail to converge. As this seems to happen only in degenerate cases, a design choice was to return
+     * an approximate point corresponding to last iteration. This point may be incorrect and fail to give the
+     * initial point back if doing roundtrip by calling {@link #transform(GeodeticPoint)}. This design choice
+     * was made to avoid NaNs appearing for example in inter-satellites visibility checks when two satellites
+     * are almost on opposite sides of Earth. The intermediate points far within the Earth should not prevent
+     * the detection algorithm to find visibility start/end.
+     * </p>
      */
     public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> transform(final FieldVector3D<T> point,
                                                                            final Frame frame,
@@ -622,7 +652,11 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
             T            bn     = an.getField().getZero();
             phi = an.getField().getZero().add(Double.POSITIVE_INFINITY);
             h   = an.getField().getZero().add(Double.POSITIVE_INFINITY);
-            for (int i = 0; i < 10; ++i) { // this usually converges in 2 iterations
+            for (int i = 0; i < 1000; ++i) {
+                // this usually converges in 2 iterations, but in rare cases it can take much more
+                // see https://gitlab.orekit.org/orekit/orekit/-/issues/1224 for examples
+                // with points near Earth center which need 137 iterations for the first example
+                // and 1150 iterations for the second example
                 final T oldSn  = sn;
                 final T oldCn  = cn;
                 final T oldPhi = phi;
@@ -662,6 +696,13 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                 }
 
             }
+
+            if (Double.isInfinite(phi.getReal())) {
+                // we did not converge, the point is probably within the ellipsoid
+                // we just compute the "best" phi we can to avoid NaN
+                phi = sn.divide(cn.multiply(g)).atan().copySign(z);
+            }
+
         }
 
         return new FieldGeodeticPoint<>(phi, lambda, h);
