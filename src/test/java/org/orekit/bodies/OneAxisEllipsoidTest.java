@@ -411,16 +411,15 @@ public class OneAxisEllipsoidTest {
     public void testNumerousIteration() {
         // this test, which corresponds to an unrealistic extremely flat ellipsoid,
         // is designed to need more than the usual 2 or 3 iterations in the iterative
-        // version of the Toshio Fukushima's algorithm. It in fact would reach
-        // convergence at iteration 17. However, despite we interrupt the loop
-        // at iteration 9, the result is nevertheless very accurate
+        // version of the Toshio Fukushima's algorithm. It reaches convergence at
+        // iteration 17
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 999.0 / 1000.0, frame);
         Vector3D point     = new Vector3D(100.001, 0.0, 1.0);
         GeodeticPoint gp = model.transform(point, frame, date);
         Vector3D rebuilt = model.transform(gp);
-        Assertions.assertEquals(0.0, rebuilt.distance(point), 8.0e-12);
+        Assertions.assertEquals(0.0, rebuilt.distance(point), 1.2e-11);
     }
 
     @Test
@@ -901,6 +900,31 @@ public class OneAxisEllipsoidTest {
         Assertions.assertEquals(83.0357553, FastMath.toDegrees(earth.azimuthBetweenPoints(london, berlin)).getReal(), 1.0e-6);
         Assertions.assertEquals(132.894864, FastMath.toDegrees(earth.azimuthBetweenPoints(berlin, perth)).getReal(), 1.0e-6);
         Assertions.assertEquals(65.3853195, FastMath.toDegrees(earth.azimuthBetweenPoints(perth, newYork)).getReal(), 1.0e-6);
+    }
+
+    @Test
+    public void testPointNearCenter1() {
+        final OneAxisEllipsoid earth  = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                             Constants.WGS84_EARTH_FLATTENING,
+                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, false));
+        final Vector3D p1   = new Vector3D( 14605530.402633,  7681001.886684,  24582223.005261);
+        final Vector3D p2   = new Vector3D(-14650836.411867, -7561887.405778, -24575352.170908);
+        final Vector3D pMid = new Vector3D(0.5, p1, 0.5, p2);
+        final GeodeticPoint gp = earth.transform(pMid, earth.getFrame(), null);
+        Vector3D rebuilt = earth.transform(gp);
+        Assertions.assertEquals(0.0, rebuilt.distance(pMid), 1.5e-9);
+    }
+
+    @Test
+    public void testPointNearCenter2() {
+        final OneAxisEllipsoid earth  = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                             Constants.WGS84_EARTH_FLATTENING,
+                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, false));
+        final Vector3D pMid = new Vector3D(-20923.23737959098, 56464.586571323685, -7647.317096056417);
+        final GeodeticPoint gp = earth.transform(pMid, earth.getFrame(), null);
+        Vector3D rebuilt = earth.transform(gp);
+        // we exited loop without convergence
+        Assertions.assertEquals(540.598, rebuilt.distance(pMid), 1.0e-3);
     }
 
     private void doTestTransformVsOldIterative(OneAxisEllipsoid model,
