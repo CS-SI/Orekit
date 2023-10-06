@@ -170,7 +170,7 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
      * <p>
      * The {@code g} function of this detector is the difference between the minimum
      * altitude of intermediate points along the line of sight between satellites and the
-     * {@ling #getSkimmingAltitude() skimming altitude}. It is therefore positive when
+     * {@link #getSkimmingAltitude() skimming altitude}. It is therefore positive when
      * all intermediate points are above the skimming altitude, meaning satellites can see
      * each other and it is negative when some intermediate points (which may be either
      * endpoints) dive below this altitude, meaning satellites cannot see each other.
