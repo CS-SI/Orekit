@@ -147,6 +147,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         this.resetAtEnd = resetAtEnd;
     }
 
+    /** Getter for the resetting flag regarding initial state.
+     * @return resetting flag
+     * @since 12.0
+     */
+    public boolean getResetAtEnd() {
+        return this.resetAtEnd;
+    }
+
     /** Initialize the mapper.
      * @param field Field used by default
      */
@@ -1181,7 +1189,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * If propagator-specific event handlers and step handlers are added to
      * the integrator in the try block, they will be removed automatically
      * when leaving the block, so the integrator only keep its own handlers
-     * between calls to {@link AbstractIntegratedPropagator#propagate(AbsoluteDate, AbsoluteDate).
+     * between calls to {@link AbstractIntegratedPropagator#propagate(FieldAbsoluteDate, FieldAbsoluteDate).
      * </p>
      * @param <T> the type of the field elements
      * @since 11.0

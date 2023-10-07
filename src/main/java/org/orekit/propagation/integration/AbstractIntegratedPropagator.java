@@ -143,6 +143,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         this.resetAtEnd = resetAtEnd;
     }
 
+    /** Getter for the resetting flag regarding initial state.
+     * @return resetting flag
+     * @since 12.0
+     */
+    public boolean getResetAtEnd() {
+        return this.resetAtEnd;
+    }
+
     /** Initialize the mapper. */
     protected void initMapper() {
         stateMapper = createMapper(null, Double.NaN, null, null, null, null);
