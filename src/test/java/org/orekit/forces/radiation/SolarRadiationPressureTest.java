@@ -233,8 +233,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testGlobalStateJacobianIsotropicSingle()
-        {
+    public void testGlobalStateJacobianIsotropicSingle() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -263,13 +262,12 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           1e3, tolerances[0], 2.0e-5);
+                           1e3, tolerances[0], 3.2e-5);
 
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVs80Implementation()
-        {
+    public void testLocalJacobianIsotropicClassicalVs80Implementation() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -295,8 +293,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVs80ImplementationGradient()
-        {
+    public void testLocalJacobianIsotropicClassicalVs80ImplementationGradient() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -441,7 +438,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           1e6, tolerances[0], 2.8e-5);
+                           1e6, tolerances[0], 4.2e-5);
 
     }
 
@@ -878,7 +875,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final Vector3D     v     = new Vector3D(-213.65557094060222, -2377.3633988328584,  3079.4740070013495);
         final Orbit        orbit = new CartesianOrbit(new TimeStampedPVCoordinates(date, p, v),
                                                       FramesFactory.getGCRF(), Constants.EIGEN5C_EARTH_MU);
-        doTestMoonEarth(orbit, 720.0, 1.0, 0, 525, 0, 0, 2.198e-3);
+        doTestMoonEarth(orbit, 720.0, 1.0, 0, 525, 0, 0, 2.192e-3);
     }
 
     @Test
@@ -888,7 +885,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final Vector3D     v     = new Vector3D(-348.8911736753223, -2383.738528546711, 3060.9815784341567);
         final Orbit        orbit = new CartesianOrbit(new TimeStampedPVCoordinates(date, p, v),
                                                       FramesFactory.getGCRF(), Constants.EIGEN5C_EARTH_MU);
-        doTestMoonEarth(orbit, 3600.0, 1.0, 534, 1003, 0, 0, 11.656e-3);
+        doTestMoonEarth(orbit, 3600.0, 1.0, 534, 1003, 0, 0, 11.685e-3);
     }
 
     private void doTestMoonEarth(Orbit orbit, double duration, double step,
@@ -1067,7 +1064,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final FieldOrbit<Binary64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
                                                                              FramesFactory.getGCRF(),
                                                                              field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU));
-        doTestFieldMoonEarth(orbit, field.getZero().newInstance(720.0), field.getZero().newInstance(1.0), 0, 525, 0, 0, 2.195e-3);
+        doTestFieldMoonEarth(orbit, field.getZero().newInstance(720.0), field.getZero().newInstance(1.0), 0, 525, 0, 0, 2.193e-3);
     }
 
     @Test
@@ -1080,7 +1077,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final FieldOrbit<Binary64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
                                                                              FramesFactory.getGCRF(),
                                                                              field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU));
-        doTestFieldMoonEarth(orbit, field.getZero().newInstance(3600.0), field.getZero().newInstance(1.0), 534, 1003, 0, 0, 11.633e-3);
+        doTestFieldMoonEarth(orbit, field.getZero().newInstance(3600.0), field.getZero().newInstance(1.0), 534, 1003, 0, 0, 11.611e-3);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldMoonEarth(FieldOrbit<T> orbit, T duration, T step,

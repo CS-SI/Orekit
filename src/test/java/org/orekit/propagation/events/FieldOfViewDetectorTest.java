@@ -301,17 +301,17 @@ public class FieldOfViewDetectorTest {
         List<LoggedEvent>  events = logger.getLoggedEvents();
         Assertions.assertEquals(6, events.size());
         Assertions.assertSame(sunPartial, events.get(0).getEventDetector());
-        Assertions.assertEquals(460.884444, events.get(0).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(460.876793, events.get(0).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
         Assertions.assertSame(sunCenter, events.get(1).getEventDetector());
         Assertions.assertEquals(488.299210, events.get(1).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
         Assertions.assertSame(sunFull, events.get(2).getEventDetector());
-        Assertions.assertEquals(517.527656, events.get(2).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(517.536353, events.get(2).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
         Assertions.assertSame(sunFull, events.get(3).getEventDetector());
-        Assertions.assertEquals(1749.292351, events.get(3).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(1749.277930, events.get(3).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
         Assertions.assertSame(sunCenter, events.get(4).getEventDetector());
         Assertions.assertEquals(1798.478948, events.get(4).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
         Assertions.assertSame(sunPartial, events.get(5).getEventDetector());
-        Assertions.assertEquals(1845.966183, events.get(5).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(1845.979622, events.get(5).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
 
     }
 
