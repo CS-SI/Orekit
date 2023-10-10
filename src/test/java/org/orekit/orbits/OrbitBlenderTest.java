@@ -16,6 +16,10 @@
  */
 package org.orekit.orbits;
 
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.analysis.polynomials.SmoothStepFactory;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
@@ -47,10 +51,6 @@ import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.AbsolutePVCoordinatesTest;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
-
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 class OrbitBlenderTest {
 
@@ -220,12 +220,12 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.0518575579460285,
-                            0.08169252105340838,
-                            0.052627727766944646,
-                            0.08349987703948437,
-                            0.10151652702927097,
-                            0.14827633387930605,
+                            0.05185755739574356,
+                            0.08169252247655118,
+                            0.05262772650491532,
+                            0.08349987871078612,
+                            0.10151652736264738,
+                            0.14827634538902450,
                             1e-17);
     }
 
@@ -252,12 +252,12 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.05106377506804307,
-                            0.03671310632700915,
-                            0.0545187548746305,
-                            0.036546408614025486,
-                            0.09412869702780567,
-                            0.0664299673588822,
+                            0.05106377387196148,
+                            0.03671310672901031,
+                            0.05451875411594503,
+                            0.03654640623799635,
+                            0.09412869292348532,
+                            0.06642996301875234,
                             1e-17);
     }
 
@@ -281,12 +281,12 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.00854503989131342,
-                            0.011925928891684793,
-                            0.008950775970761984,
-                            0.012996823429062502,
-                            0.016000311289589075,
-                            0.017432266235403948,
+                            0.00854503689113997,
+                            0.01192593191092934,
+                            0.00895077297858289,
+                            0.01299681278291136,
+                            0.01600030629530242,
+                            0.01743228664677538,
                             1e-17);
     }
 

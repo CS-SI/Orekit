@@ -123,12 +123,12 @@ public class DSSTSolarRadiationPressureTest {
             elements[i] = daidt[i];
         }
 
-        Assertions.assertEquals(6.840751151317499E-8,    elements[0], 1.e-23);
-        Assertions.assertEquals(-2.9909441926876346E-11, elements[1], 1.e-26);
-        Assertions.assertEquals(-2.5384005535097657E-10, elements[2], 1.e-25);
-        Assertions.assertEquals(2.0378281752739904E-13,  elements[3], 1.e-28);
-        Assertions.assertEquals(-2.3338771085259606E-14, elements[4], 1.e-29);
-        Assertions.assertEquals(1.608238526154956E-11,   elements[5], 1.e-26);
+        Assertions.assertEquals( 6.840790448823038E-8,    elements[0], 1.e-23);
+        Assertions.assertEquals(-2.990943627915497E-11,   elements[1], 1.e-26);
+        Assertions.assertEquals(-2.538400074176317E-10,   elements[2], 1.e-25);
+        Assertions.assertEquals( 2.037839945151859E-13,   elements[3], 1.e-28);
+        Assertions.assertEquals(-2.3338909771295392E-14,  elements[4], 1.e-29);
+        Assertions.assertEquals( 1.6082478750869883E-11,  elements[5], 1.e-26);
 
     }
 

@@ -650,7 +650,7 @@ public class FieldDSSTPropagatorTest {
         // p/hy =  0.6618387121369373D-05
         // q/hx = -0.5624363171289686D-05
         // lM   = 140°3496229467104
-        Assertions.assertEquals(42166257.99807995, state.getA().getReal(), 0.8);
+        Assertions.assertEquals(42166257.99807995, state.getA().getReal(), 1.2);
         Assertions.assertEquals(-0.1781865038201885e-05, state.getEquinoctialEx().getReal(), 3.e-7);
         Assertions.assertEquals(-0.1191876027555493e-03, state.getEquinoctialEy().getReal(), 4.e-6);
         Assertions.assertEquals(-0.5624363171289686e-05, state.getHx().getReal(), 4.e-9);

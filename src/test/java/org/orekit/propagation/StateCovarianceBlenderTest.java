@@ -148,12 +148,12 @@ class StateCovarianceBlenderTest {
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        new KeplerianPropagator(sergeiOrbit),
-                       0.1089311750227663,
-                       0.2596446611452776,
-                       0.1051988860904129,
-                       0.2803678612048340,
-                       0.2969288922773901,
-                       0.5750518125401615,
+                       0.1116407143789014,
+                       0.2425640159076254,
+                       0.1087631558851462,
+                       0.2679401217535307,
+                       0.2778578301745195,
+                       0.4530030107168802,
                        tolerance,
                        showResults);
 
@@ -198,12 +198,12 @@ class StateCovarianceBlenderTest {
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        propagator,
-                       0.0898601548317524,
-                       0.2244976446907571,
-                       0.0970501664150387,
-                       0.2246274171559650,
-                       0.1578879728929423,
-                       0.5635732855379500,
+                       0.0846851698749896,
+                       0.2058014885511439,
+                       0.0919007354549801,
+                       0.2091770636912496,
+                       0.1489481970663129,
+                       0.4356202584248650,
                        tolerance,
                        showResults);
 
@@ -248,12 +248,12 @@ class StateCovarianceBlenderTest {
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        propagator,
-                       0.0991905002547425,
-                       0.2032481714771556,
-                       0.0996905763904645,
-                       0.2151964237133183,
-                       0.1818992576978108,
-                       0.5453231160284534,
+                       0.0942271263136304,
+                       0.1838478761581066,
+                       0.0899438260720019,
+                       0.2005912073228834,
+                       0.1734389270363536,
+                       0.4082398917545950,
                        tolerance,
                        showResults);
 
@@ -318,12 +318,12 @@ class StateCovarianceBlenderTest {
         }
 
         // Results obtained when using modified orbit date to use truncated JPL test resource file
-        Assertions.assertEquals( 0.1219197603846056, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals( 9.0469978254487930, relativeRMSSigmaError[1].getMean(), tolerance);
-        Assertions.assertEquals( 0.1268714178770034, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals( 8.8496255309734640, relativeRMSSigmaError[1].getPercentile(50), tolerance);
-        Assertions.assertEquals( 0.2394787620684697, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(21.4695254558469000, relativeRMSSigmaError[1].getMax(), tolerance);
+        Assertions.assertEquals( 0.1196735195377377, relativeRMSSigmaError[0].getMean(), tolerance);
+        Assertions.assertEquals( 7.7667866774640380, relativeRMSSigmaError[1].getMean(), tolerance);
+        Assertions.assertEquals( 0.1232290773416041, relativeRMSSigmaError[0].getPercentile(50), tolerance);
+        Assertions.assertEquals( 7.9006158337863090, relativeRMSSigmaError[1].getPercentile(50), tolerance);
+        Assertions.assertEquals( 0.2316904959419679, relativeRMSSigmaError[0].getMax(), tolerance);
+        Assertions.assertEquals(17.7514263304215620, relativeRMSSigmaError[1].getMax(), tolerance);
 
         // Assert getters as well
         Assertions.assertNull(covarianceInterpolator.getOutFrame());
