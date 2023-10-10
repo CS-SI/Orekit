@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
@@ -80,6 +81,11 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
     /** Maximum offset for relative dates. */
     private final double maxRelativeOffset;
 
+    /** Central body.
+     * @since 12.0
+     */
+    private final OneAxisEllipsoid body;
+
     /**
      * Constructor used to create a new OCM writer configured with the necessary parameters
      * to successfully fill in all required fields that aren't part of a standard object.
@@ -117,6 +123,11 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
         this.outputName         = outputName;
         this.maxRelativeOffset  = maxRelativeOffset;
         this.unitsColumn        = unitsColumn;
+        this.body               = Double.isNaN(writer.getEquatorialRadius()) ?
+                                  null :
+                                  new OneAxisEllipsoid(writer.getEquatorialRadius(),
+                                                       writer.getFlattening(),
+                                                       template.getTrajReferenceFrame().asFrame());
     }
 
     /** {@inheritDoc}
@@ -208,9 +219,10 @@ public class EphemerisOcmWriter implements EphemerisFileWriter {
                         ++crossings;
                     }
                     lastZ = pv.getPosition().getZ();
-                    states.add(new TrajectoryState(type, pv.getDate(), type.toRawElements(pv, frame, block.getMu())));
+                    states.add(new TrajectoryState(type, pv.getDate(), type.toRawElements(pv, frame, body, block.getMu())));
                 }
-                final TrajectoryStateHistory history = new TrajectoryStateHistory(trajectoryMetadata, states, block.getMu());
+                final TrajectoryStateHistory history = new TrajectoryStateHistory(trajectoryMetadata, states,
+                                                                                  body, block.getMu());
 
                 // write trajectory block
                 final TrajectoryStateHistoryWriter trajectoryWriter =

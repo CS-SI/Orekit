@@ -48,6 +48,16 @@ public class OcmWriter extends AbstractMessageWriter<OdmHeader, Segment<OcmMetad
     /** Padding width for aligning the '=' sign. */
     public static final int KVN_PADDING_WIDTH = 24;
 
+    /** Central body equatorial radius.
+     * @since 12.0
+     */
+    private final double equatorialRadius;
+
+    /** Central body flattening.
+     * @since 12.0
+     */
+    private final double flattening;
+
     /** Complete constructor.
      * <p>
      * Calling this constructor directly is not recommended. Users should rather use
@@ -55,15 +65,37 @@ public class OcmWriter extends AbstractMessageWriter<OdmHeader, Segment<OcmMetad
      * writerBuilder.buildOcmWriter()}.
      * </p>
      * @param conventions IERS Conventions
+     * @param equatorialRadius central body equatorial radius
+     * @param flattening central body flattening
      * @param dataContext used to retrieve frames, time scales, etc.
      */
-    public OcmWriter(final IERSConventions conventions, final DataContext dataContext) {
+    public OcmWriter(final IERSConventions conventions,
+                     final double equatorialRadius, final double flattening,
+                     final DataContext dataContext) {
         super(Ocm.ROOT, Ocm.FORMAT_VERSION_KEY, CCSDS_OCM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
                   () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> null, () -> TimeSystem.UTC,
                   () -> 0.0, () -> 1.0));
+        this.equatorialRadius = equatorialRadius;
+        this.flattening       = flattening;
+    }
+
+    /** Get the central body equatorial radius.
+     * @return central body equatorial radius
+     * @since 12.0
+     */
+    public double getEquatorialRadius() {
+        return equatorialRadius;
+    }
+
+    /** Get the central body flattening.
+     * @return central body flattening
+     * @since 12.0
+     */
+    public double getFlattening() {
+        return flattening;
     }
 
     /** {@inheritDoc} */

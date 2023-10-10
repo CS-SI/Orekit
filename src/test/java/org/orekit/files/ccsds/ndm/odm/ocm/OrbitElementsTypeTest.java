@@ -25,14 +25,17 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.Units;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.units.Unit;
 
@@ -43,12 +46,12 @@ public class OrbitElementsTypeTest {
     public void testNotSupported() {
         for (final OrbitElementsType et : Arrays.asList(OrbitElementsType.ADBARV,
                                                         OrbitElementsType.DELAUNAY, OrbitElementsType.DELAUNAYMOD,
-                                                        OrbitElementsType.EIGVAL3EIGVEC3, OrbitElementsType.GEODETIC,
+                                                        OrbitElementsType.EIGVAL3EIGVEC3,
                                                         OrbitElementsType.LDBARV, OrbitElementsType.ONSTATION,
                                                         OrbitElementsType.POINCARE)) {
             try {
                 et.toCartesian(AbsoluteDate.J2000_EPOCH, new double[et.getUnits().size()],
-                               Constants.EIGEN5C_EARTH_MU);
+                               null, Constants.EIGEN5C_EARTH_MU);
                 Assertions.fail("an exception should have been thrown");
             } catch (OrekitException oe) {
                 Assertions.assertEquals(OrekitMessages.CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE,
@@ -63,7 +66,7 @@ public class OrbitElementsTypeTest {
             try {
                 et.toCartesian(AbsoluteDate.J2000_EPOCH,
                                new double[] { 7e6, 1.0e-3, 2.0e-3, 1.2, 0.4, 0.5, -1 },
-                               Constants.EIGEN5C_EARTH_MU);
+                               null, Constants.EIGEN5C_EARTH_MU);
                 Assertions.fail("an exception should have been thrown");
             } catch (OrekitException oe) {
                 Assertions.assertEquals(OrekitMessages.CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL,
@@ -78,19 +81,19 @@ public class OrbitElementsTypeTest {
         final double[] elements = { 1e6, 2e6, 3e6, 4e3, 5e3, 6e3, 7, 8, 9 };
 
         final TimeStampedPVCoordinates p = OrbitElementsType.CARTP.toCartesian(AbsoluteDate.J2000_EPOCH,
-                                                                          elements, Constants.EIGEN5C_EARTH_MU);
+                                                                          elements, null, Constants.EIGEN5C_EARTH_MU);
         Assertions.assertEquals(14.0e12, p.getPosition().getNormSq(),     1.0);
         Assertions.assertEquals(0.0,     p.getVelocity().getNormSq(),     1.0e-12);
         Assertions.assertEquals(0.0,     p.getAcceleration().getNormSq(), 1.0e-12);
 
         final TimeStampedPVCoordinates pv = OrbitElementsType.CARTPV.toCartesian(AbsoluteDate.J2000_EPOCH,
-                                                                            elements, Constants.EIGEN5C_EARTH_MU);
+                                                                            elements, null, Constants.EIGEN5C_EARTH_MU);
         Assertions.assertEquals(14.0e12, pv.getPosition().getNormSq(),     1.0);
         Assertions.assertEquals(77.0e6,  pv.getVelocity().getNormSq(),     1.0);
         Assertions.assertEquals(0.0,     pv.getAcceleration().getNormSq(), 1.0e-12);
 
         final TimeStampedPVCoordinates pva = OrbitElementsType.CARTPVA.toCartesian(AbsoluteDate.J2000_EPOCH,
-                                                                              elements, Constants.EIGEN5C_EARTH_MU);
+                                                                              elements, null, Constants.EIGEN5C_EARTH_MU);
         Assertions.assertEquals(14.0e12, pva.getPosition().getNormSq(),     1.0);
         Assertions.assertEquals(77.0e6,  pva.getVelocity().getNormSq(),     1.0);
         Assertions.assertEquals(194.0,   pva.getAcceleration().getNormSq(), 1.0);
@@ -103,7 +106,7 @@ public class OrbitElementsTypeTest {
                         OrbitElementsType.KEPLERIAN.
                         toCartesian(AbsoluteDate.ARBITRARY_EPOCH,
                                     new double[] { 24464560.0, 0.7311, 0.122138, 1.00681, 3.10686, 0.048363 },
-                                    3.9860047e14);
+                                    null, 3.9860047e14);
         Vector3D pos = cart.getPosition();
         Vector3D vel = cart.getVelocity();
         Assertions.assertEquals(-3442769.3470219444, pos.getX(), Utils.epsilonTest * FastMath.abs(pos.getX()));
@@ -121,7 +124,7 @@ public class OrbitElementsTypeTest {
                         OrbitElementsType.KEPLERIANMEAN.
                         toCartesian(AbsoluteDate.ARBITRARY_EPOCH,
                                     new double[] { 24464560.0, 0.7311, 0.122138, 1.00681, 3.10686, 0.048363 },
-                                    3.9860047e14);
+                                    null, 3.9860047e14);
         Vector3D pos = cart.getPosition();
         Vector3D vel = cart.getVelocity();
         Assertions.assertEquals(-0.107622532467967e+07, pos.getX(), Utils.epsilonTest * FastMath.abs(pos.getX()));
@@ -139,7 +142,7 @@ public class OrbitElementsTypeTest {
                         OrbitElementsType.EQUINOCTIAL.
                         toCartesian(AbsoluteDate.ARBITRARY_EPOCH,
                                     new double[] { 7000000.0, 0.01, -0.02, FastMath.toRadians(40.), 2.1, 1.2, +1 },
-                                    3.9860047e14);
+                                    null, 3.9860047e14);
         Vector3D pRef = new Vector3D(2004367.298657, 6575317.978060, -1518024.843914);
         Vector3D vRef = new Vector3D(5574.049, -368.839, 5009.529);
         Assertions.assertEquals(0, cart.getPosition().subtract(pRef).getNorm(), 1.0e-6);
@@ -152,7 +155,7 @@ public class OrbitElementsTypeTest {
                         OrbitElementsType.EQUINOCTIALMOD.
                         toCartesian(AbsoluteDate.ARBITRARY_EPOCH,
                                     new double[] { 7000000.0, 0.01, -0.02, FastMath.toRadians(40.), 2.1, 1.2, +1 },
-                                    3.9860047e14);
+                                    null, 3.9860047e14);
         Vector3D pRef = new Vector3D(1777672.636613, 6587379.027297, -1720306.101389);
         Vector3D vRef = new Vector3D(5660.262, -63.842, 4933.262);
         Assertions.assertEquals(0, cart.getPosition().subtract(pRef).getNorm(), 1.0e-6);
@@ -165,16 +168,20 @@ public class OrbitElementsTypeTest {
                                                         0.048363, PositionAngleType.MEAN,
                                                         FramesFactory.getEME2000(),
                                                         AbsoluteDate.ARBITRARY_EPOCH, Constants.EIGEN5C_EARTH_MU);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         for (final OrbitElementsType type : OrbitElementsType.values()) {
             try {
-                final double[] elements = type.toRawElements(orbit.getPVCoordinates(), orbit.getFrame(), orbit.getMu());
-                final TimeStampedPVCoordinates rebuilt = type.toCartesian(orbit.getDate(), elements, orbit.getMu());
+                final Frame frame = (type == OrbitElementsType.GEODETIC) ? earth.getBodyFrame() : orbit.getFrame();
+                final double[] elements = type.toRawElements(orbit.getPVCoordinates(frame), frame, earth, orbit.getMu());
+                final TimeStampedPVCoordinates rebuilt = type.toCartesian(orbit.getDate(), elements, earth, orbit.getMu());
                 Assertions.assertEquals(0.0,
-                                        Vector3D.distance(orbit.getPVCoordinates().getPosition(), rebuilt.getPosition()),
+                                        Vector3D.distance(orbit.getPVCoordinates(frame).getPosition(), rebuilt.getPosition()),
                                         2.0e-8);
                 if (elements.length > 3) {
                     Assertions.assertEquals(0.0,
-                                            Vector3D.distance(orbit.getPVCoordinates().getVelocity(), rebuilt.getVelocity()),
+                                            Vector3D.distance(orbit.getPVCoordinates(frame).getVelocity(), rebuilt.getVelocity()),
                                             2.0e-11);
                 }
             } catch (OrekitException oe) {

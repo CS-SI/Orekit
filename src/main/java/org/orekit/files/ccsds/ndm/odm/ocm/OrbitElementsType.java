@@ -21,7 +21,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -52,7 +57,8 @@ public enum OrbitElementsType {
 
         /** {@inheritDoc} */
         @Override
-        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
+        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements,
+                                                    final OneAxisEllipsoid body, final double mu) {
             return new TimeStampedPVCoordinates(date,
                                                 new Vector3D(elements[0], elements[1], elements[2]),
                                                 Vector3D.ZERO,
@@ -61,7 +67,8 @@ public enum OrbitElementsType {
 
         /** {@inheritDoc} */
         @Override
-        public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame, final double mu) {
+        public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame,
+                                      final OneAxisEllipsoid body, final double mu) {
             return new double[] {
                 pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ()
             };
@@ -75,7 +82,8 @@ public enum OrbitElementsType {
 
         /** {@inheritDoc} */
         @Override
-        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
+        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements,
+                                                    final OneAxisEllipsoid body, final double mu) {
             return new TimeStampedPVCoordinates(date,
                                                 new Vector3D(elements[0], elements[1], elements[2]),
                                                 new Vector3D(elements[3], elements[4], elements[5]),
@@ -84,7 +92,8 @@ public enum OrbitElementsType {
 
         /** {@inheritDoc} */
         @Override
-        public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame, final double mu) {
+        public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame,
+                                      final OneAxisEllipsoid body, final double mu) {
             return new double[] {
                 pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ(),
                 pv.getVelocity().getX(), pv.getVelocity().getY(), pv.getVelocity().getZ()
@@ -99,7 +108,8 @@ public enum OrbitElementsType {
 
         /** {@inheritDoc} */
         @Override
-        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
+        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements,
+                                                    final OneAxisEllipsoid body, final double mu) {
             return new TimeStampedPVCoordinates(date,
                                                 new Vector3D(elements[0], elements[1], elements[2]),
                                                 new Vector3D(elements[3], elements[4], elements[5]),
@@ -108,7 +118,8 @@ public enum OrbitElementsType {
 
         /** {@inheritDoc} */
         @Override
-        public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame, final double mu) {
+        public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame,
+                                      final OneAxisEllipsoid body, final double mu) {
             return new double[] {
                 pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
                 pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ(),
@@ -137,7 +148,8 @@ public enum OrbitElementsType {
         /** {@inheritDoc} */
         @Override
         @DefaultDataContext
-        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
+        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements,
+                                                    final OneAxisEllipsoid body, final double mu) {
             if (elements[6] < 0) {
                 // retrograde
                 throw new OrekitException(OrekitMessages.CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL,
@@ -152,7 +164,8 @@ public enum OrbitElementsType {
 
         /** {@inheritDoc} */
         @Override
-        public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame, final double mu) {
+        public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame,
+                                      final OneAxisEllipsoid body, final double mu) {
             final EquinoctialOrbit orbit = new EquinoctialOrbit(pv, frame, mu);
             return new double[] {
                 orbit.getA(), orbit.getEquinoctialEx(), orbit.getEquinoctialEy(),
@@ -169,7 +182,8 @@ public enum OrbitElementsType {
         /** {@inheritDoc} */
         @Override
         @DefaultDataContext
-        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
+        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements,
+                                                    final OneAxisEllipsoid body, final double mu) {
             if (elements[6] < 0) {
                 // retrograde
                 throw new OrekitException(OrekitMessages.CCSDS_UNSUPPORTED_RETROGRADE_EQUINOCTIAL,
@@ -185,7 +199,8 @@ public enum OrbitElementsType {
 
         /** {@inheritDoc} */
         @Override
-        public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame, final double mu) {
+        public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame,
+                                      final OneAxisEllipsoid body, final double mu) {
             final EquinoctialOrbit orbit = new EquinoctialOrbit(pv, frame, mu);
             final double           ex    = orbit.getEquinoctialEx();
             final double           ey    = orbit.getEquinoctialEy();
@@ -199,7 +214,39 @@ public enum OrbitElementsType {
 
     /** Geodetic elements (λ, ΦGD, β, A, h, vre). */
     GEODETIC("Geodetic elements (λ, ΦGD, β, A, h, vre)",
-             "°", "°", "°", "°", "km", "km/s"),
+             "°", "°", "°", "°", "km", "km/s") {
+
+        /** {@inheritDoc} */
+        @Override
+        @DefaultDataContext
+        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements,
+                                                    final OneAxisEllipsoid body, final double mu) {
+            final GeodeticPoint gp       = new GeodeticPoint(elements[1], elements[0], elements[4]);
+            final Vector3D      position = body.transform(gp);
+            final SinCos        scBeta   = FastMath.sinCos(elements[2]);
+            final SinCos        scAzi    = FastMath.sinCos(elements[3]);
+            final Vector3D      velocity = new Vector3D(elements[5] * scBeta.cos() * scAzi.sin(), gp.getEast(),
+                                                        elements[5] * scBeta.cos() * scAzi.cos(), gp.getNorth(),
+                                                        elements[5] * scBeta.sin(), gp.getZenith());
+            return new TimeStampedPVCoordinates(date, position, velocity);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame,
+                                      final OneAxisEllipsoid body, final double mu) {
+            final GeodeticPoint gp = body.transform(pv.getPosition(), frame, pv.getDate());
+            return new double[] {
+                gp.getLongitude(), gp.getLatitude(),
+                MathUtils.SEMI_PI - Vector3D.angle(pv.getVelocity(), gp.getZenith()),
+                FastMath.atan2(Vector3D.dotProduct(pv.getVelocity(), gp.getEast()),
+                               Vector3D.dotProduct(pv.getVelocity(), gp.getNorth())),
+                gp.getAltitude(),
+                pv.getVelocity().getNorm()
+            };
+        }
+
+    },
 
     /** Keplerian 6-element classical set (a, e, i, Ω, ω, ν). */
     KEPLERIAN("Keplerian 6-elemnt classical set (a, e, i, Ω, ω, ν)",
@@ -208,7 +255,8 @@ public enum OrbitElementsType {
         /** {@inheritDoc} */
         @Override
         @DefaultDataContext
-        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
+        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements,
+                                                    final OneAxisEllipsoid body, final double mu) {
             return new KeplerianOrbit(elements[0], elements[1], elements[2],
                                       elements[4], elements[3], // BEWARE! the inversion here is intentional
                                       elements[5], PositionAngleType.TRUE,
@@ -218,7 +266,8 @@ public enum OrbitElementsType {
 
         /** {@inheritDoc} */
         @Override
-        public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame, final double mu) {
+        public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame,
+                                      final OneAxisEllipsoid body, final double mu) {
             final KeplerianOrbit orbit = new KeplerianOrbit(pv, frame, mu);
             return new double[] {
                 orbit.getA(), orbit.getE(), orbit.getI(),
@@ -236,7 +285,8 @@ public enum OrbitElementsType {
         /** {@inheritDoc} */
         @Override
         @DefaultDataContext
-        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
+        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements,
+                                                    final OneAxisEllipsoid body, final double mu) {
             return new KeplerianOrbit(elements[0], elements[1], elements[2],
                                       elements[4], elements[3], // BEWARE! the inversion here is intentional
                                       elements[5], PositionAngleType.MEAN,
@@ -246,7 +296,8 @@ public enum OrbitElementsType {
 
         /** {@inheritDoc} */
         @Override
-        public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame, final double mu) {
+        public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame,
+                                      final OneAxisEllipsoid body, final double mu) {
             final KeplerianOrbit orbit = new KeplerianOrbit(pv, frame, mu);
             return new double[] {
                 orbit.getA(), orbit.getE(), orbit.getI(),
@@ -298,21 +349,27 @@ public enum OrbitElementsType {
     /** Convert to Cartesian coordinates.
      * @param date elements date
      * @param elements elements values in SI units
+     * @param body central body
+     * (may be null if type is <em>not</em> {@link OrbitElementsType#GEODETIC})
      * @param mu gravitational parameter in m³/s²
      * @return Cartesian coordinates
      */
-    public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements, final double mu) {
+    public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final double[] elements,
+                                                final OneAxisEllipsoid body, final double mu) {
         throw new OrekitException(OrekitMessages.CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE, name(), toString());
     }
 
     /** Convert to raw elements array.
      * @param pv Cartesian coordinates
      * @param frame inertial frame where elements are defined
+     * @param body central body
+     * (may be null if type is <em>not</em> {@link OrbitElementsType#GEODETIC})
      * @param mu gravitational parameter in m³/s²
      * @return elements elements values in SI units
      * @since 12.0
      */
-    public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame, final double mu) {
+    public double[] toRawElements(final TimeStampedPVCoordinates pv, final Frame frame,
+                                  final OneAxisEllipsoid body, final double mu) {
         throw new OrekitException(OrekitMessages.CCSDS_UNSUPPORTED_ELEMENT_SET_TYPE, name(), toString());
     }
 
