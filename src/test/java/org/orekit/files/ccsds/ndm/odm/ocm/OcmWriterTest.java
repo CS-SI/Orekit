@@ -30,12 +30,17 @@ public class OcmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OcmMeta
     protected OcmParser getParser() {
         return new ParserBuilder().
                withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).
+               withEquatorialRadius(Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+               withFlattening(Constants.WGS84_EARTH_FLATTENING).
                withMu(Constants.EIGEN5C_EARTH_MU).
                buildOcmParser();
     }
 
     protected OcmWriter getWriter() {
-        return new WriterBuilder().buildOcmWriter();
+        return new WriterBuilder().
+               withEquatorialRadius(Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+               withFlattening(Constants.WGS84_EARTH_FLATTENING).
+               buildOcmWriter();
     }
 
     @Test
@@ -61,6 +66,16 @@ public class OcmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OcmMeta
     @Test
     public void testWriteExample4() {
         doTest("/ccsds/odm/ocm/OCMExample4.txt");
+    }
+
+    @Test
+    public void testWriteExample5ITRF() {
+        doTest("/ccsds/odm/ocm/OCMExample5ITRF.txt");
+    }
+
+    @Test
+    public void testWriteExample5Geodetic() {
+        doTest("/ccsds/odm/ocm/OCMExample5Geodetic.txt");
     }
 
 }

@@ -80,6 +80,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      *   <li>{@link #getDataContext() data context} set to {@link DataContext#getDefault() default context}</li>
      *   <li>{@link #getMissionReferenceDate() mission reference date} set to {@code null}</li>
      *   <li>{@link #getMu() gravitational coefficient} set to {@code Double.NaN}</li>
+     *   <li>{@link #getEquatorialRadius() central body equatorial radius} set to {@code Double.NaN}</li>
+     *   <li>{@link #getFlattening() central body flattening} set to {@code Double.NaN}</li>
      *   <li>{@link #getDefaultMass() default mass} set to {@code Double.NaN}</li>
      *   <li>{@link #getDefaultInterpolationDegree() default interpolation degree} set to {@code 1}</li>
      *   <li>{@link #getParsedUnitsBehavior() parsed unit behavior} set to {@link ParsedUnitsBehavior#CONVERT_COMPATIBLE}</li>
@@ -100,6 +102,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      *   <li>{@link #isSimpleEOP() simple EOP} set to {@code true}</li>
      *   <li>{@link #getMissionReferenceDate() mission reference date} set to {@code null}</li>
      *   <li>{@link #getMu() gravitational coefficient} set to {@code Double.NaN}</li>
+     *   <li>{@link #getEquatorialRadius() central body equatorial radius} set to {@code Double.NaN}</li>
+     *   <li>{@link #getFlattening() central body flattening} set to {@code Double.NaN}</li>
      *   <li>{@link #getDefaultMass() default mass} set to {@code Double.NaN}</li>
      *   <li>{@link #getDefaultInterpolationDegree() default interpolation degree} set to {@code 1}</li>
      *   <li>{@link #getParsedUnitsBehavior() parsed unit behavior} set to {@link ParsedUnitsBehavior#CONVERT_COMPATIBLE}</li>
@@ -109,32 +113,36 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      */
     @SuppressWarnings("unchecked")
     public ParserBuilder(final DataContext dataContext) {
-        this(IERSConventions.IERS_2010, dataContext, null, new IdentityConverter(),
-             true, Double.NaN, Double.NaN, 1, ParsedUnitsBehavior.CONVERT_COMPATIBLE,
+        this(IERSConventions.IERS_2010, Double.NaN, Double.NaN, dataContext,
+             null, new IdentityConverter(), true, Double.NaN, Double.NaN,
+             1, ParsedUnitsBehavior.CONVERT_COMPATIBLE,
              (Function<ParseToken, List<ParseToken>>[]) Array.newInstance(Function.class, 0));
     }
 
     /** Complete constructor.
      * @param conventions IERS Conventions
+     * @param equatorialRadius central body equatorial radius
+     * @param flattening central body flattening
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param rangeUnitsConverter converter for {@link RangeUnits#RU Range Units}
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param mu gravitational coefficient
      * @param defaultMass default mass
      * @param defaultInterpolationDegree default interpolation degree
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
-     * @param rangeUnitsConverter converter for {@link RangeUnits#RU Range Units}
      * @param filters filters to apply to parse tokens
      * @since 12.0
      */
-    private ParserBuilder(final IERSConventions conventions, final DataContext dataContext,
-                          final AbsoluteDate missionReferenceDate,
+    private ParserBuilder(final IERSConventions conventions,
+                          final double equatorialRadius, final double flattening,
+                          final DataContext dataContext, final AbsoluteDate missionReferenceDate,
                           final RangeUnitsConverter rangeUnitsConverter,
-                          final boolean simpleEOP, final double mu, final double defaultMass,
-                          final int defaultInterpolationDegree,
+                          final boolean simpleEOP, final double mu,
+                          final double defaultMass, final int defaultInterpolationDegree,
                           final ParsedUnitsBehavior parsedUnitsBehavior,
                           final Function<ParseToken, List<ParseToken>>[] filters) {
-        super(conventions, dataContext, missionReferenceDate, rangeUnitsConverter);
+        super(conventions, equatorialRadius, flattening, dataContext, missionReferenceDate, rangeUnitsConverter);
         this.simpleEOP                  = simpleEOP;
         this.mu                         = mu;
         this.defaultMass                = defaultMass;
@@ -145,10 +153,13 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
 
     /** {@inheritDoc} */
     @Override
-    protected ParserBuilder create(final IERSConventions newConventions, final DataContext newDataContext,
+    protected ParserBuilder create(final IERSConventions newConventions,
+                                   final double newEquatorialRadius, final double newFlattening,
+                                   final DataContext newDataContext,
                                    final AbsoluteDate newMissionReferenceDate, final RangeUnitsConverter newRangeUnitsConverter) {
-        return new ParserBuilder(newConventions, newDataContext, newMissionReferenceDate, newRangeUnitsConverter,
-                                 simpleEOP, mu, defaultMass, defaultInterpolationDegree, parsedUnitsBehavior, filters);
+        return new ParserBuilder(newConventions, newEquatorialRadius, newFlattening, newDataContext,
+                                 newMissionReferenceDate, newRangeUnitsConverter, simpleEOP, mu,
+                                 defaultMass, defaultInterpolationDegree, parsedUnitsBehavior, filters);
     }
 
     /** Set up flag for ignoring tidal effects when interpolating EOP.
@@ -156,8 +167,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public ParserBuilder withSimpleEOP(final boolean newSimpleEOP) {
-        return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(), getRangeUnitsConverter(),
-                                 newSimpleEOP, getMu(), getDefaultMass(),
+        return new ParserBuilder(getConventions(), getEquatorialRadius(), getFlattening(), getDataContext(),
+                                 getMissionReferenceDate(), getRangeUnitsConverter(), newSimpleEOP, getMu(), getDefaultMass(),
                                  getDefaultInterpolationDegree(), getParsedUnitsBehavior(), getFilters());
     }
 
@@ -173,8 +184,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public ParserBuilder withMu(final double newMu) {
-        return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(), getRangeUnitsConverter(),
-                                 isSimpleEOP(), newMu, getDefaultMass(),
+        return new ParserBuilder(getConventions(), getEquatorialRadius(), getFlattening(), getDataContext(),
+                                 getMissionReferenceDate(), getRangeUnitsConverter(), isSimpleEOP(), newMu, getDefaultMass(),
                                  getDefaultInterpolationDegree(), getParsedUnitsBehavior(), getFilters());
     }
 
@@ -193,8 +204,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public ParserBuilder withDefaultMass(final double newDefaultMass) {
-        return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(), getRangeUnitsConverter(),
-                                 isSimpleEOP(), getMu(), newDefaultMass,
+        return new ParserBuilder(getConventions(), getEquatorialRadius(), getFlattening(), getDataContext(),
+                                 getMissionReferenceDate(), getRangeUnitsConverter(), isSimpleEOP(), getMu(), newDefaultMass,
                                  getDefaultInterpolationDegree(), getParsedUnitsBehavior(), getFilters());
     }
 
@@ -214,8 +225,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public ParserBuilder withDefaultInterpolationDegree(final int newDefaultInterpolationDegree) {
-        return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(), getRangeUnitsConverter(),
-                                 isSimpleEOP(), getMu(), getDefaultMass(),
+        return new ParserBuilder(getConventions(), getEquatorialRadius(), getFlattening(), getDataContext(),
+                                 getMissionReferenceDate(), getRangeUnitsConverter(), isSimpleEOP(), getMu(), getDefaultMass(),
                                  newDefaultInterpolationDegree, getParsedUnitsBehavior(), getFilters());
     }
 
@@ -231,8 +242,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public ParserBuilder withParsedUnitsBehavior(final ParsedUnitsBehavior newParsedUnitsBehavior) {
-        return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(), getRangeUnitsConverter(),
-                                 isSimpleEOP(), getMu(), getDefaultMass(),
+        return new ParserBuilder(getConventions(), getEquatorialRadius(), getFlattening(), getDataContext(),
+                                 getMissionReferenceDate(), getRangeUnitsConverter(), isSimpleEOP(), getMu(), getDefaultMass(),
                                  getDefaultInterpolationDegree(), newParsedUnitsBehavior, getFilters());
     }
 
@@ -331,8 +342,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
         System.arraycopy(filters, 0, newFilters, 0, filters.length);
         newFilters[filters.length] = filter;
 
-        return new ParserBuilder(getConventions(), getDataContext(), getMissionReferenceDate(), getRangeUnitsConverter(),
-                                 isSimpleEOP(), getMu(), getDefaultMass(),
+        return new ParserBuilder(getConventions(), getEquatorialRadius(), getFlattening(), getDataContext(),
+                                 getMissionReferenceDate(), getRangeUnitsConverter(), isSimpleEOP(), getMu(), getDefaultMass(),
                                  getDefaultInterpolationDegree(), getParsedUnitsBehavior(),
                                  newFilters);
 
@@ -381,7 +392,8 @@ public class ParserBuilder extends AbstractBuilder<ParserBuilder> {
      * @return a new parser
      */
     public OcmParser buildOcmParser() {
-        return new OcmParser(getConventions(), isSimpleEOP(), getDataContext(), getMu(),
+        return new OcmParser(getConventions(), getEquatorialRadius(), getFlattening(),
+                             isSimpleEOP(), getDataContext(), getMu(),
                              getParsedUnitsBehavior(), getFilters());
     }
 

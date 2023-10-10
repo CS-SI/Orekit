@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -102,11 +103,13 @@ public class TrajectoryState implements TimeStamped {
     }
 
     /** Convert to Cartesian coordinates.
+     * @param body central body
+     * (may be null if {@link #getType() type} is <em>not</em> {@link OrbitElementsType#GEODETIC})
      * @param mu gravitational parameter in m³/s²
      * @return Cartesian coordinates
      */
-    public TimeStampedPVCoordinates toCartesian(final double mu) {
-        return type.toCartesian(date, elements, mu);
+    public TimeStampedPVCoordinates toCartesian(final OneAxisEllipsoid body, final double mu) {
+        return type.toCartesian(date, elements, body, mu);
     }
 
 }

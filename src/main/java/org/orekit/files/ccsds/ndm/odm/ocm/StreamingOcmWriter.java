@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Collections;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
@@ -242,9 +243,14 @@ public class StreamingOcmWriter implements AutoCloseable {
                 crossings = 0;
                 type      = trajectoryMetadata.getTrajType();
 
+                final OneAxisEllipsoid body = trajectoryMetadata.getTrajType() == OrbitElementsType.GEODETIC ?
+                                              new OneAxisEllipsoid(writer.getEquatorialRadius(),
+                                                                   writer.getFlattening(),
+                                                                   trajectoryMetadata.getTrajReferenceFrame().asFrame()) :
+                                              null;
                 trajectoryWriter = new TrajectoryStateHistoryWriter(new TrajectoryStateHistory(trajectoryMetadata,
                                                                                                Collections.emptyList(),
-                                                                                               s0.getMu()),
+                                                                                               body, s0.getMu()),
                                                                     writer.getTimeConverter());
                 trajectoryWriter.enterSection(generator);
                 trajectoryWriter.writeMetadata(generator);
@@ -265,7 +271,10 @@ public class StreamingOcmWriter implements AutoCloseable {
                     ++crossings;
                 }
                 lastZ = pv.getPosition().getZ();
-                final TrajectoryState state = new TrajectoryState(type, pv.getDate(), type.toRawElements(pv, frame, currentState.getMu()));
+                final TrajectoryState state = new TrajectoryState(type, pv.getDate(),
+                                                                  type.toRawElements(pv, frame,
+                                                                                     trajectoryWriter.getHistory().getBody(),
+                                                                                     currentState.getMu()));
                 trajectoryWriter.writeState(generator, state, type.getUnits());
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());

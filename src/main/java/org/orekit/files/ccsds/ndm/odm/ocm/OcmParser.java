@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
@@ -73,6 +74,16 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
 
     /** Metadata for current observation block. */
     private OcmMetadata metadata;
+
+    /** Central body equatorial radius.
+     * @since 12.0
+     */
+    private final double equatorialRadius;
+
+    /** Central body flattening.
+     * @since 12.0
+     */
+    private final double flattening;
 
     /** Context binding valid for current metadata. */
     private ContextBinding context;
@@ -127,6 +138,8 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
      * parserBuilder.buildOcmParser()}.
      * </p>
      * @param conventions IERS Conventions
+     * @param equatorialRadius central body equatorial radius
+     * @param flattening central body flattening
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param mu gravitational coefficient
@@ -134,11 +147,15 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
      * @param filters filters to apply to parse tokens
      * @since 12.0
      */
-    public OcmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
+    public OcmParser(final IERSConventions conventions,
+                     final double equatorialRadius, final double flattening,
+                     final boolean simpleEOP, final DataContext dataContext,
                      final double mu, final ParsedUnitsBehavior parsedUnitsBehavior,
                      final Function<ParseToken, List<ParseToken>>[] filters) {
         super(Ocm.ROOT, Ocm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, null,
               mu, parsedUnitsBehavior, filters);
+        this.equatorialRadius = equatorialRadius;
+        this.flattening       = flattening;
     }
 
     /** {@inheritDoc} */
@@ -254,12 +271,17 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
     /** {@inheritDoc} */
     @Override
     public boolean finalizeData() {
-        // fix gravitational parameter now that all sections have been completed
         final List<TrajectoryStateHistory> old = trajectoryBlocks;
         if (old != null) {
+            final OneAxisEllipsoid body =
+                            currentTrajectoryStateHistoryMetadata.getTrajType() == OrbitElementsType.GEODETIC ?
+                            new OneAxisEllipsoid(equatorialRadius, flattening,
+                                                 currentTrajectoryStateHistoryMetadata.getTrajReferenceFrame().asFrame()) :
+                            null;
             trajectoryBlocks = new ArrayList<>(old.size());
             for (final TrajectoryStateHistory osh : old) {
-                trajectoryBlocks.add(new TrajectoryStateHistory(osh.getMetadata(), osh.getTrajectoryStates(), getSelectedMu()));
+                trajectoryBlocks.add(new TrajectoryStateHistory(osh.getMetadata(), osh.getTrajectoryStates(),
+                                                                body, getSelectedMu()));
             }
         }
         return true;
@@ -281,6 +303,11 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
             currentTrajectoryStateHistory         = new ArrayList<>();
             anticipateNext(this::processTrajectoryStateToken);
         } else {
+            final OneAxisEllipsoid body =
+                            currentTrajectoryStateHistoryMetadata.getTrajType() == OrbitElementsType.GEODETIC ?
+                            new OneAxisEllipsoid(equatorialRadius, flattening,
+                                                 currentTrajectoryStateHistoryMetadata.getTrajReferenceFrame().asFrame()) :
+                            null;
             anticipateNext(structureProcessor);
             if (currentTrajectoryStateHistoryMetadata.getCenter().getBody() != null) {
                 setMuCreated(currentTrajectoryStateHistoryMetadata.getCenter().getBody().getGM());
@@ -289,7 +316,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
             // as we may get a proper one in the perturbations section
             trajectoryBlocks.add(new TrajectoryStateHistory(currentTrajectoryStateHistoryMetadata,
                                                             currentTrajectoryStateHistory,
-                                                            Double.NaN));
+                                                            body, Double.NaN));
         }
         return true;
     }
@@ -329,7 +356,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
         } else {
             anticipateNext(structureProcessor);
             covarianceBlocks.add(new OrbitCovarianceHistory(currentCovarianceHistoryMetadata,
-                                                       currentCovarianceHistory));
+                                                            currentCovarianceHistory));
             currentCovarianceHistoryMetadata = null;
             currentCovarianceHistory         = null;
         }
@@ -353,7 +380,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
         } else {
             anticipateNext(structureProcessor);
             maneuverBlocks.add(new OrbitManeuverHistory(currentManeuverHistoryMetadata,
-                                                   currentManeuverHistory));
+                                                        currentManeuverHistory));
             currentManeuverHistoryMetadata = null;
             currentManeuverHistory         = null;
         }
@@ -518,7 +545,7 @@ public class OcmParser extends OdmParser<Ocm, OcmParser> implements EphemerisFil
                 }
                 final AbsoluteDate epoch = context.getTimeSystem().getConverter(context).parse(fields[0]);
                 return currentTrajectoryStateHistory.add(new TrajectoryState(currentTrajectoryStateHistoryMetadata.getTrajType(),
-                                                                   epoch, fields, 1, units));
+                                                                             epoch, fields, 1, units));
             } catch (NumberFormatException | OrekitIllegalArgumentException e) {
                 throw new OrekitException(e, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                           token.getLineNumber(), token.getFileName(), token.getContentAsNormalizedString());

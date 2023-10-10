@@ -170,7 +170,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
      * identifier. The update is performed by looking for an integer suffix at the end
      * of the {@code original} identifier and incrementing it by one, taking care to use
      * at least the same number of digits. If for example the original identifier is set
-     * to {@code trajectory 037}, then the updated identifier will be {@code trajectory 238}.
+     * to {@code trajectory 037}, then the updated identifier will be {@code trajectory 038}.
      * </p>
      * <p>
      * This helper function is intended to be used by ephemeris generators like {@link EphemerisOcmWriter}
