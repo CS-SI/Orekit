@@ -16,10 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import java.util.function.DoubleFunction;
-
-import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
@@ -179,50 +175,14 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
     @Override
     public double g(final SpacecraftState state) {
 
-        // get the line between primary and secondary in body frame
-        final AbsoluteDate date       = state.getDate();
-        final Frame        frame      = body.getBodyFrame();
-        final Vector3D     pPrimary   = state.getPosition(frame);
-        final Vector3D     pSecondary = secondary.getPosition(date, frame);
-        final Vector3D     los        = pSecondary.subtract(pPrimary);
+        // get the lowest point between primary and secondary
+        final AbsoluteDate  date   = state.getDate();
+        final Frame         frame  = body.getBodyFrame();
+        final GeodeticPoint lowest = body.lowestAltitudeIntermediate(state.getPosition(frame),
+                                                                     secondary.getPosition(date, frame));
 
-        // function computing intermediate point above ellipsoid (lambda varying between 0 and 1)
-        final DoubleFunction<GeodeticPoint> intermediate = lambda -> body.transform(new Vector3D(1 - lambda, pPrimary,
-                                                                                                 lambda, pSecondary),
-                                                                                    frame, date);
-
-        // primary point
-        final GeodeticPoint gpPrimary = intermediate.apply(0.0);
-
-        if (Vector3D.dotProduct(los, gpPrimary.getZenith()) >= 0) {
-            // the line of sight is going away from central body
-            // the minimum altitude is reached at primary point
-            return gpPrimary.getAltitude() - skimmingAltitude;
-        } else {
-            // the line of sight is closing the central body
-
-            // secondary point
-            final GeodeticPoint gpSecondary = intermediate.apply(1.0);
-
-            if (Vector3D.dotProduct(los, gpSecondary.getZenith()) <= 0) {
-                // the line of sight is still decreasing when reaching secondary point
-                // the minimum altitude is reached at secondary point
-                return gpSecondary.getAltitude() - skimmingAltitude;
-            } else {
-                // the line of sight reaches a minimum between primary and secondary points
-
-                // compute minimum altitude solver tolerance so it is several orders of magnitude
-                // smaller than the event detector tolerance
-                final double dP = state.getPVCoordinates(frame).getVelocity().getNorm() * getThreshold();
-                final double tol = 1.0e-3 * dP / Vector3D.distance(pPrimary, pSecondary);
-
-                final double lambdaMin = new BracketingNthOrderBrentSolver(tol, 5).
-                                         solve(getMaxIterationCount(),
-                                               lambda -> Vector3D.dotProduct(los, intermediate.apply(lambda).getZenith()),
-                                               0.0, 1.0);
-                return intermediate.apply(lambdaMin).getAltitude() - skimmingAltitude;
-            }
-        }
+        // compute switching function value as altitude difference
+        return lowest.getAltitude() - skimmingAltitude;
 
     }
 

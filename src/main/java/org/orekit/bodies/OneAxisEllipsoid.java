@@ -17,10 +17,12 @@
 package org.orekit.bodies;
 
 import java.io.Serializable;
+import java.util.function.DoubleFunction;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
@@ -597,9 +599,11 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                                                                            final FieldAbsoluteDate<T> date) {
 
         // transform point to body frame
-        final FieldVector3D<T> pointInBodyFrame = frame.getStaticTransformTo(bodyFrame, date).transformPosition(point);
+        final FieldVector3D<T> pointInBodyFrame = (frame == bodyFrame) ?
+                                                  point :
+                                                  frame.getStaticTransformTo(bodyFrame, date).transformPosition(point);
         final T   r2                            = pointInBodyFrame.getX().multiply(pointInBodyFrame.getX()).
-                                              add(pointInBodyFrame.getY().multiply(pointInBodyFrame.getY()));
+                                                  add(pointInBodyFrame.getY().multiply(pointInBodyFrame.getY()));
         final T   r                             = r2.sqrt();
         final T   z                             = pointInBodyFrame.getZ();
 
@@ -834,6 +838,96 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final T b = ecc.divide(2.).multiply(FastMath.log(field.getOne().subtract(eSinLat).divide(field.getOne().add(eSinLat))));
 
         return a.add(b);
+    }
+
+    /** Find intermediate point of lowest altitude along a line between two endpoints.
+     * @param endpoint1 first endpoint, in body frame
+     * @param endpoint2 second endpoint, in body frame
+     * @return point with lowest altitude between {@code endpoint1} and {@code endpoint2}.
+     * @since 12.0
+     */
+    public GeodeticPoint lowestAltitudeIntermediate(final Vector3D endpoint1, final Vector3D endpoint2) {
+
+        final Vector3D delta = endpoint2.subtract(endpoint1);
+
+        // function computing intermediate point above ellipsoid (lambda varying between 0 and 1)
+        final DoubleFunction<GeodeticPoint> intermediate =
+                        lambda -> transform(new Vector3D(1 - lambda, endpoint1, lambda, endpoint2),
+                                            bodyFrame, null);
+
+        // first endpoint
+        final GeodeticPoint gp1 = intermediate.apply(0.0);
+
+        if (Vector3D.dotProduct(delta, gp1.getZenith()) >= 0) {
+            // the line from first endpoint to second endpoint is going away from central body
+            // the minimum altitude is reached at first endpoint
+            return gp1;
+        } else {
+            // the line from first endpoint to second endpoint is closing the central body
+
+            // second endpoint
+            final GeodeticPoint gp2 = intermediate.apply(1.0);
+
+            if (Vector3D.dotProduct(delta, gp2.getZenith()) <= 0) {
+                // the line from first endpoint to second endpoint is still decreasing when reaching second endpoint,
+                // the minimum altitude is reached at second endpoint
+                return gp2;
+            } else {
+                // the line from first endpoint to second endpoint reaches a minimum between first and second endpoints
+                final double lambdaMin = new BracketingNthOrderBrentSolver(1.0e-14, 5).
+                                         solve(1000,
+                                               lambda -> Vector3D.dotProduct(delta, intermediate.apply(lambda).getZenith()),
+                                               0.0, 1.0);
+                return intermediate.apply(lambdaMin);
+            }
+        }
+
+    }
+
+    /** Find intermediate point of lowest altitude along a line between two endpoints.
+     * @param endpoint1 first endpoint, in body frame
+     * @param endpoint2 second endpoint, in body frame
+     * @param <T> type of the field elements
+     * @return point with lowest altitude between {@code endpoint1} and {@code endpoint2}.
+     * @since 12.0
+     */
+    public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> lowestAltitudeIntermediate(final FieldVector3D<T> endpoint1,
+                                                                                                final FieldVector3D<T> endpoint2) {
+
+        final FieldVector3D<T> delta = endpoint2.subtract(endpoint1);
+
+        // function computing intermediate point above ellipsoid (lambda varying between 0 and 1)
+        final DoubleFunction<FieldGeodeticPoint<T>> intermediate =
+                        lambda -> transform(new FieldVector3D<>(1 - lambda, endpoint1, lambda, endpoint2),
+                                            bodyFrame, null);
+
+        // first endpoint
+        final FieldGeodeticPoint<T> gp1 = intermediate.apply(0.0);
+
+        if (FieldVector3D.dotProduct(delta, gp1.getZenith()).getReal() >= 0) {
+            // the line from first endpoint to second endpoint is going away from central body
+            // the minimum altitude is reached at first endpoint
+            return gp1;
+        } else {
+            // the line from first endpoint to second endpoint is closing the central body
+
+            // second endpoint
+            final FieldGeodeticPoint<T> gp2 = intermediate.apply(1.0);
+
+            if (FieldVector3D.dotProduct(delta, gp2.getZenith()).getReal() <= 0) {
+                // the line from first endpoint to second endpoint is still decreasing when reaching second endpoint,
+                // the minimum altitude is reached at second endpoint
+                return gp2;
+            } else {
+                // the line from first endpoint to second endpoint reaches a minimum between first and second endpoints
+                final double lambdaMin = new BracketingNthOrderBrentSolver(1.0e-14, 5).
+                                         solve(1000,
+                                               lambda -> FieldVector3D.dotProduct(delta, intermediate.apply(lambda).getZenith()).getReal(),
+                                               0.0, 1.0);
+                return intermediate.apply(lambdaMin);
+            }
+        }
+
     }
 
     /** Replace the instance with a data transfer object for serialization.
