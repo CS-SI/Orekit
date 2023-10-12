@@ -16,6 +16,18 @@
  */
 package org.orekit.bodies;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
+
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -55,16 +67,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
 
 
 public class OneAxisEllipsoidTest {
@@ -925,6 +927,84 @@ public class OneAxisEllipsoidTest {
         Vector3D rebuilt = earth.transform(gp);
         // we exited loop without convergence
         Assertions.assertEquals(540.598, rebuilt.distance(pMid), 1.0e-3);
+    }
+
+
+    @Test
+    public void testLowestAltitudeIntermediate() {
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, false));
+        final Vector3D close = earth.transform(new GeodeticPoint(FastMath.toRadians(12.0),
+                                                                 FastMath.toRadians(34.0),
+                                                                 100000.0));
+        final Vector3D far   = earth.transform(new GeodeticPoint(FastMath.toRadians(-47.0),
+                                                                 FastMath.toRadians( 43.0),
+                                                                 10000000.0));
+        final GeodeticPoint lowestA = earth.lowestAltitudeIntermediate(close, far);
+        Assertions.assertEquals(0.0, Vector3D.distance(close, earth.transform(lowestA)), 2.0e-9);
+        final GeodeticPoint lowestB = earth.lowestAltitudeIntermediate(far, close);
+        Assertions.assertEquals(0.0, Vector3D.distance(close, earth.transform(lowestB)), 2.0e-9);
+
+        final double h = 5000000.0;
+        final Vector3D p1 = earth.transform(new GeodeticPoint(FastMath.toRadians(-20.0),
+                                                              FastMath.toRadians(-12.0),
+                                                              h));
+        final Vector3D p2 = earth.transform(new GeodeticPoint(FastMath.toRadians(17.0),
+                                                              FastMath.toRadians(13.0),
+                                                              h));
+        final GeodeticPoint lowest = earth.lowestAltitudeIntermediate(p1, p2);
+        Assertions.assertTrue(lowest.getAltitude() < h);
+        final GeodeticPoint oneCentimeterBefore = earth.transform(new Vector3D( 1.0,    earth.transform(lowest),
+                                                                               -1.0e-2, p2.subtract(p1).normalize()),
+                                                                  earth.getBodyFrame(), null);
+        Assertions.assertTrue(oneCentimeterBefore.getAltitude() > lowest.getAltitude());
+        final GeodeticPoint oneCentimeterAfter = earth.transform(new Vector3D( 1.0,    earth.transform(lowest),
+                                                                              +1.0e-2, p2.subtract(p1).normalize()),
+                                                                 earth.getBodyFrame(), null);
+         Assertions.assertTrue(oneCentimeterAfter.getAltitude() > lowest.getAltitude());
+
+    }
+
+    @Test
+    public void testLowestAltitudeIntermediateField() {
+        doTestLowestAltitudeIntermediateField(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestLowestAltitudeIntermediateField(final Field<T> field) {
+
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, false));
+        final FieldVector3D<T> close = earth.transform(new FieldGeodeticPoint<>(FastMath.toRadians(field.getZero().newInstance(12.0)),
+                                                                                FastMath.toRadians(field.getZero().newInstance(34.0)),
+                                                                                field.getZero().newInstance(100000.0)));
+        final FieldVector3D<T> far   = earth.transform(new FieldGeodeticPoint<>(FastMath.toRadians(field.getZero().newInstance(-47.0)),
+                                                                                FastMath.toRadians(field.getZero().newInstance( 43.0)),
+                                                                                field.getZero().newInstance(10000000.0)));
+        final FieldGeodeticPoint<T> lowestA = earth.lowestAltitudeIntermediate(close, far);
+        Assertions.assertEquals(0.0, FieldVector3D.distance(close, earth.transform(lowestA)).getReal(), 2.0e-9);
+        final FieldGeodeticPoint<T> lowestB = earth.lowestAltitudeIntermediate(far, close);
+        Assertions.assertEquals(0.0, FieldVector3D.distance(close, earth.transform(lowestB)).getReal(), 2.0e-9);
+
+        final double h =5000000.0;
+        final FieldVector3D<T> p1 = earth.transform(new FieldGeodeticPoint<>(FastMath.toRadians(field.getZero().newInstance(-20.0)),
+                                                                             FastMath.toRadians(field.getZero().newInstance(-12.0)),
+                                                                             field.getZero().newInstance(h)));
+        final FieldVector3D<T> p2 = earth.transform(new FieldGeodeticPoint<>(FastMath.toRadians(field.getZero().newInstance(17.0)),
+                                                                             FastMath.toRadians(field.getZero().newInstance(13.0)),
+                                                                             field.getZero().newInstance(h)));
+        final FieldGeodeticPoint<T> lowest = earth.lowestAltitudeIntermediate(p1, p2);
+        Assertions.assertTrue(lowest.getAltitude().getReal() < h);
+        final FieldGeodeticPoint<T> oneCentimeterBefore = earth.transform(new FieldVector3D<>( 1.0,    earth.transform(lowest),
+                                                                                              -1.0e-2, p2.subtract(p1).normalize()),
+                                                                          earth.getBodyFrame(), null);
+        Assertions.assertTrue(oneCentimeterBefore.getAltitude().subtract(lowest.getAltitude()).getReal() > 0);
+        final FieldGeodeticPoint<T> oneCentimeterAfter = earth.transform(new FieldVector3D<>( 1.0,    earth.transform(lowest),
+                                                                                             +1.0e-2, p2.subtract(p1).normalize()),
+                                                                         earth.getBodyFrame(), null);
+        Assertions.assertTrue(oneCentimeterAfter.getAltitude().subtract(lowest.getAltitude()).getReal() > 0);
+
     }
 
     private void doTestTransformVsOldIterative(OneAxisEllipsoid model,
