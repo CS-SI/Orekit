@@ -127,7 +127,7 @@ class JPLCelestialBody implements CelestialBody {
     /** Get the {@link FieldPVCoordinates} of the body in the selected frame.
      * @param date current date
      * @param frame the frame where to define the position
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return time-stamped position/velocity of the body (m and m/s)
      */
     public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,

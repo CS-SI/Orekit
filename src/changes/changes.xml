@@ -2104,7 +2104,7 @@
     value can be changed, access to Kalman filter internal matrices, position-only measurements in orbit determination,
     support for unofficial versions 2.12 and 2.20 of Rinex files (mainly for spaceborne receivers),
     direct building of appropriate attitude law with eclipses for all GNSS satellite types, inter-satellites
-    view detector, measurement generation feature, possibility fo use Marshall Solar Activity Future Estimation
+    view detector, measurement generation feature, possibility to use Marshall Solar Activity Future Estimation
     to feed NRL MSISE 2000 atmosphere model, new tropospheric models: Mendes-Pavlis, Vienna 1, Vienna 3, estimated model,
     new mapping functions for tropospheric effect: Global Mapping Function, Niell Mapping Function, Global
     Pression Temperature Models GPT and GPT2, possibility to estimate tropospheric zenith delay,

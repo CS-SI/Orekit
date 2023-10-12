@@ -257,7 +257,7 @@ public enum Predefined {
     /** PZ-90.11 frame. */
     PZ90_11("PZ90.11");
 
-    /** Name fo the frame. */
+    /** Name of the frame. */
     private final String name;
 
     /** Simple constructor.

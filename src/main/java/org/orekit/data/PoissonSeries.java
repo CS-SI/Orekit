@@ -96,7 +96,7 @@ public class PoissonSeries {
 
     /** Evaluate the value of the series.
      * @param elements bodies elements for nutation
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return value of the series
      */
     public <T extends CalculusFieldElement<T>> T value(final FieldBodiesElements<T> elements) {
