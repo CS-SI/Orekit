@@ -26,7 +26,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -60,7 +60,7 @@ public class ExtremumApproachDetectorTest {
         final double raan = 0; //rad
         final double anomaly = FastMath.toRadians(0); //rad
         final Orbit orbit =
-                new KeplerianOrbit(a, e, i, pa, raan, anomaly, PositionAngle.TRUE, frame, initialDate, mu);
+                new KeplerianOrbit(a, e, i, pa, raan, anomaly, PositionAngleType.TRUE, frame, initialDate, mu);
 
         // Will detect extremum approaches with Earth
         final PVCoordinatesProvider earthPVProvider = CelestialBodyFactory.getEarth();
@@ -106,7 +106,7 @@ public class ExtremumApproachDetectorTest {
         final double raan = 0; //rad
         final double anomaly = FastMath.toRadians(0); //rad
         final Orbit orbit =
-                new KeplerianOrbit(a, e, i, pa, raan, anomaly, PositionAngle.TRUE, frame, initialDate, mu);
+                new KeplerianOrbit(a, e, i, pa, raan, anomaly, PositionAngleType.TRUE, frame, initialDate, mu);
 
         // Will detect extremum approaches with Earth
         final PVCoordinatesProvider earthPVProvider = CelestialBodyFactory.getEarth();

@@ -50,14 +50,31 @@ public class Alfriend1999Max extends AbstractAlfriend1999 {
         super(ShortTermEncounter2DPOCMethodType.ALFRIEND_1999_MAX.name());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Compute the value of the probability of collision.
+     *
+     * @param radius sum of primary and secondary collision object equivalent sphere radii (m)
+     * @param squaredMahalanobisDistance squared Mahalanobis distance
+     * @param covarianceMatrixDeterminant covariance matrix determinant
+     *
+     * @return value of the probability of collision
+     */
     @Override
     public double computeValue(final double radius, final double squaredMahalanobisDistance,
                                final double covarianceMatrixDeterminant) {
         return radius * radius / (squaredMahalanobisDistance * FastMath.sqrt(covarianceMatrixDeterminant) * FastMath.E);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Compute the value of the probability of collision.
+     *
+     * @param radius sum of primary and secondary collision object equivalent sphere radii (m)
+     * @param squaredMahalanobisDistance squared Mahalanobis distance
+     * @param covarianceMatrixDeterminant covariance matrix determinant
+     * @param <T> type of the field elements
+     *
+     * @return value of the probability of collision
+     */
     @Override
     public <T extends CalculusFieldElement<T>> T computeValue(final T radius, final T squaredMahalanobisDistance,
                                                               final T covarianceMatrixDeterminant) {

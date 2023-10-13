@@ -22,7 +22,7 @@ import java.util.Map;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -62,9 +62,11 @@ public interface MeasurementBuilder<T extends ObservedMeasurement<T>> {
     ObservableSatellite[] getSatellites();
 
     /** Generate a single measurement.
-     * @param states spacecraft states relevant for this builder
+     * @param date measurement date
+     * @param interpolators interpolators relevant for this builder
      * @return generated measurement
+     * @since 12.0
      */
-    T build(Map<ObservableSatellite, SpacecraftState> states);
+    T build(AbsoluteDate date, Map<ObservableSatellite, OrekitStepInterpolator> interpolators);
 
 }

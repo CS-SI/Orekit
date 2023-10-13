@@ -334,6 +334,7 @@ public class FieldDateDetectorTest {
 
         // Min gap to seconds
         int maxCheck = (int) ((end - start) / 2000);
+        @SuppressWarnings("unchecked")
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, getAbsoluteDateFromTimestamp(field, start)).
                         withMinGap(maxCheck).
                         withThreshold(field.getZero().newInstance(1.0e-6)).

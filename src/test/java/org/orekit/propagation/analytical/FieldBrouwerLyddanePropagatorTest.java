@@ -23,7 +23,6 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
@@ -44,7 +43,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -114,7 +113,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         // ------------------------------------------------------------
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(6767924.41), zero.add(.005),  zero.add(1.7),zero.add( 2.1),
-                                                               zero.add(2.9), zero.add(6.2), PositionAngle.TRUE,
+                                                               zero.add(2.9), zero.add(6.2), PositionAngleType.TRUE,
                                                                FramesFactory.getEME2000(), initDate, zero.add(provider.getMu()));
 
         FieldBrouwerLyddanePropagator<T> extrapolator =
@@ -233,7 +232,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
         // Initial state definition
@@ -312,7 +311,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
         // Initial state definition
         final FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(initialOrbit);
@@ -341,7 +340,6 @@ public class FieldBrouwerLyddanePropagatorTest {
         MarshallSolarActivityFutureEstimation msafe =
                         new MarshallSolarActivityFutureEstimation("Jan2000F10-edited-data\\.txt",
                                                                   MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-        DataContext.getDefault().getDataProvidersManager().feed(msafe.getSupportedNames(), msafe);
         DTM2000 atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), earth);
 
         // Force model
@@ -416,7 +414,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
         FieldBrouwerLyddanePropagator<T> BLextrapolator =
@@ -494,7 +492,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                      zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                      zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                       inertialFrame, initDate, zero.add(provider.getMu()));
         // Initial state definition
         final FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(initialOrbit);
@@ -513,7 +511,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         FieldBrouwerLyddanePropagator<T> BLextrapolator2 =
                 new FieldBrouwerLyddanePropagator<>( new FieldKeplerianOrbit<>(zero.add(a + 3000), zero.add(e + 0.001),
                                                                                zero.add(i - FastMath.toRadians(12.0)), zero.add(omega),
-                                                                               zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                               zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                      inertialFrame, initDate, zero.add(provider.getMu())),DEFAULT_LAW,
                                                      zero.add(Propagator.DEFAULT_MASS),
                                                      GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
@@ -559,7 +557,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
 
@@ -647,7 +645,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(67679244.0), zero.add(1.0), zero.add(1.85850),
-                                                               zero.add(2.1), zero.add(2.9), zero.add(6.2), PositionAngle.TRUE,
+                                                               zero.add(2.1), zero.add(2.9), zero.add(6.2), PositionAngleType.TRUE,
                                                                FramesFactory.getEME2000(), initDate, zero.add(provider.getMu()));
         try {
         // Extrapolator definition
@@ -687,7 +685,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         T zero = field.getZero();
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field);
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
         // Extrapolator definition
@@ -736,7 +734,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = FastMath.toRadians(0); // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
         // Extrapolator definition
@@ -772,7 +770,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = FastMath.toRadians(0); // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
         // Initial state definition
@@ -825,7 +823,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = FastMath.toRadians(0); // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
         // Initial state definition
@@ -868,7 +866,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final FieldKeplerianOrbit<T> initialOsculating =
             new FieldKeplerianOrbit<>(zero.newInstance(7.8e6), zero.newInstance(0.032), zero.newInstance(0.4),
                                       zero.newInstance(0.1), zero.newInstance(0.2), zero.newInstance(0.3),
-                                      PositionAngle.TRUE,
+                                      PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         final UnnormalizedSphericalHarmonics ush = ushp.onDate(initialOsculating.getDate().toAbsoluteDate());
 

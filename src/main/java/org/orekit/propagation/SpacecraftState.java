@@ -24,13 +24,13 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.LofOffset;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
@@ -42,21 +42,22 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class is the representation of a complete state holding orbit, attitude
- * and mass information at a given date.
+ * and mass information at a given date, meant primarily for propagation.
  *
- * <p>It contains an {@link Orbit orbital state} at a current
- * {@link AbsoluteDate} both handled by an {@link Orbit}, plus the current
- * mass and attitude. Orbit and state are guaranteed to be consistent in terms
+ * <p>It contains an {@link Orbit}, or an {@link AbsolutePVCoordinates} if there
+ * is no definite central body, plus the current mass and attitude at the intrinsic
+ * {@link AbsoluteDate}. Quantities are guaranteed to be consistent in terms
  * of date and reference frame. The spacecraft state may also contain additional
  * states, which are simply named double arrays which can hold any user-defined
  * data.
  * </p>
  * <p>
- * The state can be slightly shifted to close dates. This shift is based on
- * a simple Keplerian model for orbit, a linear extrapolation for attitude
- * taking the spin rate into account and no mass change. It is <em>not</em>
- * intended as a replacement for proper orbit and attitude propagation but
- * should be sufficient for either small time shifts or coarse accuracy.
+ * The state can be slightly shifted to close dates. This actual shift varies
+ * between {@link Orbit} and {@link AbsolutePVCoordinates}.
+ * For attitude it is a linear extrapolation taking the spin rate into account
+ * and no mass change. It is <em>not</em> intended as a replacement for proper
+ * orbit and attitude propagation but should be sufficient for either small
+ * time shifts or coarse accuracy.
  * </p>
  * <p>
  * The instance <code>SpacecraftState</code> is guaranteed to be immutable.
@@ -106,9 +107,8 @@ public class SpacecraftState
      * @param orbit the orbit
      */
     public SpacecraftState(final Orbit orbit) {
-        this(orbit,
-             new LofOffset(orbit.getFrame(),
-                           LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+        this(orbit, getDefaultAttitudeProvider(orbit.getFrame())
+                        .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              DEFAULT_MASS, (DoubleArrayDictionary) null);
     }
 
@@ -130,9 +130,8 @@ public class SpacecraftState
      * @param mass the mass (kg)
      */
     public SpacecraftState(final Orbit orbit, final double mass) {
-        this(orbit,
-             new LofOffset(orbit.getFrame(),
-                           LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+        this(orbit, getDefaultAttitudeProvider(orbit.getFrame())
+                        .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, (DoubleArrayDictionary) null);
     }
 
@@ -155,9 +154,8 @@ public class SpacecraftState
      * @since 11.1
      */
     public SpacecraftState(final Orbit orbit, final DoubleArrayDictionary additional) {
-        this(orbit,
-             new LofOffset(orbit.getFrame(),
-                           LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+        this(orbit, getDefaultAttitudeProvider(orbit.getFrame())
+                        .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              DEFAULT_MASS, additional);
     }
 
@@ -183,8 +181,8 @@ public class SpacecraftState
      * @since 11.1
      */
     public SpacecraftState(final Orbit orbit, final double mass, final DoubleArrayDictionary additional) {
-        this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+        this(orbit, getDefaultAttitudeProvider(orbit.getFrame())
+                        .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
     }
 
@@ -233,15 +231,13 @@ public class SpacecraftState
         }
     }
 
-
-
     /** Build a spacecraft state from position-velocity-acceleration only.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param absPva position-velocity-acceleration
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva) {
-        this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+        this(absPva, getDefaultAttitudeProvider(absPva.getFrame())
+                        .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              DEFAULT_MASS, (DoubleArrayDictionary) null);
     }
 
@@ -263,8 +259,8 @@ public class SpacecraftState
      * @param mass the mass (kg)
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass) {
-        this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+        this(absPva, getDefaultAttitudeProvider(absPva.getFrame())
+                        .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, (DoubleArrayDictionary) null);
     }
 
@@ -287,8 +283,8 @@ public class SpacecraftState
      * @since 11.1
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final DoubleArrayDictionary additional) {
-        this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+        this(absPva, getDefaultAttitudeProvider(absPva.getFrame())
+                        .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              DEFAULT_MASS, additional);
     }
 
@@ -314,8 +310,8 @@ public class SpacecraftState
      * @since 11.1
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final double mass, final DoubleArrayDictionary additional) {
-        this(absPva,
-             new LofOffset(absPva.getFrame(), LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+        this(absPva, getDefaultAttitudeProvider(absPva.getFrame())
+                        .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, additional);
     }
 
@@ -339,7 +335,7 @@ public class SpacecraftState
      * @param attitude attitude
      * @param mass the mass (kg)
      * @param additional additional states (may be null if no additional states are available)
-     * @param additionalDot additional states derivatives(may be null if no additional states derivativesare available)
+     * @param additionalDot additional states derivatives(may be null if no additional states derivatives are available)
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
      * @since 11.1
@@ -443,6 +439,17 @@ public class SpacecraftState
         }
     }
 
+    /** Defines provider for default Attitude when not passed to constructor.
+     * Currently chosen arbitrarily as aligned with input frame.
+     * It is also used in {@link FieldSpacecraftState}.
+     * @param frame reference frame
+     * @return default attitude provider
+     * @since 12.0
+     */
+    static AttitudeProvider getDefaultAttitudeProvider(final Frame frame) {
+        return new FrameAlignedProvider(frame);
+    }
+
     /** Check if the state contains an orbit part.
      * <p>
      * A state contains either an {@link AbsolutePVCoordinates absolute
@@ -510,6 +517,7 @@ public class SpacecraftState
      * @return a new state, shifted with respect to the instance (which is immutable)
      * except for the mass and additional states which stay unchanged
      */
+    @Override
     public SpacecraftState shiftedBy(final double dt) {
         if (absPva == null) {
             return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
@@ -584,9 +592,8 @@ public class SpacecraftState
         return orbit;
     }
 
-    /** Get the date.
-     * @return date
-     */
+    /** {@inheritDoc} */
+    @Override
     public AbsoluteDate getDate() {
         return (absPva == null) ? orbit.getDate() : absPva.getDate();
     }
@@ -749,7 +756,7 @@ public class SpacecraftState
 
     /** Get the central attraction coefficient.
      * @return mu central attraction coefficient (m^3/s^2), or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather than an orbit
+     * state contains an absolute position-velocity-acceleration rather than an orbit
      */
     public double getMu() {
         return (absPva == null) ? orbit.getMu() : Double.NaN;
@@ -758,8 +765,8 @@ public class SpacecraftState
     /** Get the Keplerian period.
      * <p>The Keplerian period is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian period in seconds, or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * @return Keplerian period in seconds, or {code Double.NaN} if the
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      */
     public double getKeplerianPeriod() {
@@ -769,8 +776,8 @@ public class SpacecraftState
     /** Get the Keplerian mean motion.
      * <p>The Keplerian mean motion is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian mean motion in radians per second, or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * @return Keplerian mean motion in radians per second, or {code Double.NaN} if the
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      */
     public double getKeplerianMeanMotion() {
@@ -779,7 +786,7 @@ public class SpacecraftState
 
     /** Get the semi-major axis.
      * @return semi-major axis (m), or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      */
     public double getA() {
@@ -788,7 +795,7 @@ public class SpacecraftState
 
     /** Get the first component of the eccentricity vector (as per equinoctial parameters).
      * @return e cos(ω + Ω), first component of eccentricity vector, or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      * @see #getE()
      */
@@ -798,7 +805,7 @@ public class SpacecraftState
 
     /** Get the second component of the eccentricity vector (as per equinoctial parameters).
      * @return e sin(ω + Ω), second component of the eccentricity vector, or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      * @see #getE()
      */
@@ -808,7 +815,7 @@ public class SpacecraftState
 
     /** Get the first component of the inclination vector (as per equinoctial parameters).
      * @return tan(i/2) cos(Ω), first component of the inclination vector, or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      * @see #getI()
      */
@@ -818,7 +825,7 @@ public class SpacecraftState
 
     /** Get the second component of the inclination vector (as per equinoctial parameters).
      * @return tan(i/2) sin(Ω), second component of the inclination vector, or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      * @see #getI()
      */
@@ -828,7 +835,7 @@ public class SpacecraftState
 
     /** Get the true latitude argument (as per equinoctial parameters).
      * @return v + ω + Ω true longitude argument (rad), or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      * @see #getLE()
      * @see #getLM()
@@ -839,7 +846,7 @@ public class SpacecraftState
 
     /** Get the eccentric latitude argument (as per equinoctial parameters).
      * @return E + ω + Ω eccentric longitude argument (rad), or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      * @see #getLv()
      * @see #getLM()
@@ -850,7 +857,7 @@ public class SpacecraftState
 
     /** Get the mean longitude argument (as per equinoctial parameters).
      * @return M + ω + Ω mean latitude argument (rad), or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      * @see #getLv()
      * @see #getLE()
@@ -863,7 +870,7 @@ public class SpacecraftState
 
     /** Get the eccentricity.
      * @return eccentricity, or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      * @see #getEquinoctialEx()
      * @see #getEquinoctialEy()

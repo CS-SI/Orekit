@@ -29,7 +29,10 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.FieldMatrixPreservingVisitor;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.Binary64Field;
@@ -43,11 +46,13 @@ import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class FieldCartesianOrbitTest {
@@ -332,7 +337,7 @@ public class FieldCartesianOrbitTest {
 
         for (T lv = zero; lv.getReal() <= 2 * FastMath.PI; lv = lv.add(2 * FastMath.PI/100.)) {
             p = new FieldEquinoctialOrbit<>(p.getA(), p.getEquinoctialEx(), p.getEquinoctialEy(),
-                                            p.getHx(), p.getHy(), lv, PositionAngle.TRUE, p.getFrame(),
+                                            p.getHx(), p.getHy(), lv, PositionAngleType.TRUE, p.getFrame(),
                                             FieldAbsoluteDate.getJ2000Epoch(field), zero.add(mu));
             position = p.getPosition();
 
@@ -359,7 +364,7 @@ public class FieldCartesianOrbitTest {
         T zero = field.getZero();
         FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(new FieldKeplerianOrbit<>(zero.add(-10000000.0), zero.add(2.5), zero.add(0.3),
                                                                                            zero, zero, zero,
-                                                                                           PositionAngle.TRUE,
+                                                                                           PositionAngleType.TRUE,
                                                                                            FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field),
                                                                                            zero.add(mu)));
         FieldVector3D<T> perigeeP  = orbit.getPosition();
@@ -382,12 +387,12 @@ public class FieldCartesianOrbitTest {
         T zero = field.getZero();
         FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(new FieldKeplerianOrbit<>(zero.add(-10000000.0), zero.add(1.2), zero.add(0.3),
                                                                                            zero, zero, zero.add(-1.75),
-                                                                                           PositionAngle.MEAN,
+                                                                                           PositionAngleType.MEAN,
                                                                                            FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field),
                                                                                            zero.add(mu)));
         FieldVector3D<T> perigeeP  = new FieldKeplerianOrbit<>(zero.add(-10000000.0), zero.add(1.2), zero.add(0.3),
                                                                zero, zero, zero,
-                                                               PositionAngle.TRUE,
+                                                               PositionAngleType.TRUE,
                                                                orbit.getFrame(), orbit.getDate(), orbit.getMu()).getPosition();
         FieldVector3D<T> u = perigeeP.normalize();
         FieldVector3D<T> focus1 = new FieldVector3D<>(zero, zero, zero);
@@ -630,7 +635,7 @@ public class FieldCartesianOrbitTest {
                                                                  FieldAbsoluteDate.getJ2000Epoch(field), zero.add(mu));
 
         T[][] jacobian = MathArrays.buildArray(field, 6, 6);
-        orbit.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+        orbit.getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
 
         for (int i = 0; i < jacobian.length; i++) {
             T[] row    = jacobian[i];
@@ -640,7 +645,7 @@ public class FieldCartesianOrbitTest {
         }
 
         T[][] invJacobian = MathArrays.buildArray(field, 6, 6);
-        orbit.getJacobianWrtParameters(PositionAngle.MEAN, invJacobian);
+        orbit.getJacobianWrtParameters(PositionAngleType.MEAN, invJacobian);
         MatrixUtils.createFieldMatrix(jacobian).
                         multiply(MatrixUtils.createFieldMatrix(invJacobian)).
         walkInRowOrder(new FieldMatrixPreservingVisitor<T>() {
@@ -831,6 +836,57 @@ public class FieldCartesianOrbitTest {
         Assertions.assertEquals(dt, p2.getDate().durationFrom(p.getDate()).getReal());
         Assertions.assertEquals(-dt, p.durationFrom(p2).getReal());
 
+    }
+
+    @Test
+    void testFromCartesianOrbitWithoutDerivatives() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final CartesianOrbit orbit = createOrbitTestFromCartesianOrbit(false);
+        // WHEN
+        final FieldCartesianOrbit<Complex> fieldOrbit = new FieldCartesianOrbit<>(field, orbit);
+        // THEN
+        compareFieldOrbitToOrbit(fieldOrbit, orbit);
+    }
+
+    @Test
+    void testFromCartesianOrbitWithDerivatives() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final CartesianOrbit orbit = createOrbitTestFromCartesianOrbit(true);
+        // WHEN
+        final FieldCartesianOrbit<Complex> fieldOrbit = new FieldCartesianOrbit<>(field, orbit);
+        // THEN
+        compareFieldOrbitToOrbit(fieldOrbit, orbit);
+    }
+
+    private CartesianOrbit createOrbitTestFromCartesianOrbit(final boolean withAcceleration) {
+        final Vector3D position = Vector3D.MINUS_I;
+        final Vector3D velocity = Vector3D.PLUS_K;
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame frame = FramesFactory.getEME2000();
+        final TimeStampedPVCoordinates pv;
+        if (withAcceleration) {
+            pv = new TimeStampedPVCoordinates(date, position, velocity, Vector3D.PLUS_J);
+        } else {
+            pv = new TimeStampedPVCoordinates(date, position, velocity);
+        }
+        return new CartesianOrbit(pv, frame, mu);
+    }
+
+    private <T extends CalculusFieldElement<T>> void compareFieldOrbitToOrbit(final FieldCartesianOrbit<T> fieldOrbit,
+                                                                              final CartesianOrbit orbit) {
+        Assertions.assertEquals(orbit.getFrame(), fieldOrbit.getFrame());
+        Assertions.assertEquals(orbit.getMu(), fieldOrbit.getMu().getReal());
+        Assertions.assertEquals(orbit.getDate(), fieldOrbit.getDate().toAbsoluteDate());
+        Assertions.assertEquals(orbit.getPosition(), fieldOrbit.getPosition().toVector3D());
+        Assertions.assertEquals(orbit.getPVCoordinates().getVelocity(),
+                fieldOrbit.getPVCoordinates().getVelocity().toVector3D());
+        Assertions.assertEquals(orbit.getPVCoordinates().getAcceleration(),
+                fieldOrbit.getPVCoordinates().getAcceleration().toVector3D());
+        Assertions.assertEquals(orbit.hasDerivatives(), fieldOrbit.hasDerivatives());
+        Assertions.assertEquals(orbit.getPVCoordinates().getAcceleration(),
+                fieldOrbit.getPVCoordinates().getAcceleration().toVector3D());
     }
 
 }

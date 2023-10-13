@@ -53,7 +53,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldAbstractPropagator;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
@@ -69,8 +69,8 @@ import org.orekit.utils.FieldArrayDictionary;
 
 /** Common handling of {@link org.orekit.propagation.FieldPropagator FieldPropagator}
  *  methods for both numerical and semi-analytical propagators.
- *  @param <T> the type of the field elements
- *  @author Luc Maisonobe
+ * @author Luc Maisonobe
+ * @param <T> type of the field element
  */
 public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractPropagator<T> {
 
@@ -109,7 +109,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     /** Type of orbit to output (mean or osculating) <br/>
      * <p>
-     * This is used only in the case of semianalitical propagators where there is a clear separation between
+     * This is used only in the case of semi-analytical propagators where there is a clear separation between
      * mean and short periodic elements. It is ignored by the Numerical propagator.
      * </p>
      */
@@ -147,12 +147,28 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         this.resetAtEnd = resetAtEnd;
     }
 
+    /** Getter for the resetting flag regarding initial state.
+     * @return resetting flag
+     * @since 12.0
+     */
+    public boolean getResetAtEnd() {
+        return this.resetAtEnd;
+    }
+
     /** Initialize the mapper.
      * @param field Field used by default
      */
     protected void initMapper(final Field<T> field) {
         final T zero = field.getZero();
         stateMapper = createMapper(null, zero.add(Double.NaN), null, null, null, null);
+    }
+
+    /** Get the integrator's name.
+     * @return name of underlying integrator
+     * @since 12.0
+     */
+    public String getIntegratorName() {
+        return integrator.getName();
     }
 
     /**  {@inheritDoc} */
@@ -179,7 +195,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         return stateMapper.getOrbitType();
     }
 
-    /** Check if only the mean elements should be used in a semianalitical propagation.
+    /** Check if only the mean elements should be used in a semi-analytical propagation.
      * @return {@link PropagationType MEAN} if only mean elements have to be used or
      *         {@link PropagationType OSCULATING} if osculating elements have to be also used.
      */
@@ -204,7 +220,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
-    protected void setPositionAngleType(final PositionAngle positionAngleType) {
+    protected void setPositionAngleType(final PositionAngleType positionAngleType) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
                                    stateMapper.getOrbitType(), positionAngleType,
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());
@@ -213,7 +229,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
-    protected PositionAngle getPositionAngleType() {
+    protected PositionAngleType getPositionAngleType() {
         return stateMapper.getPositionAngleType();
     }
 
@@ -358,7 +374,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * @return new mapper
      */
     protected abstract FieldStateMapper<T> createMapper(FieldAbsoluteDate<T> referenceDate, T mu,
-                                                        OrbitType orbitType, PositionAngle positionAngleType,
+                                                        OrbitType orbitType, PositionAngleType positionAngleType,
                                                         AttitudeProvider attitudeProvider, Frame frame);
 
     /** Get the differential equations to integrate (for main state only).
@@ -450,7 +466,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             // convert space flight dynamics API to math API
             final FieldSpacecraftState<T> initialIntegrationState = getInitialIntegrationState();
             final FieldODEState<T> mathInitialState = createInitialState(initialIntegrationState);
-            final FieldExpandableODE<T> mathODE = createODE(integrator, mathInitialState);
+            final FieldExpandableODE<T> mathODE = createODE(integrator);
 
             // mathematical integration
             final FieldODEStateAndDerivative<T> mathFinalState;
@@ -573,11 +589,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     /** Create an ODE with all equations.
      * @param integ numerical integrator to use for propagation.
-     * @param mathInitialState initial state
      * @return a new ode
      */
-    private FieldExpandableODE<T> createODE(final FieldODEIntegrator<T> integ,
-                                    final FieldODEState<T> mathInitialState) {
+    private FieldExpandableODE<T> createODE(final FieldODEIntegrator<T> integ) {
 
         final FieldExpandableODE<T> ode =
                 new FieldExpandableODE<>(new ConvertedMainStateEquations(getMainStateEquations(integ)));
@@ -676,7 +690,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     }
 
-    /** Differential equations for the main state (orbit, attitude and mass). */
+    /** Differential equations for the main state (orbit, attitude and mass).
+     * @param <T> type of the field element
+     */
     public interface MainStateEquations<T extends CalculusFieldElement<T>> {
 
         /**
@@ -1173,7 +1189,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * If propagator-specific event handlers and step handlers are added to
      * the integrator in the try block, they will be removed automatically
      * when leaving the block, so the integrator only keep its own handlers
-     * between calls to {@link AbstractIntegratedPropagator#propagate(AbsoluteDate, AbsoluteDate).
+     * between calls to {@link AbstractIntegratedPropagator#propagate(FieldAbsoluteDate, FieldAbsoluteDate).
      * </p>
      * @param <T> the type of the field elements
      * @since 11.0
@@ -1208,11 +1224,11 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
             // reset event handlers
             integrator.clearEventDetectors();
-            detectors.forEach(c -> integrator.addEventDetector(c));
+            detectors.forEach(integrator::addEventDetector);
 
             // reset step handlers
             integrator.clearStepHandlers();
-            stepHandlers.forEach(stepHandler -> integrator.addStepHandler(stepHandler));
+            stepHandlers.forEach(integrator::addStepHandler);
 
         }
 

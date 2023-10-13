@@ -23,7 +23,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.frames.Frame;
@@ -100,6 +102,16 @@ public abstract class AbstractIodTest {
         final double dec = angular[1];
 
         return new Vector3D(ra, dec);
+    }
+
+    protected AngularAzEl getAzEl(final Propagator prop, final AbsoluteDate date) {
+        ObservableSatellite satellite = new ObservableSatellite(0);
+        final AngularAzEl azEl = new AngularAzEl(observer, date, new double[] { 0.0, 0.0 },
+                                                 new double[] { 1.0, 1.0 }, new double[] { 1.0, 1.0 },
+                                                 satellite);
+        EstimatedMeasurementBase<AngularAzEl> estimated = azEl.estimateWithoutDerivatives(0, 0, new SpacecraftState[] {prop.propagate(date)});
+        return new AngularAzEl(observer, date, estimated.getEstimatedValue(), azEl.getBaseWeight(),
+                               azEl.getTheoreticalStandardDeviation(), satellite);
     }
 
     protected double getRelativeRangeError(final Orbit estimatedGauss, final Orbit orbitRef) {

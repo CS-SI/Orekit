@@ -51,7 +51,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -145,7 +145,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
             Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
                     FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
                     FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3),
-                    0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
+                    0.1, PositionAngleType.TRUE, FramesFactory.getEME2000(), date, mu);
             double period = 2 * FastMath.PI * orbit.getA() * FastMath.sqrt(orbit.getA() / orbit.getMu());
 
             // set up propagator
@@ -193,7 +193,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         Frame EME = FramesFactory.getEME2000();
 
         FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
+                                                                                 PositionAngleType.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  mu);
@@ -226,7 +226,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         NP.addForceModel(forceModel);
 
         // Do the test
-        checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1005., NP, FNP,
+        checkRealFieldPropagation(FKO, PositionAngleType.MEAN, 1005., NP, FNP,
                                   1.0e-16, 5.0e-10, 3.0e-11, 3.0e-10,
                                   1, false);
     }
@@ -254,7 +254,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         Frame EME = FramesFactory.getEME2000();
 
         FieldKeplerianOrbit<Gradient> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                      PositionAngle.MEAN,
+                                                                      PositionAngleType.MEAN,
                                                                       EME,
                                                                       J2000,
                                                                       mu);
@@ -287,7 +287,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         NP.addForceModel(forceModel);
 
         // Do the test
-        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1005., NP, FNP,
+        checkRealFieldPropagationGradient(FKO, PositionAngleType.MEAN, 1005., NP, FNP,
                                   1.0e-16, 1.3e-2, 2.9e-4, 1.4e-3,
                                   1, false);
     }
@@ -314,7 +314,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         Frame EME = FramesFactory.getEME2000();
 
         FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
+                                                                                 PositionAngleType.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
@@ -367,7 +367,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
             new EquinoctialOrbit(42164000, 10e-3, 10e-3,
                                  FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
                                  FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3),
-                                 0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
+                                 0.1, PositionAngleType.TRUE, FramesFactory.getEME2000(), date, mu);
         double period = 2 * FastMath.PI * orbit.getA() * FastMath.sqrt(orbit.getA() / orbit.getMu());
 
         // set up propagator
@@ -462,7 +462,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(moon);
@@ -481,7 +481,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(moon);
@@ -502,7 +502,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
         double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);

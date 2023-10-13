@@ -30,6 +30,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  * @author Pascal Parraud
  * @author Vincent Cucchietti
  * @since 12.0
+ * @param <T> type of the field elements
  */
 public class DormandPrince54FieldIntegratorBuilder<T extends CalculusFieldElement<T>>
         extends AbstractVariableStepFieldIntegratorBuilder<T> {

@@ -38,6 +38,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.FieldTimeShiftable;
 
 /** Simple container for rotation / rotation rate pairs, using {@link
  * CalculusFieldElement}.
@@ -56,8 +57,8 @@ import org.orekit.errors.OrekitMessages;
  * @since 6.0
  * @see AngularCoordinates
  */
-public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
-
+public class FieldAngularCoordinates<T extends CalculusFieldElement<T>>
+        implements FieldTimeShiftable<FieldAngularCoordinates<T>, T> {
 
     /** rotation. */
     private final FieldRotation<T> rotation;
@@ -82,7 +83,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
 
     /** Builds a rotation / rotation rate / rotation acceleration triplet.
      * @param rotation i.e. the orientation of the vehicle
-     * @param rotationRate rotation rate rate Ω, i.e. the spin vector (rad/s)
+     * @param rotationRate rotation rate Ω, i.e. the spin vector (rad/s)
      * @param rotationAcceleration angular acceleration vector dΩ/dt (rad/s²)
      */
     public FieldAngularCoordinates(final FieldRotation<T> rotation,
@@ -629,6 +630,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
+    @Override
     public FieldAngularCoordinates<T> shiftedBy(final double dt) {
         return shiftedBy(rotation.getQ0().getField().getZero().add(dt));
     }
@@ -643,6 +645,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
+    @Override
     public FieldAngularCoordinates<T> shiftedBy(final T dt) {
 
         // the shiftedBy method is based on a local approximation.

@@ -33,7 +33,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -61,7 +61,7 @@ public class GlobalIonosphereMapModelTest {
         Utils.setDataRoot("regular-data:ionex");
         model = new GlobalIonosphereMapModel("gpsg0150.19i");
         final Orbit orbit = new KeplerianOrbit(24464560.0, 0.0, 1.122138, 1.10686, 1.00681,
-                                               0.048363, PositionAngle.MEAN,
+                                               0.048363, PositionAngleType.MEAN,
                                                FramesFactory.getEME2000(),
                                                new AbsoluteDate(2019, 1, 14, 23, 59, 59.0, TimeScalesFactory.getUTC()),
                                                Constants.WGS84_EARTH_MU);

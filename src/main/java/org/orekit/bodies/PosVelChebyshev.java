@@ -101,7 +101,7 @@ class PosVelChebyshev implements TimeStamped, Serializable {
 
     /** Compute value of Chebyshev's polynomial independent variable.
      * @param date date
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return <T> independent variable value
      */
     private <T extends CalculusFieldElement<T>> T computeValueIndependentVariable(final FieldAbsoluteDate<T> date) {
@@ -154,7 +154,7 @@ class PosVelChebyshev implements TimeStamped, Serializable {
 
     /** Get the position at a specified date.
      * @param date date at which position is requested
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return position at specified date
      */
     <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date) {
@@ -266,7 +266,7 @@ class PosVelChebyshev implements TimeStamped, Serializable {
 
     /** Get the position-velocity-acceleration at a specified date.
      * @param date date at which position-velocity-acceleration is requested
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return position-velocity-acceleration at specified date
      */
     <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getPositionVelocityAcceleration(final FieldAbsoluteDate<T> date) {

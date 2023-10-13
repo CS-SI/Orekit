@@ -40,6 +40,7 @@ import org.orekit.utils.ElevationMask;
  * at setting. This can be changed by calling
  * {@link #withHandler(FieldEventHandler)} after construction.</p>
  * @author Hank Grabowski
+ * @param <T> type of the field elements
  */
 public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldElevationDetector<T>, T> {
 

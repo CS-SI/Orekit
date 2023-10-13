@@ -65,7 +65,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   station clock is used for initial emission and final reception and therefore it evaluates
  *   to zero.</li>
  * </ul>
- * <p>
  * @author Thierry Ceolin
  * @author Luc Maisonobe
  * @author Maxime Journot

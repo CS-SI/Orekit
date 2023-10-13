@@ -41,7 +41,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -91,7 +91,7 @@ public class ProfileThrustPropulsionModelTest {
                                                        new TimeComponents(23, 30, 00.000),
                                                        TimeScalesFactory.getUTC());
         final Orbit initOrbit =
-            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                FramesFactory.getEME2000(), initDate, Constants.EIGEN5C_EARTH_MU);
         final SpacecraftState initialState =
             new SpacecraftState(initOrbit, law.getAttitude(initOrbit, initOrbit.getDate(), initOrbit.getFrame()), mass);
@@ -179,7 +179,7 @@ public class ProfileThrustPropulsionModelTest {
                                                                       new TimeComponents(23, 30, 00.000),
                                                                       TimeScalesFactory.getUTC());
         final FieldOrbit<T> initOrbit =
-            new FieldKeplerianOrbit<>(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+            new FieldKeplerianOrbit<>(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), initDate,
                                       zero.newInstance(Constants.EIGEN5C_EARTH_MU));
         final FieldSpacecraftState<T> initialState =

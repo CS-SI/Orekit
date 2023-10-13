@@ -46,7 +46,7 @@ import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
@@ -89,7 +89,7 @@ public class OceanTidesTest {
         AbsoluteDate date = new AbsoluteDate(1970, 07, 01, 13, 59, 27.816, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
+                                         0, PositionAngleType.MEAN, eme2000, date,
                                          gravityField.getMu());
 
         AbsoluteDate target = date.shiftedBy(7 * Constants.JULIAN_DAY);
@@ -142,7 +142,7 @@ public class OceanTidesTest {
         AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
                                          FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
+                                         0, PositionAngleType.MEAN, eme2000, date,
                                          gravityField.getMu());
 
         AbsoluteDate target = date.shiftedBy(7 * Constants.JULIAN_DAY);

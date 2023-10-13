@@ -62,31 +62,26 @@ import java.util.Optional;
  */
 public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<SpacecraftState> {
 
-    // CHECKSTYLE: stop VisibilityModifier check
     /**
      * Output frame.
      * <p><b>Must be inertial</b> if interpolating spacecraft states defined by orbit</p>
      */
-    protected final Frame outputFrame;
+    private final Frame outputFrame;
 
     /** Orbit interpolator. */
-    protected final Optional<TimeInterpolator<Orbit>> orbitInterpolator;
+    private final TimeInterpolator<Orbit> orbitInterpolator;
 
     /** Absolute position-velocity-acceleration interpolator. */
-    protected final Optional<TimeInterpolator<AbsolutePVCoordinates>> absPVAInterpolator;
+    private final TimeInterpolator<AbsolutePVCoordinates> absPVAInterpolator;
 
     /** Mass interpolator. */
-    protected final Optional<TimeInterpolator<TimeStampedDouble>> massInterpolator;
+    private final TimeInterpolator<TimeStampedDouble> massInterpolator;
 
     /** Attitude interpolator. */
-    protected final Optional<TimeInterpolator<Attitude>> attitudeInterpolator;
+    private final TimeInterpolator<Attitude> attitudeInterpolator;
 
     /** Additional state interpolator. */
-    protected final Optional<TimeInterpolator<TimeStampedDouble>> additionalStateInterpolator;
-
-    /** Flag specifying if spacecraft states are defined using an orbit or an absolute position-velocity-acceleration. */
-    protected boolean areOrbitDefined;
-    // CHECKSTYLE: resume VisibilityModifier check
+    private final TimeInterpolator<TimeStampedDouble> additionalStateInterpolator;
 
     /**
      * Simplest constructor to create a default Hermite interpolator for every spacecraft state field.
@@ -161,8 +156,8 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
      */
     public SpacecraftStateInterpolator(final int interpolationPoints, final Frame outputFrame,
                                        final Frame attitudeReferenceFrame) {
-        this(interpolationPoints, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
-             outputFrame, attitudeReferenceFrame, CartesianDerivativesFilter.USE_PVA, AngularDerivativesFilter.USE_RR);
+        this(interpolationPoints, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC, outputFrame, attitudeReferenceFrame,
+             CartesianDerivativesFilter.USE_PVA, AngularDerivativesFilter.USE_RR);
     }
 
     /**
@@ -209,14 +204,11 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
      * @param pvaFilter filter for derivatives from the sample to use in position-velocity-acceleration interpolation
      * @param angularFilter filter for derivatives from the sample to use in attitude interpolation
      */
-    public SpacecraftStateInterpolator(final int interpolationPoints,
-                                       final double extrapolationThreshold,
-                                       final Frame outputFrame,
-                                       final Frame attitudeReferenceFrame,
+    public SpacecraftStateInterpolator(final int interpolationPoints, final double extrapolationThreshold,
+                                       final Frame outputFrame, final Frame attitudeReferenceFrame,
                                        final CartesianDerivativesFilter pvaFilter,
                                        final AngularDerivativesFilter angularFilter) {
-        this(outputFrame,
-             new OrbitHermiteInterpolator(interpolationPoints, extrapolationThreshold, outputFrame, pvaFilter),
+        this(outputFrame, new OrbitHermiteInterpolator(interpolationPoints, extrapolationThreshold, outputFrame, pvaFilter),
              new AbsolutePVCoordinatesHermiteInterpolator(interpolationPoints, extrapolationThreshold, outputFrame,
                                                           pvaFilter),
              new TimeStampedDoubleHermiteInterpolator(interpolationPoints, extrapolationThreshold),
@@ -245,8 +237,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
      * @param attitudeInterpolator attitude interpolator (can be null)
      * @param additionalStateInterpolator additional state interpolator (can be null)
      */
-    public SpacecraftStateInterpolator(final Frame outputFrame,
-                                       final TimeInterpolator<Orbit> orbitInterpolator,
+    public SpacecraftStateInterpolator(final Frame outputFrame, final TimeInterpolator<Orbit> orbitInterpolator,
                                        final TimeInterpolator<AbsolutePVCoordinates> absPVAInterpolator,
                                        final TimeInterpolator<TimeStampedDouble> massInterpolator,
                                        final TimeInterpolator<Attitude> attitudeInterpolator,
@@ -254,11 +245,11 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
         super(DEFAULT_INTERPOLATION_POINTS, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC);
         checkAtLeastOneInterpolator(orbitInterpolator, absPVAInterpolator);
         this.outputFrame                 = outputFrame;
-        this.orbitInterpolator           = Optional.ofNullable(orbitInterpolator);
-        this.absPVAInterpolator          = Optional.ofNullable(absPVAInterpolator);
-        this.massInterpolator            = Optional.ofNullable(massInterpolator);
-        this.attitudeInterpolator        = Optional.ofNullable(attitudeInterpolator);
-        this.additionalStateInterpolator = Optional.ofNullable(additionalStateInterpolator);
+        this.orbitInterpolator           = orbitInterpolator;
+        this.absPVAInterpolator          = absPVAInterpolator;
+        this.massInterpolator            = massInterpolator;
+        this.attitudeInterpolator        = attitudeInterpolator;
+        this.additionalStateInterpolator = additionalStateInterpolator;
     }
 
     /**
@@ -330,7 +321,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
             checkStatesDefinitionsConsistency(sampleList);
 
             // Check interpolator and sample consistency
-            checkSampleAndInterpolatorConsistency(sampleList, orbitInterpolator.isPresent(), absPVAInterpolator.isPresent());
+            checkSampleAndInterpolatorConsistency(sampleList, orbitInterpolator != null, absPVAInterpolator != null);
         }
 
         return super.interpolate(interpolationDate, sample);
@@ -371,16 +362,15 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
     protected SpacecraftState interpolate(final InterpolationData interpolationData) {
 
         // Get first state definition
-        final SpacecraftState earliestState = interpolationData.getNeighborList().get(0);
-        areOrbitDefined = earliestState.isOrbitDefined();
+        final SpacecraftState earliestState   = interpolationData.getNeighborList().get(0);
+        final boolean         areOrbitDefined = earliestState.isOrbitDefined();
 
         // Prepare samples
         final List<Attitude> attitudes = new ArrayList<>();
 
         final List<TimeStampedDouble> masses = new ArrayList<>();
 
-        final List<DoubleArrayDictionary.Entry> additionalEntries =
-                earliestState.getAdditionalStatesValues().getData();
+        final List<DoubleArrayDictionary.Entry> additionalEntries = earliestState.getAdditionalStatesValues().getData();
         final Map<String, List<Pair<AbsoluteDate, double[]>>> additionalSample =
                 createAdditionalStateSample(additionalEntries);
 
@@ -406,16 +396,16 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
             }
 
             // Add mass sample
-            if (massInterpolator.isPresent()) {
+            if (massInterpolator != null) {
                 masses.add(new TimeStampedDouble(state.getMass(), state.getDate()));
             }
 
             // Add attitude sample if it is interpolated
-            if (attitudeInterpolator.isPresent()) {
+            if (attitudeInterpolator != null) {
                 attitudes.add(state.getAttitude());
             }
 
-            if (additionalStateInterpolator.isPresent()) {
+            if (additionalStateInterpolator != null) {
 
                 // Add all additional state values if they are interpolated
                 for (final Map.Entry<String, List<Pair<AbsoluteDate, double[]>>> entry : additionalSample.entrySet()) {
@@ -431,46 +421,42 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
 
         // Interpolate mass
         final AbsoluteDate interpolationDate = interpolationData.getInterpolationDate();
-        final double interpolatedMass;
-        if (massInterpolator.isPresent()) {
-            interpolatedMass = massInterpolator.get().interpolate(interpolationDate, masses).getValue();
-        }
-        else {
+        final double       interpolatedMass;
+        if (massInterpolator != null) {
+            interpolatedMass = massInterpolator.interpolate(interpolationDate, masses).getValue();
+        } else {
             interpolatedMass = SpacecraftState.DEFAULT_MASS;
         }
 
         // Interpolate additional states and derivatives
         final DoubleArrayDictionary interpolatedAdditional;
         final DoubleArrayDictionary interpolatedAdditionalDot;
-        if (additionalStateInterpolator.isPresent()) {
+        if (additionalStateInterpolator != null) {
             interpolatedAdditional    = interpolateAdditionalState(interpolationDate, additionalSample);
             interpolatedAdditionalDot = interpolateAdditionalState(interpolationDate, additionalDotSample);
-        }
-        else {
+        } else {
             interpolatedAdditional    = null;
             interpolatedAdditionalDot = null;
         }
 
         // Interpolate orbit
-        if (areOrbitDefined && orbitInterpolator.isPresent()) {
-            final Orbit interpolatedOrbit =
-                    orbitInterpolator.get().interpolate(interpolationDate, orbitSample);
+        if (areOrbitDefined && orbitInterpolator != null) {
+            final Orbit interpolatedOrbit = orbitInterpolator.interpolate(interpolationDate, orbitSample);
 
             final Attitude interpolatedAttitude = interpolateAttitude(interpolationDate, attitudes, interpolatedOrbit);
 
-            return new SpacecraftState(interpolatedOrbit, interpolatedAttitude, interpolatedMass,
-                                       interpolatedAdditional, interpolatedAdditionalDot);
+            return new SpacecraftState(interpolatedOrbit, interpolatedAttitude, interpolatedMass, interpolatedAdditional,
+                                       interpolatedAdditionalDot);
         }
         // Interpolate absolute position-velocity-acceleration
-        else if (!areOrbitDefined && absPVAInterpolator.isPresent()) {
+        else if (!areOrbitDefined && absPVAInterpolator != null) {
 
-            final AbsolutePVCoordinates interpolatedAbsPva =
-                    absPVAInterpolator.get().interpolate(interpolationDate, absPVASample);
+            final AbsolutePVCoordinates interpolatedAbsPva = absPVAInterpolator.interpolate(interpolationDate, absPVASample);
 
             final Attitude interpolatedAttitude = interpolateAttitude(interpolationDate, attitudes, interpolatedAbsPva);
 
-            return new SpacecraftState(interpolatedAbsPva, interpolatedAttitude, interpolatedMass,
-                                       interpolatedAdditional, interpolatedAdditionalDot);
+            return new SpacecraftState(interpolatedAbsPva, interpolatedAttitude, interpolatedMass, interpolatedAdditional,
+                                       interpolatedAdditionalDot);
         }
         // Should never happen
         else {
@@ -479,54 +465,68 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
 
     }
 
-    /** @return output frame */
+    /**
+     * Get output frame.
+     *
+     * @return output frame
+     */
     public Frame getOutputFrame() {
         return outputFrame;
     }
 
     /**
+     * Get orbit interpolator.
+     *
      * @return optional orbit interpolator
      *
      * @see Optional
      */
     public Optional<TimeInterpolator<Orbit>> getOrbitInterpolator() {
-        return orbitInterpolator;
+        return Optional.ofNullable(orbitInterpolator);
     }
 
     /**
+     * Get absolute position-velocity-acceleration interpolator.
+     *
      * @return optional absolute position-velocity-acceleration interpolator
      *
      * @see Optional
      */
     public Optional<TimeInterpolator<AbsolutePVCoordinates>> getAbsPVAInterpolator() {
-        return absPVAInterpolator;
+        return Optional.ofNullable(absPVAInterpolator);
     }
 
     /**
+     * Get mass interpolator.
+     *
      * @return optional mass interpolator
      *
      * @see Optional
      */
     public Optional<TimeInterpolator<TimeStampedDouble>> getMassInterpolator() {
-        return massInterpolator;
+        return Optional.ofNullable(massInterpolator);
     }
 
     /**
+     * Get attitude interpolator.
+     *
      * @return optional attitude interpolator
      *
      * @see Optional
      */
     public Optional<TimeInterpolator<Attitude>> getAttitudeInterpolator() {
-        return attitudeInterpolator;
+        return Optional.ofNullable(attitudeInterpolator);
     }
 
     /**
+     * Get additional state interpolator.
+     *
      * @return optional additional state interpolator
      *
      * @see Optional
      */
     public Optional<TimeInterpolator<TimeStampedDouble>> getAdditionalStateInterpolator() {
-        return additionalStateInterpolator;
+        return Optional.ofNullable(additionalStateInterpolator);
     }
 
     /**
@@ -574,8 +574,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
 
         if (additionalSamples.isEmpty()) {
             interpolatedAdditional = null;
-        }
-        else {
+        } else {
             interpolatedAdditional = new DoubleArrayDictionary(additionalSamples.size());
             for (final Map.Entry<String, List<Pair<AbsoluteDate, double[]>>> entry : additionalSamples.entrySet()) {
 
@@ -600,7 +599,7 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
 
                     // Interpolate
                     currentInterpolatedAdditional[i] =
-                            additionalStateInterpolator.get().interpolate(interpolationDate, currentValueSample).getValue();
+                            additionalStateInterpolator.interpolate(interpolationDate, currentValueSample).getValue();
                 }
 
                 interpolatedAdditional.put(entry.getKey(), currentInterpolatedAdditional);
@@ -625,9 +624,8 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
         if (attitudes.isEmpty()) {
             final AttitudeProvider attitudeProvider = new FrameAlignedProvider(outputFrame);
             return attitudeProvider.getAttitude(pvProvider, interpolationDate, outputFrame);
-        }
-        else {
-            return attitudeInterpolator.get().interpolate(interpolationDate, attitudes);
+        } else {
+            return attitudeInterpolator.interpolate(interpolationDate, attitudes);
         }
     }
 }

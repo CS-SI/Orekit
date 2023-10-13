@@ -181,6 +181,17 @@ public class StreamingOemWriter implements AutoCloseable {
         /** Reference frame of this segment. */
         private Frame frame;
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public SegmentWriter() {
+            // nothing to do
+        }
+
         /**
          * {@inheritDoc}
          *

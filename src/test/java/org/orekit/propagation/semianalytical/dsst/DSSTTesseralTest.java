@@ -41,7 +41,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -77,7 +77,7 @@ public class DSSTTesseralTest {
                                                  -0.3412974060023717,
                                                  0.3960084733107685,
                                                  8.566537840341699,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  frame,
                                                  initDate,
                                                  provider.getMu());
@@ -118,7 +118,7 @@ public class DSSTTesseralTest {
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
         UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(8, 8);
-        Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngle.MEAN,
+        Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngleType.MEAN,
                                          FramesFactory.getTOD(false),
                                          new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
                                          nshp.getMu());
@@ -184,7 +184,7 @@ public class DSSTTesseralTest {
                                                  -0.3412974060023717,
                                                  0.3960084733107685,
                                                  8.566537840341699,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  frame,
                                                  initDate,
                                                  provider.getMu());
@@ -233,7 +233,7 @@ public class DSSTTesseralTest {
         // Initial orbit
         final Orbit orbit = new EquinoctialOrbit(2.655989E7, 2.719455286199036E-4, 0.0041543085910249414,
                                                  -0.3412974060023717, 0.3960084733107685,
-                                                 8.566537840341699, PositionAngle.TRUE,
+                                                 8.566537840341699, PositionAngleType.TRUE,
                                                  frame, initDate, provider.getMu());
 
         // Force model
@@ -246,7 +246,7 @@ public class DSSTTesseralTest {
         // Eccentricity shift
         final Orbit shfitedOrbit = new EquinoctialOrbit(2.655989E7, 0.02, 0.0041543085910249414,
                                                         -0.3412974060023717, 0.3960084733107685,
-                                                        8.566537840341699, PositionAngle.TRUE,
+                                                        8.566537840341699, PositionAngleType.TRUE,
                                                         frame, initDate, provider.getMu());
 
         final double[] elements = tesseral.getMeanElementRate(new SpacecraftState(shfitedOrbit), new AuxiliaryElements(shfitedOrbit, 1), parameters);
@@ -284,7 +284,7 @@ public class DSSTTesseralTest {
                                                FastMath.toRadians(315.4985),
                                                FastMath.toRadians(130.7562),
                                                FastMath.toRadians(44.2377),
-                                               PositionAngle.MEAN,
+                                               PositionAngleType.MEAN,
                                                FramesFactory.getEME2000(),
                                                initDate,
                                                provider.getMu());

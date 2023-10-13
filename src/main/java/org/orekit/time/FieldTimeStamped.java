@@ -38,6 +38,7 @@ import org.hipparchus.CalculusFieldElement;
  * @see ChronologicalComparator
  * @see org.orekit.utils.TimeStampedCache
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
 public interface FieldTimeStamped<T extends CalculusFieldElement<T>> {
 

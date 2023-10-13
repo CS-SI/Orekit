@@ -25,7 +25,7 @@ import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.MultiplexedMeasurement;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -89,11 +89,11 @@ public class MultiplexedMeasurementBuilder implements MeasurementBuilder<Multipl
 
     /** {@inheritDoc} */
     @Override
-    public MultiplexedMeasurement build(final Map<ObservableSatellite, SpacecraftState> states) {
+    public MultiplexedMeasurement build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
 
         final List<ObservedMeasurement<?>> measurements = new ArrayList<>(builders.size());
         for (final MeasurementBuilder<?> builder : builders) {
-            measurements.add(builder.build(states));
+            measurements.add(builder.build(date, interpolators));
         }
 
 

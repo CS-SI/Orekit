@@ -282,7 +282,7 @@ public class EphemerisOcmWriterTest {
             List<TrajectoryState> states = new ArrayList<>();
             for (double dt = 0; dt < duration; dt += step) {
                 TimeStampedPVCoordinates pv = pv0.shiftedBy(dt);
-                double[] elements = type.toRawElements(pv, referenceFrame, Constants.EIGEN5C_EARTH_MU);
+                double[] elements = type.toRawElements(pv, referenceFrame, null, Constants.EIGEN5C_EARTH_MU);
                 states.add(new TrajectoryState(type, pv.getDate(), elements));
             }
 
@@ -292,7 +292,7 @@ public class EphemerisOcmWriterTest {
             }
 
             List<TrajectoryStateHistory> history = new ArrayList<>(satEphem.get(internationalDesignator).getSegments());
-            history.add(new TrajectoryStateHistory(metadata, states, Constants.EIGEN5C_EARTH_MU));
+            history.add(new TrajectoryStateHistory(metadata, states, null, Constants.EIGEN5C_EARTH_MU));
             satEphem.put(internationalDesignator, new OcmSatelliteEphemeris(internationalDesignator, Constants.EIGEN5C_EARTH_MU, history));
 
         }

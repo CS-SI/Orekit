@@ -28,7 +28,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -77,7 +77,7 @@ public class OrekitStepHandlerTest {
                                                          inclination,
                                                          argPerigee, raan,
                                                          trueAnomaly,
-                                                         PositionAngle.TRUE,
+                                                         PositionAngleType.TRUE,
                                                          inertialFrame,
                                                          initialDate, mu);
 
@@ -118,7 +118,7 @@ public class OrekitStepHandlerTest {
         Frame eci = FramesFactory.getGCRF();
         SpacecraftState ic = new SpacecraftState(new KeplerianOrbit(
                 6378137 + 500e3, 1e-3, 0, 0, 0, 0,
-                PositionAngle.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU));
+                PositionAngleType.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU));
         propagator.setInitialState(ic);
         propagator.setOrbitType(OrbitType.CARTESIAN);
         // detector triggers half way through second step
@@ -132,6 +132,7 @@ public class OrekitStepHandlerTest {
         propagator.setStepHandler(interpolator -> {
             Assertions.assertEquals(expected.poll(), interpolator.isPreviousStateInterpolated());
             Assertions.assertEquals(expected.poll(), interpolator.isCurrentStateInterpolated());
+            Assertions.assertNotNull(interpolator.getPosition(date, eci));
         });
         final AbsoluteDate end = date.shiftedBy(120);
         Assertions.assertEquals(end, propagator.propagate(end).getDate());

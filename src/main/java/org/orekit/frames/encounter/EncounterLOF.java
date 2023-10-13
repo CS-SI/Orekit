@@ -249,7 +249,7 @@ public interface EncounterLOF extends LOF {
         return new FieldVector2D<>(projectionMatrix.multiply(vectorInMatrix).getColumn(0));
     }
 
-    /**
+    /** Get other's position and velocity coordinates.
      * @param field field of the element
      * @param <T> type of the element
      *
@@ -264,10 +264,14 @@ public interface EncounterLOF extends LOF {
      */
     Vector3D getAxisNormalToCollisionPlane();
 
-    /** @return other's position and velocity coordinates */
+    /** Get other's position and velocity coordinates.
+     * @return other's position and velocity coordinates
+     */
     PVCoordinates getOther();
 
-    /** @return flag that indicates if current local orbital frame shall be treated as pseudo-inertial */
+    /** Get flag that indicates if current local orbital frame shall be treated as pseudo-inertial.
+     * @return flag that indicates if current local orbital frame shall be treated as pseudo-inertial
+     */
     @Override
     default boolean isQuasiInertial() {
         return true;

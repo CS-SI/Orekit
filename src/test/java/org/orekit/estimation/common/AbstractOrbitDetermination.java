@@ -52,9 +52,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataFilter;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DataSource;
 import org.orekit.data.GzipFilter;
 import org.orekit.data.UnixCompressFilter;
@@ -148,7 +146,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -732,7 +730,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         // Orbital covariance matrix initialization
         // Jacobian of the orbital parameters w/r to Cartesian
         final double[][] dYdC = new double[6][6];
-        initialGuess.getJacobianWrtCartesian(propagatorBuilder.getPositionAngle(), dYdC);
+        initialGuess.getJacobianWrtCartesian(propagatorBuilder.getPositionAngleType(), dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
         RealMatrix orbitalP = Jac.multiply(cartesianOrbitalP.multiply(Jac.transpose()));
 
@@ -1077,8 +1075,6 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             final MarshallSolarActivityFutureEstimation msafe =
                             new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
                                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-            final DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
-            manager.feed(msafe.getSupportedNames(), msafe);
             final Atmosphere atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), body);
             final List<ParameterDriver> drivers = setDrag(propagatorBuilder, atmosphere, new IsotropicDrag(area, cd));
             if (cdEstimated) {
@@ -1215,9 +1211,9 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
 
         // Orbit definition
-        PositionAngle angleType = PositionAngle.MEAN;
+        PositionAngleType angleType = PositionAngleType.MEAN;
         if (parser.containsKey(ParameterKey.ORBIT_ANGLE_TYPE)) {
-            angleType = PositionAngle.valueOf(parser.getString(ParameterKey.ORBIT_ANGLE_TYPE).toUpperCase());
+            angleType = PositionAngleType.valueOf(parser.getString(ParameterKey.ORBIT_ANGLE_TYPE).toUpperCase());
         }
         if (parser.containsKey(ParameterKey.ORBIT_KEPLERIAN_A)) {
             return new KeplerianOrbit(parser.getDouble(ParameterKey.ORBIT_KEPLERIAN_A),

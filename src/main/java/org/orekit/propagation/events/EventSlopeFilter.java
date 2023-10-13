@@ -59,6 +59,7 @@ import org.orekit.time.AbsoluteDate;
  * only {@code decreasing} events. The number of calls to the {@link
  * EventDetector#g(SpacecraftState) g function} will also be reduced.</p>
  * @see EventEnablingPredicateFilter
+ * @param <T> type of the detector
  */
 
 public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<EventSlopeFilter<T>> {
@@ -134,7 +135,9 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
         return rawDetector;
     }
 
-    /** @return filter type */
+    /** Get filter type.
+     * @return filter type
+     */
     public FilterType getFilter() {
         return filter;
     }

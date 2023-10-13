@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical;
 
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.utils.DoubleArrayDictionary;
 
 /**
@@ -35,7 +36,7 @@ class EcksteinHechlerHarvester extends AbstractAnalyticalMatricesHarvester {
      * <p>
      * The arguments for initial matrices <em>must</em> be compatible with the
      * {@link org.orekit.orbits.OrbitType orbit type}
-     * and {@link org.orekit.orbits.PositionAngle position angle} that will be used by propagator
+     * and {@link PositionAngleType position angle} that will be used by propagator
      * </p>
      * @param propagator propagator bound to this harvester
      * @param stmName State Transition Matrix state name

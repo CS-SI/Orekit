@@ -29,6 +29,17 @@ import org.orekit.propagation.events.EventDetector;
  */
 public class ContinueOnEvent implements EventHandler {
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public ContinueOnEvent() {
+        // nothing to do
+    }
+
     /**
      * Specific implementation of the eventOccurred interface.
      *

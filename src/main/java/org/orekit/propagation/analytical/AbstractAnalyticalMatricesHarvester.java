@@ -24,7 +24,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -65,7 +65,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
      * <p>
      * The arguments for initial matrices <em>must</em> be compatible with the
      * {@link org.orekit.orbits.OrbitType orbit type}
-     * and {@link org.orekit.orbits.PositionAngle position angle} that will be used by propagator
+     * and {@link PositionAngleType position angle} that will be used by propagator
      * </p>
      * @param propagator propagator bound to this harvester
      * @param stmName State Transition Matrix state name
@@ -279,9 +279,9 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
 
     /** {@inheritDoc} */
     @Override
-    public PositionAngle getPositionAngle() {
+    public PositionAngleType getPositionAngleType() {
         // Irrelevant: set a default value
-        return PositionAngle.MEAN;
+        return PositionAngleType.MEAN;
     }
 
     /**

@@ -37,7 +37,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -89,7 +89,7 @@ public class NadirPointingTest {
         // Create satellite position as circular parameters
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Get nadir attitude
@@ -128,7 +128,7 @@ public class NadirPointingTest {
         // **********************************
         KeplerianOrbit kep =
             new KeplerianOrbit(7178000.0, 1.e-8, FastMath.toRadians(50.), 0., 0.,
-                                    0., PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
+                                    0., PositionAngleType.TRUE, FramesFactory.getEME2000(), date, mu);
 
         // Get nadir attitude
         Rotation rotNadir = nadirAttitudeLaw.getAttitude(kep, date, kep.getFrame()).getRotation();
@@ -149,7 +149,7 @@ public class NadirPointingTest {
         // *****************************
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(90.), 0.,
-                                   FastMath.toRadians(90.), PositionAngle.TRUE,
+                                   FastMath.toRadians(90.), PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
        // Get nadir attitude
@@ -169,7 +169,7 @@ public class NadirPointingTest {
         // ***************************
         circ =
             new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(50.), 0.,
-                                   FastMath.toRadians(90.), PositionAngle.TRUE,
+                                   FastMath.toRadians(90.), PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Get nadir attitude
@@ -204,7 +204,7 @@ public class NadirPointingTest {
         //  Satellite on any position
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(50.), 0.,
-                                   FastMath.toRadians(90.), PositionAngle.TRUE,
+                                   FastMath.toRadians(90.), PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
         //  Vertical test
@@ -248,7 +248,7 @@ public class NadirPointingTest {
         //  Satellite on any position
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(50.), 0.,
-                                   FastMath.toRadians(90.), PositionAngle.TRUE,
+                                   FastMath.toRadians(90.), PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
         List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
@@ -291,7 +291,7 @@ public class NadirPointingTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngle.MEAN,
+                              FastMath.toRadians(30.), PositionAngleType.MEAN,
                               FramesFactory.getEME2000(), date, mu);
 
         Propagator propagator = new KeplerianPropagator(orbit, law, mu, 2500.0);

@@ -33,7 +33,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
@@ -73,7 +73,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
     private final CovarianceMatrixProvider measurementProcessNoiseMatrix;
 
     /** Position angle type used during orbit determination. */
-    private final PositionAngle angleType;
+    private final PositionAngleType angleType;
 
     /** Orbit type used during orbit determination. */
     private final OrbitType orbitType;
@@ -132,7 +132,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
                                                  final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
 
         this.builder                         = propagatorBuilder;
-        this.angleType                       = propagatorBuilder.getPositionAngle();
+        this.angleType                       = propagatorBuilder.getPositionAngleType();
         this.orbitType                       = propagatorBuilder.getOrbitType();
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
         this.currentMeasurementNumber        = 0;
@@ -419,7 +419,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         // Update the previous nominal mean spacecraft state
         // Calculate the corrected osculating elements
         final RealVector osculating = computeOsculatingElements(correctedFilterCorrection, nominalMeanSpacecraftState, shortPeriodicTerms);
-        final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null, builder.getPositionAngle(),
+        final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null, builder.getPositionAngleType(),
                                                                 currentDate, builder.getMu(), builder.getFrame());
 
         // Compute the corrected measurements

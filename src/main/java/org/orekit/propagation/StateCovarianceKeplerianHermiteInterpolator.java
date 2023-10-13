@@ -25,7 +25,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeStampedPair;
@@ -174,11 +174,11 @@ public class StateCovarianceKeplerianHermiteInterpolator extends AbstractStateCo
      * @param orbitInterpolator orbit interpolator
      * @param outFrame output frame
      * @param outOrbitType output orbit type
-     * @param outPositionAngle output position angle
+     * @param outPositionAngleType output position angle
      */
     public StateCovarianceKeplerianHermiteInterpolator(final TimeInterpolator<Orbit> orbitInterpolator, final Frame outFrame,
-                                                       final OrbitType outOrbitType, final PositionAngle outPositionAngle) {
-        this(DEFAULT_INTERPOLATION_POINTS, orbitInterpolator, outFrame, outOrbitType, outPositionAngle);
+                                                       final OrbitType outOrbitType, final PositionAngleType outPositionAngleType) {
+        this(DEFAULT_INTERPOLATION_POINTS, orbitInterpolator, outFrame, outOrbitType, outPositionAngleType);
     }
 
     /**
@@ -195,13 +195,13 @@ public class StateCovarianceKeplerianHermiteInterpolator extends AbstractStateCo
      * @param orbitInterpolator orbit interpolator
      * @param outFrame output frame
      * @param outOrbitType output orbit type
-     * @param outPositionAngle output position angle
+     * @param outPositionAngleType output position angle
      */
     public StateCovarianceKeplerianHermiteInterpolator(final int interpolationPoints,
                                                        final TimeInterpolator<Orbit> orbitInterpolator, final Frame outFrame,
-                                                       final OrbitType outOrbitType, final PositionAngle outPositionAngle) {
+                                                       final OrbitType outOrbitType, final PositionAngleType outPositionAngleType) {
         this(interpolationPoints, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC, orbitInterpolator, CartesianDerivativesFilter.USE_PVA,
-             outFrame, outOrbitType, outPositionAngle);
+             outFrame, outOrbitType, outPositionAngleType);
     }
 
     /**
@@ -219,14 +219,14 @@ public class StateCovarianceKeplerianHermiteInterpolator extends AbstractStateCo
      * derivatives should be used during the interpolation.
      * @param outFrame output frame
      * @param outOrbitType output orbit type
-     * @param outPositionAngle output position angle
+     * @param outPositionAngleType output position angle
      */
     public StateCovarianceKeplerianHermiteInterpolator(final int interpolationPoints,
                                                        final TimeInterpolator<Orbit> orbitInterpolator,
                                                        final CartesianDerivativesFilter filter, final Frame outFrame,
-                                                       final OrbitType outOrbitType, final PositionAngle outPositionAngle) {
+                                                       final OrbitType outOrbitType, final PositionAngleType outPositionAngleType) {
         this(interpolationPoints, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC, orbitInterpolator, filter, outFrame, outOrbitType,
-             outPositionAngle);
+                outPositionAngleType);
     }
 
     /**
@@ -243,17 +243,18 @@ public class StateCovarianceKeplerianHermiteInterpolator extends AbstractStateCo
      * derivatives should be used during the interpolation.
      * @param outFrame output frame
      * @param outOrbitType output orbit type
-     * @param outPositionAngle output position angle
+     * @param outPositionAngleType output position angle
      */
     public StateCovarianceKeplerianHermiteInterpolator(final int interpolationPoints, final double extrapolationThreshold,
                                                        final TimeInterpolator<Orbit> orbitInterpolator,
                                                        final CartesianDerivativesFilter filter, final Frame outFrame,
-                                                       final OrbitType outOrbitType, final PositionAngle outPositionAngle) {
-        super(interpolationPoints, extrapolationThreshold, orbitInterpolator, outFrame, outOrbitType, outPositionAngle);
+                                                       final OrbitType outOrbitType, final PositionAngleType outPositionAngleType) {
+        super(interpolationPoints, extrapolationThreshold, orbitInterpolator, outFrame, outOrbitType, outPositionAngleType);
         this.filter = filter;
     }
 
-    /**
+    /** Get Filter defining if only the state covariance value are used or if first or/and second Keplerian derivatives
+     * should be used.
      * @return Filter defining if only the state covariance value are used or if first or/and second Keplerian derivatives
      * should be used.
      */

@@ -17,6 +17,7 @@
 package org.orekit.orbits;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
@@ -68,9 +69,10 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @since 9.0
+ * @param <T> type of the field elements
  */
 
-public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
+public class FieldCircularOrbit<T extends CalculusFieldElement<T>>
     extends FieldOrbit<T> {
 
     /** Semi-major axis (m). */
@@ -112,12 +114,6 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
     /** Partial Cartesian coordinates (position and velocity are valid, acceleration may be missing). */
     private FieldPVCoordinates<T> partialPV;
 
-    /** one. */
-    private final T one;
-
-    /** zero. */
-    private final T zero;
-
     /** Creates a new instance.
      * @param a  semi-major axis (m)
      * @param ex e cos(ω), first component of circular eccentricity vector
@@ -135,7 +131,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
      */
     public FieldCircularOrbit(final T a, final T ex, final T ey,
                               final T i, final T raan,
-                              final T alpha, final PositionAngle type,
+                              final T alpha, final PositionAngleType type,
                               final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         this(a, ex, ey, i, raan, alpha,
@@ -168,7 +164,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
                               final T i, final T raan, final T alpha,
                               final T aDot, final T exDot, final T eyDot,
                               final T iDot, final T raanDot, final T alphaDot,
-                              final PositionAngle type,
+                              final PositionAngleType type,
                               final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
@@ -187,9 +183,6 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
         this.iDot    = iDot;
         this.raan    = raan;
         this.raanDot = raanDot;
-
-        one = a.getField().getOne();
-        zero = a.getField().getZero();
 
         if (hasDerivatives()) {
             final FieldUnivariateDerivative1<T> exUD    = new FieldUnivariateDerivative1<>(ex,    exDot);
@@ -260,15 +253,12 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
         final T V2 = pvV.getNormSq();
         final T rV2OnMu = r.multiply(V2).divide(mu);
 
-        zero = r.getField().getZero();
-        one = r.getField().getOne();
+        a = r.divide(rV2OnMu.negate().add(2));
 
-        if (rV2OnMu.getReal() > 2) {
+        if (!isElliptical()) {
             throw new OrekitIllegalArgumentException(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS,
                                                      getClass().getName());
         }
-
-        a = r.divide(rV2OnMu.negate().add(2));
 
         // compute inclination
         final FieldVector3D<T> momentum = pvCoordinates.getMomentum();
@@ -310,7 +300,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
             // we have a relevant acceleration, we can compute derivatives
 
             final T[][] jacobian = MathArrays.buildArray(a.getField(), 6, 6);
-            getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+            getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
 
             final FieldVector3D<T> keplerianAcceleration    = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(mu.negate()), pvP);
             final FieldVector3D<T> nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
@@ -387,7 +377,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
         final T equiEy = op.getEquinoctialEy();
         ex   = equiEx.multiply(cosRaan).add(equiEy.multiply(sinRaan));
         ey   = equiEy.multiply(cosRaan).subtract(equiEx.multiply(sinRaan));
-        this.alphaV = op.getLv().subtract(raan);
+        alphaV = op.getLv().subtract(raan);
 
         if (op.hasDerivatives()) {
             aDot      = op.getADot();
@@ -413,9 +403,52 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
 
         partialPV = null;
 
-        one = a.getField().getOne();
-        zero = a.getField().getZero();
+    }
 
+    /** Constructor from Field and CircularOrbit.
+     * <p>Build a FieldCircularOrbit from non-Field CircularOrbit.</p>
+     * @param field CalculusField to base object on
+     * @param op non-field orbit with only "constant" terms
+     * @since 12.0
+     */
+    public FieldCircularOrbit(final Field<T> field, final CircularOrbit op) {
+        super(op.getFrame(), new FieldAbsoluteDate<>(field, op.getDate()), field.getZero().add(op.getMu()));
+
+        a    = getZero().add(op.getA());
+        i    = getZero().add(op.getI());
+        raan = getZero().add(op.getRightAscensionOfAscendingNode());
+        ex   = getZero().add(op.getCircularEx());
+        ey   = getZero().add(op.getCircularEy());
+        alphaV = getZero().add(op.getAlphaV());
+
+        if (op.hasDerivatives()) {
+            aDot      = getZero().add(op.getADot());
+            iDot      = getZero().add(op.getIDot());
+            raanDot   = getZero().add(op.getRightAscensionOfAscendingNodeDot());
+            exDot     = getZero().add(op.getCircularExDot());
+            eyDot     = getZero().add(op.getCircularEyDot());
+            alphaVDot = getZero().add(op.getAlphaVDot());
+        } else {
+            aDot      = null;
+            exDot     = null;
+            eyDot     = null;
+            iDot      = null;
+            raanDot   = null;
+            alphaVDot = null;
+        }
+
+        partialPV = null;
+
+    }
+
+    /** Constructor from Field and Orbit.
+     * <p>Build a FieldCircularOrbit from any non-Field Orbit.</p>
+     * @param field CalculusField to base object on
+     * @param op non-field orbit with only "constant" terms
+     * @since 12.0
+     */
+    public FieldCircularOrbit(final Field<T> field, final Orbit op) {
+        this(field, new CircularOrbit(op));
     }
 
     /** {@inheritDoc} */
@@ -503,7 +536,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
     public T getHx() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
-            return zero.add(Double.NaN);
+            return getZero().add(Double.NaN);
         }
         return raan.cos().multiply(i.divide(2).tan());
     }
@@ -517,7 +550,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
 
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
-            return zero.add(Double.NaN);
+            return getZero().add(Double.NaN);
         }
 
         final FieldSinCos<T> sc = FastMath.sinCos(raan);
@@ -531,7 +564,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
     public T getHy() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
-            return zero.add(Double.NaN);
+            return getZero().add(Double.NaN);
         }
         return raan.sin().multiply(i.divide(2).tan());
     }
@@ -545,7 +578,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
 
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
-            return zero.add(Double.NaN);
+            return getZero().add(Double.NaN);
         }
 
         final FieldSinCos<T> sc = FastMath.sinCos(raan);
@@ -621,9 +654,9 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
      * @param type type of the angle
      * @return latitude argument (rad)
      */
-    public T getAlpha(final PositionAngle type) {
-        return (type == PositionAngle.MEAN) ? getAlphaM() :
-                                              ((type == PositionAngle.ECCENTRIC) ? getAlphaE() :
+    public T getAlpha(final PositionAngleType type) {
+        return (type == PositionAngleType.MEAN) ? getAlphaM() :
+                                              ((type == PositionAngleType.ECCENTRIC) ? getAlphaE() :
                                                                                    getAlphaV());
     }
 
@@ -631,9 +664,9 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
      * @param type type of the angle
      * @return latitude argument derivative (rad/s)
      */
-    public T getAlphaDot(final PositionAngle type) {
-        return (type == PositionAngle.MEAN) ? getAlphaMDot() :
-                                              ((type == PositionAngle.ECCENTRIC) ? getAlphaEDot() :
+    public T getAlphaDot(final PositionAngleType type) {
+        return (type == PositionAngleType.MEAN) ? getAlphaMDot() :
+                                              ((type == PositionAngleType.ECCENTRIC) ? getAlphaEDot() :
                                                                                    getAlphaVDot());
     }
 
@@ -833,7 +866,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
         final T x      = a.multiply(beta.negate().multiply(ey2).add(1).multiply(cLe).add(beta.multiply(exey).multiply(sLe)).subtract(equEx));
         final T y      = a.multiply(beta.negate().multiply(ex2).add(1).multiply(sLe).add(beta.multiply(exey).multiply(cLe)).subtract(equEy));
 
-        final T factor = one.add(getMu()).divide(a).sqrt().divide(exCeyS.negate().add(1));
+        final T factor = getOne().add(getMu()).divide(a).sqrt().divide(exCeyS.negate().add(1));
         final T xdot   = factor.multiply( beta.multiply(equEy).multiply(exCeyS).subtract(sLe ));
         final T ydot   = factor.multiply( cLe.subtract(beta.multiply(equEx).multiply(exCeyS)));
 
@@ -857,7 +890,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
     private FieldVector3D<T> nonKeplerianAcceleration() {
 
         final T[][] dCdP = MathArrays.buildArray(a.getField(), 6, 6);
-        getJacobianWrtParameters(PositionAngle.MEAN, dCdP);
+        getJacobianWrtParameters(PositionAngleType.MEAN, dCdP);
 
         final T nonKeplerianMeanMotion = getAlphaMDot().subtract(getKeplerianMeanMotion());
         final T nonKeplerianAx =     dCdP[3][0].multiply(aDot).
@@ -948,7 +981,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     public FieldCircularOrbit<T> shiftedBy(final double dt) {
-        return shiftedBy(getDate().getField().getZero().add(dt));
+        return shiftedBy(getZero().add(dt));
     }
 
     /** {@inheritDoc} */
@@ -957,7 +990,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
         // use Keplerian-only motion
         final FieldCircularOrbit<T> keplerianShifted = new FieldCircularOrbit<>(a, ex, ey, i, raan,
                                                                                 getAlphaM().add(getKeplerianMeanMotion().multiply(dt)),
-                                                                                PositionAngle.MEAN, getFrame(),
+                                                                                PositionAngleType.MEAN, getFrame(),
                                                                                 getDate().shiftedBy(dt), getMu());
 
         if (hasDerivatives()) {
@@ -967,15 +1000,15 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
 
             // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
             keplerianShifted.computePVWithoutA();
-            final FieldVector3D<T> fixedP   = new FieldVector3D<>(one, keplerianShifted.partialPV.getPosition(),
+            final FieldVector3D<T> fixedP   = new FieldVector3D<>(getOne(), keplerianShifted.partialPV.getPosition(),
                                                                   dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
             final T   fixedR2 = fixedP.getNormSq();
             final T   fixedR  = fixedR2.sqrt();
-            final FieldVector3D<T> fixedV  = new FieldVector3D<>(one, keplerianShifted.partialPV.getVelocity(),
+            final FieldVector3D<T> fixedV  = new FieldVector3D<>(getOne(), keplerianShifted.partialPV.getVelocity(),
                                                                  dt, nonKeplerianAcceleration);
             final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(getMu().negate()),
                                                                  keplerianShifted.partialPV.getPosition(),
-                                                                 one, nonKeplerianAcceleration);
+                                                                 getOne(), nonKeplerianAcceleration);
 
             // build a new orbit, taking non-Keplerian acceleration into account
             return new FieldCircularOrbit<>(new TimeStampedFieldPVCoordinates<>(keplerianShifted.getDate(),
@@ -992,7 +1025,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     protected T[][] computeJacobianMeanWrtCartesian() {
 
-        final T[][] jacobian = MathArrays.buildArray(one.getField(), 6, 6);
+        final T[][] jacobian = MathArrays.buildArray(getOne().getField(), 6, 6);
 
         // compute various intermediate parameters
         computePVWithoutA();
@@ -1011,7 +1044,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
         final T v2         = velocity.getNormSq();
 
         final T mu         = getMu();
-        final T oOsqrtMuA  = one.divide(a.multiply(mu).sqrt());
+        final T oOsqrtMuA  = getOne().divide(a.multiply(mu).sqrt());
         final T rOa        = r.divide(a);
         final T aOr        = a.divide(r);
         final T aOr2       = a.divide(r2);
@@ -1044,27 +1077,27 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
         final T recip2  = recip.multiply(recip);
         final T recip2N = recip2.negate();
         final FieldVector3D<T> dwXP = new FieldVector3D<>(recip,
-                                                          new FieldVector3D<>(zero, vz, vy.negate()),
+                                                          new FieldVector3D<>(getZero(), vz, vy.negate()),
                                                           recip2N.multiply(sinRaan).multiply(sinI),
                                                           danP);
         final FieldVector3D<T> dwYP = new FieldVector3D<>(recip,
-                                                          new FieldVector3D<>(vz.negate(), zero, vx),
+                                                          new FieldVector3D<>(vz.negate(), getZero(), vx),
                                                           recip2.multiply(cosRaan).multiply(sinI),
                                                           danP);
         final FieldVector3D<T> dwZP = new FieldVector3D<>(recip,
-                                                          new FieldVector3D<>(vy, vx.negate(), zero),
+                                                          new FieldVector3D<>(vy, vx.negate(), getZero()),
                                                           recip2N.multiply(cosI),
                                                           danP);
         final FieldVector3D<T> dwXV = new FieldVector3D<>(recip,
-                                                          new FieldVector3D<>(zero, z.negate(), y),
+                                                          new FieldVector3D<>(getZero(), z.negate(), y),
                                                           recip2N.multiply(sinRaan).multiply(sinI),
                                                           danV);
         final FieldVector3D<T> dwYV = new FieldVector3D<>(recip,
-                                                          new FieldVector3D<>(z, zero, x.negate()),
+                                                          new FieldVector3D<>(z, getZero(), x.negate()),
                                                           recip2.multiply(cosRaan).multiply(sinI),
                                                           danV);
         final FieldVector3D<T> dwZV = new FieldVector3D<>(recip,
-                                                          new FieldVector3D<>(y.negate(), x, zero),
+                                                          new FieldVector3D<>(y.negate(), x, getZero()),
                                                           recip2N.multiply(cosI),
                                                           danV);
 
@@ -1085,7 +1118,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
         // du
         final FieldVector3D<T> duP = new FieldVector3D<>(cv.multiply(cosRaan).divide(sinI), dwXP,
                                                          cv.multiply(sinRaan).divide(sinI), dwYP,
-                                                         one, new FieldVector3D<>(cosRaan, sinRaan, zero));
+                                                         getOne(), new FieldVector3D<>(cosRaan, sinRaan, getZero()));
         final FieldVector3D<T> duV = new FieldVector3D<>(cv.multiply(cosRaan).divide(sinI), dwXV,
                                                          cv.multiply(sinRaan).divide(sinI), dwYV);
 
@@ -1093,7 +1126,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
         final FieldVector3D<T> dvP = new FieldVector3D<>(u.negate().multiply(cosRaan).multiply(cosI).divide(sinI).add(sinRaan.multiply(z)), dwXP,
                                                          u.negate().multiply(sinRaan).multiply(cosI).divide(sinI).subtract(cosRaan.multiply(z)), dwYP,
                                                          cv, dwZP,
-                                                         one, new FieldVector3D<>(sinRaan.negate().multiply(cosI), cosRaan.multiply(cosI), sinI));
+                                                         getOne(), new FieldVector3D<>(sinRaan.negate().multiply(cosI), cosRaan.multiply(cosI), sinI));
         final FieldVector3D<T> dvV = new FieldVector3D<>(u.negate().multiply(cosRaan).multiply(cosI).divide(sinI).add(sinRaan.multiply(z)), dwXV,
                                                          u.negate().multiply(sinRaan).multiply(cosI).divide(sinI).subtract(cosRaan.multiply(z)), dwYV,
                                                          cv, dwZV);
@@ -1101,7 +1134,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
         final FieldVector3D<T> dc1P = new FieldVector3D<>(aOr2.multiply(eSinE.multiply(eSinE).multiply(2).add(1).subtract(eCosE)).divide(r2), position,
                                                           aOr2.multiply(-2).multiply(eSinE).multiply(oOsqrtMuA), velocity);
         final FieldVector3D<T> dc1V = new FieldVector3D<>(aOr2.multiply(-2).multiply(eSinE).multiply(oOsqrtMuA), position,
-                                                          zero.add(2).divide(mu), velocity);
+                                                          getZero().add(2).divide(mu), velocity);
         final FieldVector3D<T> dc2P = new FieldVector3D<>(aOr2.multiply(eSinE).multiply(eSinE.multiply(eSinE).subtract(e2.negate().add(1))).divide(r2.multiply(epsilon)), position,
                                                           aOr2.multiply(e2.negate().add(1).subtract(eSinE.multiply(eSinE))).multiply(oOsqrtMuA).divide(epsilon), velocity);
         final FieldVector3D<T> dc2V = new FieldVector3D<>(aOr2.multiply(e2.negate().add(1).subtract(eSinE.multiply(eSinE))).multiply(oOsqrtMuA).divide(epsilon), position,
@@ -1113,10 +1146,10 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
         final FieldVector3D<T> dexV = new FieldVector3D<>(u, dc1V,  v, dc2V, cof1, duV,  cof2, dvV);
         final FieldVector3D<T> deyP = new FieldVector3D<>(v, dc1P, u.negate(), dc2P, cof1, dvP, cof2.negate(), duP);
         final FieldVector3D<T> deyV = new FieldVector3D<>(v, dc1V, u.negate(), dc2V, cof1, dvV, cof2.negate(), duV);
-        fillHalfRow(one, dexP, jacobian[1], 0);
-        fillHalfRow(one, dexV, jacobian[1], 3);
-        fillHalfRow(one, deyP, jacobian[2], 0);
-        fillHalfRow(one, deyV, jacobian[2], 3);
+        fillHalfRow(getOne(), dexP, jacobian[1], 0);
+        fillHalfRow(getOne(), dexV, jacobian[1], 3);
+        fillHalfRow(getOne(), deyP, jacobian[2], 0);
+        fillHalfRow(getOne(), deyV, jacobian[2], 3);
 
         final T cle = u.divide(a).add(ex).subtract(eSinE.multiply(beta).multiply(ey));
         final T sle = v.divide(a).add(ey).add(eSinE.multiply(beta).multiply(ex));
@@ -1162,7 +1195,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
         final FieldSinCos<T> scAe = FastMath.sinCos(alphaE);
         final T cosAe             = scAe.cos();
         final T sinAe             = scAe.sin();
-        final T aOr               = one.divide(one.subtract(ex.multiply(cosAe)).subtract(ey.multiply(sinAe)));
+        final T aOr               = getOne().divide(getOne().subtract(ex.multiply(cosAe)).subtract(ey.multiply(sinAe)));
 
         // update longitude row
         final T[] rowEx = jacobian[1];
@@ -1200,8 +1233,8 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
         final T eSinE             = ex.multiply(sinAe).subtract(ey.multiply(cosAe));
         final T ecosE             = ex.multiply(cosAe).add(ey.multiply(sinAe));
         final T e2                = ex.multiply(ex).add(ey.multiply(ey));
-        final T epsilon           = (one.subtract(e2)).sqrt();
-        final T onePeps           = one.add(epsilon);
+        final T epsilon           = (getOne().subtract(e2)).sqrt();
+        final T onePeps           = getOne().add(epsilon);
         final T d                 = onePeps.subtract(ecosE);
         final T cT                = (d.multiply(d).add(eSinE.multiply(eSinE))).divide(2);
         final T cE                = ecosE.multiply(onePeps).subtract(e2);
@@ -1223,7 +1256,7 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final T gm,
+    public void addKeplerContribution(final PositionAngleType type, final T gm,
                                       final T[] pDot) {
         final T oMe2;
         final T ksi;
@@ -1234,13 +1267,13 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
                 pDot[5] = pDot[5].add(n);
                 break;
             case ECCENTRIC :
-                oMe2  = one.subtract(ex.multiply(ex)).subtract(ey.multiply(ey));
-                ksi   = one.add(ex.multiply(sc.cos())).add(ey.multiply(sc.sin()));
+                oMe2  = getOne().subtract(ex.multiply(ex)).subtract(ey.multiply(ey));
+                ksi   = getOne().add(ex.multiply(sc.cos())).add(ey.multiply(sc.sin()));
                 pDot[5] = pDot[5].add(n.multiply(ksi).divide(oMe2));
                 break;
             case TRUE :
-                oMe2  = one.subtract(ex.multiply(ex)).subtract(ey.multiply(ey));
-                ksi   = one.add(ex.multiply(sc.cos())).add(ey.multiply(sc.sin()));
+                oMe2  = getOne().subtract(ex.multiply(ex)).subtract(ey.multiply(ey));
+                ksi   = getOne().add(ex.multiply(sc.cos())).add(ey.multiply(sc.sin()));
                 pDot[5] = pDot[5].add(n.multiply(ksi).multiply(ksi).divide(oMe2.multiply(oMe2.sqrt())));
                 break;
             default :
@@ -1269,12 +1302,12 @@ public  class FieldCircularOrbit<T extends CalculusFieldElement<T>>
                                      i.getReal(), raan.getReal(), alphaV.getReal(),
                                      aDot.getReal(), exDot.getReal(), eyDot.getReal(),
                                      iDot.getReal(), raanDot.getReal(), alphaVDot.getReal(),
-                                     PositionAngle.TRUE, getFrame(),
+                                     PositionAngleType.TRUE, getFrame(),
                                      getDate().toAbsoluteDate(), getMu().getReal());
         } else {
             return new CircularOrbit(a.getReal(), ex.getReal(), ey.getReal(),
                                      i.getReal(), raan.getReal(), alphaV.getReal(),
-                                     PositionAngle.TRUE, getFrame(),
+                                     PositionAngleType.TRUE, getFrame(),
                                      getDate().toAbsoluteDate(), getMu().getReal());
         }
     }

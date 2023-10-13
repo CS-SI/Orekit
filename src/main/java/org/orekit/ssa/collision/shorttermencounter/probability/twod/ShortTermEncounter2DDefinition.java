@@ -19,8 +19,8 @@ package org.orekit.ssa.collision.shorttermencounter.probability.twod;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.EigenDecompositionSymmetric;
 import org.hipparchus.linear.LUDecomposition;
-import org.hipparchus.linear.OrderedEigenDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -34,7 +34,7 @@ import org.orekit.frames.encounter.EncounterLOF;
 import org.orekit.frames.encounter.EncounterLOFType;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.StateCovariance;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -70,6 +70,9 @@ public class ShortTermEncounter2DDefinition {
 
     /** Default threshold below which values are considered equal to zero. */
     private static final double DEFAULT_ZERO_THRESHOLD = 1e-15;
+
+    /** Default epsilon when checking covariance matrix symmetry. */
+    private static final double DEFAULT_SYMMETRY_EPSILON = 1e-8;
 
     /**
      * Time of closest approach.
@@ -293,7 +296,9 @@ public class ShortTermEncounter2DDefinition {
      * @return combined covariance matrix diagonalized and projected onto the collision plane
      */
     public RealMatrix computeProjectedAndDiagonalizedCombinedPositionalCovarianceMatrix() {
-        return new OrderedEigenDecomposition(computeProjectedCombinedPositionalCovarianceMatrix()).getD();
+        final RealMatrix covariance = computeProjectedCombinedPositionalCovarianceMatrix();
+        final EigenDecompositionSymmetric ed = new EigenDecompositionSymmetric(covariance, DEFAULT_SYMMETRY_EPSILON, false);
+        return ed.getD();
     }
 
     /**
@@ -541,7 +546,7 @@ public class ShortTermEncounter2DDefinition {
 
         final StateCovariance otherCovarianceInReferenceInertial = new StateCovariance(
                 otherCovarianceMatrixInReferenceInertial, tca, referenceAtTCA.getFrame(),
-                OrbitType.CARTESIAN, PositionAngle.MEAN);
+                OrbitType.CARTESIAN, PositionAngleType.MEAN);
 
         // Express other covariance in reference TNW local orbital frame
         final RealMatrix otherCovarianceMatrixInReferenceTNW = otherCovarianceInReferenceInertial.changeCovarianceFrame(
@@ -631,33 +636,46 @@ public class ShortTermEncounter2DDefinition {
         return tca;
     }
 
-    /** @return reference's orbit at time of closest approach */
+    /** Get reference's orbit at time of closest approach.
+     * @return reference's orbit at time of closest approach
+     */
     public Orbit getReferenceAtTCA() {
         return referenceAtTCA;
     }
 
-    /** @return other's orbit at time of closest approach */
+    /** Get other's orbit at time of closest approach.
+     *  @return other's orbit at time of closest approach
+     */
     public Orbit getOtherAtTCA() {
         return otherAtTCA;
     }
 
-    /** @return reference's covariance */
+    /** Get reference's covariance.
+     * @return reference's covariance
+     */
     public StateCovariance getReferenceCovariance() {
         return referenceCovariance;
     }
 
-    /** @return other's covariance */
+    /** Get other's covariance.
+     * @return other's covariance
+     */
     public StateCovariance getOtherCovariance() {
         return otherCovariance;
     }
 
-    /** @return combined radius (m) */
+    /** Get combined radius.
+     * @return combined radius (m)
+     */
     public double getCombinedRadius() {
         return combinedRadius;
     }
 
-    /** @return encounter local orbital frame */
+    /** Get encounter local orbital frame.
+     * @return encounter local orbital frame
+     */
     public EncounterLOF getEncounterFrame() {
         return encounterFrame;
     }
+
 }

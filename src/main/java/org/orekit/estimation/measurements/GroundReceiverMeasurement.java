@@ -26,10 +26,12 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.FieldTransform;
+import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -41,6 +43,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Maxime Journot
  * @author Tommy Fryer
  * @since 12.0
+ * @param <T> type of the measurement
  */
 public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurement<T>> extends AbstractMeasurement<T> {
 
@@ -429,5 +432,25 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
                                                                      transitPV,
                                                                      participants);
         }
+    }
+
+    /**
+     * Get the station position for a given frame.
+     * @param frame inertial frame for station position
+     * @return the station position in the given inertial frame
+     * @since 12.0
+     */
+    public Vector3D getGroundStationPosition(final Frame frame) {
+        return station.getBaseFrame().getPosition(getDate(), frame);
+    }
+
+    /**
+     * Get the station coordinates for a given frame.
+     * @param frame inertial frame for station position
+     * @return the station coordinates in the given inertial frame
+     * @since 12.0
+     */
+    public PVCoordinates getGroundStationCoordinates(final Frame frame) {
+        return station.getBaseFrame().getPVCoordinates(getDate(), frame);
     }
 }

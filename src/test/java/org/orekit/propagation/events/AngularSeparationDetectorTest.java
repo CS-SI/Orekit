@@ -31,7 +31,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -115,7 +115,7 @@ public class AngularSeparationDetectorTest {
             iniDate = new AbsoluteDate(2003, 5, 1, 17, 30, 0.0, TimeScalesFactory.getUTC());
             initialOrbit = new KeplerianOrbit(7e6, 1.0e-4, FastMath.toRadians(98.5),
                                               FastMath.toRadians(87.0), FastMath.toRadians(216.59976025619),
-                                              FastMath.toRadians(319.7), PositionAngle.MEAN,
+                                              FastMath.toRadians(319.7), PositionAngleType.MEAN,
                                               FramesFactory.getEME2000(), iniDate,
                                               Constants.EIGEN5C_EARTH_MU);
             propagator = new KeplerianPropagator(initialOrbit);

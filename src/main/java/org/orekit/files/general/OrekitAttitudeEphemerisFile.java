@@ -192,6 +192,7 @@ public class OrekitAttitudeEphemerisFile
         }
     }
 
+    /** Ephemeris segment. */
     public static class OrekitAttitudeEphemerisSegment
         implements AttitudeEphemerisFile.AttitudeEphemerisSegment<TimeStampedAngularCoordinates> {
 

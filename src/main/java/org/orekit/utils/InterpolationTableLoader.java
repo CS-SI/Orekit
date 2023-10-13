@@ -42,6 +42,17 @@ public class InterpolationTableLoader implements DataLoader {
     /** Values samples for the bi-variate interpolation function read from the file. */
     private double[][] fArr;
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public InterpolationTableLoader() {
+        // nothing to do
+    }
+
     /** Returns a copy of the abscissa grid for the interpolation function.
      * @return the abscissa grid for the interpolation function,
      *         or <code>null</code> if the file could not be read

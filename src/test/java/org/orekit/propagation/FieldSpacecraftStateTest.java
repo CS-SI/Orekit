@@ -48,7 +48,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
@@ -185,8 +185,8 @@ public class FieldSpacecraftStateTest {
         AbsoluteDate t_r = t_f.toAbsoluteDate();
 
 
-        KeplerianOrbit      kep_r = new KeplerianOrbit(a_r, e_r, i_r, pa_r, raan_r, m_r, PositionAngle.ECCENTRIC, FramesFactory.getEME2000(), t_r, mu);
-        FieldKeplerianOrbit<T> kep_f = new FieldKeplerianOrbit<>(a_f, e_f, i_f, pa_f, raan_f, m_f, PositionAngle.ECCENTRIC, FramesFactory.getEME2000(), t_f, zero.add(mu));
+        KeplerianOrbit      kep_r = new KeplerianOrbit(a_r, e_r, i_r, pa_r, raan_r, m_r, PositionAngleType.ECCENTRIC, FramesFactory.getEME2000(), t_r, mu);
+        FieldKeplerianOrbit<T> kep_f = new FieldKeplerianOrbit<>(a_f, e_f, i_f, pa_f, raan_f, m_f, PositionAngleType.ECCENTRIC, FramesFactory.getEME2000(), t_f, zero.add(mu));
 
         SpacecraftState ScS_r = new SpacecraftState(kep_r);
         FieldSpacecraftState<T> ScS_f = new FieldSpacecraftState<>(kep_f);
@@ -275,7 +275,7 @@ public class FieldSpacecraftStateTest {
                                                             TimeComponents.H00,
                                                             TimeScalesFactory.getUTC());
 
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngleType.TRUE,
                                                                  FramesFactory.getEME2000(), date, zero.add(mu));
 
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
@@ -333,7 +333,7 @@ public class FieldSpacecraftStateTest {
                                                             TimeComponents.H00,
                                                             TimeScalesFactory.getUTC());
 
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngleType.TRUE,
                                                                  FramesFactory.getEME2000(), date, zero.add(mu));
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
 
@@ -362,7 +362,7 @@ public class FieldSpacecraftStateTest {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new DateComponents(2004, 01, 01),
                                                             TimeComponents.H00,
                                                             TimeScalesFactory.getUTC());
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngleType.TRUE,
                                                                  FramesFactory.getEME2000(), date, zero.add(mu));
 
         FieldKeplerianOrbit<T> orbit10Shifts = orbit;
@@ -400,7 +400,7 @@ public class FieldSpacecraftStateTest {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new DateComponents(2004, 01, 01),
                                                             TimeComponents.H00,
                                                             TimeScalesFactory.getUTC());
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngleType.TRUE,
                                                                  FramesFactory.getEME2000(), date, zero.add(mu));
 
         new FieldSpacecraftState<>(orbit,
@@ -428,7 +428,7 @@ public class FieldSpacecraftStateTest {
                         TimeComponents.H00,
                         TimeScalesFactory.getUTC());
 
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngleType.TRUE,
                                                                  FramesFactory.getEME2000(), date, zero.add(mu));
 
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
@@ -471,7 +471,7 @@ public class FieldSpacecraftStateTest {
                                                             TimeComponents.H00,
                                                             TimeScalesFactory.getUTC());
 
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngleType.TRUE,
                                                                  FramesFactory.getEME2000(), date, zero.add(mu));
 
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
@@ -561,7 +561,7 @@ public class FieldSpacecraftStateTest {
                                                             TimeComponents.H00,
                                                             TimeScalesFactory.getUTC());
 
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngle.TRUE,
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(a, e, i, pa, raan, lv, PositionAngleType.TRUE,
                                                                  FramesFactory.getEME2000(), date, zero.add(mu));
 
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
@@ -958,7 +958,7 @@ public class FieldSpacecraftStateTest {
         // Build orbit
         FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<>(field, 2000, 1, 1, TimeScalesFactory.getUTC());
         FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(7.1E6), zero, zero, zero, zero, zero,
-                                         PositionAngle.TRUE, FramesFactory.getGCRF(), date0,
+                                         PositionAngleType.TRUE, FramesFactory.getGCRF(), date0,
                                          zero.add(Constants.WGS84_EARTH_MU));
 
         // Build propagator
@@ -973,6 +973,7 @@ public class FieldSpacecraftStateTest {
 
         // Create date detector and handler
         FieldAbsoluteDate<T> changeDate = date0.shiftedBy(3);
+        @SuppressWarnings("unchecked")
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, changeDate).
                                     withHandler(new FieldEventHandler<T>() {
 
@@ -1008,7 +1009,7 @@ public class FieldSpacecraftStateTest {
         // Build orbit
         FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<>(field, 2000, 1, 1, TimeScalesFactory.getUTC());
         FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(7.1E6), zero, zero, zero, zero, zero,
-                                         PositionAngle.TRUE, FramesFactory.getGCRF(), date0,
+                                         PositionAngleType.TRUE, FramesFactory.getGCRF(), date0,
                                          zero.add(Constants.WGS84_EARTH_MU));
 
         // Build propagator
@@ -1024,6 +1025,7 @@ public class FieldSpacecraftStateTest {
 
         // Create date detector and handler
         FieldAbsoluteDate<T> changeDate = date0.shiftedBy(3);
+        @SuppressWarnings("unchecked")
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, changeDate).
                                     withHandler(new FieldEventHandler<T>() {
 
@@ -1059,7 +1061,7 @@ public class FieldSpacecraftStateTest {
         // Build orbit
         FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<>(field, 2000, 1, 1, TimeScalesFactory.getUTC());
         FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(7.1E6), zero, zero, zero, zero, zero,
-                                         PositionAngle.TRUE, FramesFactory.getGCRF(), date0,
+                                         PositionAngleType.TRUE, FramesFactory.getGCRF(), date0,
                                          zero.add(Constants.WGS84_EARTH_MU));
 
         // Build propagator
@@ -1100,7 +1102,7 @@ public class FieldSpacecraftStateTest {
         // Build orbit
         FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<>(field, 2000, 1, 1, TimeScalesFactory.getUTC());
         FieldOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(7.1E6), zero, zero, zero, zero, zero,
-                                         PositionAngle.TRUE, FramesFactory.getGCRF(), date0,
+                                         PositionAngleType.TRUE, FramesFactory.getGCRF(), date0,
                                          zero.add(Constants.WGS84_EARTH_MU));
 
         // Build propagator
@@ -1151,7 +1153,7 @@ public class FieldSpacecraftStateTest {
             rDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                      TimeComponents.H00,
                                      TimeScalesFactory.getUTC());
-            rOrbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+            rOrbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                         FramesFactory.getEME2000(), rDate, mu);
             earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                          Constants.WGS84_EARTH_FLATTENING,

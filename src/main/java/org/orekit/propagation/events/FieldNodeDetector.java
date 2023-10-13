@@ -25,7 +25,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
@@ -45,6 +45,7 @@ import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
  * encountered during validation ...</p>
  * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
 public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldNodeDetector<T>, T> {
 
@@ -125,7 +126,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
                                                        keplerian.getI(),
                                                        keplerian.getPerigeeArgument(),
                                                        keplerian.getRightAscensionOfAscendingNode(),
-                                                       -keplerian.getPerigeeArgument(), PositionAngle.TRUE,
+                                                       -keplerian.getPerigeeArgument(), PositionAngleType.TRUE,
                                                        keplerian.getFrame(), keplerian.getDate(),
                                                        keplerian.getMu()).getMeanAnomaly();
 
@@ -134,7 +135,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
                                                        keplerian.getI(),
                                                        keplerian.getPerigeeArgument(),
                                                        keplerian.getRightAscensionOfAscendingNode(),
-                                                       FastMath.PI - keplerian.getPerigeeArgument(), PositionAngle.TRUE,
+                                                       FastMath.PI - keplerian.getPerigeeArgument(), PositionAngleType.TRUE,
                                                        keplerian.getFrame(), keplerian.getDate(),
                                                        keplerian.getMu()).getMeanAnomaly();
 

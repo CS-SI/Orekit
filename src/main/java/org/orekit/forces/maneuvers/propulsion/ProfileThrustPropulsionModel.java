@@ -56,7 +56,7 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
     /** Specific impulse. */
     private final double isp;
 
-    /** Name fo the maneuver. */
+    /** Name of the maneuver. */
     private final String name;
 
     /** Type of norm linking thrust vector to mass flow rate. */

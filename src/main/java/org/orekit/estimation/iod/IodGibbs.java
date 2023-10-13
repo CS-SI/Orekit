@@ -29,15 +29,17 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 /**
- * Gibbs initial orbit determination.
- * An orbit is determined from three position vectors.
+ * Gibbs position-based Initial Orbit Determination (IOD) algorithm.
  * <p>
+ * An orbit is determined from three position vectors. This method requires
+ * the vectors to be coplanar. Orekit uses a {@link IodGibbs#COPLANAR_THRESHOLD
+ * default coplanar threshold of 5°}.
+ *
  * Reference:
  *  Vallado, D., Fundamentals of Astrodynamics and Applications
- *
+ * </p>
  * @author Joris Olympio
  * @since 8.0
- *
  */
 public class IodGibbs {
 
@@ -138,14 +140,13 @@ public class IodGibbs {
 
         // compile a new middle point with position, velocity
         final PVCoordinates pv   = new PVCoordinates(r2, vlEci);
-        final AbsoluteDate  date = date2;
 
         // compute the equivalent Cartesian orbit
-        final CartesianOrbit orbit = new CartesianOrbit(pv, frame, date, mu);
+        final CartesianOrbit orbit = new CartesianOrbit(pv, frame, date2, mu);
 
         //define the reverse orbit
         final PVCoordinates pv2 = new PVCoordinates(r2, vlEci.scalarMultiply(-1));
-        final CartesianOrbit orbit2 = new CartesianOrbit(pv2, frame, date, mu);
+        final CartesianOrbit orbit2 = new CartesianOrbit(pv2, frame, date2, mu);
 
         //check which orbit is correct
         final Vector3D estP3 = orbit.shiftedBy(date3.durationFrom(date2)).

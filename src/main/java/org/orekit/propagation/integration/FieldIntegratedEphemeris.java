@@ -66,6 +66,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Mathieu Rom&eacute;ro
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
+ * @param <T> type of the field elements
  */
 public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
     extends FieldAbstractAnalyticalPropagator<T> implements FieldBoundedPropagator<T> {

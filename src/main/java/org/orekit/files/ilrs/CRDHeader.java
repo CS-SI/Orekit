@@ -108,6 +108,17 @@ public class CRDHeader extends ILRSHeader {
     /** Prediction provider (CPF provider in H1 record or TLE source). */
     private String predictionProvider;
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public CRDHeader() {
+        // nothing to do
+    }
+
     /**
      * Get the station name from official list.
      * @return the station name from official list

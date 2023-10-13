@@ -24,7 +24,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 
@@ -38,10 +38,10 @@ public class TLEPropagatorBuilderTest {
         final DataContext dataContext = Utils.setDataRoot("regular-data");
         final TLE tle = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                                 "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
-        final PositionAngle positionAngle = null;
+        final PositionAngleType positionAngleType = null;
         final double        positionScale = 1;
 
-        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, positionAngle, positionScale, dataContext,
+        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, positionAngleType, positionScale, dataContext,
                                                                       new FixedPointTleGenerationAlgorithm());
 
         // When
@@ -66,7 +66,7 @@ public class TLEPropagatorBuilderTest {
         Assertions.assertEquals(expected.getFrame(), actual.getFrame());
         Assertions.assertEquals(expected.getMu(), actual.getMu());
         Assertions.assertEquals(expected.getOrbitType(), actual.getOrbitType());
-        Assertions.assertEquals(expected.getPositionAngle(), actual.getPositionAngle());
+        Assertions.assertEquals(expected.getPositionAngleType(), actual.getPositionAngleType());
         Assertions.assertEquals(expected.getPositionScale(), actual.getPositionScale());
         Assertions.assertEquals(expected.getInitialOrbitDate(), actual.getInitialOrbitDate());
         Assertions.assertEquals(expected.getAdditionalDerivativesProviders(), actual.getAdditionalDerivativesProviders());

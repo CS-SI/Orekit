@@ -29,7 +29,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
@@ -65,18 +65,18 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
      *
      * @param referenceOrbit reference orbit from which real orbits will be built
      * @param builder first order integrator builder
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @since 8.0
-     * @see #NumericalPropagatorBuilder(Orbit, ODEIntegratorBuilder, PositionAngle,
+     * @see #NumericalPropagatorBuilder(Orbit, ODEIntegratorBuilder, PositionAngleType,
      * double, AttitudeProvider)
      */
     public NumericalPropagatorBuilder(final Orbit referenceOrbit,
                                       final ODEIntegratorBuilder builder,
-                                      final PositionAngle positionAngle,
+                                      final PositionAngleType positionAngleType,
                                       final double positionScale) {
-        this(referenceOrbit, builder, positionAngle, positionScale,
+        this(referenceOrbit, builder, positionAngleType, positionScale,
              FrameAlignedProvider.of(referenceOrbit.getFrame()));
     }
 
@@ -91,7 +91,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
      * </p>
      * @param referenceOrbit reference orbit from which real orbits will be built
      * @param builder first order integrator builder
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @param attitudeProvider attitude law.
@@ -99,10 +99,10 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
      */
     public NumericalPropagatorBuilder(final Orbit referenceOrbit,
                                       final ODEIntegratorBuilder builder,
-                                      final PositionAngle positionAngle,
+                                      final PositionAngleType positionAngleType,
                                       final double positionScale,
                                       final AttitudeProvider attitudeProvider) {
-        super(referenceOrbit, positionAngle, positionScale, true, attitudeProvider);
+        super(referenceOrbit, positionAngleType, positionScale, true, attitudeProvider);
         this.builder     = builder;
         this.forceModels = new ArrayList<ForceModel>();
         this.mass        = Propagator.DEFAULT_MASS;
@@ -115,7 +115,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         final NumericalPropagatorBuilder copyBuilder =
                         new NumericalPropagatorBuilder(createInitialOrbit(),
                                                        builder,
-                                                       getPositionAngle(),
+                                                       getPositionAngleType(),
                                                        getPositionScale(),
                                                        getAttitudeProvider());
         copyBuilder.setMass(mass);
@@ -170,9 +170,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
             }
         }
 
-        for (final ParameterDriver driver : model.getParametersDrivers()) {
-            addSupportedParameter(driver);
-        }
+        addSupportedParameters(model.getParametersDrivers());
     }
 
     /** Get the mass.
@@ -204,7 +202,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
                 builder.buildIntegrator(orbit, getOrbitType()),
                 getAttitudeProvider());
         propagator.setOrbitType(getOrbitType());
-        propagator.setPositionAngleType(getPositionAngle());
+        propagator.setPositionAngleType(getPositionAngleType());
 
         // Configure force models
         if (!hasNewtonianAttraction()) {

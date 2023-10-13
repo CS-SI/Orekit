@@ -451,7 +451,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             // partial derivatives of the current Cartesian coordinates with respect to current orbital state
             final double[][] aCY = new double[6][6];
             final Orbit currentOrbit = evaluationStates[k].getOrbit();
-            currentOrbit.getJacobianWrtParameters(builders[p].getPositionAngle(), aCY);
+            currentOrbit.getJacobianWrtParameters(builders[p].getPositionAngleType(), aCY);
             final RealMatrix dCdY = new Array2DRowRealMatrix(aCY, false);
 
             // Jacobian of the measurement with respect to current orbital state

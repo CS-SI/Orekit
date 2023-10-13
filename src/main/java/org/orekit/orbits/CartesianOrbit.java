@@ -206,7 +206,7 @@ public class CartesianOrbit extends Orbit {
     /** {@inheritDoc} */
     public double getE() {
         final double muA = getMu() * getA();
-        if (muA > 0) {
+        if (isElliptical()) {
             // elliptic or circular orbit
             final Vector3D pvP   = getPosition();
             final Vector3D pvV   = getPVCoordinates().getVelocity();
@@ -397,7 +397,7 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public CartesianOrbit shiftedBy(final double dt) {
-        final PVCoordinates shiftedPV = (getA() < 0) ? shiftPVHyperbolic(dt) : shiftPVElliptic(dt);
+        final PVCoordinates shiftedPV = isElliptical() ? shiftPVElliptic(dt) : shiftPVHyperbolic(dt);
         return new CartesianOrbit(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 
@@ -566,7 +566,7 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final double gm,
+    public void addKeplerContribution(final PositionAngleType type, final double gm,
                                       final double[] pDot) {
 
         final PVCoordinates pv = getPVCoordinates();

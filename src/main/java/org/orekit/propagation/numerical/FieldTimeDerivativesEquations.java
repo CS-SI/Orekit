@@ -34,6 +34,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
  * @author Luc Maisonobe
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
+ * @param <T> type of the field elements
  */
 public interface FieldTimeDerivativesEquations<T extends CalculusFieldElement<T>> {
 

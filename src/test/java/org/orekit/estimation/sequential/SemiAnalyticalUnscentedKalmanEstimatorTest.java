@@ -21,7 +21,7 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
@@ -110,7 +110,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
 
         // Create initial orbit and DSST propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngle positionAngle = PositionAngle.MEAN;
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -146,7 +146,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.MEAN, dYdC);
+        initialOrbit.getJacobianWrtCartesian(PositionAngleType.MEAN, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
 
         // Equinoctial initial covariance matrix
@@ -169,7 +169,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 1.0e-15;
         DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
@@ -193,7 +193,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngle positionAngle = PositionAngle.MEAN;
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -231,7 +231,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.MEAN, dYdC);
+        initialOrbit.getJacobianWrtCartesian(PositionAngleType.MEAN, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
 
         // Equinoctial initial covariance matrix
@@ -254,7 +254,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 3.9e-11;
         DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
@@ -278,7 +278,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngle positionAngle = PositionAngle.MEAN;
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -324,7 +324,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.MEAN, dYdC);
+        initialOrbit.getJacobianWrtCartesian(PositionAngleType.MEAN, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
 
         // Equinoctial initial covariance matrix
@@ -348,7 +348,7 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 1.7e-12;
         DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 

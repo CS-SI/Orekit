@@ -53,7 +53,7 @@ import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
@@ -111,7 +111,7 @@ public class FieldDSSTAtmosphericDragTest {
                                                                 zero.add(0.847841707880348),
                                                                 zero.add(0.7998014061193262),
                                                                 zero.add(3.897842092486239),
-                                                                PositionAngle.TRUE,
+                                                                PositionAngleType.TRUE,
                                                                 earthFrame,
                                                                 initDate,
                                                                 zero.add(mu));
@@ -181,7 +181,7 @@ public class FieldDSSTAtmosphericDragTest {
                                                                 zero.add(-1.002996107003202),
                                                                 zero.add(0.570979900577994),
                                                                 zero.add(2.62038786211518),
-                                                                PositionAngle.TRUE,
+                                                                PositionAngleType.TRUE,
                                                                 FramesFactory.getEME2000(),
                                                                 initDate,
                                                                 zero.add(3.986004415E14));
@@ -249,7 +249,7 @@ public class FieldDSSTAtmosphericDragTest {
                                                  0.847841707880348,
                                                  0.7998014061193262,
                                                  3.897842092486239,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  FramesFactory.getEME2000(),
                                                  initDate,
                                                  3.986004415E14);
@@ -383,7 +383,7 @@ public class FieldDSSTAtmosphericDragTest {
                                                  0.847841707880348,
                                                  0.7998014061193262,
                                                  3.897842092486239,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  FramesFactory.getEME2000(),
                                                  initDate,
                                                  3.986004415E14);
@@ -559,14 +559,14 @@ public class FieldDSSTAtmosphericDragTest {
     private double[][] stateToArray(SpacecraftState state, OrbitType orbitType) {
           double[][] array = new double[2][6];
 
-          orbitType.mapOrbitToArray(state.getOrbit(), PositionAngle.MEAN, array[0], array[1]);
+          orbitType.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, array[0], array[1]);
           return array;
       }
 
     private SpacecraftState arrayToState(double[][] array, OrbitType orbitType,
                                            Frame frame, AbsoluteDate date, double mu,
                                            Attitude attitude) {
-          EquinoctialOrbit orbit = (EquinoctialOrbit) orbitType.mapArrayToOrbit(array[0], array[1], PositionAngle.MEAN, date, mu, frame);
+          EquinoctialOrbit orbit = (EquinoctialOrbit) orbitType.mapArrayToOrbit(array[0], array[1], PositionAngleType.MEAN, date, mu, frame);
           return new SpacecraftState(orbit, attitude);
     }
 

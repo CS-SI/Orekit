@@ -33,7 +33,7 @@ import org.orekit.files.ilrs.CPF.CPFEphemeris;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -313,7 +313,7 @@ public class CPFWriterTest {
          double raan = FastMath.toRadians(261);   // right ascension of ascending node
          double lM = 0;                           // mean anomaly
 
-         Orbit orbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN,
+         Orbit orbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.MEAN,
                                                 FramesFactory.getEME2000(), date,
                                                 Constants.WGS84_EARTH_MU);
 

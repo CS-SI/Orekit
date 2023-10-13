@@ -86,13 +86,18 @@ public class TimeStampedPair<K extends TimeStamped, V extends TimeStamped> imple
         return first.getDate();
     }
 
-    /** @return first time stamped value */
+    /** Get first time stamped value.
+     * @return first time stamped value
+     */
     public K getFirst() {
         return first;
     }
 
-    /** @return second time stamped value */
+    /** Get second time stamped value.
+     * @return second time stamped value
+     */
     public V getSecond() {
         return second;
     }
+
 }

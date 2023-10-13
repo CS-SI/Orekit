@@ -44,7 +44,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -210,7 +210,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         double re = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
         Relativity relativity = new Relativity(gm);
         final CircularOrbit orbit = new CircularOrbit(
-                re + 500e3, 0, 0, FastMath.toRadians(41.2), -1, 3, PositionAngle.TRUE,
+                re + 500e3, 0, 0, FastMath.toRadians(41.2), -1, 3, PositionAngleType.TRUE,
                 frame,
                 date,
                 gm
@@ -273,7 +273,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         Frame EME = FramesFactory.getEME2000();
 
         FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
+                                                                                 PositionAngleType.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  mu);
@@ -306,7 +306,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         NP.addForceModel(forceModel);
 
         // Do the test
-        checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1005., NP, FNP,
+        checkRealFieldPropagation(FKO, PositionAngleType.MEAN, 1005., NP, FNP,
                                   1.0e-15, 5.0e-10, 3.0e-11, 3.0e-10,
                                   1, false);
     }
@@ -335,7 +335,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         Frame EME = FramesFactory.getEME2000();
 
         FieldKeplerianOrbit<Gradient> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                      PositionAngle.MEAN,
+                                                                      PositionAngleType.MEAN,
                                                                       EME,
                                                                       J2000,
                                                                       mu);
@@ -368,7 +368,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         NP.addForceModel(forceModel);
 
         // Do the test
-        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1005., NP, FNP,
+        checkRealFieldPropagationGradient(FKO, PositionAngleType.MEAN, 1005., NP, FNP,
                                   1.0e-15, 1.3e-2, 2.9e-4, 4.4e-3,
                                   1, false);
     }
@@ -395,7 +395,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         Frame EME = FramesFactory.getEME2000();
 
         FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
+                                                                                 PositionAngleType.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
@@ -449,7 +449,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         final double gm = Constants.EIGEN5C_EARTH_MU;
         Orbit orbit =
                 new KeplerianOrbit(
-                        7500e3, 0.025, FastMath.toRadians(41.2), 0, 0, 0, PositionAngle.TRUE,
+                        7500e3, 0.025, FastMath.toRadians(41.2), 0, 0, 0, PositionAngleType.TRUE,
                         frame,
                         date,
                         gm

@@ -24,6 +24,7 @@ import org.orekit.gnss.metric.messages.rtcm.RtcmMessage;
  * Base class for RTCM ephemeris messages.
  * @author Bryan Cazabonne
  * @since 11.0
+ * @param <D> type of the data
  */
 public class RtcmEphemerisMessage<D extends RtcmEphemerisData> extends RtcmMessage<D> {
 

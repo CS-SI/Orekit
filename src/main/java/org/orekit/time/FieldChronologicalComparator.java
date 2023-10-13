@@ -28,6 +28,7 @@ import java.util.Comparator;
  * @author Vincent Cucchietti
  * @see FieldAbsoluteDate
  * @see FieldTimeStamped
+ * @param <KK> type of the field elements
  */
 public class FieldChronologicalComparator<KK extends CalculusFieldElement<KK>>
         implements Comparator<FieldTimeStamped<KK>>, Serializable {

@@ -53,7 +53,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
@@ -100,7 +100,7 @@ public class DSSTEstimationTestUtils {
         context.gravity = GravityFieldFactory.getUnnormalizedProvider(20, 20);
 
         Orbit orbit = new KeplerianOrbit(15000000.0, 0.125, 1.25,
-                                         0.250, 1.375, 0.0625, PositionAngle.MEAN,
+                                         0.250, 1.375, 0.0625, PositionAngleType.MEAN,
                                          FramesFactory.getEME2000(),
                                          new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, context.utc),
                                          context.gravity.getMu());
@@ -226,7 +226,7 @@ public class DSSTEstimationTestUtils {
         // override orbital parameters
         double[] orbitArray = new double[6];
         OrbitType.EQUINOCTIAL.mapOrbitToArray(initialOrbit,
-                                              PositionAngle.MEAN,
+                                              PositionAngleType.MEAN,
                                               orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
             // here orbital paramaters drivers have only 1 estimated values on the all time period for orbit determination
@@ -341,12 +341,12 @@ public class DSSTEstimationTestUtils {
      */
     public static void checkKalmanFit(final DSSTContext context, final SemiAnalyticalKalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
-                                      final Orbit refOrbit, final PositionAngle positionAngle,
+                                      final Orbit refOrbit, final PositionAngleType positionAngleType,
                                       final double expectedDeltaPos, final double posEps,
                                       final double expectedDeltaVel, final double velEps) {
         checkKalmanFit(context, kalman, measurements,
                        new Orbit[] { refOrbit },
-                       new PositionAngle[] { positionAngle },
+                       new PositionAngleType[] {positionAngleType},
                        new double[] { expectedDeltaPos }, new double[] { posEps },
                        new double[] { expectedDeltaVel }, new double[] { velEps });
     }
@@ -364,7 +364,7 @@ public class DSSTEstimationTestUtils {
      */
     public static void checkKalmanFit(final DSSTContext context, final SemiAnalyticalKalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
-                                      final Orbit[] refOrbit, final PositionAngle[] positionAngle,
+                                      final Orbit[] refOrbit, final PositionAngleType[] positionAngleType,
                                       final double[] expectedDeltaPos, final double[] posEps,
                                       final double[] expectedDeltaVel, final double []velEps) {
 
@@ -386,7 +386,7 @@ public class DSSTEstimationTestUtils {
             // Convert the orbital part to Cartesian formalism
             // Assuming all 6 orbital parameters are estimated by the filter
             final double[][] dCdY = new double[6][6];
-            estimatedOrbit.getJacobianWrtParameters(positionAngle[k], dCdY);
+            estimatedOrbit.getJacobianWrtParameters(positionAngleType[k], dCdY);
             final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
             final RealMatrix estimatedCartesianP =
                             Jacobian.
@@ -421,12 +421,12 @@ public class DSSTEstimationTestUtils {
      */
     public static void checkKalmanFit(final DSSTContext context, final SemiAnalyticalUnscentedKalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
-                                      final Orbit refOrbit, final PositionAngle positionAngle,
+                                      final Orbit refOrbit, final PositionAngleType positionAngleType,
                                       final double expectedDeltaPos, final double posEps,
                                       final double expectedDeltaVel, final double velEps) {
         checkKalmanFit(context, kalman, measurements,
                 new Orbit[] { refOrbit },
-                new PositionAngle[] { positionAngle },
+                new PositionAngleType[] {positionAngleType},
                 new double[] { expectedDeltaPos }, new double[] { posEps },
                 new double[] { expectedDeltaVel }, new double[] { velEps });
         }
@@ -443,7 +443,7 @@ public class DSSTEstimationTestUtils {
      */
     public static void checkKalmanFit(final DSSTContext context, final SemiAnalyticalUnscentedKalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
-                                      final Orbit[] refOrbit, final PositionAngle[] positionAngle,
+                                      final Orbit[] refOrbit, final PositionAngleType[] positionAngleType,
                                       final double[] expectedDeltaPos, final double[] posEps,
                                       final double[] expectedDeltaVel, final double []velEps) {
 
@@ -468,7 +468,7 @@ public class DSSTEstimationTestUtils {
             // Convert the orbital part to Cartesian formalism
             // Assuming all 6 orbital parameters are estimated by the filter
             final double[][] dCdY = new double[6][6];
-            estimatedOrbit.getJacobianWrtParameters(positionAngle[k], dCdY);
+            estimatedOrbit.getJacobianWrtParameters(positionAngleType[k], dCdY);
             final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
             final RealMatrix estimatedCartesianP = 
                             Jacobian.

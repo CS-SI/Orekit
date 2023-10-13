@@ -47,8 +47,11 @@ public class TimeStampedDouble implements TimeStamped {
         return date;
     }
 
-    /** @return value */
+    /** Get value.
+     * @return value
+     */
     public double getValue() {
         return value;
     }
+
 }

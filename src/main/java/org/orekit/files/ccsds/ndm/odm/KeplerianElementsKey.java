@@ -20,7 +20,7 @@ import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.utils.units.Unit;
 
 
@@ -63,7 +63,7 @@ public enum KeplerianElementsKey {
                                  select(token.getUnits(), Unit.DEGREE).
                                  toSI(token.getContentAsDouble());
             container.setAnomaly(angle);
-            container.setAnomalyType(PositionAngle.TRUE);
+            container.setAnomalyType(PositionAngleType.TRUE);
         }
         return true;
     }),
@@ -76,7 +76,7 @@ public enum KeplerianElementsKey {
                                  select(token.getUnits(), Unit.DEGREE).
                                  toSI(token.getContentAsDouble());
             container.setAnomaly(angle);
-            container.setAnomalyType(PositionAngle.MEAN);
+            container.setAnomalyType(PositionAngleType.MEAN);
         }
         return true;
     }),

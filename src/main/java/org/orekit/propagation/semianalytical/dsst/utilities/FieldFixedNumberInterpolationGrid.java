@@ -27,6 +27,7 @@ import org.hipparchus.util.MathArrays;
  * meaning that for short steps, the grid will be dense,
  * while for long steps the points will be far away one from each other
  * </p>
+ * @param <T> type of the field elements
  */
 public class FieldFixedNumberInterpolationGrid<T extends CalculusFieldElement<T>> implements FieldInterpolationGrid<T> {
 

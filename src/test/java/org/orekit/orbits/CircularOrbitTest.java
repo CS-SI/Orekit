@@ -71,7 +71,7 @@ public class CircularOrbitTest {
         // elliptic orbit
         CircularOrbit circ =
             new CircularOrbit(42166712.0, 0.5, -0.5, i, raan,
-                                   5.300 - raan, PositionAngle.MEAN,
+                                   5.300 - raan, PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
         Vector3D pos = circ.getPosition();
         Vector3D vit = circ.getPVCoordinates().getVelocity();
@@ -99,7 +99,7 @@ public class CircularOrbitTest {
         // circular orbit
         EquinoctialOrbit circCir =
             new EquinoctialOrbit(42166712.0, 0.1e-10, -0.1e-10, i, raan,
-                                      5.300 - raan, PositionAngle.MEAN,
+                                      5.300 - raan, PositionAngleType.MEAN,
                                       FramesFactory.getEME2000(), date, mu);
         Vector3D posCir = circCir.getPosition();
         Vector3D vitCir = circCir.getPVCoordinates().getVelocity();
@@ -132,7 +132,7 @@ public class CircularOrbitTest {
 
         CircularOrbit circ=
             new CircularOrbit(42166712.0, ex, ey, i, raan,
-                                   5.300 - raan, PositionAngle.MEAN,
+                                   5.300 - raan, PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
         Vector3D pos = circ.getPosition();
         Vector3D vel = circ.getPVCoordinates().getVelocity();
@@ -168,7 +168,7 @@ public class CircularOrbitTest {
 
         CircularOrbit circ=
             new CircularOrbit(42166712.0, ex, ey, i, raan,
-                                   5.300 - raan, PositionAngle.MEAN,
+                                   5.300 - raan, PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
         KeplerianOrbit kep = new KeplerianOrbit(circ);
 
@@ -192,7 +192,7 @@ public class CircularOrbitTest {
     public void testHyperbolic1() {
         try {
             new CircularOrbit(42166712.0, 0.9, 0.5, 0.01, -0.02, 5.300,
-                              PositionAngle.MEAN,  FramesFactory.getEME2000(), date, mu);
+                              PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, mu);
         } catch (OrekitIllegalArgumentException oe) {
             Assertions.assertEquals(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, oe.getSpecifier());
         }
@@ -201,7 +201,7 @@ public class CircularOrbitTest {
     @Test
     public void testHyperbolic2() {
         Orbit orbit = new KeplerianOrbit(42166712.0, 0.9, 0.5, 0.01, -0.02, 5.300,
-                                         PositionAngle.MEAN,  FramesFactory.getEME2000(), date, mu);
+                                         PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, mu);
         try {
             new CircularOrbit(orbit.getPVCoordinates(), orbit.getFrame(), orbit.getMu());
         } catch (OrekitIllegalArgumentException oe) {
@@ -233,28 +233,28 @@ public class CircularOrbitTest {
 
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
-                                   p.getAlphaV(), lv - raan, PositionAngle.TRUE, p.getFrame(), date, mu);
+                                   p.getAlphaV(), lv - raan, PositionAngleType.TRUE, p.getFrame(), date, mu);
         Assertions.assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * FastMath.abs(lv));
         Assertions.assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * FastMath.abs(lE));
         Assertions.assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * FastMath.abs(lM));
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
-                                   p.getAlphaV(), 0, PositionAngle.TRUE, p.getFrame(), date, mu);
+                                   p.getAlphaV(), 0, PositionAngleType.TRUE, p.getFrame(), date, mu);
 
 
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
-                                   p.getAlphaV(), lE - raan, PositionAngle.ECCENTRIC, p.getFrame(), date, mu);
+                                   p.getAlphaV(), lE - raan, PositionAngleType.ECCENTRIC, p.getFrame(), date, mu);
         Assertions.assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * FastMath.abs(lv));
         Assertions.assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * FastMath.abs(lE));
         Assertions.assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * FastMath.abs(lM));
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
-                                   p.getAlphaV(), 0, PositionAngle.TRUE, p.getFrame(), date, mu);
+                                   p.getAlphaV(), 0, PositionAngleType.TRUE, p.getFrame(), date, mu);
 
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
-                                   p.getAlphaV(), lM - raan, PositionAngle.MEAN, p.getFrame(), date, mu);
+                                   p.getAlphaV(), lM - raan, PositionAngleType.MEAN, p.getFrame(), date, mu);
         Assertions.assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * FastMath.abs(lv));
         Assertions.assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * FastMath.abs(lE));
         Assertions.assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * FastMath.abs(lM));
@@ -272,7 +272,7 @@ public class CircularOrbitTest {
 
         // circular orbit
         p = new CircularOrbit(p.getA() , 0, 0, p.getRightAscensionOfAscendingNode(),
-                                   p.getAlphaV(), p.getAlphaV(), PositionAngle.TRUE, p.getFrame(), date, mu);
+                                   p.getAlphaV(), p.getAlphaV(), PositionAngleType.TRUE, p.getFrame(), date, mu);
 
         double lv = 1.1;
         double lE = lv;
@@ -280,28 +280,28 @@ public class CircularOrbitTest {
 
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
-                                   p.getAlphaV(), lv - raan, PositionAngle.TRUE, p.getFrame(), date, mu);
+                                   p.getAlphaV(), lv - raan, PositionAngleType.TRUE, p.getFrame(), date, mu);
         Assertions.assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * FastMath.abs(lv));
         Assertions.assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * FastMath.abs(lE));
         Assertions.assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * FastMath.abs(lM));
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
-                                   p.getAlphaV(), 0, PositionAngle.TRUE, p.getFrame(), date, mu);
+                                   p.getAlphaV(), 0, PositionAngleType.TRUE, p.getFrame(), date, mu);
 
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
-                                   p.getAlphaV(), lE - raan, PositionAngle.ECCENTRIC, p.getFrame(), date, mu);
+                                   p.getAlphaV(), lE - raan, PositionAngleType.ECCENTRIC, p.getFrame(), date, mu);
 
         Assertions.assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * FastMath.abs(lv));
         Assertions.assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * FastMath.abs(lE));
         Assertions.assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * FastMath.abs(lM));
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
-                                   p.getAlphaV(), 0, PositionAngle.TRUE, p.getFrame(), date, mu);
+                                   p.getAlphaV(), 0, PositionAngleType.TRUE, p.getFrame(), date, mu);
 
         p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(),
                                    p.getRightAscensionOfAscendingNode(),
-                                   p.getAlphaV(), lM - raan, PositionAngle.MEAN, p.getFrame(), date, mu);
+                                   p.getAlphaV(), lM - raan, PositionAngleType.MEAN, p.getFrame(), date, mu);
         Assertions.assertEquals(p.getAlphaV() + raan, lv, Utils.epsilonAngle * FastMath.abs(lv));
         Assertions.assertEquals(p.getAlphaE() + raan, lE, Utils.epsilonAngle * FastMath.abs(lE));
         Assertions.assertEquals(p.getAlphaM() + raan, lM, Utils.epsilonAngle * FastMath.abs(lM));
@@ -318,7 +318,7 @@ public class CircularOrbitTest {
         double raan = FastMath.atan2(hy, hx);
         CircularOrbit p =
             new CircularOrbit(42166712.0, 0.5, -0.5, i, raan,
-                                   0.67 - raan, PositionAngle.TRUE,
+                                   0.67 - raan, PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
         double ex = p.getEquinoctialEx();
@@ -375,7 +375,7 @@ public class CircularOrbitTest {
         double raan = FastMath.atan2(hy, hx);
         CircularOrbit pCirEqua =
             new CircularOrbit(42166712.0, 0.1e-8, 0.1e-8, i, raan,
-                                   0.67 - raan, PositionAngle.TRUE,
+                                   0.67 - raan, PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
         double ex = pCirEqua.getEquinoctialEx();
@@ -406,7 +406,7 @@ public class CircularOrbitTest {
         double raan = FastMath.atan2(hy, hx);
         CircularOrbit p =
             new CircularOrbit(42166712.0, 0.5, -0.5, i, raan,
-                                   0.67 - raan, PositionAngle.TRUE,
+                                   0.67 - raan, PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
         Vector3D position = p.getPosition();
@@ -419,7 +419,7 @@ public class CircularOrbitTest {
         for (double alphaV = 0; alphaV <= 2 * FastMath.PI; alphaV += 2 * FastMath.PI/100.) {
             p = new CircularOrbit(p.getA() , p.getCircularEx(), p.getCircularEy(), p.getI(),
                                        p.getRightAscensionOfAscendingNode(),
-                                       alphaV, PositionAngle.TRUE, p.getFrame(), date, mu);
+                                       alphaV, PositionAngleType.TRUE, p.getFrame(), date, mu);
             position = p.getPosition();
             // test if the norm of the position is in the range [perigee radius, apogee radius]
             // Warning: these tests are without absolute value by choice
@@ -450,7 +450,7 @@ public class CircularOrbitTest {
         double raan = FastMath.atan2(hy, hx);
         CircularOrbit pCirEqua =
             new CircularOrbit(42166712.0, 0.1e-8, 0.1e-8, i, raan,
-                                   0.67 - raan, PositionAngle.TRUE,
+                                   0.67 - raan, PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
         Vector3D position = pCirEqua.getPosition();
@@ -465,7 +465,7 @@ public class CircularOrbitTest {
         for (double alphaV = 0; alphaV <= 2 * FastMath.PI; alphaV += 2 * FastMath.PI/100.) {
             pCirEqua = new CircularOrbit(pCirEqua.getA() , pCirEqua.getCircularEx(), pCirEqua.getCircularEy(), pCirEqua.getI(),
                                               pCirEqua.getRightAscensionOfAscendingNode(),
-                                              alphaV, PositionAngle.TRUE, pCirEqua.getFrame(), date, mu);
+                                              alphaV, PositionAngleType.TRUE, pCirEqua.getFrame(), date, mu);
             position = pCirEqua.getPosition();
 
             // test if the norm pf the position is in the range [perigee radius, apogee radius]
@@ -541,7 +541,7 @@ public class CircularOrbitTest {
         AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
         CircularOrbit orbCir = new CircularOrbit(7000000.0, 0.01, -0.02, 1.2, 2.1,
-                                                 0.7, PositionAngle.MEAN,
+                                                 0.7, PositionAngleType.MEAN,
                                                  FramesFactory.getEME2000(), dateTca, mu);
 
         // the following reference values have been computed using the free software
@@ -604,7 +604,7 @@ public class CircularOrbitTest {
         Assertions.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm(), 2.0e-16 * vRef.getNorm());
 
         double[][] jacobian = new double[6][6];
-        orbCir.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+        orbCir.getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
 
         for (int i = 0; i < jacobian.length; i++) {
             double[] row    = jacobian[i];
@@ -622,10 +622,10 @@ public class CircularOrbitTest {
         AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
         CircularOrbit orbCir = new CircularOrbit(7000000.0, 0.01, -0.02, 1.2, 2.1,
-                                                 0.7, PositionAngle.MEAN,
+                                                 0.7, PositionAngleType.MEAN,
                                                  FramesFactory.getEME2000(), dateTca, mu);
 
-        for (PositionAngle type : PositionAngle.values()) {
+        for (PositionAngleType type : PositionAngleType.values()) {
             double hP = 2.0;
             double[][] finiteDiffJacobian = finiteDifferencesJacobian(type, orbCir, hP);
             double[][] jacobian = new double[6][6];
@@ -661,7 +661,7 @@ public class CircularOrbitTest {
 
     }
 
-    private double[][] finiteDifferencesJacobian(PositionAngle type, CircularOrbit orbit, double hP)
+    private double[][] finiteDifferencesJacobian(PositionAngleType type, CircularOrbit orbit, double hP)
         {
         double[][] jacobian = new double[6][6];
         for (int i = 0; i < 6; ++i) {
@@ -670,7 +670,7 @@ public class CircularOrbitTest {
         return jacobian;
     }
 
-    private void fillColumn(PositionAngle type, int i, CircularOrbit orbit, double hP, double[][] jacobian) {
+    private void fillColumn(PositionAngleType type, int i, CircularOrbit orbit, double hP, double[][] jacobian) {
 
         // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
         // we use this to compute a velocity step size from the position step size
@@ -850,7 +850,7 @@ public class CircularOrbitTest {
                                                 original.getADot(), original.getCircularExDot(), original.getCircularEyDot(),
                                                 original.getIDot(), original.getRightAscensionOfAscendingNodeDot(),
                                                 original.getAlphaVDot(),
-                                                PositionAngle.TRUE, original.getFrame(),
+                                                PositionAngleType.TRUE, original.getFrame(),
                                                 original.getDate(), original.getMu());
         Assertions.assertEquals(42255170.003, orbit.getA(), 1.0e-3);
 
@@ -938,14 +938,14 @@ public class CircularOrbitTest {
         Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlphaM()),
                             orbit.getAlphaMDot(),
                             3.7e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlpha(PositionAngle.TRUE)),
-                            orbit.getAlphaDot(PositionAngle.TRUE),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlpha(PositionAngleType.TRUE)),
+                            orbit.getAlphaDot(PositionAngleType.TRUE),
                             4.3e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlpha(PositionAngle.ECCENTRIC)),
-                            orbit.getAlphaDot(PositionAngle.ECCENTRIC),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlpha(PositionAngleType.ECCENTRIC)),
+                            orbit.getAlphaDot(PositionAngleType.ECCENTRIC),
                             1.2e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlpha(PositionAngle.MEAN)),
-                            orbit.getAlphaDot(PositionAngle.MEAN),
+        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAlpha(PositionAngleType.MEAN)),
+                            orbit.getAlphaDot(PositionAngleType.MEAN),
                             3.7e-15);
 
     }
@@ -973,7 +973,7 @@ public class CircularOrbitTest {
         final double mu   = Constants.EIGEN5C_EARTH_MU;
         final CircularOrbit orbit = new CircularOrbit(pv, frame, mu);
 
-        for (PositionAngle type : PositionAngle.values()) {
+        for (PositionAngleType type : PositionAngleType.values()) {
             final CircularOrbit rebuilt = new CircularOrbit(orbit.getA(),
                                                             orbit.getCircularEx(),
                                                             orbit.getCircularEy(),
@@ -999,7 +999,7 @@ public class CircularOrbitTest {
             MatcherAssert.assertThat(rebuilt.getEDot(),                             relativelyCloseTo(orbit.getEDot(),                             1));
             MatcherAssert.assertThat(rebuilt.getIDot(),                             relativelyCloseTo(orbit.getIDot(),                             1));
             MatcherAssert.assertThat(rebuilt.getRightAscensionOfAscendingNodeDot(), relativelyCloseTo(orbit.getRightAscensionOfAscendingNodeDot(), 1));
-            for (PositionAngle type2 : PositionAngle.values()) {
+            for (PositionAngleType type2 : PositionAngleType.values()) {
                 MatcherAssert.assertThat(rebuilt.getAlpha(type2),    relativelyCloseTo(orbit.getAlpha(type2),    1));
                 MatcherAssert.assertThat(rebuilt.getAlphaDot(type2), relativelyCloseTo(orbit.getAlphaDot(type2), 1));
             }
@@ -1104,11 +1104,11 @@ public class CircularOrbitTest {
     public void testNormalize() {
         CircularOrbit withoutDerivatives =
                         new CircularOrbit(42166712.0, 0.005, -0.025, 1.6,
-                                          1.25, 0.4, PositionAngle.MEAN,
+                                          1.25, 0.4, PositionAngleType.MEAN,
                                           FramesFactory.getEME2000(), date, mu);
         CircularOrbit ref =
                         new CircularOrbit(24000000.0, -0.012, 0.01, 0.2,
-                                          -6.28, 6.28, PositionAngle.MEAN,
+                                          -6.28, 6.28, PositionAngleType.MEAN,
                                           FramesFactory.getEME2000(), date, mu);
 
         CircularOrbit normalized1 = (CircularOrbit) OrbitType.CIRCULAR.normalize(withoutDerivatives, ref);
@@ -1127,10 +1127,10 @@ public class CircularOrbitTest {
         Assertions.assertTrue(Double.isNaN(normalized1.getAlphaVDot()));
 
         double[] p = new double[6];
-        OrbitType.CIRCULAR.mapOrbitToArray(withoutDerivatives, PositionAngle.TRUE, p, null);
+        OrbitType.CIRCULAR.mapOrbitToArray(withoutDerivatives, PositionAngleType.TRUE, p, null);
         CircularOrbit withDerivatives = (CircularOrbit) OrbitType.CIRCULAR.mapArrayToOrbit(p,
                                                                                            new double[] { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 },
-                                                                                           PositionAngle.TRUE,
+                                                                                           PositionAngleType.TRUE,
                                                                                            withoutDerivatives.getDate(),
                                                                                            withoutDerivatives.getMu(),
                                                                                            withoutDerivatives.getFrame());

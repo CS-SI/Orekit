@@ -69,6 +69,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Thomas Paulet (field translation)
  * @since 11.0
  * @see FieldTLE
+ * @param <T> type of the field elements
  */
 public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 

@@ -19,7 +19,6 @@ package org.orekit.propagation.conversion;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -29,7 +28,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -114,7 +113,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
                                  final PropagationType propagationType,
                                  final PropagationType stateType,
                                  final AttitudeProvider attitudeProvider) {
-        super(referenceOrbit, PositionAngle.MEAN, positionScale, true, attitudeProvider);
+        super(referenceOrbit, PositionAngleType.MEAN, positionScale, true, attitudeProvider);
         this.builder           = builder;
         this.forceModels       = new ArrayList<DSSTForceModel>();
         this.mass              = Propagator.DEFAULT_MASS;
@@ -212,9 +211,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
             }
         }
 
-        for (final ParameterDriver driver : model.getParametersDrivers()) {
-            addSupportedParameter(driver);
-        }
+        addSupportedParameters(model.getParametersDrivers());
     }
 
     /** Reset the orbit in the propagator builder.

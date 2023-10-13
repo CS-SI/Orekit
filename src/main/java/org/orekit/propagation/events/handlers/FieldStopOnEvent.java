@@ -32,6 +32,17 @@ import org.orekit.propagation.events.FieldEventDetector;
  */
 public class FieldStopOnEvent <T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public FieldStopOnEvent() {
+        // nothing to do
+    }
+
     /**
      * Specific implementation of the eventOccurred interface.
      *

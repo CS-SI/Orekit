@@ -202,9 +202,22 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
      */
     public static class InvalidPVProvider implements PVCoordinatesProvider {
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public InvalidPVProvider() {
+            // nothing to do
+        }
+
         @Override
         public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
             throw new IllegalStateException();
         }
+
     }
+
 }

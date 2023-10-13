@@ -41,6 +41,17 @@ public class SsrHeader {
     /** SSR Solution ID. */
     private int ssrSolutionId;
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public SsrHeader() {
+        // nothing to do
+    }
+
     /**
      * Get the SSR Epoch Time 1s.
      * <p>

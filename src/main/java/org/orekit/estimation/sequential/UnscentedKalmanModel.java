@@ -34,7 +34,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
@@ -91,7 +91,7 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
     private final int[][] covarianceIndirection;
 
     /** Position angle types used during orbit determination. */
-    private final PositionAngle[] angleTypes;
+    private final PositionAngleType[] angleTypes;
 
     /** Orbit types used during orbit determination. */
     private final OrbitType[] orbitTypes;
@@ -209,10 +209,10 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         }
 
         // set angle and orbit types
-        angleTypes = new PositionAngle[builders.size()];
+        angleTypes = new PositionAngleType[builders.size()];
         orbitTypes = new OrbitType[builders.size()];
         for (int k = 0; k < builders.size(); k++) {
-            angleTypes[k] = builders.get(k).getPositionAngle();
+            angleTypes[k] = builders.get(k).getPositionAngleType();
             orbitTypes[k] = builders.get(k).getOrbitType();
         }
 

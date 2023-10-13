@@ -38,7 +38,7 @@ import org.orekit.frames.encounter.EncounterLOF;
 import org.orekit.frames.encounter.EncounterLOFType;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldStateCovariance;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -69,6 +69,7 @@ import org.orekit.utils.FieldPVCoordinates;
  *
  * @author Vincent Cucchietti
  * @since 12.0
+ * @param <T> type of the field elements
  */
 public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<T>> {
 
@@ -577,7 +578,9 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
                                                          .getEntry(0, 0);
     }
 
-    /** @return new encounter instance */
+    /** Get new encounter instance.
+     * @return new encounter instance
+     */
     public ShortTermEncounter2DDefinition toEncounter() {
         return new ShortTermEncounter2DDefinition(referenceAtTCA.toOrbit(), referenceCovariance.toStateCovariance(),
                                                   otherAtTCA.toOrbit(), otherCovariance.toStateCovariance(),
@@ -603,7 +606,7 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
 
         final FieldStateCovariance<T> otherCovarianceInReferenceInertial = new FieldStateCovariance<>(
                 otherCovarianceMatrixInReferenceInertial, tca, referenceAtTCA.getFrame(),
-                OrbitType.CARTESIAN, PositionAngle.MEAN);
+                OrbitType.CARTESIAN, PositionAngleType.MEAN);
 
         // Express other covariance in reference TNW local orbital frame
         final FieldMatrix<T> otherCovarianceMatrixInReferenceTNW = otherCovarianceInReferenceInertial.changeCovarianceFrame(
@@ -697,33 +700,46 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
         return tca;
     }
 
-    /** @return reference's orbit at time of closest approach */
+    /** Get reference's orbit at time of closest approach.
+     * @return reference's orbit at time of closest approach
+     */
     public FieldOrbit<T> getReferenceAtTCA() {
         return referenceAtTCA;
     }
 
-    /** @return other's orbit at time of closest approach */
+    /** Get other's orbit at time of closest approach.
+     *  @return other's orbit at time of closest approach
+     */
     public FieldOrbit<T> getOtherAtTCA() {
         return otherAtTCA;
     }
 
-    /** @return reference's covariance */
+    /** Get reference's covariance.
+     * @return reference's covariance
+     */
     public FieldStateCovariance<T> getReferenceCovariance() {
         return referenceCovariance;
     }
 
-    /** @return other's covariance */
+    /** Get other's covariance.
+     * @return other's covariance
+     */
     public FieldStateCovariance<T> getOtherCovariance() {
         return otherCovariance;
     }
 
-    /** @return combined radius (m) */
+    /** Get combined radius.
+     * @return combined radius (m)
+     */
     public T getCombinedRadius() {
         return combinedRadius;
     }
 
-    /** @return encounter local orbital frame */
+    /** Get encounter local orbital frame.
+     * @return encounter local orbital frame
+     */
     public EncounterLOF getEncounterFrame() {
         return encounterFrame;
     }
+
 }

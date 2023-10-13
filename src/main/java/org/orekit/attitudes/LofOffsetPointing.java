@@ -24,6 +24,8 @@ import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -53,7 +55,7 @@ import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
  * <p>
  * The attitude pointing law is defined by an attitude provider and
  * the satellite axis vector chosen for pointing.
- * <p>
+ * </p>
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public class LofOffsetPointing extends GroundPointing {
@@ -92,11 +94,26 @@ public class LofOffsetPointing extends GroundPointing {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                        final FieldAbsoluteDate<T> date, final Frame frame) {
+                                                                            final FieldAbsoluteDate<T> date, final Frame frame) {
         return attitudeLaw.getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
+    @Override
+    public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv,
+                                        final AbsoluteDate date, final Frame frame) {
+        return attitudeLaw.getAttitudeRotation(pvProv, date, frame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                    final FieldAbsoluteDate<T> date, final Frame frame) {
+        return attitudeLaw.getAttitudeRotation(pvProv, date, frame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
                                                 final AbsoluteDate date, final Frame frame) {
 
@@ -116,7 +133,7 @@ public class LofOffsetPointing extends GroundPointing {
                             pvProv.getPosition(shifted, frame).negate()),
                     StaticTransform.of(
                             shifted,
-                            attitudeLaw.getAttitude(pvProv, shifted, frame).getRotation()));
+                            attitudeLaw.getAttitudeRotation(pvProv, shifted, frame)));
 
             // transform from specified reference frame to body frame
             final StaticTransform refToBody;
@@ -144,9 +161,10 @@ public class LofOffsetPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                                        final FieldAbsoluteDate<T> date,
-                                                                                        final Frame frame) {
+                                                                                            final FieldAbsoluteDate<T> date,
+                                                                                            final Frame frame) {
 
         // sample intersection points in current date neighborhood
         final double h  = 0.1;
@@ -164,7 +182,7 @@ public class LofOffsetPointing extends GroundPointing {
                             pvProv.getPVCoordinates(shifted, frame).getPosition().negate()),
                     FieldStaticTransform.of(
                             shifted,
-                            attitudeLaw.getAttitude(pvProv, shifted, frame).getRotation()));
+                            attitudeLaw.getAttitudeRotation(pvProv, shifted, frame)));
 
             // transform from specified reference frame to body frame
             final FieldStaticTransform<T> refToBody;

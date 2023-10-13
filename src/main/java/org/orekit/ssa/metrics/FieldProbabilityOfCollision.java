@@ -32,6 +32,7 @@ import org.orekit.ssa.collision.shorttermencounter.probability.twod.Laas2015;
  *
  * @author Vincent Cucchietti
  * @since 12.0
+ * @param <T> type of the field elements
  */
 public class FieldProbabilityOfCollision<T extends CalculusFieldElement<T>> {
 
@@ -115,28 +116,39 @@ public class FieldProbabilityOfCollision<T extends CalculusFieldElement<T>> {
         this.isMaxProbability                 = isMaxProbability;
     }
 
-    /** @return value of the probability of collision */
+    /** Get value of the probability of collision.
+     * @return value of the probability of collision
+     */
     public T getValue() {
         return value;
     }
 
-    /** @return lower limit of the probability of collision value, 0 by default */
+    /** Get lower limit of the probability of collision value.
+     * @return lower limit of the probability of collision value, 0 by default
+     */
     public T getLowerLimit() {
         return lowerLimit;
     }
 
-    /** @return upper limit of the probability of collision value, 0 by default */
+    /** Get upper limit of the probability of collision value.
+     * @return upper limit of the probability of collision value, 0 by default
+     */
     public T getUpperLimit() {
         return upperLimit;
     }
 
-    /** @return name of the probability computing method with which this probability was computed */
+    /** Get name of the probability computing method with which this probability was computed.
+     * @return name of the probability computing method with which this probability was computed
+     */
     public String getProbabilityOfCollisionMethodName() {
         return probabilityOfCollisionMethodName;
     }
 
-    /** @return flag that defines if this probability of collision can be considered a maximum probability of collision */
+    /** Get flag that defines if this probability of collision can be considered a maximum probability of collision.
+     * @return flag that defines if this probability of collision can be considered a maximum probability of collision
+     */
     public boolean isMaxProbability() {
         return isMaxProbability;
     }
+
 }

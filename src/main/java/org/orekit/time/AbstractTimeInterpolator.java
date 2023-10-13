@@ -24,7 +24,6 @@ import org.orekit.utils.ImmutableTimeStampedCache;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,13 +42,11 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
     /** Default number of interpolation points. */
     public static final int DEFAULT_INTERPOLATION_POINTS = 2;
 
-    // CHECKSTYLE: stop VisibilityModifier check
     /** The extrapolation threshold beyond which the propagation will fail. */
-    protected final double extrapolationThreshold;
+    private final double extrapolationThreshold;
 
     /** Neighbor size. */
-    protected final int interpolationPoints;
-    // CHECKSTYLE: resume VisibilityModifier check
+    private final int interpolationPoints;
 
     /**
      * Constructor.
@@ -112,19 +109,15 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
     /**
      * Add all lowest level sub interpolators to the sub interpolator list.
      *
-     * @param optionalSubInterpolator optional sub interpolator to add
+     * @param subInterpolator optional sub interpolator to add
      * @param subInterpolators list of sub interpolators
      */
-    protected void addOptionalSubInterpolatorIfDefined(
-            final Optional<? extends TimeInterpolator<? extends TimeStamped>> optionalSubInterpolator,
-            final List<TimeInterpolator<? extends TimeStamped>> subInterpolators) {
-
+    protected void addOptionalSubInterpolatorIfDefined(final TimeInterpolator<? extends TimeStamped> subInterpolator,
+                                                       final List<TimeInterpolator<? extends TimeStamped>> subInterpolators) {
         // Add all lowest level sub interpolators
-        if (optionalSubInterpolator.isPresent()) {
-            final TimeInterpolator<? extends TimeStamped> subInterpolator = optionalSubInterpolator.get();
+        if (subInterpolator != null) {
             subInterpolators.addAll(subInterpolator.getSubInterpolators());
         }
-
     }
 
     /**
@@ -157,7 +150,7 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
      * <p>
      * It makes the interpolator thread safe.
      */
-    protected class InterpolationData {
+    public class InterpolationData {
 
         /** Interpolation date. */
         private final AbsoluteDate interpolationDate;
@@ -175,28 +168,23 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
          * @param sample time stamped sample
          */
         protected InterpolationData(final AbsoluteDate interpolationDate, final Collection<T> sample) {
-            try {
-                // Handle specific case that is not handled by the immutable time stamped cache constructor
-                if (sample.size() < 2) {
-                    throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, sample.size());
-                }
-
-                // Create immutable time stamped cache
-                this.cachedSamples = new ImmutableTimeStampedCache<>(interpolationPoints, sample);
-
-                // Find neighbors
-                final AbsoluteDate central         = getCentralDate(interpolationDate);
-                final Stream<T>    neighborsStream = cachedSamples.getNeighbors(central);
-
-                // Convert to unmodifiable list
-                this.neighborList = Collections.unmodifiableList(neighborsStream.collect(Collectors.toList()));
-
-                // Store interpolation date
-                this.interpolationDate = interpolationDate;
-            }
-            catch (OrekitIllegalArgumentException exception) {
+            // Handle specific case that is not handled by the immutable time stamped cache constructor
+            if (sample.size() < 2) {
                 throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, sample.size());
             }
+
+            // Create immutable time stamped cache
+            this.cachedSamples = new ImmutableTimeStampedCache<>(interpolationPoints, sample);
+
+            // Find neighbors
+            final AbsoluteDate central         = getCentralDate(interpolationDate);
+            final Stream<T>    neighborsStream = cachedSamples.getNeighbors(central);
+
+            // Convert to unmodifiable list
+            this.neighborList = Collections.unmodifiableList(neighborsStream.collect(Collectors.toList()));
+
+            // Store interpolation date
+            this.interpolationDate = interpolationDate;
         }
 
         /**
@@ -226,19 +214,26 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
             return central;
         }
 
-        /** @return interpolation date */
+        /** Get interpolation date.
+         * @return interpolation date
+         */
         public AbsoluteDate getInterpolationDate() {
             return interpolationDate;
         }
 
-        /** @return cached samples */
+        /** Get cached samples.
+         * @return cached samples
+         */
         public ImmutableTimeStampedCache<T> getCachedSamples() {
             return cachedSamples;
         }
 
-        /** @return neighbor list */
+        /** Get neighbor list.
+         * @return neighbor list
+         */
         public List<T> getNeighborList() {
             return neighborList;
         }
+
     }
 }

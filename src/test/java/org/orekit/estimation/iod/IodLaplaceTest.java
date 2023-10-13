@@ -24,13 +24,14 @@ import org.junit.jupiter.api.Test;
 
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -66,7 +67,7 @@ public class IodLaplaceTest extends AbstractIodTest {
         final AbsoluteDate date = new AbsoluteDate(2019, 9, 29, 22, 0, 2.0, TimeScalesFactory.getUTC());
         final KeplerianOrbit kep = new KeplerianOrbit(6798938.970424857, 0.0021115522920270016, 0.9008866630545347,
                                   1.8278985811406743, -2.7656136723308524,
-                                  0.8823034512437679, PositionAngle.MEAN, gcrf,
+                                  0.8823034512437679, PositionAngleType.MEAN, gcrf,
                                   date, Constants.EGM96_EARTH_MU);
         final KeplerianPropagator prop = new KeplerianPropagator(kep);
 
@@ -82,7 +83,7 @@ public class IodLaplaceTest extends AbstractIodTest {
         final AbsoluteDate date = new AbsoluteDate(2019, 9, 29, 22, 0, 2.0, TimeScalesFactory.getUTC());
         final KeplerianOrbit kep = new KeplerianOrbit(42165414.60406032, 0.00021743441091199163, 0.0019139259842569903,
                                   1.8142608912728584, 1.648821262690012,
-                                  0.11710513241172144, PositionAngle.MEAN, gcrf,
+                                  0.11710513241172144, PositionAngleType.MEAN, gcrf,
                                   date, Constants.EGM96_EARTH_MU);
         final KeplerianPropagator prop = new KeplerianPropagator(kep);
 
@@ -146,7 +147,7 @@ public class IodLaplaceTest extends AbstractIodTest {
         final AbsoluteDate date = new AbsoluteDate(2019, 9, 29, 22, 0, 2.0, TimeScalesFactory.getUTC());
         final KeplerianOrbit kep = new KeplerianOrbit(6798938.970424857, 0.0021115522920270016, 0.9008866630545347,
                                   1.8278985811406743, -2.7656136723308524,
-                                  0.8823034512437679, PositionAngle.MEAN, gcrf,
+                                  0.8823034512437679, PositionAngleType.MEAN, gcrf,
                                   date, Constants.EGM96_EARTH_MU);
         final KeplerianPropagator prop = new KeplerianPropagator(kep);
 
@@ -165,16 +166,42 @@ public class IodLaplaceTest extends AbstractIodTest {
                                                      new ObservableSatellite(0));
 
         // IOD method
-        final IodLaplace laplace = new IodLaplace(Constants.EGM96_EARTH_MU, gcrf);
+        final IodLaplace laplace = new IodLaplace(Constants.EGM96_EARTH_MU);
 
         // Estimate orbit
-        final Orbit orbit = laplace.estimate(raDec1, raDec2, raDec3);
+        final Orbit orbit = laplace.estimate(gcrf, raDec1, raDec2, raDec3);
         final TimeStampedPVCoordinates ref = prop.getPVCoordinates(raDec2.getDate(), gcrf);
 
         // Verify
         Assertions.assertEquals(0.0, ref.getPosition().distance(orbit.getPosition()), 275.0);
         Assertions.assertEquals(0.0, ref.getVelocity().distance(orbit.getPVCoordinates().getVelocity()), 0.8);
 
+    }
+
+    @Test
+    public void testLaplaceKeplerianWithAzEl() {
+        // Same test as testLaplaceKeplerian1 but using AzEl measurements instead of line of sight
+
+        // Settings
+        final AbsoluteDate date = new AbsoluteDate(2019, 9, 29, 22, 0, 2.0, TimeScalesFactory.getUTC());
+        final KeplerianOrbit kep = new KeplerianOrbit(6798938.970424857, 0.0021115522920270016, 0.9008866630545347,
+            1.8278985811406743, -2.7656136723308524,
+            0.8823034512437679, PositionAngleType.MEAN, gcrf,
+            date, Constants.EGM96_EARTH_MU);
+        final KeplerianPropagator prop = new KeplerianPropagator(kep);
+
+        // Measurements
+        final AngularAzEl azEl1 = getAzEl(prop, date);
+        final AngularAzEl azEl2 = getAzEl(prop, date.shiftedBy(30.0));
+        final AngularAzEl azEl3 = getAzEl(prop, date.shiftedBy(60.0));
+
+        // With only 3 measurements, we can expect ~400 meters error in position and ~1 m/s in velocity
+        final Orbit estOrbit = new IodLaplace(Constants.EGM96_EARTH_MU).estimate(gcrf, azEl1, azEl2, azEl3);
+
+        // Verify
+        final TimeStampedPVCoordinates truth = prop.getPVCoordinates(azEl2.getDate(), gcrf);
+        Assertions.assertEquals(0.0, Vector3D.distance(truth.getPosition(), estOrbit.getPosition()), 275.0);
+        Assertions.assertEquals(0.0, Vector3D.distance(truth.getVelocity(), estOrbit.getPVCoordinates().getVelocity()), 0.8);
     }
 
     // Helper function to generate measurements and estimate orbit for the given propagator
@@ -195,8 +222,8 @@ public class IodLaplaceTest extends AbstractIodTest {
 
         // Estimate the orbit using the classical Laplace method
         final TimeStampedPVCoordinates truth = prop.getPVCoordinates(obsDate2, gcrf);
-        final Orbit estOrbit = new IodLaplace(Constants.EGM96_EARTH_MU, gcrf)
-            .estimate(obsPva,gcrf, obsDate1, los1, obsDate2, los2, obsDate3, los3);
+        final Orbit estOrbit = new IodLaplace(Constants.EGM96_EARTH_MU)
+            .estimate(gcrf, obsPva, obsDate1, los1, obsDate2, los2, obsDate3, los3);
         return(new Result(truth, estOrbit));
     }
 

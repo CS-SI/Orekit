@@ -42,6 +42,17 @@ import org.orekit.utils.units.Unit;
  */
 public class UserDefinedXmlTokenBuilder implements XmlTokenBuilder {
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public UserDefinedXmlTokenBuilder() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public List<ParseToken> buildTokens(final boolean startTag, final boolean isLeaf, final String qName,

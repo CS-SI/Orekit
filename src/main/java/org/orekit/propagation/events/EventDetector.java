@@ -39,7 +39,7 @@ import org.orekit.time.AbsoluteDate;
  * EventDetector, boolean) eventOccurred} method from the associated {@link #getHandler() handler}.
  * The method can do whatever it needs with the event (logging it, performing
  * some processing, ignore it ...). The return value of the method will be used by
- * the propagator to stop or resume propagation, possibly changing the state vector.<p>
+ * the propagator to stop or resume propagation, possibly changing the state vector.</p>
  *
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane

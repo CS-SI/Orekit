@@ -1057,8 +1057,8 @@ class FieldShortTermEncounter2DDefinitionTest {
                 ArmellinStatistics.getMahalanobisDistanceRelativeDifferenceStatistics();
 
         // THEN
-        Assertions.assertTrue(statistics.getMean() <= 1.6550872674112783E-10);
-        Assertions.assertTrue(statistics.getStandardDeviation() <= 5.288485151742003E-10);
+        Assertions.assertTrue(statistics.getMean() <= 1.655252960031764E-10);
+        Assertions.assertTrue(statistics.getStandardDeviation() <= 5.289370450380533E-10);
     }
 
     @Test

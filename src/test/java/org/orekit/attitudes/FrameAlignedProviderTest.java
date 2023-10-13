@@ -25,6 +25,9 @@ import static org.orekit.OrekitMatchers.distanceIs;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.GradientField;
+import org.hipparchus.complex.ComplexField;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -44,7 +47,7 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -59,7 +62,7 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 
 
-public class FrameAlignedAttitudeTest {
+public class FrameAlignedProviderTest {
 
     private AbsoluteDate t0;
     private Orbit        orbit0;
@@ -107,7 +110,7 @@ public class FrameAlignedAttitudeTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngle.MEAN,
+                              FastMath.toRadians(30.), PositionAngleType.MEAN,
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);
@@ -193,7 +196,7 @@ public class FrameAlignedAttitudeTest {
 
 
     /**
-     * Unit tests for {@link FrameAligned#getAttitude(FieldPVCoordinatesProvider,
+     * Unit tests for {@link FrameAlignedProvider#getAttitude(FieldPVCoordinatesProvider,
      * FieldAbsoluteDate, Frame)}.
      */
     @Test
@@ -241,7 +244,45 @@ public class FrameAlignedAttitudeTest {
                 not(distanceIs(Rotation.IDENTITY, closeTo(0.0, 1e-1))));
     }
 
+    @Test
+    void testGetAttitudeRotation() {
+        // GIVEN
+        final Frame frame1 = FramesFactory.getGCRF();
+        final Frame frame2 = FramesFactory.getEME2000();
+        final AbsoluteDate date = orbit0.getDate();
+        final FrameAlignedProvider frameAlignedProvider = new FrameAlignedProvider(frame1);
+        // WHEN
+        final Rotation actualRotation = frameAlignedProvider.getAttitudeRotation(orbit0, date, frame2);
+        // THEN
+        final Rotation expectedRotation = frameAlignedProvider.getAttitude(orbit0, date, frame2).getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+    }
 
+    @Test
+    void testGetAttitudeRotationFieldComplex() {
+        final ComplexField complexField = ComplexField.getInstance();
+        templateTestGetRotationField(complexField);
+    }
+
+    @Test
+    void testGetAttitudeRotationFieldGradient() {
+        final GradientField gradientField = GradientField.getField(1);
+        templateTestGetRotationField(gradientField);
+    }
+
+    <T extends CalculusFieldElement<T>> void templateTestGetRotationField(final Field<T> field) {
+        // GIVEN
+        final Frame frame1 = FramesFactory.getGCRF();
+        final Frame frame2 = FramesFactory.getEME2000();
+        final FrameAlignedProvider frameAlignedProvider = new FrameAlignedProvider(frame1);
+        final SpacecraftState state = new SpacecraftState(orbit0);
+        final FieldSpacecraftState<T> fieldState = new FieldSpacecraftState<>(field, state);
+        // WHEN
+        final FieldRotation<T> actualRotation = frameAlignedProvider.getAttitudeRotation(fieldState.getOrbit(), fieldState.getDate(), frame2);
+        // THEN
+        final FieldRotation<T> expectedRotation = frameAlignedProvider.getAttitude(fieldState.getOrbit(), fieldState.getDate(), frame2).getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
+    }
 
     @BeforeEach
     public void setUp() {
@@ -252,7 +293,7 @@ public class FrameAlignedAttitudeTest {
                                   TimeScalesFactory.getUTC());
             orbit0 =
                 new KeplerianOrbit(12345678.9, 0.001, 2.3, 0.1, 3.04, 2.4,
-                                   PositionAngle.TRUE, FramesFactory.getEME2000(),
+                                   PositionAngleType.TRUE, FramesFactory.getEME2000(),
                                    t0, 3.986004415e14);
         } catch (OrekitException oe) {
             Assertions.fail(oe.getMessage());

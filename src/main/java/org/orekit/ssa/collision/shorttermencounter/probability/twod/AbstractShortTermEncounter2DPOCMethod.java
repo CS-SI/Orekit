@@ -68,32 +68,19 @@ import org.orekit.utils.PVCoordinates;
  */
 public abstract class AbstractShortTermEncounter2DPOCMethod implements ShortTermEncounter2DPOCMethod {
 
-    // CHECKSTYLE: stop VisibilityModifier check
-    /** tolerance on reference and other times of closest approach difference. */
-    protected final double tcaTolerance;
-    // CHECKSTYLE: resume VisibilityModifier check
+    /** Default time of closest approach difference tolerance. */
+    public static final double DEFAULT_TCA_DIFFERENCE_TOLERANCE = 1e-6;
 
     /** Name of the method. */
     private final String name;
 
     /**
-     * Constructor with default time of closest approach difference tolerance.
+     * Constructor.
      *
      * @param name name of the method
      */
     protected AbstractShortTermEncounter2DPOCMethod(final String name) {
-        this(name, 1e-6);
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param name name of the method
-     * @param tcaTolerance tolerance on reference and other times of closest approach difference
-     */
-    protected AbstractShortTermEncounter2DPOCMethod(final String name, final double tcaTolerance) {
-        this.tcaTolerance = tcaTolerance;
-        this.name         = name;
+        this.name = name;
     }
 
     /** {@inheritDoc} */
@@ -158,7 +145,7 @@ public abstract class AbstractShortTermEncounter2DPOCMethod implements ShortTerm
 
         final ShortTermEncounter2DDefinition shortTermEncounter2DDefinition = new ShortTermEncounter2DDefinition(
                 primaryAtTCA, primaryCovariance, secondaryAtTCA, secondaryCovariance,
-                combinedRadius, EncounterLOFType.DEFAULT, tcaTolerance);
+                combinedRadius, EncounterLOFType.DEFAULT, DEFAULT_TCA_DIFFERENCE_TOLERANCE);
 
         return compute(shortTermEncounter2DDefinition, zeroThreshold);
     }
@@ -172,7 +159,7 @@ public abstract class AbstractShortTermEncounter2DPOCMethod implements ShortTerm
         final FieldShortTermEncounter2DDefinition<T> FieldShortTermEncounter2DDefinition =
                 new FieldShortTermEncounter2DDefinition<>(
                         primaryAtTCA, primaryCovariance, secondaryAtTCA, secondaryCovariance,
-                        combinedRadius, EncounterLOFType.DEFAULT, tcaTolerance);
+                        combinedRadius, EncounterLOFType.DEFAULT, DEFAULT_TCA_DIFFERENCE_TOLERANCE);
 
         return compute(FieldShortTermEncounter2DDefinition, zeroThreshold);
     }

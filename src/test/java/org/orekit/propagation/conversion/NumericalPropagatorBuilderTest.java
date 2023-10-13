@@ -27,7 +27,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -48,12 +48,12 @@ public class NumericalPropagatorBuilderTest {
                 new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
                                                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
 
-        final PositionAngle    positionAngle    = null;
+        final PositionAngleType positionAngleType = null;
         final double           positionScale    = 1;
         final AttitudeProvider attitudeProvider = Mockito.mock(AttitudeProvider.class);
 
         final NumericalPropagatorBuilder builder =
-                new NumericalPropagatorBuilder(orbit, integratorBuilder, positionAngle, positionScale, attitudeProvider);
+                new NumericalPropagatorBuilder(orbit, integratorBuilder, positionAngleType, positionScale, attitudeProvider);
 
         builder.addForceModel(Mockito.mock(ForceModel.class));
 

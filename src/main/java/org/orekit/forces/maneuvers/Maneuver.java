@@ -24,7 +24,9 @@ import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -203,12 +205,14 @@ public class Maneuver implements ForceModel {
         if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(parameters))) {
 
             // Attitude during maneuver
-            final Attitude maneuverAttitude =
-                            attitudeOverride == null ?
-                            s.getAttitude() :
-                            attitudeOverride.getAttitude(s.getOrbit(),
-                                                         s.getDate(),
-                                                         s.getFrame());
+            final Attitude maneuverAttitude;
+            if (attitudeOverride == null) {
+                maneuverAttitude = s.getAttitude();
+            } else {
+                final Rotation rotation = attitudeOverride.getAttitudeRotation(s.getOrbit(), s.getDate(), s.getFrame());
+                // use dummy rates to build full attitude as they should not be used
+                maneuverAttitude = new Attitude(s.getDate(), s.getFrame(), rotation, Vector3D.ZERO, Vector3D.ZERO);
+            }
 
             // Compute acceleration from propulsion model
             // Specific drivers for the propulsion model are extracted from the array given by the ForceModel interface
@@ -228,12 +232,15 @@ public class Maneuver implements ForceModel {
         if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(parameters))) {
 
             // Attitude during maneuver
-            final FieldAttitude<T> maneuverAttitude =
-                            attitudeOverride == null ?
-                            s.getAttitude() :
-                            attitudeOverride.getAttitude(s.getOrbit(),
-                                                         s.getDate(),
-                                                         s.getFrame());
+            final FieldAttitude<T> maneuverAttitude;
+            if (attitudeOverride == null) {
+                maneuverAttitude = s.getAttitude();
+            } else {
+                final FieldRotation<T> rotation = attitudeOverride.getAttitudeRotation(s.getOrbit(), s.getDate(), s.getFrame());
+                // use dummy rates to build full attitude as they should not be used
+                final FieldVector3D<T> zeroVector3D = FieldVector3D.getZero(s.getDate().getField());
+                maneuverAttitude = new FieldAttitude<>(s.getDate(), s.getFrame(), rotation, zeroVector3D, zeroVector3D);
+            }
 
             // Compute acceleration from propulsion model
             // Specific drivers for the propulsion model are extracted from the array given by the ForceModel interface

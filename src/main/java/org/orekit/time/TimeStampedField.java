@@ -24,6 +24,7 @@ import org.hipparchus.CalculusFieldElement;
  * @author Vincent Cucchietti
  * @see FieldAbsoluteDate
  * @see CalculusFieldElement
+ * @param <KK> type of the field elements
  */
 public class TimeStampedField<KK extends CalculusFieldElement<KK>> implements FieldTimeStamped<KK> {
 
@@ -60,8 +61,11 @@ public class TimeStampedField<KK extends CalculusFieldElement<KK>> implements Fi
         return date;
     }
 
-    /** @return value */
+    /** Get value.
+     * @return value
+     */
     public KK getValue() {
         return value;
     }
+
 }

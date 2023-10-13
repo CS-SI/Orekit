@@ -27,6 +27,17 @@ public class GzipFilter implements DataFilter {
     /** Suffix for gzip compressed files. */
     private static final String SUFFIX = ".gz";
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public GzipFilter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public DataSource filter(final DataSource original) {

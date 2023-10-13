@@ -28,9 +28,10 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * It performs parameters initialization at each integration step for the third
  * body attraction perturbation. These parameters change for each integration
  * step.
- * <p>
+ * </p>
  * @author Bryan Cazabonne
  * @since 12.0
+ * @param <T> type of the field elements
  */
 public class FieldDSSTThirdBodyDynamicContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 

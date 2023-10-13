@@ -46,7 +46,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.SpacecraftStateInterpolator;
@@ -118,7 +118,7 @@ public class OrekitEphemerisFileTest {
         final Frame frame = FramesFactory.getGCRF();
         final CelestialBody body = CelestialBodyFactory.getEarth();
         final double mu = body.getGM();
-        KeplerianOrbit initialOrbit = new KeplerianOrbit(sma, ecc, inc, pa, raan, ta, PositionAngle.TRUE, frame, date,
+        KeplerianOrbit initialOrbit = new KeplerianOrbit(sma, ecc, inc, pa, raan, ta, PositionAngleType.TRUE, frame, date,
                 mu);
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
 

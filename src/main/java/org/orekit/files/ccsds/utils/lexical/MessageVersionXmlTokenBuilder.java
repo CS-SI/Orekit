@@ -51,6 +51,17 @@ public class MessageVersionXmlTokenBuilder implements XmlTokenBuilder {
     /** Attribute name for version. */
     private static final String VERSION = "version";
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public MessageVersionXmlTokenBuilder() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public List<ParseToken> buildTokens(final boolean startTag, final boolean isLeaf, final String qName,

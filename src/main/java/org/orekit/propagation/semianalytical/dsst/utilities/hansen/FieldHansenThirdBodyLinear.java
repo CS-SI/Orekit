@@ -33,6 +33,7 @@ import org.hipparchus.util.MathArrays;
  * @author Petre Bazavan
  * @author Lucian Barbulescu
  * @author Bryan Cazabonne
+ * @param <T> type of the field elements
  */
 public class FieldHansenThirdBodyLinear <T extends CalculusFieldElement<T>> {
 

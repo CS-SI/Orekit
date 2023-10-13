@@ -23,7 +23,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -146,7 +146,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
                                                        keplerian.getI(),
                                                        keplerian.getPerigeeArgument(),
                                                        keplerian.getRightAscensionOfAscendingNode(),
-                                                       -keplerian.getPerigeeArgument(), PositionAngle.TRUE,
+                                                       -keplerian.getPerigeeArgument(), PositionAngleType.TRUE,
                                                        keplerian.getFrame(), keplerian.getDate(),
                                                        keplerian.getMu()).getMeanAnomaly();
 
@@ -155,7 +155,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
                                                        keplerian.getI(),
                                                        keplerian.getPerigeeArgument(),
                                                        keplerian.getRightAscensionOfAscendingNode(),
-                                                       FastMath.PI - keplerian.getPerigeeArgument(), PositionAngle.TRUE,
+                                                       FastMath.PI - keplerian.getPerigeeArgument(), PositionAngleType.TRUE,
                                                        keplerian.getFrame(), keplerian.getDate(),
                                                        keplerian.getMu()).getMeanAnomaly();
 

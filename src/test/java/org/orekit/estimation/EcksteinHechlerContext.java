@@ -27,7 +27,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.conversion.EcksteinHechlerPropagatorBuilder;
 import org.orekit.time.TimeScale;
 import org.orekit.time.UT1Scale;
@@ -54,7 +54,7 @@ public class EcksteinHechlerContext implements StationDataProvider {
     // Map value = secondary station associated
     public Map<GroundStation, GroundStation>     TARstations;
 
-    public EcksteinHechlerPropagatorBuilder createBuilder(final PositionAngle angleType, final boolean perfectStart, final double dP) {
+    public EcksteinHechlerPropagatorBuilder createBuilder(final PositionAngleType angleType, final boolean perfectStart, final double dP) {
 
         final Orbit startOrbit;
         if (perfectStart) {

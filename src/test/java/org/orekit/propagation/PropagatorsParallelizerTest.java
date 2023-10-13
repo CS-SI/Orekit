@@ -48,7 +48,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.DateDetector;
@@ -84,7 +84,7 @@ public class PropagatorsParallelizerTest {
 
         // Orbit
         Orbit orbit = new KeplerianOrbit(15000000.0, 0.125, 1.25,
-                                         0.250, 1.375, 0.0625, PositionAngle.MEAN,
+                                         0.250, 1.375, 0.0625, PositionAngleType.MEAN,
                                          FramesFactory.getEME2000(),
                                          new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, TimeScalesFactory.getUTC()),
                                          gravity.getMu());
@@ -129,7 +129,7 @@ public class PropagatorsParallelizerTest {
         // Arbitrary orbit and date
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final Orbit orbit = new KeplerianOrbit(Constants.IERS2003_EARTH_EQUATORIAL_RADIUS + 1.e6,
-                                               0.125, 1.25, 0.250, 1.375, 0.0625, PositionAngle.MEAN,
+                                               0.125, 1.25, 0.250, 1.375, 0.0625, PositionAngleType.MEAN,
                                                FramesFactory.getGCRF(), date, Constants.IERS2010_EARTH_MU);
 
 
@@ -471,7 +471,7 @@ public class PropagatorsParallelizerTest {
             AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                  TimeComponents.H00,
                                                  TimeScalesFactory.getUTC());
-            orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+            orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                        FramesFactory.getEME2000(), date, normalizedGravityField.getMu());
             OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                           Constants.WGS84_EARTH_FLATTENING,

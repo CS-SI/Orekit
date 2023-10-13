@@ -44,6 +44,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * that have occurred at once by calling method {@link #getLoggedEvents()}.</p>
  *
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
 public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
 
@@ -104,7 +105,9 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
         return new ArrayList<FieldEventsLogger.FieldLoggedEvent<T>>(log);
     }
 
-    /** Class for logged events entries. */
+    /** Class for logged events entries.
+     * @param <T> type of the field elements
+     */
     public static class FieldLoggedEvent <T extends CalculusFieldElement<T>> {
 
         /** Event detector triggered. */

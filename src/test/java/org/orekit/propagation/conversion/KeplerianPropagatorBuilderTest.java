@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -40,10 +40,10 @@ public class KeplerianPropagatorBuilderTest {
                 new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
                 new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
                                                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
-        final PositionAngle positionAngle = null;
+        final PositionAngleType positionAngleType = null;
         final double        positionScale = 1;
 
-        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(orbit, positionAngle, positionScale);
+        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(orbit, positionAngleType, positionScale);
 
         // When
         final KeplerianPropagatorBuilder copyBuilder = builder.copy();

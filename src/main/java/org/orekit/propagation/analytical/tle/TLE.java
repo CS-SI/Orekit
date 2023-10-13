@@ -185,7 +185,7 @@ public class TLE implements TimeStamped, Serializable, ParameterDriversProvider 
      * DataContext#getDefault() default data context}.
      *
      * <p>The static method {@link #isFormatOK(String, String)} should be called
-     * before trying to build this object.<p>
+     * before trying to build this object.</p>
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)
      * @see #TLE(String, String, TimeScale)
@@ -198,7 +198,7 @@ public class TLE implements TimeStamped, Serializable, ParameterDriversProvider 
     /** Simple constructor from unparsed two lines using the given time scale as UTC.
      *
      * <p>The static method {@link #isFormatOK(String, String)} should be called
-     * before trying to build this object.<p>
+     * before trying to build this object.</p>
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)
      * @param utc the UTC time scale.

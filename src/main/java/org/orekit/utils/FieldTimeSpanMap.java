@@ -31,6 +31,7 @@ import org.orekit.time.ChronologicalComparator;
 /** Container for objects that apply to spans of time.
 
  * @param <T> Type of the data.
+ * @param <D> type of the field elements
 
  * @author Luc Maisonobe
  * @since 7.1
@@ -165,7 +166,10 @@ public class FieldTimeSpanMap<T, D extends CalculusFieldElement<D>> {
         return Collections.unmodifiableSortedSet(data);
     }
 
-    /** Local class holding transition times. */
+    /** Local class holding transition times.
+     * @param <D> type of the field elements
+     * @param <S> type of the data
+     */
     public static class Transition<S, D extends CalculusFieldElement<D>> implements TimeStamped {
 
         /** Transition date. */

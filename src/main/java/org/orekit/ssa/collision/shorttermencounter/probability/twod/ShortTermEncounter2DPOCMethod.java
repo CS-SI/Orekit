@@ -336,15 +336,20 @@ public interface ShortTermEncounter2DPOCMethod {
      *
      * @return probability of collision
      */
-    <T extends CalculusFieldElement<T>> FieldProbabilityOfCollision<T> compute(T xm, T ym, T sigmaX, T sigmaY,
-                                                                               T radius);
+    <T extends CalculusFieldElement<T>> FieldProbabilityOfCollision<T> compute(T xm, T ym, T sigmaX, T sigmaY, T radius);
 
-    /** @return type of the method */
+    /** Get type of the method.
+     * @return type of the method
+     */
     ShortTermEncounter2DPOCMethodType getType();
 
-    /** @return name of the method */
+    /** Get name of the method.
+     * @return name of the method
+     */
     String getName();
 
-    /** @return flag that defines if the method is a maximum probability of collision computing method */
+    /** Get flag that defines if the method is a maximum probability of collision computing method.
+     * @return flag that defines if the method is a maximum probability of collision computing method
+     */
     boolean isAMaximumProbabilityOfCollisionMethod();
 }

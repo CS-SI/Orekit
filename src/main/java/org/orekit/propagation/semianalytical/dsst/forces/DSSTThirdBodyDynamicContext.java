@@ -28,7 +28,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * It performs parameters initialization at each integration step for the third
  * body attraction perturbation. These parameters change for each integration
  * step.
- * <p>
+ * </p>
  * @author Bryan Cazabonne
  * @since 11.3.3
  */

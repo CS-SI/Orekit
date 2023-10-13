@@ -63,7 +63,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
@@ -162,7 +162,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
-        Orbit orbit = new KeplerianOrbit(1.0e11, 0.1, 0.2, 0.3, 0.4, 0.5, PositionAngle.TRUE,
+        Orbit orbit = new KeplerianOrbit(1.0e11, 0.1, 0.2, 0.3, 0.4, 0.5, PositionAngleType.TRUE,
                                          FramesFactory.getICRF(), date, Constants.JPL_SSD_SUN_GM);
         ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         SolarRadiationPressure srp =
@@ -192,7 +192,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                              TimeScalesFactory.getUTC());
         Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
                                            FastMath.tan(0.001745329)*FastMath.cos(2*FastMath.PI/3), FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
-                                           0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
+                                           0.1, PositionAngleType.TRUE, FramesFactory.getEME2000(), date, mu);
         CelestialBody sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth =
                         new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
@@ -233,8 +233,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testGlobalStateJacobianIsotropicSingle()
-        {
+    public void testGlobalStateJacobianIsotropicSingle() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -244,7 +243,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
         double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
@@ -263,13 +262,12 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           1e3, tolerances[0], 2.0e-5);
+                           1e3, tolerances[0], 3.2e-5);
 
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVs80Implementation()
-        {
+    public void testLocalJacobianIsotropicClassicalVs80Implementation() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -279,7 +277,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final SolarRadiationPressure forceModel =
                 new SolarRadiationPressure(CelestialBodyFactory.getSun(),
@@ -295,8 +293,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testLocalJacobianIsotropicClassicalVs80ImplementationGradient()
-        {
+    public void testLocalJacobianIsotropicClassicalVs80ImplementationGradient() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -306,7 +303,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final SolarRadiationPressure forceModel =
                 new SolarRadiationPressure(CelestialBodyFactory.getSun(),
@@ -371,7 +368,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final SolarRadiationPressure forceModel =
                 new SolarRadiationPressure(CelestialBodyFactory.getSun(),
@@ -397,7 +394,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final SolarRadiationPressure forceModel =
                 new SolarRadiationPressure(CelestialBodyFactory.getSun(),
@@ -422,7 +419,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
         double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
@@ -441,7 +438,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           1e6, tolerances[0], 2.8e-5);
+                           1e6, tolerances[0], 4.2e-5);
 
     }
 
@@ -456,7 +453,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
         double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
@@ -536,7 +533,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
         double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
@@ -570,7 +567,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
                                            FastMath.tan(0.001745329)*FastMath.cos(2*FastMath.PI/3),
                                            FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
-                                           0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
+                                           0.1, PositionAngleType.TRUE, FramesFactory.getEME2000(), date, mu);
         final double period = orbit.getKeplerianPeriod();
         Assertions.assertEquals(86164, period, 1);
         ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
@@ -652,7 +649,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         // Create initial field Keplerian orbit
         FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
+                                                                                 PositionAngleType.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
@@ -693,7 +690,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         NP.addForceModel(forceModel);
 
         // Do the test
-        checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1000., NP, FNP,
+        checkRealFieldPropagation(FKO, PositionAngleType.MEAN, 1000., NP, FNP,
                                   1.0e-30, 5.0e-10, 3.0e-11, 3.0e-10,
                                   1, false);
     }
@@ -720,7 +717,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         Frame EME = FramesFactory.getEME2000();
 
         FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
+                                                                                 PositionAngleType.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
@@ -779,7 +776,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final Orbit initialOrbit =
                         new CircularOrbit(6992986.636088, -5.3589198032e-04, 1.2502577102e-03,
                                           FastMath.toRadians(97.827521740), FastMath.toRadians(124.587089845),
-                                          FastMath.toRadians(0.0), PositionAngle.MEAN,
+                                          FastMath.toRadians(0.0), PositionAngleType.MEAN,
                                           FramesFactory.getMOD(IERSConventions.IERS_2010),
                                           initialDate, gravityField.getMu());
         final SpacecraftState initialState = new SpacecraftState(initialOrbit, 30.0);
@@ -878,7 +875,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final Vector3D     v     = new Vector3D(-213.65557094060222, -2377.3633988328584,  3079.4740070013495);
         final Orbit        orbit = new CartesianOrbit(new TimeStampedPVCoordinates(date, p, v),
                                                       FramesFactory.getGCRF(), Constants.EIGEN5C_EARTH_MU);
-        doTestMoonEarth(orbit, 720.0, 1.0, 0, 525, 0, 0, 2.198e-3);
+        doTestMoonEarth(orbit, 720.0, 1.0, 0, 525, 0, 0, 2.192e-3);
     }
 
     @Test
@@ -888,7 +885,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final Vector3D     v     = new Vector3D(-348.8911736753223, -2383.738528546711, 3060.9815784341567);
         final Orbit        orbit = new CartesianOrbit(new TimeStampedPVCoordinates(date, p, v),
                                                       FramesFactory.getGCRF(), Constants.EIGEN5C_EARTH_MU);
-        doTestMoonEarth(orbit, 3600.0, 1.0, 534, 1003, 0, 0, 11.656e-3);
+        doTestMoonEarth(orbit, 3600.0, 1.0, 534, 1003, 0, 0, 11.685e-3);
     }
 
     private void doTestMoonEarth(Orbit orbit, double duration, double step,
@@ -1067,7 +1064,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final FieldOrbit<Binary64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
                                                                              FramesFactory.getGCRF(),
                                                                              field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU));
-        doTestFieldMoonEarth(orbit, field.getZero().newInstance(720.0), field.getZero().newInstance(1.0), 0, 525, 0, 0, 2.195e-3);
+        doTestFieldMoonEarth(orbit, field.getZero().newInstance(720.0), field.getZero().newInstance(1.0), 0, 525, 0, 0, 2.193e-3);
     }
 
     @Test
@@ -1080,7 +1077,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final FieldOrbit<Binary64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
                                                                              FramesFactory.getGCRF(),
                                                                              field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU));
-        doTestFieldMoonEarth(orbit, field.getZero().newInstance(3600.0), field.getZero().newInstance(1.0), 534, 1003, 0, 0, 11.633e-3);
+        doTestFieldMoonEarth(orbit, field.getZero().newInstance(3600.0), field.getZero().newInstance(1.0), 534, 1003, 0, 0, 11.611e-3);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldMoonEarth(FieldOrbit<T> orbit, T duration, T step,

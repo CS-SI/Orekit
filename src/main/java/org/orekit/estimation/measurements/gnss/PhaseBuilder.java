@@ -24,6 +24,7 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.generation.AbstractMeasurementBuilder;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
@@ -65,11 +66,11 @@ public class PhaseBuilder extends AbstractMeasurementBuilder<Phase> {
 
     /** {@inheritDoc} */
     @Override
-    public Phase build(final Map<ObservableSatellite, SpacecraftState> states) {
+    public Phase build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
 
         final double sigma                  = getTheoreticalStandardDeviation()[0];
         final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState[] relevant    = new SpacecraftState[] { states.get(satellite) };
+        final SpacecraftState[] relevant    = new SpacecraftState[] { interpolators.get(satellite).getInterpolatedState(date) };
 
         // create a dummy measurement
         final Phase dummy = new Phase(station, relevant[0].getDate(), Double.NaN, wavelength, sigma, baseWeight, satellite);

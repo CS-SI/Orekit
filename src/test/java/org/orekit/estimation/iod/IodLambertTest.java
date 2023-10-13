@@ -29,6 +29,7 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.frames.Frame;
@@ -36,7 +37,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -69,7 +70,7 @@ public class IodLambertTest {
         final Frame frame = context.initialOrbit.getFrame();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -134,7 +135,7 @@ public class IodLambertTest {
 
         // Use a simple Keplerian propagator (no perturbation)
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create propagator
@@ -144,7 +145,7 @@ public class IodLambertTest {
         final SpacecraftState initialState = propagator.getInitialState();
         final KeplerianOrbit refOrbit = new KeplerianOrbit(initialState.getOrbit());
         double[] refOrbitArray = new double[6];
-        OrbitType.KEPLERIAN.mapOrbitToArray(refOrbit, PositionAngle.TRUE, refOrbitArray, null);
+        OrbitType.KEPLERIAN.mapOrbitToArray(refOrbit, PositionAngleType.TRUE, refOrbitArray, null);
         final Vector3D position1 = refOrbit.getPosition();
         final AbsoluteDate date1 = refOrbit.getDate();
 
@@ -230,7 +231,7 @@ public class IodLambertTest {
 
         // Use a simple Keplerian propagator (no perturbation)
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create propagator
@@ -240,7 +241,7 @@ public class IodLambertTest {
         final SpacecraftState initialState = propagator.getInitialState();
         final KeplerianOrbit refOrbit = new KeplerianOrbit(initialState.getOrbit());
         double[] refOrbitArray = new double[6];
-        OrbitType.KEPLERIAN.mapOrbitToArray(refOrbit, PositionAngle.TRUE, refOrbitArray, null);
+        OrbitType.KEPLERIAN.mapOrbitToArray(refOrbit, PositionAngleType.TRUE, refOrbitArray, null);
 
         final Vector3D position1 = refOrbit.getPosition();
         final AbsoluteDate date1 = refOrbit.getDate();
@@ -282,8 +283,6 @@ public class IodLambertTest {
     @Test
     public void testIssue533() {
 
-        //Utils.setDataRoot("regular-data");
-
         double mu = Constants.EGM96_EARTH_MU;
         Frame j2000 = FramesFactory.getEME2000();
 
@@ -321,12 +320,12 @@ public class IodLambertTest {
 
             // Assign position and velocity @t1 (defined as the position and velocity vectors and the periapse)
             AbsoluteDate t1 = new AbsoluteDate(2010, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC());
-            KeplerianOrbit kep1 = new KeplerianOrbit(a, e, i, aop, raan, nu0, PositionAngle.TRUE, j2000, t1, mu);
+            KeplerianOrbit kep1 = new KeplerianOrbit(a, e, i, aop, raan, nu0, PositionAngleType.TRUE, j2000, t1, mu);
             Vector3D p1 = kep1.getPosition();
             Vector3D v1 = kep1.getPVCoordinates().getVelocity();
 
             // Assign t2 date (defined as the date after a swept angle of "trueAnomalyDifference" after periapsis)
-            KeplerianOrbit kep2 = new KeplerianOrbit(a, e, i, aop, raan, trueAnomalyDifference, PositionAngle.TRUE, j2000, t1, mu);
+            KeplerianOrbit kep2 = new KeplerianOrbit(a, e, i, aop, raan, trueAnomalyDifference, PositionAngleType.TRUE, j2000, t1, mu);
             double n = kep2.getKeplerianMeanMotion();
             double M2 = kep2.getMeanAnomaly();
             double delta_t = M2 / n; // seconds
@@ -409,6 +408,48 @@ public class IodLambertTest {
         final Orbit orbit = lambert.estimate(inertialFrame, true, 0,
                                                       new Position(dateRef, posR1, 1.0, 1.0, satellite),
                                                       new Position(date2,   posR2, 1.0, 1.0, satellite));
+
+        // Test for the norm of the first velocity
+        Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR1.getNorm(),  1e-3);
+
+        // Test the norm of the second velocity
+        final KeplerianPropagator kepler = new KeplerianPropagator(orbit);
+        Assertions.assertEquals(0.0, kepler.propagate(date2).getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
+
+
+    }
+
+    @Test
+    public void testWithPVMeasurements() {
+
+        // Test taken from “Superior Lambert Algorithm” by Gim Der
+
+        // Initial frame, time scale
+        final Frame inertialFrame = FramesFactory.getEME2000();
+        final TimeScale utc       = TimeScalesFactory.getUTC();
+
+        // Initialisation
+        final IodLambert lambert = new IodLambert(Constants.EGM96_EARTH_MU);
+
+        // Observable satellite to initialize measurements
+        final ObservableSatellite satellite = new ObservableSatellite(0);
+
+        // Observations vector (EME2000)
+        final Vector3D posR1 = new Vector3D(22592145.603, -1599915.239, -19783950.506);
+        final Vector3D posR2 = new Vector3D(1922067.697, 4054157.051, -8925727.465);
+
+        // Epoch corresponding to the observation vector
+        AbsoluteDate dateRef = new AbsoluteDate(2018, 11, 1, 0, 0, 0.0, utc);
+        AbsoluteDate date2 = dateRef.shiftedBy(36000.0);
+
+        // Reference result
+        final Vector3D velR1 = new Vector3D(2000.652697, 387.688615, -2666.947760);
+        final Vector3D velR2 = new Vector3D(-3792.46619, -1777.07641, 6856.81495);
+
+        // Lambert IOD
+        final Orbit orbit = lambert.estimate(inertialFrame, true, 0,
+                                                      new PV(dateRef, posR1, velR1, 1.0, 1.0, 1.0, satellite),
+                                                      new PV(date2,   posR2, velR2, 1.0, 1.0, 1.0, satellite));
 
         // Test for the norm of the first velocity
         Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR1.getNorm(),  1e-3);

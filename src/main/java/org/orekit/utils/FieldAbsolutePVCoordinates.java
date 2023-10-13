@@ -33,6 +33,7 @@ import org.orekit.time.FieldTimeStamped;
 /** Field implementation of AbsolutePVCoordinates.
  * @see AbsolutePVCoordinates
  * @author Vincent Mouraux
+ * @param <T> type of the field elements
  */
 public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> extends TimeStampedFieldPVCoordinates<T>
     implements FieldTimeStamped<T>, FieldPVCoordinatesProvider<T> {
@@ -291,12 +292,12 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
      */
     public FieldVector3D<T> getPosition(final Frame outputFrame) {
         // If output frame requested is the same as definition frame,
-        // PV coordinates are returned directly
+        // Position vector is returned directly
         if (outputFrame == frame) {
             return getPosition();
         }
 
-        // Else, PV coordinates are transformed to output frame
+        // Else, position vector is transformed to output frame
         final FieldStaticTransform<T> t = frame.getStaticTransformTo(outputFrame, getDate());
         return t.transformPosition(getPosition());
     }

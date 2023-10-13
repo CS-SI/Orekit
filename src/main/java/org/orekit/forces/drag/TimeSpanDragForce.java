@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.drag;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -39,6 +40,7 @@ import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.ParameterDriver;
@@ -332,13 +334,14 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         final AbsoluteDate[] transitionDates = getTransitionDates();
 
         // Initialize the date detector
+        @SuppressWarnings("unchecked")
         final FieldDateDetector<T> datesDetector =
-                        new FieldDateDetector<>(field, new FieldAbsoluteDate<>(field, transitionDates[0])).
+                        new FieldDateDetector<>(field, (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 0)).
                         withMaxCheck(60.0).
                         withHandler((FieldSpacecraftState<T> state, FieldEventDetector<T> detector, boolean increasing) ->
                                     Action.RESET_DERIVATIVES);
         // Add all transitions' dates to the date detector
-        for (int i = 1; i < transitionDates.length; i++) {
+        for (int i = 0; i < transitionDates.length; i++) {
             datesDetector.addEventDate(new FieldAbsoluteDate<>(field, transitionDates[i]));
         }
 

@@ -106,7 +106,7 @@ public interface BodyShape extends Serializable {
 
     /** Transform a Cartesian point to a surface-relative point.
      * @param point Cartesian point
-     * @param <T> type fo the filed elements
+     * @param <T> type of the filed elements
      * @param frame frame in which Cartesian point is expressed
      * @param date date of the computation (used for frames conversions)
      * @return point at the same location but as a surface-relative point
@@ -123,7 +123,7 @@ public interface BodyShape extends Serializable {
 
     /** Transform a surface-relative point to a Cartesian point.
      * @param point surface-relative point
-     * @param <T> type fo the filed elements
+     * @param <T> type of the filed elements
      * @return point at the same location but as a Cartesian point
      * @since 9.0
      */

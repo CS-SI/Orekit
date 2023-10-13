@@ -36,7 +36,7 @@ import org.orekit.models.earth.EarthStandardAtmosphereRefraction;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -239,7 +239,7 @@ public class ElevationDetectorTest {
         Frame inertialFrame = FramesFactory.getEME2000(); // inertial frame for orbit definition
         Orbit initialOrbit = new KeplerianOrbit(6828137.005, 7.322641382145889e-10, 1.6967079057368113,
                                                 0.0, 1.658054062748353,
-                                                0.0001223149429077902, PositionAngle.MEAN,
+                                                0.0001223149429077902, PositionAngleType.MEAN,
                                                 inertialFrame, initialDate, Constants.EIGEN5C_EARTH_MU);
 
         // Propagator : consider a simple Keplerian motion (could be more elaborate)
@@ -295,7 +295,7 @@ public class ElevationDetectorTest {
         final double a = 7000000.0;
         final Orbit initialOrbit = new KeplerianOrbit(a, 0.0,
                 FastMath.PI / 2.2, 0.0, FastMath.PI / 2., 0.0,
-                PositionAngle.TRUE, eme2000Frame, initDate,
+                PositionAngleType.TRUE, eme2000Frame, initDate,
                 Constants.EGM96_EARTH_MU);
         final KeplerianPropagator kProp = new KeplerianPropagator(initialOrbit);
 
@@ -378,7 +378,7 @@ public class ElevationDetectorTest {
 
         Frame inertialFrame = FramesFactory.getEME2000(); // inertial frame for orbit definition
 
-        Orbit initialOrbit = new KeplerianOrbit(6828137.5, 7.322641060181212E-8, 1.7082667003713938, 0.0, 1.658054062748353, 1.2231496082116026E-4, PositionAngle.TRUE , inertialFrame, initialDate, Constants.WGS84_EARTH_MU);
+        Orbit initialOrbit = new KeplerianOrbit(6828137.5, 7.322641060181212E-8, 1.7082667003713938, 0.0, 1.658054062748353, 1.2231496082116026E-4, PositionAngleType.TRUE , inertialFrame, initialDate, Constants.WGS84_EARTH_MU);
 
         Propagator propagator =
                 new EcksteinHechlerPropagator(initialOrbit,

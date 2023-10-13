@@ -26,52 +26,52 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.LOFType;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeShiftable;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-
 /** This class is the representation of a complete state holding orbit, attitude
- * and mass information at a given date.
+ * and mass information at a given date, meant primarily for propagation.
  *
- * <p>It contains an {@link FieldOrbit orbital state} at a current
- * {@link FieldAbsoluteDate} both handled by an {@link FieldOrbit}, plus the current
- * mass and attitude. FieldOrbit and state are guaranteed to be consistent in terms
+ * <p>It contains an {@link FieldOrbit}, or a {@link FieldAbsolutePVCoordinates} if there
+ * is no definite central body, plus the current mass and attitude at the intrinsic
+ * {@link FieldAbsoluteDate}. Quantities are guaranteed to be consistent in terms
  * of date and reference frame. The spacecraft state may also contain additional
  * states, which are simply named double arrays which can hold any user-defined
  * data.
  * </p>
  * <p>
- * The state can be slightly shifted to close dates. This shift is based on
- * a simple Keplerian model for orbit, a linear extrapolation for attitude
- * taking the spin rate into account and no mass change. It is <em>not</em>
- * intended as a replacement for proper orbit and attitude propagation but
- * should be sufficient for either small time shifts or coarse accuracy.
+ * The state can be slightly shifted to close dates. This actual shift varies
+ * between {@link FieldOrbit} and {@link FieldAbsolutePVCoordinates}.
+ * For attitude it is a linear extrapolation taking the spin rate into account
+ * and no mass change. It is <em>not</em> intended as a replacement for proper
+ * orbit and attitude propagation but should be sufficient for either small
+ * time shifts or coarse accuracy.
  * </p>
  * <p>
  * The instance {@code FieldSpacecraftState} is guaranteed to be immutable.
  * </p>
  * @see org.orekit.propagation.numerical.NumericalPropagator
+ * @see SpacecraftState
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
  * @author Vincent Mouraux
+ * @param <T> type of the field elements
  */
 public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     implements FieldTimeStamped<T>, FieldTimeShiftable<FieldSpacecraftState<T>, T> {
@@ -110,8 +110,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @param orbit the orbit
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit) {
-        this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+        this(orbit, SpacecraftState.getDefaultAttitudeProvider(orbit.getFrame())
+                        .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), (FieldArrayDictionary<T>) null);
     }
 
@@ -133,9 +133,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @param mass the mass (kg)
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass) {
-        this(orbit,
-             new LofOffset(orbit.getFrame(),
-                           LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+        this(orbit, SpacecraftState.getDefaultAttitudeProvider(orbit.getFrame())
+                        .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, (FieldArrayDictionary<T>) null);
     }
 
@@ -158,8 +157,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @since 11.1
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldArrayDictionary<T> additional) {
-        this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+        this(orbit, SpacecraftState.getDefaultAttitudeProvider(orbit.getFrame())
+                        .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              orbit.getA().getField().getZero().add(DEFAULT_MASS), additional);
     }
 
@@ -185,8 +184,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @since 11.1
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final T mass, final FieldArrayDictionary<T> additional) {
-        this(orbit,
-             new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+        this(orbit, SpacecraftState.getDefaultAttitudeProvider(orbit.getFrame())
+                        .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
              mass, additional);
     }
 
@@ -246,7 +245,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         if (state.isOrbitDefined()) {
             final double[] stateD    = new double[6];
             final double[] stateDotD = state.getOrbit().hasDerivatives() ? new double[6] : null;
-            state.getOrbit().getType().mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateD, stateDotD);
+            final PositionAngleType positionAngleType = PositionAngleType.TRUE;
+            state.getOrbit().getType().mapOrbitToArray(state.getOrbit(), positionAngleType, stateD, stateDotD);
             final T[] stateF    = MathArrays.buildArray(field, 6);
             for (int i = 0; i < stateD.length; ++i) {
                 stateF[i]    = field.getZero().add(stateD[i]);
@@ -263,29 +263,19 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
             final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, state.getDate());
 
-            this.orbit    = state.getOrbit().getType().mapArrayToOrbit(stateF, stateDotF,
-                                                                       PositionAngle.TRUE,
-                                                                       dateF, field.getZero().add(state.getMu()), state.getFrame());
+            this.orbit    = state.getOrbit().getType().mapArrayToOrbit(stateF, stateDotF, positionAngleType, dateF,
+                                                                       field.getZero().add(state.getMu()), state.getFrame());
             this.absPva   = null;
 
         } else {
-            final T zero = field.getZero();
-            final TimeStampedPVCoordinates pva = state.getPVCoordinates();
-            final T x = zero.add(pva.getPosition().getX());
-            final T y = zero.add(pva.getPosition().getY());
-            final T z = zero.add(pva.getPosition().getZ());
-            final T vx = zero.add(pva.getVelocity().getX());
-            final T vy = zero.add(pva.getVelocity().getY());
-            final T vz = zero.add(pva.getVelocity().getZ());
-            final T ax = zero.add(pva.getAcceleration().getX());
-            final T ay = zero.add(pva.getAcceleration().getY());
-            final T az = zero.add(pva.getAcceleration().getZ());
-            final FieldPVCoordinates<T> pva_f = new FieldPVCoordinates<>(new FieldVector3D<>(x, y, z),
-                                                                         new FieldVector3D<>(vx, vy, vz),
-                                                                         new FieldVector3D<>(ax, ay, az));
+            final TimeStampedPVCoordinates tspva = state.getPVCoordinates();
+            final FieldVector3D<T> position = new FieldVector3D<>(field, tspva.getPosition());
+            final FieldVector3D<T> velocity = new FieldVector3D<>(field, tspva.getVelocity());
+            final FieldVector3D<T> acceleration = new FieldVector3D<>(field, tspva.getAcceleration());
+            final FieldPVCoordinates<T> pva = new FieldPVCoordinates<>(position, velocity, acceleration);
             final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, state.getDate());
             this.orbit  = null;
-            this.absPva = new FieldAbsolutePVCoordinates<>(state.getFrame(), dateF, pva_f);
+            this.absPva = new FieldAbsolutePVCoordinates<>(state.getFrame(), dateF, pva);
         }
 
         this.attitude = new FieldAttitude<>(field, state.getAttitude());
@@ -318,8 +308,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva) {
         this(absPva,
-             new LofOffset(absPva.getFrame(),
-                           LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+             SpacecraftState.getDefaultAttitudeProvider(absPva.getFrame()).
+                     getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              absPva.getDate().getField().getZero().add(DEFAULT_MASS), (FieldArrayDictionary<T>) null);
     }
 
@@ -341,9 +331,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @param mass the mass (kg)
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final T mass) {
-        this(absPva,
-             new LofOffset(absPva.getFrame(),
-                           LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+        this(absPva, SpacecraftState.getDefaultAttitudeProvider(absPva.getFrame())
+                        .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, (FieldArrayDictionary<T>) null);
     }
 
@@ -366,9 +355,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @since 11.1
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldArrayDictionary<T> additional) {
-        this(absPva,
-             new LofOffset(absPva.getFrame(),
-                           LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+        this(absPva, SpacecraftState.getDefaultAttitudeProvider(absPva.getFrame())
+                        .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              absPva.getDate().getField().getZero().add(DEFAULT_MASS), additional);
     }
 
@@ -395,9 +383,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @since 11.1
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final T mass, final FieldArrayDictionary<T> additional) {
-        this(absPva,
-             new LofOffset(absPva.getFrame(),
-                           LOFType.LVLH_CCSDS).getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
+        this(absPva, SpacecraftState.getDefaultAttitudeProvider(absPva.getFrame())
+                        .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
              mass, additional);
     }
 
@@ -432,14 +419,14 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         this.attitude   = attitude;
         this.mass       = mass;
         if (additional == null) {
-            this.additional = new FieldArrayDictionary<T>(absPva.getDate().getField());
+            this.additional = new FieldArrayDictionary<>(absPva.getDate().getField());
         } else {
-            this.additional = new FieldArrayDictionary<T>(additional);
+            this.additional = new FieldArrayDictionary<>(additional);
         }
         if (additionalDot == null) {
-            this.additionalDot = new FieldArrayDictionary<T>(absPva.getDate().getField());
+            this.additionalDot = new FieldArrayDictionary<>(absPva.getDate().getField());
         } else {
-            this.additionalDot = new FieldArrayDictionary<T>(additionalDot);
+            this.additionalDot = new FieldArrayDictionary<>(additionalDot);
         }
     }
 
@@ -587,6 +574,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @return a new state, shifted with respect to the instance (which is immutable)
      * except for the mass which stay unchanged
      */
+    @Override
     public FieldSpacecraftState<T> shiftedBy(final double dt) {
         if (absPva == null) {
             return new FieldSpacecraftState<>(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
@@ -628,6 +616,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @return a new state, shifted with respect to the instance (which is immutable)
      * except for the mass which stay unchanged
      */
+    @Override
     public FieldSpacecraftState<T> shiftedBy(final T dt) {
         if (absPva == null) {
             return new FieldSpacecraftState<>(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
@@ -651,7 +640,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         }
 
         // there are derivatives, we need to take them into account in the additional state
-        final FieldArrayDictionary<T> shifted = new FieldArrayDictionary<T>(additional);
+        final FieldArrayDictionary<T> shifted = new FieldArrayDictionary<>(additional);
         for (final FieldArrayDictionary<T>.Entry dotEntry : additionalDot.getData()) {
             final FieldArrayDictionary<T>.Entry entry = shifted.getEntry(dotEntry.getKey());
             if (entry != null) {
@@ -676,7 +665,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         }
 
         // there are derivatives, we need to take them into account in the additional state
-        final FieldArrayDictionary<T> shifted = new FieldArrayDictionary<T>(additional);
+        final FieldArrayDictionary<T> shifted = new FieldArrayDictionary<>(additional);
         for (final FieldArrayDictionary<T>.Entry dotEntry : additionalDot.getData()) {
             final FieldArrayDictionary<T>.Entry entry = shifted.getEntry(dotEntry.getKey());
             if (entry != null) {
@@ -727,9 +716,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         return orbit;
     }
 
-    /** Get the date.
-     * @return date
-     */
+    /** {@inheritDoc} */
+    @Override
     public FieldAbsoluteDate<T> getDate() {
         return (absPva == null) ? orbit.getDate() : absPva.getDate();
     }
@@ -891,7 +879,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
     /** Get the central attraction coefficient.
      * @return mu central attraction coefficient (m^3/s^2), or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather than an orbit
+     * state contains an absolute position-velocity-acceleration rather than an orbit
      */
     public T getMu() {
         return (absPva == null) ? orbit.getMu() : absPva.getDate().getField().getZero().add(Double.NaN);
@@ -900,8 +888,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     /** Get the Keplerian period.
      * <p>The Keplerian period is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian period in seconds, or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * @return Keplerian period in seconds, or {code Double.NaN} if the
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      */
     public T getKeplerianPeriod() {
@@ -911,8 +899,8 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     /** Get the Keplerian mean motion.
      * <p>The Keplerian mean motion is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian mean motion in radians per second, or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * @return Keplerian mean motion in radians per second, or {code Double.NaN} if the
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      */
     public T getKeplerianMeanMotion() {
@@ -921,7 +909,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
     /** Get the semi-major axis.
      * @return semi-major axis (m), or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      */
     public T getA() {
@@ -930,7 +918,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
     /** Get the first component of the eccentricity vector (as per equinoctial parameters).
      * @return e cos(ω + Ω), first component of eccentricity vector, or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      * @see #getE()
      */
@@ -940,7 +928,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
     /** Get the second component of the eccentricity vector (as per equinoctial parameters).
      * @return e sin(ω + Ω), second component of the eccentricity vector, or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      * @see #getE()
      */
@@ -950,7 +938,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
     /** Get the first component of the inclination vector (as per equinoctial parameters).
      * @return tan(i/2) cos(Ω), first component of the inclination vector, or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      * @see #getI()
      */
@@ -960,7 +948,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
     /** Get the second component of the inclination vector (as per equinoctial parameters).
      * @return tan(i/2) sin(Ω), second component of the inclination vector, or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      * @see #getI()
      */
@@ -970,7 +958,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
     /** Get the true latitude argument (as per equinoctial parameters).
      * @return v + ω + Ω true longitude argument (rad), or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      * @see #getLE()
      * @see #getLM()
@@ -981,7 +969,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
     /** Get the eccentric latitude argument (as per equinoctial parameters).
      * @return E + ω + Ω eccentric longitude argument (rad), or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      * @see #getLv()
      * @see #getLM()
@@ -992,7 +980,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
     /** Get the mean longitude argument (as per equinoctial parameters).
      * @return M + ω + Ω mean latitude argument (rad), or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      * @see #getLv()
      * @see #getLE()
@@ -1005,7 +993,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
 
     /** Get the eccentricity.
      * @return eccentricity, or {code Double.NaN} if the
-     * state is contains an absolute position-velocity-acceleration rather
+     * state contains an absolute position-velocity-acceleration rather
      * than an orbit
      * @see #getEquinoctialEx()
      * @see #getEquinoctialEy()

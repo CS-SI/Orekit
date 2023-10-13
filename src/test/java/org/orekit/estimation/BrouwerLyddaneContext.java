@@ -11,7 +11,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.conversion.BrouwerLyddanePropagatorBuilder;
 import org.orekit.time.TimeScale;
@@ -39,7 +39,7 @@ public class BrouwerLyddaneContext implements StationDataProvider {
     // Map value = secondary station associated
     public Map<GroundStation, GroundStation>     TARstations;
 
-    public BrouwerLyddanePropagatorBuilder createBuilder(final PositionAngle angleType, final boolean perfectStart, final double dP) {
+    public BrouwerLyddanePropagatorBuilder createBuilder(final PositionAngleType angleType, final boolean perfectStart, final double dP) {
 
         final Orbit startOrbit;
         if (perfectStart) {

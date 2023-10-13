@@ -40,7 +40,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
@@ -97,7 +97,7 @@ public class FieldDSSTTesseralTest {
                                                                 zero.add(-0.3412974060023717),
                                                                 zero.add(0.3960084733107685),
                                                                 zero.add(8.566537840341699),
-                                                                PositionAngle.TRUE,
+                                                                PositionAngleType.TRUE,
                                                                 frame,
                                                                 initDate,
                                                                 zero.add(3.986004415E14));
@@ -152,7 +152,7 @@ public class FieldDSSTTesseralTest {
                                                         zero,
                                                         zero.add(FastMath.PI),
                                                         zero,
-                                                        PositionAngle.MEAN,
+                                                        PositionAngleType.MEAN,
                                                         FramesFactory.getTOD(false),
                                                         new FieldAbsoluteDate<>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
                                                         zero.add(nshp.getMu()));
@@ -223,7 +223,7 @@ public class FieldDSSTTesseralTest {
                                                                 zero.add(-0.3412974060023717),
                                                                 zero.add(0.3960084733107685),
                                                                 zero.add(8.566537840341699),
-                                                                PositionAngle.TRUE,
+                                                                PositionAngleType.TRUE,
                                                                 frame,
                                                                 initDate,
                                                                 zero.add(3.986004415E14));
@@ -277,7 +277,7 @@ public class FieldDSSTTesseralTest {
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<>(zero.add(2.655989E7), zero.add(2.719455286199036E-4),
                                                                 zero.add(0.0041543085910249414), zero.add(-0.3412974060023717),
                                                                 zero.add(0.3960084733107685), zero.add(8.566537840341699),
-                                                                PositionAngle.TRUE, frame, initDate, zero.add(3.986004415E14));
+                                                                PositionAngleType.TRUE, frame, initDate, zero.add(3.986004415E14));
 
         // Force model
         final DSSTForceModel tesseral = new DSSTTesseral(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
@@ -290,7 +290,7 @@ public class FieldDSSTTesseralTest {
         final FieldOrbit<T> shfitedOrbit = new FieldEquinoctialOrbit<>(zero.add(2.655989E7), zero.add(0.02),
                         zero.add(0.0041543085910249414), zero.add(-0.3412974060023717),
                         zero.add(0.3960084733107685), zero.add(8.566537840341699),
-                        PositionAngle.TRUE, frame, initDate, zero.add(3.986004415E14));
+                        PositionAngleType.TRUE, frame, initDate, zero.add(3.986004415E14));
 
         final T[] elements = tesseral.getMeanElementRate(new FieldSpacecraftState<>(shfitedOrbit), new FieldAuxiliaryElements<>(shfitedOrbit, 1), parameters);
 
@@ -316,7 +316,7 @@ public class FieldDSSTTesseralTest {
                                                  10e-3,
                                                  FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
                                                  FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3), 0.1,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  FramesFactory.getEME2000(),
                                                  initDate,
                                                  3.986004415E14);
@@ -434,7 +434,7 @@ public class FieldDSSTTesseralTest {
                                                  10e-3,
                                                  FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
                                                  FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3), 0.1,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  FramesFactory.getEME2000(),
                                                  initDate,
                                                  3.986004415E14);
@@ -605,14 +605,14 @@ public class FieldDSSTTesseralTest {
     private double[][] stateToArray(SpacecraftState state, OrbitType orbitType) {
           double[][] array = new double[2][6];
 
-          orbitType.mapOrbitToArray(state.getOrbit(), PositionAngle.MEAN, array[0], array[1]);
+          orbitType.mapOrbitToArray(state.getOrbit(), PositionAngleType.MEAN, array[0], array[1]);
           return array;
       }
 
     private SpacecraftState arrayToState(double[][] array, OrbitType orbitType,
                                            Frame frame, AbsoluteDate date, double mu,
                                            Attitude attitude) {
-          EquinoctialOrbit orbit = (EquinoctialOrbit) orbitType.mapArrayToOrbit(array[0], array[1], PositionAngle.MEAN, date, mu, frame);
+          EquinoctialOrbit orbit = (EquinoctialOrbit) orbitType.mapArrayToOrbit(array[0], array[1], PositionAngleType.MEAN, date, mu, frame);
           return new SpacecraftState(orbit, attitude);
     }
 

@@ -66,9 +66,13 @@ public interface TimeInterpolator<T extends TimeStamped> {
      */
     List<TimeInterpolator<? extends TimeStamped>> getSubInterpolators();
 
-    /** @return get the number of interpolation points. */
+    /** Get the number of interpolation points.
+     * @return get the number of interpolation points
+     */
     int getNbInterpolationPoints();
 
-    /** @return get the extrapolation threshold. */
+    /** Get the extrapolation threshold.
+     * @return get the extrapolation threshold
+     */
     double getExtrapolationThreshold();
 }

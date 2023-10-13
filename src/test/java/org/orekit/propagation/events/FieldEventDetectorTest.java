@@ -44,7 +44,7 @@ import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
@@ -108,7 +108,9 @@ public class FieldEventDetectorTest {
 
         FieldPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         T stepSize = zero.add(60.0);
-        propagator.addEventDetector(new FieldDateDetector<>(field, date.shiftedBy(stepSize.multiply(5.25))).withHandler(handler));
+        @SuppressWarnings("unchecked")
+        final FieldDateDetector<T> detector = new FieldDateDetector<>(field, date.shiftedBy(stepSize.multiply(5.25))).withHandler(handler);
+        propagator.addEventDetector(detector);
         propagator.propagate(date.shiftedBy(stepSize.multiply(10)));
         Assertions.assertTrue(eventOccurred[0]);
 
@@ -136,7 +138,9 @@ public class FieldEventDetectorTest {
         FieldPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         T stepSize = zero.add(60.0);
         OutOfOrderChecker<T> checker = new OutOfOrderChecker<>(stepSize);
-        propagator.addEventDetector(new FieldDateDetector<>(field, date.shiftedBy(stepSize.multiply(5.25))).withHandler(checker));
+        @SuppressWarnings("unchecked")
+        FieldDateDetector<T> detector = new FieldDateDetector<>(field, date.shiftedBy(stepSize.multiply(5.25))).withHandler(checker);
+        propagator.addEventDetector(detector);
         propagator.setStepHandler(stepSize, checker);
         propagator.propagate(date.shiftedBy(stepSize.multiply(10)));
         Assertions.assertTrue(checker.outOfOrderCallDetected());
@@ -345,6 +349,7 @@ public class FieldEventDetectorTest {
         doTestWrappedException(Binary64Field.getInstance());
     }
 
+    @SuppressWarnings("unchecked")
     private <T extends CalculusFieldElement<T>> void doTestWrappedException(Field<T> field) {
         final T zero = field.getZero();
         final Throwable dummyCause = new RuntimeException();
@@ -428,7 +433,7 @@ public class FieldEventDetectorTest {
                                                                                         field.getZero().add(0.3),
                                                                                         field.getZero().add(0),
                                                                                         field.getZero().add(0),
-                                                                                        field.getZero().add(0), PositionAngle.TRUE,
+                                                                                        field.getZero().add(0), PositionAngleType.TRUE,
                                                                                         FramesFactory.getEME2000(),
                                                                                         FieldAbsoluteDate.getJ2000Epoch(field),
                                                                                         field.getZero().add(Constants.EIGEN5C_EARTH_MU)));
@@ -498,11 +503,13 @@ public class FieldEventDetectorTest {
         });
 
         for (int i = 0; i < 10; ++i) {
-            propagator.addEventDetector(new FieldDateDetector<>(field, initialDate.shiftedBy(0.0625 * (i + 1))).
-                               withHandler((state, detector, increasing) -> {
-                                   checker.callDate(state.getDate());
-                                   return Action.CONTINUE;
-                               }));
+            @SuppressWarnings("unchecked")
+            FieldDateDetector<T> detector = new FieldDateDetector<>(field, initialDate.shiftedBy(0.0625 * (i + 1))).
+                                            withHandler((state, d, increasing) -> {
+                                                checker.callDate(state.getDate());
+                                                return Action.CONTINUE;
+                                            });
+            propagator.addEventDetector(detector);
         }
 
         propagator.propagate(initialDate.shiftedBy(start), initialDate.shiftedBy(stop));

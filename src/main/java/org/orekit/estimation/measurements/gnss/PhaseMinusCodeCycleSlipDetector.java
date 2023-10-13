@@ -45,7 +45,6 @@ import org.orekit.utils.Constants;
  * one has access to the begin and end of availability, and a sorted set which contains all the date at which
  * cycle-slip have been detected
  * </p>
- * <p>
  * @author David Soulard
  * @since 10.2
  */

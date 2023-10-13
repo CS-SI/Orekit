@@ -55,12 +55,16 @@ public class AttitudeInterpolator extends AbstractTimeInterpolator<Attitude> {
         this.interpolator   = interpolator;
     }
 
-    /** @return reference frame from which attitude is defined */
+    /** Get reference frame from which attitude is defined.
+     * @return reference frame from which attitude is defined
+     */
     public Frame getReferenceFrame() {
         return referenceFrame;
     }
 
-    /** @return time stamped angular coordinates interpolator */
+    /** Get time stamped angular coordinates interpolator.
+     * @return time stamped angular coordinates interpolator
+     */
     public TimeInterpolator<TimeStampedAngularCoordinates> getAngularInterpolator() {
         return interpolator;
     }

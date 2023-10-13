@@ -37,7 +37,7 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.time.FieldAbsoluteDate;
@@ -53,6 +53,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * retrograde).</p>
  * @see FieldOrbit
  * @author Guylaine Prat
+ * @param <T> type of the field elements
  */
 public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
@@ -679,7 +680,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
                                                                   current.mean.getI()         .add( deltaI ),
                                                                   current.mean.getRightAscensionOfAscendingNode().add(deltaRAAN),
                                                                   current.mean.getAlphaM().add(deltaAlphaM),
-                                                                  PositionAngle.MEAN,
+                                                                  PositionAngleType.MEAN,
                                                                   current.mean.getFrame(),
                                                                   current.mean.getDate(), mu),
                                   mass, referenceRadius, mu, ck0);

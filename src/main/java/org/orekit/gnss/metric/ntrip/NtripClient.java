@@ -27,6 +27,8 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Proxy.Type;
 import java.net.SocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
@@ -370,8 +372,8 @@ public class NtripClient {
                 sourceTable = table;
                 return table;
 
-            } catch (IOException ioe) {
-                throw new OrekitException(ioe, OrekitMessages.CANNOT_PARSE_SOURCETABLE, host);
+            } catch (IOException | URISyntaxException e) {
+                throw new OrekitException(e, OrekitMessages.CANNOT_PARSE_SOURCETABLE, host);
             }
         }
 
@@ -471,13 +473,14 @@ public class NtripClient {
      * @param mountPoint mount point (empty for getting sourcetable)
      * @return performed connection
      * @throws IOException if an I/O exception occurs during connection
+     * @throws URISyntaxException if the built URI is invalid
      */
     HttpURLConnection connect(final String mountPoint)
-        throws IOException {
+        throws IOException, URISyntaxException {
 
         // set up connection
-        final String protocol = "http";
-        final URL casterURL = new URL(protocol, host, port, "/" + mountPoint);
+        final String scheme = "http";
+        final URL casterURL = new URI(scheme, null, host, port, "/" + mountPoint, null, null).toURL();
         final HttpURLConnection connection = (HttpURLConnection) casterURL.openConnection(proxy);
         connection.setConnectTimeout(timeout);
         connection.setReadTimeout(timeout);

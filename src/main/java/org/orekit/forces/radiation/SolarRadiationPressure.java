@@ -437,7 +437,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
     /** Compute min of two values, one double and one field element.
      * @param d double value
      * @param f field element
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return min value
      */
     private <T extends CalculusFieldElement<T>> T min(final double d, final T f) {
@@ -447,7 +447,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
     /** Compute max of two values, one double and one field element.
      * @param d double value
      * @param f field element
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return max value
      */
     private <T extends CalculusFieldElement<T>> T max(final double d, final T f) {

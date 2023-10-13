@@ -112,7 +112,9 @@ public class TimeStampedFieldPVCoordinatesHermiteInterpolator<KK extends Calculu
         this.filter = filter;
     }
 
-    /** @return filter for derivatives from the sample to use in interpolation */
+    /** filter for derivatives from the sample to use in interpolation.
+     * @return filter for derivatives from the sample to use in interpolation
+     */
     public CartesianDerivativesFilter getFilter() {
         return filter;
     }

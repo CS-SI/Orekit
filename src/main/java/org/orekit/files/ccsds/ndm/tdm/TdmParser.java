@@ -47,9 +47,11 @@ import org.orekit.utils.IERSConventions;
  * and drop it afterwards, or to use a single-thread loop.
  * </p>
  *
- * <p>References:<p>
- *  - <a href="https://public.ccsds.org/Pubs/503x0b1c1.pdf">CCSDS 503.0-B-1 recommended standard</a> ("Tracking Data Message", Blue Book, Issue 1, November 2007).<p>
- *  - <a href="https://public.ccsds.org/Pubs/505x0b1.pdf">CCSDS 505.0-B-1 recommended standard</a> ("XML Specification for Navigation Data Message", Blue Book, Issue 1, December 2010).<p>
+ * <p>References:</p>
+ * <ul>
+ *   <li><a href="https://public.ccsds.org/Pubs/503x0b1c1.pdf">CCSDS 503.0-B-1 recommended standard</a> ("Tracking Data Message", Blue Book, Issue 1, November 2007)</li>
+ *   <li><a href="https://public.ccsds.org/Pubs/505x0b1.pdf">CCSDS 505.0-B-1 recommended standard</a> ("XML Specification for Navigation Data Message", Blue Book, Issue 1, December 2010)</li>
+ * </ul>
  *
  * @author Maxime Journot
  * @since 9.0

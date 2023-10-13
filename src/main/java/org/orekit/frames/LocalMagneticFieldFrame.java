@@ -150,12 +150,16 @@ public class LocalMagneticFieldFrame implements LOF {
         return "LOCAL_MAGNETIC_FIELD_FRAME";
     }
 
-    /** @return inertial frame */
+    /** Get interlai frame.
+     * @return inertial frame
+     */
     public Frame getInertialFrame() {
         return inertialFrame;
     }
 
-    /** @return geo magnetic field */
+    /** Get geomagnetid field.
+     * @return geo magnetic field
+     */
     public GeoMagneticField getMagneticField() {
         return magneticField;
     }

@@ -52,6 +52,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * occurs at a bound rather than inside the step).</p>
  * @author Luc Maisonobe
  * @param <D> class type for the generic version
+ * @param <T> type of the field elements
  */
 public class FieldEventState<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> {
 
@@ -626,6 +627,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
     /**
      * Class to hold the data related to an event occurrence that is needed to decide how
      * to modify integration.
+     * @param <T> type of the field elements
      */
     public static class EventOccurrence<T extends CalculusFieldElement<T>> {
 

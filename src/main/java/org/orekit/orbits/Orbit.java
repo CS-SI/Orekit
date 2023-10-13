@@ -189,6 +189,14 @@ public abstract class Orbit
         }
     }
 
+    /** Returns true if and only if the orbit is elliptical i.e. has a non-negative semi-major axis.
+     * @return true if getA() is strictly greater than 0
+     * @since 12.0
+     */
+    public boolean isElliptical() {
+        return getA() > 0.;
+    }
+
     /** Get the orbit type.
      * @return orbit type
      */
@@ -400,7 +408,7 @@ public abstract class Orbit
      */
     public double getKeplerianPeriod() {
         final double a = getA();
-        return (a < 0) ? Double.POSITIVE_INFINITY : 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
+        return isElliptical() ? 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu) : Double.POSITIVE_INFINITY;
     }
 
     /** Get the Keplerian mean motion.
@@ -465,12 +473,12 @@ public abstract class Orbit
         }
 
         // If output frame requested is the same as definition frame,
-        // PV coordinates are returned directly
+        // Position vector is returned directly
         if (outputFrame == frame) {
             return position;
         }
 
-        // Else, PV coordinates are transformed to output frame
+        // Else, position vector is transformed to output frame
         final StaticTransform t = frame.getStaticTransformTo(outputFrame, date);
         return t.transformPosition(position);
 
@@ -535,7 +543,7 @@ public abstract class Orbit
      * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix
      * is larger than 6x6, only the 6x6 upper left corner will be modified
      */
-    public void getJacobianWrtCartesian(final PositionAngle type, final double[][] jacobian) {
+    public void getJacobianWrtCartesian(final PositionAngleType type, final double[][] jacobian) {
 
         final double[][] cachedJacobian;
         synchronized (this) {
@@ -583,7 +591,7 @@ public abstract class Orbit
      * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix
      * is larger than 6x6, only the 6x6 upper left corner will be modified
      */
-    public void getJacobianWrtParameters(final PositionAngle type, final double[][] jacobian) {
+    public void getJacobianWrtParameters(final PositionAngleType type, final double[][] jacobian) {
 
         final double[][] cachedJacobian;
         synchronized (this) {
@@ -625,7 +633,7 @@ public abstract class Orbit
      * @param type type of the position angle to use
      * @return inverse Jacobian
      */
-    private double[][] createInverseJacobian(final PositionAngle type) {
+    private double[][] createInverseJacobian(final PositionAngleType type) {
 
         // get the direct Jacobian
         final double[][] directJacobian = new double[6][6];
@@ -694,7 +702,7 @@ public abstract class Orbit
      * part must be <em>added</em> to the array components, as the array may already
      * contain some non-zero elements corresponding to non-Keplerian parts)
      */
-    public abstract void addKeplerContribution(PositionAngle type, double gm, double[] pDot);
+    public abstract void addKeplerContribution(PositionAngleType type, double gm, double[] pDot);
 
         /** Fill a Jacobian half row with a single vector.
      * @param a coefficient of the vector

@@ -272,6 +272,7 @@ public class OrekitEphemerisFile
         }
     }
 
+    /** Ephemeris segment. */
     public static class OrekitEphemerisSegment
         implements EphemerisFile.EphemerisSegment<TimeStampedPVCoordinates> {
 

@@ -40,7 +40,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -350,7 +350,7 @@ public class EventDetectorTest {
 
        // by default, this method returns its argument
        SpacecraftState s = new SpacecraftState(new KeplerianOrbit(7e6, 0.01, 0.3, 0, 0, 0,
-                                                                  PositionAngle.TRUE, FramesFactory.getEME2000(),
+                                                                  PositionAngleType.TRUE, FramesFactory.getEME2000(),
                                                                   AbsoluteDate.J2000_EPOCH, Constants.EIGEN5C_EARTH_MU));
        Assertions.assertSame(s, dummyDetector.getHandler().resetState(dummyDetector, s));
 

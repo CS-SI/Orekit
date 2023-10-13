@@ -50,6 +50,14 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
         this.timeConverter = timeConverter;
     }
 
+    /** Get state history.
+     * @return state history
+     * @since 12.0
+     */
+    TrajectoryStateHistory getHistory() {
+        return history;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void writeContent(final Generator generator) throws IOException {

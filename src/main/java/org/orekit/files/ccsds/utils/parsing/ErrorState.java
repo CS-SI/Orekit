@@ -29,6 +29,17 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
  */
 public class ErrorState implements ProcessingState {
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public ErrorState() {
+        // nothing to do
+    }
+
     /** {@inheritDoc}
      * <p>
      * This method always generate an error, as no data is expected in this state.

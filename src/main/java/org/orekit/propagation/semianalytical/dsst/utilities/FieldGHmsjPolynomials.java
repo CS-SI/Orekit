@@ -28,6 +28,7 @@ import org.hipparchus.util.FastMath;
  *  </p>
  *  @author Romain Di Costanzo
  *  @author Bryan Cazabonne (field translation)
+ * @param <T> type of the field elements
  */
 public class FieldGHmsjPolynomials <T extends CalculusFieldElement<T>> {
     /** C<sub>j</sub>(k, h), S<sub>j</sub>(k, h) coefficient.

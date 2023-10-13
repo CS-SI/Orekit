@@ -32,7 +32,7 @@ import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** Class modeling an Right Ascension - Declination measurement from a ground point (station, telescope).
+/** Class modeling a Right Ascension - Declination measurement from a ground point (station, telescope).
  * The angles are given in an inertial reference frame.
  * The motion of the spacecraft during the signal flight time is taken into
  * account. The date of the measurement corresponds to the reception on
@@ -204,10 +204,13 @@ public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec>
         return estimated;
     }
 
-    /** Calculate the Line Of Sight of the given Radec.
-     * @return Vector3D the line of Sight of the Radec
+    /** Calculate the Line Of Sight of the given measurement.
+     * @param outputFrame output frame of the line of sight vector
+     * @return Vector3D the line of Sight of the measurement
+     * @since 12.0
      */
-    public Vector3D getLineOfSight() {
-        return new Vector3D(this.getObservedValue()[0], this.getObservedValue()[1]);
+    public Vector3D getObservedLineOfSight(final Frame outputFrame) {
+        return referenceFrame.getStaticTransformTo(outputFrame, getDate())
+            .transformVector(new Vector3D(getObservedValue()[0], getObservedValue()[1]));
     }
 }

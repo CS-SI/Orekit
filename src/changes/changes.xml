@@ -21,6 +21,99 @@
   </properties>
   <body>
   <release version="12.0" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="1228">
+          Added lowestAltitudeIntermediate method to OneAxisEllipsoid.
+      </action>
+      <action dev="luc" type="fix"  issue="1226">
+          Fixed Sun radius.
+      </action>
+      <action dev="luc" type="add"  issue="1227">
+          Added support for CCSDS/SANA geodetic orbital elements.
+      </action>
+      <action dev="serrof" type="add"  issue="1217">
+          Added getter for resetAtEnd in (Field)AbstractIntegratedIntegrator.
+      </action>
+      <action dev="luc" type="add"  issue="1224">
+          Fixed NaN appering in one axis ellipsoid Cartesian to geodetic transform in rare cases.
+      </action>
+      <action dev="luc" type="add"  issue="1222">
+          Added configurable skimming altitude to inter-satellite direct view detector.
+      </action>
+      <action dev="luc" type="add"  issue="1223">
+          Added wind-up effect for inter-satellites phase measurements.
+      </action>
+      <action dev="luc" type="add"  issue="1219">
+          Added builders for OneWayGNSSPhase and OneWayGNSSRange.
+      </action>
+      <action dev="luc" type="add"  issue="1220">
+          Use step interpolators for measurements generation requiring time shifts.
+      </action>
+      <action dev="luc" type="add"  issue="1221">
+          {Field}OrekitStepInterpolator now implement {Field}PVCoordinatesProvider.
+      </action>
+      <action dev="bryan" type="add" issue="1216">
+          Added Az/El based initial orbit determination.
+      </action>
+      <action dev="bryan" type="fix" issue="1196">
+          Fixed multiple issues in initial orbit determination.
+      </action>
+      <action dev="serrof" type="update" issue="1210">
+          Fixed missing up- and down-stream inheritance of FieldTimeShiftable.
+      </action>
+      <action dev="serrof" type="update" issue="1209">
+          Renamed PositionAngle into PositionAngleType
+      </action>
+      <action dev="serrof" type="add" issue="1172">
+          Added access to integrator's name for (Field)AbstractIntegratedPropagator
+      </action>
+      <action dev="vincent" type="fix" issue="1205">
+        Fixed failing tests after correction of Hipparchus issue 253.
+      </action>
+      <action dev="vincent" type="update" issue="1169">
+        Refactored MarshallSolarActivityFutureEstimation so that it follows the same architecture as CssiSpaceWeatherData
+      </action>
+      <action dev="vincent" type="fix" issue="1168">
+        Fixed Marshall Solar Activity website link in MarshallSolarActivityFutureEstimation javadoc
+      </action>
+      <action dev="vincent" type="fix" issue="1072">
+        Fixed thread interference using CssiSpaceWeatherData and MarshallSolarActivityFutureEstimation
+      </action>
+      <action dev="vincent" type="update" issue="1195">
+        Updated OrbitBlender API and improved javadoc.
+      </action>
+      <action dev="serrof" type="fix" issue="1197">
+        Use of FieldOrbit in gradient converters only when applicable.
+      </action>
+      <action dev="luc" type="update" >
+        Improved (a lot) performance of GNSS attitude models.
+      </action>
+      <action dev="luc" type="update" >
+        Replaced {Field}DerivativeStructure by {Field}UnivariateDerivative2 in GNSS attitude context.
+      </action>
+      <action dev="serrof" type="add" issue="1194">
+        Added ways to create FieldOrbit from Orbit.
+      </action>
+      <action dev="luc" type="fix" issue="1014" due-to="Li Rongwang">
+        Added support for more weird dates in SP3 files.
+      </action>
+      <action dev="serrof" type="update" issue="1192">
+        Cleaned (Field)SpacecraftState and changed default Attitude from LofOffset to FrameAlignedProvider.
+      </action>
+      <action dev="serrof" type="add" issue="1185">
+        Added direct call to (Field)Rotation for AttitudeProviders.
+      </action>
+      <action dev="luc" type="fix" issue="1191">
+        Added SP3CoordinateHermiteInterpolator.
+      </action>
+      <action dev="luc" type="fix" issue="1049">
+        Added SP3Writer.
+      </action>
+      <action dev="luc" type="fix" issue="1190">
+        Revamped SP3 data hierarchy, with header and separated ephemeris segments.
+      </action>
+      <action dev="luc" type="fix" issue="1187">
+        Fixed units in SP3 files.
+      </action>
       <action dev="vincent" type="add">
         Added getter for filter in EventSlopeFilter.
       </action>
@@ -2014,7 +2107,7 @@
     value can be changed, access to Kalman filter internal matrices, position-only measurements in orbit determination,
     support for unofficial versions 2.12 and 2.20 of Rinex files (mainly for spaceborne receivers),
     direct building of appropriate attitude law with eclipses for all GNSS satellite types, inter-satellites
-    view detector, measurement generation feature, possibility fo use Marshall Solar Activity Future Estimation
+    view detector, measurement generation feature, possibility to use Marshall Solar Activity Future Estimation
     to feed NRL MSISE 2000 atmosphere model, new tropospheric models: Mendes-Pavlis, Vienna 1, Vienna 3, estimated model,
     new mapping functions for tropospheric effect: Global Mapping Function, Niell Mapping Function, Global
     Pression Temperature Models GPT and GPT2, possibility to estimate tropospheric zenith delay,

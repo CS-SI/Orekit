@@ -22,7 +22,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -224,7 +224,7 @@ public class J2DifferentialEffect
 
         // build updated orbit
         final EquinoctialOrbit updated =
-                new EquinoctialOrbit(original.getA(), ex, ey, hx, hy, lambda, PositionAngle.TRUE,
+                new EquinoctialOrbit(original.getA(), ex, ey, hx, hy, lambda, PositionAngleType.TRUE,
                                      original.getFrame(), date, original.getMu());
 
         // convert to required type

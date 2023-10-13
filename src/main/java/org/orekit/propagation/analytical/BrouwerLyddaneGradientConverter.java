@@ -63,8 +63,8 @@ class BrouwerLyddaneGradientConverter extends AbstractAnalyticalGradientConverte
         final Gradient mu = zero.add(propagator.getMu());
 
         // Return the "Field" propagator
-        return new FieldBrouwerLyddanePropagator<Gradient>(state.getOrbit(), provider, radius, mu,
-                                                           ck0[2], ck0[3], ck0[4], ck0[5], parameters[0].getValue());
+        return new FieldBrouwerLyddanePropagator<>(state.getOrbit(), provider, radius, mu,
+                ck0[2], ck0[3], ck0[4], ck0[5], parameters[0].getValue());
 
     }
 

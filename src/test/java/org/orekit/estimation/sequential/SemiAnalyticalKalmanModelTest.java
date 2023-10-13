@@ -16,7 +16,7 @@ import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
@@ -33,7 +33,7 @@ public class SemiAnalyticalKalmanModelTest {
     private final OrbitType orbitType = OrbitType.EQUINOCTIAL;
 
     /** Position angle for propagation. */
-    private final PositionAngle positionAngle = PositionAngle.MEAN;
+    private final PositionAngleType positionAngleType = PositionAngleType.MEAN;
 
     /** Initial orbit. */
     private Orbit orbit0;
@@ -172,7 +172,7 @@ public class SemiAnalyticalKalmanModelTest {
         final RealVector x = model.getPhysicalEstimatedState();
         final RealVector expX = MatrixUtils.createRealVector(M);
         final double[] orbitState0 = new double[6];
-        orbitType.mapOrbitToArray(orbit0, positionAngle, orbitState0, null);
+        orbitType.mapOrbitToArray(orbit0, positionAngleType, orbitState0, null);
         expX.setSubVector(0, MatrixUtils.createRealVector(orbitState0));
         expX.setEntry(6, srpCoefDriver.getReferenceValue());
         expX.setEntry(7, satRangeBiasDriver.getReferenceValue());

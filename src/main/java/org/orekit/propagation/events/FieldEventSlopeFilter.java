@@ -61,6 +61,8 @@ import org.orekit.time.FieldAbsoluteDate;
  * only {@code decreasing} events. The number of calls to the {@link
  * FieldEventDetector#g(FieldSpacecraftState) g function} will also be reduced.</p>
  * @see FieldEventEnablingPredicateFilter
+ * @param <D> type of the detector
+ * @param <T> type of the field elements
  */
 
 public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>>

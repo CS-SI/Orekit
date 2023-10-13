@@ -115,12 +115,16 @@ public class AbsolutePVCoordinatesHermiteInterpolator extends AbstractTimeInterp
         this.filter      = filter;
     }
 
-    /** @return filter for derivatives from the sample to use in interpolation. */
+    /** Get the filter for derivatives from the sample to use in interpolation.
+     * @return filter for derivatives from the sample to use in interpolation.
+     */
     public CartesianDerivativesFilter getFilter() {
         return filter;
     }
 
-    /** @return output frame for the interpolated instance */
+    /** Get output frame for the interpolated instance.
+     * @return output frame for the interpolated instance
+     */
     public Frame getOutputFrame() {
         return outputFrame;
     }

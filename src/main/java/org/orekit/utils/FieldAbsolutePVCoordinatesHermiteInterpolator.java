@@ -37,6 +37,7 @@ import java.util.List;
  * @author Vincent Cucchietti
  * @see FieldHermiteInterpolator
  * @see FieldAbsolutePVCoordinates
+ * @param <KK> type of the field elements
  */
 public class FieldAbsolutePVCoordinatesHermiteInterpolator<KK extends CalculusFieldElement<KK>>
         extends AbstractFieldTimeInterpolator<FieldAbsolutePVCoordinates<KK>, KK> {
@@ -118,12 +119,16 @@ public class FieldAbsolutePVCoordinatesHermiteInterpolator<KK extends CalculusFi
         this.filter      = filter;
     }
 
-    /** @return filter for derivatives from the sample to use in interpolation. */
+    /** Get filter for derivatives from the sample to use in interpolation.
+     * @return filter for derivatives from the sample to use in interpolation
+     */
     public CartesianDerivativesFilter getFilter() {
         return filter;
     }
 
-    /** @return output frame for the interpolated instance */
+    /** Get output frame for the interpolated instance.
+     * @return output frame for the interpolated instance
+     */
     public Frame getOutputFrame() {
         return outputFrame;
     }

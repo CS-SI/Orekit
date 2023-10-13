@@ -21,7 +21,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -64,13 +64,13 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
     private final OrbitType stmOrbitType;
 
     /** Position angle used for State Transition Matrix. */
-    private final PositionAngle stmAngleType;
+    private final PositionAngleType stmAngleType;
 
     /** Orbit type for the covariance matrix. */
     private final OrbitType covOrbitType;
 
     /** Position angle used for the covariance matrix. */
-    private final PositionAngle covAngleType;
+    private final PositionAngleType covAngleType;
 
     /** Initial state covariance. */
     private StateCovariance covInit;
@@ -95,9 +95,9 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
         this.harvester = harvester;
         this.covInit = covInit;
         this.covOrbitType = covInit.getOrbitType();
-        this.covAngleType = covInit.getPositionAngle();
+        this.covAngleType = covInit.getPositionAngleType();
         this.stmOrbitType = harvester.getOrbitType();
-        this.stmAngleType = harvester.getPositionAngle();
+        this.stmAngleType = harvester.getPositionAngleType();
     }
 
     /** {@inheritDoc} */
@@ -165,7 +165,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      * @param state spacecraft state to which the covariance matrix should correspond
      * @return the state covariance
      * @see #getStateCovariance(SpacecraftState, Frame)
-     * @see #getStateCovariance(SpacecraftState, OrbitType, PositionAngle)
+     * @see #getStateCovariance(SpacecraftState, OrbitType, PositionAngleType)
      */
     public StateCovariance getStateCovariance(final SpacecraftState state) {
 
@@ -195,7 +195,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      * @param frame output frame for which the output covariance matrix must be expressed (must be inertial)
      * @return the state covariance expressed in <code>frame</code>
      * @see #getStateCovariance(SpacecraftState)
-     * @see #getStateCovariance(SpacecraftState, OrbitType, PositionAngle)
+     * @see #getStateCovariance(SpacecraftState, OrbitType, PositionAngleType)
      */
     public StateCovariance getStateCovariance(final SpacecraftState state, final Frame frame) {
         // Return the converted covariance
@@ -213,7 +213,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
      * @see #getStateCovariance(SpacecraftState, Frame)
      */
     public StateCovariance getStateCovariance(final SpacecraftState state, final OrbitType orbitType,
-                                              final PositionAngle angleType) {
+                                              final PositionAngleType angleType) {
         // Return the converted covariance
         return getStateCovariance(state).changeCovarianceType(state.getOrbit(), orbitType, angleType);
     }

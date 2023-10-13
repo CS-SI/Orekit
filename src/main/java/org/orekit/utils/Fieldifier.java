@@ -33,7 +33,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldStateCovariance;
 import org.orekit.propagation.StateCovariance;
 import org.orekit.time.FieldAbsoluteDate;
@@ -89,7 +89,7 @@ public class Fieldifier {
                 final T alphaMDot = one.multiply(circOrbit.getAlphaMDot());
 
                 return new FieldCircularOrbit<>(a, ex, ey, i, raan, alphaM, aDot, exDot, eyDot, iDot, raanDot, alphaMDot,
-                                                PositionAngle.MEAN, frame, fieldDate, fieldMu);
+                                                PositionAngleType.MEAN, frame, fieldDate, fieldMu);
             }
 
             case CARTESIAN: {
@@ -118,7 +118,7 @@ public class Fieldifier {
                 final T meanAnomalyDot = one.multiply(kepOrbit.getMeanAnomalyDot());
 
                 return new FieldKeplerianOrbit<>(a, e, i, pa, raan, meanAnomaly, aDot, eDot, iDot, paDot, raanDot,
-                                                 meanAnomalyDot, PositionAngle.MEAN, frame, fieldDate, fieldMu);
+                                                 meanAnomalyDot, PositionAngleType.MEAN, frame, fieldDate, fieldMu);
             }
             case EQUINOCTIAL: {
                 final EquinoctialOrbit equiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
@@ -140,7 +140,7 @@ public class Fieldifier {
                 final T lmDot = one.multiply(equiOrbit.getLMDot());
 
                 return new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy, lm, aDot, exDot, eyDot, hxDot, hyDot,
-                                                   lmDot, PositionAngle.MEAN, frame, fieldDate, fieldMu);
+                                                   lmDot, PositionAngleType.MEAN, frame, fieldDate, fieldMu);
             }
             default:
                 // Should never happen
@@ -192,7 +192,7 @@ public class Fieldifier {
         final FieldAbsoluteDate<T> fieldEpoch  = new FieldAbsoluteDate<>(field, stateCovariance.getDate());
         if (stateCovariance.getLOF() == null) {
             return new FieldStateCovariance<>(fieldMatrix, fieldEpoch, stateCovariance.getFrame(),
-                                              stateCovariance.getOrbitType(), stateCovariance.getPositionAngle());
+                                              stateCovariance.getOrbitType(), stateCovariance.getPositionAngleType());
         }
         return new FieldStateCovariance<>(fieldMatrix, fieldEpoch, stateCovariance.getLOF());
     }

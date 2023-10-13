@@ -32,15 +32,18 @@ import org.orekit.propagation.events.FieldEventDetector;
  *
  * <p> As this handler stores all observed events it may consume large amounts
  * of memory depending on the duration of propagation and the frequency of events.
+ * </p>
  *
- * @param <T> type of the field element
  * @author Evan Ward
  * @see RecordAndContinue
  * @since 9.3
+ * @param <T> type of the field element
  */
 public class FieldRecordAndContinue <T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
-    /** A single event detected during propagation. */
+    /** A single event detected during propagation.
+     * @param <T> type of the field element
+     */
     public static class Event<T extends CalculusFieldElement<T>> {
 
         /** The observed state. */

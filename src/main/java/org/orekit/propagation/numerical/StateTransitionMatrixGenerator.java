@@ -31,7 +31,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
@@ -120,13 +120,13 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
      * @param dYdY0 initial State Transition Matrix ∂Y/∂Y₀,
      * if null (which is the most frequent case), assumed to be 6x6 identity
      * @param orbitType orbit type used for states Y and Y₀ in {@code dYdY0}
-     * @param positionAngle position angle used states Y and Y₀ in {@code dYdY0}
+     * @param positionAngleType position angle used states Y and Y₀ in {@code dYdY0}
      * @return state with initial STM (converted to Cartesian ∂C/∂Y₀) added
      */
     SpacecraftState setInitialStateTransitionMatrix(final SpacecraftState state,
                                                     final RealMatrix dYdY0,
                                                     final OrbitType orbitType,
-                                                    final PositionAngle positionAngle) {
+                                                    final PositionAngleType positionAngleType) {
 
         final RealMatrix nonNullDYdY0;
         if (dYdY0 == null) {
@@ -145,7 +145,7 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
         final RealMatrix dCdY0;
         if (state.isOrbitDefined()) {
             final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
-            orbitType.convertType(state.getOrbit()).getJacobianWrtCartesian(positionAngle, dYdC);
+            orbitType.convertType(state.getOrbit()).getJacobianWrtCartesian(positionAngleType, dYdC);
             dCdY0 = new QRDecomposition(MatrixUtils.createRealMatrix(dYdC), THRESHOLD).getSolver().solve(nonNullDYdY0);
         } else {
             dCdY0 = nonNullDYdY0;

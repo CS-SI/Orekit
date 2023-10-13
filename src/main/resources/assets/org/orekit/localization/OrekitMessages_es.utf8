@@ -388,23 +388,23 @@ DSST_SPR_SHADOW_INCONSISTENT = cálculo de sombra incoherente : entrada = {0} mi
 # The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
 DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = la órbita tiene una excentricidad ({0} > 0.5). DSST necesita para calcular las derivadas medias un método numérico dependiente del tiempo que no está implementado
 
-# unsupported sp3 file version {0}
-SP3_UNSUPPORTED_VERSION = versión de formato sp3 {0} no reconocida
+# unsupported sp3 file version "{0}"
+SP3_UNSUPPORTED_VERSION = versión de formato sp3 "{0}" no reconocida
+
+# invalid header entry {0} "{1}" in file {2} (format version {3})
+SP3_INVALID_HEADER_ENTRY = <MISSING TRANSLATION>
+
+# version "{0}" supports only up to {1} satellites, found {2} in file {3}
+SP3_TOO_MANY_SATELLITES_FOR_VERSION = <MISSING TRANSLATION>
 
 # found {0} epochs in file {1}, expected {2}
 SP3_NUMBER_OF_EPOCH_MISMATCH = se han encontrado {0} épocas en el fichero {1} en vez de {2}
-
-# unexpected end of file in sp3 file (after line {0})
-SP3_UNEXPECTED_END_OF_FILE = final inesperado de un fichero sp3 (después de la línea {0})
 
 # cannot splice sp3 files with incompatible metadata
 SP3_INCOMPATIBLE_FILE_METADATA = imposible de adjuntar los ficheros sp3 teniendo metadata diferente
 
 # cannot splice sp3 files with incompatible satellite metadata for satellite {0}
 SP3_INCOMPATIBLE_SATELLITE_MEDATADA = imposible de adjuntar los ficheros sp3 teniendo metadata del satéllite {0} diferente 
-
-# cannot splice sp3 files with large gap for satellite {0} ({1} s)
-SP3_TOO_LARGE_GAP_FOR_SPLICING = imposible de adjuntar los ficheros sp3 separados de {1} s para el satéllite {0} 
 
 # STK coordinate system "{0}" is invalid or not yet supported
 STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = el sistema de coordenadas "{0}" de STK es inválido o no aún implementado
@@ -860,3 +860,6 @@ HEADER_ALREADY_WRITTEN = la cabezera del fichero {0} ya se ha escrito
 
 # Cannot start the propagation from an infinitely far date
 CANNOT_START_PROPAGATION_FROM_INFINITY = <MISSING TRANSLATION>
+
+# invalid satellite id {0}
+INVALID_SATELLITE_ID = <MISSING TRANSLATION>

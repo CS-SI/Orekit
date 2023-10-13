@@ -35,6 +35,7 @@ import org.orekit.propagation.events.handlers.FieldStopOnDecreasing;
  * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @author Luc Maisonobe
  * @since 9.0
+ * @param <T> type of the field elements
  */
 public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldAltitudeDetector<T>, T> {
 

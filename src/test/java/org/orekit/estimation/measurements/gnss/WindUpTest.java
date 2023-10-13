@@ -154,7 +154,7 @@ public class WindUpTest {
         SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
         Assertions.assertEquals(120, measurements.size());
 
-        WindUp windUp = new WindUpFactory().getWindUp(system, prn, station.getBaseFrame().getName());
+        WindUp windUp = new WindUpFactory().getWindUp(system, prn, Dipole.CANONICAL_I_J, station.getBaseFrame().getName());
         Propagator propagator = new KeplerianPropagator(orbit, attitudeProvider);
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;

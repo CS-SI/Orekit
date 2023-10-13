@@ -22,37 +22,37 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <!-- Spotbugs version higher than 4.2.3 will trigger numerous EI_EXPOSE_REP errors not handled by Orekit yet -->
     <orekit.spotbugs-maven-plugin.version>4.2.3</orekit.spotbugs-maven-plugin.version>
-    <orekit.jacoco-maven-plugin.version>0.8.8</orekit.jacoco-maven-plugin.version>
+    <orekit.jacoco-maven-plugin.version>0.8.9</orekit.jacoco-maven-plugin.version>
     <orekit.maven-bundle-plugin.version>5.1.8</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
-    <orekit.maven-checkstyle-plugin.version>3.2.0</orekit.maven-checkstyle-plugin.version>
+    <orekit.maven-checkstyle-plugin.version>3.2.2</orekit.maven-checkstyle-plugin.version>
     <!-- Checkstyle 9.3 seems to be the last version usable with JDK 8 -->
     <orekit.checkstyle.version>9.3</orekit.checkstyle.version>
     <orekit.maven-clean-plugin.version>3.2.0</orekit.maven-clean-plugin.version>
-    <orekit.maven-compiler-plugin.version>3.10.1</orekit.maven-compiler-plugin.version>
-    <orekit.maven-javadoc-plugin.version>3.4.1</orekit.maven-javadoc-plugin.version>
+    <orekit.maven-compiler-plugin.version>3.11.0</orekit.maven-compiler-plugin.version>
+    <orekit.maven-javadoc-plugin.version>3.5.0</orekit.maven-javadoc-plugin.version>
     <orekit.maven-jar-plugin.version>3.3.0</orekit.maven-jar-plugin.version>
     <orekit.maven-jxr-plugin.version>3.3.0</orekit.maven-jxr-plugin.version>
     <orekit.plantuml-maven-plugin.version>1.2</orekit.plantuml-maven-plugin.version>
-    <orekit.plantuml.version>1.2022.8</orekit.plantuml.version>
-    <orekit.maven-project-info-reports-plugin.version>3.4.1</orekit.maven-project-info-reports-plugin.version>
-    <orekit.maven-resources-plugin.version>3.3.0</orekit.maven-resources-plugin.version>
+    <orekit.plantuml.version>1.2023.6</orekit.plantuml.version>
+    <orekit.maven-resources-plugin.version>3.3.1</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.12.1</orekit.maven-site-plugin.version>
+    <orekit.maven-project-info-reports-plugin.version>3.4.3</orekit.maven-project-info-reports-plugin.version>
     <orekit.maven-wagon-ssh-plugin.version>3.5.2</orekit.maven-wagon-ssh-plugin.version>
     <orekit.maven-source-plugin.version>3.2.1</orekit.maven-source-plugin.version>
     <!-- Surefire 2.22.2 is the last to support CentOS/RedHat 7 due to
          https://issues.apache.org/jira/browse/SUREFIRE-1628 -->
     <orekit.maven-surefire-plugin.version>2.22.2</orekit.maven-surefire-plugin.version>
-    <orekit.maven-surefire-report-plugin.version>3.0.0-M6</orekit.maven-surefire-report-plugin.version>
+    <orekit.maven-surefire-report-plugin.version>3.0.0-M9</orekit.maven-surefire-report-plugin.version>
     <orekit.mockito-core.version>4.8.1</orekit.mockito-core.version>
     <orekit.jgit.buildnumber.version>1.2.12</orekit.jgit.buildnumber.version>
     <orekit.build-helper-maven-plugin.version>3.3.0</orekit.build-helper-maven-plugin.version>
     <orekit.nexus-staging-maven-plugin.version>1.6.13</orekit.nexus-staging-maven-plugin.version>
     <orekit.maven-gpg-plugin.version>3.0.1</orekit.maven-gpg-plugin.version>
-    <orekit.maven-install-plugin.version>3.0.1</orekit.maven-install-plugin.version>
+    <orekit.maven-install-plugin.version>3.1.1</orekit.maven-install-plugin.version>
     <orekit.mathjax.config>&lt;script type=&quot;text/x-mathjax-config&quot;&gt;MathJax.Hub.Config({ TeX: { extensions: [&quot;autoload.js&quot;]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
-    <orekit.hipparchus.version>3.0-SNAPSHOT</orekit.hipparchus.version>
+    <orekit.hipparchus.version>3.0</orekit.hipparchus.version>
     <orekit.junit.version>5.9.1</orekit.junit.version>
     <orekit.hamcrest.version>2.2</orekit.hamcrest.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
@@ -500,6 +500,7 @@
             <configuration>
               <compilerArgs>
                 <arg>-Xlint:deprecation</arg>
+                <arg>-Xlint:unchecked</arg>
                 <!-- don't activate the compiler plugin for Orekit own tests -->
                 <!-- thousands of tests use intentionally the default context -->
               </compilerArgs>

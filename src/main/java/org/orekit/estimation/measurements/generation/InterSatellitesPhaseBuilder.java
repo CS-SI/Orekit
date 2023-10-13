@@ -23,6 +23,7 @@ import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
@@ -41,8 +42,7 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
      */
     private final ObservableSatellite local;
 
-    /** Satellite which simply emits the signal in the one-way case,
-     * or reflects the signal in the two-way case.
+    /** Satellite which simply emits the signal.
      * @since 12.0
      */
     private final ObservableSatellite remote;
@@ -50,8 +50,7 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param local satellite which receives the signal and performs the measurement
-     * @param remote satellite which simply emits the signal in the one-way case,
-     * or reflects the signal in the two-way case
+     * @param remote satellite which simply emits the signal
      * @param wavelength phase observed value wavelength (m)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
@@ -67,13 +66,13 @@ public class InterSatellitesPhaseBuilder extends AbstractMeasurementBuilder<Inte
 
     /** {@inheritDoc} */
     @Override
-    public InterSatellitesPhase build(final Map<ObservableSatellite, SpacecraftState> states) {
+    public InterSatellitesPhase build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
 
         final double sigma                     = getTheoreticalStandardDeviation()[0];
         final double baseWeight                = getBaseWeight()[0];
         final SpacecraftState[] relevant       = new SpacecraftState[] {
-            states.get(local),
-            states.get(remote)
+            interpolators.get(local).getInterpolatedState(date),
+            interpolators.get(remote).getInterpolatedState(date)
         };
 
         // create a dummy measurement

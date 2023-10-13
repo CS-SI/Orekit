@@ -162,6 +162,9 @@ public enum ShortTermEncounter2DPOCMethodType {
      */
     public abstract PocMethodType getCCSDSType();
 
-    /** @return probability of collision method */
+    /** Get probability of collision method.
+     * @return probability of collision method
+     */
     public abstract ShortTermEncounter2DPOCMethod getMethod();
+
 }

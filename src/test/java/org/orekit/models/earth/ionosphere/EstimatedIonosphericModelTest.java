@@ -42,7 +42,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -155,7 +155,7 @@ public class EstimatedIonosphericModelTest {
         final Frame           frame   = FramesFactory.getEME2000();
         final Orbit           orbit   = new KeplerianOrbit(24464560.0, 0.05, 0.122138,
                                                3.10686, 1.00681, 0.048363,
-                                               PositionAngle.MEAN, frame, date, Constants.WGS84_EARTH_MU);
+                                               PositionAngleType.MEAN, frame, date, Constants.WGS84_EARTH_MU);
         final SpacecraftState state = new SpacecraftState(orbit);
 
         // Delay
@@ -192,7 +192,7 @@ public class EstimatedIonosphericModelTest {
         final Frame                   frame   = FramesFactory.getEME2000();
         final FieldOrbit<T>           orbit   = new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(0.05), zero.add(0.122138),
                                                                           zero.add(3.10686), zero.add(1.00681), zero.add(0.048363),
-                                                                          PositionAngle.MEAN, frame, date, zero.add(Constants.WGS84_EARTH_MU));
+                                                                          PositionAngleType.MEAN, frame, date, zero.add(Constants.WGS84_EARTH_MU));
         final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit);
 
         // Delay
@@ -261,7 +261,7 @@ public class EstimatedIonosphericModelTest {
         // Field Orbit
         final Frame frame = FramesFactory.getEME2000();
         final FieldOrbit<DerivativeStructure> dsOrbit = new FieldKeplerianOrbit<>(a0, e0, i0, pa0, raan0, anomaly0,
-                                                                                  PositionAngle.MEAN, frame,
+                                                                                  PositionAngleType.MEAN, frame,
                                                                                   dsDate, zero.add(3.9860047e14));
         // Field State
         final FieldSpacecraftState<DerivativeStructure> dsState = new FieldSpacecraftState<>(dsOrbit);
@@ -292,7 +292,7 @@ public class EstimatedIonosphericModelTest {
         // Finite differences for reference values
         final double[][] refDeriv = new double[1][6];
         final OrbitType orbitType = OrbitType.KEPLERIAN;
-        final PositionAngle angleType = PositionAngle.MEAN;
+        final PositionAngleType angleType = PositionAngleType.MEAN;
         double dP = 0.001;
         double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
         for (int i = 0; i < 6; i++) {
@@ -346,7 +346,7 @@ public class EstimatedIonosphericModelTest {
         }
     }
 
-    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
+    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
                                        double delta, int column) {
 
         double[][] array = stateToArray(state, orbitType, angleType, true);
@@ -416,7 +416,7 @@ public class EstimatedIonosphericModelTest {
         // Field Orbit
         final Frame frame = FramesFactory.getEME2000();
         final FieldOrbit<DerivativeStructure> dsOrbit = new FieldKeplerianOrbit<>(a0, e0, i0, pa0, raan0, anomaly0,
-                                                                                  PositionAngle.MEAN, frame,
+                                                                                  PositionAngleType.MEAN, frame,
                                                                                   dsDate, zero.add(3.9860047e14));
 
         // Field State
@@ -491,7 +491,7 @@ public class EstimatedIonosphericModelTest {
 
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
+    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
                                   boolean withMass) {
         double[][] array = new double[2][withMass ? 7 : 6];
         orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
@@ -501,7 +501,7 @@ public class EstimatedIonosphericModelTest {
         return array;
     }
 
-    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngle angleType,
+    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngleType angleType,
                                          Frame frame, AbsoluteDate date, double mu,
                                          Attitude attitude) {
         Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);

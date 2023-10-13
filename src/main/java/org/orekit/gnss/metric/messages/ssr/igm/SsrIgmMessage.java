@@ -29,7 +29,8 @@ import org.orekit.gnss.metric.messages.ssr.SsrMessage;
  *
  * @author Bryan Cazabonne
  * @since 11.0
- *
+ * @param <H> type of the header
+ * @param <D> type of the data
  */
 public class SsrIgmMessage<H extends SsrIgmHeader, D extends SsrIgmData> extends SsrMessage<H, D> {
 

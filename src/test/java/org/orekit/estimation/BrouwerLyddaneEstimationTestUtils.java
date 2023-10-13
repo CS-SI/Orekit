@@ -43,7 +43,7 @@ import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.models.earth.displacement.TidalDisplacement;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
@@ -91,7 +91,7 @@ public class BrouwerLyddaneEstimationTestUtils {
                                                                          map));
         context.gravity = GravityFieldFactory.getUnnormalizedProvider(5, 0);
         context.initialOrbit = new KeplerianOrbit(15000000.0, 0.125, 1.25,
-                                                  0.250, 1.375, 0.0625, PositionAngle.TRUE,
+                                                  0.250, 1.375, 0.0625, PositionAngleType.TRUE,
                                                   FramesFactory.getEME2000(),
                                                   new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, context.utc),
                                                   context.gravity.getMu());
@@ -123,7 +123,7 @@ public class BrouwerLyddaneEstimationTestUtils {
         // override orbital parameters
         double[] orbitArray = new double[6];
         propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
-                                                         propagatorBuilder.getPositionAngle(),
+                                                         propagatorBuilder.getPositionAngleType(),
                                                          orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
             propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i], initialOrbit.getDate());
@@ -244,7 +244,7 @@ public class BrouwerLyddaneEstimationTestUtils {
      */
     public static void checkKalmanFit(final BrouwerLyddaneContext context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
-                                      final Orbit refOrbit, final PositionAngle positionAngle,
+                                      final Orbit refOrbit, final PositionAngleType positionAngleType,
                                       final double expectedDeltaPos, final double posEps,
                                       final double expectedDeltaVel, final double velEps,
                                       final double[] expectedSigmasPos,final double sigmaPosEps,
@@ -252,7 +252,7 @@ public class BrouwerLyddaneEstimationTestUtils {
         {
         checkKalmanFit(context, kalman, measurements,
                        new Orbit[] { refOrbit },
-                       new PositionAngle[] { positionAngle },
+                       new PositionAngleType[] {positionAngleType},
                        new double[] { expectedDeltaPos }, new double[] { posEps },
                        new double[] { expectedDeltaVel }, new double[] { velEps },
                        new double[][] { expectedSigmasPos }, new double[] { sigmaPosEps },
@@ -276,7 +276,7 @@ public class BrouwerLyddaneEstimationTestUtils {
      */
     public static void checkKalmanFit(final BrouwerLyddaneContext context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
-                                      final Orbit[] refOrbit, final PositionAngle[] positionAngle,
+                                      final Orbit[] refOrbit, final PositionAngleType[] positionAngleType,
                                       final double[] expectedDeltaPos, final double[] posEps,
                                       final double[] expectedDeltaVel, final double []velEps,
                                       final double[][] expectedSigmasPos,final double[] sigmaPosEps,
@@ -301,7 +301,7 @@ public class BrouwerLyddaneEstimationTestUtils {
             // Convert the orbital part to Cartesian formalism
             // Assuming all 6 orbital parameters are estimated by the filter
             final double[][] dCdY = new double[6][6];
-            estimatedOrbit.getJacobianWrtParameters(positionAngle[k], dCdY);
+            estimatedOrbit.getJacobianWrtParameters(positionAngleType[k], dCdY);
             final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
             final RealMatrix estimatedCartesianP =
                             Jacobian.

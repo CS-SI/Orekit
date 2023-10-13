@@ -405,9 +405,7 @@ public class SinexLoader implements EOPHistoryLoader {
                     // They represent the minimum set of parameters that are interesting to consider in a SINEX file
                     // Other keys can be added depending user needs
 
-                    // The first line is parsed in order to get the creation date of the file, which might be used
-                    // in the case of an absent date as the final date of the data.
-                    // Its position is fixed in the file, at the first line, in the 4th column.
+                    // The first line is parsed in order to get the creation, start and end dates of the file
                     if (lineNumber == 1) {
                         final Matcher matcher = PATTERN_BEGIN.matcher(line);
                         if (matcher.matches()) {
@@ -465,7 +463,7 @@ public class SinexLoader implements EOPHistoryLoader {
                                 inEstimate = true;
                                 break;
                             case "-SOLUTION/ESTIMATE" :
-                                // Start of coordinates data
+                                // End of coordinates data
                                 inEstimate = false;
                                 break;
                             case "+BIAS/DESCRIPTION" :

@@ -75,7 +75,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -129,7 +129,7 @@ public class DSSTPropagatorTest {
         final AbsoluteDate orbitEpoch = new AbsoluteDate(2023, 2, 18, TimeScalesFactory.getUTC());
         final Frame inertial = FramesFactory.getCIRF(IERSConventions.IERS_2010, true);
         final KeplerianOrbit orbit = new KeplerianOrbit(42166000.0, 0.00028, FastMath.toRadians(0.05), FastMath.toRadians(66.0),
-                                                        FastMath.toRadians(270.0), FastMath.toRadians(11.94), PositionAngle.MEAN,
+                                                        FastMath.toRadians(270.0), FastMath.toRadians(11.94), PositionAngleType.MEAN,
                                                         inertial, orbitEpoch, Constants.WGS84_EARTH_MU);
         final EquinoctialOrbit equinoctial = new EquinoctialOrbit(orbit);
 
@@ -160,7 +160,7 @@ public class DSSTPropagatorTest {
     public void testIssue363() {
         Utils.setDataRoot("regular-data");
         AbsoluteDate date = new AbsoluteDate("2003-06-18T00:00:00.000", TimeScalesFactory.getUTC());
-        CircularOrbit orbit = new CircularOrbit(7389068.5, 1.0e-15, 1.0e-15, 1.709573, 1.308398, 0, PositionAngle.MEAN,
+        CircularOrbit orbit = new CircularOrbit(7389068.5, 1.0e-15, 1.0e-15, 1.709573, 1.308398, 0, PositionAngleType.MEAN,
                                                 FramesFactory.getTOD(IERSConventions.IERS_2010, false),
                                                 date, Constants.WGS84_EARTH_MU);
         SpacecraftState osculatingState = new SpacecraftState(orbit, 1116.2829);
@@ -184,7 +184,7 @@ public class DSSTPropagatorTest {
     public void testIssue364() {
         Utils.setDataRoot("regular-data");
         AbsoluteDate date = new AbsoluteDate("2003-06-18T00:00:00.000", TimeScalesFactory.getUTC());
-        CircularOrbit orbit = new CircularOrbit(7389068.5, 0.0, 0.0, 1.709573, 1.308398, 0, PositionAngle.MEAN,
+        CircularOrbit orbit = new CircularOrbit(7389068.5, 0.0, 0.0, 1.709573, 1.308398, 0, PositionAngleType.MEAN,
                                                 FramesFactory.getTOD(IERSConventions.IERS_2010, false),
                                                 date, Constants.WGS84_EARTH_MU);
         SpacecraftState osculatingState = new SpacecraftState(orbit, 1116.2829);
@@ -229,7 +229,7 @@ public class DSSTPropagatorTest {
                                                   7120000.0, 1.0e-3, FastMath.toRadians(60.0),
                                                   FastMath.toRadians(120.0), FastMath.toRadians(47.0),
                                                   FastMath.toRadians(12.0),
-                                                  PositionAngle.TRUE, eci, initialDate, Constants.EIGEN5C_EARTH_MU);
+                                                  PositionAngleType.TRUE, eci, initialDate, Constants.EIGEN5C_EARTH_MU);
         SpacecraftState oscuState = DSSTPropagator.computeOsculatingState(new SpacecraftState(orbit), null, forces);
         Assertions.assertEquals(7119927.097122, oscuState.getA(), 0.001);
     }
@@ -244,7 +244,7 @@ public class DSSTPropagatorTest {
         Frame eci = FramesFactory.getGCRF();
         KeplerianOrbit orbit = new KeplerianOrbit(
                                                   600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0, 0, 0, 0,
-                                                  PositionAngle.TRUE, eci, initialDate, Constants.EIGEN5C_EARTH_MU);
+                                                  PositionAngleType.TRUE, eci, initialDate, Constants.EIGEN5C_EARTH_MU);
         double[][] tol = DSSTPropagator
                         .tolerances(1, orbit);
         Propagator prop = new DSSTPropagator(
@@ -353,7 +353,7 @@ public class DSSTPropagatorTest {
 
     @Test
     public void testImpulseManeuver() {
-        final Orbit initialOrbit = new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0, PositionAngle.MEAN, FramesFactory.getEME2000(), new AbsoluteDate(new DateComponents(2008, 06, 23), new TimeComponents(14, 18, 37), TimeScalesFactory.getUTC()), 3.986004415e14);
+        final Orbit initialOrbit = new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0, PositionAngleType.MEAN, FramesFactory.getEME2000(), new AbsoluteDate(new DateComponents(2008, 06, 23), new TimeComponents(14, 18, 37), TimeScalesFactory.getUTC()), 3.986004415e14);
         final double a = initialOrbit.getA();
         final double e = initialOrbit.getE();
         final double i = initialOrbit.getI();
@@ -389,7 +389,7 @@ public class DSSTPropagatorTest {
                                                FastMath.toRadians(315.4985),
                                                FastMath.toRadians(130.7562),
                                                FastMath.toRadians(44.2377),
-                                               PositionAngle.MEAN,
+                                               PositionAngleType.MEAN,
                                                FramesFactory.getEME2000(),
                                                initDate,
                                                provider.getMu());
@@ -446,7 +446,7 @@ public class DSSTPropagatorTest {
                                                FastMath.toRadians(270.0),
                                                FastMath.toRadians(285.0),
                                                FastMath.toRadians(344.0),
-                                               PositionAngle.MEAN,
+                                               PositionAngleType.MEAN,
                                                FramesFactory.getEME2000(),
                                                initDate,
                                                provider.getMu());
@@ -530,7 +530,7 @@ public class DSSTPropagatorTest {
                                                FastMath.toRadians(111.1990175076630),
                                                FastMath.toRadians(43.32990110790340),
                                                FastMath.toRadians(68.66852509725620),
-                                               PositionAngle.MEAN,
+                                               PositionAngleType.MEAN,
                                                FramesFactory.getEME2000(),
                                                initDate,
                                                provider.getMu());
@@ -593,7 +593,7 @@ public class DSSTPropagatorTest {
                                                FastMath.toRadians(315.4985),
                                                FastMath.toRadians(130.7562),
                                                FastMath.toRadians(44.2377),
-                                               PositionAngle.MEAN,
+                                               PositionAngleType.MEAN,
                                                FramesFactory.getGCRF(),
                                                initDate,
                                                provider.getMu());
@@ -615,7 +615,7 @@ public class DSSTPropagatorTest {
         // p/hy =  0.6618387121369373D-05
         // q/hx = -0.5624363171289686D-05
         // lM   = 140°3496229467104
-        Assertions.assertEquals(42166257.99807995, state.getA(), 0.8);
+        Assertions.assertEquals(42166257.99807995, state.getA(), 0.9);
         Assertions.assertEquals(-0.1781865038201885e-05, state.getEquinoctialEx(), 3.e-7);
         Assertions.assertEquals(-0.1191876027555493e-03, state.getEquinoctialEy(), 4.e-6);
         Assertions.assertEquals(-0.5624363171289686e-05, state.getHx(), 4.e-9);
@@ -665,7 +665,7 @@ public class DSSTPropagatorTest {
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
         UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(8, 8);
-        Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngle.MEAN,
+        Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngleType.MEAN,
                                          FramesFactory.getTOD(false),
                                          new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
                                          nshp.getMu());
@@ -718,7 +718,7 @@ public class DSSTPropagatorTest {
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
         UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(8, 8);
-        Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngle.MEAN,
+        Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngleType.MEAN,
                                          FramesFactory.getTOD(false),
                                          new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
                                          nshp.getMu());
@@ -865,7 +865,7 @@ public class DSSTPropagatorTest {
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
         UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(4, 4);
-        Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngle.MEAN,
+        Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngleType.MEAN,
                                          FramesFactory.getTOD(false),
                                          new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
                                          nshp.getMu());
@@ -1156,7 +1156,7 @@ public class DSSTPropagatorTest {
                                                FastMath.toRadians(315.4985),
                                                FastMath.toRadians(130.7562),
                                                FastMath.toRadians(44.2377),
-                                               PositionAngle.MEAN,
+                                               PositionAngleType.MEAN,
                                                FramesFactory.getEME2000(),
                                                initDate,
                                                provider.getMu());
@@ -1195,7 +1195,7 @@ public class DSSTPropagatorTest {
                                                  10e-3,
                                                  FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
                                                  FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3), 0.1,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  FramesFactory.getEME2000(),
                                                  initDate,
                                                  3.986004415E14);

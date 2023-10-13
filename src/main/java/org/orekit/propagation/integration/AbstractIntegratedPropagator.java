@@ -51,7 +51,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
@@ -107,7 +107,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Type of orbit to output (mean or osculating) <br/>
      * <p>
-     * This is used only in the case of semianalitical propagators where there is a clear separation between
+     * This is used only in the case of semi-analytical propagators where there is a clear separation between
      * mean and short periodic elements. It is ignored by the Numerical propagator.
      * </p>
      */
@@ -143,9 +143,25 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         this.resetAtEnd = resetAtEnd;
     }
 
+    /** Getter for the resetting flag regarding initial state.
+     * @return resetting flag
+     * @since 12.0
+     */
+    public boolean getResetAtEnd() {
+        return this.resetAtEnd;
+    }
+
     /** Initialize the mapper. */
     protected void initMapper() {
         stateMapper = createMapper(null, Double.NaN, null, null, null, null);
+    }
+
+    /** Get the integrator's name.
+     * @return name of underlying integrator
+     * @since 12.0
+     */
+    public String getIntegratorName() {
+        return integrator.getName();
     }
 
     /**  {@inheritDoc} */
@@ -193,7 +209,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
-    protected void setPositionAngleType(final PositionAngle positionAngleType) {
+    protected void setPositionAngleType(final PositionAngleType positionAngleType) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
                                    stateMapper.getOrbitType(), positionAngleType,
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());
@@ -202,7 +218,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
-    protected PositionAngle getPositionAngleType() {
+    protected PositionAngleType getPositionAngleType() {
         return stateMapper.getPositionAngleType();
     }
 
@@ -348,7 +364,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @return new mapper
      */
     protected abstract StateMapper createMapper(AbsoluteDate referenceDate, double mu,
-                                                OrbitType orbitType, PositionAngle positionAngleType,
+                                                OrbitType orbitType, PositionAngleType positionAngleType,
                                                 AttitudeProvider attitudeProvider, Frame frame);
 
     /** Get the differential equations to integrate (for main state only).
@@ -452,7 +468,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // convert space flight dynamics API to math API
             final SpacecraftState initialIntegrationState = getInitialIntegrationState();
             final ODEState mathInitialState = createInitialState(initialIntegrationState);
-            final ExpandableODE mathODE = createODE(integrator, mathInitialState);
+            final ExpandableODE mathODE = createODE(integrator);
 
             // mathematical integration
             final ODEStateAndDerivative mathFinalState;
@@ -574,11 +590,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Create an ODE with all equations.
      * @param integ numerical integrator to use for propagation.
-     * @param mathInitialState initial state
      * @return a new ode
      */
-    private ExpandableODE createODE(final ODEIntegrator integ,
-                                    final ODEState mathInitialState) {
+    private ExpandableODE createODE(final ODEIntegrator integ) {
 
         final ExpandableODE ode =
                 new ExpandableODE(new ConvertedMainStateEquations(getMainStateEquations(integ)));
@@ -1217,11 +1231,11 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // reset event handlers
             integrator.clearEventDetectors();
-            detectors.forEach(c -> integrator.addEventDetector(c));
+            detectors.forEach(integrator::addEventDetector);
 
             // reset step handlers
             integrator.clearStepHandlers();
-            stepHandlers.forEach(stepHandler -> integrator.addStepHandler(stepHandler));
+            stepHandlers.forEach(integrator::addStepHandler);
 
         }
 

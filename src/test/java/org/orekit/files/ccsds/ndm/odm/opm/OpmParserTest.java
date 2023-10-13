@@ -43,7 +43,7 @@ import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -187,7 +187,7 @@ public class OpmParserTest {
         Assertions.assertEquals(FastMath.toRadians(0.117746), keplerianElements.getI(), 1e-10);
         Assertions.assertEquals(FastMath.toRadians(17.604721), keplerianElements.getRaan(), 1e-10);
         Assertions.assertEquals(FastMath.toRadians(218.242943), keplerianElements.getPa(), 1e-10);
-        Assertions.assertEquals(PositionAngle.TRUE, keplerianElements.getAnomalyType());
+        Assertions.assertEquals(PositionAngleType.TRUE, keplerianElements.getAnomalyType());
         Assertions.assertEquals(FastMath.toRadians(41.922339), keplerianElements.getAnomaly(), 1e-10);
         Assertions.assertEquals(398600.4415 * 1e9, keplerianElements.getMu(), 1e-10);
 
@@ -301,7 +301,7 @@ public class OpmParserTest {
         Assertions.assertEquals(FastMath.toRadians(0.117746), keplerianElements.getI(), 1e-10);
         Assertions.assertEquals(FastMath.toRadians(17.604721), keplerianElements.getRaan(), 1e-10);
         Assertions.assertEquals(FastMath.toRadians(218.242943), keplerianElements.getPa(), 1e-10);
-        Assertions.assertEquals(PositionAngle.TRUE, keplerianElements.getAnomalyType());
+        Assertions.assertEquals(PositionAngleType.TRUE, keplerianElements.getAnomalyType());
         Assertions.assertEquals(FastMath.toRadians(41.922339), keplerianElements.getAnomaly(), 1e-10);
         Assertions.assertEquals(398600.4415 * 1e9, keplerianElements.getMu(), 1e-10);
 

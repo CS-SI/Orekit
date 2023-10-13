@@ -54,7 +54,7 @@ import org.orekit.models.earth.atmosphere.HarrisPriester;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEConstants;
@@ -104,7 +104,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
     protected TLEPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                            final ODEIntegratorBuilder builder,
                                                            final double positionScale) {
-        return new TLEPropagatorBuilder(templateTLE, PositionAngle.MEAN, positionScale,
+        return new TLEPropagatorBuilder(templateTLE, PositionAngleType.MEAN, positionScale,
                                         new FixedPointTleGenerationAlgorithm());
     }
 

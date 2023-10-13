@@ -54,7 +54,7 @@ import org.orekit.files.general.OrekitAttitudeEphemerisFile.OrekitSatelliteAttit
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -94,7 +94,7 @@ public class OrekitAttitudeEphemerisFileTest {
         final Frame frame = FramesFactory.getEME2000();
         final CelestialBody body = CelestialBodyFactory.getEarth();
         final double mu = body.getGM();
-        KeplerianOrbit initialOrbit = new KeplerianOrbit(sma, ecc, inc, pa, raan, ta, PositionAngle.TRUE,
+        KeplerianOrbit initialOrbit = new KeplerianOrbit(sma, ecc, inc, pa, raan, ta, PositionAngleType.TRUE,
                                                          frame, date, mu);
 
         // Initialize a Keplerian propagator with an Inertial attitude provider
@@ -206,7 +206,7 @@ public class OrekitAttitudeEphemerisFileTest {
         final Frame frame = FramesFactory.getEME2000();
         final CelestialBody body = CelestialBodyFactory.getEarth();
         final double mu = body.getGM();
-        KeplerianOrbit initialOrbit = new KeplerianOrbit(sma, ecc, inc, pa, raan, ta, PositionAngle.TRUE,
+        KeplerianOrbit initialOrbit = new KeplerianOrbit(sma, ecc, inc, pa, raan, ta, PositionAngleType.TRUE,
                                                          frame, date, mu);
         SpacecraftState state = new SpacecraftState(initialOrbit);
 

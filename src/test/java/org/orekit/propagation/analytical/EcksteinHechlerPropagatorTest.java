@@ -61,7 +61,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -151,7 +151,7 @@ public class EcksteinHechlerPropagatorTest {
         // -----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                                6.2, PositionAngle.TRUE,
+                                                6.2, PositionAngleType.TRUE,
                                                 FramesFactory.getEME2000(), initDate, provider.getMu());
 
         // Extrapolator definition
@@ -346,7 +346,7 @@ public class EcksteinHechlerPropagatorTest {
         // -----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                              6.2, PositionAngle.TRUE,
+                                              6.2, PositionAngleType.TRUE,
                                               FramesFactory.getEME2000(), initDate, provider.getMu());
 
         // Extrapolator definition
@@ -449,7 +449,7 @@ public class EcksteinHechlerPropagatorTest {
         Assertions.assertThrows(OrekitException.class, () -> {
             AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
             Orbit initialOrbit = new CircularOrbit(7000000, 1.0e-4, -1.5e-4,
-                    0.0, 1.2, 2.3, PositionAngle.MEAN,
+                    0.0, 1.2, 2.3, PositionAngleType.MEAN,
                     FramesFactory.getEME2000(),
                     initDate, provider.getMu());
             // Extrapolator definition
@@ -517,7 +517,7 @@ public class EcksteinHechlerPropagatorTest {
     public void hyperbolic() {
         Assertions.assertThrows(OrekitException.class, () -> {
             KeplerianOrbit hyperbolic =
-                    new KeplerianOrbit(-1.0e10, 2, 0, 0, 0, 0, PositionAngle.TRUE,
+                    new KeplerianOrbit(-1.0e10, 2, 0, 0, 0, 0, PositionAngleType.TRUE,
                             FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
             EcksteinHechlerPropagator propagator =
                     new EcksteinHechlerPropagator(hyperbolic, provider);
@@ -529,7 +529,7 @@ public class EcksteinHechlerPropagatorTest {
     public void wrongAttitude() {
         Assertions.assertThrows(OrekitException.class, () -> {
             KeplerianOrbit orbit =
-                    new KeplerianOrbit(1.0e10, 1.0e-4, 1.0e-2, 0, 0, 0, PositionAngle.TRUE,
+                    new KeplerianOrbit(1.0e10, 1.0e-4, 1.0e-2, 0, 0, 0, PositionAngleType.TRUE,
                             FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
             AttitudeProvider wrongLaw = new AttitudeProvider() {
                 public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
@@ -550,7 +550,7 @@ public class EcksteinHechlerPropagatorTest {
     @Test
     public void testAcceleration() {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngleType.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
@@ -578,7 +578,7 @@ public class EcksteinHechlerPropagatorTest {
                                   propagated.getCircularEy(),
                                   propagated.getI(),
                                   propagated.getRightAscensionOfAscendingNode(),
-                                  propagated.getAlphaM(), PositionAngle.MEAN,
+                                  propagated.getAlphaM(), PositionAngleType.MEAN,
                                   propagated.getFrame(),
                                   propagated.getDate(),
                                   propagated.getMu());
@@ -611,7 +611,7 @@ public class EcksteinHechlerPropagatorTest {
     @Test
     public void ascendingNode() {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngleType.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
@@ -634,7 +634,7 @@ public class EcksteinHechlerPropagatorTest {
     @Test
     public void stopAtTargetDate() {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngleType.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
@@ -648,7 +648,7 @@ public class EcksteinHechlerPropagatorTest {
     @Test
     public void perigee() {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngleType.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
@@ -664,7 +664,7 @@ public class EcksteinHechlerPropagatorTest {
     @Test
     public void date() {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngleType.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
@@ -678,7 +678,7 @@ public class EcksteinHechlerPropagatorTest {
     @Test
     public void fixedStep() {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngleType.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
@@ -699,7 +699,7 @@ public class EcksteinHechlerPropagatorTest {
     @Test
     public void setting() {
         final KeplerianOrbit orbit =
-            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngleType.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
@@ -738,7 +738,7 @@ public class EcksteinHechlerPropagatorTest {
         CircularOrbit initial = new CircularOrbit(7208669.8179538045, 1.3740461966386876E-4, -3.2364250248363356E-5,
                                                        FastMath.toRadians(97.40236024565775),
                                                        FastMath.toRadians(166.15873160992115),
-                                                       FastMath.toRadians(90.1282370098961), PositionAngle.MEAN,
+                                                       FastMath.toRadians(90.1282370098961), PositionAngleType.MEAN,
                                                        poleAligned, date, provider.getMu());
 
         // find the default Eckstein-Hechler propagator initialized from the initial orbit
@@ -769,7 +769,7 @@ public class EcksteinHechlerPropagatorTest {
         PropagatorConverter converter =
                 new FiniteDifferencePropagatorConverter(new EcksteinHechlerPropagatorBuilder(initial,
                                                                                              provider,
-                                                                                             PositionAngle.TRUE,
+                                                                                             PositionAngleType.TRUE,
                                                                                              1.0),
                                                         1.0e-6, 100);
         EcksteinHechlerPropagator fittedEH =
@@ -865,7 +865,7 @@ public class EcksteinHechlerPropagatorTest {
     @Test
     public void testMeanOrbit() {
         final KeplerianOrbit initialOsculating =
-                        new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
+                        new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngleType.TRUE,
                                            FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                            provider.getMu());
         final UnnormalizedSphericalHarmonics ush = provider.onDate(initialOsculating.getDate());

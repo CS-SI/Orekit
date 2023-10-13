@@ -30,6 +30,7 @@ import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
  * @author Luc Maisonobe
  * @author Evan Ward
  * @since 9.3
+ * @param <T> type of the field elements
  */
 public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
         extends FieldAbstractDetector<FieldLatitudeCrossingDetector<T>, T> {

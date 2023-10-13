@@ -126,7 +126,7 @@ public abstract class Panel {
     public abstract Vector3D getNormal(SpacecraftState state);
 
     /** Get panel normal in spacecraft frame.
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @param state current spacecraft state
      * @return panel normal in spacecraft frame
      */

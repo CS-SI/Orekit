@@ -46,6 +46,17 @@ public class HatanakaCompressFilter implements DataFilter {
     /** Pattern for rinex 3 observation files. */
     private static final Pattern RINEX_3_PATTERN = Pattern.compile("^(\\w{9}_\\w{1}_\\d{11}_\\d{2}\\w_\\d{2}\\w{1}_\\w{2})\\.crx$");
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public HatanakaCompressFilter() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
     public DataSource filter(final DataSource original) {

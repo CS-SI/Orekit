@@ -22,11 +22,13 @@ import org.hipparchus.CalculusFieldElement;
  * <p>
  * An interpolation grid provides a grid of time points
  * that can be used for interpolation processes.
- * </p><p>
+ * </p>
+ * <p>
  * In the context of DSST propagation, an interpolation grid is used for the
  * computation through interpolation of short periodics coefficients
- * <p>
+ * </p>
  * @author Nicolas Bernard
+ * @param <T> type of the field elements
  */
 public interface FieldInterpolationGrid<T extends CalculusFieldElement<T>> {
 

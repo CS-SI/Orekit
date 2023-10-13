@@ -38,9 +38,7 @@ import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataFilter;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DataSource;
 import org.orekit.data.GzipFilter;
 import org.orekit.data.UnixCompressFilter;
@@ -285,8 +283,6 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
      * @param gravityField gravity field
      * @param convention IERS convention
      * @param simpleEop if true, tidal effects are ignored when interpolating EOP
-     * @param minStep min integration step (s)
-     * @param maxStep max integration step (s)
      * @param mass spacecraft mass (kg)
      * @param surface surface (m²)
      * @param useDrag true if drag acceleration must be added
@@ -359,8 +355,6 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
             final MarshallSolarActivityFutureEstimation msafe =
                             new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
                                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-            final DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
-            manager.feed(msafe.getSupportedNames(), msafe);
             final Atmosphere atmosphere = new NRLMSISE00(msafe, CelestialBodyFactory.getSun(), centralBody);
 
             // Drag force
@@ -500,7 +494,7 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = OrbitType.EQUINOCTIAL.convertType(orbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(propagatorBuilder.getPositionAngle(), dYdC);
+        initialOrbit.getJacobianWrtCartesian(propagatorBuilder.getPositionAngleType(), dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
 
         // Keplerian initial covariance matrix

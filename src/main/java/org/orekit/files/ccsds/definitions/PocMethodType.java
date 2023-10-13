@@ -151,8 +151,11 @@ public enum PocMethodType {
      */
     public abstract ShortTermEncounter2DPOCMethodType getMethodType();
 
-    /** @return CCSDS compatible name. */
+    /** Get CCSDS compatible name.
+     * @return CCSDS compatible name
+     */
     public String getCCSDSName() {
         return this.name().replace("_", "-");
     }
+
 }

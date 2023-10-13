@@ -67,6 +67,17 @@ public abstract class ILRSHeader {
     /** Sequence number. */
     private int sequenceNumber;
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public ILRSHeader() {
+        // nothing to do
+    }
+
     /**
      * Get the file format.
      * @return the file format

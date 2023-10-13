@@ -24,7 +24,7 @@ import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
@@ -54,7 +54,7 @@ public class DSSTNewtonianAttractionTest {
                                                             -0.3412974060023717,
                                                             0.3960084733107685,
                                                             FastMath.toRadians(44.2377),
-                                                            PositionAngle.MEAN,
+                                                            PositionAngleType.MEAN,
                                                             earthFrame,
                                                             date,
                                                             mu);

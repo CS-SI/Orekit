@@ -33,7 +33,7 @@ import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -66,7 +66,7 @@ public class ThrustDirectionAndAttitudeProviderTest {
         final double raan = 0.;
         final double anomaly = FastMath.toRadians(0);
 
-        final KeplerianOrbit initialOrbit = new KeplerianOrbit(sma, ecc, inc, pa, raan, anomaly, PositionAngle.TRUE,
+        final KeplerianOrbit initialOrbit = new KeplerianOrbit(sma, ecc, inc, pa, raan, anomaly, PositionAngleType.TRUE,
                 FramesFactory.getCIRF(IERSConventions.IERS_2010, true), date, Constants.EGM96_EARTH_MU);
         pvProv = new KeplerianPropagator(initialOrbit);
     }

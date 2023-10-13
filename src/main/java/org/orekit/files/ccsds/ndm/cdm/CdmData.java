@@ -33,16 +33,16 @@ public class CdmData implements Data {
     private final CommentsContainer commentsBlock;
 
     /** Quaternion block. */
-    private final ODParameters ODParametersBlock;
+    private ODParameters ODParametersBlock;
 
     /** Euler angles block. */
-    private final AdditionalParameters additionalParametersBlock;
+    private AdditionalParameters additionalParametersBlock;
 
     /** Spin-stabilized block. */
     private final StateVector stateVectorBlock;
 
     /** Spacecraft parameters block. */
-    private final RTNCovariance covarianceMatrixBlock;
+    private RTNCovariance covarianceMatrixBlock;
 
     /** XYZ covariance block. */
     private final XYZCovariance xyzCovarianceMatrixBlock;
@@ -206,11 +206,25 @@ public class CdmData implements Data {
         return ODParametersBlock;
     }
 
+    /** Set the OD parameters logical block.
+     * @param ODParametersBlock the OD Parameters logical block
+     */
+    public void setODParametersBlock(final ODParameters ODParametersBlock) {
+        this.ODParametersBlock = ODParametersBlock;
+    }
+
     /** Get the additional parameters logical block.
      * @return additional parameters block (may be null)
      */
     public AdditionalParameters getAdditionalParametersBlock() {
         return additionalParametersBlock;
+    }
+
+    /** Set the additional parameters logical block.
+     * @param additionalParametersBlock the additional parameters logical block
+     */
+    public void setAdditionalParametersBlock(final AdditionalParameters additionalParametersBlock) {
+        this.additionalParametersBlock = additionalParametersBlock;
     }
 
     /** Get the state vector logical block.
@@ -255,7 +269,14 @@ public class CdmData implements Data {
         return additionalCovMetadata;
     }
 
-     /** Get the user defined logical block.
+    /** Set the additional covariance metadata logical block.
+     * @param covarianceMatrixBlock the additional covariance metadata logical block
+     */
+    public void setCovarianceMatrixBlock(final RTNCovariance covarianceMatrixBlock) {
+        this.covarianceMatrixBlock = covarianceMatrixBlock;
+    }
+
+    /** Get the user defined logical block.
      * <p> This method will return null if the block is not defined in the CDM. </p>
      * @return the additional covariance metadata logical block
      */

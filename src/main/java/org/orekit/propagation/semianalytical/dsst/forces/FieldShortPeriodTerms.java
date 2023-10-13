@@ -29,6 +29,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * </p>
  * @see DSSTForceModel
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
 public interface FieldShortPeriodTerms <T extends CalculusFieldElement<T>> {
 

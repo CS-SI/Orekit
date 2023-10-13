@@ -25,7 +25,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
@@ -57,7 +57,7 @@ public class EventMultipleHandlerTest {
         DateDetector detector = new DateDetector(date);
         Frame eci = FramesFactory.getGCRF();
         Orbit orbit = new KeplerianOrbit(6378137 + 500e3, 0, 0, 0, 0, 0,
-                PositionAngle.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU);
+                PositionAngleType.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU);
         SpacecraftState s = new SpacecraftState(orbit);
 
         // actions
@@ -79,7 +79,7 @@ public class EventMultipleHandlerTest {
         DateDetector detector = new DateDetector(date);
         Frame eci = FramesFactory.getGCRF();
         Orbit orbit = new KeplerianOrbit(6378137 + 500e3, 0, 0, 0, 0, 0,
-                                         PositionAngle.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU);
+                                         PositionAngleType.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU);
         SpacecraftState s = new SpacecraftState(orbit);
 
         // actions

@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -28,6 +29,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
 
@@ -155,8 +157,9 @@ public interface EventDetectorsProvider {
 
             // Initialize the date detector
             // Max check set to half the shortest duration between 2 consecutive dates
+            @SuppressWarnings("unchecked")
             final FieldDateDetector<T> datesDetector =
-                            new FieldDateDetector<>(field, new FieldAbsoluteDate<>(field, transitionDates.get(0))).
+                            new FieldDateDetector<>(field, (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 0)).
                             withMaxCheck(0.5 * shortestDuration).
                             withMinGap(0.5 * shortestDuration).
                             withThreshold(field.getZero().newInstance(DATATION_ACCURACY)).
@@ -164,7 +167,7 @@ public interface EventDetectorsProvider {
                                 return Action.RESET_DERIVATIVES;
                             });
             // Add all transitions' dates to the date detector
-            for (int i = 1; i < transitionDates.size(); i++) {
+            for (int i = 0; i < transitionDates.size(); i++) {
                 datesDetector.addEventDate(new FieldAbsoluteDate<>(field, transitionDates.get(i)));
             }
             // Return the detectors
