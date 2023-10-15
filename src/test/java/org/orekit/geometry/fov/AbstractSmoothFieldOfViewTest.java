@@ -103,8 +103,10 @@ public abstract class AbstractSmoothFieldOfViewTest {
             maxOffset = FastMath.max(maxOffset, offset);
 
             TopocentricFrame topo = new TopocentricFrame(earth, loop.get(i), "onFootprint");
-            final double elevation = topo.getElevation(state.getPosition(),
-                                                       state.getFrame(), state.getDate());
+            final double elevation = topo.getTrackingCoordinates(state.getPosition(),
+                                                                 state.getFrame(),
+                                                                 state.getDate()).
+                                     getElevation();
             if (elevation > 0.001) {
                 Assertions.assertEquals(-fov.getMargin(),
                                     fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),

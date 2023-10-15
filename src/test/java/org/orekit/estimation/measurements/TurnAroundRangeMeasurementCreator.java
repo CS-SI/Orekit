@@ -111,8 +111,8 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                 final Vector3D         position      = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter);
 
                 // Create a TAR measurement only if elevation for both stations is higher than elevationMin°
-                if ((primaryStation.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0))&&
-                    (secondaryStation.getBaseFrame().getElevation(position, inertial, date)  > FastMath.toRadians(30.0))) {
+                if ((primaryStation.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0))&&
+                    (secondaryStation.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation()  > FastMath.toRadians(30.0))) {
 
                     // The solver used
                     final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);

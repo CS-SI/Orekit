@@ -83,7 +83,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
             final double           satDft    = satellite.getClockDriftDriver().getValue(date);
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundDft - satDft);
 
-            if (station.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
+            if (station.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0)) {
                 final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
                 final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {

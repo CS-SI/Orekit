@@ -40,6 +40,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TrackingCoordinates;
 
 public class InterSatDirectViewDetectorTest {
 
@@ -176,11 +177,12 @@ public class InterSatDirectViewDetectorTest {
                                                                          pPrimary, frame, grazingDate);
             final TopocentricFrame topo = new TopocentricFrame(earth, earth.transform(grazing, frame, grazingDate),
                                                                "grazing");
-            Assertions.assertEquals(  0.0, FastMath.toDegrees(topo.getElevation(pPrimary, frame, grazingDate)), 2.0e-4);
-            Assertions.assertEquals(  0.0, FastMath.toDegrees(topo.getElevation(psecondary,  frame, grazingDate)), 2.0e-4);
+            final TrackingCoordinates tcPrimary   = topo.getTrackingCoordinates(pPrimary, frame, grazingDate);
+            final TrackingCoordinates tcSecondary = topo.getTrackingCoordinates(psecondary, frame, grazingDate);
+            Assertions.assertEquals(  0.0, FastMath.toDegrees(tcPrimary.getElevation()), 2.0e-4);
+            Assertions.assertEquals(  0.0, FastMath.toDegrees(tcSecondary.getElevation()), 2.0e-4);
             Assertions.assertEquals(180.0,
-                                FastMath.abs(FastMath.toDegrees(topo.getAzimuth(psecondary,  frame, grazingDate) -
-                                                                topo.getAzimuth(pPrimary, frame, grazingDate))),
+                                FastMath.abs(FastMath.toDegrees(tcSecondary.getAzimuth() - tcPrimary.getAzimuth())),
                                 6.0e-14);
             return Action.CONTINUE;
         }

@@ -28,6 +28,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 
 import java.util.Arrays;
 
@@ -76,7 +77,7 @@ public class AngularAzElMeasurementCreator extends MeasurementCreator {
             final Frame            inertial  = currentState.getFrame();
             final Vector3D         position  = currentState.getPosition();
 
-            if (station.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
+            if (station.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0)) {
                 final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
                 final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
@@ -96,14 +97,12 @@ public class AngularAzElMeasurementCreator extends MeasurementCreator {
                 final double[] baseweight = {10.0, 10.0};
 
                 // Compute measurement
-                // Elevation
-                angular[1] = station.getBaseFrame().getElevation(satelliteAtDeparture,
-                                                                 currentState.getFrame(),
-                                                                 currentState.getDate()) + elBias;
-                // Azimuth
-                angular[0] = station.getBaseFrame().getAzimuth(satelliteAtDeparture,
-                                                               currentState.getFrame(),
-                                                               currentState.getDate()) + azBias;
+                final TrackingCoordinates tc =
+                                station.getBaseFrame().getTrackingCoordinates(satelliteAtDeparture,
+                                                                              currentState.getFrame(),
+                                                                              currentState.getDate());
+                angular[0] = tc.getAzimuth()   + azBias;
+                angular[1] = tc.getElevation() + elBias;
 
                 addMeasurement(new AngularAzEl(station, date, angular, sigma, baseweight, satellite));
             }
