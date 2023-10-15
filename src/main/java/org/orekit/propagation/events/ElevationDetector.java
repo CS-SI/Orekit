@@ -23,6 +23,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.ElevationMask;
+import org.orekit.utils.TrackingCoordinates;
 
 
 /**
@@ -164,19 +165,17 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
     @Override
     public double g(final SpacecraftState s) {
 
-        final double trueElevation = topo.getElevation(s.getPosition(),
-                                                       s.getFrame(), s.getDate());
+        final TrackingCoordinates tc = topo.getTrackingCoordinates(s.getPosition(), s.getFrame(), s.getDate());
 
         final double calculatedElevation;
         if (refractionModel != null) {
-            calculatedElevation = trueElevation + refractionModel.getRefraction(trueElevation);
+            calculatedElevation = tc.getElevation() + refractionModel.getRefraction(tc.getElevation());
         } else {
-            calculatedElevation = trueElevation;
+            calculatedElevation = tc.getElevation();
         }
 
         if (elevationMask != null) {
-            final double azimuth = topo.getAzimuth(s.getPosition(), s.getFrame(), s.getDate());
-            return calculatedElevation - elevationMask.getElevation(azimuth);
+            return calculatedElevation - elevationMask.getElevation(tc.getAzimuth());
         } else {
             return calculatedElevation - minElevation;
         }

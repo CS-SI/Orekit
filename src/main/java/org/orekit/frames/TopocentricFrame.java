@@ -36,9 +36,11 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TrackingCoordinates;
 
 
 /** Topocentric frame.
@@ -103,7 +105,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
     }
 
     /** Get the surface point defining the origin of the frame.
-     * @param <T> tyoe of the elements
+     * @param <T> type of the elements
      * @param field of the elements
      * @return surface point defining the origin of the frame
      * @since 9.3
@@ -171,133 +173,51 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         return point.getWest();
     }
 
-    /** Get the elevation of a point with regards to the local point.
-     * <p>The elevation is the angle between the local horizontal and
-     * the direction from local point to given point.</p>
+    /** Get the tracking coordinates of a point with regards to the local point.
      * @param extPoint point for which elevation shall be computed
      * @param frame frame in which the point is defined
      * @param date computation date
-     * @return elevation of the point
+     * @return tracking coordinates of the point
+     * @since 12.0
      */
-    public double getElevation(final Vector3D extPoint, final Frame frame,
-                               final AbsoluteDate date) {
+    public TrackingCoordinates getTrackingCoordinates(final Vector3D extPoint, final Frame frame,
+                                                      final AbsoluteDate date) {
 
-        // Transform given point from given frame to topocentric frame
+        // transform given point from given frame to topocentric frame
         final StaticTransform t = frame.getStaticTransformTo(this, date);
         final Vector3D extPointTopo = t.transformPosition(extPoint);
 
-        // Elevation angle is PI/2 - angle between zenith and given point direction
-        return extPointTopo.getDelta();
-    }
-
-    /** Get the elevation of a point with regards to the local point.
-     * <p>The elevation is the angle between the local horizontal and
-     * the direction from local point to given point.</p>
-     * @param <T> type of the elements
-     * @param extPoint point for which elevation shall be computed
-     * @param frame frame in which the point is defined
-     * @param date computation date
-     * @return elevation of the point
-     * @since 9.3
-     */
-    public <T extends CalculusFieldElement<T>> T getElevation(final FieldVector3D<T> extPoint, final Frame frame,
-                                                              final FieldAbsoluteDate<T> date) {
-
-        // Transform given point from given frame to topocentric frame
-        final FieldStaticTransform<T> t = frame.getStaticTransformTo(this, date);
-        final FieldVector3D<T> extPointTopo = t.transformPosition(extPoint);
-
-        // Elevation angle is PI/2 - angle between zenith and given point direction
-        return extPointTopo.getDelta();
-    }
-
-    /** Get the azimuth of a point with regards to the topocentric frame center point.
-     * <p>The azimuth is the angle between the North direction at local point and
-     * the projection in local horizontal plane of the direction from local point
-     * to given point. Azimuth angles are counted clockwise, i.e positive towards the East.</p>
-     * @param extPoint point for which elevation shall be computed
-     * @param frame frame in which the point is defined
-     * @param date computation date
-     * @return azimuth of the point
-     */
-    public double getAzimuth(final Vector3D extPoint, final Frame frame,
-                             final AbsoluteDate date) {
-
-        // Transform given point from given frame to topocentric frame
-        final StaticTransform t = frame.getStaticTransformTo(this, date);
-        final Vector3D extPointTopo = t.transformPosition(extPoint);
-
-        // Compute azimuth
         double azimuth = FastMath.atan2(extPointTopo.getX(), extPointTopo.getY());
-        if (azimuth < 0.) {
+        if (azimuth < 0.0) {
             azimuth += MathUtils.TWO_PI;
         }
-        return azimuth;
+
+        return new TrackingCoordinates(azimuth, extPointTopo.getDelta(), extPointTopo.getNorm());
 
     }
 
-    /** Get the azimuth of a point with regards to the topocentric frame center point.
-     * <p>The azimuth is the angle between the North direction at local point and
-     * the projection in local horizontal plane of the direction from local point
-     * to given point. Azimuth angles are counted clockwise, i.e positive towards the East.</p>
-     * @param <T> type of the elements
+    /** Get the tracking coordinates of a point with regards to the local point.
+     * @param <T> type of the field elements
      * @param extPoint point for which elevation shall be computed
      * @param frame frame in which the point is defined
      * @param date computation date
-     * @return azimuth of the point
-     * @since 9.3
+     * @return tracking coordinates of the point
+     * @since 12.0
      */
-    public <T extends CalculusFieldElement<T>> T getAzimuth(final FieldVector3D<T> extPoint, final Frame frame,
-                                                        final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTrackingCoordinates<T> getTrackingCoordinates(final FieldVector3D<T> extPoint,
+                                                                                                  final Frame frame,
+                                                                                                  final FieldAbsoluteDate<T> date) {
 
         // Transform given point from given frame to topocentric frame
         final FieldStaticTransform<T> t = frame.getStaticTransformTo(this, date);
         final FieldVector3D<T> extPointTopo = t.transformPosition(extPoint);
 
-        // Compute azimuth
         T azimuth = FastMath.atan2(extPointTopo.getX(), extPointTopo.getY());
-        if (azimuth.getReal() < 0.) {
+        if (azimuth.getReal() < 0.0) {
             azimuth = azimuth.add(MathUtils.TWO_PI);
         }
-        return azimuth;
 
-    }
-
-    /** Get the range of a point with regards to the topocentric frame center point.
-     * @param extPoint point for which range shall be computed
-     * @param frame frame in which the point is defined
-     * @param date computation date
-     * @return range (distance) of the point
-     */
-    public double getRange(final Vector3D extPoint, final Frame frame,
-                           final AbsoluteDate date) {
-
-        // Transform given point from given frame to topocentric frame
-        final StaticTransform t = frame.getStaticTransformTo(this, date);
-        final Vector3D extPointTopo = t.transformPosition(extPoint);
-
-        // Compute range
-        return extPointTopo.getNorm();
-
-    }
-
-    /** Get the range of a point with regards to the topocentric frame center point.
-     * @param <T> type of the elements
-     * @param extPoint point for which range shall be computed
-     * @param frame frame in which the point is defined
-     * @param date computation date
-     * @return range (distance) of the point
-     * @since 9.3
-     */
-    public <T extends CalculusFieldElement<T>> T getRange(final FieldVector3D<T> extPoint, final Frame frame,
-                                                          final FieldAbsoluteDate<T> date) {
-
-        // Transform given point from given frame to topocentric frame
-        final FieldStaticTransform<T> t = frame.getStaticTransformTo(this, date);
-        final FieldVector3D<T> extPointTopo = t.transformPosition(extPoint);
-
-        // Compute range
-        return extPointTopo.getNorm();
+        return new FieldTrackingCoordinates<T>(azimuth, extPointTopo.getDelta(), extPointTopo.getNorm());
 
     }
 

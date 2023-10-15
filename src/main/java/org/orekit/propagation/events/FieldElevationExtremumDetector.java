@@ -115,7 +115,7 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
      * @return spacecraft elevation
      */
     public T getElevation(final FieldSpacecraftState<T> s) {
-        return topo.getElevation(s.getPosition(), s.getFrame(), s.getDate());
+        return topo.getTrackingCoordinates(s.getPosition(), s.getFrame(), s.getDate()).getElevation();
     }
 
     /** Compute the value of the detection function.

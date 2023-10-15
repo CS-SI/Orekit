@@ -713,9 +713,10 @@ public class EcksteinHechlerPropagatorTest {
         propagator.addEventDetector(detector);
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        final double elevation = topo.getElevation(propagated.getPosition(),
-                                                   propagated.getFrame(),
-                                                   propagated.getDate());
+        final double elevation = topo.getTrackingCoordinates(propagated.getPosition(),
+                                                             propagated.getFrame(),
+                                                             propagated.getDate()).
+                                 getElevation();
         final double zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ();
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) > 7800.0);
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) < 7900.0,"Incorrect value " + farTarget.durationFrom(propagated.getDate()) + " !< 7900");

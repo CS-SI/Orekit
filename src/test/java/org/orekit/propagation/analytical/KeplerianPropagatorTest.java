@@ -567,9 +567,11 @@ public class KeplerianPropagatorTest {
         propagator.addEventDetector(new ElevationDetector(60, AbstractDetector.DEFAULT_THRESHOLD, topo).withConstantElevation(0.09));
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        final double elevation = topo.getElevation(propagated.getPosition(),
-                                                   propagated.getFrame(),
-                                                   propagated.getDate());
+        final double elevation = topo.
+                                 getTrackingCoordinates(propagated.getPosition(),
+                                                        propagated.getFrame(),
+                                                        propagated.getDate()).
+                                 getElevation();
         final double zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ();
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) > 7800.0);
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) < 7900.0);

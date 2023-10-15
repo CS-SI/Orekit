@@ -186,8 +186,9 @@ public class PolygonalFieldOfViewTest {
         for (int i = 0; i < loop.size(); ++i) {
             Assertions.assertEquals(0.0, loop.get(i).getAltitude(), 3.0e-7);
             TopocentricFrame topo = new TopocentricFrame(earth, loop.get(i), "atLimb");
-            final double elevation = topo.getElevation(state.getPosition(),
-                                                       state.getFrame(), state.getDate());
+            final double elevation = topo.
+                                     getTrackingCoordinates(state.getPosition(), state.getFrame(), state.getDate()).
+                                     getElevation();
             minEl = FastMath.min(minEl, elevation);
             maxEl = FastMath.max(maxEl, elevation);
             final double dist = Vector3D.distance(subSat, earth.transform(loop.get(i)));
@@ -243,8 +244,9 @@ public class PolygonalFieldOfViewTest {
             Assertions.assertEquals(0.0, loop.get(i).getAltitude(), 9.0e-9);
 
             TopocentricFrame topo = new TopocentricFrame(earth, loop.get(i), "onFootprint");
-            final double elevation = topo.getElevation(state.getPosition(),
-                                                       state.getFrame(), state.getDate());
+            final double elevation = topo.
+                                     getTrackingCoordinates(state.getPosition(), state.getFrame(), state.getDate()).
+                                     getElevation();
             if (elevation > 0.001) {
                 Vector3D los = fovToBody.getInverse().transformPosition(earth.transform(loop.get(i)));
                 Assertions.assertEquals(-fov.getMargin(),

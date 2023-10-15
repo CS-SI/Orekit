@@ -30,6 +30,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 
 /** Class modifying theoretical angular measurement with tropospheric delay.
  * The effect of tropospheric correction on the angular is computed
@@ -67,9 +68,9 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
         final Vector3D position = state.getPosition();
 
         // elevation
-        final double elevation = station.getBaseFrame().getElevation(position,
-                                                                     state.getFrame(),
-                                                                     state.getDate());
+        final double elevation =
+                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate()).
+                        getElevation();
 
         // only consider measures above the horizon
         if (elevation > 0.0) {
@@ -108,14 +109,13 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
         final Frame        inertial  = transitState.getFrame();
 
         // Elevation and azimuth in radians
-        final double elevation   = station.getBaseFrame().getElevation(position, inertial, date);
-        final double baseAzimuth = station.getBaseFrame().getAzimuth(position, inertial, date);
-        final double twoPiWrap   = MathUtils.normalizeAngle(baseAzimuth, measure.getObservedValue()[0]) - baseAzimuth;
-        final double azimuth     = baseAzimuth + twoPiWrap;
+        final TrackingCoordinates tc = station.getBaseFrame().getTrackingCoordinates(position, inertial, date);
+        final double twoPiWrap   = MathUtils.normalizeAngle(tc.getAzimuth(), measure.getObservedValue()[0]) - tc.getAzimuth();
+        final double azimuth     = tc.getAzimuth() + twoPiWrap;
 
         // Update estimated value taking into account the tropospheric delay.
         // Azimuth - elevation values
-        estimated.setEstimatedValue(azimuth, elevation);
+        estimated.setEstimatedValue(azimuth, tc.getElevation());
     }
 
 }

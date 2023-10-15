@@ -66,9 +66,9 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
         final Vector3D position = state.getPosition();
 
         // elevation
-        final double elevation = station.getBaseFrame().getElevation(position,
-                                                                     state.getFrame(),
-                                                                     state.getDate());
+        final double elevation =
+                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate()).
+                        getElevation();
 
         // only consider measurements above the horizon
         if (elevation > 0) {
@@ -98,9 +98,9 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
 
         // elevation
         final FieldVector3D<T> pos = state.getPosition();
-        final T elevation          = station.getBaseFrame().getElevation(pos,
-                                                                         state.getFrame(),
-                                                                         state.getDate());
+        final T elevation =
+                        station.getBaseFrame().getTrackingCoordinates(pos, state.getFrame(), state.getDate()).
+                        getElevation();
 
         // only consider measurements above the horizon
         if (elevation.getReal() > 0) {
