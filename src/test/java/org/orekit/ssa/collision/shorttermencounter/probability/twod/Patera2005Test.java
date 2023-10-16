@@ -53,8 +53,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 class Patera2005Test {
@@ -1059,8 +1057,7 @@ class Patera2005Test {
         final Cdm        cdm     = new ParserBuilder().buildCdmParser().parseMessage(data);
 
         // When
-        final AbstractShortTermEncounter1DNumerical2DPOCMethod patera = new Patera2005();
-        final ProbabilityOfCollision                           result = patera.compute(cdm, combinedHbr);
+        final ProbabilityOfCollision result = method.compute(cdm, combinedHbr);
 
         // Then
         Assertions.assertEquals(expected, result.getValue(), tolerance);

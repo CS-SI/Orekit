@@ -30,9 +30,6 @@ import org.orekit.files.ccsds.ndm.cdm.Cdm;
 import org.orekit.ssa.metrics.FieldProbabilityOfCollision;
 import org.orekit.ssa.metrics.ProbabilityOfCollision;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 class Laas2015Test {
 
     /** Systems analysis and architecture laboratory's method to compute probability of collision. */
@@ -894,5 +891,165 @@ class Laas2015Test {
         // THEN
         Assertions.assertEquals(6.1e-3, resultNominal.getValue().getReal(), 1e-4);
         Assertions.assertEquals(exactResult, taylorResult, 1e-16);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 1 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase01() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase01.cdm";
+        final double combinedHbr = 15.;
+
+        // Excepted outcome
+        final double expectedPc = 0.146749549;
+        final double tolerance = 1e-6;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 2 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase02() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase02.cdm";
+        final double combinedHbr = 4.;
+
+        // Excepted outcome
+        final double expectedPc = 0.006222267;
+        final double tolerance = 1e-6;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 3 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase03() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase03.cdm";
+        final double combinedHbr = 15.;
+
+        // Excepted outcome
+        final double expectedPc = 0.100351176;
+        final double tolerance = 1e-6;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 4 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase04() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase04.cdm";
+        final double combinedHbr = 15.;
+
+        // Excepted outcome
+        final double expectedPc = 0.049323406;
+        final double tolerance = 1e-5;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 5 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase05() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase05.cdm";
+        final double combinedHbr = 10.;
+
+        // Excepted outcome
+        final double expectedPc = 0.044487386;
+        final double tolerance = 1e-5;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 6 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase06() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase06.cdm";
+        final double combinedHbr = 10.;
+
+        // Excepted outcome
+        final double expectedPc = 0.004335455;
+        final double tolerance = 1e-8;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 7 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase07() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase07.cdm";
+        final double combinedHbr = 10.;
+
+        // Excepted outcome
+        final double expectedPc = 0.000158147;
+        final double tolerance = 1e-9;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 8 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase08() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase08.cdm";
+        final double combinedHbr = 4.;
+
+        // Excepted outcome
+        final double expectedPc = 0.036948008;
+        final double tolerance = 1e-5;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 9 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase09() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase09.cdm";
+        final double combinedHbr = 6.;
+
+        // Excepted outcome
+        final double expectedPc = 0.290146291;
+        final double tolerance = 2e-5;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    // Alfano test case 10 is a duplicate of test 9 in the NASA CARA unit tests.
+
+    @Test
+    @DisplayName("Alfano test case 11 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase11() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase11.cdm";
+        final double combinedHbr = 4.;
+
+        // Excepted outcome
+        final double expectedPc = 0.002672026;
+        final double tolerance = 1e-7;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    private void computeAndCheckCollisionProbability(
+            final String cdmName,
+            final double combinedHbr,
+            final double expected,
+            final double tolerance) {
+
+        // Given
+        final String     cdmPath = "/ccsds/cdm/" + cdmName;
+        final DataSource data    = new DataSource(cdmPath, () -> getClass().getResourceAsStream(cdmPath));
+        final Cdm        cdm     = new ParserBuilder().buildCdmParser().parseMessage(data);
+
+        // When
+        final ProbabilityOfCollision result = method.compute(cdm, combinedHbr);
+
+        // Then
+        Assertions.assertEquals(expected, result.getValue(), tolerance);
     }
 }
