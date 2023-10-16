@@ -36,6 +36,15 @@
       <action dev="serrof" type="add" issue="1211">
           Added method to create new instance without rates from position-angled based (Field)Orbit, with new Interface.
       </action>
+      <action dev="luc" type="add" issue="1229">
+          Added {Field}TrackingCoordinates.
+      </action>
+      <action dev="luc" type="add" issue="1228">
+          Added lowestAltitudeIntermediate method to OneAxisEllipsoid.
+      </action>
+      <action dev="luc" type="fix"  issue="1226">
+          Fixed Sun radius.
+      </action>
       <action dev="serrof" type="add" issue="1217">
           Added getter for resetAtEnd in (Field)AbstractIntegratedIntegrator.
       </action>

@@ -46,6 +46,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
@@ -194,6 +195,7 @@ public class FieldEquinoctialOrbitTest {
         final FieldEquinoctialOrbit<Complex> actualFieldOrbit = fieldOrbit.removeRates();
         // THEN
         Assertions.assertFalse(actualFieldOrbit.hasRates());
+        Assertions.assertTrue(Objects.isNull(actualFieldOrbit.getADot()));
         Assertions.assertEquals(fieldOrbit.getMu(), actualFieldOrbit.getMu());
         Assertions.assertEquals(fieldOrbit.getDate(), actualFieldOrbit.getDate());
         Assertions.assertEquals(fieldOrbit.getFrame(), actualFieldOrbit.getFrame());

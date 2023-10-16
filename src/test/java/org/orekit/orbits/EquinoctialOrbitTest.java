@@ -1010,6 +1010,7 @@ public class EquinoctialOrbitTest {
         final EquinoctialOrbit orbitWithoutRates = orbit.removeRates();
         // THEN
         Assertions.assertFalse(orbitWithoutRates.hasRates());
+        Assertions.assertTrue(Double.isNaN(orbitWithoutRates.getADot()));
         Assertions.assertEquals(orbit.getMu(), orbitWithoutRates.getMu());
         Assertions.assertEquals(orbit.getDate(), orbitWithoutRates.getDate());
         Assertions.assertEquals(orbit.getFrame(), orbitWithoutRates.getFrame());
