@@ -72,7 +72,8 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @since 9.0
  * @param <T> type of the field elements
  */
-public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> {
+public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T>
+        implements PositionAngleBased {
 
     /** Semi-major axis (m). */
     private final T a;
@@ -1052,6 +1053,26 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
                                   append("; hx: ").append(hx.getReal()).append("; hy: ").append(hy.getReal()).
                                   append("; lv: ").append(FastMath.toDegrees(lv.getReal())).
                                   append(";}").toString();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PositionAngleType getCachedPositionAngleType() {
+        return PositionAngleType.TRUE;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasRates() {
+        return hasDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldEquinoctialOrbit<T> removeRates() {
+        final PositionAngleType positionAngleType = getCachedPositionAngleType();
+        return new FieldEquinoctialOrbit<>(getA(), getEquinoctialEx(), getEquinoctialEy(), getHx(), getHy(),
+                getL(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
     }
 
     /** {@inheritDoc} */

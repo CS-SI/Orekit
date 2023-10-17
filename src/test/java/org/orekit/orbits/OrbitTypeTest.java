@@ -39,6 +39,46 @@ class OrbitTypeTest {
     }
 
     @Test
+    void testCartesianIsPositionAngleBased() {
+        // GIVEN
+        final OrbitType orbitType = OrbitType.CARTESIAN;
+        // WHEN
+        final boolean actualIsPositionAngleBased = orbitType.isPositionAngleBased();
+        // THEN
+        Assertions.assertFalse(actualIsPositionAngleBased);
+    }
+
+    @Test
+    void testEquinoctialIsPositionAngleBased() {
+        // GIVEN
+        final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+        // WHEN
+        final boolean actualIsPositionAngleBased = orbitType.isPositionAngleBased();
+        // THEN
+        Assertions.assertTrue(actualIsPositionAngleBased);
+    }
+
+    @Test
+    void testKeplerianIsPositionAngleBased() {
+        // GIVEN
+        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        // WHEN
+        final boolean actualIsPositionAngleBased = orbitType.isPositionAngleBased();
+        // THEN
+        Assertions.assertTrue(actualIsPositionAngleBased);
+    }
+
+    @Test
+    void testCircularIsPositionAngleBased() {
+        // GIVEN
+        final OrbitType orbitType = OrbitType.CIRCULAR;
+        // WHEN
+        final boolean actualIsPositionAngleBased = orbitType.isPositionAngleBased();
+        // THEN
+        Assertions.assertTrue(actualIsPositionAngleBased);
+    }
+
+    @Test
     void testConvertToFieldOrbitCartesian() {
         // GIVEN
         final ComplexField field = ComplexField.getInstance();

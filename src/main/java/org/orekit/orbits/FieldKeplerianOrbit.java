@@ -77,7 +77,8 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @since 9.0
  * @param <T> type of the field elements
  */
-public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> {
+public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T>
+        implements PositionAngleBased {
 
     /** Name of the eccentricity parameter. */
     private static final String ECCENTRICITY = "eccentricity";
@@ -1437,6 +1438,27 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                                   append("; v: ").append(FastMath.toDegrees(v.getReal())).
                                   append(";}").toString();
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public PositionAngleType getCachedPositionAngleType() {
+        return PositionAngleType.TRUE;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasRates() {
+        return hasDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldKeplerianOrbit<T> removeRates() {
+        final PositionAngleType positionAngleType = getCachedPositionAngleType();
+        return new FieldKeplerianOrbit<>(getA(), getE(), getI(), getPerigeeArgument(), getRightAscensionOfAscendingNode(),
+                getAnomaly(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
+    }
+
 
     /** Check if the given parameter is within an acceptable range.
      * The bounds are inclusive: an exception is raised when either of those conditions are met:
