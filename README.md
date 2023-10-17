@@ -72,7 +72,7 @@ all released under business friendly FOSS licenses.
 ### Compile-time/run-time dependencies
 
 * [Hipparchus](https://hipparchus.org/), a mathematics library released under
-  the Apache License, version 2.1.
+  the Apache License, version 2.0.
 
 ### Test-time dependencies
 
