@@ -607,7 +607,7 @@ public class FramesFactoryTest {
                                                       stream().
                                                       map(e -> new EOPEntry(e.getMjd(),
                                                                             e.getUT1MinusUTC() + deltaUT1, e.getLOD(),
-                                                                            e.getX(), e.getY(),
+                                                                            e.getX(), e.getY(), e.getXRate(), e.getYRate(),
                                                                             e.getDdPsi(), e.getDdEps(),
                                                                             e.getDx(), e.getDy(),
                                                                             e.getITRFType(), e.getDate())).

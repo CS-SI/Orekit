@@ -113,8 +113,8 @@ public class VersionedITRFFrameTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(itrf2008);
 
-        Assertions.assertTrue(bos.size() > 40000);
-        Assertions.assertTrue(bos.size() < 45000);
+        Assertions.assertTrue(bos.size() > 45000);
+        Assertions.assertTrue(bos.size() < 50000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

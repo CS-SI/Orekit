@@ -426,7 +426,8 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
                     nro = getConverter().toNonRotating(date, equinox[0], equinox[1]);
                 }
 
-                return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, Double.NaN, Double.NaN,
+                                    equinox[0], equinox[1], nro[0], nro[1],
                                     getItrfVersion(), date);
 
             }
@@ -525,7 +526,8 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
                 };
                 final double[] equinox = getConverter().toEquinox(date, nro[0], nro[1]);
 
-                return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, Double.NaN, Double.NaN,
+                                    equinox[0], equinox[1], nro[0], nro[1],
                                     getItrfVersion(), date);
 
             }

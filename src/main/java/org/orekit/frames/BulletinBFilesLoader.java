@@ -337,6 +337,7 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                             configuration = getItrfVersionProvider().getConfiguration(name, mjd);
                         }
                         history.add(new EOPEntry(mjd, array[0], array[1], array[2], array[3],
+                                                 Double.NaN, Double.NaN,
                                                  equinox[0], equinox[1], array[4], array[5],
                                                  configuration.getVersion(), mjdDate));
                     }
@@ -454,7 +455,8 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                             // get a configuration for current name and date range
                             configuration = getItrfVersionProvider().getConfiguration(name, mjd);
                         }
-                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, Double.NaN, Double.NaN,
+                                                 equinox[0], equinox[1], nro[0], nro[1],
                                                  configuration.getVersion(), mjdDate));
                         line = mjd < mjdMax ? reader.readLine() : null;
                     } else {

@@ -383,7 +383,8 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                         // get a configuration for current name and date range
                         configuration = getItrfVersionProvider().getConfiguration(name, mjd);
                     }
-                    history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                    history.add(new EOPEntry(mjd, dtu1, lod, x, y, Double.NaN, Double.NaN,
+                                             equinox[0], equinox[1], nro[0], nro[1],
                                              configuration.getVersion(), mjdDate));
 
                 }
