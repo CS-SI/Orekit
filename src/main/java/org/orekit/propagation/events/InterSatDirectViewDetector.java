@@ -99,13 +99,13 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
      * @param handler   event handler to call at event occurrences
      * @since 12.0
      */
-    private InterSatDirectViewDetector(final OneAxisEllipsoid body,
-                                       final double skimmingAltitude,
-                                       final PVCoordinatesProvider secondary,
-                                       final AdaptableInterval maxCheck,
-                                       final double threshold,
-                                       final int maxIter,
-                                       final EventHandler handler) {
+    protected InterSatDirectViewDetector(final OneAxisEllipsoid body,
+                                         final double skimmingAltitude,
+                                         final PVCoordinatesProvider secondary,
+                                         final AdaptableInterval maxCheck,
+                                         final double threshold,
+                                         final int maxIter,
+                                         final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
         this.body             = body;
         this.skimmingAltitude = skimmingAltitude;
