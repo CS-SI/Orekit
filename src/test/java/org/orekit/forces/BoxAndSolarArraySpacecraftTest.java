@@ -68,6 +68,42 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class BoxAndSolarArraySpacecraftTest {
 
     @Test
+    public void testCoefficients() {
+        final double drag = 1.1;
+        final double lift = 2.2;
+        final double abso = 3.3;
+        final double refl = 4.4;
+
+        final double tol = 1.0e-15;
+
+        // build box
+        List<Panel> box = BoxAndSolarArraySpacecraft.buildBox(1.5, 3.5, 2.5,
+            drag, lift, abso, refl);
+
+        // check
+        for (Panel panel : box) {
+            Assertions.assertEquals(drag, panel.getDrag(), tol);
+            Assertions.assertEquals(lift, panel.getLiftRatio(), tol);
+            Assertions.assertEquals(refl, panel.geReflection(), tol);
+            Assertions.assertEquals(abso, panel.getAbsorption(), tol);
+        }
+
+        // build panels
+        List<Panel> panels = BoxAndSolarArraySpacecraft.buildPanels(1.5, 3.5, 2.5,
+            CelestialBodyFactory.getSun(), 0.4, Vector3D.PLUS_J,
+            drag, lift, abso, refl);
+
+        // check
+        for (Panel panel : panels) {
+            Assertions.assertEquals(drag, panel.getDrag(), tol);
+            Assertions.assertEquals(lift, panel.getLiftRatio(), tol);
+            Assertions.assertEquals(refl, panel.geReflection(), tol);
+            Assertions.assertEquals(abso, panel.getAbsorption(), tol);
+        }
+
+    }
+
+    @Test
     public void testParametersDrivers() {
 
         CelestialBody sun = CelestialBodyFactory.getSun();
