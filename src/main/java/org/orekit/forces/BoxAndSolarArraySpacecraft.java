@@ -356,60 +356,60 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param xLength length of the body along its X axis (m)
      * @param yLength length of the body along its Y axis (m)
      * @param zLength length of the body along its Z axis (m)
-     * @param absorption radiation pressure absorption coefficient (between 0 and 1)
-     * @param reflection radiation pressure specular reflection coefficient (between 0 and 1)
      * @param drag drag coefficient
      * @param liftRatio drag lift ratio (proportion between 0 and 1 of atmosphere modecules
      * that will experience specular reflection when hitting spacecraft instead
      * of experiencing diffuse reflection, hence producing lift)
+     * @param absorption radiation pressure absorption coefficient (between 0 and 1)
+     * @param reflection radiation pressure specular reflection coefficient (between 0 and 1)
      * @return surface vectors array
      * @since 12.0
      */
     public static List<Panel> buildBox(final double xLength, final double yLength, final double zLength,
-                                       final double absorption, final double reflection,
-                                       final double drag, final double liftRatio) {
+                                       final double drag, final double liftRatio,
+                                       final double absorption, final double reflection) {
 
         final List<Panel> panels = new ArrayList<>(6);
 
         // spacecraft body, composed of single-sided panels
-        panels.add(new FixedPanel(Vector3D.MINUS_I, yLength * zLength, false, absorption, reflection, drag, liftRatio));
-        panels.add(new FixedPanel(Vector3D.PLUS_I,  yLength * zLength, false, absorption, reflection, drag, liftRatio));
-        panels.add(new FixedPanel(Vector3D.MINUS_J, xLength * zLength, false, absorption, reflection, drag, liftRatio));
-        panels.add(new FixedPanel(Vector3D.PLUS_J,  xLength * zLength, false, absorption, reflection, drag, liftRatio));
-        panels.add(new FixedPanel(Vector3D.MINUS_K, xLength * yLength, false, absorption, reflection, drag, liftRatio));
-        panels.add(new FixedPanel(Vector3D.PLUS_K,  xLength * yLength, false, absorption, reflection, drag, liftRatio));
+        panels.add(new FixedPanel(Vector3D.MINUS_I, yLength * zLength, false, drag, liftRatio, absorption, reflection));
+        panels.add(new FixedPanel(Vector3D.PLUS_I,  yLength * zLength, false, drag, liftRatio, absorption, reflection));
+        panels.add(new FixedPanel(Vector3D.MINUS_J, xLength * zLength, false, drag, liftRatio, absorption, reflection));
+        panels.add(new FixedPanel(Vector3D.PLUS_J,  xLength * zLength, false, drag, liftRatio, absorption, reflection));
+        panels.add(new FixedPanel(Vector3D.MINUS_K, xLength * yLength, false, drag, liftRatio, absorption, reflection));
+        panels.add(new FixedPanel(Vector3D.PLUS_K,  xLength * yLength, false, drag, liftRatio, absorption, reflection));
 
         return panels;
 
     }
 
-    /** Build the panels of a simple parallelepipedic box plus one solar array panel.
+    /** Build the panels of a simple parallelepiped box plus one solar array panel.
      * @param xLength length of the body along its X axis (m)
      * @param yLength length of the body along its Y axis (m)
      * @param zLength length of the body along its Z axis (m)
      * @param sun sun model
      * @param solarArrayArea area of the solar array (m²)
      * @param solarArrayAxis solar array rotation axis in satellite frame
-     * @param absorption radiation pressure absorption coefficient (between 0 and 1)
-     * @param reflection radiation pressure specular reflection coefficient (between 0 and 1)
      * @param drag drag coefficient
      * @param liftRatio drag lift ratio (proportion between 0 and 1 of atmosphere modecules
      * that will experience specular reflection when hitting spacecraft instead
      * of experiencing diffuse reflection, hence producing lift)
+     * @param absorption radiation pressure absorption coefficient (between 0 and 1)
+     * @param reflection radiation pressure specular reflection coefficient (between 0 and 1)
      * @return surface vectors array
      * @since 12.0
      */
     public static List<Panel> buildPanels(final double xLength, final double yLength, final double zLength,
                                           final ExtendedPVCoordinatesProvider sun,
                                           final double solarArrayArea, final Vector3D solarArrayAxis,
-                                          final double absorption, final double reflection,
-                                          final double drag, final double liftRatio) {
+                                          final double drag, final double liftRatio,
+                                          final double absorption, final double reflection) {
 
         // spacecraft body
-        final List<Panel> panels = buildBox(xLength, yLength, zLength, absorption, reflection, drag, liftRatio);
+        final List<Panel> panels = buildBox(xLength, yLength, zLength, drag, liftRatio, absorption, reflection);
 
         // solar array
-        panels.add(new PointingPanel(solarArrayAxis, sun, solarArrayArea, absorption, reflection, drag, liftRatio));
+        panels.add(new PointingPanel(solarArrayAxis, sun, solarArrayArea, drag, liftRatio, absorption, reflection));
 
         return panels;
 
