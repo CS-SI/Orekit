@@ -27,8 +27,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.AbsolutePVCoordinates;
-import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -197,21 +195,4 @@ public class AngularRaDec extends GroundReceiverMeasurement<AngularRaDec> {
         return referenceFrame.getStaticTransformTo(outputFrame, getDate())
             .transformVector(new Vector3D(getObservedValue()[0], getObservedValue()[1]));
     }
-
-    /** Calculate the estimated Line Of Sight of the measurement at a given date.
-     *
-     * @param provider provider for satellite coordinates
-     * @param date the date for which the line of sight must be computed
-     * @param gcrf GCRF frame
-     * @return the estimate line of Sight of the measurement at the given date.
-     * @since 12.0
-     */
-    public Vector3D getEstimatedLineOfSight(final PVCoordinatesProvider provider, final AbsoluteDate date, final Frame gcrf) {
-        final TimeStampedPVCoordinates satPV       = provider.getPVCoordinates(date, gcrf);
-        final AbsolutePVCoordinates    satPVInGCRF = new AbsolutePVCoordinates(gcrf, satPV);
-        final SpacecraftState[]        satState    = new SpacecraftState[] { new SpacecraftState(satPVInGCRF) };
-        final double[]                 angular     = this.estimateWithoutDerivatives(0, 0, satState).getEstimatedValue();
-        return new Vector3D(angular[0], angular[1]);
-    }
-
 }
