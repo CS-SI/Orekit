@@ -84,7 +84,7 @@ public class BoxAndSolarArraySpacecraftTest {
         for (Panel panel : box) {
             Assertions.assertEquals(drag, panel.getDrag(), tol);
             Assertions.assertEquals(lift, panel.getLiftRatio(), tol);
-            Assertions.assertEquals(refl, panel.geReflection(), tol);
+            Assertions.assertEquals(refl, panel.getReflection(), tol);
             Assertions.assertEquals(abso, panel.getAbsorption(), tol);
         }
 
@@ -97,7 +97,7 @@ public class BoxAndSolarArraySpacecraftTest {
         for (Panel panel : panels) {
             Assertions.assertEquals(drag, panel.getDrag(), tol);
             Assertions.assertEquals(lift, panel.getLiftRatio(), tol);
-            Assertions.assertEquals(refl, panel.geReflection(), tol);
+            Assertions.assertEquals(refl, panel.getReflection(), tol);
             Assertions.assertEquals(abso, panel.getAbsorption(), tol);
         }
 

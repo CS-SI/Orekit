@@ -277,7 +277,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                 // the panel intercepts the incoming flux
 
                 final double absorptionCoeff         = panel.getAbsorption();
-                final double specularReflectionCoeff = panel.geReflection();
+                final double specularReflectionCoeff = panel.getReflection();
                 final double diffuseReflectionCoeff  = 1 - (absorptionCoeff + specularReflectionCoeff);
                 final double psr                     = fluxSat.getNorm();
 
@@ -333,7 +333,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                 // the panel intercepts the incoming flux
 
                 final double absorptionCoeff         = panel.getAbsorption();
-                final double specularReflectionCoeff = panel.geReflection();
+                final double specularReflectionCoeff = panel.getReflection();
                 final double diffuseReflectionCoeff  = 1 - (absorptionCoeff + specularReflectionCoeff);
                 final T      psr                     = fluxSat.getNorm();
 
