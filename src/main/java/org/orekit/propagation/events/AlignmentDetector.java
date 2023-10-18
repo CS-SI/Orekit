@@ -93,9 +93,9 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
         this(orbit.getKeplerianPeriod() / 3, threshold, body, alignAngle);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
