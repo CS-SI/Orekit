@@ -24,6 +24,9 @@
       <action dev="alfe" type="add"  issue="1231">
           Fix bug on buildBox constructor coefficients order.
       </action>
+      <action dev="alfe" type="add"  issue="1225">
+          Adding {Field}LongitudeCrossingDetector.
+      </action>
       <action dev="luc" type="add"  issue="1227">
           Added support for CCSDS/SANA geodetic orbital elements.
       </action>
