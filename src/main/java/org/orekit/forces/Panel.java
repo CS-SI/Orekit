@@ -115,7 +115,7 @@ public abstract class Panel {
     /** Get radiation pressure specular reflection coefficient.
      * @return radiation pressure specular reflection coefficient
      */
-    public double geReflection() {
+    public double getReflection() {
         return reflection;
     }
 
