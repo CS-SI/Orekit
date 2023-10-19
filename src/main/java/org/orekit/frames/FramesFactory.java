@@ -186,6 +186,11 @@ public class FramesFactory {
     /** Default regular expression for the BulletinA files (IAU1980 and IAU2000 compatibles). */
     public static final String BULLETINA_FILENAME = "^bulletina-[ivxlcdm]+-\\d\\d\\d\\.txt$";
 
+    /** Default regular expression for the csv files (IAU1980 and IAU2000 compatibles).
+     * @since 12.0
+     */
+    public static final String CSV_FILENAME = "^(?:eopc04|bulletina\bulletinb).*\\.csv$";
+
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
      * nor a default constructor. This private constructor prevents
@@ -222,23 +227,28 @@ public class FramesFactory {
      * (may be null if the default IERS file names are used)
      * @param bulletinASupportedNames regular expression for supported bulletin A files names
      * (may be null if the default IERS file names are used)
+     * @param csvSupportedNames regular expression for supported csv files names
+     * (may be null if the default IERS file names are used)
      * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
      * @see #clearEOPHistoryLoaders()
-     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String, String)
+     * @since 12.0
      */
     @DefaultDataContext
     public static void addDefaultEOP1980HistoryLoaders(final String rapidDataColumnsSupportedNames,
                                                        final String rapidDataXMLSupportedNames,
                                                        final String eopC04SupportedNames,
                                                        final String bulletinBSupportedNames,
-                                                       final String bulletinASupportedNames) {
+                                                       final String bulletinASupportedNames,
+                                                       final String csvSupportedNames) {
         getFrames().addDefaultEOP1980HistoryLoaders(
                 rapidDataColumnsSupportedNames,
                 rapidDataXMLSupportedNames,
                 eopC04SupportedNames,
                 bulletinBSupportedNames,
-                bulletinASupportedNames);
+                bulletinASupportedNames,
+                csvSupportedNames);
     }
 
     /** Add the default loaders for EOP history (IAU 2000/2006 precession/nutation).
@@ -259,23 +269,28 @@ public class FramesFactory {
      * (may be null if the default IERS file names are used)
      * @param bulletinASupportedNames regular expression for supported bulletin A files names
      * (may be null if the default IERS file names are used)
+     * @param csvSupportedNames regular expression for supported csv files names
+     * (may be null if the default IERS file names are used)
      * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
      * @see #clearEOPHistoryLoaders()
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
+     * @since 12.0
      */
     @DefaultDataContext
     public static void addDefaultEOP2000HistoryLoaders(final String rapidDataColumnsSupportedNames,
                                                        final String rapidDataXMLSupportedNames,
                                                        final String eopC04SupportedNames,
                                                        final String bulletinBSupportedNames,
-                                                       final String bulletinASupportedNames) {
+                                                       final String bulletinASupportedNames,
+                                                       final String csvSupportedNames) {
         getFrames().addDefaultEOP2000HistoryLoaders(
                 rapidDataColumnsSupportedNames,
                 rapidDataXMLSupportedNames,
                 eopC04SupportedNames,
                 bulletinBSupportedNames,
-                bulletinASupportedNames);
+                bulletinASupportedNames,
+                csvSupportedNames);
     }
 
     /** Add a loader for Earth Orientation Parameters history.

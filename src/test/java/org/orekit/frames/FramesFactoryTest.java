@@ -80,7 +80,8 @@ public class FramesFactoryTest {
                                                       "wrong-rapidDataXML-1980",
                                                       "wrong-eopC04-1980",
                                                       "wrong-bulletinB-1980",
-                                                      "wrong-bulletinA-1980");
+                                                      "wrong-bulletinA-1980",
+                                                      "wrong-csv");
         try {
             FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true).getStartDate();
             Assertions.fail("an exception should have been thrown");
@@ -95,7 +96,8 @@ public class FramesFactoryTest {
                                                       "wrong-rapidDataXML-2000",
                                                       "wrong-eopC04-2000",
                                                       "wrong-bulletinB-2000",
-                                                      "wrong-bulletinA-2000");
+                                                      "wrong-bulletinA-2000",
+                                                      "wrong-csv");
         try {
             FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true).getStartDate();
             Assertions.fail("an exception should have been thrown");
@@ -107,7 +109,7 @@ public class FramesFactoryTest {
     @Test
     public void testWrongConventions() {
         // set up only 1980 conventions
-        FramesFactory.addDefaultEOP1980HistoryLoaders(null, null, null, null, null);
+        FramesFactory.addDefaultEOP1980HistoryLoaders(null, null, null, null, null, null);
         try {
             // attempt to retrieve 2000 conventions
             FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true).getStartDate();

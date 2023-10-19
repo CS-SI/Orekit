@@ -47,8 +47,8 @@ public class LazyLoadedFramesTest {
         LazyLoadedFrames frames = new LazyLoadedFrames(eop, timeScales, null);
 
         // actions
-        frames.addDefaultEOP1980HistoryLoaders(null, null, null, null, null);
-        frames.addDefaultEOP2000HistoryLoaders(null, null, null, null, null);
+        frames.addDefaultEOP1980HistoryLoaders(null, null, null, null, null, null);
+        frames.addDefaultEOP2000HistoryLoaders(null, null, null, null, null, null);
         frames.addEOPHistoryLoader(IERSConventions.IERS_2010, null);
 
         // verify: no exceptions thrown

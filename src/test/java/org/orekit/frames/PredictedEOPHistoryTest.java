@@ -267,7 +267,8 @@ public class PredictedEOPHistoryTest {
     public void setUp() {
         Utils.setDataRoot("eop-prediction");
         FramesFactory.clearEOPHistoryLoaders();
-        FramesFactory.addDefaultEOP2000HistoryLoaders("none", "none", "^eopc04_14_IAU2000\\.[0-9][0-9]\\.txt$", "none", "none");
+        FramesFactory.addDefaultEOP2000HistoryLoaders("none", "none", "^eopc04_14_IAU2000\\.[0-9][0-9]\\.txt$",
+                                                      "none", "none", "none");
         utc     = TimeScalesFactory.getUTC();
         trueEOP = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
 
