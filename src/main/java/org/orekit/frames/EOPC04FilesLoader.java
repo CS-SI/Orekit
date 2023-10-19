@@ -111,7 +111,7 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
 
             final List<EOPEntry> history = new ArrayList<>();
 
-            // set up a reader for line-oriented bulletin B files
+            // set up a reader for line-oriented EOP C04 files
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
                 // reset parse info to start new file (do not clear history!)
                 int lineNumber   = 0;
@@ -433,7 +433,7 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
             }
         }
 
-        /** Parser for data lines without pole rates.
+        /** Parser for data lines with pole rates.
          * <p>
          * ITRF markers have either the following form:
          * </p>
