@@ -173,8 +173,8 @@ public class UT1ScaleTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(ut1);
 
-        Assertions.assertTrue(bos.size() > 180000);
-        Assertions.assertTrue(bos.size() < 181000);
+        Assertions.assertTrue(bos.size() > 138000);
+        Assertions.assertTrue(bos.size() < 139000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

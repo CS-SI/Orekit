@@ -73,7 +73,7 @@ public interface EOPHistoryLoader {
                 final IERSConventions conventions,
                 final ItrfVersionProvider itrfVersionProvider,
                 final TimeScales timeScales) {
-            return new RapidDataAndPredictionXMLLoader.Parser(
+            return new EopXmlLoader.Parser(
                     conventions.getNutationCorrectionConverter(timeScales),
                     itrfVersionProvider,
                     timeScales.getUTC());

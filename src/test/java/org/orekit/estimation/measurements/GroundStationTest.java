@@ -233,8 +233,8 @@ public class GroundStationTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(moved.getEstimatedEarthFrame().getTransformProvider());
 
-        Assertions.assertTrue(bos.size() > 180000);
-        Assertions.assertTrue(bos.size() < 185000);
+        Assertions.assertTrue(bos.size() > 138000);
+        Assertions.assertTrue(bos.size() < 139000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

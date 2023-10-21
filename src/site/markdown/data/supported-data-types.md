@@ -30,22 +30,22 @@ planetary ephemerides), and some must be loaded explicitly by applications (for 
 CCSDS orbit, attitude, tracking or navigation messages).
 
 Earth Orientation Parameters are provided by observatories in many different formats
-(Bulletin A in txt and csv formats, several different formats of Bulletin B, EOP C04,
+(Bulletin A in txt, csv and xml formats, several different formats of Bulletin B, EOP C04,
 finals file combining both Bulletin A and Bulletin B information ...). They are also
 provided for different precession-nutation models (IAU-1980 and IAU-2006/2000A). Orekit
 supports all of these formats and supports both precession-nutation models. Two different
 naming patterns for Bulletin B are supported by default. Both the old Bulletin B format
-used up to 2009, the new format used since 2010 and the csv format are supported. The
-supported formats for `finals2000A` files for IAU-2006/2000A and the finals files for
+used up to 2009, new format used since 2010, the csv format and the xml format are supported.
+Thevsupported formats for `finals2000A` files for IAU-2006/2000A and the finals files for
 IAU-1980 are both the XML format and the columns format.
 
 |                          data type                                                       |       format                              |          default naming pattern                         |                                                                    source                                                              |
 |------------------------------------------------------------------------------------------|-------------------------------------------|---------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
 | leap seconds introduction history                                                        | USNO tai-utc                              | tai-utc.dat[.gz\|.Z]                                    | [https://maia.usno.navy.mil/ser7/tai-utc.dat](https://maia.usno.navy.mil/ser7/tai-utc.dat)                                             |
 | leap seconds introduction history                                                        | IERS history                              | UTC-TAI.history[.gz\|.Z]                                | [https://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history](https://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history)                       |
-| weekly Earth Orientation Parameters, IAU-1980 and IAU-2000, rapid service and prediction | IERS Bulletin A                           | bulletina-xxxx-\#\#\#{.txt|.csv}[.gz\|.Z]               | [https://datacenter.iers.org/products/eop/rapid/bulletina/](https://datacenter.iers.org/products/eop/rapid/bulletina/)                 |
-| monthly Earth Orientation Parameters model IAU 2006/2000A, final values                  | IERS Bulletin B                           | bulletinb-\#\#\#{.txt|.csv}[.gz\|.Z]                    | [https://datacenter.iers.org/products/eop/bulletinb/format_2009/](https://datacenter.iers.org/products/eop/bulletinb/format_2009/      |
-| yearly Earth Orientation Parameters model IAU 2006/2000A                                 | IERS EOP C04                              | eopc04*{.##|.csv}[.gz\|.Z]                              | [https://datacenter.iers.org/products/eop/long-term/](https://datacenter.iers.org/products/eop/long-term/)                             |
+| weekly Earth Orientation Parameters, IAU-1980 and IAU-2000, rapid service and prediction | IERS Bulletin A                           | bulletina-xxxx-\#\#\#{.txt|.csv|xml}[.gz\|.Z]           | [https://datacenter.iers.org/products/eop/rapid/bulletina/](https://datacenter.iers.org/products/eop/rapid/bulletina/)                 |
+| monthly Earth Orientation Parameters model IAU 2006/2000A, final values                  | IERS Bulletin B                           | bulletinb-\#\#\#{.txt|.csv|.xml}[.gz\|.Z]               | [https://datacenter.iers.org/products/eop/bulletinb/format_2009/](https://datacenter.iers.org/products/eop/bulletinb/format_2009/      |
+| yearly Earth Orientation Parameters model IAU 2006/2000A                                 | IERS EOP C04                              | eopc04*{.##|.csv|.xml}[.gz\|.Z]                         | [https://datacenter.iers.org/products/eop/long-term/](https://datacenter.iers.org/products/eop/long-term/)                             |
 | Earth Orientation Parameters model IAU 2006/2000A                                        | IERS standard EOP                         | finals2000A.\*.[.gz\|.Z]                                | [https://datacenter.iers.org/data/9/finals2000A.all](https://datacenter.iers.org/data/9/finals2000A.all)                               |
 | Earth Orientation Parameters  model IAU 1980                                             | IERS standard EOP                         | finals.\*.[.gz\|.Z]                                     | [https://datacenter.iers.org/data/7/finals.all](https://datacenter.iers.org/data/7/finals.all)                                         |
 | JPL DE 4xx planets ephemerides                                                           | DE 4xx binary                             | (l/u)nx(m/p)\#\#\#\#.4\#\#[.gz\|.Z]                     | [https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/](https://ssd.jpl.nasa.gov/ftp/eph/planets Linux/)                                     |

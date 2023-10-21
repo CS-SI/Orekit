@@ -616,7 +616,7 @@ public class FramesFactoryTest {
                                                       collect(Collectors.toList()),
                                                       baseEOP.isSimpleEop());
         final Frame modifiedITRF = FramesFactory.buildUncachedITRF(modifiedEOP, TimeScalesFactory.getUTC());
-        final AbsoluteDate t0 = new AbsoluteDate(2002, 2, 14, 13, 59, 43.0, TimeScalesFactory.getUTC());
+        final AbsoluteDate t0 = new AbsoluteDate(2003, 2, 14, 13, 59, 43.0, TimeScalesFactory.getUTC());
         for (double dt = 0; dt < 7 * Constants.JULIAN_DAY; dt += 3600) {
             final Transform t = baseITRF.getTransformTo(modifiedITRF, t0.shiftedBy(dt));
             Assertions.assertEquals(Constants.WGS84_EARTH_ANGULAR_VELOCITY * deltaUT1,
@@ -628,8 +628,7 @@ public class FramesFactoryTest {
     private void doTestDerivatives(AbsoluteDate ref,
                                    double duration, double step, boolean forbidInterpolation,
                                    double cartesianTolerance, double cartesianDotTolerance, double cartesianDotDotTolerance,
-                                   double rodriguesTolerance, double rodriguesDotTolerance, double rodriguesDotDotTolerance)
-        {
+                                   double rodriguesTolerance, double rodriguesDotTolerance, double rodriguesDotDotTolerance) {
 
         final DSFactory factory = new DSFactory(1, 2);
         final FieldAbsoluteDate<DerivativeStructure> refDS = new FieldAbsoluteDate<>(factory.getDerivativeField(), ref);
