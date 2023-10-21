@@ -44,30 +44,30 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-/** Loader for IERS rapid data and prediction file in XML format (finals file).
- * <p>Rapid data and prediction file contain {@link EOPEntry
- * Earth Orientation Parameters} for several years periods, in one file
- * only that is updated regularly.</p>
+/** Loader for IERS EOP data in XML format (finals and EOPC04 files).
  * <p>The XML EOP files are recognized thanks to their base names, which
- * must match one of the the patterns <code>finals.2000A.*.xml</code> or
- * <code>finals.*.xml</code> (or the same ending with <code>.gz</code> for
- * gzip-compressed files) where * stands for a word like "all", "daily",
- * or "data".</p>
- * <p>Files containing data (back to 1973) are available at IERS web site: <a
- * href="http://www.iers.org/IERS/EN/DataProducts/EarthOrientationData/eop.html">Earth orientation data</a>.</p>
+ * must match one of the the patterns {@code finals.2000A.*.xml} or
+ * {@code finals.*.xml} or {@code eopc04_*.xml} (or the same ending with
+ * {@.gz} for gzip-compressed files) where * stands for any string of characters.</p>
+ * <p>Files containing data (back to 1962) are available at IERS web site: <a
+ * href="https://datacenter.iers.org/products/eop/">IERS https data download</a>.</p>
  * <p>
  * This class is immutable and hence thread-safe
  * </p>
  * @author Luc Maisonobe
  */
-class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
-        implements EOPHistoryLoader {
+class EopXmlLoader extends AbstractEopLoader implements EOPHistoryLoader {
 
     /** Millisecond unit. */
     private static final Unit MILLI_SECOND = Unit.parse("ms");
 
     /** Milli arcsecond unit. */
     private static final Unit MILLI_ARC_SECOND = Unit.parse("mas");
+
+    /**Arcsecond per day unit.
+     * @since 12.0
+     */
+    private static final Unit ARC_SECOND_PER_DAY = Unit.parse("as/day");
 
     /**
      * Build a loader for IERS XML EOP files.
@@ -76,9 +76,9 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
      * @param manager        provides access to the XML EOP files.
      * @param utcSupplier    UTC time scale.
      */
-    RapidDataAndPredictionXMLLoader(final String supportedNames,
-                                    final DataProvidersManager manager,
-                                    final Supplier<TimeScale> utcSupplier) {
+    EopXmlLoader(final String supportedNames,
+                 final DataProvidersManager manager,
+                 final Supplier<TimeScale> utcSupplier) {
         super(supportedNames, manager, utcSupplier);
     }
 
@@ -143,10 +143,20 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
             private static final String LOD_ELT           = "LOD";
             private static final String X_ELT             = "X";
             private static final String Y_ELT             = "Y";
+            private static final String X_RATE_ELT        = "x_rate";
+            private static final String Y_RATE_ELT        = "y_rate";
             private static final String DPSI_ELT          = "dPsi";
             private static final String DEPSILON_ELT      = "dEpsilon";
             private static final String DX_ELT            = "dX";
             private static final String DY_ELT            = "dY";
+
+            // elements and attributes specific to bulletinA, bulletinB and EOP C04 files
+            private static final String DATA_ELT            = "data";
+            private static final String PRODUCT_ATTR        = "product";
+            private static final String BULLETIN_A_PROD     = "BulletinA";
+            private static final String BULLETIN_B_PROD     = "BulletinB";
+            private static final String EOP_C04_PROD_PREFIX = "EOP";
+            private static final String EOP_C04_PROD_SUFFIX = "C04";
 
             // elements and attributes specific to daily data files
             private static final String DATA_EOP_ELT      = "dataEOP";
@@ -159,7 +169,6 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
             private static final String UT1_U_UTC_ELT     = "UT1_UTC";
             private static final String NUTATION_ELT      = "nutation";
             private static final String SOURCE_ATTR       = "source";
-            private static final String BULLETIN_A_SOURCE = "BulletinA";
 
             // elements and attributes specific to finals data files
             private static final String FINALS_ELT        = "Finals";
@@ -178,6 +187,8 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
             private double  lod;
             private double  x;
             private double  y;
+            private double  xRate;
+            private double  yRate;
             private double  dpsi;
             private double  deps;
             private double  dx;
@@ -234,10 +245,26 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                     } else if (qName.equals(FINALS_ELT)) {
                         // the file contains final data
                         content = DataFileContent.FINAL;
+                    } else if (qName.equals(DATA_ELT)) {
+                        final String product = atts.getValue(PRODUCT_ATTR);
+                        if (product != null) {
+                            if (product.startsWith(BULLETIN_A_PROD)) {
+                                // the file contains bulletinA
+                                content     = DataFileContent.BULLETIN_A;
+                                inBulletinA = true;
+                            } else if (product.startsWith(BULLETIN_B_PROD)) {
+                                // the file contains bulletinB
+                                content = DataFileContent.BULLETIN_B;
+                            } else if (product.startsWith(EOP_C04_PROD_PREFIX) && product.endsWith(EOP_C04_PROD_SUFFIX)) {
+                                // the file contains EOP C04
+                                content = DataFileContent.EOP_C04;
+                            }
+                        }
                     }
                 }
 
-                if (content == DataFileContent.DAILY) {
+                if (content == DataFileContent.DAILY      || content == DataFileContent.BULLETIN_A ||
+                    content == DataFileContent.BULLETIN_B || content == DataFileContent.EOP_C04) {
                     startDailyElement(qName, atts);
                 } else if (content == DataFileContent.FINAL) {
                     startFinalElement(qName);
@@ -256,7 +283,7 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                 } else if (qName.equals(POLE_ELT) || qName.equals(UT_ELT) || qName.equals(NUTATION_ELT)) {
                     final String source = atts.getValue(SOURCE_ATTR);
                     if (source != null) {
-                        inBulletinA = source.equals(BULLETIN_A_SOURCE);
+                        inBulletinA = source.equals(BULLETIN_A_PROD);
                     }
                 }
             }
@@ -283,9 +310,11 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                 mjd         = -1;
                 mjdDate     = null;
                 dtu1        = Double.NaN;
-                lod         = Double.NaN;
+                lod         = content == DataFileContent.BULLETIN_A ? 0.0 : Double.NaN;
                 x           = Double.NaN;
                 y           = Double.NaN;
+                xRate       = Double.NaN;
+                yRate       = Double.NaN;
                 dpsi        = Double.NaN;
                 deps        = Double.NaN;
                 dx          = Double.NaN;
@@ -295,7 +324,8 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
             /** {@inheritDoc} */
             @Override
             public void endElement(final String uri, final String localName, final String qName) {
-                if (content == DataFileContent.DAILY) {
+                if (content == DataFileContent.DAILY      || content == DataFileContent.BULLETIN_A ||
+                    content == DataFileContent.BULLETIN_B || content == DataFileContent.EOP_C04) {
                     endDailyElement(qName);
                 } else if (content == DataFileContent.FINAL) {
                     endFinalElement(qName);
@@ -324,6 +354,10 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                     x = overwrite(x, Unit.ARC_SECOND);
                 } else if (qName.equals(Y_ELT)) {
                     y = overwrite(y, Unit.ARC_SECOND);
+                } else if (qName.equals(X_RATE_ELT)) {
+                    xRate = overwrite(xRate, ARC_SECOND_PER_DAY);
+                } else if (qName.equals(Y_RATE_ELT)) {
+                    yRate = overwrite(yRate, ARC_SECOND_PER_DAY);
                 } else if (qName.equals(DPSI_ELT)) {
                     dpsi = overwrite(dpsi, MILLI_ARC_SECOND);
                 } else if (qName.equals(DEPSILON_ELT)) {
@@ -354,7 +388,8 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                             // get a configuration for current name and date range
                             configuration = getItrfVersionProvider().getConfiguration(name, mjd);
                         }
-                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, Double.NaN, Double.NaN,
+                                                 equinox[0], equinox[1], nro[0], nro[1],
                                                  configuration.getVersion(), mjdDate));
                     }
                 }
@@ -383,6 +418,10 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                     x = overwrite(x, Unit.ARC_SECOND);
                 } else if (qName.equals(Y_ELT)) {
                     y = overwrite(y, Unit.ARC_SECOND);
+                } else if (qName.equals(X_RATE_ELT)) {
+                    xRate = overwrite(xRate, ARC_SECOND_PER_DAY);
+                } else if (qName.equals(Y_RATE_ELT)) {
+                    yRate = overwrite(yRate, ARC_SECOND_PER_DAY);
                 } else if (qName.equals(DPSI_ELT)) {
                     dpsi = overwrite(dpsi, MILLI_ARC_SECOND);
                 } else if (qName.equals(DEPSILON_ELT)) {
@@ -413,7 +452,8 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
                             // get a configuration for current name and date range
                             configuration = getItrfVersionProvider().getConfiguration(name, mjd);
                         }
-                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, xRate, yRate,
+                                                 equinox[0], equinox[1], nro[0], nro[1],
                                                  configuration.getVersion(), mjdDate));
                     }
                 }
@@ -462,6 +502,21 @@ class RapidDataAndPredictionXMLLoader extends AbstractEopLoader
 
         /** Unknown content. */
         UNKNOWN,
+
+        /** Bulletin A data.
+         * @since 12.0
+         */
+        BULLETIN_A,
+
+        /** Bulletin B data.
+         * @since 12.0
+         */
+        BULLETIN_B,
+
+        /** EOP_C04 data.
+         * @since 12.0
+         */
+        EOP_C04,
 
         /** Daily data. */
         DAILY,

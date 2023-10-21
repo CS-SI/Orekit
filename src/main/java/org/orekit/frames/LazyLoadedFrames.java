@@ -62,8 +62,7 @@ public class LazyLoadedFrames extends AbstractFrames {
      * @param rapidDataColumnsSupportedNames regular expression for supported
      * rapid data columns EOP files names
      * (may be null if the default IERS file names are used)
-     * @param rapidDataXMLSupportedNames regular expression for supported
-     * rapid data XML EOP files names
+     * @param xmlSupportedNames regular expression for supported XML EOP files names
      * (may be null if the default IERS file names are used)
      * @param eopC04SupportedNames regular expression for supported EOP C04 files names
      * (may be null if the default IERS file names are used)
@@ -71,22 +70,27 @@ public class LazyLoadedFrames extends AbstractFrames {
      * (may be null if the default IERS file names are used)
      * @param bulletinASupportedNames regular expression for supported bulletin A files names
      * (may be null if the default IERS file names are used)
-     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
+     * @param csvSupportedNames regular expression for supported csv files names
+     * (may be null if the default IERS file names are used)
+     * @see <a href="https://datacenter.iers.org/products/eop/">IERS https data download</a>
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
      * @see #clearEOPHistoryLoaders()
-     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String, String)
+     * @since 12.0
      */
     public void addDefaultEOP1980HistoryLoaders(final String rapidDataColumnsSupportedNames,
-                                                       final String rapidDataXMLSupportedNames,
-                                                       final String eopC04SupportedNames,
-                                                       final String bulletinBSupportedNames,
-                                                       final String bulletinASupportedNames) {
+                                                final String xmlSupportedNames,
+                                                final String eopC04SupportedNames,
+                                                final String bulletinBSupportedNames,
+                                                final String bulletinASupportedNames,
+                                                final String csvSupportedNames) {
         lazyLoadedEop.addDefaultEOP1980HistoryLoaders(
             rapidDataColumnsSupportedNames,
-            rapidDataXMLSupportedNames,
+            xmlSupportedNames,
             eopC04SupportedNames,
             bulletinBSupportedNames,
             bulletinASupportedNames,
+            csvSupportedNames,
             () -> getTimeScales().getUTC());
     }
 
@@ -99,8 +103,7 @@ public class LazyLoadedFrames extends AbstractFrames {
      * @param rapidDataColumnsSupportedNames regular expression for supported
      * rapid data columns EOP files names
      * (may be null if the default IERS file names are used)
-     * @param rapidDataXMLSupportedNames regular expression for supported
-     * rapid data XML EOP files names
+     * @param xmlSupportedNames regular expression for supported XML EOP files names
      * (may be null if the default IERS file names are used)
      * @param eopC04SupportedNames regular expression for supported EOP C04 files names
      * (may be null if the default IERS file names are used)
@@ -108,29 +111,34 @@ public class LazyLoadedFrames extends AbstractFrames {
      * (may be null if the default IERS file names are used)
      * @param bulletinASupportedNames regular expression for supported bulletin A files names
      * (may be null if the default IERS file names are used)
-     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
+     * @param csvSupportedNames regular expression for supported csv files names
+     * (may be null if the default IERS file names are used)
+     * @see <a href="https://datacenter.iers.org/products/eop/">IERS https data download</a>
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
      * @see #clearEOPHistoryLoaders()
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
+     * @since 12.0
      */
     public void addDefaultEOP2000HistoryLoaders(final String rapidDataColumnsSupportedNames,
-                                                       final String rapidDataXMLSupportedNames,
-                                                       final String eopC04SupportedNames,
-                                                       final String bulletinBSupportedNames,
-                                                       final String bulletinASupportedNames) {
+                                                final String xmlSupportedNames,
+                                                final String eopC04SupportedNames,
+                                                final String bulletinBSupportedNames,
+                                                final String bulletinASupportedNames,
+                                                final String csvSupportedNames) {
         lazyLoadedEop.addDefaultEOP2000HistoryLoaders(
             rapidDataColumnsSupportedNames,
-            rapidDataXMLSupportedNames,
+            xmlSupportedNames,
             eopC04SupportedNames,
             bulletinBSupportedNames,
             bulletinASupportedNames,
+            csvSupportedNames,
             () -> getTimeScales().getUTC());
     }
 
     /** Add a loader for Earth Orientation Parameters history.
      * @param conventions IERS conventions to which EOP history applies
      * @param loader custom loader to add for the EOP history
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
      * @see #clearEOPHistoryLoaders()
      */
     public void addEOPHistoryLoader(final IERSConventions conventions, final EOPHistoryLoader loader) {

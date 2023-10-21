@@ -219,7 +219,7 @@ public class SinexEopEntry implements TimeStamped {
 
         // Create a new EOPEntry object storing the extracted data, then add it to the list of EOPEntries.
         return new EOPEntry(mjd, ut1MinusUtc, lod,
-                            xPo, yPo,
+                            xPo, yPo, Double.NaN, Double.NaN,
                             equinox[0], equinox[1],
                             nro[0], nro[1],
                             version, epoch);

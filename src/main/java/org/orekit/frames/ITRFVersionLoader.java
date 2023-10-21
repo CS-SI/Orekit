@@ -46,7 +46,7 @@ import org.orekit.time.DateComponents;
  * {@link BulletinBFilesLoader Bulletin B} files,
  * {@link RapidDataAndPredictionColumnsLoader rapid data
  * and prediction files in columns format} files,
- * {@link RapidDataAndPredictionXMLLoader rapid data
+ * {@link EopXmlLoader rapid data
  * and prediction files in XML format} files...
  * </p>
  * <p>This file is an Orekit-specific configuration file.
@@ -58,7 +58,7 @@ import org.orekit.time.DateComponents;
  * @see BulletinAFilesLoader
  * @see BulletinBFilesLoader
  * @see RapidDataAndPredictionColumnsLoader
- * @see RapidDataAndPredictionXMLLoader
+ * @see EopXmlLoader
  * @author Luc Maisonobe
  * @since 9.2
  */

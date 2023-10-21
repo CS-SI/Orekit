@@ -497,7 +497,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                             configuration = itrfVersionProvider.getConfiguration(fileName, mjd);
                         }
                         history.add(new EOPEntry(mjd,
-                                                 0.0, 0.0, 0.0, 0.0,
+                                                 0.0, 0.0, 0.0, 0.0, Double.NaN, Double.NaN,
                                                  UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[1]),
                                                  UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[2]),
                                                  UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[3]),
@@ -537,6 +537,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                                                  currentEOP[3], lod,
                                                  UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[1]),
                                                  UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[2]),
+                                                 Double.NaN, Double.NaN,
                                                  0.0, 0.0, 0.0, 0.0,
                                                  configuration.getVersion(),
                                                  mjdDate));
@@ -546,6 +547,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                                                  currentEOP[3], lod,
                                                  UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[1] ),
                                                  UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[2] ),
+                                                 Double.NaN, Double.NaN,
                                                  UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[1]),
                                                  UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[2]),
                                                  UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[3]),

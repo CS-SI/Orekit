@@ -119,7 +119,7 @@ public class IERSConventionsTest {
         final TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_1996, true);
         checkScalarFunctionConsistency(IERSConventions.IERS_1996.getGMSTFunction(ut1),
                                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 9.0e-16, 8.0e-13);
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.8e-15, 8.0e-13);
     }
 
     @Test

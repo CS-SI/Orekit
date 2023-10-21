@@ -68,6 +68,11 @@ public class EOPHistory implements Serializable {
      */
     private final boolean hasData;
 
+    /** Indicator for pole rates.
+     * @since 12.0
+     */
+    private final boolean hasPoleRates;
+
     /** EOP history entries. */
     private final transient ImmutableTimeStampedCache<EOPEntry> cache;
 
@@ -131,10 +136,21 @@ public class EOPHistory implements Serializable {
             // enough data to interpolate
             cache = new ImmutableTimeStampedCache<EOPEntry>(FastMath.min(INTERPOLATION_POINTS, data.size()), data);
             hasData = true;
+
+            // check if all data have pole rates
+            boolean rates = true;
+            for (final EOPEntry entry : data) {
+                if (Double.isNaN(entry.getXRate()) || Double.isNaN(entry.getYRate())) {
+                    rates = false;
+                }
+            }
+            hasPoleRates = rates;
+
         } else {
             // not enough data to interpolate -> always use null correction
             cache = ImmutableTimeStampedCache.emptyCache();
-            hasData = false;
+            hasData      = false;
+            hasPoleRates = false;
         }
     }
 
@@ -145,6 +161,14 @@ public class EOPHistory implements Serializable {
      */
     public boolean isSimpleEop() {
         return tidalCorrection == null;
+    }
+
+    /** Check if history has pole rates.
+     * @return true if history has pole rates
+     * @since 12.0
+     */
+    public boolean hasPoleRates() {
+        return hasPoleRates;
     }
 
     /**
@@ -459,7 +483,12 @@ public class EOPHistory implements Serializable {
         }
 
         // we have EOP data for date -> interpolate correction
-        final double[] interpolated = interpolate(date, entry -> entry.getX(), entry -> entry.getY());
+        final double[] interpolated = hasPoleRates ?
+                                      interpolate(date,
+                                                  entry -> entry.getX(),     entry -> entry.getY(),
+                                                  entry -> entry.getXRate(), entry -> entry.getYRate()) :
+                                      interpolate(date,
+                                                  entry -> entry.getX(), entry -> entry.getY());
         if (tidalCorrection != null) {
             final double[] correction = tidalCorrection.value(date);
             interpolated[0] += correction[0];
@@ -687,8 +716,8 @@ public class EOPHistory implements Serializable {
      * @return interpolated value
      */
     private <T extends CalculusFieldElement<T>> T interpolate(final FieldAbsoluteDate<T> date,
-                                                          final AbsoluteDate aDate,
-                                                          final Function<EOPEntry, Double> selector) {
+                                                              final AbsoluteDate aDate,
+                                                              final Function<EOPEntry, Double> selector) {
         try {
             final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
             final T[] y = MathArrays.buildArray(date.getField(), 1);
@@ -726,6 +755,42 @@ public class EOPHistory implements Serializable {
                                                                    new double[] {
                                                                        selector1.apply(entry),
                                                                        selector2.apply(entry)
+                                                                   }));
+            return interpolator.value(0);
+        } catch (TimeStampedCacheException tce) {
+            // this should not happen because of date check performed by caller
+            throw new OrekitInternalError(tce);
+        }
+    }
+
+    /** Interpolate two EOP components.
+     * <p>
+     * This method should be called <em>only</em> when {@link #hasDataFor(AbsoluteDate)} returns true.
+     * </p>
+     * @param date interpolation date
+     * @param selector1 selector for first EOP entry component
+     * @param selector2 selector for second EOP entry component
+     * @param selector1Rate selector for first EOP entry component rate
+     * @param selector2Rate selector for second EOP entry component rate
+     * @return interpolated value
+     * @since 12.0
+     */
+    private double[] interpolate(final AbsoluteDate date,
+                                 final Function<EOPEntry, Double> selector1,
+                                 final Function<EOPEntry, Double> selector2,
+                                 final Function<EOPEntry, Double> selector1Rate,
+                                 final Function<EOPEntry, Double> selector2Rate) {
+        try {
+            final HermiteInterpolator interpolator = new HermiteInterpolator();
+            getNeighbors(date).forEach(entry ->
+                                       interpolator.addSamplePoint(entry.getDate().durationFrom(date),
+                                                                   new double[] {
+                                                                       selector1.apply(entry),
+                                                                       selector2.apply(entry)
+                                                                   },
+                                                                   new double[] {
+                                                                       selector1Rate.apply(entry),
+                                                                       selector2Rate.apply(entry)
                                                                    }));
             return interpolator.value(0);
         } catch (TimeStampedCacheException tce) {

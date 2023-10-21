@@ -237,8 +237,8 @@ public class PredictedEOPHistoryTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(predicted);
 
-        Assertions.assertTrue(bos.size() > 185000);
-        Assertions.assertTrue(bos.size() < 190000);
+        Assertions.assertTrue(bos.size() > 215000);
+        Assertions.assertTrue(bos.size() < 216000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -267,7 +267,8 @@ public class PredictedEOPHistoryTest {
     public void setUp() {
         Utils.setDataRoot("eop-prediction");
         FramesFactory.clearEOPHistoryLoaders();
-        FramesFactory.addDefaultEOP2000HistoryLoaders("none", "none", "^eopc04_14_IAU2000\\.[0-9][0-9]\\.txt$", "none", "none");
+        FramesFactory.addDefaultEOP2000HistoryLoaders("none", "none", "^eopc04_14_IAU2000\\.[0-9][0-9]\\.txt$",
+                                                      "none", "none", "none");
         utc     = TimeScalesFactory.getUTC();
         trueEOP = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
 

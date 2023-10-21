@@ -107,14 +107,17 @@ public class PredictedEOPHistory extends EOPHistory implements Serializable {
         entries.addAll(rawEntries);
         for (int i = 0; i < n; ++i) {
             final AbsoluteDate date = last.getDate().shiftedBy((i + 1) * Constants.JULIAN_DAY);
-            final double dut1 = model.getDUT1().osculatingValue(date);
-            final double lod  = -Constants.JULIAN_DAY * model.getDUT1().osculatingDerivative(date);
-            final double xp   = model.getXp().osculatingValue(date);
-            final double yp   = model.getYp().osculatingValue(date);
-            final double dx   = model.getDx().osculatingValue(date);
-            final double dy   = model.getDy().osculatingValue(date);
+            final double dut1   = model.getDUT1().osculatingValue(date);
+            final double lod    = -Constants.JULIAN_DAY * model.getDUT1().osculatingDerivative(date);
+            final double xp     = model.getXp().osculatingValue(date);
+            final double yp     = model.getYp().osculatingValue(date);
+            final double xpRate = model.getXp().osculatingDerivative(date);
+            final double ypRate = model.getYp().osculatingDerivative(date);
+            final double dx     = model.getDx().osculatingValue(date);
+            final double dy     = model.getDy().osculatingValue(date);
             final double[] equinox = converter.toEquinox(date, dx, dy);
-            entries.add(new EOPEntry(last.getMjd() + i + 1, dut1, lod, xp, yp, equinox[0], equinox[1], dx, dy,
+            entries.add(new EOPEntry(last.getMjd() + i + 1, dut1, lod, xp, yp, xpRate, ypRate,
+                                     equinox[0], equinox[1], dx, dy,
                                      last.getITRFType(), date));
         }
 

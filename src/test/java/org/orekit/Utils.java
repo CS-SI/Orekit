@@ -199,6 +199,7 @@ public class Utils {
             list.add(new EOPEntry((int) row[0], row[1], row[2],
                                   Constants.ARC_SECONDS_TO_RADIANS * row[3],
                                   Constants.ARC_SECONDS_TO_RADIANS * row[4],
+                                  Double.NaN, Double.NaN,
                                   equinox[0], equinox[1],
                                   nro[0], nro[1], version,
                                   AbsoluteDate.createMJDDate((int) row[0], 0.0, utc)));
