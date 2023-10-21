@@ -163,6 +163,14 @@ public class EOPHistory implements Serializable {
         return tidalCorrection == null;
     }
 
+    /** Check if history has pole rates.
+     * @return true if history has pole rates
+     * @since 12.0
+     */
+    public boolean hasPoleRates() {
+        return hasPoleRates;
+    }
+
     /**
      * Get the time scales used in computing EOP corrections.
      *

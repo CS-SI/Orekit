@@ -36,7 +36,6 @@ import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
 import org.orekit.utils.units.Unit;
-import org.orekit.utils.units.UnitsConverter;
 
 /** Loader for EOP csv files (can be bulletin A, bulletin B, EOP C04…).
  * <p>
@@ -93,13 +92,13 @@ class EOPCsvFilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
     private static final String DY = "dY";
 
     /** Converter for milliarcseconds. */
-    private static final UnitsConverter MAS = UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS;
+    private static final Unit MAS = Unit.parse("mas");
 
     /** Converter for milliarcseconds per day. */
-    private static final UnitsConverter MAS_D = new UnitsConverter(Unit.parse("mas/day"), Unit.parse("rad/s"));
+    private static final Unit MAS_D = Unit.parse("mas/day");
 
     /** Converter for milliseconds. */
-    private static final UnitsConverter MS = UnitsConverter.MILLI_SECONDS_TO_SECONDS;
+    private static final Unit MS = Unit.parse("ms");
 
     /** Build a loader for IERS EOP csv files.
      * @param supportedNames regular expression for supported files names
@@ -214,7 +213,7 @@ class EOPCsvFilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
                 }
 
                 // check if we have read something
-                if (lineNumber > 1) {
+                if (lineNumber < 2) {
                     throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
                 }
             }
@@ -329,29 +328,25 @@ class EOPCsvFilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
                 configuration = itrfVersionProvider.getConfiguration(name, mjd);
             }
 
-            final double x     = MAS.convert(Double.parseDouble(fields[xPoleColumn]));
-            final double y     = MAS.convert(Double.parseDouble(fields[yPoleColumn]));
-            final double xRate = xRatePoleColumn < 0 ?
-                                 Double.NaN :
-                                 MAS_D.convert(Double.parseDouble(fields[xRatePoleColumn]));
-            final double yRate = yRatePoleColumn < 0 ?
-                                 Double.NaN :
-                                 MAS_D.convert(Double.parseDouble(fields[yRatePoleColumn]));
-            final double dtu1  = MS.convert(Double.parseDouble(fields[ut1Column]));
-            final double lod   = MS.convert(Double.parseDouble(fields[lodColumn]));
+            final double x     = parseField(fields, xPoleColumn,     MAS);
+            final double y     = parseField(fields, yPoleColumn,     MAS);
+            final double xRate = parseField(fields, xRatePoleColumn, MAS_D);
+            final double yRate = parseField(fields, yRatePoleColumn, MAS_D);
+            final double dtu1  = parseField(fields, ut1Column,       MS);
+            final double lod   = parseField(fields, lodColumn,       MS);
 
             if (dxColumn >= 0) {
                 // non-rotatin origin paradigm
-                final double dx = MAS.convert(Double.parseDouble(fields[dxColumn]));
-                final double dy = MAS.convert(Double.parseDouble(fields[dyColumn]));
+                final double dx = parseField(fields, dxColumn, MAS);
+                final double dy = parseField(fields, dyColumn, MAS);
                 final double[] equinox = getConverter().toEquinox(date, dx, dy);
                 return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, xRate, yRate,
                                     equinox[0], equinox[1], dx, dy,
                                     configuration.getVersion(), date);
             } else {
                 // equinox paradigm
-                final double ddPsi      = MAS.convert(Double.parseDouble(fields[dPsiColumn]));
-                final double dddEpsilon = MAS.convert(Double.parseDouble(fields[dEpsilonColumn]));
+                final double ddPsi      = parseField(fields, dPsiColumn,     MAS);
+                final double dddEpsilon = parseField(fields, dEpsilonColumn, MAS);
                 final double[] nro = getConverter().toNonRotating(date, ddPsi, dddEpsilon);
                 return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, xRate, yRate,
                                     ddPsi, dddEpsilon, nro[0], nro[1],
@@ -360,6 +355,19 @@ class EOPCsvFilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
 
 
         }
+
+        /** Parse one field.
+         * @param fields fields array to parse
+         * @param index index in the field array (negative for ignored fields)
+         * @param unit field unit
+         * @return parsed and converted field
+         */
+        private double parseField(final String[] fields, final int index, final Unit unit) {
+            return (index < 0 || index >= fields.length || fields[index].isEmpty()) ?
+                   Double.NaN :
+                   unit.toSI(Double.parseDouble(fields[index]));
+        }
+
     }
 
 }

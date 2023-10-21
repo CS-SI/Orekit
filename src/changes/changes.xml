@@ -433,8 +433,8 @@
         Added support for STK ephemeris files.
       </action>
       <action dev="luc" type="add" issue="1031">
-         Added support for new EOP C04 format that will be published
-         by IERS starting 2023-02-14.
+         Added support for new EOP C04 format and csv format that will be published
+         by IERS starting 2023-02-14 and 2023-11-06
       </action>
       <action dev="afossa" type="add" issue="876">
         Added scaling of linear system and allowed different arc duration in multiple shooting.
