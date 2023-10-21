@@ -157,7 +157,7 @@ public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTes
     }
 
     private void checkdFdP(final Vector3D reference, final Vector3D result, final double checkTolerance) {
-        if (reference.getNorm() == 0) {
+        if (result.getNorm() == 0) {
             // if dF/dP is exactly zero (i.e. no dependency between F and P),
             // then the result should also be exactly zero
             Assertions.assertEquals(0, result.getNorm(), Precision.SAFE_MIN);

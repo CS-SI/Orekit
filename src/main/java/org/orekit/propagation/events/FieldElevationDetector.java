@@ -21,7 +21,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.orekit.frames.StaticTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -172,8 +172,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
     @Override
     public T g(final FieldSpacecraftState<T> s) {
 
-        final StaticTransform t = s.getFrame()
-                .getStaticTransformTo(topo, s.getDate().toAbsoluteDate());
+        final FieldStaticTransform<T> t = s.getFrame().getStaticTransformTo(topo, s.getDate());
         final FieldVector3D<T> extPointTopo = t.transformPosition(s.getPosition());
         final T trueElevation = extPointTopo.getDelta();
 
