@@ -529,9 +529,9 @@ class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
                 final double x     = Double.parseDouble(matcher.group(POLE_X_GROUP)) * Constants.ARC_SECONDS_TO_RADIANS;
                 final double y     = Double.parseDouble(matcher.group(POLE_Y_GROUP)) * Constants.ARC_SECONDS_TO_RADIANS;
                 final double xRate = Double.parseDouble(matcher.group(POLE_X_RATE_GROUP)) *
-                                     Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
+                                     Constants.ARC_SECONDS_TO_RADIANS / Constants.JULIAN_DAY;
                 final double yRate = Double.parseDouble(matcher.group(POLE_Y_RATE_GROUP)) *
-                                     Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
+                                     Constants.ARC_SECONDS_TO_RADIANS / Constants.JULIAN_DAY;
                 final double dtu1  = Double.parseDouble(matcher.group(UT1_UTC_GROUP));
                 final double lod   = Double.parseDouble(matcher.group(LOD_GROUP));
                 final double[] nro = new double[] {

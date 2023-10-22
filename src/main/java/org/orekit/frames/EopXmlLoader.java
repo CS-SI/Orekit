@@ -310,7 +310,7 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
                 mjd         = -1;
                 mjdDate     = null;
                 dtu1        = Double.NaN;
-                lod         = content == DataFileContent.BULLETIN_A ? 0.0 : Double.NaN;
+                lod         = Double.NaN;
                 x           = Double.NaN;
                 y           = Double.NaN;
                 xRate       = Double.NaN;
@@ -370,7 +370,7 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
                     inBulletinA = false;
                 } else if (qName.equals(DATA_EOP_ELT)) {
                     checkDates();
-                    if (!Double.isNaN(dtu1) && !Double.isNaN(lod) && !Double.isNaN(x) && !Double.isNaN(y)) {
+                    if (!Double.isNaN(dtu1) && !Double.isNaN(x) && !Double.isNaN(y)) {
                         final double[] equinox;
                         final double[] nro;
                         if (Double.isNaN(dpsi)) {
@@ -434,7 +434,7 @@ class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
                     inBulletinA = false;
                 } else if (qName.equals(EOP_SET_ELT)) {
                     checkDates();
-                    if (!Double.isNaN(dtu1) && !Double.isNaN(lod) && !Double.isNaN(x) && !Double.isNaN(y)) {
+                    if (!Double.isNaN(dtu1) && !Double.isNaN(x) && !Double.isNaN(y)) {
                         final double[] equinox;
                         final double[] nro;
                         if (Double.isNaN(dpsi)) {

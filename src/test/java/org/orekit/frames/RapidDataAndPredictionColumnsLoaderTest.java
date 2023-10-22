@@ -93,7 +93,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         Assertions.assertEquals(-0.2784173, history.getUT1MinusUTC(t1Sup),                                                1.0e-10);
         Assertions.assertEquals( 0.5055,    1000 * history.getLOD(t1Sup),                                                 1.0e-10);
 
-        // after 2011-07-06, the example daily file has no columns for LOD
+        // after 2011-07-06, the example daily file has no columns for LOD, but it is interpolated
         AbsoluteDate t2Inf = new AbsoluteDate(2011, 7, 6, TimeScalesFactory.getUTC());
         Assertions.assertEquals(-72.717,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t2Inf)[0]), 1.0e-10);
         Assertions.assertEquals(-10.620,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t2Inf)[1]), 1.0e-10);
@@ -103,19 +103,19 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         Assertions.assertEquals(-73.194,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t2Sup)[0]), 1.0e-10);
         Assertions.assertEquals(-10.535,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t2Sup)[1]), 1.0e-10);
         Assertions.assertEquals(-0.2920866, history.getUT1MinusUTC(t2Sup),                                                1.0e-10);
-        Assertions.assertEquals( 0.0,       1000 * history.getLOD(t2Sup),                                                 1.0e-10);
+        Assertions.assertEquals( 5.3509e-6, 1000 * history.getLOD(t2Sup),                                                 1.0e-10);
 
         // after 2011-09-19, the example daily file has no columns for nutation
         AbsoluteDate t3Inf = new AbsoluteDate(2011, 9, 19, TimeScalesFactory.getUTC());
         Assertions.assertEquals(-79.889,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t3Inf)[0]), 1.0e-10);
         Assertions.assertEquals(-11.125,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t3Inf)[1]), 1.0e-10);
         Assertions.assertEquals(-0.3112849, history.getUT1MinusUTC(t3Inf),                                                1.0e-10);
-        Assertions.assertEquals( 0.0,       1000 * history.getLOD(t3Inf),                                                 1.0e-10);
+        Assertions.assertEquals( 3.2137e-6, 1000 * history.getLOD(t3Inf),                                                 1.0e-10);
         AbsoluteDate t3Sup = t3Inf.shiftedBy(Constants.JULIAN_DAY);
         Assertions.assertEquals( 0.0,       3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t3Sup)[0]), 1.0e-10);
         Assertions.assertEquals( 0.0,       3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t3Sup)[1]), 1.0e-10);
         Assertions.assertEquals(-0.3115675, history.getUT1MinusUTC(t3Sup),                                                1.0e-10);
-        Assertions.assertEquals( 0.0,       1000 * history.getLOD(t3Sup),                                                 1.0e-10);
+        Assertions.assertEquals( 3.4186e-6, 1000 * history.getLOD(t3Sup),                                                 1.0e-10);
 
     }
 
@@ -142,7 +142,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         Assertions.assertEquals(-0.2784173, history.getUT1MinusUTC(t1Sup),                                       1.0e-10);
         Assertions.assertEquals( 0.5055,    1000 * history.getLOD(t1Sup),                                        1.0e-10);
 
-        // after 2011-07-06, the example daily file has no columns for LOD
+        // after 2011-07-06, the example daily file has no columns for LOD, but it is interpolated
         AbsoluteDate t2Inf = new AbsoluteDate(2011, 7, 6, TimeScalesFactory.getUTC());
         Assertions.assertEquals( 0.052605,  3600 * FastMath.toDegrees(history.getPoleCorrection(t2Inf).getXp()), 1.0e-10);
         Assertions.assertEquals( 0.440076,  3600 * FastMath.toDegrees(history.getPoleCorrection(t2Inf).getYp()), 1.0e-10);
@@ -152,7 +152,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         Assertions.assertEquals( 0.055115,  3600 * FastMath.toDegrees(history.getPoleCorrection(t2Sup).getXp()), 1.0e-10);
         Assertions.assertEquals( 0.440848,  3600 * FastMath.toDegrees(history.getPoleCorrection(t2Sup).getYp()), 1.0e-10);
         Assertions.assertEquals(-0.2920866, history.getUT1MinusUTC(t2Sup),                                       1.0e-10);
-        Assertions.assertEquals( 0.0,       1000 * history.getLOD(t2Sup),                                        1.0e-10);
+        Assertions.assertEquals( 5.3509e-6, 1000 * history.getLOD(t2Sup),                                        1.0e-10);
 
     }
 

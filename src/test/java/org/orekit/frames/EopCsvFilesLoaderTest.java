@@ -36,7 +36,6 @@ public class EopCsvFilesLoaderTest extends AbstractFilesLoaderTest {
     public void testEopc04Rates() {
         EOPHistory history = load("eopc04_20.2022-now.csv");
         Assertions.assertEquals(IERSConventions.IERS_2010, history.getConventions());
-        Assertions.assertTrue(history.hasPoleRates());
         Assertions.assertEquals(new AbsoluteDate(2022, 1, 1, utc), history.getStartDate());
         Assertions.assertEquals(new AbsoluteDate(2023, 8, 28, utc), history.getEndDate());
         checkRatesConsistency(history, 0.049, 0.072, 0.063, 0.046);
@@ -48,7 +47,6 @@ public class EopCsvFilesLoaderTest extends AbstractFilesLoaderTest {
         Assertions.assertEquals(IERSConventions.IERS_2010, history.getConventions());
         Assertions.assertEquals(new AbsoluteDate(2023, 8, 24, utc), history.getStartDate());
         Assertions.assertEquals(new AbsoluteDate(2024, 9, 13, utc), history.getEndDate());
-        Assertions.assertFalse(history.hasPoleRates());
     }
 
     @Test
@@ -57,7 +55,6 @@ public class EopCsvFilesLoaderTest extends AbstractFilesLoaderTest {
         Assertions.assertEquals(IERSConventions.IERS_2010, history.getConventions());
         Assertions.assertEquals(new AbsoluteDate(2023, 8, 30, utc), history.getStartDate());
         Assertions.assertEquals(new AbsoluteDate(2024, 9, 20, utc), history.getEndDate());
-        Assertions.assertFalse(history.hasPoleRates());
     }
 
     @Test
@@ -66,7 +63,6 @@ public class EopCsvFilesLoaderTest extends AbstractFilesLoaderTest {
         Assertions.assertEquals(IERSConventions.IERS_2010, history.getConventions());
         Assertions.assertEquals(new AbsoluteDate(2023, 3, 2, utc), history.getStartDate());
         Assertions.assertEquals(new AbsoluteDate(2023, 5, 1, utc), history.getEndDate());
-        Assertions.assertFalse(history.hasPoleRates());
     }
 
     @Test
@@ -75,7 +71,6 @@ public class EopCsvFilesLoaderTest extends AbstractFilesLoaderTest {
         Assertions.assertEquals(IERSConventions.IERS_2010, history.getConventions());
         Assertions.assertEquals(new AbsoluteDate(2023, 7, 2, utc), history.getStartDate());
         Assertions.assertEquals(new AbsoluteDate(2023, 9, 1, utc), history.getEndDate());
-        Assertions.assertFalse(history.hasPoleRates());
     }
 
     private EOPHistory load(final String name) {
