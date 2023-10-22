@@ -45,6 +45,7 @@ public class PredictedEOPHistoryTest {
         // truncate EOP between 2018 and 2020
         final int mjdLimit = new DateComponents(2021, 1, 1).getMJD();
         final EOPHistory truncatedEOP = new EOPHistory(trueEOP.getConventions(),
+                                                       EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                                        trueEOP.getEntries().
                                                                stream().
                                                                filter(e -> e.getMjd() < mjdLimit).
@@ -74,6 +75,7 @@ public class PredictedEOPHistoryTest {
         // truncate EOP between 2018 and 2021
         final int mjdLimit = new DateComponents(2022, 1, 1).getMJD();
         final EOPHistory truncatedEOP = new EOPHistory(trueEOP.getConventions(),
+                                                       EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                                        trueEOP.getEntries().
                                                                stream().
                                                                filter(e -> e.getMjd() < mjdLimit).
@@ -155,6 +157,7 @@ public class PredictedEOPHistoryTest {
             final DateComponents dc = new DateComponents(new DateComponents(2021, 1, 1), d);
             final int mjdLimit = dc.getMJD();
             final EOPHistory truncatedEOP = new EOPHistory(trueEOP.getConventions(),
+                                                           EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                                            trueEOP.getEntries().
                                                            stream().
                                                            filter(e -> e.getMjd() < mjdLimit).

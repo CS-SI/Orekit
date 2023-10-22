@@ -62,7 +62,7 @@ class ITRFProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public ITRFProvider getNonInterpolatingProvider() {
-        return new ITRFProvider(eopHistory.getNonInterpolatingEOPHistory());
+        return new ITRFProvider(eopHistory.getEOPHistoryWithoutCachedTidalCorrection());
     }
 
     /** {@inheritDoc} */

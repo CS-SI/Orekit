@@ -84,7 +84,7 @@ public class EOPCsvFilesLoaderTest extends AbstractFilesLoaderTest {
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new EOPCsvFilesLoader("^" + name + "$", manager, () -> utc).
         fillHistory(converter, data);
-        return new EOPHistory(IERSConventions.IERS_2010, data, true);
+        return new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE, data, true);
     }
 
     private final void checkRatesConsistency(final EOPHistory history,

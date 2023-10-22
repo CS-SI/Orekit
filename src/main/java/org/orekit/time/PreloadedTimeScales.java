@@ -110,11 +110,10 @@ class PreloadedTimeScales extends AbstractTimeScales {
     @Override
     protected EOPHistory getEopHistory(final IERSConventions conventions,
                                        final boolean simpleEOP) {
-        return new EOPHistory(
-                conventions,
-                eopMap.computeIfAbsent(conventions, c -> eopSupplier.apply(c, this)),
-                simpleEOP,
-                this);
+        return new EOPHistory(conventions, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                              eopMap.computeIfAbsent(conventions, c -> eopSupplier.apply(c, this)),
+                              simpleEOP,
+                              this);
     }
 
     @Override

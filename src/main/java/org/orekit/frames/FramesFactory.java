@@ -294,7 +294,7 @@ public class FramesFactory {
     /** Add a loader for Earth Orientation Parameters history.
      * @param conventions IERS conventions to which EOP history applies
      * @param loader custom loader to add for the EOP history
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
      * @see #clearEOPHistoryLoaders()
      */
     @DefaultDataContext
@@ -304,7 +304,7 @@ public class FramesFactory {
 
     /** Clear loaders for Earth Orientation Parameters history.
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
      */
     @DefaultDataContext
     public static void clearEOPHistoryLoaders() {
@@ -338,8 +338,8 @@ public class FramesFactory {
      * #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader) addEOPHistoryLoader}
      * or if {@link #clearEOPHistoryLoaders() clearEOPHistoryLoaders} has been
      * called afterwards, the {@link #addDefaultEOP1980HistoryLoaders(String, String,
-     * String, String, String)} and {@link #addDefaultEOP2000HistoryLoaders(String,
-     * String, String, String, String)} methods will be called automatically with
+     * String, String, String, String)} and {@link #addDefaultEOP2000HistoryLoaders(String,
+     * String, String, String, String, String)} methods will be called automatically with
      * supported file names parameters all set to null, in order to get the default
      * loaders configuration.
      * </p>
@@ -810,7 +810,7 @@ public class FramesFactory {
                 peeled = ((ShiftingTransformProvider) peeled).getRawProvider();
             } else if (peeled instanceof EOPBasedTransformProvider &&
                        ((EOPBasedTransformProvider) peeled).getEOPHistory() != null &&
-                       ((EOPBasedTransformProvider) peeled).getEOPHistory().usesInterpolation()) {
+                       ((EOPBasedTransformProvider) peeled).getEOPHistory().cachesTidalCorrection()) {
                 peeled = ((EOPBasedTransformProvider) peeled).getNonInterpolatingProvider();
             } else {
                 peeling = false;

@@ -78,7 +78,7 @@ class CIRFProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public CIRFProvider getNonInterpolatingProvider() {
-        return new CIRFProvider(eopHistory.getNonInterpolatingEOPHistory());
+        return new CIRFProvider(eopHistory.getEOPHistoryWithoutCachedTidalCorrection());
     }
 
     /** {@inheritDoc} */

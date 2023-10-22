@@ -79,7 +79,7 @@ class TIRFProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public TIRFProvider getNonInterpolatingProvider() {
-        return new TIRFProvider(eopHistory.getNonInterpolatingEOPHistory(), ut1);
+        return new TIRFProvider(eopHistory.getEOPHistoryWithoutCachedTidalCorrection(), ut1);
     }
 
     /** {@inheritDoc} */

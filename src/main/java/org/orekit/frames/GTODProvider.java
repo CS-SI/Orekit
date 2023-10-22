@@ -102,7 +102,7 @@ public class GTODProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public GTODProvider getNonInterpolatingProvider() {
-        return new GTODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory(),
+        return new GTODProvider(conventions, eopHistory.getEOPHistoryWithoutCachedTidalCorrection(),
                 gastFunction);
     }
 

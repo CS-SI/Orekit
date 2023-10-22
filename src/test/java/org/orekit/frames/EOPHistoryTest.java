@@ -163,7 +163,7 @@ public class EOPHistoryTest {
     public void testTidalInterpolationEffects() throws IOException, OrekitException {
 
         final EOPHistory h1 = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
-        final EOPHistory h2 = h1.getNonInterpolatingEOPHistory();
+        final EOPHistory h2 = h1.getEOPHistoryWithoutCachedTidalCorrection();
         final AbsoluteDate date0 = new AbsoluteDate(2004, 8, 16, 20, 0, 0, TimeScalesFactory.getUTC());
 
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 10) {
