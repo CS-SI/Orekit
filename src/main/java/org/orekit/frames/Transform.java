@@ -361,6 +361,18 @@ public class Transform implements
                 angular.rotationShiftedBy(dt));
     }
 
+    /**
+     * Create a so-called static transform from the instance.
+     *
+     * @return static part of the transform. It is static in the
+     * sense that it can only be used to transform directions and positions, but
+     * not velocities or accelerations.
+     * @see StaticTransform
+     */
+    public StaticTransform toStaticTransform() {
+        return StaticTransform.of(date, cartesian.getPosition(), angular.getRotation());
+    }
+
     /** Interpolate a transform from a sample set of existing transforms.
      * <p>
      * Calling this method is equivalent to call {@link #interpolate(AbsoluteDate,
