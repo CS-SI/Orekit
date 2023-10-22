@@ -64,7 +64,7 @@ import org.orekit.utils.units.UnitsConverter;
  * @see <a href="http://maia.usno.navy.mil/ser7/readme.finals">finals file format description at USNO</a>
  */
 class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
-        implements EOPHistoryLoader {
+        implements EopHistoryLoader {
 
     /** Field for year, month and day parsing. */
     private static final String  INTEGER2_FIELD               = "((?:\\p{Blank}|\\p{Digit})\\p{Digit})";
@@ -313,7 +313,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                     final double lod;
                     if (lodPartA.trim().length() == 0) {
                         // lod part from bulletin A is blank
-                        lod = 0;
+                        lod = Double.NaN;
                     } else {
                         final Matcher lodAMatcher = LOD_PATTERN_A.matcher(lodPartA);
                         if (lodAMatcher.matches()) {

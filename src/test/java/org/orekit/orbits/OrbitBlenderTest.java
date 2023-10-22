@@ -19,6 +19,7 @@ package org.orekit.orbits;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.hipparchus.analysis.polynomials.SmoothStepFactory;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -192,11 +193,20 @@ class OrbitBlenderTest {
                                      final double expectedMedianRMSVelocityError,
                                      final double expectedMaxRMSPositionError,
                                      final double expectedMaxRMSVelocityError,
-                                     final double tolerance) {
+                                     final double tolerance,
+                                     final boolean showResults) {
         final DescriptiveStatistics[] statistics =
                 computeStatisticsOrbitInterpolationOnSergeiCase(propagationHorizon, tabulatedTimeStep, stateInterpolator);
 
         // Then
+        if (showResults) {
+            System.out.format(Locale.US, "%.17f%n", statistics[0].getMean());
+            System.out.format(Locale.US, "%.17f%n", statistics[1].getMean());
+            System.out.format(Locale.US, "%.17f%n", statistics[0].getPercentile(50));
+            System.out.format(Locale.US, "%.17f%n", statistics[1].getPercentile(50));
+            System.out.format(Locale.US, "%.17f%n", statistics[0].getMax());
+            System.out.format(Locale.US, "%.17f%n", statistics[1].getMax());
+        }
         Assertions.assertEquals(expectedMeanRMSPositionError, statistics[0].getMean(), tolerance);
         Assertions.assertEquals(expectedMeanRMSVelocityError, statistics[1].getMean(), tolerance);
         Assertions.assertEquals(expectedMedianRMSPositionError, statistics[0].getPercentile(50), tolerance);
@@ -220,13 +230,13 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.05185755739574356,
-                            0.08169252247655118,
-                            0.05262772650491532,
-                            0.08349987871078612,
-                            0.10151652736264738,
-                            0.14827634538902450,
-                            1e-17);
+                            0.05185755740700528,
+                            0.08169252246167892,
+                            0.05262772652596856,
+                            0.08349987869494085,
+                            0.10151652739088853,
+                            0.14827634525717634,
+                            1e-17, false);
     }
 
     @Test
@@ -252,13 +262,13 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.05106377387196148,
-                            0.03671310672901031,
-                            0.05451875411594503,
-                            0.03654640623799635,
-                            0.09412869292348532,
-                            0.06642996301875234,
-                            1e-17);
+                            0.05106377388516059,
+                            0.03671310671380644,
+                            0.05451875412478483,
+                            0.03654640625064279,
+                            0.09412869297314610,
+                            0.06642996306635666,
+                            1e-17, false);
     }
 
     @Test
@@ -281,13 +291,14 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.00854503689113997,
-                            0.01192593191092934,
-                            0.00895077297858289,
-                            0.01299681278291136,
-                            0.01600030629530242,
-                            0.01743228664677538,
-                            1e-17);
+                            0.00854503692536256,
+                            0.01192593187393609,
+                            0.00895077301610845,
+                            0.01299681289409554,
+                            0.01600030634518512,
+                            0.01743228687362160,
+                            1e-17, false);
+                            
     }
 
     @Test

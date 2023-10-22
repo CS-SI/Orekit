@@ -213,7 +213,7 @@ public class EphemerisKalmanEstimatorTest {
         estimator.processMeasurements(measurements);
 
         // verify
-        Assertions.assertEquals(refClockBias, estimator.getPhysicalEstimatedState().getEntry(0), 1.0e-17);
+        Assertions.assertEquals(refClockBias, estimator.getPhysicalEstimatedState().getEntry(0), 6.0e-16);
         Assertions.assertEquals(1, estimator.getEstimatedMeasurementsParameters().getNbParams());
         Assertions.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
         Assertions.assertEquals(0, estimator.getPropagationParametersDrivers(true).getNbParams());

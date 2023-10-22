@@ -74,14 +74,21 @@ import org.orekit.utils.units.UnitsConverter;
  * files with different name was published each month between March 2003 and January 2010).
  * </p>
  * <p>
+ * Bulletin B in csv format must be read using {@link EopCsvFilesLoader} rather
+ * than using this loader. Bulletin B in xml format must be read using {@link EopXmlLoader}
+ * rather than using this loader.
+ * </p>
+ * <p>
  * This class handles both the old and the new format.
  * </p>
  * <p>
  * This class is immutable and hence thread-safe
  * </p>
  * @author Luc Maisonobe
+ * @see EopCsvFilesLoader
+ * @see EopXmlLoader
  */
-class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
+class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
     /** Section 1 header pattern. */
     private static final Pattern SECTION_1_HEADER;

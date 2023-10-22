@@ -28,7 +28,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 6.1
  */
-public interface EOPHistoryLoader {
+public interface EopHistoryLoader {
 
     /** Load celestial body.
      * @param converter converter to use for nutation corrections
@@ -129,7 +129,7 @@ public interface EOPHistoryLoader {
                 final IERSConventions conventions,
                 final ItrfVersionProvider itrfVersionProvider,
                 final TimeScales timeScales) {
-            return new EOPC04FilesLoader.Parser(conventions.getNutationCorrectionConverter(timeScales),
+            return new EopC04FilesLoader.Parser(conventions.getNutationCorrectionConverter(timeScales),
                                                 timeScales.getUTC());
         }
 

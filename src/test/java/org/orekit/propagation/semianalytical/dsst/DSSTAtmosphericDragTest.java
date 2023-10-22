@@ -16,6 +16,12 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -55,12 +61,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
-
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class DSSTAtmosphericDragTest {
 
@@ -191,12 +191,12 @@ public class DSSTAtmosphericDragTest {
             }
         }
 
-        Assertions.assertEquals(0.03966657233280967,    y[0], 1.e-15);
-        Assertions.assertEquals(-1.5294381443173415E-8, y[1], 1.e-23);
-        Assertions.assertEquals(-2.3614929828516364E-8, y[2], 1.e-23);
-        Assertions.assertEquals(-5.90158033655866E-11,  y[3], 1.e-25);
-        Assertions.assertEquals(1.0287639743125E-11,    y[4], 1.e-24);
-        Assertions.assertEquals(2.538427523777691E-8,   y[5], 1.e-23);
+        Assertions.assertEquals( 0.0396665723326745000,   y[0], 1.e-15);
+        Assertions.assertEquals(-1.52943814431706260e-8,  y[1], 1.e-23);
+        Assertions.assertEquals(-2.36149298285121920e-8,  y[2], 1.e-23);
+        Assertions.assertEquals(-5.90158033654418600e-11, y[3], 1.e-25);
+        Assertions.assertEquals( 1.02876397430632310e-11, y[4], 1.e-24);
+        Assertions.assertEquals( 2.53842752377756570e-8,  y[5], 1.e-23);
     }
 
     @BeforeEach
