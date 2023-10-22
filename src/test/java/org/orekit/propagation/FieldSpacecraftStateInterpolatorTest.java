@@ -38,6 +38,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.SingleBodyAbsoluteAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -185,13 +186,11 @@ class FieldSpacecraftStateInterpolatorTest {
                                                        null, null);
 
         // WHEN & THEN
-        Exception exception = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
+        OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
                 AbstractFieldTimeInterpolator.checkInterpolatorCompatibilityWithSampleSize(stateInterpolator, 2));
 
-        String expectedMessage = "not enough data for interpolation (sample size = 2)";
-        String actualMessage   = exception.getMessage();
-
-        Assertions.assertTrue(actualMessage.contains(expectedMessage));
+        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        Assertions.assertEquals(2, ((Integer) thrown.getParts()[0]).intValue());
 
     }
 
@@ -485,13 +484,11 @@ class FieldSpacecraftStateInterpolatorTest {
         final List<FieldSpacecraftState<Binary64>> states = new ArrayList<>();
 
         // WHEN & THEN
-        Exception exception = Assertions.assertThrows(OrekitIllegalArgumentException.class,
-                                                      () -> interpolator.interpolate(new AbsoluteDate(), states.stream()));
+        OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
+                                                                        () -> interpolator.interpolate(new AbsoluteDate(), states.stream()));
 
-        String expectedMessage = "not enough data for interpolation (sample size = 0)";
-        String actualMessage   = exception.getMessage();
-
-        Assertions.assertTrue(actualMessage.contains(expectedMessage));
+        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        Assertions.assertEquals(0, ((Integer) thrown.getParts()[0]).intValue());
 
     }
 
@@ -595,11 +592,12 @@ class FieldSpacecraftStateInterpolatorTest {
                 new FieldSpacecraftStateInterpolator<>(inertialFrame, orbitInterpolatorMock, null, null, null, null);
 
         // When & Then
-        Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
-                interpolator.interpolate(interpolationDate, states));
+        OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
+                                                                        interpolator.interpolate(interpolationDate, states));
 
-        Assertions.assertEquals("not enough data for interpolation (sample size = 0)",
-                                thrown.getMessage());
+        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        Assertions.assertEquals(0, ((Integer) thrown.getParts()[0]).intValue());
+
     }
 
     @Test

@@ -26,6 +26,7 @@ import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
@@ -176,10 +177,12 @@ class AttitudeInterpolatorTest {
                 new AttitudeInterpolator(FramesFactory.getGCRF(), angularInterpolator);
 
         // When & Then
-        Exception exception = Assertions.assertThrows(OrekitIllegalArgumentException.class,
-                                                      () -> attitudeInterpolator.interpolate(interpolationDate, attitudes));
+        OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
+                                                                        () -> attitudeInterpolator.interpolate(interpolationDate, attitudes));
 
-        Assertions.assertEquals("not enough data for interpolation (sample size = 1)", exception.getMessage());
+        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        Assertions.assertEquals(1, ((Integer) thrown.getParts()[0]).intValue());
+
     }
 
 }

@@ -164,7 +164,7 @@ public class OrekitAttitudeEphemerisFile
             }
 
             if (interpolationSamples < minimumSampleSize) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION,
+                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA,
                         interpolationSamples);
             }
 

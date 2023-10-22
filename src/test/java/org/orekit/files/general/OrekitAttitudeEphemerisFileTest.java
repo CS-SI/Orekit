@@ -222,7 +222,7 @@ public class OrekitAttitudeEphemerisFileTest {
         try {
             satellite.addNewSegment(states, "LINEAR", 1, AngularDerivativesFilter.USE_R);
         } catch (OrekitIllegalArgumentException oiae) {
-            Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, oiae.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, oiae.getSpecifier());
         }
     }
 

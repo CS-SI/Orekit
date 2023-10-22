@@ -73,7 +73,7 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
         final List<TimeInterpolator<? extends TimeStamped>> subInterpolators = interpolator.getSubInterpolators();
         for (final TimeInterpolator<? extends TimeStamped> subInterpolator : subInterpolators) {
             if (sampleSize < subInterpolator.getNbInterpolationPoints()) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, sampleSize);
+                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA, sampleSize);
             }
         }
     }
@@ -170,7 +170,7 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
         protected InterpolationData(final AbsoluteDate interpolationDate, final Collection<T> sample) {
             // Handle specific case that is not handled by the immutable time stamped cache constructor
             if (sample.size() < 2) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, sample.size());
+                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA, sample.size());
             }
 
             // Create immutable time stamped cache

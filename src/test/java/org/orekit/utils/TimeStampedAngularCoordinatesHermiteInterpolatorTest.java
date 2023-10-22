@@ -187,7 +187,7 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
             Assertions.fail("an exception should have been thrown");
         }
         catch (OrekitIllegalArgumentException oe) {
-            Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, oe.getSpecifier());
+            Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, oe.getSpecifier());
             Assertions.assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
         }
 
