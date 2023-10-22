@@ -513,8 +513,8 @@ public enum OrekitMessages implements Localizable {
     /** OUT_OF_RANGE_TIME_TRANSFORM. */
     OUT_OF_RANGE_TIME_TRANSFORM("time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]"),
 
-    /** NOT_ENOUGH_DATA_FOR_INTERPOLATION. */
-    NOT_ENOUGH_DATA_FOR_INTERPOLATION("not enough data for interpolation (sample size = {0})"),
+    /** NOT_ENOUGH_DATA. */
+    NOT_ENOUGH_DATA("not enough data (sample size = {0})"),
 
     /** NOT_ENOUGH_CACHED_NEIGHBORS. */
     NOT_ENOUGH_CACHED_NEIGHBORS("too small number of cached neighbors: {0} (must be at least {1})"),
@@ -907,7 +907,10 @@ public enum OrekitMessages implements Localizable {
     CANNOT_START_PROPAGATION_FROM_INFINITY("Cannot start the propagation from an infinitely far date"),
 
     /** INVALID_SATELLITE_ID. */
-    INVALID_SATELLITE_ID("invalid satellite id {0}");
+    INVALID_SATELLITE_ID("invalid satellite id {0}"),
+
+    /** WRONG_EOP_INTERPOLATION_DEGREE. */
+    WRONG_EOP_INTERPOLATION_DEGREE("EOP interpolation degree must be of the form 4k-1, got {0}");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";

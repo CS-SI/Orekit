@@ -257,7 +257,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
             }
         }
         else {
-            throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, 0);
+            throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA, 0);
         }
     }
 

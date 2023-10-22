@@ -604,6 +604,7 @@ public class FramesFactoryTest {
         final Frame      baseITRF    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
         final EOPHistory baseEOP     = FramesFactory.findEOP(baseITRF);
         final EOPHistory modifiedEOP = new EOPHistory(baseEOP.getConventions(),
+                                                      EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                                       baseEOP.
                                                       getEntries().
                                                       stream().

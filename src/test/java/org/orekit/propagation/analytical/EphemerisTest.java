@@ -158,12 +158,12 @@ public class EphemerisTest {
                 new SpacecraftStateInterpolator(nbInterpolationPoints, inertialFrameMock, inertialFrameMock);
 
         // When & Then
-        Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
-                                                   () -> new Ephemeris(states, stateInterpolator));
+        OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
+                                                                        () -> new Ephemeris(states, stateInterpolator));
 
-        Assertions.assertEquals(
-                "not enough data for interpolation (sample size = 2)",
-                thrown.getMessage());
+        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        Assertions.assertEquals(2, ((Integer) thrown.getParts()[0]).intValue());
+
     }
 
     @Test

@@ -104,7 +104,7 @@ class TEMEProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public TEMEProvider getNonInterpolatingProvider() {
-        return new TEMEProvider(conventions, eopHistory.getNonInterpolatingEOPHistory(),
+        return new TEMEProvider(conventions, eopHistory.getEOPHistoryWithoutCachedTidalCorrection(),
                 obliquityFunction, nutationFunction);
     }
 

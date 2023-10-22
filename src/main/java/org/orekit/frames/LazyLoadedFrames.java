@@ -147,7 +147,7 @@ public class LazyLoadedFrames extends AbstractFrames {
 
     /** Clear loaders for Earth Orientation Parameters history.
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
      */
     public void clearEOPHistoryLoaders() {
         lazyLoadedEop.clearEOPHistoryLoaders();
@@ -179,8 +179,8 @@ public class LazyLoadedFrames extends AbstractFrames {
      * #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader) addEOPHistoryLoader}
      * or if {@link #clearEOPHistoryLoaders() clearEOPHistoryLoaders} has been
      * called afterwards, the {@link #addDefaultEOP1980HistoryLoaders(String, String,
-     * String, String, String)} and {@link #addDefaultEOP2000HistoryLoaders(String,
-     * String, String, String, String)} methods will be called automatically with
+     * String, String, String, String)} and {@link #addDefaultEOP2000HistoryLoaders(String,
+     * String, String, String, String, String)} methods will be called automatically with
      * supported file names parameters all set to null, in order to get the default
      * loaders configuration.
      * </p>

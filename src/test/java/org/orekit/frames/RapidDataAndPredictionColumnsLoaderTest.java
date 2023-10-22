@@ -42,7 +42,8 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$", manager, () -> utc).fillHistory(converter, history);
         Assertions.assertEquals(new AbsoluteDate(2011, 4, 9, TimeScalesFactory.getUTC()),
-                            new EOPHistory(IERSConventions.IERS_1996, history, true).getStartDate());
+                            new EOPHistory(IERSConventions.IERS_1996, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                           history, true).getStartDate());
     }
 
     @Test
@@ -53,7 +54,8 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$", manager, () -> utc).fillHistory(converter, history);
         Assertions.assertEquals(new AbsoluteDate(2011, 10, 6, TimeScalesFactory.getUTC()),
-                            new EOPHistory(IERSConventions.IERS_1996, history, true).getEndDate());
+                            new EOPHistory(IERSConventions.IERS_1996, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                           history, true).getEndDate());
     }
 
     @Test
@@ -64,7 +66,8 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(true, "^finals\\.daily$", manager, () -> utc).fillHistory(converter, history);
         Assertions.assertEquals(new AbsoluteDate(2011, 4, 9, TimeScalesFactory.getUTC()),
-                            new EOPHistory(IERSConventions.IERS_2003, history, true).getStartDate());
+                            new EOPHistory(IERSConventions.IERS_2003, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                           history, true).getStartDate());
     }
 
     @Test
@@ -74,7 +77,8 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$", manager, () -> utc).fillHistory(converter, data);
-        EOPHistory history = new EOPHistory(IERSConventions.IERS_1996, data, true);
+        EOPHistory history = new EOPHistory(IERSConventions.IERS_1996, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                            data, true);
 
         // after 2011-05-31, the example daily file has no columns for Bulletin B data
         // we don't see anything since we fall back to bulletin A
@@ -122,7 +126,8 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$", manager, () -> utc).fillHistory(converter, data);
-        EOPHistory history = new EOPHistory(IERSConventions.IERS_2003, data, true);
+        EOPHistory history = new EOPHistory(IERSConventions.IERS_2003, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                            data, true);
 
         // after 2011-05-31, the example daily file has no columns for Bulletin B data
         // we don't see anything since we fall back to bulletin A
@@ -159,7 +164,8 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$", manager, () -> utc).fillHistory(converter, history);
         Assertions.assertEquals(new AbsoluteDate(2011, 10, 6, TimeScalesFactory.getUTC()),
-                            new EOPHistory(IERSConventions.IERS_2003, history, true).getEndDate());
+                            new EOPHistory(IERSConventions.IERS_2003, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                           history, true).getEndDate());
     }
 
     @Test
@@ -169,7 +175,8 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
                         IERSConventions.IERS_2010.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A-no-columns\\.daily$", manager, () -> utc).fillHistory(converter, history);
-        EOPHistory eopH = new EOPHistory(IERSConventions.IERS_2010, history, true);
+        EOPHistory eopH = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                         history, true);
         Assertions.assertEquals(new AbsoluteDate(2011, 4, 16, TimeScalesFactory.getUTC()), eopH.getEndDate());
         AbsoluteDate testDate = eopH.getEndDate().shiftedBy(-2 * Constants.JULIAN_DAY);
         Assertions.assertEquals(0.0, eopH.getPoleCorrection(testDate).getXp(),                1.0e-15);
@@ -188,7 +195,8 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A-post-2070\\.daily$", manager, () -> utc).fillHistory(converter, history);
         Assertions.assertEquals(new AbsoluteDate(2075, 4, 16, TimeScalesFactory.getUTC()),
-                            new EOPHistory(IERSConventions.IERS_2010, history, true).getEndDate());
+                            new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                           history, true).getEndDate());
 
     }
 

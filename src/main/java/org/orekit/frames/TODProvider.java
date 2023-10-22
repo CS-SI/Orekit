@@ -101,7 +101,7 @@ class TODProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public TODProvider getNonInterpolatingProvider() {
-        return new TODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory(),
+        return new TODProvider(conventions, eopHistory.getEOPHistoryWithoutCachedTidalCorrection(),
                 obliquityFunction, nutationFunction);
     }
 

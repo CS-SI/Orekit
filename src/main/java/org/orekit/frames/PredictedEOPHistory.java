@@ -73,7 +73,7 @@ public class PredictedEOPHistory extends EOPHistory implements Serializable {
      */
     public PredictedEOPHistory(final EOPHistory rawHistory, final double extensionDuration,
                                final EOPFitter fitter) {
-        super(rawHistory.getConventions(),
+        super(rawHistory.getConventions(), rawHistory.getInterpolationDegree(),
               extendHistory(rawHistory, extensionDuration, fitter),
               rawHistory.isSimpleEop(), rawHistory.getTimeScales());
         this.rawHistory        = rawHistory;

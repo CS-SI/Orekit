@@ -79,7 +79,7 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
                 interpolator.getSubInterpolators();
         for (final FieldTimeInterpolator<? extends FieldTimeStamped<T>, T> subInterpolator : subInterpolators) {
             if (sampleSize < subInterpolator.getNbInterpolationPoints()) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, sampleSize);
+                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA, sampleSize);
             }
         }
     }
@@ -189,7 +189,7 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
             try {
                 // Handle specific case that is not handled by the immutable time stamped cache constructor
                 if (sample.size() < 2) {
-                    throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION,
+                    throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA,
                                                              sample.size());
                 }
 
@@ -212,7 +212,7 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
                 this.interpolationDate = interpolationDate;
             }
             catch (OrekitIllegalArgumentException exception) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, sample.size());
+                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA, sample.size());
             }
         }
 

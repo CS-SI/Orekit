@@ -1344,7 +1344,7 @@ public class CRD {
         public MeteorologicalMeasurement getMeteo(final AbsoluteDate date) {
 
             // Check if meteorological data are available
-            if (meteo.getNeighborsSize() == 0) {
+            if (meteo.getMaxNeighborsSize() == 0) {
                 return null;
             }
 

@@ -430,8 +430,8 @@ UNSUPPORTED_TIME_TRANSFORM = el modelo geomagnético {0} en la época {1} no tie
 # time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
 OUT_OF_RANGE_TIME_TRANSFORM = la transformación temporal del modelo geomagnético {0} en la época {1} está fuera del dominio de validez: {2} != [{3}, {4}]
 
-# not enough data for interpolation (sample size = {0})
-NOT_ENOUGH_DATA_FOR_INTERPOLATION = no hay datos suficientes como para interpolar (tamaño de la muestra = {0})
+# not enough data (sample size = {0})
+NOT_ENOUGH_DATA = no hay datos suficientes como (tamaño de la muestra = {0})
 
 # too small number of cached neighbors: {0} (must be at least {1})
 NOT_ENOUGH_CACHED_NEIGHBORS = número de vecinos almacenados demasiado pequeño : {0} (debe ser por lo menos {1})
@@ -863,3 +863,6 @@ CANNOT_START_PROPAGATION_FROM_INFINITY = <MISSING TRANSLATION>
 
 # invalid satellite id {0}
 INVALID_SATELLITE_ID = <MISSING TRANSLATION>
+
+# EOP interpolation degree must be of the form 4k-1, got {0}
+WRONG_EOP_INTERPOLATION_DEGREE = <MISSING TRANSLATION>

@@ -34,6 +34,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.SingleBodyAbsoluteAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -500,11 +501,12 @@ class SpacecraftStateInterpolatorTest {
                 new SpacecraftStateInterpolator(inertialFrame, orbitInterpolatorMock, null, null, null, null);
 
         // When & Then
-        Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
+        OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
                 interpolator.interpolate(interpolationDate, states));
 
-        Assertions.assertEquals("not enough data for interpolation (sample size = 0)",
-                                thrown.getMessage());
+        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        Assertions.assertEquals(0, ((Integer) thrown.getParts()[0]).intValue());
+
     }
 
     @Test

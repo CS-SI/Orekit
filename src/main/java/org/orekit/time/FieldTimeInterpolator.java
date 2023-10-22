@@ -68,7 +68,7 @@ public interface FieldTimeInterpolator<T extends FieldTimeStamped<KK>, KK extend
             final T element = optionalElement.get();
             return interpolate(new FieldAbsoluteDate<>(element.getDate().getField(), interpolationDate), sample);
         }
-        throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, 0);
+        throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA, 0);
     }
 
     /**

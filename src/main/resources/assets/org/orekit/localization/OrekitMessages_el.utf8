@@ -430,8 +430,8 @@ UNSUPPORTED_TIME_TRANSFORM = το γεωμαγνητικό μοντέλο {0} μ
 # time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
 OUT_OF_RANGE_TIME_TRANSFORM = o χρόνος μετατροπής τoυ γεωμαγνητικού μοντέλου {0} με την εποχή {1} είναι εκτός της περιοχής ισχύος: {2}! = [{3}, {4}]
 
-# not enough data for interpolation (sample size = {0})
-NOT_ENOUGH_DATA_FOR_INTERPOLATION = δεν υπάρχουν επαρκή δεδομένα για την παρεμβολή (μέγεθος δείγματος = {0})
+# not enough data (sample size = {0})
+NOT_ENOUGH_DATA = δεν υπάρχουν επαρκή δεδομένα (μέγεθος δείγματος = {0})
 
 # too small number of cached neighbors: {0} (must be at least {1})
 NOT_ENOUGH_CACHED_NEIGHBORS = πολύ μικρός αριθμός των προσωρινά αποθηκευμένων γειτόνων {0} (πρέπει να είναι τουλάχιστον {1})
@@ -863,3 +863,6 @@ CANNOT_START_PROPAGATION_FROM_INFINITY = <MISSING TRANSLATION>
 
 # invalid satellite id {0}
 INVALID_SATELLITE_ID = <MISSING TRANSLATION>
+
+# EOP interpolation degree must be of the form 4k-1, got {0}
+WRONG_EOP_INTERPOLATION_DEGREE = <MISSING TRANSLATION>

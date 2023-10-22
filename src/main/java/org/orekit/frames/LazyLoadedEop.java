@@ -53,6 +53,10 @@ public class LazyLoadedEop {
     private final Map<IERSConventions, List<EOPHistoryLoader>> eopHistoryLoaders;
     /** Threshold for EOP continuity. */
     private double eopContinuityThreshold;
+    /** Degree for EOP interpolation.
+     * @since 12.0
+     */
+    private int interpolationDegree;
 
     /**
      * Create a new instance for loading EOP data from multiple {@link
@@ -64,6 +68,7 @@ public class LazyLoadedEop {
         this.dataProvidersManager   = dataProvidersManager;
         this.eopHistoryLoaders      = new HashMap<>();
         this.eopContinuityThreshold = 5 * Constants.JULIAN_DAY;
+        this.interpolationDegree    = EOPHistory.DEFAULT_INTERPOLATION_DEGREE;
     }
 
     /**
@@ -233,7 +238,7 @@ public class LazyLoadedEop {
      *
      * @param conventions IERS conventions to which EOP history applies
      * @param loader      custom loader to add for the EOP history
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, Supplier)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String, Supplier)
      * @see #clearEOPHistoryLoaders()
      */
     public void addEOPHistoryLoader(final IERSConventions conventions, final EOPHistoryLoader loader) {
@@ -249,7 +254,7 @@ public class LazyLoadedEop {
      * Clear loaders for Earth Orientation Parameters history.
      *
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, Supplier)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String, Supplier)
      */
     public void clearEOPHistoryLoaders() {
         synchronized (eopHistoryLoaders) {
@@ -278,14 +283,27 @@ public class LazyLoadedEop {
     }
 
     /**
+     * Set the degree for interpolation degree.
+     * <p>
+     * The default threshold (used if this method is never called) is {@link EOPHistory#DEFAULT_INTERPOLATION_DEGREE}.
+     * </p>
+     *
+     * @param interpolationDegree interpolation degree, must be of the form 4k-1
+     * @since 12.0
+     */
+    public void setInterpolationDegree(final int interpolationDegree) {
+        this.interpolationDegree = interpolationDegree;
+    }
+
+    /**
      * Get Earth Orientation Parameters history.
      * <p>
      * If no {@link EOPHistoryLoader} has been added by calling {@link
      * #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader) addEOPHistoryLoader} or if
      * {@link #clearEOPHistoryLoaders() clearEOPHistoryLoaders} has been called
      * afterwards, the {@link #addDefaultEOP1980HistoryLoaders(String, String, String,
-     * String, String, Supplier)} and {@link #addDefaultEOP2000HistoryLoaders(String,
-     * String, String, String, String, Supplier)} methods will be called automatically
+     * String, String, String, Supplier)} and {@link #addDefaultEOP2000HistoryLoaders(String,
+     * String, String, String, String, String, Supplier)} methods will be called automatically
      * with supported file names parameters all set to null, in order to get the default
      * loaders configuration.
      * </p>
@@ -316,9 +334,8 @@ public class LazyLoadedEop {
             if (eopHistoryLoaders.containsKey(conventions)) {
                 for (final EOPHistoryLoader loader : eopHistoryLoaders.get(conventions)) {
                     try {
-                        loader.fillHistory(
-                                conventions.getNutationCorrectionConverter(timeScales),
-                                data);
+                        loader.fillHistory(conventions.getNutationCorrectionConverter(timeScales),
+                                           data);
                     } catch (OrekitException oe) {
                         pendingException = oe;
                     }
@@ -329,8 +346,7 @@ public class LazyLoadedEop {
                 throw pendingException;
             }
 
-            final EOPHistory history =
-                    new EOPHistory(conventions, data, simpleEOP, timeScales);
+            final EOPHistory history = new EOPHistory(conventions, interpolationDegree, data, simpleEOP, timeScales);
             history.checkEOPContinuity(eopContinuityThreshold);
             return history;
 
