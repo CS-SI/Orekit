@@ -114,12 +114,19 @@ import org.orekit.utils.units.UnitsConverter;
  * where x stands for a roman numeral character and # stands for a digit
  * character.</p>
  * <p>
+ * Bulletin A in csv format must be read using {@link EopCsvFilesLoader} rather
+ * than using this loader. Bulletin A in xml format must be read using {@link EopXmlLoader}
+ * rather than using this loader.
+ * </p>
+ * <p>
  * This class is immutable and hence thread-safe
  * </p>
  * @author Luc Maisonobe
  * @since 7.0
+ * @see EopCsvFilesLoader
+ * @see EopXmlLoader
  */
-class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
+class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
     /** Regular expression matching blanks at start of line. */
     private static final String LINE_START_REGEXP     = "^\\p{Blank}+";

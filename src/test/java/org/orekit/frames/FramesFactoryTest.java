@@ -123,14 +123,14 @@ public class FramesFactoryTest {
     public void testEOPLoaderException() {
         final boolean[] flags = new boolean[2];
         try {
-            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EOPHistoryLoader() {
+            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EopHistoryLoader() {
                 @Override
                 public void fillHistory(NutationCorrectionConverter converter, SortedSet<EOPEntry> history) {
                     // don't really fill history here
                     flags[0] = true;
                 }
             });
-            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EOPHistoryLoader() {
+            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EopHistoryLoader() {
                 @Override
                 public void fillHistory(NutationCorrectionConverter converter, SortedSet<EOPEntry> history)
                     {

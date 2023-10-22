@@ -56,7 +56,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * </p>
  * @author Luc Maisonobe
  */
-class EopXmlLoader extends AbstractEopLoader implements EOPHistoryLoader {
+class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
 
     /** Millisecond unit. */
     private static final Unit MILLI_SECOND = Unit.parse("ms");

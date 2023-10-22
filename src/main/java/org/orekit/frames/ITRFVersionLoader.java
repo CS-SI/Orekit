@@ -41,7 +41,7 @@ import org.orekit.time.DateComponents;
  * the {@link ITRFVersion ITRF versions} that each
  * type of Earth Orientation Parameter file contains
  * for each date. This configuration file is used to
- * interpret {@link EOPC04FilesLoader EOP C04} files,
+ * interpret {@link EopC04FilesLoader EOP C04} files,
  * {@link BulletinAFilesLoader Bulletin A} files,
  * {@link BulletinBFilesLoader Bulletin B} files,
  * {@link RapidDataAndPredictionColumnsLoader rapid data
@@ -54,7 +54,7 @@ import org.orekit.time.DateComponents;
  * <p>
  * This class is immutable and hence thread-safe
  * </p>
- * @see EOPC04FilesLoader
+ * @see EopC04FilesLoader
  * @see BulletinAFilesLoader
  * @see BulletinBFilesLoader
  * @see RapidDataAndPredictionColumnsLoader

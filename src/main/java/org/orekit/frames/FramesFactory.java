@@ -229,7 +229,7 @@ public class FramesFactory {
      * @param csvSupportedNames regular expression for supported csv files names
      * (may be null if the default IERS file names are used)
      * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
      * @see #clearEOPHistoryLoaders()
      * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String, String)
      * @since 12.0
@@ -270,7 +270,7 @@ public class FramesFactory {
      * @param csvSupportedNames regular expression for supported csv files names
      * (may be null if the default IERS file names are used)
      * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
      * @see #clearEOPHistoryLoaders()
      * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
      * @since 12.0
@@ -298,12 +298,12 @@ public class FramesFactory {
      * @see #clearEOPHistoryLoaders()
      */
     @DefaultDataContext
-    public static void addEOPHistoryLoader(final IERSConventions conventions, final EOPHistoryLoader loader) {
+    public static void addEOPHistoryLoader(final IERSConventions conventions, final EopHistoryLoader loader) {
         getFrames().addEOPHistoryLoader(conventions, loader);
     }
 
     /** Clear loaders for Earth Orientation Parameters history.
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
      * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
      */
     @DefaultDataContext
@@ -334,8 +334,8 @@ public class FramesFactory {
 
     /** Get Earth Orientation Parameters history.
      * <p>
-     * If no {@link EOPHistoryLoader} has been added by calling {@link
-     * #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader) addEOPHistoryLoader}
+     * If no {@link EopHistoryLoader} has been added by calling {@link
+     * #addEOPHistoryLoader(IERSConventions, EopHistoryLoader) addEOPHistoryLoader}
      * or if {@link #clearEOPHistoryLoaders() clearEOPHistoryLoaders} has been
      * called afterwards, the {@link #addDefaultEOP1980HistoryLoaders(String, String,
      * String, String, String, String)} and {@link #addDefaultEOP2000HistoryLoaders(String,

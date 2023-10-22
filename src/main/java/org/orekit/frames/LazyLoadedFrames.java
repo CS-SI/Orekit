@@ -73,7 +73,7 @@ public class LazyLoadedFrames extends AbstractFrames {
      * @param csvSupportedNames regular expression for supported csv files names
      * (may be null if the default IERS file names are used)
      * @see <a href="https://datacenter.iers.org/products/eop/">IERS https data download</a>
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
      * @see #clearEOPHistoryLoaders()
      * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String, String)
      * @since 12.0
@@ -114,7 +114,7 @@ public class LazyLoadedFrames extends AbstractFrames {
      * @param csvSupportedNames regular expression for supported csv files names
      * (may be null if the default IERS file names are used)
      * @see <a href="https://datacenter.iers.org/products/eop/">IERS https data download</a>
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
      * @see #clearEOPHistoryLoaders()
      * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
      * @since 12.0
@@ -141,12 +141,12 @@ public class LazyLoadedFrames extends AbstractFrames {
      * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
      * @see #clearEOPHistoryLoaders()
      */
-    public void addEOPHistoryLoader(final IERSConventions conventions, final EOPHistoryLoader loader) {
+    public void addEOPHistoryLoader(final IERSConventions conventions, final EopHistoryLoader loader) {
         lazyLoadedEop.addEOPHistoryLoader(conventions, loader);
     }
 
     /** Clear loaders for Earth Orientation Parameters history.
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
      * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
      */
     public void clearEOPHistoryLoaders() {
@@ -175,8 +175,8 @@ public class LazyLoadedFrames extends AbstractFrames {
 
     /** {@inheritDoc}
      * <p>
-     * If no {@link EOPHistoryLoader} has been added by calling {@link
-     * #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader) addEOPHistoryLoader}
+     * If no {@link EopHistoryLoader} has been added by calling {@link
+     * #addEOPHistoryLoader(IERSConventions, EopHistoryLoader) addEOPHistoryLoader}
      * or if {@link #clearEOPHistoryLoaders() clearEOPHistoryLoaders} has been
      * called afterwards, the {@link #addDefaultEOP1980HistoryLoaders(String, String,
      * String, String, String, String)} and {@link #addDefaultEOP2000HistoryLoaders(String,

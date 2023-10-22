@@ -30,7 +30,7 @@ import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.IERSConventions;
 
 
-public class EOPCsvFilesLoaderTest extends AbstractFilesLoaderTest {
+public class EopCsvFilesLoaderTest extends AbstractFilesLoaderTest {
 
     @Test
     public void testEopc04Rates() {
@@ -82,7 +82,7 @@ public class EOPCsvFilesLoaderTest extends AbstractFilesLoaderTest {
         IERSConventions.NutationCorrectionConverter converter =
                         IERSConventions.IERS_2010.getNutationCorrectionConverter();
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
-        new EOPCsvFilesLoader("^" + name + "$", manager, () -> utc).
+        new EopCsvFilesLoader("^" + name + "$", manager, () -> utc).
         fillHistory(converter, data);
         return new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE, data, true);
     }

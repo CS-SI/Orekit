@@ -71,14 +71,14 @@ import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
  * </p>
  * @author Luc Maisonobe
  */
-class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
+class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
     /** Build a loader for IERS EOP C04 files.
      * @param supportedNames regular expression for supported files names
      * @param manager provides access to the EOP C04 files.
      * @param utcSupplier UTC time scale.
      */
-    EOPC04FilesLoader(final String supportedNames,
+    EopC04FilesLoader(final String supportedNames,
                       final DataProvidersManager manager,
                       final Supplier<TimeScale> utcSupplier) {
         super(supportedNames, manager, utcSupplier);

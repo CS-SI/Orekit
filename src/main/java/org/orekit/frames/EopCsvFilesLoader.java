@@ -44,7 +44,7 @@ import org.orekit.utils.units.Unit;
  * @author Luc Maisonobe
  * @since 12.0
  */
-class EOPCsvFilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
+class EopCsvFilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
     /** Separator. */
     private static final String SEPARATOR = ";";
@@ -105,7 +105,7 @@ class EOPCsvFilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
      * @param manager provides access to the EOP C04 files.
      * @param utcSupplier UTC time scale.
      */
-    EOPCsvFilesLoader(final String supportedNames,
+    EopCsvFilesLoader(final String supportedNames,
                       final DataProvidersManager manager,
                       final Supplier<TimeScale> utcSupplier) {
         super(supportedNames, manager, utcSupplier);

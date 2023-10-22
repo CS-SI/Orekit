@@ -65,7 +65,7 @@ public class FramesTest {
                 leapSeconds,
                 (conventions, timeScales) -> {
                     try {
-                        return EOPHistoryLoader.Parser
+                        return EopHistoryLoader.Parser
                                 .newFinalsColumnsParser(
                                         conventions,
                                         itrfVersionProvider,
