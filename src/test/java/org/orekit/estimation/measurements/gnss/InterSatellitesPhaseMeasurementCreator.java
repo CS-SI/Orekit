@@ -87,7 +87,7 @@ public class InterSatellitesPhaseMeasurementCreator extends MeasurementCreator {
         try {
             final double           n         = ambiguity.getParametersDrivers().get(0).getValue();
             final AbsoluteDate     date      = currentState.getDate();
-            final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter1);
+            final Vector3D         position  = currentState.toTransform().toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
             final double           remoteClk = remote.getClockOffsetDriver().getValue(date);
             final double           localClk  = local.getClockOffsetDriver().getValue(date);
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);

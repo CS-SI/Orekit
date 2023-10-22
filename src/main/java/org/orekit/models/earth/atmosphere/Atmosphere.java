@@ -68,7 +68,7 @@ public interface Atmosphere extends Serializable {
      */
     default Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame) {
         final Transform     bodyToFrame = getFrame().getTransformTo(frame, date);
-        final Vector3D      posInBody   = bodyToFrame.getInverse().transformPosition(position);
+        final Vector3D      posInBody   = bodyToFrame.toStaticTransform().getInverse().transformPosition(position);
         final PVCoordinates pvBody      = new PVCoordinates(posInBody, Vector3D.ZERO);
         final PVCoordinates pvFrame     = bodyToFrame.transformPVCoordinates(pvBody);
         return pvFrame.getVelocity();
@@ -83,7 +83,7 @@ public interface Atmosphere extends Serializable {
      */
     default <T extends CalculusFieldElement<T>> FieldVector3D<T> getVelocity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame) {
         final Transform             bodyToFrame = getFrame().getTransformTo(frame, date.toAbsoluteDate());
-        final FieldVector3D<T>      posInBody   = bodyToFrame.getInverse().transformPosition(position);
+        final FieldVector3D<T>      posInBody   = bodyToFrame.toStaticTransform().getInverse().transformPosition(position);
         final FieldPVCoordinates<T> pvBody      = new FieldPVCoordinates<>(posInBody, FieldVector3D.getZero(position.getX().getField()));
         final FieldPVCoordinates<T> pvFrame     = bodyToFrame.transformPVCoordinates(pvBody);
         return pvFrame.getVelocity();

@@ -39,6 +39,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
@@ -1002,6 +1003,22 @@ public class TransformTest {
 
             }
         }
+    }
+
+    @Test
+    void testToStaticTransform() {
+        // GIVEN
+        final PVCoordinates pvCoordinates = new PVCoordinates();
+        final AngularCoordinates angularCoordinates = new AngularCoordinates();
+        final Transform transform = new Transform(AbsoluteDate.ARBITRARY_EPOCH, pvCoordinates, angularCoordinates);
+        // WHEN
+        final StaticTransform actualStaticTransform = transform.toStaticTransform();
+        // THEN
+        final StaticTransform expectedStaticTransform = transform.staticShiftedBy(0.);
+        Assertions.assertEquals(expectedStaticTransform.getDate(), actualStaticTransform.getDate());
+        Assertions.assertEquals(expectedStaticTransform.getTranslation(), actualStaticTransform.getTranslation());
+        Assertions.assertEquals(0., Rotation.distance(expectedStaticTransform.getRotation(),
+                actualStaticTransform.getRotation()));
     }
 
     @Test

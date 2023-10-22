@@ -18,12 +18,15 @@ package org.orekit.frames;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.random.RandomGenerator;
@@ -33,8 +36,10 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
+import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
@@ -1177,6 +1182,24 @@ public class FieldTransformTest {
 
             }
         }
+    }
+
+    @Test
+    void testToStaticTransform() {
+        // GIVEN
+        final Field<Complex> field = ComplexField.getInstance();
+        final PVCoordinates pvCoordinates = new PVCoordinates();
+        final AngularCoordinates angularCoordinates = new AngularCoordinates();
+        final Transform transform = new Transform(AbsoluteDate.ARBITRARY_EPOCH, pvCoordinates, angularCoordinates);
+        final FieldTransform<Complex> fieldTransform = new FieldTransform<>(field, transform);
+        // WHEN
+        final FieldStaticTransform<Complex> actualStaticTransform = fieldTransform.toStaticTransform();
+        // THEN
+        final FieldStaticTransform<Complex> expectedStaticTransform = fieldTransform.staticShiftedBy(Complex.ZERO);
+        Assertions.assertEquals(expectedStaticTransform.getDate(), actualStaticTransform.getDate());
+        Assertions.assertEquals(expectedStaticTransform.getTranslation(), actualStaticTransform.getTranslation());
+        Assertions.assertEquals(0., Rotation.distance(expectedStaticTransform.getRotation().toRotation(),
+                actualStaticTransform.getRotation().toRotation()));
     }
 
     @Test
