@@ -459,7 +459,7 @@ public class GenericTimeStampedCacheTest {
                                        final GenericTimeStampedCache<AbsoluteDate> cache)
         throws TimeStampedCacheException {
 
-        final int n = cache.getNeighborsSize();
+        final int n = cache.getMaxNeighborsSize();
         final double step = ((Generator) cache.getGenerator()).getStep();
 
         for (final AbsoluteDate central : centralDates) {
@@ -480,7 +480,7 @@ public class GenericTimeStampedCacheTest {
                                       final int threadPoolSize)
         throws TimeStampedCacheException {
 
-        final int n = cache.getNeighborsSize();
+        final int n = cache.getMaxNeighborsSize();
         final double step = ((Generator) cache.getGenerator()).getStep();
         final AtomicReference<AbsoluteDate[]> failedDates = new AtomicReference<AbsoluteDate[]>();
         final AtomicReference<TimeStampedCacheException> caught = new AtomicReference<TimeStampedCacheException>();
