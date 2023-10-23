@@ -21,6 +21,7 @@ import java.io.Serializable;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
@@ -82,9 +83,10 @@ public interface Atmosphere extends Serializable {
      * @return velocity (m/s) (defined in the same frame as the position)
      */
     default <T extends CalculusFieldElement<T>> FieldVector3D<T> getVelocity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame) {
-        final Transform             bodyToFrame = getFrame().getTransformTo(frame, date.toAbsoluteDate());
+        final FieldTransform<T>     bodyToFrame = getFrame().getTransformTo(frame, date);
         final FieldVector3D<T>      posInBody   = bodyToFrame.toStaticTransform().getInverse().transformPosition(position);
-        final FieldPVCoordinates<T> pvBody      = new FieldPVCoordinates<>(posInBody, FieldVector3D.getZero(position.getX().getField()));
+        final FieldPVCoordinates<T> pvBody      = new FieldPVCoordinates<>(posInBody,
+                FieldVector3D.getZero(date.getField()));
         final FieldPVCoordinates<T> pvFrame     = bodyToFrame.transformPVCoordinates(pvBody);
         return pvFrame.getVelocity();
     }
