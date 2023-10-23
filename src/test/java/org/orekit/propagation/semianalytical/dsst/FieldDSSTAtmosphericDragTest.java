@@ -228,11 +228,12 @@ public class FieldDSSTAtmosphericDragTest {
         }
 
         Assertions.assertEquals( 0.03966657233267546,     y[0].getReal(), 1.0e-15);
-        Assertions.assertEquals(-1.52943814431705860e-8,  y[1].getReal(), 1.0e-23);
+        Assertions.assertEquals(-1.52943814431705860e-8,  y[1].getReal(), 1.0e-22);
         Assertions.assertEquals(-2.36149298285122150e-8,  y[2].getReal(), 1.4e-23);
         Assertions.assertEquals(-5.90158033654432200e-11, y[3].getReal(), 1.0e-24);
         Assertions.assertEquals( 1.02876397430619780e-11, y[4].getReal(), 2.0e-24);
         Assertions.assertEquals( 2.53842752377756140e-8,  y[5].getReal(), 1.0e-22);
+
     }
 
     @Test

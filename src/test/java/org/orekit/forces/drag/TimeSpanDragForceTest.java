@@ -105,31 +105,13 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
             final Vector3D   posBody   = posBodyDS.toVector3D();
             final Vector3D   vAtmBody  = atmosphere.getVelocity(date, posBody, atmFrame);
 
-            // estimate density model by finite differences and composition
-            // the following implementation works only for first order derivatives.
-            // this could be improved by adding a new method
-            // getDensity(AbsoluteDate, DerivativeStructure, Frame)
-            // to the Atmosphere interface
+            // estimate density model
             if (factory.getCompiler().getOrder() > 1) {
                 throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, factory.getCompiler().getOrder());
             }
-            final double delta  = 1.0;
-            final double x      = posBody.getX();
-            final double y      = posBody.getY();
-            final double z      = posBody.getZ();
-            final double rho0   = atmosphere.getDensity(date, posBody, atmFrame);
-            final double dRhodX = (atmosphere.getDensity(date, new Vector3D(x + delta, y,         z),         atmFrame) - rho0) / delta;
-            final double dRhodY = (atmosphere.getDensity(date, new Vector3D(x,         y + delta, z),         atmFrame) - rho0) / delta;
-            final double dRhodZ = (atmosphere.getDensity(date, new Vector3D(x,         y,         z + delta), atmFrame) - rho0) / delta;
-            final double[] dXdQ = posBodyDS.getX().getAllDerivatives();
-            final double[] dYdQ = posBodyDS.getY().getAllDerivatives();
-            final double[] dZdQ = posBodyDS.getZ().getAllDerivatives();
-            final double[] rhoAll = new double[dXdQ.length];
-            rhoAll[0] = rho0;
-            for (int i = 1; i < rhoAll.length; ++i) {
-                rhoAll[i] = dRhodX * dXdQ[i] + dRhodY * dYdQ[i] + dRhodZ * dZdQ[i];
-            }
-            final DerivativeStructure rho = factory.build(rhoAll);
+
+            final DerivativeStructure rho = atmosphere.getDensity(new FieldAbsoluteDate<>(factory.getDerivativeField(), date),
+                    posBodyDS, atmFrame);
 
             // we consider that at first order the atmosphere velocity in atmosphere frame
             // does not depend on local position; however atmosphere velocity in inertial
@@ -186,27 +168,9 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
             final Vector3D   posBody   = posBodyG.toVector3D();
             final Vector3D   vAtmBody  = atmosphere.getVelocity(date, posBody, atmFrame);
 
-            // estimate density model by finite differences and composition
-            // the following implementation works only for first order derivatives.
-            // this could be improved by adding a new method
-            // getDensity(AbsoluteDate, FieldVector3D<Gradient>, Frame)
-            // to the Atmosphere interface
-            final double delta  = 1.0;
-            final double x      = posBody.getX();
-            final double y      = posBody.getY();
-            final double z      = posBody.getZ();
-            final double rho0   = atmosphere.getDensity(date, posBody, atmFrame);
-            final double dRhodX = (atmosphere.getDensity(date, new Vector3D(x + delta, y,         z),         atmFrame) - rho0) / delta;
-            final double dRhodY = (atmosphere.getDensity(date, new Vector3D(x,         y + delta, z),         atmFrame) - rho0) / delta;
-            final double dRhodZ = (atmosphere.getDensity(date, new Vector3D(x,         y,         z + delta), atmFrame) - rho0) / delta;
-            final double[] dXdQ = posBodyG.getX().getGradient();
-            final double[] dYdQ = posBodyG.getY().getGradient();
-            final double[] dZdQ = posBodyG.getZ().getGradient();
-            final double[] rhoAll = new double[dXdQ.length];
-            for (int i = 0; i < rhoAll.length; ++i) {
-                rhoAll[i] = dRhodX * dXdQ[i] + dRhodY * dYdQ[i] + dRhodZ * dZdQ[i];
-            }
-            final Gradient rho = new Gradient(rho0, rhoAll);
+            // estimate density model
+            final Gradient rho = atmosphere.getDensity(new FieldAbsoluteDate<>(posBodyG.getX().getField(), date),
+                    posBodyG, atmFrame);
 
             // we consider that at first order the atmosphere velocity in atmosphere frame
             // does not depend on local position; however atmosphere velocity in inertial
