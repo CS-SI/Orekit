@@ -804,7 +804,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
             
         }
         Assertions.assertEquals( 0.0678893939532068, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals( 7.3610159507701840, relativeRMSSigmaError[1].getMean(), tolerance);
+        Assertions.assertEquals( 7.3610159507701730, relativeRMSSigmaError[1].getMean(), tolerance);
         Assertions.assertEquals( 0.0649252237750957, relativeRMSSigmaError[0].getPercentile(50), tolerance);
         Assertions.assertEquals( 7.7054187147650770, relativeRMSSigmaError[1].getPercentile(50), tolerance);
         Assertions.assertEquals( 0.1405955596105993, relativeRMSSigmaError[0].getMax(), tolerance);
