@@ -46,7 +46,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.sinex.Station.ReferenceSystem;
 import org.orekit.frames.EOPEntry;
-import org.orekit.frames.EOPHistoryLoader;
+import org.orekit.frames.EopHistoryLoader;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
@@ -78,7 +78,7 @@ import org.orekit.utils.units.Unit;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class SinexLoader implements EOPHistoryLoader {
+public class SinexLoader implements EopHistoryLoader {
 
     /** Length of day. */
     private static final String LOD = "LOD";

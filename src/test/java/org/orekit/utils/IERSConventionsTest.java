@@ -1141,7 +1141,7 @@ public class IERSConventionsTest {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2003, false);
         checkVectorFunctionConsistency(IERSConventions.IERS_2003.getSolidPoleTide(eopHistory), 2,
                                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-25, 3.0e-26);
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.5e-14, 6.9e-19);
     }
 
     @Test
@@ -1149,7 +1149,7 @@ public class IERSConventionsTest {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
         checkVectorFunctionConsistency(IERSConventions.IERS_2010.getSolidPoleTide(eopHistory), 2,
                                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-25, 2.0e-26);
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.5e-14, 6.9e-19);
     }
 
     @Test
@@ -1173,7 +1173,7 @@ public class IERSConventionsTest {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
         checkVectorFunctionConsistency(IERSConventions.IERS_2010.getOceanPoleTide(eopHistory), 2,
                                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-26, 2.0e-27);
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.9e-15, 8.9e-20);
     }
 
     private void checkScalarFunctionConsistency(final TimeScalarFunction function,

@@ -27,6 +27,9 @@
       <action dev="serrof" type="add" issue="1240">
          Add toStaticTransform to (Field)Transform.
       </action>
+      <action dev="luc" type="add" issue="1239">
+         Added derivatives to EOP when they are missing in the files.
+      </action>
       <action dev="luc" type="add" issue="1238">
          Allow customization of interpolation degree in EOP.
       </action>

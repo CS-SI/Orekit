@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -74,11 +75,6 @@ public class EOPHistory implements Serializable {
      * @see #hasDataFor(AbsoluteDate)
      */
     private final boolean hasData;
-
-    /** Indicator for pole rates.
-     * @since 12.0
-     */
-    private final boolean hasPoleRates;
 
     /** EOP history entries. */
     private final transient ImmutableTimeStampedCache<EOPEntry> cache;
@@ -154,23 +150,23 @@ public class EOPHistory implements Serializable {
         this.timeScales          = timeScales;
         if (data.size() >= 1) {
             // enough data to interpolate
-            cache = new ImmutableTimeStampedCache<EOPEntry>(FastMath.min(interpolationDegree + 1, data.size()), data);
-            hasData = true;
-
-            // check if all data have pole rates
-            boolean rates = true;
-            for (final EOPEntry entry : data) {
-                if (Double.isNaN(entry.getXRate()) || Double.isNaN(entry.getYRate())) {
-                    rates = false;
+            if (missSomeDerivatives(data)) {
+                // we need to estimate the missing derivatives
+                final ImmutableTimeStampedCache<EOPEntry> rawCache =
+                                new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1, data.size()), data);
+                final List<EOPEntry>fixedData = new ArrayList<>();
+                for (final EOPEntry entry : rawCache.getAll()) {
+                    fixedData.add(fixDerivatives(entry, rawCache));
                 }
+                cache = new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1, fixedData.size()), fixedData);
+            } else {
+                cache = new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1, data.size()), data);
             }
-            hasPoleRates = rates;
-
+            hasData = true;
         } else {
             // not enough data to interpolate -> always use null correction
-            cache        = ImmutableTimeStampedCache.emptyCache();
-            hasData      = false;
-            hasPoleRates = false;
+            cache   = ImmutableTimeStampedCache.emptyCache();
+            hasData = false;
         }
     }
 
@@ -181,14 +177,6 @@ public class EOPHistory implements Serializable {
      */
     public boolean isSimpleEop() {
         return tidalCorrection == null;
-    }
-
-    /** Check if history has pole rates.
-     * @return true if history has pole rates
-     * @since 12.0
-     */
-    public boolean hasPoleRates() {
-        return hasPoleRates;
     }
 
     /** Get interpolation degree.
@@ -516,12 +504,9 @@ public class EOPHistory implements Serializable {
         }
 
         // we have EOP data for date -> interpolate correction
-        final double[] interpolated = hasPoleRates ?
-                                      interpolate(date,
+        final double[] interpolated = interpolate(date,
                                                   entry -> entry.getX(),     entry -> entry.getY(),
-                                                  entry -> entry.getXRate(), entry -> entry.getYRate()) :
-                                      interpolate(date,
-                                                  entry -> entry.getX(), entry -> entry.getY());
+                                                  entry -> entry.getXRate(), entry -> entry.getYRate());
         if (tidalCorrection != null) {
             final double[] correction = tidalCorrection.value(date);
             interpolated[0] += correction[0];
@@ -845,9 +830,9 @@ public class EOPHistory implements Serializable {
      * @return interpolated value
      */
     private <T extends CalculusFieldElement<T>> T[] interpolate(final FieldAbsoluteDate<T> date,
-                                                            final AbsoluteDate aDate,
-                                                            final Function<EOPEntry, Double> selector1,
-                                                            final Function<EOPEntry, Double> selector2) {
+                                                                final AbsoluteDate aDate,
+                                                                final Function<EOPEntry, Double> selector1,
+                                                                final Function<EOPEntry, Double> selector2) {
         try {
             final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
             final T[] y = MathArrays.buildArray(date.getField(), 2);
@@ -865,6 +850,62 @@ public class EOPHistory implements Serializable {
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check performed by caller
             throw new OrekitInternalError(tce);
+        }
+    }
+
+    /** Check if some derivatives are missing.
+     * @param raw raw EOP history
+     * @return true if some derivatives are missing
+     * @since 12.0
+     */
+    private boolean missSomeDerivatives(final Collection<? extends EOPEntry> raw) {
+        for (final EOPEntry entry : raw) {
+            if (Double.isNaN(entry.getLOD() + entry.getXRate() + entry.getYRate())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Fix missing derivatives.
+     * @param entry EOP entry to fix
+     * @param rawCache raw EOP history cache
+     * @return fixed entry
+     * @since 12.0
+     */
+    private EOPEntry fixDerivatives(final EOPEntry entry, final ImmutableTimeStampedCache<EOPEntry> rawCache) {
+
+        // helper function to differentiate some EOP parameters
+        final BiFunction<EOPEntry, Function<EOPEntry, Double>, Double> differentiator =
+                        (e, selector) -> {
+                            final HermiteInterpolator interpolator = new HermiteInterpolator();
+                            rawCache.getNeighbors(e.getDate()).
+                                forEach(f -> interpolator.addSamplePoint(f.getDate().durationFrom(e.getDate()),
+                                                                         new double[] {
+                                                                             selector.apply(f)
+                                                                         }));
+                            return interpolator.derivatives(0.0, 1)[1][0];
+                        };
+
+        if (Double.isNaN(entry.getLOD() + entry.getXRate() + entry.getYRate())) {
+            final double lod   = Double.isNaN(entry.getLOD()) ?
+                                 -differentiator.apply(entry, e -> e.getUT1MinusUTC()) :
+                                 entry.getLOD();
+            final double xRate = Double.isNaN(entry.getXRate()) ?
+                                 differentiator.apply(entry, e -> e.getX()) :
+                                 entry.getXRate();
+            final double yRate = Double.isNaN(entry.getYRate()) ?
+                                 differentiator.apply(entry, e -> e.getY()) :
+                                 entry.getYRate();
+            return new EOPEntry(entry.getMjd(),
+                                entry.getUT1MinusUTC(), lod,
+                                entry.getX(), entry.getY(), xRate, yRate,
+                                entry.getDdPsi(), entry.getDdEps(),
+                                entry.getDx(), entry.getDy(),
+                                entry.getITRFType(), entry.getDate());
+        } else {
+            // the entry already has all derivatives
+            return entry;
         }
     }
 

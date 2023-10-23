@@ -885,7 +885,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final Vector3D     v     = new Vector3D(-348.8911736753223, -2383.738528546711, 3060.9815784341567);
         final Orbit        orbit = new CartesianOrbit(new TimeStampedPVCoordinates(date, p, v),
                                                       FramesFactory.getGCRF(), Constants.EIGEN5C_EARTH_MU);
-        doTestMoonEarth(orbit, 3600.0, 1.0, 534, 1003, 0, 0, 11.685e-3);
+        doTestMoonEarth(orbit, 3600.0, 1.0, 534, 1003, 0, 0, 11.689e-3);
     }
 
     private void doTestMoonEarth(Orbit orbit, double duration, double step,

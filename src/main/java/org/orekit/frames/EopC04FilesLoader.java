@@ -71,14 +71,14 @@ import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
  * </p>
  * @author Luc Maisonobe
  */
-class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
+class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
     /** Build a loader for IERS EOP C04 files.
      * @param supportedNames regular expression for supported files names
      * @param manager provides access to the EOP C04 files.
      * @param utcSupplier UTC time scale.
      */
-    EOPC04FilesLoader(final String supportedNames,
+    EopC04FilesLoader(final String supportedNames,
                       final DataProvidersManager manager,
                       final Supplier<TimeScale> utcSupplier) {
         super(supportedNames, manager, utcSupplier);
@@ -529,9 +529,9 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
                 final double x     = Double.parseDouble(matcher.group(POLE_X_GROUP)) * Constants.ARC_SECONDS_TO_RADIANS;
                 final double y     = Double.parseDouble(matcher.group(POLE_Y_GROUP)) * Constants.ARC_SECONDS_TO_RADIANS;
                 final double xRate = Double.parseDouble(matcher.group(POLE_X_RATE_GROUP)) *
-                                     Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
+                                     Constants.ARC_SECONDS_TO_RADIANS / Constants.JULIAN_DAY;
                 final double yRate = Double.parseDouble(matcher.group(POLE_Y_RATE_GROUP)) *
-                                     Constants.ARC_SECONDS_TO_RADIANS * Constants.JULIAN_DAY;
+                                     Constants.ARC_SECONDS_TO_RADIANS / Constants.JULIAN_DAY;
                 final double dtu1  = Double.parseDouble(matcher.group(UT1_UTC_GROUP));
                 final double lod   = Double.parseDouble(matcher.group(LOD_GROUP));
                 final double[] nro = new double[] {

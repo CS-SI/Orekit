@@ -412,8 +412,7 @@ public class FieldSpacecraftStateTest {
                                                 field));
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestTransform(final Field<T> field)
-        {
+    private <T extends CalculusFieldElement<T>> void doTestTransform(final Field<T> field) {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
@@ -452,7 +451,7 @@ public class FieldSpacecraftStateTest {
         }
         Assertions.assertEquals(0.0, maxDP, 1.0e-6);
         Assertions.assertEquals(0.0, maxDV, 1.0e-9);
-        Assertions.assertEquals(0.0, maxDA, 3.2e-12);
+        Assertions.assertEquals(0.0, maxDA, 8.1e-10);
 
     }
 

@@ -240,7 +240,7 @@ public class SolidTidesFieldTest {
             {           0.0,           -4.897228975221076E-12, -4.1034042689652575E-12,         0.0,                  0.0 }
         };
         for (int n = 0; n < refDeltaCnm.length; ++n) {
-            double threshold = (n == 2) ? 1.3e-17 : 1.0e-24;
+            double threshold = (n == 2) ? 1.3e-17 : 3.1e-21;
             for (int m = 0; m <= n; ++m) {
                 Assertions.assertEquals(refDeltaCnm[n][m], harmonics.getNormalizedCnm(n, m), threshold);
                 Assertions.assertEquals(refDeltaSnm[n][m], harmonics.getNormalizedSnm(n, m), threshold);
@@ -308,7 +308,7 @@ public class SolidTidesFieldTest {
                 }
             }
         }
-        Assertions.assertEquals(0.0, stat.getMean(), 2.0e-12);
+        Assertions.assertEquals(0.0, stat.getMean(), 2.7e-12);
         Assertions.assertTrue(stat.getStandardDeviation() < 2.0e-9);
         Assertions.assertTrue(stat.getMin() > -9.0e-8);
         Assertions.assertTrue(stat.getMax() <  2.2e-7);

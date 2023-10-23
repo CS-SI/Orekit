@@ -113,7 +113,7 @@ public class EopXmlLoaderTest extends AbstractFilesLoaderTest {
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new EopXmlLoader("^finals\\.daily\\.xml$", manager, () -> utc).fillHistory(converter, history);
-        Assertions.assertEquals(new AbsoluteDate(2010, 8, 1, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(2010, 11, 8, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_1996, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                            history, true).getEndDate());
     }
@@ -136,7 +136,7 @@ public class EopXmlLoaderTest extends AbstractFilesLoaderTest {
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new EopXmlLoader("^finals2000A\\.daily\\.xml$", manager, () -> utc).fillHistory(converter, history);
-        Assertions.assertEquals(new AbsoluteDate(2010, 7, 24, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(2010, 11, 5, TimeScalesFactory.getUTC()),
                                 Collections.max(history, COMP).getDate());
     }
 
@@ -158,7 +158,7 @@ public class EopXmlLoaderTest extends AbstractFilesLoaderTest {
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new EopXmlLoader("^bulletinb-421\\.xml$", manager, () -> utc).fillHistory(converter, history);
-        Assertions.assertEquals(new AbsoluteDate(2023, 2, 1, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(2023, 3, 1, TimeScalesFactory.getUTC()),
                                 Collections.max(history, COMP).getDate());
     }
 

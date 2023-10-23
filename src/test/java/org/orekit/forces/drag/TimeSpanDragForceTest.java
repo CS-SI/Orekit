@@ -1225,7 +1225,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         // Set target date to *1.5*dt to be inside 3rd drag model
         // The further away we are from the initial date, the greater the checkTolerance parameter must be set
         checkStateJacobian(propagator, state0, date.shiftedBy(-1.5 * dt),
-                           1e3, tolerances[0], 4.9e-9);
+                           1e3, tolerances[0], 5.6e-9);
     }
 
     /** Testing if the propagation between the FieldPropagation and the propagation is equivalent.

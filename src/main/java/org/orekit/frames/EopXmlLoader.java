@@ -56,7 +56,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * </p>
  * @author Luc Maisonobe
  */
-class EopXmlLoader extends AbstractEopLoader implements EOPHistoryLoader {
+class EopXmlLoader extends AbstractEopLoader implements EopHistoryLoader {
 
     /** Millisecond unit. */
     private static final Unit MILLI_SECOND = Unit.parse("ms");
@@ -310,7 +310,7 @@ class EopXmlLoader extends AbstractEopLoader implements EOPHistoryLoader {
                 mjd         = -1;
                 mjdDate     = null;
                 dtu1        = Double.NaN;
-                lod         = content == DataFileContent.BULLETIN_A ? 0.0 : Double.NaN;
+                lod         = Double.NaN;
                 x           = Double.NaN;
                 y           = Double.NaN;
                 xRate       = Double.NaN;
@@ -370,7 +370,7 @@ class EopXmlLoader extends AbstractEopLoader implements EOPHistoryLoader {
                     inBulletinA = false;
                 } else if (qName.equals(DATA_EOP_ELT)) {
                     checkDates();
-                    if (!Double.isNaN(dtu1) && !Double.isNaN(lod) && !Double.isNaN(x) && !Double.isNaN(y)) {
+                    if (!Double.isNaN(dtu1) && !Double.isNaN(x) && !Double.isNaN(y)) {
                         final double[] equinox;
                         final double[] nro;
                         if (Double.isNaN(dpsi)) {
@@ -434,7 +434,7 @@ class EopXmlLoader extends AbstractEopLoader implements EOPHistoryLoader {
                     inBulletinA = false;
                 } else if (qName.equals(EOP_SET_ELT)) {
                     checkDates();
-                    if (!Double.isNaN(dtu1) && !Double.isNaN(lod) && !Double.isNaN(x) && !Double.isNaN(y)) {
+                    if (!Double.isNaN(dtu1) && !Double.isNaN(x) && !Double.isNaN(y)) {
                         final double[] equinox;
                         final double[] nro;
                         if (Double.isNaN(dpsi)) {

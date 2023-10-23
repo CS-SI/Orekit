@@ -25,7 +25,7 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.EOPEntry;
-import org.orekit.frames.EOPHistoryLoader;
+import org.orekit.frames.EopHistoryLoader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.models.earth.weather.GlobalPressureTemperature2Model;
@@ -211,7 +211,7 @@ public class Utils {
 
         clearFactories();
 
-        FramesFactory.addEOPHistoryLoader(conventions, new EOPHistoryLoader() {
+        FramesFactory.addEOPHistoryLoader(conventions, new EopHistoryLoader() {
             public void fillHistory(IERSConventions.NutationCorrectionConverter converter,
                                     SortedSet<EOPEntry> history) {
                 history.addAll(eop);

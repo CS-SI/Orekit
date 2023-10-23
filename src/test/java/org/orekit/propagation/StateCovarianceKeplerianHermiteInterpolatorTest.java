@@ -610,12 +610,12 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // When & Then
         doTestInterpolation(stateInterpolator, covarianceInterpolator,
                             DEFAULT_SERGEI_PROPAGATION_TIME, DEFAULT_SERGEI_TABULATED_TIMESTEP,
-                            0.0639531515409560,
-                            0.1925086072463824,
-                            0.0598143397814985,
-                            0.2081809731796255,
-                            0.1746981465797790,
-                            0.4480215255235762,
+                            0.0646887955936730,
+                            0.1870011267826034,
+                            0.0605252722806762,
+                            0.2090092562980378,
+                            0.1722559416492755,
+                            0.3756010728001388,
                             tolerance,
                             showResults);
 
@@ -669,12 +669,12 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // When & then
         doTestInterpolation(stateInterpolator, covarianceInterpolator,
                             DEFAULT_SERGEI_PROPAGATION_TIME, DEFAULT_SERGEI_TABULATED_TIMESTEP,
-                            0.0763369869294496,
-                            0.1805136912258552,
-                            0.0791783786641363,
-                            0.1758746122255046,
-                            0.1812903026960719,
-                            0.4645080823170000,
+                            0.0687107241065522,
+                            0.1727658843435031,
+                            0.0696685213697581,
+                            0.1788064054703819,
+                            0.1702870226981246,
+                            0.3841670380381794,
                             tolerance,
                             showResults);
 
@@ -727,12 +727,12 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         // When & Then
         doTestInterpolation(stateInterpolator, covarianceInterpolator,
                             DEFAULT_SERGEI_PROPAGATION_TIME, DEFAULT_SERGEI_TABULATED_TIMESTEP,
-                            0.2354175410219489,
-                            0.2055828020694689,
-                            0.2654155356635388,
-                            0.1754058754818608,
-                            0.3706878734042218,
-                            0.6020072487243944,
+                            0.1967531616991254,
+                            0.1744809570174334,
+                            0.2201299654842542,
+                            0.1501037774167836,
+                            0.3115607775141900,
+                            0.4912990230073768,
                             tolerance,
                             showResults);
 
@@ -803,12 +803,12 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
             System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[1].getMax", relativeRMSSigmaError[1].getMax());
             
         }
-        Assertions.assertEquals( 0.0704190182979353, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals( 7.8664691161177680, relativeRMSSigmaError[1].getMean(), tolerance);
-        Assertions.assertEquals( 0.0672627366628110, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals( 8.0703482669702200, relativeRMSSigmaError[1].getPercentile(50), tolerance);
-        Assertions.assertEquals( 0.1429615835990901, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(17.7159802497412500, relativeRMSSigmaError[1].getMax(), tolerance);
+        Assertions.assertEquals( 0.0678893939532068, relativeRMSSigmaError[0].getMean(), tolerance);
+        Assertions.assertEquals( 7.3610159507701840, relativeRMSSigmaError[1].getMean(), tolerance);
+        Assertions.assertEquals( 0.0649252237750957, relativeRMSSigmaError[0].getPercentile(50), tolerance);
+        Assertions.assertEquals( 7.7054187147650770, relativeRMSSigmaError[1].getPercentile(50), tolerance);
+        Assertions.assertEquals( 0.1405955596105993, relativeRMSSigmaError[0].getMax(), tolerance);
+        Assertions.assertEquals(16.0051089451628240, relativeRMSSigmaError[1].getMax(), tolerance);
 
     }
 }

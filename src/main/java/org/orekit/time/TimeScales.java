@@ -317,7 +317,7 @@ public interface TimeScales {
      *                    collection.
      * @return a set of time scales based on the given data.
      * @see UTCTAIOffsetsLoader.Parser
-     * @see org.orekit.frames.EOPHistoryLoader.Parser
+     * @see org.orekit.frames.EopHistoryLoader.Parser
      */
     static TimeScales of(
             final Collection<? extends OffsetModel> utcMinusTai,

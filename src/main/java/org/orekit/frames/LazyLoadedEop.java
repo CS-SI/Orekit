@@ -34,7 +34,7 @@ import org.orekit.utils.IERSConventions;
 
 /**
  * Loads Earth Orientation Parameters (EOP) from a configured set of {@link
- * EOPHistoryLoader}s on demand. Methods are synchronized so it is safe for access from
+ * EopHistoryLoader}s on demand. Methods are synchronized so it is safe for access from
  * multiple threads.
  *
  * @author Guylaine Prat
@@ -50,7 +50,7 @@ public class LazyLoadedEop {
     /** Provides access to the EOP data files. */
     private final DataProvidersManager dataProvidersManager;
     /** Loaders for Earth Orientation parameters. */
-    private final Map<IERSConventions, List<EOPHistoryLoader>> eopHistoryLoaders;
+    private final Map<IERSConventions, List<EopHistoryLoader>> eopHistoryLoaders;
     /** Threshold for EOP continuity. */
     private double eopContinuityThreshold;
     /** Degree for EOP interpolation.
@@ -60,7 +60,7 @@ public class LazyLoadedEop {
 
     /**
      * Create a new instance for loading EOP data from multiple {@link
-     * EOPHistoryLoader}s.
+     * EopHistoryLoader}s.
      *
      * @param dataProvidersManager provides access to the needed EOP data files.
      */
@@ -107,7 +107,7 @@ public class LazyLoadedEop {
      * @param utcSupplier                    UTC time scale supplier. Value is not
      *                                       accessed until attempting to load EOP.
      * @see <a href="https://datacenter.iers.org/products/eop/">IERS https data download</a>
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
      * @see #clearEOPHistoryLoaders()
      * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String, String, Supplier)
      * @since 12.0
@@ -135,7 +135,7 @@ public class LazyLoadedEop {
                 (eopC04SupportedNames == null) ?
                         FramesFactory.EOPC04_1980_FILENAME : eopC04SupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new EOPC04FilesLoader(eopcNames, dataProvidersManager, utcSupplier));
+                new EopC04FilesLoader(eopcNames, dataProvidersManager, utcSupplier));
         final String bulBNames =
                 (bulletinBSupportedNames == null) ?
                         FramesFactory.BULLETINB_1980_FILENAME : bulletinBSupportedNames;
@@ -149,7 +149,7 @@ public class LazyLoadedEop {
         final String csvNames = (csvSupportedNames == null) ?
                                 FramesFactory.CSV_FILENAME : csvSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
-                            new EOPCsvFilesLoader(csvNames, dataProvidersManager, utcSupplier));
+                            new EopCsvFilesLoader(csvNames, dataProvidersManager, utcSupplier));
     }
 
     /**
@@ -180,7 +180,7 @@ public class LazyLoadedEop {
      * @param utcSupplier                    UTC time scale supplier. Value is not
      *                                       accessed until attempting to load EOP.
      * @see <a href="https://datacenter.iers.org/products/eop/">IERS https data download</a>
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
      * @see #clearEOPHistoryLoaders()
      * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String, Supplier)
      * @since 12.0
@@ -210,9 +210,9 @@ public class LazyLoadedEop {
         final String eopcNames = (eopC04SupportedNames == null) ?
                                  FramesFactory.EOPC04_2000_FILENAME : eopC04SupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new EOPC04FilesLoader(eopcNames, dataProvidersManager, utcSupplier));
+                new EopC04FilesLoader(eopcNames, dataProvidersManager, utcSupplier));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new EOPC04FilesLoader(eopcNames, dataProvidersManager, utcSupplier));
+                new EopC04FilesLoader(eopcNames, dataProvidersManager, utcSupplier));
         final String bulBNames = (bulletinBSupportedNames == null) ?
                                  FramesFactory.BULLETINB_2000_FILENAME : bulletinBSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
@@ -228,9 +228,9 @@ public class LazyLoadedEop {
         final String csvNames = (csvSupportedNames == null) ?
                                 FramesFactory.CSV_FILENAME : csvSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                            new EOPCsvFilesLoader(csvNames, dataProvidersManager, utcSupplier));
+                            new EopCsvFilesLoader(csvNames, dataProvidersManager, utcSupplier));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                            new EOPCsvFilesLoader(csvNames, dataProvidersManager, utcSupplier));
+                            new EopCsvFilesLoader(csvNames, dataProvidersManager, utcSupplier));
     }
 
     /**
@@ -241,7 +241,7 @@ public class LazyLoadedEop {
      * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String, Supplier)
      * @see #clearEOPHistoryLoaders()
      */
-    public void addEOPHistoryLoader(final IERSConventions conventions, final EOPHistoryLoader loader) {
+    public void addEOPHistoryLoader(final IERSConventions conventions, final EopHistoryLoader loader) {
         synchronized (eopHistoryLoaders) {
             if (!eopHistoryLoaders.containsKey(conventions)) {
                 eopHistoryLoaders.put(conventions, new ArrayList<>());
@@ -253,7 +253,7 @@ public class LazyLoadedEop {
     /**
      * Clear loaders for Earth Orientation Parameters history.
      *
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
      * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String, Supplier)
      */
     public void clearEOPHistoryLoaders() {
@@ -298,8 +298,8 @@ public class LazyLoadedEop {
     /**
      * Get Earth Orientation Parameters history.
      * <p>
-     * If no {@link EOPHistoryLoader} has been added by calling {@link
-     * #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader) addEOPHistoryLoader} or if
+     * If no {@link EopHistoryLoader} has been added by calling {@link
+     * #addEOPHistoryLoader(IERSConventions, EopHistoryLoader) addEOPHistoryLoader} or if
      * {@link #clearEOPHistoryLoaders() clearEOPHistoryLoaders} has been called
      * afterwards, the {@link #addDefaultEOP1980HistoryLoaders(String, String, String,
      * String, String, String, Supplier)} and {@link #addDefaultEOP2000HistoryLoaders(String,
@@ -332,7 +332,7 @@ public class LazyLoadedEop {
 
             // try to load canonical data if available
             if (eopHistoryLoaders.containsKey(conventions)) {
-                for (final EOPHistoryLoader loader : eopHistoryLoaders.get(conventions)) {
+                for (final EopHistoryLoader loader : eopHistoryLoaders.get(conventions)) {
                     try {
                         loader.fillHistory(conventions.getNutationCorrectionConverter(timeScales),
                                            data);

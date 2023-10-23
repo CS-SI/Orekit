@@ -84,7 +84,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
      * @param data the backing data for this cache. The list will be copied to
      *        ensure immutability. To guarantee immutability the entries in
      *        {@code data} must be immutable themselves. There must be more data
-     *        than {@code neighborsSize}.
+     *        than {@code maxNeighborsSize}.
      * @throws IllegalArgumentException if {@code neightborsSize > data.size()}
      *         or if {@code neighborsSize} is negative
      */
