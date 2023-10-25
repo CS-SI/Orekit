@@ -16,6 +16,14 @@
  */
 package org.orekit.models.earth.ionosphere;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
@@ -31,6 +39,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
@@ -41,12 +50,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 
 public class GlobalIonosphereMapModelTest {
 
@@ -97,10 +100,21 @@ public class GlobalIonosphereMapModelTest {
     public void testDelay() {
         final double latitude  = FastMath.toRadians(30.0);
         final double longitude = FastMath.toRadians(-130.0);
-        final double delay = model.pathDelay(new AbsoluteDate(2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC()),
-                                             new GeodeticPoint(latitude, longitude, 0.0),
-                                             0.5 * FastMath.PI, Frequency.G01.getMHzFrequency() * 1.0e6);
-        Assertions.assertEquals(1.557, delay, epsilonDelay);
+        try {
+            final Method pathDelay = GlobalIonosphereMapModel.class.getDeclaredMethod("pathDelayAtIPP",
+                                                                                      AbsoluteDate.class,
+                                                                                      GeodeticPoint.class,
+                                                                                      Double.TYPE, Double.TYPE);
+            pathDelay.setAccessible(true);
+            final double delay = (Double) pathDelay.invoke(model,
+                                                           new AbsoluteDate(2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC()),
+                                                           new GeodeticPoint(latitude, longitude, 0.0),
+                                                           0.5 * FastMath.PI, Frequency.G01.getMHzFrequency() * 1.0e6);
+            Assertions.assertEquals(1.557, delay, epsilonDelay);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
+                 IllegalArgumentException | InvocationTargetException e) {
+            Assertions.fail(e);
+        }
     }
 
     @Test
@@ -112,11 +126,162 @@ public class GlobalIonosphereMapModelTest {
         final T zero = field.getZero();
         final double latitude  = FastMath.toRadians(30.0);
         final double longitude = FastMath.toRadians(-130.0);
-        final T delay = model.pathDelay(new FieldAbsoluteDate<>(field, 2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC()),
-                                        new GeodeticPoint(latitude, longitude, 0.0),
-                                        zero.add(0.5 * FastMath.PI),
-                                        Frequency.G01.getMHzFrequency() * 1.0e6);
-        Assertions.assertEquals(1.557, delay.getReal(), epsilonDelay);
+        try {
+            final Method pathDelay = GlobalIonosphereMapModel.class.getDeclaredMethod("pathDelayAtIPP",
+                                                                                      FieldAbsoluteDate.class,
+                                                                                      GeodeticPoint.class,
+                                                                                      CalculusFieldElement.class,
+                                                                                      Double.TYPE);
+            pathDelay.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            final T delay = (T) pathDelay.invoke(model,
+                                                 new FieldAbsoluteDate<>(field, 2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC()),
+                                                 new GeodeticPoint(latitude, longitude, 0.0),
+                                                 zero.add(0.5 * FastMath.PI),
+                                                 Frequency.G01.getMHzFrequency() * 1.0e6);
+            Assertions.assertEquals(1.557, delay.getReal(), epsilonDelay);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
+                        IllegalArgumentException | InvocationTargetException e) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
+    public void testSpacecraftState() {
+        double a = 7187990.1979844316;
+        double e = 0.5e-4;
+        double i = FastMath.toRadians(98.01);
+        double omega = FastMath.toRadians(131.88);
+        double OMEGA = FastMath.toRadians(252.24);
+        double lv = FastMath.toRadians(250.00);
+
+        AbsoluteDate date = new AbsoluteDate(2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC());
+        final SpacecraftState state =
+                        new SpacecraftState(new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
+                                                               FramesFactory.getEME2000(), date,
+                                                               Constants.EIGEN5C_EARTH_MU));
+        final TopocentricFrame topo = new TopocentricFrame(earth,
+                                                           new GeodeticPoint(FastMath.toRadians(20.5236),
+                                                                             FastMath.toRadians(85.7881),
+                                                                             36.0),
+                                                           "Cuttack");
+        final double delay = model.pathDelay(state, topo, Frequency.G01.getMHzFrequency() * 1.0e6, null);
+        Assertions.assertEquals(2.810, delay, epsilonDelay);
+
+        // the delay at station longitude is different, due to IPP
+        try {
+            final Method pathDelay = GlobalIonosphereMapModel.class.getDeclaredMethod("pathDelayAtIPP",
+                                                                                      AbsoluteDate.class,
+                                                                                      GeodeticPoint.class,
+                                                                                      Double.TYPE, Double.TYPE);
+            pathDelay.setAccessible(true);
+            final double delayIPP = (Double) pathDelay.invoke(model, date, topo.getPoint(),
+                                                              0.5 * FastMath.PI,
+                                                              Frequency.G01.getMHzFrequency() * 1.0e6);
+            Assertions.assertEquals(2.173, delayIPP, epsilonDelay);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
+                 IllegalArgumentException | InvocationTargetException ex) {
+            Assertions.fail(ex);
+        }
+    }
+
+    @Test
+    public void testAboveIono() {
+        double a = 7187990.1979844316;
+        double e = 0.5e-4;
+        double i = FastMath.toRadians(98.01);
+        double omega = FastMath.toRadians(131.88);
+        double OMEGA = FastMath.toRadians(252.24);
+        double lv = FastMath.toRadians(250.00);
+
+        AbsoluteDate date = new AbsoluteDate(2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC());
+        final SpacecraftState state =
+                        new SpacecraftState(new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
+                                                               FramesFactory.getEME2000(), date,
+                                                               Constants.EIGEN5C_EARTH_MU));
+        final TopocentricFrame topo = new TopocentricFrame(earth,
+                                                           new GeodeticPoint(FastMath.toRadians(20.5236),
+                                                                             FastMath.toRadians(85.7881),
+                                                                             650000.0),
+                                                           "very-high");
+        final double delay = model.pathDelay(state, topo, Frequency.G01.getMHzFrequency() * 1.0e6, null);
+        Assertions.assertEquals(0.0, delay, epsilonDelay);
+
+    }
+
+    @Test
+    public void testSpacecraftStateField() {
+        doTestSpacecraftStateField(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestSpacecraftStateField(final Field<T> field) {
+        T a = field.getZero().newInstance(7187990.1979844316);
+        T e = field.getZero().newInstance(0.5e-4);
+        T i = FastMath.toRadians(field.getZero().newInstance(98.01));
+        T omega = FastMath.toRadians(field.getZero().newInstance(131.88));
+        T OMEGA = FastMath.toRadians(field.getZero().newInstance(252.24));
+        T lv = FastMath.toRadians(field.getZero().newInstance(250.00));
+
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
+                                                            new AbsoluteDate(2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC()));
+        final FieldSpacecraftState<T> state =
+                        new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
+                                                                             FramesFactory.getEME2000(), date,
+                                                                             field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU)));
+        final TopocentricFrame topo = new TopocentricFrame(earth,
+                                                           new GeodeticPoint(FastMath.toRadians(20.5236),
+                                                                             FastMath.toRadians(85.7881),
+                                                                             36.0),
+                                                           "Cuttack");
+        final T delay = model.pathDelay(state, topo, Frequency.G01.getMHzFrequency() * 1.0e6, null);
+        Assertions.assertEquals(2.810, delay.getReal(), epsilonDelay);
+
+        // the delay at station longitude is different, due to IPP
+        try {
+            final Method pathDelay = GlobalIonosphereMapModel.class.getDeclaredMethod("pathDelayAtIPP",
+                                                                                      FieldAbsoluteDate.class,
+                                                                                      GeodeticPoint.class,
+                                                                                      CalculusFieldElement.class,
+                                                                                      Double.TYPE);
+            pathDelay.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            final T delayIPP = (T) pathDelay.invoke(model, date, topo.getPoint(),
+                                                    field.getZero().newInstance(0.5 * FastMath.PI),
+                                                    Frequency.G01.getMHzFrequency() * 1.0e6);
+            Assertions.assertEquals(2.173, delayIPP.getReal(), epsilonDelay);
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
+                 IllegalArgumentException | InvocationTargetException ex) {
+            Assertions.fail(ex);
+        }
+    }
+
+    @Test
+    public void testAboveIonoField() {
+        doTestAboveIonoField(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestAboveIonoField(final Field<T> field) {
+        T a = field.getZero().newInstance(7187990.1979844316);
+        T e = field.getZero().newInstance(0.5e-4);
+        T i = FastMath.toRadians(field.getZero().newInstance(98.01));
+        T omega = FastMath.toRadians(field.getZero().newInstance(131.88));
+        T OMEGA = FastMath.toRadians(field.getZero().newInstance(252.24));
+        T lv = FastMath.toRadians(field.getZero().newInstance(250.00));
+
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
+                                                            new AbsoluteDate(2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC()));
+        final FieldSpacecraftState<T> state =
+                        new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
+                                                                             FramesFactory.getEME2000(), date,
+                                                                             field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU)));
+        final TopocentricFrame topo = new TopocentricFrame(earth,
+                                                           new GeodeticPoint(FastMath.toRadians(20.5236),
+                                                                             FastMath.toRadians(85.7881),
+                                                                             650000.0),
+                                                           "very-high");
+        final T delay = model.pathDelay(state, topo, Frequency.G01.getMHzFrequency() * 1.0e6, null);
+        Assertions.assertEquals(0.0, delay.getReal(), epsilonDelay);
+
     }
 
     @Test
