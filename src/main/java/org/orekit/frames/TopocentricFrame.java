@@ -66,8 +66,13 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
     /** Body shape on which the local point is defined. */
     private final BodyShape parentShape;
 
-    /** Point where the topocentric frame is defined. */
+    /** Geodetic point where the topocentric frame is defined. */
     private final GeodeticPoint point;
+
+    /** Cartesian point where the topocentric frame is defined.
+     * @since 12.0
+     */
+    private final Vector3D cartesianPoint;
 
     /** Simple constructor.
      * @param parentShape body shape on which the local point is defined
@@ -86,8 +91,12 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
                                                        Vector3D.PLUS_I, Vector3D.PLUS_K),
                                           Vector3D.ZERO)),
               name, false);
-        this.parentShape = parentShape;
-        this.point = point;
+        this.parentShape    = parentShape;
+        this.point          = point;
+        this.cartesianPoint = getTransformProvider().
+                              getStaticTransform(AbsoluteDate.ARBITRARY_EPOCH).
+                              getInverse().
+                              transformPosition(Vector3D.ZERO);
     }
 
     /** Get the body shape on which the local point is defined.
@@ -102,6 +111,14 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      */
     public GeodeticPoint getPoint() {
         return point;
+    }
+
+    /** Get the surface point defining the origin of the frame.
+     * @return surface point defining the origin of the frame in body frame
+     * @since 12.0
+     */
+    public Vector3D getCartesianPoint() {
+        return cartesianPoint;
     }
 
     /** Get the surface point defining the origin of the frame.

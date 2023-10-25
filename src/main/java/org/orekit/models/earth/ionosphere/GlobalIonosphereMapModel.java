@@ -36,8 +36,8 @@ import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
@@ -46,6 +46,7 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -132,15 +133,6 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
-    /** Threshold for latitude and longitude difference. */
-    private static final double THRESHOLD = 0.001;
-
-    /** Geodetic site latitude, radians.*/
-    private double latitude;
-
-    /** Geodetic site longitude, radians.*/
-    private double longitude;
-
     /** Mean earth radius [m]. */
     private double r0;
 
@@ -163,7 +155,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
     private AbsoluteDate endDate;
 
     /** Map of interpolated TEC at a specific date. */
-    private Map<AbsoluteDate, Double> tecMap;
+    private Map<AbsoluteDate, BilinearInterpolatingFunction> tecMap;
 
     /** UTC time scale. */
     private final TimeScale utc;
@@ -198,28 +190,47 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                                     final DataProvidersManager dataProvidersManager,
                                     final TimeScale utc) {
         super(supportedNames, dataProvidersManager);
-        this.latitude       = Double.NaN;
-        this.longitude      = Double.NaN;
-        this.tecMap         = new HashMap<>();
-        this.utc = utc;
+        this.utc    = utc;
+
+        // Read file
+        final Parser parser = new Parser();
+        feed(parser);
+
+        // File header
+        final IONEXHeader top = parser.getIONEXHeader();
+        this.startDate  = top.getFirstDate();
+        this.endDate    = top.getLastDate();
+        this.dt         = top.getInterval();
+        this.nbMaps     = top.getTECMapsNumer();
+        this.r0         = top.getEarthRadius();
+        this.h          = top.getHIon();
+        this.mapping    = top.isMappingFunction();
+
+        // TEC map
+        this.tecMap = new HashMap<>();
+        for (TECMap map : parser.getTECMaps()) {
+            tecMap.put(map.getDate(), map.getTEC());
+        }
+        checkSize();
+
     }
 
     /**
      * Calculates the ionospheric path delay for the signal path from a ground
-     * station to a satellite.
+     * station to a satellite traversing ionosphere single layer at some pierce point.
      * <p>
      * The path delay can be computed for any elevation angle.
      * </p>
      * @param date current date
-     * @param geo geodetic point of receiver/station
-     * @param elevation elevation of the satellite in radians
+     * @param piercePoint ionospheric pierce point
+     * @param elevation elevation of the satellite from receiver point in radians
      * @param frequency frequency of the signal in Hz
      * @return the path delay due to the ionosphere in m
      */
-    public double pathDelay(final AbsoluteDate date, final GeodeticPoint geo,
-                            final double elevation, final double frequency) {
+    private double pathDelayAtIPP(final AbsoluteDate date, final GeodeticPoint piercePoint,
+                                  final double elevation, final double frequency) {
         // TEC in TECUnits
-        final double tec = getTEC(date, geo);
+        final double tec = getTEC(date, piercePoint);
         // Square of the frequency
         final double freq2 = frequency * frequency;
         // "Slant" Total Electron Content
@@ -241,18 +252,26 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
     public double pathDelay(final SpacecraftState state, final TopocentricFrame baseFrame,
                             final double frequency, final double[] parameters) {
 
+        // Satellite position in body frame
+        final Frame    bodyFrame = baseFrame.getParentShape().getBodyFrame();
+        final Vector3D satPoint  = state.getPosition(bodyFrame);
+
         // Elevation in radians
-        final Vector3D position  = state.getPosition(baseFrame);
-        final double   elevation = position.getDelta();
+        final double   elevation = bodyFrame.
+                                   getStaticTransformTo(baseFrame, state.getDate()).
+                                   transformPosition(satPoint).
+                                   getDelta();
 
         // Only consider measures above the horizon
         if (elevation > 0.0) {
-            // Date
-            final AbsoluteDate date = state.getDate();
-            // Geodetic point
-            final GeodeticPoint geo = baseFrame.getPoint();
-            // Delay
-            return pathDelay(date, geo, elevation, frequency);
+            // Normalized Line Of Sight in body frame
+            final Vector3D los = satPoint.subtract(baseFrame.getCartesianPoint()).normalize();
+            // Ionosphere Pierce Point
+            final GeodeticPoint ipp = piercePoint(baseFrame.getCartesianPoint(), los, baseFrame.getParentShape());
+            if (ipp != null) {
+                // Delay
+                return pathDelayAtIPP(state.getDate(), ipp, elevation, frequency);
+            }
         }
 
         return 0.0;
@@ -261,21 +280,22 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
 
     /**
      * Calculates the ionospheric path delay for the signal path from a ground
-     * station to a satellite.
+     * station to a satellite traversing ionosphere single layer at some pierce point.
      * <p>
      * The path delay can be computed for any elevation angle.
      * </p>
      * @param <T> type of the elements
      * @param date current date
-     * @param geo geodetic point of receiver/station
-     * @param elevation elevation of the satellite in radians
+     * @param piercePoint ionospheric pierce point
+     * @param elevation elevation of the satellite from receiver point in radians
      * @param frequency frequency of the signal in Hz
      * @return the path delay due to the ionosphere in m
      */
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldAbsoluteDate<T> date, final GeodeticPoint geo,
-                                                       final T elevation, final double frequency) {
+    private <T extends CalculusFieldElement<T>> T pathDelayAtIPP(final FieldAbsoluteDate<T> date,
+                                                                 final GeodeticPoint piercePoint,
+                                                                 final T elevation, final double frequency) {
         // TEC in TECUnits
-        final T tec = getTEC(date, geo);
+        final T tec = getTEC(date, piercePoint);
         // Square of the frequency
         final double freq2 = frequency * frequency;
         // "Slant" Total Electron Content
@@ -295,20 +315,28 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
 
     @Override
     public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
-                                                       final double frequency, final T[] parameters) {
+                                                           final double frequency, final T[] parameters) {
+
+        // Satellite position in body frame
+        final Frame            bodyFrame = baseFrame.getParentShape().getBodyFrame();
+        final FieldVector3D<T> satPoint  = state.getPosition(bodyFrame);
 
         // Elevation in radians
-        final FieldVector3D<T> position = state.getPosition(baseFrame);
-        final T elevation = position.getDelta();
+        final T                elevation = bodyFrame.
+                                           getStaticTransformTo(baseFrame, state.getDate()).
+                                           transformPosition(satPoint).
+                                           getDelta();
 
         // Only consider measures above the horizon
         if (elevation.getReal() > 0.0) {
-            // Date
-            final FieldAbsoluteDate<T> date = state.getDate();
-            // Geodetic point
-            final GeodeticPoint geo = baseFrame.getPoint();
-            // Delay
-            return pathDelay(date, geo, elevation, frequency);
+            // Normalized Line Of Sight in body frame
+            final Vector3D los = satPoint.toVector3D().subtract(baseFrame.getCartesianPoint()).normalize();
+            // Ionosphere Pierce Point
+            final GeodeticPoint ipp = piercePoint(baseFrame.getCartesianPoint(), los, baseFrame.getParentShape());
+            if (ipp != null) {
+                // Delay
+                return pathDelayAtIPP(state.getDate(), ipp, elevation, frequency);
+            }
         }
 
         return elevation.getField().getZero();
@@ -319,13 +347,10 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
      * Computes the Total Electron Content (TEC) at a given date by performing a
      * temporal interpolation with the two closest date in the IONEX file.
      * @param date current date
-     * @param recPoint geodetic point of receiver/station
+     * @param piercePoint ionospheric pierce point
      * @return the TEC after a temporal interpolation, in TECUnits
      */
-    public double getTEC(final AbsoluteDate date, final GeodeticPoint recPoint) {
-
-        // Load TEC data only if needed
-        loadsIfNeeded(recPoint);
+    public double getTEC(final AbsoluteDate date, final GeodeticPoint piercePoint) {
 
         // Check if the date is out of range
         checkDate(date);
@@ -341,8 +366,8 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
         final AbsoluteDate tIp1 = tI.shiftedBy(dt);
 
         // Get the TEC values at the two closest dates
-        final double tecI   = tecMap.get(tI);
-        final double tecIp1 = tecMap.get(tIp1);
+        final double tecI   = tecMap.get(tI).value(piercePoint.getLatitude(), piercePoint.getLongitude());
+        final double tecIp1 = tecMap.get(tIp1).value(piercePoint.getLatitude(), piercePoint.getLongitude());
 
         // Perform temporal interpolation (Ref, Eq. 2)
         final double tec = (tIp1.durationFrom(date) / dt) * tecI + (date.durationFrom(tI) / dt) * tecIp1;
@@ -354,13 +379,10 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
      * temporal interpolation with the two closest date in the IONEX file.
      * @param <T> type of the elements
      * @param date current date
-     * @param recPoint geodetic point of receiver/station
+     * @param piercePoint ionospheric pierce point
      * @return the TEC after a temporal interpolation, in TECUnits
      */
-    public <T extends CalculusFieldElement<T>> T getTEC(final FieldAbsoluteDate<T> date, final GeodeticPoint recPoint) {
-
-        // Load TEC data only if needed
-        loadsIfNeeded(recPoint);
+    public <T extends CalculusFieldElement<T>> T getTEC(final FieldAbsoluteDate<T> date, final GeodeticPoint piercePoint) {
 
         // Check if the date is out of range
         checkDate(date.toAbsoluteDate());
@@ -379,8 +401,8 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
         final FieldAbsoluteDate<T> tIp1 = tI.shiftedBy(dt);
 
         // Get the TEC values at the two closest dates
-        final double tecI   = tecMap.get(tI.toAbsoluteDate());
-        final double tecIp1 = tecMap.get(tIp1.toAbsoluteDate());
+        final double tecI   = tecMap.get(tI.toAbsoluteDate()).value(piercePoint.getLatitude(), piercePoint.getLongitude());
+        final double tecIp1 = tecMap.get(tIp1.toAbsoluteDate()).value(piercePoint.getLatitude(), piercePoint.getLongitude());
 
         // Perform temporal interpolation (Ref, Eq. 2)
         final T tec = tIp1.durationFrom(date).divide(dt).multiply(tecI).add(date.durationFrom(tI).divide(dt).multiply(tecIp1));
@@ -426,44 +448,6 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
     }
 
     /**
-     * Lazy loading of TEC data.
-     * @param recPoint geodetic point of receiver/station
-     */
-    private void loadsIfNeeded(final GeodeticPoint recPoint) {
-
-        // Current latitude and longitude of the geodetic point
-        final double lat = recPoint.getLatitude();
-        final double lon = MathUtils.normalizeAngle(recPoint.getLongitude(), 0.0);
-
-        // Read the file only if the TEC map is empty or if the geodetic point displacement is
-        // greater than 0.001 radians (in latitude or longitude)
-        if (tecMap.isEmpty() || FastMath.abs(lat - latitude) > THRESHOLD ||  FastMath.abs(lon - longitude) > THRESHOLD) {
-            this.latitude  = lat;
-            this.longitude = lon;
-
-            // Read file
-            final Parser parser = new Parser();
-            feed(parser);
-
-            // File header
-            final IONEXHeader top = parser.getIONEXHeader();
-            this.startDate  = top.getFirstDate();
-            this.endDate    = top.getLastDate();
-            this.dt         = top.getInterval();
-            this.nbMaps     = top.getTECMapsNumer();
-            this.r0         = top.getEarthRadius();
-            this.h          = top.getHIon();
-            this.mapping    = top.isMappingFunction();
-
-            // TEC map
-            for (TECMap map : parser.getTECMaps()) {
-                tecMap.put(map.getDate(), map.getTEC());
-            }
-        }
-        checkSize();
-    }
-
-    /**
      * Check if the current date is between the startDate and
      * the endDate of the IONEX file.
      * @param date current date
@@ -482,6 +466,37 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
         if (tecMap.size() != nbMaps) {
             throw new OrekitException(OrekitMessages.INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE, tecMap.size(), nbMaps);
         }
+    }
+
+    /** Compute Ionospheric Pierce Point.
+     * <p>
+     * The pierce point is computed assuming a spherical ionospheric shell above mean Earth radius.
+     * </p>
+     * @param recPoint point at receiver station in body frame
+     * @param los normalized line of sight in body frame
+     * @param bodyShape shape of the body
+     * @return pierce point, or null if recPoint is above ionosphere single layer
+     * @since 12.0
+     */
+    private GeodeticPoint piercePoint(final Vector3D recPoint, final Vector3D los, final BodyShape bodyShape) {
+
+        final double r  = r0 + h;
+        final double r2 = r * r;
+        final double p2 = recPoint.getNormSq();
+        if (p2 >= r2) {
+            // we are above ionosphere single layer
+            return null;
+        }
+
+        // compute positive k such that recPoint + k los is on the spherical shell at radius r
+        final double dot = Vector3D.dotProduct(recPoint, los);
+        final double k   = FastMath.sqrt(dot * dot + r2 - p2) - dot;
+
+        // Ionosphere Pierce Point in body frame
+        final Vector3D ipp = new Vector3D(1, recPoint, k, los);
+
+        return bodyShape.transform(ipp, bodyShape.getBodyFrame(), null);
+
     }
 
     /** Replace the instance with a data transfer object for serialization.
@@ -600,7 +615,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                                 inTEC = true;
                                 break;
                             case END :
-                                final double tec = interpolateTEC(values, exponent, latitudes, longitudes);
+                                final BilinearInterpolatingFunction tec = interpolateTEC(values, exponent, latitudes, longitudes);
                                 final TECMap map = new TECMap(epoch, tec);
                                 maps.add(map);
                                 // Reset parameters
@@ -733,29 +748,30 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
          * @param values TEC values
          * @param latitudes array containing the different latitudes in radians
          * @param longitudes array containing the different latitudes in radians
-         * @return the interpolated TEC in TECUnits
+         * @return the interpolating TEC functiopn in TECUnits
          */
-        private double interpolateTEC(final ArrayList<Double> values, final double exponent,
-                                      final double[] latitudes, final double[] longitudes) {
+        private BilinearInterpolatingFunction interpolateTEC(final ArrayList<Double> values, final double exponent,
+                                                             final double[] latitudes, final double[] longitudes) {
             // Array dimensions
             final int dimLat = latitudes.length;
             final int dimLon = longitudes.length;
 
             // Build the array of TEC data
+            final double factor = FastMath.pow(10.0, exponent);
             final double[][] fvalTEC = new double[dimLat][dimLon];
             int index = dimLon * dimLat;
             for (int x = 0; x < dimLat; x++) {
                 for (int y = dimLon - 1; y >= 0; y--) {
                     index = index - 1;
-                    fvalTEC[x][y] = values.get(index);
+                    fvalTEC[x][y] = values.get(index) * factor;
                 }
             }
 
             // Build Bilinear Interpolation function
-            final BilinearInterpolatingFunction functionTEC = new BilinearInterpolatingFunction(latitudes, longitudes, fvalTEC);
-            final double tec = functionTEC.value(latitude, longitude) * FastMath.pow(10.0, exponent);
-            return tec;
+            return new BilinearInterpolatingFunction(latitudes, longitudes, fvalTEC);
+
         }
+
     }
 
     /**
@@ -771,14 +787,14 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
         private AbsoluteDate date;
 
         /** Interpolated TEC [TECUnits]. */
-        private double tec;
+        private BilinearInterpolatingFunction tec;
 
         /**
          * Constructor.
          * @param date date of the TEC map
          * @param tec interpolated tec
          */
-        TECMap(final AbsoluteDate date, final double tec) {
+        TECMap(final AbsoluteDate date, final BilinearInterpolatingFunction tec) {
             this.date = date;
             this.tec  = tec;
         }
@@ -792,10 +808,10 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
         }
 
         /**
-         * Get the value of the interpolated TEC.
+         * Get the interpolating TEC function.
          * @return the TEC in TECUnits
          */
-        public double getTEC() {
+        public BilinearInterpolatingFunction getTEC() {
             return tec;
         }
 
