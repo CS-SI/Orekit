@@ -108,10 +108,16 @@ public class TopocentricFrameTest {
         // First point at latitude 45°
         final GeodeticPoint point1 = new GeodeticPoint(FastMath.toRadians(45.), FastMath.toRadians(30.), 0.);
         final TopocentricFrame topoFrame1 = new TopocentricFrame(earthSpheric, point1, "lat 45");
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(topoFrame1.getCartesianPoint(), earthSpheric.transform(point1)),
+                                7.0e-9);
 
         // Second point at latitude -45° and same longitude
         final GeodeticPoint point2 = new GeodeticPoint(FastMath.toRadians(-45.), FastMath.toRadians(30.), 0.);
         final TopocentricFrame topoFrame2 = new TopocentricFrame(earthSpheric, point2, "lat -45");
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(topoFrame2.getCartesianPoint(), earthSpheric.transform(point2)),
+                                2.0e-9);
 
         // Check that frame North and Zenith directions are all normal to each other, and East are the same
         final double xDiff = Vector3D.dotProduct(topoFrame1.getEast(), topoFrame2.getEast());
