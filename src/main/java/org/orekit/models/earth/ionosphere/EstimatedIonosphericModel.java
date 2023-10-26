@@ -52,9 +52,6 @@ public class EstimatedIonosphericModel implements IonosphericModel {
     /** Name of the parameter of this model: the Vertical Total Electron Content. */
     public static final String VERTICAL_TOTAL_ELECTRON_CONTENT = "vertical total electron content";
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20200304L;
-
     /** Ionospheric delay factor. */
     private static final double FACTOR = 40.3e16;
 

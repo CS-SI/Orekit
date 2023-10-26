@@ -16,8 +16,6 @@
  */
 package org.orekit.models.earth.ionosphere;
 
-import java.io.Serializable;
-
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -35,7 +33,7 @@ import org.orekit.utils.ParameterDriversProvider;
  * @author Bryan Cazabonne
  * @since 7.1
  */
-public interface IonosphericModel extends ParameterDriversProvider, Serializable {
+public interface IonosphericModel extends ParameterDriversProvider {
 
     /**
      * Calculates the ionospheric path delay for the signal path from a ground

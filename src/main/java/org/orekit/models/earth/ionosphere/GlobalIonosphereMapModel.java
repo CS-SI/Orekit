@@ -16,46 +16,41 @@
  */
 package org.orekit.models.earth.ionosphere;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
+import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.data.AbstractSelfFeedingLoader;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap;
 
 /**
  * Global Ionosphere Map (GIM) model.
@@ -124,41 +119,21 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  *
  */
-public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
-        implements IonosphericModel {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 201928052L;
+public class GlobalIonosphereMapModel implements IonosphericModel {
 
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
-    /** Mean earth radius [m]. */
-    private double r0;
-
-    /** Height of the ionospheric single layer [m]. */
-    private double h;
-
-    /** Time interval between two TEC maps [s]. */
-    private double dt;
-
-    /** Number of TEC maps as read on the header of the file. */
-    private int nbMaps;
-
-    /** Flag for mapping function computation. */
-    private boolean mapping;
-
-    /** Epoch of the first TEC map as read in the header of the IONEX file. */
-    private AbsoluteDate startDate;
-
-    /** Epoch of the last TEC map as read in the header of the IONEX file. */
-    private AbsoluteDate endDate;
-
-    /** Map of interpolated TEC at a specific date. */
-    private Map<AbsoluteDate, BilinearInterpolatingFunction> tecMap;
+    /** Map of interpolable TEC. */
+    private TimeSpanMap<TECMapPair> tecMap;
 
     /** UTC time scale. */
     private final TimeScale utc;
+
+    /** Loaded IONEX files.
+     * @since 12.0
+     */
+    private String names;
 
     /**
      * Constructor with supported names given by user. This constructor uses the {@link
@@ -189,30 +164,38 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
     public GlobalIonosphereMapModel(final String supportedNames,
                                     final DataProvidersManager dataProvidersManager,
                                     final TimeScale utc) {
-        super(supportedNames, dataProvidersManager);
         this.utc    = utc;
+        this.tecMap = new TimeSpanMap<>(null);
+        this.names  = "";
 
-        // Read file
-        final Parser parser = new Parser();
-        feed(parser);
+        // Read files
+        dataProvidersManager.feed(supportedNames, new Parser());
 
-        // File header
-        final IONEXHeader top = parser.getIONEXHeader();
-        this.startDate  = top.getFirstDate();
-        this.endDate    = top.getLastDate();
-        this.dt         = top.getInterval();
-        this.nbMaps     = top.getTECMapsNumer();
-        this.r0         = top.getEarthRadius();
-        this.h          = top.getHIon();
-        this.mapping    = top.isMappingFunction();
+    }
 
-        // TEC map
-        this.tecMap = new HashMap<>();
-        for (TECMap map : parser.getTECMaps()) {
-            tecMap.put(map.getDate(), map.getTEC());
+    /**
+     * Constructor that uses user defined data sources.
+     *
+     * @param utc   UTC time scale.
+     * @param ionex sources for the IONEX files
+     * @since 12.0
+     */
+    public GlobalIonosphereMapModel(final TimeScale utc,
+                                    final DataSource... ionex) {
+        try {
+            this.utc    = utc;
+            this.tecMap = new TimeSpanMap<>(null);
+            this.names  = "";
+            final Parser parser = new Parser();
+            for (final DataSource source : ionex) {
+                try (InputStream is  = source.getOpener().openStreamOnce();
+                    BufferedInputStream bis = new BufferedInputStream(is)) {
+                    parser.loadData(bis, source.getName());
+                }
+            }
+        } catch (IOException ioe) {
+            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }
-        checkSize();
-
     }
 
     /**
@@ -230,17 +213,18 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
     private double pathDelayAtIPP(final AbsoluteDate date, final GeodeticPoint piercePoint,
                                   final double elevation, final double frequency) {
         // TEC in TECUnits
-        final double tec = getTEC(date, piercePoint);
+        final TECMapPair pair = getPairAtDate(date);
+        final double tec = pair.getTEC(date, piercePoint);
         // Square of the frequency
         final double freq2 = frequency * frequency;
         // "Slant" Total Electron Content
         final double stec;
         // Check if a mapping factor is needed
-        if (mapping) {
+        if (pair.mapping) {
             stec = tec;
         } else {
             // Mapping factor
-            final double fz = mappingFunction(elevation);
+            final double fz = mappingFunction(elevation, pair.r0, pair.h);
             stec = tec * fz;
         }
         // Delay computation
@@ -267,7 +251,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
             // Normalized Line Of Sight in body frame
             final Vector3D los = satPoint.subtract(baseFrame.getCartesianPoint()).normalize();
             // Ionosphere Pierce Point
-            final GeodeticPoint ipp = piercePoint(baseFrame.getCartesianPoint(), los, baseFrame.getParentShape());
+            final GeodeticPoint ipp = piercePoint(state.getDate(), baseFrame.getCartesianPoint(), los, baseFrame.getParentShape());
             if (ipp != null) {
                 // Delay
                 return pathDelayAtIPP(state.getDate(), ipp, elevation, frequency);
@@ -295,17 +279,18 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                                                                  final GeodeticPoint piercePoint,
                                                                  final T elevation, final double frequency) {
         // TEC in TECUnits
-        final T tec = getTEC(date, piercePoint);
+        final TECMapPair pair = getPairAtDate(date.toAbsoluteDate());
+        final T tec = pair.getTEC(date, piercePoint);
         // Square of the frequency
         final double freq2 = frequency * frequency;
         // "Slant" Total Electron Content
         final T stec;
         // Check if a mapping factor is needed
-        if (mapping) {
+        if (pair.mapping) {
             stec = tec;
         } else {
             // Mapping factor
-            final T fz = mappingFunction(elevation);
+            final T fz = mappingFunction(elevation, pair.r0, pair.h);
             stec = tec.multiply(fz);
         }
         // Delay computation
@@ -332,7 +317,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
             // Normalized Line Of Sight in body frame
             final Vector3D los = satPoint.toVector3D().subtract(baseFrame.getCartesianPoint()).normalize();
             // Ionosphere Pierce Point
-            final GeodeticPoint ipp = piercePoint(baseFrame.getCartesianPoint(), los, baseFrame.getParentShape());
+            final GeodeticPoint ipp = piercePoint(state.getDate().toAbsoluteDate(), baseFrame.getCartesianPoint(), los, baseFrame.getParentShape());
             if (ipp != null) {
                 // Delay
                 return pathDelayAtIPP(state.getDate(), ipp, elevation, frequency);
@@ -343,70 +328,18 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
 
     }
 
-    /**
-     * Computes the Total Electron Content (TEC) at a given date by performing a
-     * temporal interpolation with the two closest date in the IONEX file.
-     * @param date current date
-     * @param piercePoint ionospheric pierce point
-     * @return the TEC after a temporal interpolation, in TECUnits
+    /** Get the pair valid at date.
+     * @param date computation date
+     * @return pair valid at date
+     * @since 12.0
      */
-    public double getTEC(final AbsoluteDate date, final GeodeticPoint piercePoint) {
-
-        // Check if the date is out of range
-        checkDate(date);
-
-        // Date and Time components
-        final DateTimeComponents dateTime = date.getComponents(utc);
-        // Find the two closest dates of the current date
-        final double secInDay   = dateTime.getTime().getSecondsInLocalDay();
-        final double ratio      = FastMath.floor(secInDay / dt) * dt;
-        final AbsoluteDate tI   = new AbsoluteDate(dateTime.getDate(),
-                                                   new TimeComponents(ratio),
-                                                   utc);
-        final AbsoluteDate tIp1 = tI.shiftedBy(dt);
-
-        // Get the TEC values at the two closest dates
-        final double tecI   = tecMap.get(tI).value(piercePoint.getLatitude(), piercePoint.getLongitude());
-        final double tecIp1 = tecMap.get(tIp1).value(piercePoint.getLatitude(), piercePoint.getLongitude());
-
-        // Perform temporal interpolation (Ref, Eq. 2)
-        final double tec = (tIp1.durationFrom(date) / dt) * tecI + (date.durationFrom(tI) / dt) * tecIp1;
-        return tec;
-    }
-
-    /**
-     * Computes the Total Electron Content (TEC) at a given date by performing a
-     * temporal interpolation with the two closest date in the IONEX file.
-     * @param <T> type of the elements
-     * @param date current date
-     * @param piercePoint ionospheric pierce point
-     * @return the TEC after a temporal interpolation, in TECUnits
-     */
-    public <T extends CalculusFieldElement<T>> T getTEC(final FieldAbsoluteDate<T> date, final GeodeticPoint piercePoint) {
-
-        // Check if the date is out of range
-        checkDate(date.toAbsoluteDate());
-
-        // Field
-        final Field<T> field = date.getField();
-
-        // Date and Time components
-        final DateTimeComponents dateTime = date.getComponents(utc);
-        // Find the two closest dates of the current date
-        final double secInDay           = dateTime.getTime().getSecondsInLocalDay();
-        final double ratio              = FastMath.floor(secInDay / dt) * dt;
-        final FieldAbsoluteDate<T> tI   = new FieldAbsoluteDate<>(field, dateTime.getDate(),
-                                                                  new TimeComponents(ratio),
-                                                                  utc);
-        final FieldAbsoluteDate<T> tIp1 = tI.shiftedBy(dt);
-
-        // Get the TEC values at the two closest dates
-        final double tecI   = tecMap.get(tI.toAbsoluteDate()).value(piercePoint.getLatitude(), piercePoint.getLongitude());
-        final double tecIp1 = tecMap.get(tIp1.toAbsoluteDate()).value(piercePoint.getLatitude(), piercePoint.getLongitude());
-
-        // Perform temporal interpolation (Ref, Eq. 2)
-        final T tec = tIp1.durationFrom(date).divide(dt).multiply(tecI).add(date.durationFrom(tI).divide(dt).multiply(tecIp1));
-        return tec;
+    private TECMapPair getPairAtDate(final AbsoluteDate date) {
+        final TECMapPair pair = tecMap.get(date);
+        if (pair == null) {
+            throw new OrekitException(OrekitMessages.NO_TEC_DATA_IN_FILES_FOR_DATE,
+                                      names, date);
+        }
+        return pair;
     }
 
     @Override
@@ -417,9 +350,12 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
     /**
      * Computes the ionospheric mapping function.
      * @param elevation the elevation of the satellite in radians
+     * @param r0 mean Earth radius
+     * @param h height of the ionospheric layer
      * @return the mapping function
      */
-    private double mappingFunction(final double elevation) {
+    private double mappingFunction(final double elevation,
+                                   final double r0, final double h) {
         // Calculate the zenith angle from the elevation
         final double z = FastMath.abs(0.5 * FastMath.PI - elevation);
         // Distance ratio
@@ -434,9 +370,12 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
      * Computes the ionospheric mapping function.
      * @param <T> type of the elements
      * @param elevation the elevation of the satellite in radians
+     * @param r0 mean Earth radius
+     * @param h height of the ionospheric layer
      * @return the mapping function
      */
-    private <T extends CalculusFieldElement<T>> T mappingFunction(final T elevation) {
+    private <T extends CalculusFieldElement<T>> T mappingFunction(final T elevation,
+                                                                  final double r0, final double h) {
         // Calculate the zenith angle from the elevation
         final T z = FastMath.abs(elevation.getPi().multiply(0.5).subtract(elevation));
         // Distance ratio
@@ -447,42 +386,25 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
         return fz;
     }
 
-    /**
-     * Check if the current date is between the startDate and
-     * the endDate of the IONEX file.
-     * @param date current date
-     */
-    private void checkDate(final AbsoluteDate date) {
-        if (startDate.durationFrom(date) > 0 || date.durationFrom(endDate) > 0) {
-            throw new OrekitException(OrekitMessages.NO_TEC_DATA_IN_FILE_FOR_DATE,
-                    getSupportedNames(), date);
-        }
-    }
-
-    /**
-     * Check if the number of parsed TEC maps is consistent with the header specification.
-     */
-    private void checkSize() {
-        if (tecMap.size() != nbMaps) {
-            throw new OrekitException(OrekitMessages.INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE, tecMap.size(), nbMaps);
-        }
-    }
-
     /** Compute Ionospheric Pierce Point.
      * <p>
      * The pierce point is computed assuming a spherical ionospheric shell above mean Earth radius.
      * </p>
+     * @param date computation date
      * @param recPoint point at receiver station in body frame
      * @param los normalized line of sight in body frame
      * @param bodyShape shape of the body
      * @return pierce point, or null if recPoint is above ionosphere single layer
      * @since 12.0
      */
-    private GeodeticPoint piercePoint(final Vector3D recPoint, final Vector3D los, final BodyShape bodyShape) {
+    private GeodeticPoint piercePoint(final AbsoluteDate date,
+                                      final Vector3D recPoint, final Vector3D los,
+                                      final BodyShape bodyShape) {
 
-        final double r  = r0 + h;
-        final double r2 = r * r;
-        final double p2 = recPoint.getNormSq();
+        final TECMapPair pair = getPairAtDate(date);
+        final double     r    = pair.r0 + pair.h;
+        final double     r2   = r * r;
+        final double     p2   = recPoint.getNormSq();
         if (p2 >= r2) {
             // we are above ionosphere single layer
             return null;
@@ -497,14 +419,6 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
 
         return bodyShape.transform(ipp, bodyShape.getBodyFrame(), null);
 
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DataTransferObject(getSupportedNames());
     }
 
     /** Parser for IONEX files. */
@@ -535,7 +449,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
 
         @Override
         public void loadData(final InputStream input, final String name)
-            throws IOException,  ParseException {
+            throws IOException {
 
             maps = new ArrayList<>();
 
@@ -543,14 +457,13 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
             int   lineNumber = 0;
             String line      = null;
             try (InputStreamReader isr = new InputStreamReader(input, StandardCharsets.UTF_8);
-                 BufferedReader    br = new BufferedReader(isr)) {
+                 BufferedReader    br  = new BufferedReader(isr)) {
 
                 // Placeholders for parsed data
-                int               interval    = 3600;
                 int               nbOfMaps    = 1;
                 int               exponent    = -1;
-                double            baseRadius  = 6371.0e3;
-                double            hIon        = 350e3;
+                double            baseRadius  = Double.NaN;
+                double            hIon        = Double.NaN;
                 boolean           mappingF    = false;
                 boolean           inTEC       = false;
                 double[]          latitudes   = null;
@@ -571,7 +484,7 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                                 lastEpoch = parseDate(line);
                                 break;
                             case "INTERVAL" :
-                                interval = parseInt(line, 2, 4);
+                                // ignored;
                                 break;
                             case "# OF MAPS IN FILE" :
                                 nbOfMaps = parseInt(line, 2, 4);
@@ -601,15 +514,14 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                             case "END OF HEADER" :
                                 // Check that latitude and longitude bondaries were found
                                 if (latitudes == null || longitudes == null) {
-                                    throw new OrekitException(OrekitMessages.NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER, getSupportedNames());
+                                    throw new OrekitException(OrekitMessages.NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER, name);
                                 }
                                 // Check that first and last epochs were found
                                 if (firstEpoch == null || lastEpoch == null) {
-                                    throw new OrekitException(OrekitMessages.NO_EPOCH_IN_IONEX_HEADER, getSupportedNames());
+                                    throw new OrekitException(OrekitMessages.NO_EPOCH_IN_IONEX_HEADER, name);
                                 }
                                 // At the end of the header, we build the IONEXHeader object
-                                header = new IONEXHeader(firstEpoch, lastEpoch, interval, nbOfMaps,
-                                                         baseRadius, hIon, mappingF);
+                                header = new IONEXHeader(nbOfMaps, baseRadius, hIon, mappingF);
                                 break;
                             case "START OF TEC MAP" :
                                 inTEC = true;
@@ -664,22 +576,23 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
                                           lineNumber, name, line);
             }
 
-        }
+            // TEC map
+            if (maps.size() != header.getTECMapsNumer()) {
+                throw new OrekitException(OrekitMessages.INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE,
+                                          maps.size(), header.getTECMapsNumer());
+            }
+            TECMap previous = null;
+            for (TECMap current : maps) {
+                if (previous != null) {
+                    tecMap.addValidBetween(new TECMapPair(previous, current,
+                                                          header.getEarthRadius(), header.getHIon(), header.isMappingFunction()),
+                                           previous.date, current.date);
+                }
+                previous = current;
+            }
 
-        /**
-         * Get the header of the IONEX file.
-         * @return the header of the IONEX file
-         */
-        public IONEXHeader getIONEXHeader() {
-            return header;
-        }
+            names = names.isEmpty() ? name : (names + ", " + name);
 
-        /**
-         * Get the list of the TEC maps.
-         * @return the list of TEC maps.
-         */
-        public List<TECMap> getTECMaps() {
-            return maps;
         }
 
         /** Extract a string from a line.
@@ -799,35 +712,86 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
             this.tec  = tec;
         }
 
-        /**
-         * Get the date of the TEC map.
-         * @return the date
+    }
+
+    /** Container for a consecutive pair of TEC maps.
+     * @since 12.0
+     */
+    private static class TECMapPair {
+
+        /** First snapshot. */
+        private final TECMap first;
+
+        /** Second snapshot. */
+        private final TECMap second;
+
+        /** Mean earth radius [m]. */
+        private double r0;
+
+        /** Height of the ionospheric single layer [m]. */
+        private double h;
+
+        /** Flag for mapping function computation. */
+        private boolean mapping;
+
+        /** Simple constructor.
+         * @param first first snapshot
+         * @param second second snapshot
+         * @param r0 mean Earth radius
+         * @param h height of the ionospheric layer
+         * @param mapping flag for mapping computation
          */
-        public AbsoluteDate getDate() {
-            return date;
+        TECMapPair(final TECMap first, final TECMap second,
+                   final double r0, final double h, final boolean mapping) {
+            this.first   = first;
+            this.second  = second;
+            this.r0      = r0;
+            this.h       = h;
+            this.mapping = mapping;
         }
 
-        /**
-         * Get the interpolating TEC function.
-         * @return the TEC in TECUnits
+        /** Get TEC at pierce point.
+         * @param date date
+         * @param ipp Ionospheric Pierce Point
+         * @return TEC
          */
-        public BilinearInterpolatingFunction getTEC() {
-            return tec;
+        public double getTEC(final AbsoluteDate date, final GeodeticPoint ipp) {
+            // Get the TEC values at the two closest dates
+            final AbsoluteDate t1   = first.date;
+            final double       tec1 = first.tec.value(ipp.getLatitude(), ipp.getLongitude());
+            final AbsoluteDate t2   = second.date;
+            final double       tec2 = second.tec.value(ipp.getLatitude(), ipp.getLongitude());
+            final double       dt   = t2.durationFrom(t1);
+
+            // Perform temporal interpolation (Ref, Eq. 2)
+            return (t2.durationFrom(date) / dt) * tec1 + (date.durationFrom(t1) / dt) * tec2;
+
+        }
+
+        /** Get TEC at pierce point.
+         * @param date date
+         * @param ipp Ionospheric Pierce Point
+         * @param <T> type of the field elements
+         * @return TEC
+         */
+        public <T extends CalculusFieldElement<T>> T getTEC(final FieldAbsoluteDate<T> date, final GeodeticPoint ipp) {
+
+            // Get the TEC values at the two closest dates
+            final AbsoluteDate t1   = first.date;
+            final double       tec1 = first.tec.value(ipp.getLatitude(), ipp.getLongitude());
+            final AbsoluteDate t2   = second.date;
+            final double       tec2 = second.tec.value(ipp.getLatitude(), ipp.getLongitude());
+            final double       dt   = t2.durationFrom(t1);
+
+            // Perform temporal interpolation (Ref, Eq. 2)
+            return date.durationFrom(t2).negate().divide(dt).multiply(tec1).add(date.durationFrom(t1).divide(dt).multiply(tec2));
+
         }
 
     }
 
     /** Container for IONEX header. */
     private static class IONEXHeader {
-
-        /** Epoch of the first TEC map. */
-        private AbsoluteDate firstDate;
-
-        /** Epoch of the last TEC map. */
-        private AbsoluteDate lastDate;
-
-        /** Interval between two maps [s]. */
-        private int interval;
 
         /** Number of maps contained in the IONEX file. */
         private int nbOfMaps;
@@ -843,49 +807,18 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
 
         /**
          * Constructor.
-         * @param firstDate epoch of the first TEC map.
-         * @param lastDate epoch of the last TEC map.
          * @param nbOfMaps number of TEC maps contained in the file
-         * @param interval number of seconds between two tec maps.
          * @param baseRadius mean earth radius in meters
          * @param hIon height of the ionospheric single layer in meters
          * @param mappingFunction flag for mapping function adopted for TEC determination
          */
-        IONEXHeader(final AbsoluteDate firstDate, final AbsoluteDate lastDate,
-                    final int interval, final int nbOfMaps,
+        IONEXHeader(final int nbOfMaps,
                     final double baseRadius, final double hIon,
                     final boolean mappingFunction) {
-            this.firstDate         = firstDate;
-            this.lastDate          = lastDate;
-            this.interval          = interval;
             this.nbOfMaps          = nbOfMaps;
             this.baseRadius        = baseRadius;
             this.hIon              = hIon;
             this.isMappingFunction = mappingFunction;
-        }
-
-        /**
-         * Get the first date of the IONEX file.
-         * @return the first date of the IONEX file
-         */
-        public AbsoluteDate getFirstDate() {
-            return firstDate;
-        }
-
-        /**
-         * Get the last date of the IONEX file.
-         * @return the last date of the IONEX file
-         */
-        public AbsoluteDate getLastDate() {
-            return lastDate;
-        }
-
-        /**
-         * Get the time interval between two TEC maps.
-         * @return the interval between two TEC maps
-         */
-        public int getInterval() {
-            return interval;
         }
 
         /**
@@ -918,36 +851,6 @@ public class GlobalIonosphereMapModel extends AbstractSelfFeedingLoader
          */
         public boolean isMappingFunction() {
             return isMappingFunction;
-        }
-
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 201928052L;
-
-        /** Regular expression that matches the names of the IONEX files. */
-        private final String supportedNames;
-
-        /** Simple constructor.
-         * @param supportedNames regular expression that matches the names of the IONEX files
-         */
-        DataTransferObject(final String supportedNames) {
-            this.supportedNames = supportedNames;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link GlobalIonosphereMapModel}.
-         * @return replacement {@link GlobalIonosphereMapModel}
-         */
-        private Object readResolve() {
-            try {
-                return new GlobalIonosphereMapModel(supportedNames);
-            } catch (OrekitException oe) {
-                throw new OrekitInternalError(oe);
-            }
         }
 
     }

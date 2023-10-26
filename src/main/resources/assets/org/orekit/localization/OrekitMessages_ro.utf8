@@ -637,8 +637,8 @@ IRREGULAR_OR_INCOMPLETE_GRID = grilă neregulată sau incompletă în fișierul 
 # invalid satellite system {0}
 INVALID_SATELLITE_SYSTEM = sistemul satelit {0} este nevalid
 
-# IONEX file {0} does not contain TEC data for date {1}
-NO_TEC_DATA_IN_FILE_FOR_DATE = fișierul IONEX {0} nu conține informații TEC pentru data {1}
+# IONEX files {0} does not contain TEC data for date {1}
+NO_TEC_DATA_IN_FILES_FOR_DATE = fișierul IONEX {0} nu conține informații TEC pentru data {1}
 
 # number of maps {0} is inconsistent with header specification: {1}
 INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = numărul de hărți {0} este incompatibil cu specificațiile din antet: {1}

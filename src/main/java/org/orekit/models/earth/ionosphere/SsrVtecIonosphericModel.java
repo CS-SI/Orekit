@@ -56,9 +56,6 @@ import org.orekit.utils.ParameterDriver;
  */
 public class SsrVtecIonosphericModel implements IonosphericModel {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20210322L;
-
     /** Earth radius in meters (see reference). */
     private static final double EARTH_RADIUS = 6370000.0;
 

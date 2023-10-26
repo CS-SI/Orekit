@@ -637,8 +637,8 @@ IRREGULAR_OR_INCOMPLETE_GRID = cuadrícula irregular o incompleta en el fichero 
 # invalid satellite system {0}
 INVALID_SATELLITE_SYSTEM = el sistema de satélites {0} no es válido
 
-# IONEX file {0} does not contain TEC data for date {1}
-NO_TEC_DATA_IN_FILE_FOR_DATE = el fichero IONEX {0} no contiene datos TEC para la fecha {1}
+# IONEX files {0} does not contain TEC data for date {1}
+NO_TEC_DATA_IN_FILES_FOR_DATE = el fichero IONEX {0} no contiene datos TEC para la fecha {1}
 
 # number of maps {0} is inconsistent with header specification: {1}
 INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = el número de mapas {0} no es coherente con la especificación del encabezado {1}
