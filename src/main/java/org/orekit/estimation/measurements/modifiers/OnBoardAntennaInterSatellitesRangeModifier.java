@@ -23,7 +23,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.InterSatellitesRange;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -83,10 +83,10 @@ public class OnBoardAntennaInterSatellitesRangeModifier implements EstimationMod
         // transforms from spacecraft to inertial frame at emission/reception dates
         final SpacecraftState refState1                  = estimated.getStates()[0];
         final SpacecraftState receptionState             = refState1.shiftedBy(receptionDate.durationFrom(refState1.getDate()));
-        final Transform       receptionSpacecraftToInert = receptionState.toTransform().getInverse();
+        final StaticTransform receptionSpacecraftToInert = receptionState.toStaticTransform().getInverse();
         final SpacecraftState refState2                  = estimated.getStates()[1];
         final SpacecraftState emissionState              = refState2.shiftedBy(emissionDate.durationFrom(refState2.getDate()));
-        final Transform       emissionSpacecraftToInert  = emissionState.toTransform().getInverse();
+        final StaticTransform emissionSpacecraftToInert  = emissionState.toStaticTransform().getInverse();
 
         // compute the geometrical value of the inter-satellites range directly from participants positions.
         // Note that this may be different from the value returned by estimated.getEstimatedValue(),
@@ -126,12 +126,12 @@ public class OnBoardAntennaInterSatellitesRangeModifier implements EstimationMod
         // transforms from spacecraft to inertial frame at emission/reception dates
         final SpacecraftState refState1                  = estimated.getStates()[0];
         final SpacecraftState receptionState             = refState1.shiftedBy(receptionDate.durationFrom(refState1.getDate()));
-        final Transform       receptionSpacecraftToInert = receptionState.toTransform().getInverse();
+        final StaticTransform receptionSpacecraftToInert = receptionState.toStaticTransform().getInverse();
         final SpacecraftState refState2                  = estimated.getStates()[1];
         final SpacecraftState transitState               = refState2.shiftedBy(transitDate.durationFrom(refState2.getDate()));
-        final Transform       transitSpacecraftToInert   = transitState.toTransform().getInverse();
+        final StaticTransform transitSpacecraftToInert   = transitState.toStaticTransform().getInverse();
         final SpacecraftState emissionState              = refState1.shiftedBy(emissionDate.durationFrom(refState1.getDate()));
-        final Transform       emissionSpacecraftToInert  = emissionState.toTransform().getInverse();
+        final StaticTransform emissionSpacecraftToInert  = emissionState.toStaticTransform().getInverse();
 
         // compute the geometrical value of the inter-satellites range directly from participants positions.
         // Note that this may be different from the value returned by estimated.getEstimatedValue(),

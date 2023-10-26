@@ -19,6 +19,8 @@ package org.orekit.propagation;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -42,13 +44,11 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
-import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.*;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
@@ -60,12 +60,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.FieldAbsolutePVCoordinates;
-import org.orekit.utils.FieldArrayDictionary;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.*;
 
 
 public class FieldSpacecraftStateTest {
@@ -159,6 +154,32 @@ public class FieldSpacecraftStateTest {
     @Test
     public void testShiftAdditionalDerivativesField() {
         doTestShiftAdditionalDerivativesField(Binary64Field.getInstance());
+    }
+
+    @Test
+    void testToStaticTransform() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final FieldOrbit<Complex> orbit = new FieldCartesianOrbit<>(field, rOrbit);
+        final TimeStampedAngularCoordinates angularCoordinates = new TimeStampedAngularCoordinates(
+                orbit.getDate().toAbsoluteDate(), Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO);
+        final FieldAttitude<Complex> attitude = new FieldAttitude<>(orbit.getFrame(),
+                new TimeStampedFieldAngularCoordinates<>(field, angularCoordinates));
+        final FieldSpacecraftState<Complex> state = new FieldSpacecraftState<>(orbit, attitude);
+        // WHEN
+        final FieldStaticTransform<Complex> actualStaticTransform = state.toStaticTransform();
+        // THEN
+        final FieldStaticTransform<Complex> expectedStaticTransform = state.toTransform().toStaticTransform();
+        Assertions.assertEquals(expectedStaticTransform.getDate(), actualStaticTransform.getDate());
+        final double tolerance = 1e-10;
+        Assertions.assertEquals(expectedStaticTransform.getTranslation().getX().getReal(),
+                actualStaticTransform.getTranslation().getX().getReal(), tolerance);
+        Assertions.assertEquals(expectedStaticTransform.getTranslation().getY().getReal(),
+                actualStaticTransform.getTranslation().getY().getReal(), tolerance);
+        Assertions.assertEquals(expectedStaticTransform.getTranslation().getZ().getReal(),
+                actualStaticTransform.getTranslation().getZ().getReal(), tolerance);
+        Assertions.assertEquals(0., Rotation.distance(expectedStaticTransform.getRotation().toRotation(),
+                actualStaticTransform.getRotation().toRotation()));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldVsReal(final Field<T> field) {

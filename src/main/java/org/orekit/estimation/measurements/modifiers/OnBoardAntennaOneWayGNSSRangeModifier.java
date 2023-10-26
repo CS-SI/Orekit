@@ -24,7 +24,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSRange;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -80,7 +80,7 @@ public class OnBoardAntennaOneWayGNSSRangeModifier implements EstimationModifier
         // Transforms from spacecraft to inertial frame at reception date
         final SpacecraftState refStateLocal              = estimated.getStates()[0];
         final SpacecraftState receptionState             = refStateLocal.shiftedBy(receptionDate.durationFrom(refStateLocal.getDate()));
-        final Transform       receptionSpacecraftToInert = receptionState.toTransform().getInverse();
+        final StaticTransform       receptionSpacecraftToInert = receptionState.toStaticTransform().getInverse();
 
         // Orbit of the remote satellite
         final Orbit orbitRemote = new CartesianOrbit(participants[0], refStateLocal.getFrame(), receptionState.getMu());
@@ -91,7 +91,7 @@ public class OnBoardAntennaOneWayGNSSRangeModifier implements EstimationModifier
                                                                                                     orbitRemote.getDate(),
                                                                                                     orbitRemote.getFrame()));
         final SpacecraftState emissionState              = refStateRemote.shiftedBy(emissionDate.durationFrom(refStateRemote.getDate()));
-        final Transform       emissionSpacecraftToInert  = emissionState.toTransform().getInverse();
+        final StaticTransform       emissionSpacecraftToInert  = emissionState.toStaticTransform().getInverse();
 
         // Compute the geometrical value of the one-way GNSS range directly from participants positions.
         // Note that this may be different from the value returned by estimated.getEstimatedValue(),
