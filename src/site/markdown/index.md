@@ -35,7 +35,7 @@
       (or telemetry-dependent) frames
     * predefined frames (EME2000/J2000, ICRF, GCRF, all ITRF from 1988 to 2020
       and intermediate frames, TOD, MOD, GTOD and TOD frames, Veis, topocentric, TEME and PZ-90.11 frames,
-      tnw and qsw local orbital frames, Moon, Sun, planets, solar system barycenter,
+      tnw and qsw local orbital frames, relative encounter frames, Moon, Sun, planets, solar system barycenter,
       Earth-Moon barycenter, ecliptic)
     * user extensible (used operationally in real time with a set of about 60 frames on
       several spacecraft)
@@ -317,7 +317,15 @@
   * Collisions
 
     * loading and writing of CCSDS Conjunction Data Messages (CDM in both KVN and XML formats)
-    
+    * 2D probability of collision computing methods assuming short term encounter and spherical bodies :
+      
+      * Chan 1997
+      * Alfriend 1999
+      * Alfriend 1999 (maximum version)
+      * Alfano 2005
+      * Patera 2005 (custom Orekit implementation) (recommended)
+      * Laas 2015 (recommended)
+
   * Customizable data loading
 
     * loading by exploring folders hierarchy on local disk
