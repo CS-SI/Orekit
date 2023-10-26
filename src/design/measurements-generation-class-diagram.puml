@@ -50,7 +50,7 @@
       class PropagatorsParallelizer {
         propagate()
       }
-      Propagator <-left- PropagatorsParallelizer
+      Propagator <-- PropagatorsParallelizer
 
     }
 
@@ -119,9 +119,9 @@
         Scheduler_T_ "*" <--* Generator
         Generator *--> GeneratedMeasurementSubscriber
         GeneratedMeasurementSubscriber <|-- GatheringSubscriber
-        EventsDetector "1" <--* EventBasedScheduler_T_
+        EventBasedScheduler_T_ *--> EventsDetector
   
-        PropagatorsParallelizer <-- Generator
+        Generator --> PropagatorsParallelizer
         Propagator "*" <--* Generator
 
       }

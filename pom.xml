@@ -34,7 +34,7 @@
     <orekit.maven-jar-plugin.version>3.3.0</orekit.maven-jar-plugin.version>
     <orekit.maven-jxr-plugin.version>3.3.0</orekit.maven-jxr-plugin.version>
     <orekit.plantuml-maven-plugin.version>1.2</orekit.plantuml-maven-plugin.version>
-    <orekit.plantuml.version>1.2023.6</orekit.plantuml.version>
+    <orekit.plantuml.version>1.2023.12</orekit.plantuml.version>
     <orekit.maven-resources-plugin.version>3.3.1</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.12.1</orekit.maven-site-plugin.version>
     <orekit.maven-project-info-reports-plugin.version>3.4.3</orekit.maven-project-info-reports-plugin.version>
