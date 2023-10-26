@@ -21,6 +21,8 @@ import java.io.IOException;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
@@ -749,6 +751,45 @@ public class TopocentricFrameTest {
             }
         }
 
+    }
+
+    @Test
+    void testGetTrackingCoordinates() {
+        // GIVEN
+        final GeodeticPoint geodeticPoint = new GeodeticPoint(0., 0., 0.);
+        final TopocentricFrame topoFrame = new TopocentricFrame(earthSpheric, geodeticPoint, "geodeticPoint");
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame frame = FramesFactory.getGCRF();
+        final Vector3D point = new Vector3D(1., 2., -3.);
+        // WHEN
+        final TrackingCoordinates trackingCoordinates = topoFrame.getTrackingCoordinates(point, frame, date);
+        // THEN
+        final double expectedElevation = topoFrame.getElevation(point, frame, date);
+        final double expectedAzimuth = topoFrame.getAzimuth(point, frame, date);
+        final double expectedRange = topoFrame.getRange(point, frame, date);
+        Assertions.assertEquals(expectedElevation, trackingCoordinates.getElevation());
+        Assertions.assertEquals(expectedAzimuth, trackingCoordinates.getAzimuth());
+        Assertions.assertEquals(expectedRange, trackingCoordinates.getRange());
+    }
+
+    @Test
+    void testGetFieldTrackingCoordinates() {
+        // GIVEN
+        final GeodeticPoint geodeticPoint = new GeodeticPoint(0., 0., 0.);
+        final TopocentricFrame topoFrame = new TopocentricFrame(earthSpheric, geodeticPoint, "geodeticPoint");
+        final ComplexField field = ComplexField.getInstance();
+        final FieldAbsoluteDate<Complex> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        final Frame frame = FramesFactory.getGCRF();
+        final FieldVector3D<Complex> point = new FieldVector3D<>(field, new Vector3D(1., 2., -3.));
+        // WHEN
+        final FieldTrackingCoordinates<Complex> trackingCoordinates = topoFrame.getTrackingCoordinates(point, frame, date);
+        // THEN
+        final Complex expectedElevation = topoFrame.getElevation(point, frame, date);
+        final Complex expectedAzimuth = topoFrame.getAzimuth(point, frame, date);
+        final Complex expectedRange = topoFrame.getRange(point, frame, date);
+        Assertions.assertEquals(expectedElevation, trackingCoordinates.getElevation());
+        Assertions.assertEquals(expectedAzimuth, trackingCoordinates.getAzimuth());
+        Assertions.assertEquals(expectedRange, trackingCoordinates.getRange());
     }
 
     @BeforeEach
