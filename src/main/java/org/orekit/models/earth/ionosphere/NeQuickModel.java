@@ -63,9 +63,6 @@ public class NeQuickModel implements IonosphericModel {
     /** NeQuick resources base directory. */
     private static final String NEQUICK_BASE = "/assets/org/orekit/nequick/";
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 201928051L;
-
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 

@@ -637,8 +637,8 @@ IRREGULAR_OR_INCOMPLETE_GRID = Unregelmäßige oder unvollständige "grid" in Da
 # invalid satellite system {0}
 INVALID_SATELLITE_SYSTEM = Ungültiges Satellitensystem {0}
 
-# IONEX file {0} does not contain TEC data for date {1}
-NO_TEC_DATA_IN_FILE_FOR_DATE = IONEX Datei {0} beinhaltet keine TEC Daten für Datum {1}
+# IONEX files {0} does not contain TEC data for date {1}
+NO_TEC_DATA_IN_FILES_FOR_DATE = IONEX Datei {0} beinhaltet keine TEC Daten für Datum {1}
 
 # number of maps {0} is inconsistent with header specification: {1}
 INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = Anzahl an Karten {0} ist nicht konsistent mit der Kopfzeilen-Spezifikation: {1}

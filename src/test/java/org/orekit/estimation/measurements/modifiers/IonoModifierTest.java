@@ -656,9 +656,6 @@ public class IonoModifierTest {
 
     private class MockIonosphericModel implements IonosphericModel {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 5944637011744634693L;
-
         /** Driver for the ionospheric delay.*/
         private final ParameterDriver ionoDelay;
 

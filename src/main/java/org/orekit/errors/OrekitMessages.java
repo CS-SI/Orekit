@@ -681,8 +681,8 @@ public enum OrekitMessages implements Localizable {
     /** INVALID_SATELLITE_SYSTEM. */
     INVALID_SATELLITE_SYSTEM("invalid satellite system {0}"),
 
-    /** NO_TEC_DATA_IN_FILE_FOR_DATE. */
-    NO_TEC_DATA_IN_FILE_FOR_DATE("IONEX file {0} does not contain TEC data for date {1}"),
+    /** NO_TEC_DATA_IN_FILES_FOR_DATE. */
+    NO_TEC_DATA_IN_FILES_FOR_DATE("IONEX files {0} does not contain TEC data for date {1}"),
 
     /** INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE. */
     INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE("number of maps {0} is inconsistent with header specification: {1}"),
