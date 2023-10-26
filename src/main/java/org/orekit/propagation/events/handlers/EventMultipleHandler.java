@@ -76,12 +76,7 @@ public class EventMultipleHandler implements EventHandler {
         handlers.forEach(handler -> handler.init(initialState, target, detector));
     }
 
-    /**
-     * eventOccurred method mirrors the same interface method as in {@link EventDetector}
-     * and its subclasses, but with an additional parameter that allows the calling
-     * method to pass in an object from the detector which would have potential
-     * additional data to allow the implementing class to determine the correct
-     * return state.
+    /** Handle an event.
      *
      * The MultipleEventHandler class implies a different behaviour on event detections
      * than with other handlers :

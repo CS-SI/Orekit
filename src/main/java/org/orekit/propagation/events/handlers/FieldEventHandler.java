@@ -19,17 +19,11 @@ package org.orekit.propagation.events.handlers;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.events.Action;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.FieldAbsoluteDate;
 
 
-/**
- * An interface defining how to override event handling behavior in the standard
- * propagator eventing classes without requiring subclassing.  In cases where
- * one wishes to use anonymous classes rather than explicit subclassing this
- * allows for a more direct way to override the behavior.  Event classes have to
- * specifically support this capability.
+/** An interface defining how to handle events occurring during propagation..
  *
  * @author Hank Grabowski
  *
@@ -56,12 +50,7 @@ public interface FieldEventHandler<T extends CalculusFieldElement<T>> {
         // nothing by default
     }
 
-    /**
-     * eventOccurred method mirrors the same interface method as in {@link EventDetector}
-     * and its subclasses, but with an additional parameter that allows the calling
-     * method to pass in an object from the detector which would have potential
-     * additional data to allow the implementing class to determine the correct
-     * return state.
+    /** Handle an event.
      *
      * @param s SpaceCraft state to be used in the evaluation
      * @param detector object with appropriate type that can be used in determining correct return state
