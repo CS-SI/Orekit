@@ -30,6 +30,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
@@ -875,6 +876,14 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         return new FieldTransform<>(pv.getDate(),
                                     new FieldTransform<>(pv.getDate(), pv.negate()),
                                     new FieldTransform<>(pv.getDate(), attitude.getOrientation()));
+    }
+
+    /** Compute the static transform from state defining frame to spacecraft frame.
+     * @return static transform from specified frame to current spacecraft frame
+     * @see #toTransform()
+     */
+    public FieldStaticTransform<T> toStaticTransform() {
+        return FieldStaticTransform.of(getDate(), getPosition().negate(), attitude.getRotation());
     }
 
     /** Get the central attraction coefficient.

@@ -31,6 +31,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
@@ -752,6 +753,14 @@ public class SpacecraftState
         return new Transform(pv.getDate(),
                              new Transform(pv.getDate(), pv.negate()),
                              new Transform(pv.getDate(), attitude.getOrientation()));
+    }
+
+    /** Compute the static transform from state defining frame to spacecraft frame.
+     * @return static transform from specified frame to current spacecraft frame
+     * @see #toTransform()
+     */
+    public StaticTransform toStaticTransform() {
+        return StaticTransform.of(getDate(), getPosition().negate(), attitude.getRotation());
     }
 
     /** Get the central attraction coefficient.

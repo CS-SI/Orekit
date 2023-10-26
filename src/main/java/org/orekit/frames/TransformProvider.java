@@ -55,7 +55,7 @@ public interface TransformProvider extends Serializable {
      * @return the static transform.
      */
     default StaticTransform getStaticTransform(AbsoluteDate date) {
-        return getTransform(date);
+        return getTransform(date).toStaticTransform();
     }
 
     /**
@@ -70,7 +70,7 @@ public interface TransformProvider extends Serializable {
      * @since 12.0
      */
     default <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(FieldAbsoluteDate<T> date) {
-        return getTransform(date);
+        return getTransform(date).toStaticTransform();
     }
 
 }
