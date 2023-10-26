@@ -16,6 +16,11 @@
  */
 package org.orekit.models.earth.atmosphere.data;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.interpolation.LinearInterpolator;
 import org.hipparchus.util.FastMath;
@@ -37,40 +42,33 @@ import org.orekit.utils.GenericTimeStampedCache;
 import org.orekit.utils.OrekitConfiguration;
 import org.orekit.utils.TimeStampedGenerator;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 /**
  * This class provides solar activity data needed by atmospheric models: F107 solar flux, Ap and Kp indexes.
  * <p>
- * The data are retrieved through the NASA Marshall Solar Activity Future Estimation (MSAFE) as estimates of monthly F10.7
- * Mean solar flux and Ap geomagnetic parameter. The data can be retrieved at the NASA <a
- * href="http://sail.msfc.nasa.gov/archive_index.htm"> Marshall Solar Activity website</a>. Here Kp indices are deduced from
- * Ap indexes, which in turn are tabulated equivalent of retrieved Ap values.
- * </p>
- * <p>
- * If several MSAFE files are available, some dates may appear in several files (for example August 2007 is in all files from
+ * Data comes from the NASA Marshall Solar Activity Future Estimation (MSAFE) as estimates of monthly F10.7
+ * Mean solar flux and Ap geomagnetic parameter
+ * (see <a href="https://www.nasa.gov/solar-cycle-progression-and-forecast"> Marshall Solar Activity website</a>).
+ *
+ * <p>Data can be retrieved at the NASA
+ * <a href="https://www.nasa.gov/solar-cycle-progression-and-forecast/archived-forecast/"> Marshall Solar Activity archived forecast</a>.
+ * Here Kp indices are deduced from Ap indexes, which in turn are tabulated equivalent of retrieved Ap values.
+ *
+ * <p> If several MSAFE files are available, some dates may appear in several files (for example August 2007 is in all files from
  * the first one published in March 1999 to the February 2008 file). In this case, the data from the most recent file is used
  * and the older ones are discarded. The date of the file is assumed to be 6 months after its first entry (which explains why
  * the file having August 2007 as its first entry is the February 2008 file). This implies that MSAFE files must <em>not</em>
  * be edited to change their time span, otherwise this would break the old entries overriding mechanism.
- * </p>
- * <p>
- * With these data, the {@link #getInstantFlux(AbsoluteDate)} and {@link #getMeanFlux(AbsoluteDate)} methods return the same
+ *
+ * <p>With these data, the {@link #getInstantFlux(AbsoluteDate)} and {@link #getMeanFlux(AbsoluteDate)} methods return the same
  * values and the {@link #get24HoursKp(AbsoluteDate)} and {@link #getThreeHourlyKP(AbsoluteDate)} methods return the same
  * values.
- * </p>
- * <p>
- * Conversion from Ap index values in the MSAFE file to Kp values used by atmosphere models is done using Jacchia's equation
+ *
+ * <p>Conversion from Ap index values in the MSAFE file to Kp values used by atmosphere models is done using Jacchia's equation
  * in [1].
- * </p>
- * <p>
- * With these data, the {@link #getAp(AbsoluteDate date)} method returns an array of seven times the same daily Ap value,
+ *
+ * <p>With these data, the {@link #getAp(AbsoluteDate date)} method returns an array of seven times the same daily Ap value,
  * i.e. it is suited to be used only with the {@link org.orekit.models.earth.atmosphere.NRLMSISE00 NRLMSISE00} atmospheric
  * model where the switch #9 is set to 1.
- * </p>
  *
  * <h2>References</h2>
  *
