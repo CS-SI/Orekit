@@ -167,7 +167,7 @@
         * spacecraft detection in ground based Field Of View (any shape)
         * sensor Field Of View (any shape) overlapping complex geographic zone
         * complex geographic zones traversal
-        * inter-satellites direct view
+        * inter-satellites direct view (with customizable skimming altitude)
         * ground at night
         * impulse maneuvers occurrence
         * geomagnetic intensity
@@ -274,13 +274,14 @@
 
     * computation of Dilution Of Precision
     * loading of ANTEX antenna models file
-    * loading of RINEX observation files (version 2, 3, and 4)
+    * loading and writing of RINEX observation files (version 2, 3, and 4)
     * loading of RINEX navigation files (version 2, 3, and 4)
     * support for Hatanaka compact RINEX format
     * loading of SINEX file (can load station positions, eccentricities, EOPs, and Differential Code Biases)
     * loading of RINEX clock files (version 2 and version 3)
     * parsing of IGS SSR messages for all constellations (version 1)
     * parsing of RTCM messages (both ephemeris and correction messages)
+    * parsing of GPS RF link binary message
     * Hatch filters for GNSS measurements smoothing
     * implementation of Ntrip protocol
     * decoding of GPS navigation messages

@@ -208,7 +208,7 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>spacecraft detection in ground based Field Of View (any shape)</li>
           <li>sensor Field Of View (any shape) overlapping complex geographic zone</li>
           <li>complex geographic zones traversal</li>
-          <li>inter-satellites direct view</li>
+          <li>inter-satellites direct view (with customizable skimming altitude)</li>
           <li>ground at night</li>
           <li>impulse maneuvers occurrence</li>
           <li>geomagnetic intensity</li>
@@ -348,13 +348,14 @@ discrete events. Here is a short list of the features offered by the library:</p
     <ul>
       <li>computation of Dilution Of Precision</li>
       <li>loading of ANTEX antenna models file</li>
-      <li>loading of RINEX observation files (version 2, 3, and 4)</li>
+      <li>loading and writing of RINEX observation files (version 2, 3, and 4)</li>
       <li>loading of RINEX navigation files (version 2, 3, and 4)</li>
       <li>support for Hatanaka compact RINEX format</li>
       <li>loading of SINEX file (can load station positions, eccentricities, EOPs, and Differential Code Biases)</li>
       <li>loading of RINEX clock files (version 2 and version 3)</li>
       <li>parsing of IGS SSR messages for all constellations (version 1)</li>
       <li>parsing of RTCM messages (both ephemeris and correction messages)</li>
+      <li>parsing of GPS RF link binary message</li>
       <li>Hatch filters for GNSS measurements smoothing</li>
       <li>implementation of Ntrip protocol</li>
       <li>decoding of GPS navigation messages</li>
