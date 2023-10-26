@@ -6,12 +6,12 @@
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
   <version>12.0-SNAPSHOT</version>
-  <name>ORbit Extrapolation KIT</name>
+  <name>OREKIT</name>
   <url>http://www.orekit.org/</url>
 
   <inceptionYear>2002</inceptionYear>
   <description>
-    OREKIT (ORbits Extrapolation KIT) is a low level space dynamics library.
+    OREKIT is a low level space dynamics library.
     It provides basic elements (orbits, dates, attitude, frames ...) and
     various algorithms to handle them (conversions, analytical and numerical
     propagation, pointing ...).
