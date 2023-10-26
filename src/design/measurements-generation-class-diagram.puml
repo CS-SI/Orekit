@@ -76,7 +76,7 @@
         }
 
         class "...MeasurementBuilder" as XXXMeasurementBuilder
-        note right
+        note left
           one for each
           measurement type
         end note
@@ -119,7 +119,7 @@
         Scheduler_T_ "*" <--* Generator
         Generator *--> GeneratedMeasurementSubscriber
         GeneratedMeasurementSubscriber <|-- GatheringSubscriber
-        EventBasedScheduler_T_ *--> EventsDetector
+        EventsDetector <--* EventBasedScheduler_T_
   
         Generator --> PropagatorsParallelizer
         Propagator "*" <--* Generator
@@ -129,7 +129,7 @@
       interface "EstimationModifier<T>" as EstimationModifier_T_
       interface "ObservedMeasurement<T>" as ObservedMeasurement_T_
       class "...Measurement" as XXXMeasurement
-      note bottom
+      note top
         this box represents any
         measurement type
         (range, range-rate, ...)
@@ -141,7 +141,7 @@
       XXXMeasurement <-left- XXXMeasurementBuilder
       EstimationModifier_T_ "*" <--* XXXMeasurementBuilder 
 
-      DatesSelector "1" <-right-* Scheduler_T_
+      Scheduler_T_ *--> "1" DatesSelector
     }
 
   }

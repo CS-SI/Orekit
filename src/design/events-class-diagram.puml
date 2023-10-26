@@ -112,7 +112,7 @@
       AbstractDetector_T_ <|-- EclipseDetector
       AbstractDetector_T_ <|-- ElevationDetector
       class "...Detector" as DummyDetector
-      AbstractDetector_T_ <|-- DummyDetector
+      DummyDetector --|> AbstractDetector_T_
       note top
         many implementations
         not displayed for the
