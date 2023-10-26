@@ -79,7 +79,7 @@
       ThrustDirectionAndAttitudeProvider <-- "1" ThrustDirectionProvider
 
       TimeSpanMap <-- ProfileThrustPropulsionModel
-      PolynomialThrustSegment <-- TimeSpanMap
+      TimeSpanMap --> PolynomialThrustSegment
 
     }
 
