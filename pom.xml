@@ -634,7 +634,6 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${orekit.maven-surefire-plugin.version}</version>
         <configuration>
-          <argLine>@{argLine} -Xmx2048m</argLine>
           <additionalClasspathElements>
             <additionalClasspathElement>${tools.jar.path}</additionalClasspathElement>
           </additionalClasspathElements>
