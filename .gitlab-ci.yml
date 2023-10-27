@@ -63,9 +63,9 @@ coverage-import:
   image: haynes/jacoco2cobertura:1.0.8
   script:
     # Display total coverage
-    - "grep -o '<tfoot.*tfoot>' target/site/jacoco/index.html | sed 's:<[^>]*>: :g'"
+    - "grep -o '<tfoot.*tfoot>' target/site/jacoco-aggregate/index.html | sed 's:<[^>]*>: :g'"
     # Convert report from jacoco to cobertura
-    - 'python /opt/cover2cover.py target/site/jacoco/jacoco.xml src/main/java > target/site/cobertura.xml'
+    - 'python /opt/cover2cover.py target/site/jacoco-aggregate/jacoco.xml src/main/java > target/site/cobertura.xml'
     # Read the <source></source> tag and prepend the path to every filename
     # attribute
     - 'python /opt/source2filename.py target/site/cobertura.xml'
