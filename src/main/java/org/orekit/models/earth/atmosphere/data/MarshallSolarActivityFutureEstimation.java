@@ -90,7 +90,7 @@ public class MarshallSolarActivityFutureEstimation
      * @since 10.0
      */
     public static final String DEFAULT_SUPPORTED_NAMES =
-            "\\p{Alpha}\\p{Lower}\\p{Lower}\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}(?:f|F)10(?:_prd)?\\.(?:txt|TXT)";
+            "\\p{Alpha}\\p{Lower}\\p{Lower}\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}(?:f|F)10(?:[-_]prd)?\\.(?:txt|TXT)";
 
     /** Serializable UID. */
     private static final long serialVersionUID = -5212198874900835369L;
