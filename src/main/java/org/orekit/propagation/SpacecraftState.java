@@ -758,6 +758,7 @@ public class SpacecraftState
     /** Compute the static transform from state defining frame to spacecraft frame.
      * @return static transform from specified frame to current spacecraft frame
      * @see #toTransform()
+     * @since 12.0
      */
     public StaticTransform toStaticTransform() {
         return StaticTransform.of(getDate(), getPosition().negate(), attitude.getRotation());

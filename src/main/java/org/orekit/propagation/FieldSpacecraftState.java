@@ -881,6 +881,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     /** Compute the static transform from state defining frame to spacecraft frame.
      * @return static transform from specified frame to current spacecraft frame
      * @see #toTransform()
+     * @since 12.0
      */
     public FieldStaticTransform<T> toStaticTransform() {
         return FieldStaticTransform.of(getDate(), getPosition().negate(), attitude.getRotation());

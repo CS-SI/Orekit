@@ -216,9 +216,6 @@
 
   <contributors>
     <contributor>
-      <name>Alberto Ferrero</name>
-    </contributor>
-    <contributor>
       <name>Roberto Alacevich</name>
     </contributor>
     <contributor>
@@ -270,6 +267,9 @@
       <name>Christine Fernandez-Martin</name>
     </contributor>
     <contributor>
+      <name>Alberto Ferrero</name>
+    </contributor>
+    <contributor>
       <name>Mikael Fillastre</name>
     </contributor>
     <contributor>
@@ -307,6 +307,9 @@
     </contributor>
     <contributor>
       <name>Lukas Matt</name>
+    </contributor>
+    <contributor>
+      <name>Tanner Mills</name>
     </contributor>
     <contributor>
       <name>Vincent Mouraux</name>
