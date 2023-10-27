@@ -1096,6 +1096,7 @@
               <!-- Orekit is mostly a computational library. -->
               <!-- As there is not a lot of I/O it is better to not overide the number of CPU. -->
               <forkCount>1C</forkCount>
+              <reuseForks>true</reuseForks>
             </configuration>
           </plugin>
         </plugins>
