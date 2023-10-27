@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.0" date="TBD" description="TBD">
+      <action dev="tmills" type="update" issue="1213">
+          Changed "absPva == null" to "isOrbitDefined()" in (Field)SpacecraftState.
+      </action>
       <action dev="serrof" type="add" issue="1247">
           Add toStaticTransform to (Field)SpacecraftState.
       </action>
