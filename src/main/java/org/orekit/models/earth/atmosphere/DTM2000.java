@@ -82,24 +82,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class DTM2000 implements Atmosphere {
 
-    /** Identifier for hydrogen. */
-    public static final int HYDROGEN = 1;
-
-    /** Identifier for helium. */
-    public static final int HELIUM = 2;
-
-    /** Identifier for atomic oxygen. */
-    public static final int ATOMIC_OXYGEN = 3;
-
-    /** Identifier for molecular nitrogen. */
-    public static final int MOLECULAR_NITROGEN = 4;
-
-    /** Identifier for molecular oxygen. */
-    public static final int MOLECULAR_OXYGEN = 5;
-
-    /** Identifier for atomic nitrogen. */
-    public static final int ATOMIC_NITROGEN = 6;
-
     /** Serializable UID. */
     private static final long serialVersionUID = 20170705L;
 
