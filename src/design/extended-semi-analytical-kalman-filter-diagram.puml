@@ -121,14 +121,14 @@
          - computeOsculatingElements()
       }
       
-      class EskfMeasurementHandler
+      class SemiAnalyticalMeasurementHandler
 
-      OrekitStepHandler <|..  EskfMeasurementHandler
+      OrekitStepHandler <|..  SemiAnalyticalMeasurementHandler
       SemiAnalyticalKalmanEstimator <--   SemiAnalyticalKalmanEstimatorBuilder
       NonLinearProcess <|..  SemiAnalyticalKalmanModel
       SemiAnalyticalKalmanModel <--   SemiAnalyticalKalmanEstimator
       ExtendedKalmanFilter <--   SemiAnalyticalKalmanEstimator
-      EskfMeasurementHandler <--   SemiAnalyticalKalmanModel
+      SemiAnalyticalMeasurementHandler <--   SemiAnalyticalKalmanModel
 
     }
 
