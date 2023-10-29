@@ -2,22 +2,22 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-    <property name="project.version"            value="11.3.3" />
-    <property name="src.dir"                    location="src"                    />
-    <property name="main.src.dir"               value="${src.dir}/main/java"      />
-    <property name="main.resources.dir"         value="${src.dir}/main/resources" />
-    <property name="test.src.dir"               value="${src.dir}/test/java"      />
-    <property name="test.resources.dir"         value="${src.dir}/test/resources" />
+    <property name="project.version"                    value="11.3.3" />
+    <property name="src.dir"                            location="src"                    />
+    <property name="main.src.dir"                       value="${src.dir}/main/java"      />
+    <property name="main.resources.dir"                 value="${src.dir}/main/resources" />
+    <property name="test.src.dir"                       value="${src.dir}/test/java"      />
+    <property name="test.resources.dir"                 value="${src.dir}/test/resources" />
 
-    <property name="build.dir"                  location="build"                  />
-    <property name="main.classes.dir"           value="${build.dir}/classes"      />
-    <property name="test.classes.dir"           value="${build.dir}/test-classes" />
-    <property name="javadoc.dir"                value="${build.dir}/javadoc"      />
-    <property name="tests.reports"              value="${build.dir}/test-reports" />
+    <property name="build.dir"                          location="build"                  />
+    <property name="main.classes.dir"                   value="${build.dir}/classes"      />
+    <property name="test.classes.dir"                   value="${build.dir}/test-classes" />
+    <property name="javadoc.dir"                        value="${build.dir}/javadoc"      />
+    <property name="tests.reports"                      value="${build.dir}/test-reports" />
 
-    <property name="lib.dir"                    location="lib"                    />
+    <property name="lib.dir"                            location="lib"                    />
 
-    <property name="hipparchus.version"                 value="2.3"                                               />
+    <property name="hipparchus.version"                 value="3.0"                                               />
     <property name="hipparchus.core.jar"                value="hipparchus-core-${hipparchus.version}.jar"         />
     <property name="hipparchus.geometry.jar"            value="hipparchus-geometry-${hipparchus.version}.jar"     />
     <property name="hipparchus.ode.jar"                 value="hipparchus-ode-${hipparchus.version}.jar"          />
@@ -26,7 +26,7 @@
     <property name="hipparchus.filtering.jar"           value="hipparchus-filtering-${hipparchus.version}.jar"    />
     <property name="hipparchus.stat.jar"                value="hipparchus-stat-${hipparchus.version}.jar"         />
     <property name="hipparchus.maven.path"              value="org/hipparchus"                                    />
-    <property name="junit-jupiter.version"              value="5.9.1"                                             />
+    <property name="junit-jupiter.version"              value="5.10.0"                                             />
     <property name="junit-jupiter-api.jar"              value="junit-jupiter-api-${junit-jupiter.version}.jar"    />
     <property name="junit-jupiter-api.maven.path"       value="org/junit/jupiter/junit-jupiter-api"               />
     <property name="junit-jupiter-engine.jar"           value="junit-jupiter-engine-${junit-jupiter.version}.jar" />
@@ -44,7 +44,7 @@
     <property name="apiguardian-api.version"            value="1.1.2"                                             />
     <property name="apiguardian-api.jar"                value="apiguardian-api-${apiguardian-api.version}.jar"    />
     <property name="apiguardian-api.maven.path"         value="org/apiguardian/apiguardian-api"                   />
-    <property name="mockito.version"                    value="4.8.1"                                             />
+    <property name="mockito.version"                    value="4.11.0"                                             />
     <property name="mockito.jar"                        value="mockito-core-${mockito.version}.jar"               />
     <property name="mockito.maven.path"                 value="org/mockito/mockito-core"                          />
     <property name="bytebuddy.version"                  value="1.12.16"                                           />
