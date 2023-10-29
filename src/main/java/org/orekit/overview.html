@@ -70,6 +70,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>cartesian, elliptical Keplerian, circular and equinoctial parameters,
         with non-Keplerian derivatives if available</li>
       <li>Two-Line Elements (TLE)</li>
+      <li>Two-Line Elements generation using Fixed-Point algorithm or Least Squares Fitting</li>
       <li>transparent conversion between all parameters</li>
       <li>automatic binding with frames</li>
       <li>attitude state and derivative</li>
@@ -85,6 +86,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>covariance extrapolation using a Keplerian model</li>
       <li>covariance frame transformation (inertial, Earth fixed, and local orbital frames)</li>
       <li>covariance type transformation (cartesian, keplerian, circular, and equinoctial)</li>
+      <li>covariance interpolation based on the blending model</li>
     </ul>
   </li>
   <li>Maneuvers
@@ -139,7 +141,7 @@ discrete events. Here is a short list of the features offered by the library:</p
         <ul>
           <li>central attraction</li>
           <li>gravity models</li>
-          <li>J2-squared effect</li>
+          <li>J2-squared effect (Zeis model)</li>
           <li>atmospheric drag</li>
           <li>third body attraction</li>
           <li>radiation pressure with eclipse</li>
@@ -368,6 +370,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>loading of SEM and YUMA files for GPS constellation</li>
       <li>exporting of ephemeris in CCSDS OEM and OCM file formats</li>
       <li>loading of ILRS CPF orbit files</li>
+      <li>exporting of ephemeris in STK format</li>
     </ul>
   </li>
   <li>Earth models

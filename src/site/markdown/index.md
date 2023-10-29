@@ -54,6 +54,7 @@
     * Cartesian, Keplerian (elliptic, parabolic, hyperbolic), circular and equinoctial parameters, with non-Keplerian
       derivatives if available
     * Two-Line Elements (TLE)
+    * Two-Line Elements generation using Fixed-Point algorithm or Least Squares Fitting
     * transparent conversion between all parameters
     * automatic binding with frames
     * attitude state and derivative
@@ -68,6 +69,7 @@
 	* covariance extrapolation using a Keplerian model
     * covariance frame transformation (inertial, Earth fixed, and local orbital frames)
     * covariance type transformation (cartesian, keplerian, circular, and equinoctial)
+    * covariance interpolation based on the blending model
 
   * Maneuvers
 
@@ -109,7 +111,7 @@
     * semi-analytical propagation model (DSST)
         * central attraction
         * gravity models
-        * J2-squared effect
+        * J2-squared effect (Zeis model)
         * atmospheric drag
         * third body attraction
         * radiation pressure with eclipses
@@ -292,6 +294,7 @@
     * loading of SEM and YUMA files for GPS constellation
     * exporting of ephemeris in CCSDS OEM and OCM file formats
     * loading of ILRS CPF orbit files
+    * exporting of ephemeris in STK format
 
   * Earth models
   
