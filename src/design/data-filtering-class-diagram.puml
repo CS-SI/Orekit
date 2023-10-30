@@ -63,15 +63,15 @@
       DataFilter <|-- GzipFilter
       DataFilter <|-- UnixFilter
 
-      UnixFilter --> DataSource.Opener : creates
-      GzipFilter --> DataSource.Opener : creates
+      UnixFilter --> Opener : creates
+      GzipFilter --> Opener : creates
  
     }
 
     package files.rinex #DDEBD8 {
       class HatanakaCompressFilter
       DataFilter <|-- HatanakaCompressFilter
-      DataSource.Opener <-left- HatanakaCompressFilter : creates
+      Opener <-left- HatanakaCompressFilter : creates
    }
 
   }
