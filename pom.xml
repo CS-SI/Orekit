@@ -1101,7 +1101,7 @@
             <configuration>
               <!-- Orekit is mostly a computational library. -->
               <!-- As there is not a lot of I/O it is better to not overide the number of CPU. -->
-              <forkCount>1C</forkCount>
+              <forkCount>0.5C</forkCount>
               <argLine>@{argLine} -Xmx2048m</argLine>
             </configuration>
           </plugin>
