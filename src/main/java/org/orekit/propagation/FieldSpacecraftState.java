@@ -720,14 +720,14 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     @Override
     public FieldAbsoluteDate<T> getDate() {
-        return (isOrbitDefined()) ? orbit.getDate() : absPva.getDate();
+        return isOrbitDefined() ? orbit.getDate() : absPva.getDate();
     }
 
     /** Get the defining frame.
      * @return the frame in which state is defined
      */
     public Frame getFrame() {
-        return (isOrbitDefined()) ? orbit.getFrame() : absPva.getFrame();
+        return isOrbitDefined() ? orbit.getFrame() : absPva.getFrame();
     }
 
 
@@ -892,7 +892,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * state contains an absolute position-velocity-acceleration rather than an orbit
      */
     public T getMu() {
-        return (isOrbitDefined()) ? orbit.getMu() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getMu() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the Keplerian period.
@@ -903,7 +903,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * than an orbit
      */
     public T getKeplerianPeriod() {
-        return (isOrbitDefined()) ? orbit.getKeplerianPeriod() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getKeplerianPeriod() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the Keplerian mean motion.
@@ -914,7 +914,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * than an orbit
      */
     public T getKeplerianMeanMotion() {
-        return (isOrbitDefined()) ? orbit.getKeplerianMeanMotion() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getKeplerianMeanMotion() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the semi-major axis.
@@ -923,7 +923,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * than an orbit
      */
     public T getA() {
-        return (isOrbitDefined()) ? orbit.getA() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getA() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the first component of the eccentricity vector (as per equinoctial parameters).
@@ -933,7 +933,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getE()
      */
     public T getEquinoctialEx() {
-        return (isOrbitDefined()) ? orbit.getEquinoctialEx() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getEquinoctialEx() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the second component of the eccentricity vector (as per equinoctial parameters).
@@ -943,7 +943,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getE()
      */
     public T getEquinoctialEy() {
-        return (isOrbitDefined()) ? orbit.getEquinoctialEy() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getEquinoctialEy() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the first component of the inclination vector (as per equinoctial parameters).
@@ -953,7 +953,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getI()
      */
     public T getHx() {
-        return (isOrbitDefined()) ? orbit.getHx() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getHx() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the second component of the inclination vector (as per equinoctial parameters).
@@ -963,7 +963,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getI()
      */
     public T getHy() {
-        return (isOrbitDefined()) ? orbit.getHy() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getHy() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the true latitude argument (as per equinoctial parameters).
@@ -974,7 +974,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getLM()
      */
     public T getLv() {
-        return (isOrbitDefined()) ? orbit.getLv() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getLv() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the eccentric latitude argument (as per equinoctial parameters).
@@ -985,7 +985,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getLM()
      */
     public T getLE() {
-        return (isOrbitDefined()) ? orbit.getLE() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getLE() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the mean longitude argument (as per equinoctial parameters).
@@ -996,7 +996,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getLE()
      */
     public T getLM() {
-        return (isOrbitDefined()) ? orbit.getLM() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getLM() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     // Additional orbital elements
@@ -1009,7 +1009,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getEquinoctialEy()
      */
     public T getE() {
-        return (isOrbitDefined()) ? orbit.getE() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getE() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the inclination.
@@ -1018,7 +1018,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getHy()
      */
     public T getI() {
-        return (isOrbitDefined()) ? orbit.getI() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getI() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the position in orbit definition frame.
@@ -1026,7 +1026,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @since 12.0
      */
     public FieldVector3D<T> getPosition() {
-        return (isOrbitDefined()) ? orbit.getPosition() : absPva.getPosition();
+        return isOrbitDefined() ? orbit.getPosition() : absPva.getPosition();
     }
 
     /** Get the {@link TimeStampedFieldPVCoordinates} in orbit definition frame.
@@ -1040,7 +1040,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @return pvCoordinates in orbit definition frame
      */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates() {
-        return (isOrbitDefined()) ? orbit.getPVCoordinates() : absPva.getPVCoordinates();
+        return isOrbitDefined() ? orbit.getPVCoordinates() : absPva.getPVCoordinates();
     }
 
     /** Get the position in given output frame.
@@ -1050,7 +1050,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getPVCoordinates(Frame)
      */
     public FieldVector3D<T> getPosition(final Frame outputFrame) {
-        return (isOrbitDefined()) ? orbit.getPosition(outputFrame) : absPva.getPosition(outputFrame);
+        return isOrbitDefined() ? orbit.getPosition(outputFrame) : absPva.getPosition(outputFrame);
     }
 
     /** Get the {@link TimeStampedFieldPVCoordinates} in given output frame.
@@ -1065,7 +1065,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @return pvCoordinates in orbit definition frame
      */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame) {
-        return (isOrbitDefined()) ? orbit.getPVCoordinates(outputFrame) : absPva.getPVCoordinates(outputFrame);
+        return isOrbitDefined() ? orbit.getPVCoordinates(outputFrame) : absPva.getPVCoordinates(outputFrame);
     }
 
     /** Get the attitude.
