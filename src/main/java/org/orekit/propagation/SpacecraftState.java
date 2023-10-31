@@ -603,7 +603,7 @@ public class SpacecraftState
      * @return the frame in which state is defined
      */
     public Frame getFrame() {
-        return (isOrbitDefined()) ? orbit.getFrame() : absPva.getFrame();
+        return isOrbitDefined() ? orbit.getFrame() : absPva.getFrame();
     }
 
     /** Check if an additional state is available.
@@ -769,7 +769,7 @@ public class SpacecraftState
      * state contains an absolute position-velocity-acceleration rather than an orbit
      */
     public double getMu() {
-        return (isOrbitDefined()) ? orbit.getMu() : Double.NaN;
+        return isOrbitDefined() ? orbit.getMu() : Double.NaN;
     }
 
     /** Get the Keplerian period.
@@ -780,7 +780,7 @@ public class SpacecraftState
      * than an orbit
      */
     public double getKeplerianPeriod() {
-        return (isOrbitDefined()) ? orbit.getKeplerianPeriod() : Double.NaN;
+        return isOrbitDefined() ? orbit.getKeplerianPeriod() : Double.NaN;
     }
 
     /** Get the Keplerian mean motion.
@@ -791,7 +791,7 @@ public class SpacecraftState
      * than an orbit
      */
     public double getKeplerianMeanMotion() {
-        return (isOrbitDefined()) ? orbit.getKeplerianMeanMotion() : Double.NaN;
+        return isOrbitDefined() ? orbit.getKeplerianMeanMotion() : Double.NaN;
     }
 
     /** Get the semi-major axis.
@@ -800,7 +800,7 @@ public class SpacecraftState
      * than an orbit
      */
     public double getA() {
-        return (isOrbitDefined()) ? orbit.getA() : Double.NaN;
+        return isOrbitDefined() ? orbit.getA() : Double.NaN;
     }
 
     /** Get the first component of the eccentricity vector (as per equinoctial parameters).
@@ -810,7 +810,7 @@ public class SpacecraftState
      * @see #getE()
      */
     public double getEquinoctialEx() {
-        return (isOrbitDefined()) ? orbit.getEquinoctialEx() : Double.NaN;
+        return isOrbitDefined() ? orbit.getEquinoctialEx() : Double.NaN;
     }
 
     /** Get the second component of the eccentricity vector (as per equinoctial parameters).
@@ -820,7 +820,7 @@ public class SpacecraftState
      * @see #getE()
      */
     public double getEquinoctialEy() {
-        return (isOrbitDefined()) ? orbit.getEquinoctialEy() : Double.NaN;
+        return isOrbitDefined() ? orbit.getEquinoctialEy() : Double.NaN;
     }
 
     /** Get the first component of the inclination vector (as per equinoctial parameters).
@@ -830,7 +830,7 @@ public class SpacecraftState
      * @see #getI()
      */
     public double getHx() {
-        return (isOrbitDefined()) ? orbit.getHx() : Double.NaN;
+        return isOrbitDefined() ? orbit.getHx() : Double.NaN;
     }
 
     /** Get the second component of the inclination vector (as per equinoctial parameters).
@@ -840,7 +840,7 @@ public class SpacecraftState
      * @see #getI()
      */
     public double getHy() {
-        return (isOrbitDefined()) ? orbit.getHy() : Double.NaN;
+        return isOrbitDefined() ? orbit.getHy() : Double.NaN;
     }
 
     /** Get the true latitude argument (as per equinoctial parameters).
@@ -851,7 +851,7 @@ public class SpacecraftState
      * @see #getLM()
      */
     public double getLv() {
-        return (isOrbitDefined()) ? orbit.getLv() : Double.NaN;
+        return isOrbitDefined() ? orbit.getLv() : Double.NaN;
     }
 
     /** Get the eccentric latitude argument (as per equinoctial parameters).
@@ -862,7 +862,7 @@ public class SpacecraftState
      * @see #getLM()
      */
     public double getLE() {
-        return (isOrbitDefined()) ? orbit.getLE() : Double.NaN;
+        return isOrbitDefined() ? orbit.getLE() : Double.NaN;
     }
 
     /** Get the mean longitude argument (as per equinoctial parameters).
@@ -873,7 +873,7 @@ public class SpacecraftState
      * @see #getLE()
      */
     public double getLM() {
-        return (isOrbitDefined()) ? orbit.getLM() : Double.NaN;
+        return isOrbitDefined() ? orbit.getLM() : Double.NaN;
     }
 
     // Additional orbital elements
@@ -886,7 +886,7 @@ public class SpacecraftState
      * @see #getEquinoctialEy()
      */
     public double getE() {
-        return (isOrbitDefined()) ? orbit.getE() : Double.NaN;
+        return isOrbitDefined() ? orbit.getE() : Double.NaN;
     }
 
     /** Get the inclination.
@@ -895,7 +895,7 @@ public class SpacecraftState
      * @see #getHy()
      */
     public double getI() {
-        return (isOrbitDefined()) ? orbit.getI() : Double.NaN;
+        return isOrbitDefined() ? orbit.getI() : Double.NaN;
     }
 
     /** Get the position in orbit definition frame.
@@ -904,7 +904,7 @@ public class SpacecraftState
      * @see #getPVCoordinates()
      */
     public Vector3D getPosition() {
-        return (isOrbitDefined()) ? orbit.getPosition() : absPva.getPosition();
+        return isOrbitDefined() ? orbit.getPosition() : absPva.getPosition();
     }
 
     /** Get the {@link TimeStampedPVCoordinates} in orbit definition frame.
@@ -918,7 +918,7 @@ public class SpacecraftState
      * @return pvCoordinates in orbit definition frame
      */
     public TimeStampedPVCoordinates getPVCoordinates() {
-        return (isOrbitDefined()) ? orbit.getPVCoordinates() : absPva.getPVCoordinates();
+        return isOrbitDefined() ? orbit.getPVCoordinates() : absPva.getPVCoordinates();
     }
 
     /** Get the position in given output frame.
@@ -928,7 +928,7 @@ public class SpacecraftState
      * @see #getPVCoordinates(Frame)
      */
     public Vector3D getPosition(final Frame outputFrame) {
-        return (isOrbitDefined()) ? orbit.getPosition(outputFrame) : absPva.getPosition(outputFrame);
+        return isOrbitDefined() ? orbit.getPosition(outputFrame) : absPva.getPosition(outputFrame);
     }
 
     /** Get the {@link TimeStampedPVCoordinates} in given output frame.
@@ -943,7 +943,7 @@ public class SpacecraftState
      * @return pvCoordinates in orbit definition frame
      */
     public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame) {
-        return (isOrbitDefined()) ? orbit.getPVCoordinates(outputFrame) : absPva.getPVCoordinates(outputFrame);
+        return isOrbitDefined() ? orbit.getPVCoordinates(outputFrame) : absPva.getPVCoordinates(outputFrame);
     }
 
     /** Get the attitude.
