@@ -94,7 +94,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     /** {@inheritDoc} */
     @Override
     public EphemerisGenerator getEphemerisGenerator() {
-        return () -> new BoundedPropagatorView(lastPropagationStart, lastPropagationEnd);
+        return () -> new BoundedPropagatorView(lastPropagationStart, lastPropagationEnd, getResetAtEnd());
     }
 
     /** {@inheritDoc} */
@@ -158,9 +158,12 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
             } while (!isLastStep);
 
-            // return the last computed state
             lastPropagationEnd = state.getDate();
-            setStartDate(state.getDate());
+            if (getResetAtEnd()) {
+                resetInitialState(state);
+            }
+
+            // return the last computed state
             return state;
 
         } catch (MathRuntimeException mrte) {
@@ -425,10 +428,13 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         /** Simple constructor.
          * @param startDate start date of the propagation
          * @param endDate end date of the propagation
+         * @param resetAtEnd resetting flag
          */
-        BoundedPropagatorView(final AbsoluteDate startDate, final AbsoluteDate endDate) {
+        BoundedPropagatorView(final AbsoluteDate startDate, final AbsoluteDate endDate,
+                              final boolean resetAtEnd) {
             super(AbstractAnalyticalPropagator.this.getAttitudeProvider());
             super.resetInitialState(AbstractAnalyticalPropagator.this.getInitialState());
+            setResetAtEnd(resetAtEnd);
             if (startDate.compareTo(endDate) <= 0) {
                 minDate = startDate;
                 maxDate = endDate;
@@ -468,11 +474,6 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public double getMass(final AbsoluteDate date) {
             return AbstractAnalyticalPropagator.this.getMass(date);
-        }
-
-        /** {@inheritDoc} */
-        public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-            return propagate(date).getPVCoordinates(frame);
         }
 
         /** {@inheritDoc} */

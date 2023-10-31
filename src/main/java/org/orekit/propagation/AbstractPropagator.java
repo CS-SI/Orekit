@@ -66,6 +66,9 @@ public abstract class AbstractPropagator implements Propagator {
     /** Harvester for State Transition Matrix and Jacobian matrix. */
     private AbstractMatricesHarvester harvester;
 
+    /** Flag for resetting the state at end of propagation. */
+    private boolean resetAtEnd;
+
     /** Build a new instance.
      */
     protected AbstractPropagator() {
@@ -73,6 +76,7 @@ public abstract class AbstractPropagator implements Propagator {
         additionalStateProviders = new ArrayList<>();
         unmanagedStates          = new HashMap<>();
         harvester                = null;
+        resetAtEnd               = true;
     }
 
     /** Set a start date.
@@ -151,6 +155,28 @@ public abstract class AbstractPropagator implements Propagator {
         }
         harvester = createHarvester(stmName, initialStm, initialJacobianColumns);
         return harvester;
+    }
+
+    /** Allow/disallow resetting the initial state at end of propagation.
+     * <p>
+     * By default, at the end of the propagation, the propagator resets the initial state
+     * to the final state, thus allowing a new propagation to be started from there without
+     * recomputing the part already performed. Calling this method with {@code resetAtEnd} set
+     * to false changes prevents such reset.
+     * </p>
+     * @param resetAtEnd if true, at end of each propagation, the {@link
+     * #getInitialState() initial state} will be reset to the final state of
+     * the propagation, otherwise the initial state will be preserved
+     */
+    public void setResetAtEnd(final boolean resetAtEnd) {
+        this.resetAtEnd = resetAtEnd;
+    }
+
+    /** Getter for the resetting flag regarding initial state.
+     * @return resetting flag
+     */
+    public boolean getResetAtEnd() {
+        return this.resetAtEnd;
     }
 
     /** Create the harvester suitable for propagator.

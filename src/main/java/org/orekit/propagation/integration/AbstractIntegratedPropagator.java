@@ -102,9 +102,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Mapper between raw double components and space flight dynamics objects. */
     private StateMapper stateMapper;
 
-    /** Flag for resetting the state at end of propagation. */
-    private boolean resetAtEnd;
-
     /** Type of orbit to output (mean or osculating) <br/>
      * <p>
      * This is used only in the case of semi-analytical propagators where there is a clear separation between
@@ -124,31 +121,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         this.secondaryOffsets          = new HashMap<>();
         this.integrator                = integrator;
         this.propagationType           = propagationType;
-        this.resetAtEnd                = true;
-    }
-
-    /** Allow/disallow resetting the initial state at end of propagation.
-     * <p>
-     * By default, at the end of the propagation, the propagator resets the initial state
-     * to the final state, thus allowing a new propagation to be started from there without
-     * recomputing the part already performed. Calling this method with {@code resetAtEnd} set
-     * to false changes prevents such reset.
-     * </p>
-     * @param resetAtEnd if true, at end of each propagation, the {@link
-     * #getInitialState() initial state} will be reset to the final state of
-     * the propagation, otherwise the initial state will be preserved
-     * @since 9.0
-     */
-    public void setResetAtEnd(final boolean resetAtEnd) {
-        this.resetAtEnd = resetAtEnd;
-    }
-
-    /** Getter for the resetting flag regarding initial state.
-     * @return resetting flag
-     * @since 12.0
-     */
-    public boolean getResetAtEnd() {
-        return this.resetAtEnd;
     }
 
     /** Initialize the mapper. */
@@ -499,7 +471,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
             finalState = updateAdditionalStates(finalState);
 
-            if (resetAtEnd) {
+            if (getResetAtEnd()) {
                 resetInitialState(finalState);
                 setStartDate(finalState.getDate());
             }
