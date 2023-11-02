@@ -39,6 +39,9 @@
            formats: EOP C04, STK ephemeris files, Rinex 3.05 and 4.0, Rinex 2 navigation
            messages, CCSDS ADM v2, and Sinex Differential Code Bias (DCB).
            See the list below for a full description of the changes.">
+      <action dev="luc" type="update" issue="1256">
+          Limit use of synchronization in LazyLoadedTimeScales.
+      </action>
       <action dev="serrof" type="update" issue="1242">
           Removed unused static variables in DTM2000.
       </action>
