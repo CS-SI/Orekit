@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class TimeStampedDoubleHermiteInterpolatorTest {
@@ -60,6 +61,14 @@ class TimeStampedDoubleHermiteInterpolatorTest {
         // Sum of 1*1 + 2*2 + 3*3 + ...
         final int expectedSum = sampleSize * (sampleSize + 1) * (2 * sampleSize + 1) / 6;
         Assertions.assertEquals(expectedSum, sum.get());
+        try {
+            // wait for proper ending
+            service.shutdown();
+            service.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException ie) {
+            // Restore interrupted state...
+            Thread.currentThread().interrupt();
+        }
     }
 
     /** Custom class for multi threading testing purpose */
