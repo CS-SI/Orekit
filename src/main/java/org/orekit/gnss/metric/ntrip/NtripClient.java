@@ -459,6 +459,7 @@ public class NtripClient {
 
         try {
             // wait for proper ending
+            executorService.shutdown();
             executorService.awaitTermination(time, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ie) {
             // Restore interrupted state...

@@ -71,6 +71,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -656,6 +657,15 @@ public class MarshallSolarActivityFutureEstimationTest {
             for (int i = 0; i < sampleSize + 1; i++) {
                 final AbsoluteDate currentDate = dates.get(i);
                 Assertions.assertEquals(weatherData.get24HoursKp(currentDate), sortedComputedResults.get(i));
+            }
+
+            try {
+                // wait for proper ending
+                service.shutdown();
+                service.awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException ie) {
+                // Restore interrupted state...
+                Thread.currentThread().interrupt();
             }
         }
         catch (Exception e) {
