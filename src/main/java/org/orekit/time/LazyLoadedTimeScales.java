@@ -19,6 +19,7 @@ package org.orekit.time;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -44,41 +45,42 @@ public class LazyLoadedTimeScales extends AbstractTimeScales {
 
     /** UTCTAI offsets loaders. */
     private final List<UTCTAIOffsetsLoader> loaders = new ArrayList<>();
+
     /** Universal Time Coordinate scale. */
-    private UTCScale utc = null;
+    private AtomicReference<UTCScale> utc = new AtomicReference<>();
 
     /** International Atomic Time scale. */
-    private TAIScale tai = null;
+    private AtomicReference<TAIScale> tai = new AtomicReference<>();
 
     /** Terrestrial Time scale. */
-    private TTScale tt = null;
+    private AtomicReference<TTScale> tt = new AtomicReference<>();
 
     /** Galileo System Time scale. */
-    private GalileoScale gst = null;
+    private AtomicReference<GalileoScale> gst = new AtomicReference<>();
 
     /** GLObal NAvigation Satellite System scale. */
-    private GLONASSScale glonass = null;
+    private AtomicReference<GLONASSScale> glonass = new AtomicReference<>();
 
     /** Quasi-Zenith Satellite System scale. */
-    private QZSSScale qzss = null;
+    private AtomicReference<QZSSScale> qzss = new AtomicReference<>();
 
     /** Global Positioning System scale. */
-    private GPSScale gps = null;
+    private AtomicReference<GPSScale> gps = new AtomicReference<>();
 
     /** Geocentric Coordinate Time scale. */
-    private TCGScale tcg = null;
+    private AtomicReference<TCGScale> tcg = new AtomicReference<>();
 
     /** Barycentric Dynamic Time scale. */
-    private TDBScale tdb = null;
+    private AtomicReference<TDBScale> tdb = new AtomicReference<>();
 
     /** Barycentric Coordinate Time scale. */
-    private TCBScale tcb = null;
+    private AtomicReference<TCBScale> tcb = new AtomicReference<>();
 
     /** IRNSS System Time scale. */
-    private IRNSSScale irnss = null;
+    private AtomicReference<IRNSSScale> irnss = new AtomicReference<>();
 
     /** BDS System Time scale. */
-    private BDTScale bds = null;
+    private AtomicReference<BDTScale> bds = new AtomicReference<>();
 
     /**
      * Create a new set of time scales with the given sources of auxiliary data. This
@@ -159,39 +161,41 @@ public class LazyLoadedTimeScales extends AbstractTimeScales {
 
     @Override
     public TAIScale getTAI() {
-        synchronized (this) {
 
-            if (tai == null) {
-                tai = new TAIScale();
-            }
-
-            return tai;
-
+        TAIScale refTai = tai.get();
+        if (refTai == null) {
+            tai.compareAndSet(null, new TAIScale());
+            refTai = tai.get();
         }
+
+        return refTai;
+
     }
 
     @Override
     public UTCScale getUTC() {
-        synchronized (this) {
-            if (utc == null) {
-                List<OffsetModel> entries = Collections.emptyList();
-                if (loaders.isEmpty()) {
-                    addDefaultUTCTAIOffsetsLoaders();
-                }
-                for (UTCTAIOffsetsLoader loader : loaders) {
-                    entries = loader.loadOffsets();
-                    if (!entries.isEmpty()) {
-                        break;
-                    }
-                }
-                if (entries.isEmpty()) {
-                    throw new OrekitException(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED);
-                }
-                utc = new UTCScale(getTAI(), entries);
-            }
 
-            return utc;
+        UTCScale refUtc = utc.get();
+        if (refUtc == null) {
+            List<OffsetModel> entries = Collections.emptyList();
+            if (loaders.isEmpty()) {
+                addDefaultUTCTAIOffsetsLoaders();
+            }
+            for (UTCTAIOffsetsLoader loader : loaders) {
+                entries = loader.loadOffsets();
+                if (!entries.isEmpty()) {
+                    break;
+                }
+            }
+            if (entries.isEmpty()) {
+                throw new OrekitException(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED);
+            }
+            utc.compareAndSet(null, new UTCScale(getTAI(), entries));
+            refUtc = utc.get();
         }
+
+        return refUtc;
+
     }
 
     @Override
@@ -217,106 +221,106 @@ public class LazyLoadedTimeScales extends AbstractTimeScales {
 
     @Override
     public TTScale getTT() {
-        synchronized (this) {
 
-            if (tt == null) {
-                tt = new TTScale();
-            }
-
-            return tt;
-
+        TTScale refTt = tt.get();
+        if (refTt == null) {
+            tt.compareAndSet(null, new TTScale());
+            refTt = tt.get();
         }
+
+        return refTt;
+
     }
 
     @Override
     public GalileoScale getGST() {
-        synchronized (this) {
 
-            if (gst == null) {
-                gst = new GalileoScale();
-            }
-
-            return gst;
-
+        GalileoScale refGst = gst.get();
+        if (refGst == null) {
+            gst.compareAndSet(null, new GalileoScale());
+            refGst = gst.get();
         }
+
+        return refGst;
+
     }
 
     @Override
     public GLONASSScale getGLONASS() {
-        synchronized (this) {
 
-            if (glonass == null) {
-                glonass = new GLONASSScale(getUTC());
-            }
-
-            return glonass;
-
+        GLONASSScale refGlonass = glonass.get();
+        if (refGlonass == null) {
+            glonass.compareAndSet(null, new GLONASSScale(getUTC()));
+            refGlonass = glonass.get();
         }
+
+        return refGlonass;
+
     }
 
     @Override
     public QZSSScale getQZSS() {
-        synchronized (this) {
 
-            if (qzss == null) {
-                qzss = new QZSSScale();
-            }
-
-            return qzss;
-
+        QZSSScale refQzss = qzss.get();
+        if (refQzss == null) {
+            qzss.compareAndSet(null, new QZSSScale());
+            refQzss = qzss.get();
         }
+
+        return refQzss;
+
     }
 
     @Override
     public GPSScale getGPS() {
-        synchronized (this) {
 
-            if (gps == null) {
-                gps = new GPSScale();
-            }
-
-            return gps;
-
+        GPSScale refGps = gps.get();
+        if (refGps == null) {
+            gps.compareAndSet(null, new GPSScale());
+            refGps = gps.get();
         }
+
+        return refGps;
+
     }
 
     @Override
     public TCGScale getTCG() {
-        synchronized (this) {
 
-            if (tcg == null) {
-                tcg = new TCGScale(getTT(), getTAI());
-            }
-
-            return tcg;
-
+        TCGScale refTcg = tcg.get();
+        if (refTcg == null) {
+            tcg.compareAndSet(null, new TCGScale(getTT(), getTAI()));
+            refTcg = tcg.get();
         }
+
+        return refTcg;
+
     }
 
     @Override
     public TDBScale getTDB() {
-        synchronized (this) {
 
-            if (tdb == null) {
-                tdb = new TDBScale(getTT(), getJ2000Epoch());
-            }
-
-            return tdb;
-
+        TDBScale refTdb = tdb.get();
+        if (refTdb == null) {
+            tdb.compareAndSet(null, new TDBScale(getTT(), getJ2000Epoch()));
+            refTdb = tdb.get();
         }
+
+        return refTdb;
+
     }
 
     @Override
     public TCBScale getTCB() {
-        synchronized (this) {
 
-            if (tcb == null) {
-                tcb = new TCBScale(getTDB(), getTAI());
-            }
-
-            return tcb;
-
+        TCBScale refTcb = tcb.get();
+        if (refTcb == null) {
+            tcb.compareAndSet(null, new TCBScale(getTDB(), getTAI()));
+            refTcb = tcb.get();
         }
+
+        return refTcb;
+
     }
 
     @Override
@@ -329,28 +333,28 @@ public class LazyLoadedTimeScales extends AbstractTimeScales {
 
     @Override
     public IRNSSScale getIRNSS() {
-        synchronized (this) {
 
-            if (irnss == null) {
-                irnss = new IRNSSScale();
-            }
-
-            return irnss;
-
+        IRNSSScale refIrnss = irnss.get();
+        if (refIrnss == null) {
+            irnss.compareAndSet(null, new IRNSSScale());
+            refIrnss = irnss.get();
         }
+
+        return refIrnss;
+
     }
 
     @Override
     public BDTScale getBDT() {
-        synchronized (this) {
 
-            if (bds == null) {
-                bds = new BDTScale();
-            }
-
-            return bds;
-
+        BDTScale refBds = bds.get();
+        if (refBds == null) {
+            bds.compareAndSet(null, new BDTScale());
+            refBds = bds.get();
         }
+
+        return refBds;
+
     }
 
 }
