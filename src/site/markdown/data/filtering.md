@@ -49,11 +49,11 @@ by the `FiltersManager.applyRelevantFilters` method as needed, each one reading 
 underlying stack element and providing filtered data to the next element upward.
 
 In the `DataProvidersManager` case, if at the end the name part of the `DataSource` matches the
-name that the`DataLoader` instance expects, then the data stream of the top of the stack is opened.
+name that the `DataLoader` instance expects, then the data stream of the top of the stack is opened.
 This is were the lazy opening occurs, and it generally ends up with all the intermediate bytes or
 characters streams being opened as well. The opened stream is then passed to the `DataLoader` to be
 parsed. If on the other hand the name part of the `DataSource` does not match the name that the
-`DataLoader` instance expects, then neither the data stream is *not* opened, the full stack is discarded
+`DataLoader` instance expects, then the data stream is *not* opened, the full stack is discarded
 and the next resource/file from the `DataProvider` is considered for filtering and loading.
 
 In the explicit loading case, application can decide on its own to open or discard the top
