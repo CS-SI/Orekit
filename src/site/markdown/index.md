@@ -148,6 +148,7 @@
           step handler alongside the operational ones
     * handling of discrete events during integration
       (models changes, G-stop, simple notifications ...)
+    * adaptable max checking interval for discrete events detection
     * predefined discrete events
         * eclipse (both umbra and penumbra)
         * ascending and descending node crossing
@@ -224,7 +225,7 @@
     * orbit determination can be performed with numerical, DSST, SDP4/SGP4, Eckstein-Hechler, Brouwer-Lyddane, or Keplerian propagators
     * ephemeris-based orbit determination to estimate measurement parameters like station biases or clock offsets
     * multi-satellites orbit determination
-    * initial orbit determination methods (Gibbs, Gooding, Lambert and Laplace)
+    * initial orbit determination methods (Gibbs, Gooding, Lambert, Gauss, and Laplace)
     * ground stations displacements due to solid tides
     * ground stations displacements due to ocean loading (based on Onsala Space Observatory files in BLQ format)
     * ground stations displacements due to plate tectonics
@@ -256,6 +257,7 @@
         * delays
         * Antenna Phase Center
         * Shapiro relativistic effect
+        * aberration of light in telescope measurements
     * possibility to add custom measurement modifiers (even for predefined events)
     * combination of GNSS measurements
         * dual frequency combination of measurements
@@ -290,6 +292,7 @@
   * Orbit file handling
   
     * loading and writing of SP3 orbit files (from version a to d)
+    * splicing and interpolation of SP3 files
     * loading and writing of CCSDS Orbit Data Messages (OPM, OEM, OMM and OCM types are supported, in both KVN and XML formats, standalone or in combined NDM)
     * loading of SEM and YUMA files for GPS constellation
     * exporting of ephemeris in CCSDS OEM and OCM file formats
@@ -320,7 +323,7 @@
   * Collisions
 
     * loading and writing of CCSDS Conjunction Data Messages (CDM in both KVN and XML formats)
-    * 2D probability of collision computing methods assuming short term encounter and spherical bodies :
+    * 2D probability of collision computing methods assuming short term encounter and spherical bodies:
       
       * Chan 1997
       * Alfriend 1999

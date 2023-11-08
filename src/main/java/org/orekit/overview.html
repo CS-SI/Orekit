@@ -185,6 +185,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       </li>
       <li>handling of discrete events during integration (models changes, G-stop,
         simple notifications ...)</li>
+      <li>adaptable max checking interval for discrete events detection</li>
       <li>predefined discrete events
         <ul>
           <li>eclipse (both umbra and penumbra)</li>
@@ -289,7 +290,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>orbit determination can be performed with numerical, DSST, SDP4/SGP4, Eckstein-Hechler, Brouwer-Lyddane, or Keplerian propagators</li>
       <li>ephemeris-based orbit determination to estimate measurement parameters like station biases or clock offsets</li>
       <li>multi-satellites orbit determination</li>
-      <li>initial orbit determination methods (Gibbs, Gooding, Lambert and Laplace)</li>
+      <li>initial orbit determination methods (Gibbs, Gooding, Lambert, Gauss, and Laplace)</li>
       <li>ground stations displacements due to solid tides</li>
       <li>ground stations displacements due to ocean loading (based on Onsala Space Observatory files in BLQ format)</li>
       <li>ground stations displacements due to plate tectonics</li>
@@ -325,6 +326,7 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>delays</li>
           <li>Antenna Phase Center</li>
           <li>Shapiro relativistic effect</li>
+          <li>aberration of light in telescope measurements</li>
         </ul>
       </li>
       <li>possibility to add custom measurement modifiers (even for predefined events)</li>
@@ -366,6 +368,7 @@ discrete events. Here is a short list of the features offered by the library:</p
   <li>Orbit file handling
     <ul>
       <li>loading and writing of SP3 orbit files (from versions a to d)</li>
+      <li>splicing and interpolation of SP3 files</li>
       <li>loading and writing of CCSDS Orbit Data Messages (both OPM, OEM, OMM, OCM types are supported, in both KVN and XML formats, standalone or in combined NDM)</li>
       <li>loading of SEM and YUMA files for GPS constellation</li>
       <li>exporting of ephemeris in CCSDS OEM and OCM file formats</li>
@@ -399,7 +402,7 @@ discrete events. Here is a short list of the features offered by the library:</p
   <li>Collisions
     <ul>
       <li>loading and writing of CCSDS Conjunction Data Messages (CDM in both KVN and XML formats)</li>
-      <li>2D probability of collision computing methods assuming short term encounter and spherical bodies :
+      <li>2D probability of collision computing methods assuming short term encounter and spherical bodies:
         <ul>
           <li>Chan 1997</li>
           <li>Alfriend 1999</li>
