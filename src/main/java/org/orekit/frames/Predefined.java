@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -257,7 +257,7 @@ public enum Predefined {
     /** PZ-90.11 frame. */
     PZ90_11("PZ90.11");
 
-    /** Name fo the frame. */
+    /** Name of the frame. */
     private final String name;
 
     /** Simple constructor.

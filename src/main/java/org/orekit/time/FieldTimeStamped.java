@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,6 +38,7 @@ import org.hipparchus.CalculusFieldElement;
  * @see ChronologicalComparator
  * @see org.orekit.utils.TimeStampedCache
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
 public interface FieldTimeStamped<T extends CalculusFieldElement<T>> {
 
@@ -45,5 +46,22 @@ public interface FieldTimeStamped<T extends CalculusFieldElement<T>> {
      * @return date attached to the object
      */
     FieldAbsoluteDate<T> getDate();
+
+    /** Compute the physically elapsed duration between two instants.
+     * <p>The returned duration is the number of seconds physically
+     * elapsed between the two instants, measured in a regular time
+     * scale with respect to surface of the Earth (i.e either the {@link
+     * TAIScale TAI scale}, the {@link TTScale TT scale} or the {@link
+     * GPSScale GPS scale}). It is the only method that gives a
+     * duration with a physical meaning.</p>
+     * @param other instant to subtract from the instance
+     * @return offset in seconds between the two instants (positive
+     * if the instance is posterior to the argument)
+     * @see FieldAbsoluteDate#durationFrom(FieldAbsoluteDate)
+     * @since 12.0
+     */
+    default T durationFrom(FieldTimeStamped<T> other) {
+        return getDate().durationFrom(other.getDate());
+    }
 
 }

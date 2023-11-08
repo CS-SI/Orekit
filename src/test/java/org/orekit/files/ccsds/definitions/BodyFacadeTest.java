@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 
 public class BodyFacadeTest {
 
@@ -49,6 +50,25 @@ public class BodyFacadeTest {
         // Verify
         Assertions.assertEquals("SUN", body.getName());
         Assertions.assertEquals("Sun", body.getBody().getName());
+
+    }
+
+    @Test
+    public void testIssue1137() {
+
+        // Create the body facade (SUN)
+        final BodyFacade sun = BodyFacade.create(CenterName.SUN, DataContext.getDefault());
+
+        // Verify
+        Assertions.assertEquals("SUN", sun.getName());
+        Assertions.assertEquals("Sun", sun.getBody().getName());
+
+        // Create the body facade (EARTH)
+        final BodyFacade earth = BodyFacade.create(CenterName.EARTH, DataContext.getDefault().getCelestialBodies());
+
+        // Verify
+        Assertions.assertEquals("EARTH", earth.getName());
+        Assertions.assertEquals("Earth", earth.getBody().getName());
 
     }
 

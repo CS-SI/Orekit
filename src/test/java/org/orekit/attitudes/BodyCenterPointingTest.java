@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.AfterEach;
@@ -37,11 +37,12 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -238,21 +239,21 @@ public class BodyCenterPointingTest {
 
     @Test
     public void testTargetField() {
-        doTestTarget(Decimal64Field.getInstance());
+        doTestTarget(Binary64Field.getInstance());
     }
     @Test
     public void doxBodyCenterInPointingDirectionTest() {
-        doTestBodyCenterInPointingDirection(Decimal64Field.getInstance());
+        doTestBodyCenterInPointingDirection(Binary64Field.getInstance());
     }
 
     @Test
     public void testQDotField() {
-        doTestQDot(Decimal64Field.getInstance());
+        doTestQDot(Binary64Field.getInstance());
     }
 
     @Test
     public void testSpinField() {
-        doTestSpin(Decimal64Field.getInstance());
+        doTestSpin(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>>void doTestTarget(final Field<T> field) {
@@ -273,7 +274,7 @@ public class BodyCenterPointingTest {
                                                            TimeScalesFactory.getUTC());
         // Orbit
         FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
-                                                                m, PositionAngle.MEAN,
+                                                                m, PositionAngleType.MEAN,
                                                                 FramesFactory.getEME2000(), date, mu);
         // WGS84 Earth model
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -312,7 +313,7 @@ public class BodyCenterPointingTest {
                                                            TimeScalesFactory.getUTC());
         // Orbit
         FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
-                                                                m, PositionAngle.MEAN,
+                                                                m, PositionAngleType.MEAN,
                                                                 FramesFactory.getEME2000(), date, mu);
 
         // WGS84 Earth model
@@ -320,12 +321,12 @@ public class BodyCenterPointingTest {
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Transform from EME2000 to ITRF2008
-        Transform eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(earth.getBodyFrame(), date.toAbsoluteDate());
+        StaticTransform eme2000ToItrf = FramesFactory.getEME2000().getStaticTransformTo(earth.getBodyFrame(), date.toAbsoluteDate());
 
         // Earth center pointing attitude provider
         BodyCenterPointing earthCenterAttitudeLaw= new BodyCenterPointing(circ.getFrame(), earth);
         // Transform satellite position to position/velocity parameters in EME2000 frame
-        FieldPVCoordinates<T> pvSatEME2000 = circ.getPVCoordinates();
+        FieldVector3D<T> positionSatEME2000 = circ.getPosition();
 
         //  Pointing direction
         // ********************
@@ -340,12 +341,12 @@ public class BodyCenterPointingTest {
         FieldVector3D<T> zSatITRF2008C = eme2000ToItrf.transformVector(zSatEME2000);
 
         // Transform satellite position/velocity from EME2000 to ITRF2008
-        FieldPVCoordinates<T> pvSatITRF2008C = eme2000ToItrf.transformPVCoordinates(pvSatEME2000);
+        FieldVector3D<T> positionSatITRF2008C = eme2000ToItrf.transformPosition(positionSatEME2000);
 
 
        // Line containing satellite point and following pointing direction
-        Line pointingLine = new Line(pvSatITRF2008C.getPosition().toVector3D(),
-                                     pvSatITRF2008C.getPosition().toVector3D().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+        Line pointingLine = new Line(positionSatITRF2008C.toVector3D(),
+                                     positionSatITRF2008C.toVector3D().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                       zSatITRF2008C.toVector3D()),
                                      2.0e-8);
 
@@ -379,7 +380,7 @@ public class BodyCenterPointingTest {
                                                                 TimeScalesFactory.getUTC());
         // Orbit
         FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
-                                                                m, PositionAngle.MEAN,
+                                                                m, PositionAngleType.MEAN,
                                                                 FramesFactory.getEME2000(), date_comp, ehMu);
         // WGS84 Earth model
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -464,7 +465,7 @@ public class BodyCenterPointingTest {
                                                               TimeScalesFactory.getUTC());
         // Orbit
         FieldKeplerianOrbit<T> circ = new FieldKeplerianOrbit<>(a, e, i, pa, raan,
-                                                                m, PositionAngle.MEAN,
+                                                                m, PositionAngleType.MEAN,
                                                                 FramesFactory.getEME2000(), date_R, ehMu);
         // WGS84 Earth model
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -508,7 +509,7 @@ public class BodyCenterPointingTest {
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
         Assertions.assertTrue(spin0.getNorm().getReal() > 1.0e-3);
-        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm().getReal(), 1.0e-13);
+        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm().getReal(), 1.1e-13);
 
     }
 
@@ -528,7 +529,7 @@ public class BodyCenterPointingTest {
             final double raan = 270.;
             circ =
                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(raan),
-                                       FastMath.toRadians(5.300 - raan), PositionAngle.MEAN,
+                                       FastMath.toRadians(5.300 - raan), PositionAngleType.MEAN,
                                        FramesFactory.getEME2000(), date, mu);
 
 

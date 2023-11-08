@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,9 @@
  */
 package org.orekit.propagation.numerical;
 
-import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.FieldAttitude;
-import org.orekit.orbits.FieldCartesianOrbit;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractGradientConverter;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Converter for states and parameters arrays.
  * @author Luc Maisonobe
@@ -46,54 +36,8 @@ class NumericalGradientConverter extends AbstractGradientConverter {
 
         super(freeStateParameters);
 
-        // Derivative field
-        final Field<Gradient> field =  GradientField.getField(freeStateParameters);
-
-        // position always has derivatives
-        final Vector3D pos = state.getPVCoordinates().getPosition();
-        final FieldVector3D<Gradient> posG = new FieldVector3D<>(Gradient.variable(freeStateParameters, 0, pos.getX()),
-                                                                 Gradient.variable(freeStateParameters, 1, pos.getY()),
-                                                                 Gradient.variable(freeStateParameters, 2, pos.getZ()));
-
-        // velocity may have derivatives or not
-        final Vector3D vel = state.getPVCoordinates().getVelocity();
-        final FieldVector3D<Gradient> velG;
-        if (freeStateParameters > 3) {
-            velG = new FieldVector3D<>(Gradient.variable(freeStateParameters, 3, vel.getX()),
-                                       Gradient.variable(freeStateParameters, 4, vel.getY()),
-                                       Gradient.variable(freeStateParameters, 5, vel.getZ()));
-        } else {
-            velG = new FieldVector3D<>(Gradient.constant(freeStateParameters, vel.getX()),
-                                       Gradient.constant(freeStateParameters, vel.getY()),
-                                       Gradient.constant(freeStateParameters, vel.getZ()));
-        }
-
-        // acceleration never has derivatives
-        final Vector3D acc = state.getPVCoordinates().getAcceleration();
-        final FieldVector3D<Gradient> accG = new FieldVector3D<>(Gradient.constant(freeStateParameters, acc.getX()),
-                                                                 Gradient.constant(freeStateParameters, acc.getY()),
-                                                                 Gradient.constant(freeStateParameters, acc.getZ()));
-
-        // mass never has derivatives
-        final Gradient gM = Gradient.constant(freeStateParameters, state.getMass());
-
-        final Gradient gMu = Gradient.constant(freeStateParameters, state.getMu());
-
-        final FieldOrbit<Gradient> gOrbit =
-                        new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(state.getDate(), posG, velG, accG),
-                                                  state.getFrame(), gMu);
-
-        final FieldAttitude<Gradient> gAttitude;
-        if (freeStateParameters > 3) {
-            // compute attitude partial derivatives with respect to position/velocity
-            gAttitude = provider.getAttitude(gOrbit, gOrbit.getDate(), gOrbit.getFrame());
-        } else {
-            // force model does not depend on attitude, don't bother recomputing it
-            gAttitude = new FieldAttitude<>(field, state.getAttitude());
-        }
-
         // initialize the list with the state having 0 force model parameters
-        initStates(new FieldSpacecraftState<>(gOrbit, gAttitude, gM));
+        initStates(buildBasicGradientSpacecraftState(state, freeStateParameters, provider));
 
     }
 

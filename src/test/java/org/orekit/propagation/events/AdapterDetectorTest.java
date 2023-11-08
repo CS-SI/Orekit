@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +30,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -48,7 +49,9 @@ public class AdapterDetectorTest {
 
     @Test
     public void testSimpleTimer() {
-        DateDetector dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(2.0*dt));
+        DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(2.0*dt)).
+                                    withMaxCheck(maxCheck).
+                                    withThreshold(threshold);
         AdapterDetector adapter = new AdapterDetector(dateDetector);
         Assertions.assertSame(dateDetector, adapter.getDetector());
         Assertions.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate), 1.0e-10);
@@ -59,15 +62,23 @@ public class AdapterDetectorTest {
     }
 
     @Test
-    public void testOverrideAction() {
+    public void testOverrideHandler() {
         AtomicInteger count = new AtomicInteger(0);
-        DateDetector dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(2.0*dt));
+        DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(2.0*dt)).
+                                    withMaxCheck(maxCheck).
+                                    withThreshold(threshold);
         AdapterDetector adapter = new AdapterDetector(dateDetector) {
             /** {@inheritDoc} */
             @Override
-            public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-                count.incrementAndGet();
-                return Action.RESET_STATE;
+            public EventHandler getHandler() {
+                return new EventHandler() {
+                    /** {@inheritDoc} */
+                    @Override
+                    public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
+                        count.incrementAndGet();
+                        return Action.RESET_STATE;
+                    }
+                };
             }
         };
         Assertions.assertSame(dateDetector, adapter.getDetector());

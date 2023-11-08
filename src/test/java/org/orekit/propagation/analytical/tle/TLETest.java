@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,29 +16,6 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.CombinatoricsUtils;
-import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.CartesianOrbit;
-import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
-
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -50,15 +27,31 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Path;
 import java.text.ParseException;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.CombinatoricsUtils;
+import org.hipparchus.util.FastMath;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
+
 
 public class TLETest {
     
     @TempDir
     public Path temporaryFolderPath;
-
-    private TLE geoTLE;
-
-    private TLE leoTLE;
 
     @Test
     public void testTLEFormat() {
@@ -538,66 +531,6 @@ public class TLETest {
     }
 
     @Test
-    public void testOneMoreRevolution() {
-        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(leoTLE);
-        final int initRevolutionNumber = leoTLE.getRevolutionNumberAtEpoch();
-        final double dt =  2 * FastMath.PI / leoTLE.getMeanMotion();
-        final AbsoluteDate target = leoTLE.getDate().shiftedBy(dt);
-        final SpacecraftState endState = propagator.propagate(target);
-        final TLE endLEOTLE = TLE.stateToTLE(endState, leoTLE);
-        final int endRevolutionNumber = endLEOTLE.getRevolutionNumberAtEpoch();
-        Assertions.assertEquals(initRevolutionNumber + 1 , endRevolutionNumber);
-    }
-
-    @Test
-    public void testOneLessRevolution() {
-        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(leoTLE);
-        final int initRevolutionNumber = leoTLE.getRevolutionNumberAtEpoch();
-        final double dt =  - 2 * FastMath.PI / leoTLE.getMeanMotion();
-        final AbsoluteDate target = leoTLE.getDate().shiftedBy(dt);
-        final SpacecraftState endState = propagator.propagate(target);
-        final TLE endLEOTLE = TLE.stateToTLE(endState, leoTLE);
-        final int endRevolutionNumber = endLEOTLE.getRevolutionNumberAtEpoch();
-        Assertions.assertEquals(initRevolutionNumber - 1 , endRevolutionNumber);
-    }
-
-    @Test
-    public void testConversionLeo() {
-        checkConversion(leoTLE);
-    }
-
-    @Test
-    public void testConversionGeo() {
-        checkConversion(geoTLE);
-    }
-
-    /** Check the State to TLE conversion. */
-    protected void checkConversion(final TLE tle) {
-
-        Propagator p = TLEPropagator.selectExtrapolator(tle);
-        final TLE converted = TLE.stateToTLE(p.getInitialState(), tle);
-
-        Assertions.assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
-        Assertions.assertEquals(tle.getClassification(),          converted.getClassification());
-        Assertions.assertEquals(tle.getLaunchYear(),              converted.getLaunchYear());
-        Assertions.assertEquals(tle.getLaunchNumber(),            converted.getLaunchNumber());
-        Assertions.assertEquals(tle.getLaunchPiece(),             converted.getLaunchPiece());
-        Assertions.assertEquals(tle.getElementNumber(),           converted.getElementNumber());
-        Assertions.assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
-
-        final double eps = 1.0e-7;
-        Assertions.assertEquals(tle.getMeanMotion(), converted.getMeanMotion(), eps * tle.getMeanMotion());
-        Assertions.assertEquals(tle.getE(), converted.getE(), eps * tle.getE());
-        Assertions.assertEquals(tle.getI(), converted.getI(), eps * tle.getI());
-        Assertions.assertEquals(tle.getPerigeeArgument(), converted.getPerigeeArgument(), eps * tle.getPerigeeArgument());
-        Assertions.assertEquals(tle.getRaan(), converted.getRaan(), eps * tle.getRaan());
-        Assertions.assertEquals(tle.getMeanAnomaly(), converted.getMeanAnomaly(), eps * tle.getMeanAnomaly());
-        Assertions.assertEquals(tle.getMeanAnomaly(), converted.getMeanAnomaly(), eps * tle.getMeanAnomaly());
-        Assertions.assertEquals(tle.getBStar(), converted.getBStar(), eps * tle.getBStar());
-
-    }
-
-    @Test
     public void testStateToTleISS() {
 
         // Initialize TLE
@@ -610,8 +543,11 @@ public class TLETest {
         // State at TLE epoch
         final SpacecraftState state = propagator.propagate(tleISS.getDate());
 
+        // TLE generation algorithm
+        final TleGenerationAlgorithm algorithm = new FixedPointTleGenerationAlgorithm();
+
         // Convert to TLE
-        final TLE rebuilt = TLE.stateToTLE(state, tleISS);
+        final TLE rebuilt = TLE.stateToTLE(state, tleISS, algorithm);
 
         // Verify
         final double eps = 1.0e-7;
@@ -630,32 +566,6 @@ public class TLETest {
         Assertions.assertEquals(tleISS.getMeanAnomaly(),             rebuilt.getMeanAnomaly(),     eps * tleISS.getMeanAnomaly());
         Assertions.assertEquals(tleISS.getMeanAnomaly(),             rebuilt.getMeanAnomaly(),     eps * tleISS.getMeanAnomaly());
         Assertions.assertEquals(tleISS.getBStar(),                   rebuilt.getBStar(),           eps * tleISS.getBStar());
-    }
-
-    @Test
-    public void testIssue802() {
-
-        // Initialize TLE
-        final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
-                                   "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
-
-        // TLE propagator
-        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleISS);
-
-        // State at TLE epoch
-        final SpacecraftState state = propagator.propagate(tleISS.getDate());
-
-        // Changes frame
-        final Frame eme2000 = FramesFactory.getEME2000();
-        final TimeStampedPVCoordinates pv = state.getPVCoordinates(eme2000);
-        final CartesianOrbit orbit = new CartesianOrbit(pv, eme2000, state.getMu());
-
-        // Convert to TLE
-        final TLE rebuilt = TLE.stateToTLE(new SpacecraftState(orbit), tleISS);
-
-        // Verify
-        Assertions.assertEquals(tleISS.getLine1(), rebuilt.getLine1());
-        Assertions.assertEquals(tleISS.getLine2(), rebuilt.getLine2());
     }
 
     @Test
@@ -689,30 +599,6 @@ public class TLETest {
     }
 
     @Test
-    public void testIssue864() {
-
-        // Initialize TLE
-        final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
-                                   "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
-
-        // TLE propagator
-        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleISS);
-
-        // State at TLE epoch
-        final SpacecraftState state = propagator.propagate(tleISS.getDate());
-
-        // Set the BStar driver to selected
-        tleISS.getParametersDrivers().forEach(driver -> driver.setSelected(true));
-
-        // Convert to TLE
-        final TLE rebuilt = TLE.stateToTLE(state, tleISS);
-
-        // Verify if driver is still selected
-        rebuilt.getParametersDrivers().forEach(driver -> Assertions.assertTrue(driver.isSelected()));
-
-    }
-
-    @Test
     public void testUnknowParameter() {
 
         // Initialize TLE
@@ -728,12 +614,25 @@ public class TLETest {
 
     }
 
+    @Test
+    void roundToNextDayError() {
+        //Given
+        final AbsoluteDate tleDate = new AbsoluteDate("2022-01-01T23:59:59.99999999", TimeScalesFactory.getUTC());
+
+        final TLE tle =
+                new TLE(99999, 'U', 2022, 999, "A", 0, 1, tleDate, 0.0, 0.0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 99, 11606 * 1e-4,
+                        TimeScalesFactory.getUTC());
+
+        //When
+        final AbsoluteDate returnedDate = tle.getDate();
+
+        //Then
+        // Assert that TLE class did not round the date to the next day
+        Assertions.assertEquals(tleDate, returnedDate);
+    }
+
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
-        geoTLE = new TLE("1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
-                         "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
-        leoTLE = new TLE("1 31135U 07013A   11003.00000000  .00000816  00000+0  47577-4 0    11",
-                         "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.NullArgumentException;
 import org.hipparchus.random.MersenneTwister;
 import org.hipparchus.util.CombinatoricsUtils;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
@@ -48,7 +48,7 @@ public class CoefficientFactoryTest {
     @Test
     public void testVns() {
         final int order = 100;
-        SortedMap<NSKey, Double> Vns = CoefficientsFactory.computeVnsCoefficients(order);
+        SortedMap<NSKey, Double> Vns = CoefficientsFactory.computeVns(order);
 
         // Odd terms are null
         for (int i = 0; i < order; i++) {
@@ -146,7 +146,7 @@ public class CoefficientFactoryTest {
 
     @Test
     public void testQnsField() {
-        doTestQnsField(Decimal64Field.getInstance());
+        doTestQnsField(Binary64Field.getInstance());
     }
 
     /**
@@ -196,7 +196,7 @@ public class CoefficientFactoryTest {
 
     @Test
     public void testGsHsField() {
-        doTestGsHsField(Decimal64Field.getInstance());
+        doTestGsHsField(Binary64Field.getInstance());
     }
 
     /** Gs and Hs computation test based on 2 independent methods.

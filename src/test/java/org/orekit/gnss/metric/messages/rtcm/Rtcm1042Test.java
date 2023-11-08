@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,12 +24,12 @@ import org.orekit.Utils;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1042;
 import org.orekit.gnss.metric.messages.rtcm.ephemeris.Rtcm1042Data;
-import org.orekit.gnss.metric.parser.ByteArrayEncodedMessages;
+import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
-import org.orekit.propagation.analytical.gnss.data.BeidouNavigationMessage;
+import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.time.GNSSDate;
 
 import java.util.ArrayList;
@@ -77,7 +77,7 @@ public class Rtcm1042Test {
                         "0" +                                // SV Health
                         "0";                                 // Reserved
 
-        final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+        final EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
         message.start();
 
         ArrayList<Integer> messages = new ArrayList<>();
@@ -85,13 +85,13 @@ public class Rtcm1042Test {
 
         final Rtcm1042                rtcm1042      = (Rtcm1042) new RtcmMessagesParser(messages).parse(message, false);
         final Rtcm1042Data            ephemerisData = rtcm1042.getEphemerisData();
-        final BeidouNavigationMessage beidouMessage = ephemerisData.getBeidouNavigationMessage();
+        final BeidouLegacyNavigationMessage beidouMessage = ephemerisData.getBeidouNavigationMessage();
 
         // Verify propagator initialization
         final GNSSPropagator propagator = new GNSSPropagatorBuilder(beidouMessage).build();
         Assertions.assertNotNull(propagator);
         Assertions.assertEquals(0.0, beidouMessage.getDate().
-                            durationFrom(new GNSSDate(beidouMessage.getWeek(), 1000.0 * beidouMessage.getTime(), SatelliteSystem.BEIDOU).getDate()), eps);
+                            durationFrom(new GNSSDate(beidouMessage.getWeek(), beidouMessage.getTime(), SatelliteSystem.BEIDOU).getDate()), eps);
 
         // Verify message number
         Assertions.assertEquals(1042,                   rtcm1042.getTypeCode());
@@ -108,7 +108,7 @@ public class Rtcm1042Test {
         Assertions.assertEquals(20,                     beidouMessage.getAODC());
         Assertions.assertEquals(0.0,                    beidouMessage.getCrs(),                eps);
         Assertions.assertEquals(1.4587496546628753E-4,  beidouMessage.getMeanMotion(),         eps);
-        Assertions.assertEquals(0.16717753824407455,    beidouMessage.getM0(),                 eps);
+        Assertions.assertEquals(0.1671775426328288,     beidouMessage.getM0(),                 eps);
         Assertions.assertEquals(0.0,                    beidouMessage.getCuc(),                eps);
         Assertions.assertEquals(0.03899807028938085,    beidouMessage.getE(),                  eps);
         Assertions.assertEquals(0.0,                    beidouMessage.getCus(),                eps);
@@ -116,11 +116,11 @@ public class Rtcm1042Test {
         Assertions.assertEquals(560696.0,               beidouMessage.getTime(),               eps);
         Assertions.assertEquals(0.0,                    beidouMessage.getCic(),                eps);
         Assertions.assertEquals(0.0,                    beidouMessage.getCis(),                eps);
-        Assertions.assertEquals(0.9877147247285952,     beidouMessage.getI0(),                 eps);
+        Assertions.assertEquals(0.987714701321906,      beidouMessage.getI0(),                 eps);
         Assertions.assertEquals(0.0,                    beidouMessage.getCrc(),                eps);
         Assertions.assertEquals(0.30049130834913723,    beidouMessage.getPa(),                 eps);
         Assertions.assertEquals(-5.855958209879004E-9,  beidouMessage.getOmegaDot(),           eps);
-        Assertions.assertEquals(0.6980085400002902,     beidouMessage.getOmega0(),             eps);
+        Assertions.assertEquals(0.6980085385373721,     beidouMessage.getOmega0(),             eps);
         Assertions.assertEquals(7.9E-9,                 beidouMessage.getTGD1(),               eps);
         Assertions.assertEquals(4.63E-8,                beidouMessage.getTGD2(),               eps);
 
@@ -166,7 +166,7 @@ public class Rtcm1042Test {
                         "0" +                                // SV Health
                         "0";                                 // Reserved
 
-       final EncodedMessage message = new ByteArrayEncodedMessages(byteArrayFromBinary(m));
+       final EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
        message.start();
 
        ArrayList<Integer> messages = new ArrayList<>();

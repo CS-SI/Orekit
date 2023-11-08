@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,19 +41,43 @@ public enum ManeuverKey {
                                                                       container::setDuration)),
 
     /** Reference frame entry. */
-    MAN_REF_FRAME((token, context, container) -> token.processAsUppercaseString(container::setRefFrameString)),
+    MAN_REF_FRAME((token, context, container) -> token.processAsFrame(container::setFrame, context, true, true, true)),
 
-    /** First torque vector component entry. */
+    /** First torque vector component entry (ADM V1 only). */
     MAN_TOR_1((token, context, container) -> token.processAsIndexedDouble(0, Units.N_M, context.getParsedUnitsBehavior(),
                                                                           container::setTorque)),
 
-    /** Second torque vector component entry. */
+    /** First torque vector component entry.
+     * @since 12.0
+     */
+    MAN_TOR_X((token, context, container) -> token.processAsIndexedDouble(0, Units.N_M, context.getParsedUnitsBehavior(),
+                                                                          container::setTorque)),
+
+    /** Second torque vector component entry (ADM V1 only). */
     MAN_TOR_2((token, context, container) -> token.processAsIndexedDouble(1, Units.N_M, context.getParsedUnitsBehavior(),
                                                                           container::setTorque)),
 
-    /** Third torque vector component entry. */
+    /** Second torque vector component entry.
+     * @since 12.0
+     */
+    MAN_TOR_Y((token, context, container) -> token.processAsIndexedDouble(1, Units.N_M, context.getParsedUnitsBehavior(),
+                                                                          container::setTorque)),
+
+    /** Third torque vector component entry (ADM V1 only). */
     MAN_TOR_3((token, context, container) -> token.processAsIndexedDouble(2, Units.N_M, context.getParsedUnitsBehavior(),
-                                                                          container::setTorque));
+                                                                          container::setTorque)),
+
+    /** Third torque vector component entry.
+     * @since 12.0
+     */
+    MAN_TOR_Z((token, context, container) -> token.processAsIndexedDouble(2, Units.N_M, context.getParsedUnitsBehavior(),
+                                                                          container::setTorque)),
+
+    /** Mass change entry.
+     * @since 12.0
+     */
+    MAN_DELTA_MASS((token, context, container) -> token.processAsDouble(Unit.KILOGRAM, context.getParsedUnitsBehavior(),
+                                                                        container::setDeltaMass));
 
     /** Processing method. */
     private final TokenProcessor processor;

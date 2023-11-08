@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
+import org.orekit.propagation.events.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -110,12 +111,12 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
+    public Stream<EventDetector> getEventDetectors() {
         return Stream.of(firingIntervalDetector);
     }
 
     /** {@inheritDoc} */
-    public <S extends CalculusFieldElement<S>> Stream<FieldEventDetector<S>> getFieldEventsDetectors(final Field<S> field) {
+    public <S extends CalculusFieldElement<S>> Stream<FieldEventDetector<S>> getFieldEventDetectors(final Field<S> field) {
 
         @SuppressWarnings("unchecked")
         FieldEventDetector<S> fd = (FieldEventDetector<S>) cached.get(field);
@@ -130,7 +131,7 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
 
     /** Convert a detector and set up check interval, threshold and new handler.
      * <p>
-     * This method is not inlined in {@link #getFieldEventsDetectors(Field)} because the
+     * This method is not inlined in {@link #getFieldEventDetectors(Field)} because the
      * parameterized types confuses the Java compiler.
      * </p>
      * @param field field to which the state belongs
@@ -140,15 +141,16 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
      */
     private <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> D convertAndSetUpHandler(final Field<S> field) {
         final FieldAbstractDetector<D, S> converted = convertIntervalDetector(field, firingIntervalDetector);
+        final FieldAdaptableInterval<S>   maxCheck  = s -> firingIntervalDetector.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
         return converted.
-               withMaxCheck(field.getZero().newInstance(firingIntervalDetector.getMaxCheckInterval())).
+               withMaxCheck(maxCheck).
                withThreshold(field.getZero().newInstance(firingIntervalDetector.getThreshold())).
                withHandler(new FieldHandler<>());
     }
 
     /** Convert a primitive firing intervals detector into a field firing intervals detector.
      * <p>
-     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(CalculusFieldElement) withMaxCheck},
+     * There is not need to set up {@link FieldAbstractDetector#withMaxCheck(FieldAdaptableInterval) withMaxCheck},
      * {@link FieldAbstractDetector#withThreshold(CalculusFieldElement) withThreshold}, or
      * {@link FieldAbstractDetector#withHandler(org.orekit.propagation.events.handlers.FieldEventHandler) withHandler}
      * in the converted detector, this will be done by caller.
@@ -176,25 +178,25 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
      * @param <S> type of the field elements
      * @return converted firing intervals detector
      */
-    protected abstract <D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>>
+    protected abstract <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>>
         FieldAbstractDetector<D, S> convertIntervalDetector(Field<S> field, T detector);
 
     /** Local handler for both start and stop triggers. */
-    private class Handler implements EventHandler<T> {
+    private class Handler implements EventHandler {
 
         /** Propagation direction. */
         private boolean forward;
 
         /** {@inheritDoc} */
         @Override
-        public void init(final SpacecraftState initialState, final AbsoluteDate target, final T detector) {
+        public void init(final SpacecraftState initialState, final AbsoluteDate target, final EventDetector detector) {
             forward = target.isAfterOrEqualTo(initialState);
             initializeResetters(initialState, target);
         }
 
         /** {@inheritDoc} */
         @Override
-        public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing) {
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
             if (forward) {
                 getFirings().addValidAfter(increasing, s.getDate(), false);
             } else {
@@ -206,7 +208,7 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final T detector, final SpacecraftState oldState) {
+        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
             return applyResetters(oldState);
         }
 
@@ -215,7 +217,7 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
     /** Local handler for both start and stop triggers.
      * @param <S> type of the field elements
      */
-    private class FieldHandler<D extends FieldEventDetector<S>, S extends CalculusFieldElement<S>> implements FieldEventHandler<D, S> {
+    private class FieldHandler<D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> implements FieldEventHandler<S> {
 
         /** Propagation direction. */
         private boolean forward;
@@ -224,14 +226,14 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
         @Override
         public void init(final FieldSpacecraftState<S> initialState,
                          final FieldAbsoluteDate<S> target,
-                         final D detector) {
+                         final FieldEventDetector<S> detector) {
             forward = target.isAfterOrEqualTo(initialState);
             initializeResetters(initialState, target);
         }
 
         /** {@inheritDoc} */
         @Override
-        public Action eventOccurred(final FieldSpacecraftState<S> s, final D detector, final boolean increasing) {
+        public Action eventOccurred(final FieldSpacecraftState<S> s, final FieldEventDetector<S> detector, final boolean increasing) {
             if (forward) {
                 getFirings().addValidAfter(increasing, s.getDate().toAbsoluteDate(), false);
             } else {
@@ -243,7 +245,7 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
 
         /** {@inheritDoc} */
         @Override
-        public FieldSpacecraftState<S> resetState(final D detector, final FieldSpacecraftState<S> oldState) {
+        public FieldSpacecraftState<S> resetState(final FieldEventDetector<S> detector, final FieldSpacecraftState<S> oldState) {
             return applyResetters(oldState);
         }
 

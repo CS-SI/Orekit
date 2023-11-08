@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,17 +58,17 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
     public AngularSeparationDetector(final PVCoordinatesProvider beacon,
                                      final PVCoordinatesProvider observer,
                                      final double proximityAngle) {
-        this(60.0, 1.0e-3, 100, new StopOnDecreasing<AngularSeparationDetector>(),
+        this(s -> 60.0, 1.0e-3, 100, new StopOnDecreasing(),
              beacon, observer, proximityAngle);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -77,12 +77,12 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      * the beacon at the same time if they are too close to each other
      * @param proximityAngle proximity angle as seen from observer, at which events are triggered (rad)
      */
-    private AngularSeparationDetector(final double maxCheck, final double threshold,
-                                      final int maxIter,
-                                      final EventHandler<? super AngularSeparationDetector> handler,
-                                      final PVCoordinatesProvider beacon,
-                                      final PVCoordinatesProvider observer,
-                                      final double proximityAngle) {
+    protected AngularSeparationDetector(final AdaptableInterval maxCheck, final double threshold,
+                                        final int maxIter,
+                                        final EventHandler handler,
+                                        final PVCoordinatesProvider beacon,
+                                        final PVCoordinatesProvider observer,
+                                        final double proximityAngle) {
         super(maxCheck, threshold, maxIter, handler);
         this.beacon         = beacon;
         this.observer       = observer;
@@ -91,8 +91,8 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
 
     /** {@inheritDoc} */
     @Override
-    protected AngularSeparationDetector create(final double newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler<? super AngularSeparationDetector> newHandler) {
+    protected AngularSeparationDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                               final int newMaxIter, final EventHandler newHandler) {
         return new AngularSeparationDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                              beacon, observer, proximityAngle);
     }
@@ -137,10 +137,10 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      */
     public double g(final SpacecraftState s) {
         final PVCoordinates sPV = s.getPVCoordinates();
-        final PVCoordinates bPV = beacon.getPVCoordinates(s.getDate(), s.getFrame());
-        final PVCoordinates oPV = observer.getPVCoordinates(s.getDate(), s.getFrame());
-        final double separation = Vector3D.angle(sPV.getPosition().subtract(oPV.getPosition()),
-                                                 bPV.getPosition().subtract(oPV.getPosition()));
+        final Vector3D bP = beacon.getPosition(s.getDate(), s.getFrame());
+        final Vector3D oP = observer.getPosition(s.getDate(), s.getFrame());
+        final double separation = Vector3D.angle(sPV.getPosition().subtract(oP),
+                                                 bP.subtract(oP));
         return separation - proximityAngle;
     }
 

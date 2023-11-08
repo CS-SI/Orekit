@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,9 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.frames.LOFType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.propagation.StateCovariance;
 
 /** Provider for a temporal evolution of the process noise matrix.
  * All parameters (orbital or propagation) are time dependent and provided as {@link UnivariateFunction}.
@@ -31,7 +31,7 @@ import org.orekit.utils.CartesianDerivativesFilter;
  * The method {@link #getProcessNoiseMatrix} then square the values so that they are consistent with a covariance matrix.
  * <p>
  * The orbital parameters evolutions are provided in LOF frame and Cartesian (PV);
- * then converted in inertial frame and current {@link org.orekit.orbits.OrbitType} and {@link PositionAngle}
+ * then converted in inertial frame and current {@link org.orekit.orbits.OrbitType} and {@link PositionAngleType}
  * when method {@link #getProcessNoiseMatrix} is called.
  * </p>
  * <p>
@@ -67,7 +67,7 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
     private final LOFType lofType;
 
     /** Position angle for the orbital process noise matrix. */
-    private final PositionAngle positionAngle;
+    private final PositionAngleType positionAngleType;
 
     /** Array of univariate functions for the six orbital parameters process noise evolution in LOF frame and Cartesian formalism. */
     private final UnivariateFunction[] lofCartesianOrbitalParametersEvolution;
@@ -81,24 +81,24 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
     /** Simple constructor.
      * @param initialCovarianceMatrix initial covariance matrix
      * @param lofType the LOF type used
-     * @param positionAngle the position angle used for the computation of the process noise
+     * @param positionAngleType the position angle used for the computation of the process noise
      * @param lofCartesianOrbitalParametersEvolution Array of univariate functions for the six orbital parameters process noise evolution in LOF frame and Cartesian orbit type
      * @param propagationParametersEvolution Array of univariate functions for the propagation parameters process noise evolution
      */
     public UnivariateProcessNoise(final RealMatrix initialCovarianceMatrix,
                                   final LOFType lofType,
-                                  final PositionAngle positionAngle,
+                                  final PositionAngleType positionAngleType,
                                   final UnivariateFunction[] lofCartesianOrbitalParametersEvolution,
                                   final UnivariateFunction[] propagationParametersEvolution) {
 
         // Call the new constructor with an empty array for measurements parameters
-        this(initialCovarianceMatrix, lofType, positionAngle, lofCartesianOrbitalParametersEvolution, propagationParametersEvolution, new UnivariateFunction[0]);
+        this(initialCovarianceMatrix, lofType, positionAngleType, lofCartesianOrbitalParametersEvolution, propagationParametersEvolution, new UnivariateFunction[0]);
     }
 
     /** Simple constructor.
      * @param initialCovarianceMatrix initial covariance matrix
      * @param lofType the LOF type used
-     * @param positionAngle the position angle used for the computation of the process noise
+     * @param positionAngleType the position angle used for the computation of the process noise
      * @param lofCartesianOrbitalParametersEvolution Array of univariate functions for the six orbital parameters process noise evolution in LOF frame and Cartesian orbit type
      * @param propagationParametersEvolution Array of univariate functions for the propagation parameters process noise evolution
      * @param measurementsParametersEvolution Array of univariate functions for the measurements parameters process noise evolution
@@ -106,14 +106,14 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
      */
     public UnivariateProcessNoise(final RealMatrix initialCovarianceMatrix,
                                   final LOFType lofType,
-                                  final PositionAngle positionAngle,
+                                  final PositionAngleType positionAngleType,
                                   final UnivariateFunction[] lofCartesianOrbitalParametersEvolution,
                                   final UnivariateFunction[] propagationParametersEvolution,
                                   final UnivariateFunction[] measurementsParametersEvolution) {
 
         super(initialCovarianceMatrix);
         this.lofType = lofType;
-        this.positionAngle = positionAngle;
+        this.positionAngleType = positionAngleType;
         this.lofCartesianOrbitalParametersEvolution  = lofCartesianOrbitalParametersEvolution.clone();
         this.propagationParametersEvolution = propagationParametersEvolution.clone();
         this.measurementsParametersEvolution = measurementsParametersEvolution.clone();
@@ -129,8 +129,8 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
     /** Getter for the positionAngle.
      * @return the positionAngle
      */
-    public PositionAngle getPositionAngle() {
-        return positionAngle;
+    public PositionAngleType getPositionAngleType() {
+        return positionAngleType;
     }
 
     /** Getter for the lofCartesianOrbitalParametersEvolution.
@@ -204,12 +204,12 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
         final double deltaT = current.getDate().durationFrom(previous.getDate());
 
         // Evaluate the functions, using ΔT as argument
-        final int      lofOrbitalprocessNoiseLength = lofCartesianOrbitalParametersEvolution.length;
-        final double[] lofOrbitalProcessNoiseValues = new double[lofOrbitalprocessNoiseLength];
+        final int      lofOrbitalProcessNoiseLength = lofCartesianOrbitalParametersEvolution.length;
+        final double[] lofOrbitalProcessNoiseValues = new double[lofOrbitalProcessNoiseLength];
 
         // The function return a value which dimension is that of a standard deviation
         // It needs to be squared before being put in the process noise covariance matrix
-        for (int i = 0; i < lofOrbitalprocessNoiseLength; i++) {
+        for (int i = 0; i < lofOrbitalProcessNoiseLength; i++) {
             final double functionValue =  lofCartesianOrbitalParametersEvolution[i].value(deltaT);
             lofOrbitalProcessNoiseValues[i] = functionValue * functionValue;
         }
@@ -217,26 +217,20 @@ public class UnivariateProcessNoise extends AbstractCovarianceMatrixProvider {
         // Form the diagonal matrix in LOF frame and Cartesian formalism
         final RealMatrix lofCartesianProcessNoiseMatrix = MatrixUtils.createRealDiagonalMatrix(lofOrbitalProcessNoiseValues);
 
-        // Get the Jacobian from LOF to Inertial
-        final double[][] dLofdInertial = new double[6][6];
-        lofType.transformFromInertial(current.getDate(),
-                                      current.getPVCoordinates()).getInverse().getJacobian(CartesianDerivativesFilter.USE_PV,
-                                                                                           dLofdInertial);
-        final RealMatrix jacLofToInertial = MatrixUtils.createRealMatrix(dLofdInertial);
+        // Create state covariance object in LOF
+        final StateCovariance lofCartesianProcessNoiseCov =
+                        new StateCovariance(lofCartesianProcessNoiseMatrix, current.getDate(), lofType);
 
-        // Jacobian of orbit parameters with respect to Cartesian parameters
-        final double[][] dYdC = new double[6][6];
-        current.getOrbit().getJacobianWrtCartesian(positionAngle, dYdC);
-        final RealMatrix jacOrbitWrtCartesian = MatrixUtils.createRealMatrix(dYdC);
+        // Convert to Cartesian in orbital frame
+        final StateCovariance inertialCartesianProcessNoiseCov =
+                        lofCartesianProcessNoiseCov.changeCovarianceFrame(current.getOrbit(), current.getFrame());
 
-        // Complete Jacobian of the transformation
-        final RealMatrix jacobian = jacOrbitWrtCartesian.multiply(jacLofToInertial);
-
-        // Return the orbital process noise matrix in inertial frame and proper orbit type
-        final RealMatrix inertialOrbitalProcessNoiseMatrix = jacobian.
-                         multiply(lofCartesianProcessNoiseMatrix).
-                         multiplyTransposed(jacobian);
-        return inertialOrbitalProcessNoiseMatrix;
+        // Convert to current orbit type and position angle
+        final StateCovariance inertialOrbitalProcessNoiseCov =
+                        inertialCartesianProcessNoiseCov.changeCovarianceType(current.getOrbit(),
+                                                                              current.getOrbit().getType(), positionAngleType);
+        // Return inertial orbital covariance matrix
+        return inertialOrbitalProcessNoiseCov.getMatrix();
     }
 
     /** Get the process noise for the propagation parameters.

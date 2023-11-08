@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,16 @@
  */
 package org.orekit.files.ccsds.ndm.adm;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
 import org.orekit.files.ccsds.utils.lexical.XmlTokenBuilder;
 import org.orekit.utils.units.Unit;
 import org.orekit.utils.units.UnitsCache;
-import org.xml.sax.Attributes;
 
 /** Builder for rotation angles and rates.
  * <p>
@@ -55,26 +56,29 @@ public class RotationXmlTokenBuilder implements XmlTokenBuilder {
 
     /** {@inheritDoc} */
     @Override
-    public List<ParseToken> buildTokens(final boolean startTag, final String qName,
-                                        final String content, final Attributes attributes,
+    public List<ParseToken> buildTokens(final boolean startTag, final boolean isLeaf, final String qName,
+                                        final String content, final Map<String, String> attributes,
                                         final int lineNumber, final String fileName) {
 
         // get the token name from the first attribute found
-        String name = attributes.getValue(ANGLE);
+        String name = attributes.get(ANGLE);
         if (name == null) {
-            name = attributes.getValue(RATE);
+            name = attributes.get(RATE);
         }
 
-        // elaborate the token type
-        final TokenType type = (content == null) ? (startTag ? TokenType.START : TokenType.STOP) : TokenType.ENTRY;
+        if (startTag) {
+            return Collections.singletonList(new ParseToken(TokenType.START, name, content, Unit.NONE, lineNumber, fileName));
+        } else {
+            final List<ParseToken> built = new ArrayList<>(2);
+            if (isLeaf) {
+                // get units
+                final Unit units = cache.getUnits(attributes.get(UNITS));
 
-        // get units
-        final Unit units = cache.getUnits(attributes.getValue(UNITS));
-
-        // final build
-        final ParseToken token = new ParseToken(type, name, content, units, lineNumber, fileName);
-
-        return Collections.singletonList(token);
+                built.add(new ParseToken(TokenType.ENTRY, name, content, units, lineNumber, fileName));
+            }
+            built.add(new ParseToken(TokenType.STOP, name, null, Unit.NONE, lineNumber, fileName));
+            return built;
+        }
 
     }
 

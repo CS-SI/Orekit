@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2022 CS GROUP
+<!--- Copyright 2002-2023 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -67,7 +67,9 @@ override.
 
 The `PropulsionModel` defines the characteristics of the acceleration. Its main implementation
 is `BasicConstantThrustPropulsionModel`. The `ScaledConstantThrustPropulsionModel` implementation
-is inteded to be used in estimation processes, by evaluating scaling factors.
+is intended to be used in estimation processes, by evaluating scaling factors. The `ProfileThrustPropulsionModel`
+provides a piecewise-polynomial thrust with constant specific impulse that can model
+profile-based thrusts.
 
 ![propulsion class diagram](../images/design/propulsion-class-diagram.png)
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,7 +39,7 @@ import org.orekit.models.earth.atmosphere.SimpleExponentialAtmosphere;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
@@ -77,7 +77,7 @@ public class NumericalConverterTest {
         final NumericalPropagatorBuilder builder =
                         new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
                                                        dp54Builder,
-                                                       PositionAngle.TRUE, 1.0);
+                                                       PositionAngleType.TRUE, 1.0);
         builder.addForceModel(gravity);
         // Verify that there is no Newtonian attraction force model
         Assertions.assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
@@ -95,7 +95,7 @@ public class NumericalConverterTest {
         NumericalPropagatorBuilder builder =
                         new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
                                                        new LutherIntegratorBuilder(100.0),
-                                                       PositionAngle.TRUE, 1.0);
+                                                       PositionAngleType.TRUE, 1.0);
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
         try {
@@ -216,7 +216,7 @@ public class NumericalConverterTest {
         final NumericalPropagatorBuilder builder =
                         new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
                                                        dp54Builder,
-                                                       PositionAngle.TRUE, 1.0);
+                                                       PositionAngleType.TRUE, 1.0);
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
 
@@ -229,10 +229,6 @@ public class NumericalConverterTest {
 
             public int getDimension() {
                 return 1;
-            }
-
-            public double[] derivatives(final SpacecraftState state) {
-                return null;
             }
 
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
@@ -249,10 +245,6 @@ public class NumericalConverterTest {
 
             public int getDimension() {
                 return 1;
-            }
-
-            public double[] derivatives(final SpacecraftState state) {
-                return null;
             }
 
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
@@ -278,7 +270,7 @@ public class NumericalConverterTest {
         final NumericalPropagatorBuilder builder =
                         new NumericalPropagatorBuilder(OrbitType.CIRCULAR.convertType(orbit),
                                                        dp54Builder,
-                                                       PositionAngle.TRUE, 1.0);
+                                                       PositionAngleType.TRUE, 1.0);
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
             Assertions.assertTrue(driver.isSelected());
         }
@@ -297,7 +289,7 @@ public class NumericalConverterTest {
         NumericalPropagatorBuilder builder =
                         new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit),
                                                        new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                                       PositionAngle.TRUE, dP);
+                                                       PositionAngleType.TRUE, dP);
 
         ForceModel guessedDrag = drag;
         ForceModel guessedGravity = gravity;
@@ -343,14 +335,14 @@ public class NumericalConverterTest {
 
         Assertions.assertEquals(expectedRMS, fitter.getRMS(), 0.01 * expectedRMS);
 
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getX(),
-                            fitted.getPVCoordinates().getPosition().getX(),
+        Assertions.assertEquals(orbit.getPosition().getX(),
+                            fitted.getPosition().getX(),
                             1.1);
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getY(),
-                            fitted.getPVCoordinates().getPosition().getY(),
+        Assertions.assertEquals(orbit.getPosition().getY(),
+                            fitted.getPosition().getY(),
                             1.1);
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getZ(),
-                            fitted.getPVCoordinates().getPosition().getZ(),
+        Assertions.assertEquals(orbit.getPosition().getZ(),
+                            fitted.getPosition().getZ(),
                             1.1);
 
         Assertions.assertEquals(orbit.getPVCoordinates().getVelocity().getX(),
@@ -368,7 +360,7 @@ public class NumericalConverterTest {
 
         NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit),
                                                                             foiBuilder,
-                                                                            PositionAngle.TRUE,
+                                                                            PositionAngleType.TRUE,
                                                                             1.0);
 
         builder.addForceModel(drag);
@@ -384,15 +376,15 @@ public class NumericalConverterTest {
         Orbit fitted = prop.getInitialState().getOrbit();
 
         final double peps = 1.e-1;
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getX(),
-                            fitted.getPVCoordinates().getPosition().getX(),
-                            peps * FastMath.abs(orbit.getPVCoordinates().getPosition().getX()));
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getY(),
-                            fitted.getPVCoordinates().getPosition().getY(),
-                            peps * FastMath.abs(orbit.getPVCoordinates().getPosition().getY()));
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getZ(),
-                            fitted.getPVCoordinates().getPosition().getZ(),
-                            peps * FastMath.abs(orbit.getPVCoordinates().getPosition().getZ()));
+        Assertions.assertEquals(orbit.getPosition().getX(),
+                            fitted.getPosition().getX(),
+                            peps * FastMath.abs(orbit.getPosition().getX()));
+        Assertions.assertEquals(orbit.getPosition().getY(),
+                            fitted.getPosition().getY(),
+                            peps * FastMath.abs(orbit.getPosition().getY()));
+        Assertions.assertEquals(orbit.getPosition().getZ(),
+                            fitted.getPosition().getZ(),
+                            peps * FastMath.abs(orbit.getPosition().getZ()));
 
         final double veps = 5.e-1;
         Assertions.assertEquals(orbit.getPVCoordinates().getVelocity().getX(),

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,15 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.TurnAroundRange;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
@@ -38,6 +41,11 @@ public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroun
     /** Secondary ground station reflecting the signal. */
     private final GroundStation secondaryStation;
 
+    /** Satellite related to this builder.
+     * @since 12.0
+     */
+    private final ObservableSatellite satellite;
+
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
      * @param primaryStation ground station from which measurement is performed
@@ -53,16 +61,16 @@ public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroun
         super(noiseSource, sigma, baseWeight, satellite);
         this.primaryStation   = primaryStation;
         this.secondaryStation = secondaryStation;
+        this.satellite        = satellite;
     }
 
     /** {@inheritDoc} */
     @Override
-    public TurnAroundRange build(final SpacecraftState[] states) {
+    public TurnAroundRange build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
 
-        final ObservableSatellite satellite = getSatellites()[0];
         final double sigma                  = getTheoreticalStandardDeviation()[0];
         final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState[] relevant    = new SpacecraftState[] { states[satellite.getPropagatorIndex()] };
+        final SpacecraftState[] relevant    = new SpacecraftState[] { interpolators.get(satellite).getInterpolatedState(date) };
 
         // create a dummy measurement
         final TurnAroundRange dummy = new TurnAroundRange(primaryStation, secondaryStation, relevant[0].getDate(),
@@ -81,7 +89,7 @@ public class TurnAroundRangeBuilder extends AbstractMeasurementBuilder<TurnAroun
         }
 
         // estimate the perfect value of the measurement
-        double range = dummy.estimate(0, 0, relevant).getEstimatedValue()[0];
+        double range = dummy.estimateWithoutDerivatives(0, 0, relevant).getEstimatedValue()[0];
 
         // add the noise
         final double[] noise = getNoise();

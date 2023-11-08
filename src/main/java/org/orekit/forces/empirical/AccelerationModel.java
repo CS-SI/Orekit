@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,17 @@
  */
 package org.orekit.forces.empirical;
 
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
 /** Acceleration model used by empirical force.
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public interface AccelerationModel {
+public interface AccelerationModel extends ParameterDriversProvider {
 
     /** Initialize the acceleration model at the start of the propagation.
      * <p>
@@ -65,10 +63,4 @@ public interface AccelerationModel {
      * @return norm of the acceleration
      */
     <T extends CalculusFieldElement<T>> T signedAmplitude(FieldSpacecraftState<T> state, T[] parameters);
-
-    /** Get the drivers for acceleration model parameters.
-     * @return drivers for acceleration model parameters
-     */
-    List<ParameterDriver> getParametersDrivers();
-
 }

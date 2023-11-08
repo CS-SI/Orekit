@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -93,15 +93,18 @@ public class PositionBuilderTest {
         generator.addScheduler(new ContinuousScheduler<>(getBuilder(new Well19937a(seed), satellite),
                                                          new BurstSelector(maxBurstSize, highRateStep, burstPeriod,
                                                                            TimeScalesFactory.getUTC())));
+        final GatheringSubscriber gatherer = new GatheringSubscriber();
+        generator.addSubscriber(gatherer);
         final double period = context.initialOrbit.getKeplerianPeriod();
         AbsoluteDate t0     = context.initialOrbit.getDate().shiftedBy(startPeriod * period);
         AbsoluteDate t1     = context.initialOrbit.getDate().shiftedBy(endPeriod   * period);
-        SortedSet<ObservedMeasurement<?>> measurements = generator.generate(t0, t1);
+        generator.generate(t0, t1);
+        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
         Propagator propagator = buildPropagator();
         double maxError = 0;
         AbsoluteDate previous = null;
-        AbsoluteDate tInf = t0.compareTo(t1) < 0 ? t0 : t1;
-        AbsoluteDate tSup = t0.compareTo(t1) < 0 ? t1 : t0;
+        AbsoluteDate tInf = t0.isBefore(t1) ? t0 : t1;
+        AbsoluteDate tSup = t0.isBefore(t1) ? t1 : t0;
         int count = 0;
         for (ObservedMeasurement<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
@@ -115,12 +118,18 @@ public class PositionBuilderTest {
                 final double expected = (count % maxBurstSize == 0) ?
                                         burstPeriod - (maxBurstSize - 1) * highRateStep :
                                         highRateStep;
-                Assertions.assertEquals(expected, date.durationFrom(previous), 1.0e-10 * expected);
+                if (t0.isBefore(t1)) {
+                    // measurements are expected to be chronological
+                    Assertions.assertEquals(expected, date.durationFrom(previous), 1.0e-10 * expected);
+                } else {
+                    // measurements are expected to be reverse chronological
+                    Assertions.assertEquals(expected, previous.durationFrom(date), 1.0e-10 * expected);
+                }
             }
             previous = date;
             ++count;
             SpacecraftState state = propagator.propagate(date);
-            double[] e = measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+            double[] e = measurement.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
             for (int i = 0; i < m.length; ++i) {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
             }
@@ -132,7 +141,7 @@ public class PositionBuilderTest {
      public void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-         propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+         propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                                    1.0e-6, 300.0, 0.001, Force.POTENTIAL,
                                                    Force.THIRD_BODY_SUN, Force.THIRD_BODY_MOON);
      }

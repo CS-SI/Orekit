@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,10 @@ package org.orekit.propagation.analytical;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -47,8 +47,8 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
      * @see #KeplerianPropagator(Orbit, AttitudeProvider)
      */
     public KeplerianPropagator(final Orbit initialOrbit) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-                initialOrbit.getMu(), DEFAULT_MASS);
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             initialOrbit.getMu(), DEFAULT_MASS);
     }
 
     /** Build a propagator from orbit and central attraction coefficient μ.
@@ -59,8 +59,8 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
      * @see #KeplerianPropagator(Orbit, AttitudeProvider, double)
      */
     public KeplerianPropagator(final Orbit initialOrbit, final double mu) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-                mu, DEFAULT_MASS);
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             mu, DEFAULT_MASS);
     }
 
     /** Build a propagator from orbit and attitude provider.
@@ -129,8 +129,8 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
                                      final DoubleArrayDictionary additionalStatesDerivatives) {
         final OrbitType type = orbit.getType();
         final double[] stateVector = new double[6];
-        type.mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
-        final Orbit fixedOrbit = type.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+        type.mapOrbitToArray(orbit, PositionAngleType.TRUE, stateVector, null);
+        final Orbit fixedOrbit = type.mapArrayToOrbit(stateVector, null, PositionAngleType.TRUE,
                                                       orbit.getDate(), mu, orbit.getFrame());
         SpacecraftState fixedState = new SpacecraftState(fixedOrbit, attitude, mass);
         if (additionalStates != null) {

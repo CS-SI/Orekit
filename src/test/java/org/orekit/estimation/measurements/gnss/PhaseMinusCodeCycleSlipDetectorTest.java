@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,10 +24,10 @@ import org.orekit.data.DataFilter;
 import org.orekit.data.DataSource;
 import org.orekit.data.GzipFilter;
 import org.orekit.data.UnixCompressFilter;
+import org.orekit.files.rinex.HatanakaCompressFilter;
+import org.orekit.files.rinex.observation.ObservationDataSet;
+import org.orekit.files.rinex.observation.RinexObservationParser;
 import org.orekit.gnss.Frequency;
-import org.orekit.gnss.HatanakaCompressFilter;
-import org.orekit.gnss.ObservationDataSet;
-import org.orekit.gnss.RinexObservationLoader;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
@@ -59,8 +59,8 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexObservationLoader loader = new RinexObservationLoader(nd);
-        final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
+        final RinexObservationParser parser = new RinexObservationParser();
+        final List<ObservationDataSet> obserDataSets = parser.parse(nd).getObservationDataSets();
         PhaseMinusCodeCycleSlipDetector slipDetectors =
             new PhaseMinusCodeCycleSlipDetector(90, 10, 20, 3);
         final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
@@ -133,8 +133,8 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexObservationLoader loader = new RinexObservationLoader(nd);
-        final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
+        final RinexObservationParser parser = new RinexObservationParser();
+        final List<ObservationDataSet> obserDataSets = parser.parse(nd).getObservationDataSets();
         PhaseMinusCodeCycleSlipDetector slipDetectors =
             new PhaseMinusCodeCycleSlipDetector(90, 1e15, 20, 3);
         final List<CycleSlipDetectorResults> results = slipDetectors.detect(obserDataSets);
@@ -182,8 +182,8 @@ public class PhaseMinusCodeCycleSlipDetectorTest {
                                                      new HatanakaCompressFilter())) {
             nd = filter.filter(nd);
         }
-        final RinexObservationLoader loader = new RinexObservationLoader(nd);
-        final List<ObservationDataSet> obserDataSets = loader.getObservationDataSets();
+        final RinexObservationParser parser = new RinexObservationParser();
+        final List<ObservationDataSet> obserDataSets = parser.parse(nd).getObservationDataSets();
         final double dt = 31; //great time gap threshold to don't detect cycle-slip because of time gap
         final int N = 25;
         final int m = 2;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,16 +18,31 @@ package org.orekit.files.ilrs;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 
 /**
  * Container for Consolidated laser ranging Data Format (CDR) header.
  * @author Bryan Cazabonne
+ * @author Rongwang Li
  * @since 10.3
  */
 public class CRDHeader extends ILRSHeader {
+
+    /** String delimiter regex of datetime. */
+    private static final String DATETIME_DELIMITER_REGEX = "[-:T]";
+
+    /** Space. */
+    private static final String SPACE = " ";
+
+    /** Pattern of delimiter of datetime. */
+    public static final Pattern PATTERN_DATETIME_DELIMITER_REGEX = Pattern.compile(DATETIME_DELIMITER_REGEX);
 
     /** Station name from official list. */
     private String stationName;
@@ -92,6 +107,17 @@ public class CRDHeader extends ILRSHeader {
 
     /** Prediction provider (CPF provider in H1 record or TLE source). */
     private String predictionProvider;
+
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public CRDHeader() {
+        // nothing to do
+    }
 
     /**
      * Get the station name from official list.
@@ -425,6 +451,74 @@ public class CRDHeader extends ILRSHeader {
         this.predictionProvider = predictionProvider;
     }
 
+    /**
+     * Get a string representation of the H1 in the CRD format.
+     * @return a string representation of the H1, in the CRD format.
+     * @since 12.0
+     */
+    public String getH1CrdString() {
+        final DateComponents dc = getProductionEpoch();
+        return String.format("H1 %3s %2d %04d %02d %02d %02d", getFormat(),
+                getVersion(), dc.getYear(), dc.getMonth(), dc.getDay(),
+                getProductionHour());
+    }
+
+    /**
+     * Get a string representation of the H2 in the CRD format.
+     * @return a string representation of the H2, in the CRD format.
+     * @since 12.0
+     */
+    public String getH2CrdString() {
+        return String.format("H2 %s %4d %02d %02d %2d %s", stationName,
+                systemIdentifier, systemNumber, systemOccupancy,
+                epochIdentifier, stationNetword);
+    }
+
+    /**
+     * Get a string representation of the H3 in the CRD format.
+     * @return a string representation of the H3, in the CRD format.
+     * @since 12.0
+     */
+    public String getH3CrdString() {
+        final int targetLocation = getTargetLocation();
+        return String.format("H3 %s %7s %4s %5s %1d %1d %2s", getName(),
+                getIlrsSatelliteId(), getSic(), getNoradId(),
+                getSpacecraftEpochTimeScale(), getTargetClass(),
+                CRD.formatIntegerOrNaN(targetLocation, -1));
+    }
+
+    /**
+     * Get a string representation of the H4 in the CRD format.
+     * @return a string representation of the H4, in the CRD format.
+     * @since 12.0
+     */
+    @DefaultDataContext
+    public String getH4CrdString() {
+        // "2006-11-13T15:23:52" -- > "2006 11 13 15 23 52"
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final String startEpoch = getStartEpoch().toStringWithoutUtcOffset(utc, 0);
+        final String endEpoch = getEndEpoch().toStringWithoutUtcOffset(utc, 0);
+        return String.format("H4 %2d %s %s %d %d %d %d %d %d %d %d", getDataType(),
+                PATTERN_DATETIME_DELIMITER_REGEX.matcher(startEpoch).replaceAll(SPACE),
+                PATTERN_DATETIME_DELIMITER_REGEX.matcher(endEpoch).replaceAll(SPACE),
+                dataReleaseFlag, isTroposphericRefractionApplied ? 1 : 0,
+                isCenterOfMassCorrectionApplied ? 1 : 0,
+                isReceiveAmplitudeCorrectionApplied ? 1 : 0,
+                isStationSystemDelayApplied ? 1 : 0,
+                isTransponderDelayApplied ? 1 : 0, rangeType.getIndicator(),
+                qualityIndicator);
+    }
+
+    /**
+     * Get a string representation of the H5 in the CRD format.
+     * @return a string representation of the H5, in the CRD format.
+     * @since 12.0
+     */
+    public String getH5CrdString() {
+        return String.format("H5 %2d %02d %s %3s %5d", getPredictionType(), getYearOfCentury(),
+                getDateAndTime(), getPredictionProvider(), getSequenceNumber());
+    }
+
     /** Range type for SLR data. */
     public enum RangeType {
 
@@ -480,6 +574,63 @@ public class CRDHeader extends ILRSHeader {
             if (type == null) {
                // Invalid value. An exception is thrown
                 throw new OrekitException(OrekitMessages.INVALID_RANGE_INDICATOR_IN_CRD_FILE, id);
+            }
+            return type;
+        }
+
+    }
+
+    /** Data type for CRD data.
+     * @since 12.0
+     */
+    public enum DataType {
+
+        /** Full rate. */
+        FULL_RATE(0),
+
+        /** Normal point. */
+        NORMAL_POINT(1),
+
+        /** Sampled engineering. */
+        SAMPLED_ENGIEERING(2);
+
+        /** Codes map. */
+        private static final Map<Integer, DataType> CODES_MAP = new HashMap<>();
+        static {
+            for (final DataType type : values()) {
+                CODES_MAP.put(type.getIndicator(), type);
+            }
+        }
+
+        /** data type indicator. */
+        private final int indicator;
+
+        /**
+         * Constructor.
+         * @param indicator data type indicator
+         */
+        DataType(final int indicator) {
+            this.indicator = indicator;
+        }
+
+        /**
+         * Get the data type indicator.
+         * @return the data type indicator
+         */
+        public int getIndicator() {
+            return indicator;
+        }
+
+        /**
+         * Get the data type for the given indicator.
+         * @param id indicator
+         * @return the data type corresponding to the indicator
+         */
+        public static DataType getDataType(final int id) {
+            final DataType type = CODES_MAP.get(id);
+            if (type == null) {
+               // Invalid value. An exception is thrown
+                throw new RuntimeException(String.format("Invalid data type indicator {0} in CRD file header", id));
             }
             return type;
         }

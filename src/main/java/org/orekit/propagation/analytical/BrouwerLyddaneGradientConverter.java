@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -63,8 +63,8 @@ class BrouwerLyddaneGradientConverter extends AbstractAnalyticalGradientConverte
         final Gradient mu = zero.add(propagator.getMu());
 
         // Return the "Field" propagator
-        return new FieldBrouwerLyddanePropagator<Gradient>(state.getOrbit(), provider, radius, mu,
-                                                           ck0[2], ck0[3], ck0[4], ck0[5], parameters[0].getValue());
+        return new FieldBrouwerLyddanePropagator<>(state.getOrbit(), provider, radius, mu,
+                ck0[2], ck0[3], ck0[4], ck0[5], parameters[0].getValue());
 
     }
 

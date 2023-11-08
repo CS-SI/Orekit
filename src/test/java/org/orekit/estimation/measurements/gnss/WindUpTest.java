@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
+import java.util.SortedSet;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
@@ -27,11 +29,12 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.generation.EventBasedScheduler;
+import org.orekit.estimation.measurements.generation.GatheringSubscriber;
 import org.orekit.estimation.measurements.generation.Generator;
 import org.orekit.estimation.measurements.generation.SignSemantic;
 import org.orekit.frames.FramesFactory;
@@ -55,8 +58,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.util.SortedSet;
-
 public class WindUpTest {
 
     @Test
@@ -64,7 +65,7 @@ public class WindUpTest {
         // this test corresponds to a classical yaw steering attitude far from turns
         // where Sun remains largely below orbital plane during the turn (β is about -18.8°)
         // in this case, yaw does not evolve a lot, so wind-up changes only about 0.024 cycle
-        doTest(new CartesianOrbit(new TimeStampedPVCoordinates(new GNSSDate(1206, 307052670.0, SatelliteSystem.GPS).getDate(),
+        doTest(new CartesianOrbit(new TimeStampedPVCoordinates(new GNSSDate(1206, 307052.670, SatelliteSystem.GPS).getDate(),
                                                                new Vector3D( 8759594.455119, 12170903.262908, 21973798.932235),
                                                                new Vector3D(-2957.570165356,  2478.252315039,  -263.042027935)),
                                   FramesFactory.getGCRF(),
@@ -90,7 +91,7 @@ public class WindUpTest {
         // side, so the satellites keeps turning for about 70 minutes, completing one turn and an half
         // instead of only one half of a turn. One turn and an half seems unrealistic.
         // The wind-up effect changes therefore almost linearly by about 1.5 cycle
-        doTest(new CartesianOrbit(new TimeStampedPVCoordinates(new GNSSDate(1218, 287890543.0, SatelliteSystem.GPS).getDate(),
+        doTest(new CartesianOrbit(new TimeStampedPVCoordinates(new GNSSDate(1218, 287890.543, SatelliteSystem.GPS).getDate(),
                                                                new Vector3D(-17920092.444521, -11889104.443797, -15318905.173501),
                                                                new Vector3D(   231.983556337,  -3232.849996931,   2163.378049467)),
                                   FramesFactory.getGCRF(),
@@ -112,7 +113,7 @@ public class WindUpTest {
         // this test corresponds to a Block II-R noon turn (prn = 11, satellite G46)
         // where Sun remains slightly above orbital plane during the turn (β is about +1.5°)
         // this is a regular turn, corresponding to a half turn, so wind-up effect changes by about 0.5 cycle
-        doTest(new CartesianOrbit(new TimeStampedPVCoordinates(new GNSSDate(1225, 509000063.0, SatelliteSystem.GPS).getDate(),
+        doTest(new CartesianOrbit(new TimeStampedPVCoordinates(new GNSSDate(1225, 509000.063, SatelliteSystem.GPS).getDate(),
                                                                new Vector3D( 2297608.196826, 20928500.842189, 16246321.092008),
                                                                new Vector3D(-2810.598090399,  1819.511241767, -1939.009527296)),
                                   FramesFactory.getGCRF(),
@@ -145,21 +146,27 @@ public class WindUpTest {
                                                          generator.getPropagator(obsSat),
                                                          new ElevationDetector(station.getBaseFrame()).
                                                          withConstantElevation(FastMath.toRadians(5.0)).
-                                                         withHandler(new ContinueOnEvent<>()),
+                                                         withHandler(new ContinueOnEvent()),
                                                          SignSemantic.FEASIBLE_MEASUREMENT_WHEN_POSITIVE));
-        SortedSet<ObservedMeasurement<?>> measurements = generator.generate(orbit.getDate(), orbit.getDate().shiftedBy(7200));
+        final GatheringSubscriber gatherer = new GatheringSubscriber();
+        generator.addSubscriber(gatherer);
+        generator.generate(orbit.getDate(), orbit.getDate().shiftedBy(7200));
+        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
         Assertions.assertEquals(120, measurements.size());
 
-        WindUp windUp = new WindUpFactory().getWindUp(system, prn, station.getBaseFrame().getName());
+        WindUp windUp = new WindUpFactory().getWindUp(system, prn, Dipole.CANONICAL_I_J, station.getBaseFrame().getName());
         Propagator propagator = new KeplerianPropagator(orbit, attitudeProvider);
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
         for (ObservedMeasurement<?> m : measurements) {
             Phase phase = (Phase) m;
             @SuppressWarnings("unchecked")
-            EstimatedMeasurement<Phase> estimated = (EstimatedMeasurement<Phase>) m.estimate(0, 0, new SpacecraftState[] { propagator.propagate(phase.getDate()) });
+            EstimatedMeasurementBase<Phase> estimated = (EstimatedMeasurementBase<Phase>) m.estimateWithoutDerivatives(0, 0,
+                                                                                                                       new SpacecraftState[] {
+                                                                                                                           propagator.propagate(phase.getDate()) 
+                                                                                                                       });
             final double original = estimated.getEstimatedValue()[0];
-            windUp.modify(estimated);
+            windUp.modifyWithoutDerivatives(estimated);
             final double modified = estimated.getEstimatedValue()[0];
             final double correction = modified - original;
             min = FastMath.min(min, correction);

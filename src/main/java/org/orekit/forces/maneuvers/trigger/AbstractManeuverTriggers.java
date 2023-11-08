@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,9 +61,7 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
 
         forward = target.isAfterOrEqualTo(initialState);
         firings = new TimeSpanMap<>(Boolean.FALSE);
-        for (final ManeuverTriggersResetter r : resetters) {
-            r.init(initialState, target);
-        }
+        initializeResetters(initialState, target);
 
         if (isFiringOnInitialState(initialState, forward)) {
             if (forward) {
@@ -129,18 +127,14 @@ public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
         return firings;
     }
 
-    /** Add a resetter.
-     * @param resetter resetter to add
-     */
+    /** {@inheritDoc} */
+    @Override
     public void addResetter(final ManeuverTriggersResetter resetter) {
         resetters.add(resetter);
     }
 
-    /** Add a resetter.
-     * @param field field to which the state belongs
-     * @param resetter resetter to add
-     * @param <T> type of the field elements
-     */
+    /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> void addResetter(final Field<T> field, final FieldManeuverTriggersResetter<T> resetter) {
 
         // check if we already have resetters for this field

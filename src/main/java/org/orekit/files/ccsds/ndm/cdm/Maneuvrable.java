@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,19 +34,33 @@ public enum Maneuvrable {
     /** Value of the enum .*/
     private String value;
 
+    /**
+     * Constructor.
+     * @param value String value of the enum
+     */
     Maneuvrable(final String value) {
         this.value = value;
     }
 
+    /** Get the String representation of the enum.
+     * @return the String representation of the enum
+     */
     public String getValue() {
         return value;
     }
 
+    /** {@inheritDoc}. */
     @Override
     public String toString() {
         return this.getValue();
     }
 
+    /** Get the enum entry corresponding to the given String.
+     * @param keyValue input Sring value
+     * @return the corresponding enum entry
+     * @throws IllegalArgumentException if there is no enum entry corresponding
+     *                                  to the given String value
+     */
     public static Maneuvrable getEnum(final String keyValue) {
         for (Maneuvrable v : values()) {
             if (v.getValue().equalsIgnoreCase(keyValue)) {

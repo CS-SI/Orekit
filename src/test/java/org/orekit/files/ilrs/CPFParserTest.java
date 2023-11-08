@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -119,11 +120,11 @@ public class CPFParserTest {
         Assertions.assertEquals(0.0, lastPos.distance(ephemeris.getEphemeridesDataLines().get(ephemeris.getEphemeridesDataLines().size() - 1).getPosition()), 1.0e-15);
 
         // Verify propagator
-        final BoundedPropagator propagator = ephemeris.getPropagator();
+        final BoundedPropagator propagator = ephemeris.getPropagator(new FrameAlignedProvider(ephemeris.getInertialFrame()));
         // 10 0 58283  56640.000000  0      -1578630.043      -2922293.651      -6964482.056
         final AbsoluteDate date = AbsoluteDate.createMJDDate(58283, 56640.000000, file.getTimeScale());
         final Vector3D position = new Vector3D(-1578630.043, -2922293.651, -6964482.056);
-        Assertions.assertEquals(0.0, position.distance(propagator.getPVCoordinates(date, ephemeris.getFrame()).getPosition()), 2.4e-10);
+        Assertions.assertEquals(0.0, position.distance(propagator.getPosition(date, ephemeris.getFrame())), 2.4e-10);
 
     }
 
@@ -204,7 +205,7 @@ public class CPFParserTest {
         // 10 0 58282  78000.00000  0   -5843276.537    1074212.914  -10696380.103
         final AbsoluteDate date = AbsoluteDate.createMJDDate(58282, 78000.00000, file.getTimeScale());
         final Vector3D position = new Vector3D(-5843276.537, 1074212.914, -10696380.103);
-        Assertions.assertEquals(0.0, position.distance(propagator.getPVCoordinates(date, ephemeris.getFrame()).getPosition()), 2.0e-9);
+        Assertions.assertEquals(0.0, position.distance(propagator.getPosition(date, ephemeris.getFrame())), 2.0e-9);
 
     }
 
@@ -278,11 +279,11 @@ public class CPFParserTest {
         Assertions.assertEquals(0.0, lastPos.distance(ephemeris.getEphemeridesDataLines().get(ephemeris.getEphemeridesDataLines().size() - 1).getPosition()), 1.0e-15);
 
         // Verify propagator
-        final BoundedPropagator propagator = ephemeris.getPropagator();
+        final BoundedPropagator propagator = ephemeris.getPropagator(new FrameAlignedProvider(ephemeris.getInertialFrame()));
         // 10 0 58282  78282.000000  0      22173889.124     -19259262.865       3650461.090
         final AbsoluteDate date = AbsoluteDate.createMJDDate(58282, 78282.000000, file.getTimeScale());
         final Vector3D position = new Vector3D(22173889.124, -19259262.865, 3650461.090);
-        Assertions.assertEquals(0.0, position.distance(propagator.getPVCoordinates(date, ephemeris.getFrame()).getPosition()), 4.7e-10);
+        Assertions.assertEquals(0.0, position.distance(propagator.getPosition(date, ephemeris.getFrame())), 4.7e-10);
 
     }
 

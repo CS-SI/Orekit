@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 Joseph Reed
+/* Copyright 2002-2023 Joseph Reed
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.utils;
 
 import java.util.Objects;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -83,9 +84,17 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
     }
 
     @Override
+    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+        if (date.isBefore(minDate) || date.isAfter(maxDate)) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_DATE, date, minDate, maxDate);
+        }
+        return pvProvMap.get(date).getPosition(date, frame);
+    }
+
+    @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         if (date.isBefore(minDate) || date.isAfter(maxDate)) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, date, minDate, maxDate);
+            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_DATE, date, minDate, maxDate);
         }
         return pvProvMap.get(date).getPVCoordinates(date, frame);
     }
@@ -193,9 +202,22 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
      */
     public static class InvalidPVProvider implements PVCoordinatesProvider {
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public InvalidPVProvider() {
+            // nothing to do
+        }
+
         @Override
         public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
             throw new IllegalStateException();
         }
+
     }
+
 }

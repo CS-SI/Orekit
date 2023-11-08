@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,27 +48,34 @@ public abstract class AbstractWriter {
      * @throws IOException if any buffer writing operations fails
      */
     public void write(final Generator generator) throws IOException {
+        enterSection(generator);
+        writeContent(generator);
+        exitSection(generator);
+    }
 
-        // enter section
-        final boolean needsClosing;
+    /** Enter the section.
+     * @param generator generator to use for producing output
+     * @throws IOException if an I/O error occurs.
+     * @since 12.0
+     */
+    public void enterSection(final Generator generator) throws IOException {
         if (generator.getFormat() == FileFormat.XML) {
             generator.enterSection(xmlTag);
-            needsClosing = true;
         } else if (generator.getFormat() == FileFormat.KVN && kvnTag != null) {
             generator.enterSection(kvnTag);
-            needsClosing = true;
-        } else {
-            needsClosing = false;
         }
+    }
 
-        // write content
-        writeContent(generator);
-
-        // exit section
-        if (needsClosing) {
+    /** Exit the section.
+     * @param generator generator to use for producing output
+     * @throws IOException if an I/O error occurs.
+     * @since 12.0
+     */
+    public void exitSection(final Generator generator) throws IOException {
+        if (generator.getFormat() == FileFormat.XML ||
+            generator.getFormat() == FileFormat.KVN && kvnTag != null) {
             generator.exitSection();
         }
-
     }
 
     /** Write the content of the section, excluding surrounding tags.

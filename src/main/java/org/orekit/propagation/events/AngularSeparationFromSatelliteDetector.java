@@ -58,17 +58,17 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
     public AngularSeparationFromSatelliteDetector(final PVCoordinatesProvider primaryObject,
                                                   final PVCoordinatesProvider secondaryObject,
                                                   final double proximityAngle) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnDecreasing<AngularSeparationFromSatelliteDetector>(),
+        this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnDecreasing(),
              primaryObject, secondaryObject, proximityAngle);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
@@ -77,12 +77,12 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
      *        the primaryObject as seen from the spacecraft
      * @param proximityAngle proximity angle as seen from secondaryObject, at which events are triggered (rad)
      */
-    private AngularSeparationFromSatelliteDetector(final double maxCheck, final double threshold,
-                                                   final int maxIter,
-                                                   final EventHandler<? super AngularSeparationFromSatelliteDetector> handler,
-                                                   final PVCoordinatesProvider primaryObject,
-                                                   final PVCoordinatesProvider secondaryObject,
-                                                   final double proximityAngle) {
+    protected AngularSeparationFromSatelliteDetector(final AdaptableInterval maxCheck, final double threshold,
+                                                     final int maxIter,
+                                                     final EventHandler handler,
+                                                     final PVCoordinatesProvider primaryObject,
+                                                     final PVCoordinatesProvider secondaryObject,
+                                                     final double proximityAngle) {
         super(maxCheck, threshold, maxIter, handler);
         this.primaryObject         = primaryObject;
         this.secondaryObject       = secondaryObject;
@@ -91,8 +91,8 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
 
     /** {@inheritDoc} */
     @Override
-    protected AngularSeparationFromSatelliteDetector create(final double newMaxCheck, final double newThreshold,
-                                               final int newMaxIter, final EventHandler<? super AngularSeparationFromSatelliteDetector> newHandler) {
+    protected AngularSeparationFromSatelliteDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                                            final int newMaxIter, final EventHandler newHandler) {
         return new AngularSeparationFromSatelliteDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                              primaryObject, secondaryObject, proximityAngle);
     }
@@ -137,10 +137,10 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
      */
     public double g(final SpacecraftState s) {
         final PVCoordinates sPV = s.getPVCoordinates();
-        final PVCoordinates primaryPV   = primaryObject  .getPVCoordinates(s.getDate(), s.getFrame());
-        final PVCoordinates secondaryPV = secondaryObject.getPVCoordinates(s.getDate(), s.getFrame());
-        final double separation = Vector3D.angle(primaryPV  .getPosition().subtract(sPV.getPosition()),
-                                                 secondaryPV.getPosition().subtract(sPV.getPosition()));
+        final Vector3D primaryPos   = primaryObject  .getPosition(s.getDate(), s.getFrame());
+        final Vector3D secondaryPos = secondaryObject.getPosition(s.getDate(), s.getFrame());
+        final double separation = Vector3D.angle(primaryPos.subtract(sPV.getPosition()),
+                                                 secondaryPos.subtract(sPV.getPosition()));
         return separation - proximityAngle;
     }
 

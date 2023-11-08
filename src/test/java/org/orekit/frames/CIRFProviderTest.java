@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -129,7 +129,8 @@ public class CIRFProviderTest {
         //        12                         86400s / 18 = 1h20    2.96e-13 rad
         //        12                         86400s / 24 = 1h00    1.25e-13 rad
         //        12                         86400s / 48 = 0h30    1.56e-14 rad
-        EOPHistory eopHistory = new EOPHistory(IERSConventions.IERS_2010, new ArrayList<EOPEntry>(), true);
+        EOPHistory eopHistory = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                               new ArrayList<EOPEntry>(), true);
         TransformProvider nonShifting = new CIRFProvider(eopHistory);
         final TransformProvider shifting =
                 new ShiftingTransformProvider(nonShifting,
@@ -163,8 +164,8 @@ public class CIRFProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
 
-        Assertions.assertTrue(bos.size() > 295000);
-        Assertions.assertTrue(bos.size() < 300000);
+        Assertions.assertTrue(bos.size() > 340000);
+        Assertions.assertTrue(bos.size() < 350000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

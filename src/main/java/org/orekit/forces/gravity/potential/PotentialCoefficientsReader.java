@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,9 +19,7 @@ package org.orekit.forces.gravity.potential;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 
 import org.hipparchus.util.FastMath;
@@ -42,7 +40,7 @@ import org.orekit.time.TimeScale;
  *  interface represents all the methods that should be implemented by a reader.
  *  The proper way to use this interface is to call the {@link GravityFieldFactory}
  *  which will determine which reader to use with the selected potential
- *  coefficients file.<p>
+ *  coefficients file.</p>
  *
  * @see GravityFields
  * @author Fabien Maussion
@@ -235,23 +233,6 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
 
     /** Set the tesseral-sectorial coefficients matrix.
      * @param rawNormalized if true, raw coefficients are normalized
-     * @param c raw tesseral-sectorial coefficients matrix
-     * @param s raw tesseral-sectorial coefficients matrix
-     * @param name name of the file (or zip entry)
-     * @deprecated as of 11.1, replaced by {@link #setRawCoefficients(boolean,
-     * Flattener, double[], double[], String)}
-     */
-    @Deprecated
-    protected void setRawCoefficients(final boolean rawNormalized,
-                                      final double[][] c, final double[][] s,
-                                      final String name) {
-        setRawCoefficients(rawNormalized, buildFlattener(c),
-                           buildFlattener(c).flatten(c), buildFlattener(s).flatten(s),
-                           name);
-    }
-
-    /** Set the tesseral-sectorial coefficients matrix.
-     * @param rawNormalized if true, raw coefficients are normalized
      * @param f converter from triangular to flat form
      * @param c raw tesseral-sectorial coefficients matrix
      * @param s raw tesseral-sectorial coefficients matrix
@@ -362,7 +343,6 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @param degree maximal degree
      * @param order maximal order
      * @return a new provider
-     * @see #getConstantProvider(boolean, int, int)
      * @since 6.0
      */
     public abstract RawSphericalHarmonicsProvider getProvider(boolean wantNormalized, int degree, int order);
@@ -392,48 +372,6 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
                                               rescale(1.0, wantNormalized, truncatedFlattener, flattener, rawC),
                                               rescale(1.0, wantNormalized, truncatedFlattener, flattener, rawS));
 
-    }
-
-    /** Get a time-independent provider for read spherical harmonics coefficients.
-     * @param wantNormalized if true, the raw provider must provide normalized coefficients,
-     * otherwise it will provide un-normalized coefficients
-     * @param degree maximal degree
-     * @param order maximal order
-     * @return a new provider, with no time-dependent parts
-     * @see #getProvider(boolean, int, int)
-     * @since 6.0
-     * @deprecated as of 11.1, not used anymore
-     */
-    @Deprecated
-    protected ConstantSphericalHarmonics getConstantProvider(final boolean wantNormalized,
-                                                             final int degree, final int order) {
-        return getBaseProvider(wantNormalized, degree, order);
-    }
-
-    /** Get a flattener for a triangular array.
-     * @param triangular triangular array to flatten
-     * @return flattener suited for triangular array dimensions
-     * @since 11.1
-     */
-    private static Flattener buildFlattener(final double[][] triangular) {
-        return new Flattener(triangular.length - 1, triangular[triangular.length - 1].length - 1);
-    }
-
-    /** Build a coefficients triangular array.
-     * @param degree array degree
-     * @param order array order
-     * @param value initial value to put in array elements
-     * @return built array
-     * @deprecated as of 11.1, replaced by {@link #buildFlatArray(Flattener, double)}
-     */
-    @Deprecated
-    protected static double[][] buildTriangularArray(final int degree, final int order, final double value) {
-        final int rows = degree + 1;
-        final double[][] array = new double[rows][];
-        for (int k = 0; k < array.length; ++k) {
-            array[k] = buildRow(k, order, value);
-        }
-        return array;
     }
 
     /** Build a coefficients array in flat form.
@@ -471,93 +409,6 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         return row;
     }
 
-    /** Extend a list of lists of coefficients if needed.
-     * @param list list of lists of coefficients
-     * @param degree degree required to be present
-     * @param order order required to be present
-     * @param value initial value to put in list elements
-     * @deprecated as of 11.1, not used anymore
-     */
-    @Deprecated
-    protected void extendListOfLists(final List<List<Double>> list, final int degree, final int order,
-                                     final double value) {
-        for (int i = list.size(); i <= degree; ++i) {
-            list.add(new ArrayList<>());
-        }
-        final List<Double> listN = list.get(degree);
-        final Double v = value;
-        for (int j = listN.size(); j <= order; ++j) {
-            listN.add(v);
-        }
-    }
-
-    /** Convert a list of list into an array.
-     * @param list list of lists of coefficients
-     * @return a new array
-     * @deprecated as of 11.1, not used anymore
-     */
-    @Deprecated
-    protected double[][] toArray(final List<List<Double>> list) {
-        final double[][] array = new double[list.size()][];
-        for (int i = 0; i < array.length; ++i) {
-            array[i] = new double[list.get(i).size()];
-            for (int j = 0; j < array[i].length; ++j) {
-                array[i][j] = list.get(i).get(j);
-            }
-        }
-        return array;
-    }
-
-    /** Parse a coefficient.
-     * @param field text field to parse
-     * @param list list where to put the coefficient
-     * @param i first index in the list
-     * @param j second index in the list
-     * @param cName name of the coefficient
-     * @param name name of the file
-     * @deprecated as of 11.1, replaced by {@link #parseCoefficient(String,
-     * Flattener, double[], int, int, String, String)}
-     */
-    @Deprecated
-    protected void parseCoefficient(final String field, final List<List<Double>> list,
-                                    final int i, final int j,
-                                    final String cName, final String name) {
-        final double value    = parseDouble(field);
-        final double oldValue = list.get(i).get(j);
-        if (Double.isNaN(oldValue) || Precision.equals(oldValue, 0.0, 0)) {
-            // the coefficient was not already initialized
-            list.get(i).set(j, value);
-        } else {
-            throw new OrekitException(OrekitMessages.DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
-                                      name, i, j, name);
-        }
-    }
-
-    /** Parse a coefficient.
-     * @param field text field to parse
-     * @param array array where to put the coefficient
-     * @param i first index in the list
-     * @param j second index in the list
-     * @param cName name of the coefficient
-     * @param name name of the file
-     * @deprecated as of 11.1, replaced by {@link #parseCoefficient(String,
-     * Flattener, double[], int, int, String, String)}
-     */
-    @Deprecated
-    protected void parseCoefficient(final String field, final double[][] array,
-                                    final int i, final int j,
-                                    final String cName, final String name) {
-        final double value    = parseDouble(field);
-        final double oldValue = array[i][j];
-        if (Double.isNaN(oldValue) || Precision.equals(oldValue, 0.0, 0)) {
-            // the coefficient was not already initialized
-            array[i][j] = value;
-        } else {
-            throw new OrekitException(OrekitMessages.DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
-                                      name, i, j, name);
-        }
-    }
-
     /** Parse a coefficient.
      * @param field text field to parse
      * @param f converter from triangular to flat form
@@ -580,76 +431,6 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         } else {
             throw new OrekitException(OrekitMessages.DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
                                       name, i, j, name);
-        }
-    }
-
-    /** Rescale coefficients arrays.
-     * @param scale general scaling factor to apply to all elements
-     * @param normalizedOrigin if true, the origin coefficients are normalized
-     * @param originC cosine part of the original coefficients
-     * @param originS sine part of the origin coefficients
-     * @param wantNormalized if true, the rescaled coefficients must be normalized
-     * @param rescaledC cosine part of the rescaled coefficients to fill in (may be the originC array)
-     * @param rescaledS sine part of the rescaled coefficients to fill in (may be the originS array)
-     * @deprecated as of 11.1, replaced by {@link #rescale(double, boolean, Flattener, Flattener, double[])}
-     */
-    @Deprecated
-    protected static void rescale(final double scale,
-                                  final boolean normalizedOrigin, final double[][] originC,
-                                  final double[][] originS, final boolean wantNormalized,
-                                  final double[][] rescaledC, final double[][] rescaledS) {
-
-        if (wantNormalized == normalizedOrigin) {
-            // apply only the general scaling factor
-            for (int i = 0; i < rescaledC.length; ++i) {
-                final double[] rCi = rescaledC[i];
-                final double[] rSi = rescaledS[i];
-                final double[] oCi = originC[i];
-                final double[] oSi = originS[i];
-                for (int j = 0; j < rCi.length; ++j) {
-                    rCi[j] = oCi[j] * scale;
-                    rSi[j] = oSi[j] * scale;
-                }
-            }
-        } else {
-
-            // we have to re-scale the coefficients
-            // (we use rescaledC.length - 1 for the order instead of rescaledC[rescaledC.length - 1].length - 1
-            //  because typically trend or pulsation arrays are irregular, some test cases have
-            //  order 2 elements at degree 2, but only order 1 elements for higher degrees for example)
-            final double[][] factors = GravityFieldFactory.getUnnormalizationFactors(rescaledC.length - 1,
-                                                                                     rescaledC.length - 1);
-
-            if (wantNormalized) {
-                // normalize the coefficients
-                for (int i = 0; i < rescaledC.length; ++i) {
-                    final double[] rCi = rescaledC[i];
-                    final double[] rSi = rescaledS[i];
-                    final double[] oCi = originC[i];
-                    final double[] oSi = originS[i];
-                    final double[] fi  = factors[i];
-                    for (int j = 0; j < rCi.length; ++j) {
-                        final double factor = scale / fi[j];
-                        rCi[j] = oCi[j] * factor;
-                        rSi[j] = oSi[j] * factor;
-                    }
-                }
-            } else {
-                // un-normalize the coefficients
-                for (int i = 0; i < rescaledC.length; ++i) {
-                    final double[] rCi = rescaledC[i];
-                    final double[] rSi = rescaledS[i];
-                    final double[] oCi = originC[i];
-                    final double[] oSi = originS[i];
-                    final double[] fi  = factors[i];
-                    for (int j = 0; j < rCi.length; ++j) {
-                        final double factor = scale * fi[j];
-                        rCi[j] = oCi[j] * factor;
-                        rSi[j] = oSi[j] * factor;
-                    }
-                }
-            }
-
         }
     }
 

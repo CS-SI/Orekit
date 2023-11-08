@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import java.util.Queue;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.solvers.FieldBracketingNthOrderBrentSolver;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.ode.FieldDenseOutputModel;
@@ -38,7 +39,8 @@ import org.hipparchus.ode.FieldODEStateAndDerivative;
 import org.hipparchus.ode.FieldOrdinaryDifferentialEquation;
 import org.hipparchus.ode.FieldSecondaryODE;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.ode.events.FieldEventHandlerConfiguration;
+import org.hipparchus.ode.events.FieldAdaptableInterval;
+import org.hipparchus.ode.events.FieldODEEventDetector;
 import org.hipparchus.ode.events.FieldODEEventHandler;
 import org.hipparchus.ode.sampling.AbstractFieldODEStateInterpolator;
 import org.hipparchus.ode.sampling.FieldODEStateInterpolator;
@@ -51,13 +53,14 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldAbstractPropagator;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
@@ -66,8 +69,8 @@ import org.orekit.utils.FieldArrayDictionary;
 
 /** Common handling of {@link org.orekit.propagation.FieldPropagator FieldPropagator}
  *  methods for both numerical and semi-analytical propagators.
- *  @param <T> the type of the field elements
- *  @author Luc Maisonobe
+ * @author Luc Maisonobe
+ * @param <T> type of the field element
  */
 public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractPropagator<T> {
 
@@ -106,7 +109,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     /** Type of orbit to output (mean or osculating) <br/>
      * <p>
-     * This is used only in the case of semianalitical propagators where there is a clear separation between
+     * This is used only in the case of semi-analytical propagators where there is a clear separation between
      * mean and short periodic elements. It is ignored by the Numerical propagator.
      * </p>
      */
@@ -144,12 +147,28 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         this.resetAtEnd = resetAtEnd;
     }
 
+    /** Getter for the resetting flag regarding initial state.
+     * @return resetting flag
+     * @since 12.0
+     */
+    public boolean getResetAtEnd() {
+        return this.resetAtEnd;
+    }
+
     /** Initialize the mapper.
      * @param field Field used by default
      */
     protected void initMapper(final Field<T> field) {
         final T zero = field.getZero();
         stateMapper = createMapper(null, zero.add(Double.NaN), null, null, null, null);
+    }
+
+    /** Get the integrator's name.
+     * @return name of underlying integrator
+     * @since 12.0
+     */
+    public String getIntegratorName() {
+        return integrator.getName();
     }
 
     /**  {@inheritDoc} */
@@ -176,7 +195,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         return stateMapper.getOrbitType();
     }
 
-    /** Check if only the mean elements should be used in a semianalitical propagation.
+    /** Check if only the mean elements should be used in a semi-analytical propagation.
      * @return {@link PropagationType MEAN} if only mean elements have to be used or
      *         {@link PropagationType OSCULATING} if osculating elements have to be also used.
      */
@@ -201,7 +220,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
-    protected void setPositionAngleType(final PositionAngle positionAngleType) {
+    protected void setPositionAngleType(final PositionAngleType positionAngleType) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
                                    stateMapper.getOrbitType(), positionAngleType,
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());
@@ -210,7 +229,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
-    protected PositionAngle getPositionAngleType() {
+    protected PositionAngleType getPositionAngleType() {
         return stateMapper.getPositionAngleType();
     }
 
@@ -271,15 +290,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         return managed;
     }
 
-    /** Add a set of user-specified equations to be integrated along with the orbit propagation.
-     * @param additional additional equations
-     * @deprecated as of 11.1, replaced by {@link #addAdditionalDerivativesProvider(FieldAdditionalDerivativesProvider)}
-     */
-    @Deprecated
-    public void addAdditionalEquations(final FieldAdditionalEquations<T> additional) {
-        addAdditionalDerivativesProvider(new FieldAdditionalEquationsAdapter<>(additional, this::getInitialState));
-    }
-
     /** Add a provider for user-specified state derivatives to be integrated along with the orbit propagation.
      * @param provider provider for additional derivatives
      * @see #addAdditionalStateProvider(org.orekit.propagation.FieldAdditionalStateProvider)
@@ -336,10 +346,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * @param detector event detector to wrap
      */
     protected void setUpEventDetector(final FieldODEIntegrator<T> integ, final FieldEventDetector<T> detector) {
-        integ.addEventHandler(new FieldAdaptedEventDetector(detector),
-                              detector.getMaxCheckInterval().getReal(),
-                              detector.getThreshold().getReal(),
-                              detector.getMaxIterationCount());
+        integ.addEventDetector(new FieldAdaptedEventDetector(detector));
     }
 
     /** {@inheritDoc} */
@@ -367,7 +374,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * @return new mapper
      */
     protected abstract FieldStateMapper<T> createMapper(FieldAbsoluteDate<T> referenceDate, T mu,
-                                                        OrbitType orbitType, PositionAngle positionAngleType,
+                                                        OrbitType orbitType, PositionAngleType positionAngleType,
                                                         AttitudeProvider attitudeProvider, Frame frame);
 
     /** Get the differential equations to integrate (for main state only).
@@ -452,14 +459,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                 setMu(getInitialState().getMu());
             }
             if (getInitialState().getMass().getReal() <= 0.0) {
-                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
+                throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS,
                                                getInitialState().getMass());
             }
 
             // convert space flight dynamics API to math API
             final FieldSpacecraftState<T> initialIntegrationState = getInitialIntegrationState();
             final FieldODEState<T> mathInitialState = createInitialState(initialIntegrationState);
-            final FieldExpandableODE<T> mathODE = createODE(integrator, mathInitialState);
+            final FieldExpandableODE<T> mathODE = createODE(integrator);
 
             // mathematical integration
             final FieldODEStateAndDerivative<T> mathFinalState;
@@ -582,11 +589,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     /** Create an ODE with all equations.
      * @param integ numerical integrator to use for propagation.
-     * @param mathInitialState initial state
      * @return a new ode
      */
-    private FieldExpandableODE<T> createODE(final FieldODEIntegrator<T> integ,
-                                    final FieldODEState<T> mathInitialState) {
+    private FieldExpandableODE<T> createODE(final FieldODEIntegrator<T> integ) {
 
         final FieldExpandableODE<T> ode =
                 new FieldExpandableODE<>(new ConvertedMainStateEquations(getMainStateEquations(integ)));
@@ -685,7 +690,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
     }
 
-    /** Differential equations for the main state (orbit, attitude and mass). */
+    /** Differential equations for the main state (orbit, attitude and mass).
+     * @param <T> type of the field element
+     */
     public interface MainStateEquations<T extends CalculusFieldElement<T>> {
 
         /**
@@ -802,7 +809,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             int yieldCount = 0;
             while (!pending.isEmpty()) {
                 final FieldAdditionalDerivativesProvider<T> equations = pending.remove();
-                if (equations.yield(updated)) {
+                if (equations.yields(updated)) {
                     // these equations have to wait for another set,
                     // we put them again in the pending queue
                     pending.add(equations);
@@ -862,14 +869,19 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     }
 
     /** Adapt an {@link org.orekit.propagation.events.FieldEventDetector<T>}
-     * to Hipparchus {@link org.hipparchus.ode.events.FieldODEEventHandler<T>} interface.
+     * to Hipparchus {@link org.hipparchus.ode.events.FieldODEEventDetector<T>} interface.
      * @param <T> class type for the generic version
      * @author Fabien Maussion
      */
-    private class FieldAdaptedEventDetector implements FieldODEEventHandler<T> {
+    private class FieldAdaptedEventDetector implements FieldODEEventDetector<T> {
 
         /** Underlying event detector. */
         private final FieldEventDetector<T> detector;
+
+        /** Underlying event handler.
+         * @since 12.0
+         */
+        private final FieldEventHandler<T> handler;
 
         /** Time of the previous call to g. */
         private T lastT;
@@ -882,8 +894,28 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         */
         FieldAdaptedEventDetector(final FieldEventDetector<T> detector) {
             this.detector = detector;
+            this.handler  = detector.getHandler();
             this.lastT    = getField().getZero().add(Double.NaN);
             this.lastG    = getField().getZero().add(Double.NaN);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public FieldAdaptableInterval<T> getMaxCheckInterval() {
+            return s -> detector.getMaxCheckInterval().currentInterval(convert(s));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int getMaxIterationCount() {
+            return detector.getMaxIterationCount();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public FieldBracketingNthOrderBrentSolver<T> getSolver() {
+            final T zero = detector.getThreshold().getField().getZero();
+            return new FieldBracketingNthOrderBrentSolver<>(zero, detector.getThreshold(), zero, 5);
         }
 
         /** {@inheritDoc} */
@@ -903,32 +935,43 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         }
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final FieldODEStateAndDerivative<T> s, final boolean increasing) {
-            return detector.eventOccurred(convert(s), increasing);
-        }
+        public FieldODEEventHandler<T> getHandler() {
 
-        /** {@inheritDoc} */
-        public FieldODEState<T> resetState(final FieldODEStateAndDerivative<T> s) {
+            return new FieldODEEventHandler<T>() {
 
-            final FieldSpacecraftState<T> oldState = convert(s);
-            final FieldSpacecraftState<T> newState = detector.resetState(oldState);
-            stateChanged(newState);
+                /** {@inheritDoc} */
+                public Action eventOccurred(final FieldODEStateAndDerivative<T> s,
+                                            final FieldODEEventDetector<T> d,
+                                            final boolean increasing) {
+                    return handler.eventOccurred(convert(s), detector, increasing);
+                }
 
-            // main part
-            final T[] primary    = MathArrays.buildArray(getField(), s.getPrimaryStateDimension());
-            stateMapper.mapStateToArray(newState, primary, null);
+                /** {@inheritDoc} */
+                public FieldODEState<T> resetState(final FieldODEEventDetector<T> d,
+                                                   final FieldODEStateAndDerivative<T> s) {
 
-            // secondary part
-            final T[][] secondary = MathArrays.buildArray(getField(), 1, additionalDerivativesProviders.size());
-            for (final FieldAdditionalDerivativesProvider<T> provider : additionalDerivativesProviders) {
-                final String name      = provider.getName();
-                final int    offset    = secondaryOffsets.get(name);
-                final int    dimension = provider.getDimension();
-                System.arraycopy(newState.getAdditionalState(name), 0, secondary[0], offset, dimension);
-            }
+                    final FieldSpacecraftState<T> oldState = convert(s);
+                    final FieldSpacecraftState<T> newState = handler.resetState(detector, oldState);
+                    stateChanged(newState);
 
-            return new FieldODEState<>(newState.getDate().durationFrom(getStartDate()),
-                                       primary, secondary);
+                    // main part
+                    final T[] primary    = MathArrays.buildArray(getField(), s.getPrimaryStateDimension());
+                    stateMapper.mapStateToArray(newState, primary, null);
+
+                    // secondary part
+                    final T[][] secondary = MathArrays.buildArray(getField(), 1, additionalDerivativesProviders.size());
+                    for (final FieldAdditionalDerivativesProvider<T> provider : additionalDerivativesProviders) {
+                        final String name      = provider.getName();
+                        final int    offset    = secondaryOffsets.get(name);
+                        final int    dimension = provider.getDimension();
+                        System.arraycopy(newState.getAdditionalState(name), 0, secondary[0], offset, dimension);
+                    }
+
+                    return new FieldODEState<>(newState.getDate().durationFrom(getStartDate()),
+                                               primary, secondary);
+                }
+            };
+
         }
 
     }
@@ -1146,7 +1189,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * If propagator-specific event handlers and step handlers are added to
      * the integrator in the try block, they will be removed automatically
      * when leaving the block, so the integrator only keep its own handlers
-     * between calls to {@link AbstractIntegratedPropagator#propagate(AbsoluteDate, AbsoluteDate).
+     * between calls to {@link AbstractIntegratedPropagator#propagate(FieldAbsoluteDate, FieldAbsoluteDate).
      * </p>
      * @param <T> the type of the field elements
      * @since 11.0
@@ -1156,8 +1199,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         /** Wrapped integrator. */
         private final FieldODEIntegrator<T> integrator;
 
-        /** Initial event handlers list. */
-        private final List<FieldEventHandlerConfiguration<T>> eventHandlersConfigurations;
+        /** Initial event detectors list. */
+        private final List<FieldODEEventDetector<T>> detectors;
 
         /** Initial step handlers list. */
         private final List<FieldODEStepHandler<T>> stepHandlers;
@@ -1166,9 +1209,9 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
          * @param integrator wrapped integrator
          */
         IntegratorResetter(final FieldODEIntegrator<T> integrator) {
-            this.integrator                  = integrator;
-            this.eventHandlersConfigurations = new ArrayList<>(integrator.getEventHandlersConfigurations());
-            this.stepHandlers                = new ArrayList<>(integrator.getStepHandlers());
+            this.integrator   = integrator;
+            this.detectors    = new ArrayList<>(integrator.getEventDetectors());
+            this.stepHandlers = new ArrayList<>(integrator.getStepHandlers());
         }
 
         /** {@inheritDoc}
@@ -1180,16 +1223,12 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         public void close() {
 
             // reset event handlers
-            integrator.clearEventHandlers();
-            eventHandlersConfigurations.forEach(c -> integrator.addEventHandler(c.getEventHandler(),
-                                                                                c.getMaxCheckInterval(),
-                                                                                c.getConvergence().getReal(),
-                                                                                c.getMaxIterationCount(),
-                                                                                c.getSolver()));
+            integrator.clearEventDetectors();
+            detectors.forEach(integrator::addEventDetector);
 
             // reset step handlers
             integrator.clearStepHandlers();
-            stepHandlers.forEach(stepHandler -> integrator.addStepHandler(stepHandler));
+            stepHandlers.forEach(integrator::addStepHandler);
 
         }
 

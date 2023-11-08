@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
@@ -44,7 +44,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -68,7 +68,7 @@ public class FieldGlobalMappingFunctionModelTest {
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(Decimal64Field.getInstance());
+        doTestMappingFactors(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
@@ -106,7 +106,7 @@ public class FieldGlobalMappingFunctionModelTest {
 
     @Test
     public void testFixedHeight() {
-        doTestFixedHeight(Decimal64Field.getInstance());
+        doTestFixedHeight(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
@@ -165,14 +165,14 @@ public class FieldGlobalMappingFunctionModelTest {
         // Field Orbit
         final Frame frame = FramesFactory.getEME2000();
         final FieldOrbit<DerivativeStructure> dsOrbit = new FieldKeplerianOrbit<>(a0, e0, i0, pa0, raan0, anomaly0,
-                                                                                  PositionAngle.MEAN, frame,
+                                                                                  PositionAngleType.MEAN, frame,
                                                                                   dsDate, zero.add(3.9860047e14));
         // Field State
         final FieldSpacecraftState<DerivativeStructure> dsState = new FieldSpacecraftState<>(dsOrbit);
 
         // Initial satellite elevation
-        final FieldVector3D<DerivativeStructure> position = dsState.getPVCoordinates().getPosition();
-        final DerivativeStructure dsElevation = baseFrame.getElevation(position, frame, dsDate);
+        final FieldVector3D<DerivativeStructure> position = dsState.getPosition();
+        final DerivativeStructure dsElevation = baseFrame.getTrackingCoordinates(position, frame, dsDate).getElevation();
 
         // Compute mapping factors state derivatives
         final FieldGeodeticPoint<DerivativeStructure> dsPoint = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
@@ -188,48 +188,64 @@ public class FieldGlobalMappingFunctionModelTest {
         // Finite differences for reference values
         final double[][] refMF = new double[2][6];
         final OrbitType orbitType = OrbitType.KEPLERIAN;
-        final PositionAngle angleType = PositionAngle.MEAN;
+        final PositionAngleType angleType = PositionAngleType.MEAN;
         double dP = 0.001;
         double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
         for (int i = 0; i < 6; i++) {
             SpacecraftState stateM4 = shiftState(state, orbitType, angleType, -4 * steps[i], i);
-            final Vector3D positionM4 = stateM4.getPVCoordinates().getPosition();
-            final double elevationM4  = station.getBaseFrame().getElevation(positionM4, stateM4.getFrame(), stateM4.getDate());
+            final Vector3D positionM4 = stateM4.getPosition();
+            final double elevationM4  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionM4, stateM4.getFrame(), stateM4.getDate()).
+                                        getElevation();
             double[]  delayM4 = model.mappingFactors(elevationM4, point, stateM4.getDate());
 
             SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
-            final Vector3D positionM3 = stateM3.getPVCoordinates().getPosition();
-            final double elevationM3  = station.getBaseFrame().getElevation(positionM3, stateM3.getFrame(), stateM3.getDate());
+            final Vector3D positionM3 = stateM3.getPosition();
+            final double elevationM3  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionM3, stateM3.getFrame(), stateM3.getDate()).
+                                        getElevation();
             double[]  delayM3 = model.mappingFactors(elevationM3, point, stateM3.getDate());
 
             SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
-            final Vector3D positionM2 = stateM2.getPVCoordinates().getPosition();
-            final double elevationM2  = station.getBaseFrame().getElevation(positionM2, stateM2.getFrame(), stateM2.getDate());
+            final Vector3D positionM2 = stateM2.getPosition();
+            final double elevationM2  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionM2, stateM2.getFrame(), stateM2.getDate()).
+                                        getElevation();
             double[]  delayM2 = model.mappingFactors(elevationM2, point, stateM2.getDate());
 
             SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
-            final Vector3D positionM1 = stateM1.getPVCoordinates().getPosition();
-            final double elevationM1  = station.getBaseFrame().getElevation(positionM1, stateM1.getFrame(), stateM1.getDate());
+            final Vector3D positionM1 = stateM1.getPosition();
+            final double elevationM1  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionM1, stateM1.getFrame(), stateM1.getDate()).
+                                        getElevation();
             double[]  delayM1 = model.mappingFactors(elevationM1, point, stateM1.getDate());
 
             SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
-            final Vector3D positionP1 = stateP1.getPVCoordinates().getPosition();
-            final double elevationP1  = station.getBaseFrame().getElevation(positionP1, stateP1.getFrame(), stateP1.getDate());
+            final Vector3D positionP1 = stateP1.getPosition();
+            final double elevationP1  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionP1, stateP1.getFrame(), stateP1.getDate()).
+                                        getElevation();
             double[]  delayP1 = model.mappingFactors(elevationP1, point, stateP1.getDate());
 
             SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
-            final Vector3D positionP2 = stateP2.getPVCoordinates().getPosition();
-            final double elevationP2  = station.getBaseFrame().getElevation(positionP2, stateP2.getFrame(), stateP2.getDate());
+            final Vector3D positionP2 = stateP2.getPosition();
+            final double elevationP2  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionP2, stateP2.getFrame(), stateP2.getDate()).
+                                        getElevation();
             double[]  delayP2 = model.mappingFactors(elevationP2, point, stateP2.getDate());
 
             SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
-            final Vector3D positionP3 = stateP3.getPVCoordinates().getPosition();
-            final double elevationP3  = station.getBaseFrame().getElevation(positionP3, stateP3.getFrame(), stateP3.getDate());
+            final Vector3D positionP3 = stateP3.getPosition();
+            final double elevationP3  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionP3, stateP3.getFrame(), stateP3.getDate()).
+                                        getElevation();
             double[]  delayP3 = model.mappingFactors(elevationP3, point, stateP3.getDate());
 
             SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
-            final Vector3D positionP4 = stateP4.getPVCoordinates().getPosition();
-            final double elevationP4  = station.getBaseFrame().getElevation(positionP4, stateP4.getFrame(), stateP4.getDate());
+            final Vector3D positionP4 = stateP4.getPosition();
+            final double elevationP4  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionP4, stateP4.getFrame(), stateP4.getDate()).
+                                        getElevation();
             double[]  delayP4 = model.mappingFactors(elevationP4, point, stateP4.getDate());
 
             fillJacobianColumn(refMF, i, orbitType, angleType, steps[i],
@@ -244,7 +260,7 @@ public class FieldGlobalMappingFunctionModelTest {
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, PositionAngle angleType, double h,
+                                    OrbitType orbitType, PositionAngleType angleType, double h,
                                     double[] sM4h, double[] sM3h,
                                     double[] sM2h, double[] sM1h,
                                     double[] sP1h, double[] sP2h,
@@ -257,7 +273,7 @@ public class FieldGlobalMappingFunctionModelTest {
         }
     }
 
-    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
+    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
                                        double delta, int column) {
 
         double[][] array = stateToArray(state, orbitType, angleType, true);
@@ -268,7 +284,7 @@ public class FieldGlobalMappingFunctionModelTest {
 
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
+    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
                                   boolean withMass) {
         double[][] array = new double[2][withMass ? 7 : 6];
         orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
@@ -278,7 +294,7 @@ public class FieldGlobalMappingFunctionModelTest {
         return array;
     }
 
-    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngle angleType,
+    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngleType angleType,
                                          Frame frame, AbsoluteDate date, double mu,
                                          Attitude attitude) {
         Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);

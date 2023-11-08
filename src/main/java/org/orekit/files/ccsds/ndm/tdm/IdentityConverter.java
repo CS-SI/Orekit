@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,11 +19,22 @@ package org.orekit.files.ccsds.ndm.tdm;
 import org.orekit.time.AbsoluteDate;
 
 /**
- * Identity converter for Range Units.<p>
+ * Identity converter for Range Units.
  * @author Luc Maisonobe
  * @since 11.0
  */
 public class IdentityConverter implements RangeUnitsConverter {
+
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public IdentityConverter() {
+        // nothing to do
+    }
 
     /** {@inheritDoc} */
     @Override

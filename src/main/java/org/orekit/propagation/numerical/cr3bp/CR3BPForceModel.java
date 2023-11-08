@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,7 @@ package org.orekit.propagation.numerical.cr3bp;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -30,11 +28,9 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CR3BPSystem;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.utils.ParameterDriver;
 
 /** Class calculating the acceleration induced by CR3BP model.
@@ -42,7 +38,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Vincent Mouraux
  * @since 10.2
  */
-public class CR3BPForceModel extends AbstractForceModel {
+public class CR3BPForceModel implements ForceModel {
 
     /** Suffix for parameter name for Mass Ratio enabling Jacobian processing. */
     public static final String MASS_RATIO_SUFFIX =  "CR3BP System Mass Ratio";
@@ -133,9 +129,9 @@ public class CR3BPForceModel extends AbstractForceModel {
     public DerivativeStructure getPotential(final SpacecraftState s) {
 
         // Spacecraft Position
-        final double x = s.getPVCoordinates().getPosition().getX();
-        final double y = s.getPVCoordinates().getPosition().getY();
-        final double z = s.getPVCoordinates().getPosition().getZ();
+        final double x = s.getPosition().getX();
+        final double y = s.getPosition().getY();
+        final double z = s.getPosition().getZ();
 
         final DSFactory factoryP = new DSFactory(3, 2);
         final DerivativeStructure fpx = factoryP.variable(0, x);
@@ -145,7 +141,9 @@ public class CR3BPForceModel extends AbstractForceModel {
         final DerivativeStructure zero = fpx.getField().getZero();
 
         // Get CR3BP System mass ratio
-        final DerivativeStructure mu = zero.add(muParameterDriver.getValue());
+        // By construction, mudriver has 1 value for the all time period that is why
+        // the getValue can be called with any date argument or null argument
+        final DerivativeStructure mu = zero.add(muParameterDriver.getValue(s.getDate()));
 
         // Normalized distances between primaries and barycenter in CR3BP
         final DerivativeStructure d1 = mu;
@@ -175,9 +173,9 @@ public class CR3BPForceModel extends AbstractForceModel {
     public <T extends CalculusFieldElement<T>> FieldDerivativeStructure<T> getPotential(final FieldSpacecraftState<T> s) {
 
         // Spacecraft Position
-        final T x = s.getPVCoordinates().getPosition().getX();
-        final T y = s.getPVCoordinates().getPosition().getY();
-        final T z = s.getPVCoordinates().getPosition().getZ();
+        final T x = s.getPosition().getX();
+        final T y = s.getPosition().getY();
+        final T z = s.getPosition().getZ();
 
         final FDSFactory<T> factoryP = new FDSFactory<>(s.getDate().getField(), 3, 2);
         final FieldDerivativeStructure<T> fpx = factoryP.variable(0, x);
@@ -186,7 +184,9 @@ public class CR3BPForceModel extends AbstractForceModel {
         final FieldDerivativeStructure<T> zero = fpx.getField().getZero();
 
         // Get CR3BP System mass ratio
-        final FieldDerivativeStructure<T> mu = zero.add(muParameterDriver.getValue());
+        // By construction, mudriver has 1 value for the all time period that is why
+        // the getValue can be called with any date argument or null argument
+        final FieldDerivativeStructure<T> mu = zero.add(muParameterDriver.getValue(s.getDate().toAbsoluteDate()));
 
         // Normalized distances between primaries and barycenter in CR3BP
         final FieldDerivativeStructure<T> d1 = mu;
@@ -205,17 +205,6 @@ public class CR3BPForceModel extends AbstractForceModel {
         // Potential of the Spacecraft
         return (mu.negate().add(1.0).divide(r1)).add(mu.divide(r2))
                 .add(fpx.multiply(fpx).add(fpy.multiply(fpy)).multiply(0.5)).add(d1.multiply(d2).multiply(0.5));
-    }
-
-    /** {@inheritDoc} */
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
-    @Override
-    /** {@inheritDoc} */
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
     /** {@inheritDoc} */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,11 +66,11 @@ public class EOPHistoryTest {
     @Test
     public void testFieldOutOfRange() {
         EOPHistory history = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
-        FieldAbsoluteDate<Decimal64> endDate = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
+        FieldAbsoluteDate<Binary64> endDate = new FieldAbsoluteDate<>(Binary64Field.getInstance(),
                                                                        2006, 3, 5, TimeScalesFactory.getUTC());
         for (double t = -1000; t < 1000 ; t += 3) {
-            FieldAbsoluteDate<Decimal64> date = endDate.shiftedBy(t);
-            Decimal64 dt = history.getUT1MinusUTC(date);
+            FieldAbsoluteDate<Binary64> date = endDate.shiftedBy(t);
+            Binary64 dt = history.getUT1MinusUTC(date);
             if (t <= 0) {
                 Assertions.assertTrue(dt.getReal() < 0.29236);
                 Assertions.assertTrue(dt.getReal() > 0.29233);
@@ -112,11 +112,11 @@ public class EOPHistoryTest {
     @Test
     public void testFieldUTCLeap() {
         EOPHistory history = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
-        FieldAbsoluteDate<Decimal64> endLeap = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
+        FieldAbsoluteDate<Binary64> endLeap = new FieldAbsoluteDate<>(Binary64Field.getInstance(),
                                                                        2006, 1, 1, TimeScalesFactory.getUTC());
         for (double dt = -200; dt < 200; dt += 3) {
-            final FieldAbsoluteDate<Decimal64> date = endLeap.shiftedBy(dt);
-            Decimal64 dtu1 = history.getUT1MinusUTC(date);
+            final FieldAbsoluteDate<Binary64> date = endLeap.shiftedBy(dt);
+            Binary64 dtu1 = history.getUT1MinusUTC(date);
             if (dt <= 0) {
                 Assertions.assertEquals(-0.6612, dtu1.getReal(), 3.0e-5);
             } else {
@@ -133,8 +133,8 @@ public class EOPHistoryTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(history);
 
-        Assertions.assertTrue(bos.size() > 150000);
-        Assertions.assertTrue(bos.size() < 155000);
+        Assertions.assertTrue(bos.size() > 135000);
+        Assertions.assertTrue(bos.size() < 140000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -163,7 +163,7 @@ public class EOPHistoryTest {
     public void testTidalInterpolationEffects() throws IOException, OrekitException {
 
         final EOPHistory h1 = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
-        final EOPHistory h2 = h1.getNonInterpolatingEOPHistory();
+        final EOPHistory h2 = h1.getEOPHistoryWithoutCachedTidalCorrection();
         final AbsoluteDate date0 = new AbsoluteDate(2004, 8, 16, 20, 0, 0, TimeScalesFactory.getUTC());
 
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 10) {

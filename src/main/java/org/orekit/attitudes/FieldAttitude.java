@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,6 @@
  */
 package org.orekit.attitudes;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -30,10 +26,8 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldTimeInterpolable;
 import org.orekit.time.FieldTimeShiftable;
 import org.orekit.time.FieldTimeStamped;
-import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
@@ -53,10 +47,11 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinates;
  * @see     org.orekit.orbits.Orbit
  * @see AttitudeProvider
  * @author V&eacute;ronique Pommier-Maurussane
+ * @param <T> type of the field elements
  */
 
 public class FieldAttitude<T extends CalculusFieldElement<T>>
-    implements FieldTimeStamped<T>, FieldTimeShiftable<FieldAttitude<T>, T>, FieldTimeInterpolable<FieldAttitude<T>, T> {
+    implements FieldTimeStamped<T>, FieldTimeShiftable<FieldAttitude<T>, T> {
 
 
     /** Reference frame. */
@@ -234,29 +229,6 @@ public class FieldAttitude<T extends CalculusFieldElement<T>>
         return orientation.getRotationAcceleration();
     }
 
-    /** Get an interpolated instance.
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * on Rodrigues vector ensuring rotation rate remains the exact derivative of rotation.
-     * </p>
-     * <p>
-     * As this implementation of interpolation is polynomial, it should be used only
-     * with small samples (about 10-20 points) in order to avoid <a
-     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
-     * and numerical problems (including NaN appearing).
-     * </p>
-     * @param interpolationDate interpolation date
-     * @param sample sample points on which interpolation should be done
-     * @return a new instance, interpolated at specified date
-     */
-    public FieldAttitude<T> interpolate(final FieldAbsoluteDate<T> interpolationDate,
-                                        final Stream<FieldAttitude<T>> sample) {
-        final List<TimeStampedFieldAngularCoordinates<T>> datedPV =
-                sample.map(attitude -> attitude.orientation).collect(Collectors.toList());
-        final TimeStampedFieldAngularCoordinates<T> interpolated =
-                TimeStampedFieldAngularCoordinates.interpolate(interpolationDate, AngularDerivativesFilter.USE_RR, datedPV);
-        return new FieldAttitude<>(referenceFrame, interpolated);
-    }
     /**
      * Converts to an Attitude instance.
      * @return Attitude with same properties

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,10 @@ import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Blendable;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -44,7 +46,7 @@ import org.orekit.time.TimeShiftable;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */
-public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable {
+public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PVCoordinates>, Serializable {
 
     /** Fixed position/velocity at origin (both p, v and a are zero vectors). */
     public static final PVCoordinates ZERO = new PVCoordinates(Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
@@ -629,6 +631,17 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      */
     private Object writeReplace() {
         return new DTO(this);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PVCoordinates blendArithmeticallyWith(final PVCoordinates other, final double blendingValue)
+            throws MathIllegalArgumentException {
+        final Vector3D blendedPosition     = position.blendArithmeticallyWith(other.position, blendingValue);
+        final Vector3D blendedVelocity     = velocity.blendArithmeticallyWith(other.velocity, blendingValue);
+        final Vector3D blendedAcceleration = acceleration.blendArithmeticallyWith(other.acceleration, blendingValue);
+
+        return new PVCoordinates(blendedPosition, blendedVelocity, blendedAcceleration);
     }
 
     /** Internal class used only for serialization. */

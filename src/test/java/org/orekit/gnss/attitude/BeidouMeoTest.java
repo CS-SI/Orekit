@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,7 @@ public class BeidouMeoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedSmallPositiveBeta() {
-        doTestAxes("patched-eclips/beta-small-positive-BEIDOU-2M.txt", 8.1e-15, 7.8e-16, false);
+        doTestAxes("patched-eclips/beta-small-positive-BEIDOU-2M.txt", 9.5e-15, 9.6e-16, false);
     }
 
     @Test
@@ -52,7 +52,7 @@ public class BeidouMeoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testOriginalSmallPositiveBeta() {
-        doTestAxes("original-eclips/beta-small-positive-BEIDOU-2M.txt", 2.7e-3, 7.8e-16, false);
+        doTestAxes("original-eclips/beta-small-positive-BEIDOU-2M.txt", 2.7e-3, 9.6e-16, false);
     }
 
     @Test

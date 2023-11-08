@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.time;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -211,11 +212,11 @@ public class AbsoluteDate
             DataContext.getDefault().getTimeScales().getGlonassEpoch();
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC).
-     * @see #createJulianEpoch(double)
-     * @see #createBesselianEpoch(double)
      *
      * <p>This constant uses the {@link DataContext#getDefault() default data context}.
      *
+     * @see #createJulianEpoch(double)
+     * @see #createBesselianEpoch(double)
      * @see TimeScales#getJ2000Epoch()
      */
     @DefaultDataContext
@@ -417,6 +418,18 @@ public class AbsoluteDate
              timeScale);
     }
 
+    /** Build an instance from an {@link Instant instant} in a {@link TimeScale time scale}.
+     * @param instant instant in the time scale
+     * @param timeScale time scale
+     * @since 12.0
+     */
+    public AbsoluteDate(final Instant instant, final TimeScale timeScale) {
+        this(new DateComponents(DateComponents.JAVA_EPOCH,
+                                (int) (instant.getEpochSecond() / 86400l)),
+             instantToTimeComponents(instant),
+             timeScale);
+    }
+
     /** Build an instance from an elapsed duration since to another instant.
      * <p>It is important to note that the elapsed duration is <em>not</em>
      * the difference between two readings on a time scale. As an example,
@@ -499,6 +512,15 @@ public class AbsoluteDate
      */
     private static TimeComponents millisToTimeComponents(final int millisInDay) {
         return new TimeComponents(millisInDay / 1000, 0.001 * (millisInDay % 1000));
+    }
+
+    /** Extract time components from an instant within the day.
+     * @param instant instant to extract the number of seconds within the day
+     * @return time components
+     */
+    private static TimeComponents instantToTimeComponents(final Instant instant) {
+        final int secInDay = (int) (instant.getEpochSecond() % 86400l);
+        return new TimeComponents(secInDay, 1.0e-9 * instant.getNano());
     }
 
     /** Get the reference epoch in seconds from 2000-01-01T12:00:00 TAI.

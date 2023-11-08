@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,20 +18,24 @@ package org.orekit.estimation.iod;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 /**
- * Gooding angles only initial orbit determination, assuming Keplerian motion.
- * An orbit is determined from three angular observations.
+ * Gooding angles only Initial Orbit Determination (IOD) algorithm, assuming Keplerian motion.
+ * <p>
+ * An orbit is determined from three lines of sight w.r.t. their respective observers
+ * inertial positions vectors. Gooding algorithm can handle multiple satellite's revolutions.
  *
  * Reference:
  *    Gooding, R.H., A New Procedure for Orbit Determination Based on Three Lines of Sight (Angles only),
  *    Technical Report 93004, April 1993
- *
+ * </p>
  * @author Joris Olympio
  * @since 8.0
  */
@@ -70,9 +74,11 @@ public class IodGooding {
 
     /** Range of point 1 (O1-R1). */
     private double rho1;
-    /** Range of point 2 (O2-R2). */
+
+    /** Range of point 2 (O1-R1). */
     private double rho2;
-    /** Range of point 3 (O3-R3). */
+
+    /** Range of point 1 (O1-R1). */
     private double rho3;
 
     /** working variable. */
@@ -87,43 +93,114 @@ public class IodGooding {
     /** Simple Lambert's problem solver. */
     private IodLambert lambert;
 
-    /** Creator.
-     * @param mu  gravitational constant
+    /**
+     * Constructor.
+     *
+     * @param mu gravitational constant
      */
     public IodGooding(final double mu) {
-        this.mu = mu;
+        this.mu   = mu;
 
         this.rho1 = 0;
         this.rho2 = 0;
         this.rho3 = 0;
     }
 
-    /** Get the range for observation (1).
+    /** Get range for observation (1).
      *
-     * @return the range for observation (1).
+     * @return the range for observation (1)
      */
     public double getRange1() {
         return rho1 * R;
     }
 
-    /** Get the range for observation (2).
+    /** Get range for observation (2).
      *
-     * @return the range for observation (2).
+     * @return the range for observation (2)
      */
     public double getRange2() {
         return rho2 * R;
     }
 
-    /** Get the range for observation (3).
+    /** Get range for observation (3).
      *
-     * @return the range for observation (3).
+     * @return the range for observation (3)
      */
     public double getRange3() {
         return rho3 * R;
     }
 
-    /** Orbit got from three angular observations.
-     * @param frame inertial frame for observer coordinates and orbit estimate
+    /** Estimate orbit from three angular observations.
+     * <p>
+     * This signature assumes there was less than an half revolution between start and final date
+     * </p>
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
+     * @param azEl1 first angular observation
+     * @param azEl2 second angular observation
+     * @param azEl3 third angular observation
+     * @param rho1init initial guess of the range problem. range 1, in meters
+     * @param rho3init initial guess of the range problem. range 3, in meters
+     * @return an estimate of the Keplerian orbit at the central date
+     *         (i.e., date of the second angular observation)
+     * @since 12.0
+     */
+    public Orbit estimate(final Frame outputFrame, final AngularAzEl azEl1,
+                          final AngularAzEl azEl2, final AngularAzEl azEl3,
+                          final double rho1init, final double rho3init) {
+        return estimate(outputFrame, azEl1, azEl2, azEl3, rho1init, rho3init, 0, true);
+    }
+
+    /** Estimate orbit from three angular observations.
+     *
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
+     * @param azEl1 first angular observation
+     * @param azEl2 second angular observation
+     * @param azEl3 third angular observation
+     * @param rho1init initial guess of the range problem. range 1, in meters
+     * @param rho3init initial guess of the range problem. range 3, in meters
+     * @param nRev number of complete revolutions between observation 1 and 3
+     * @param direction true if posigrade (short way)
+     * @return an estimate of the Keplerian orbit at the central date
+     *         (i.e., date of the second angular observation)
+     * @since 11.0
+     */
+    public Orbit estimate(final Frame outputFrame, final AngularAzEl azEl1,
+                          final AngularAzEl azEl2, final AngularAzEl azEl3,
+                          final double rho1init, final double rho3init,
+                          final int nRev, final boolean direction) {
+        return estimate(outputFrame,
+                        azEl1.getGroundStationPosition(outputFrame),
+                        azEl2.getGroundStationPosition(outputFrame),
+                        azEl3.getGroundStationPosition(outputFrame),
+                        azEl1.getObservedLineOfSight(outputFrame), azEl1.getDate(),
+                        azEl2.getObservedLineOfSight(outputFrame), azEl2.getDate(),
+                        azEl3.getObservedLineOfSight(outputFrame), azEl3.getDate(),
+                        rho1init, rho3init, nRev, direction);
+    }
+
+    /** Estimate orbit from three angular observations.
+     * <p>
+     * This signature assumes there was less than an half revolution between start and final date
+     * </p>
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
+     * @param raDec1 first angular observation
+     * @param raDec2 second angular observation
+     * @param raDec3 third angular observation
+     * @param rho1init initial guess of the range problem. range 1, in meters
+     * @param rho3init initial guess of the range problem. range 3, in meters
+     * @return an estimate of the Keplerian orbit at the central date
+     *         (i.e., date of the second angular observation)
+     * @since 11.0
+     */
+    public Orbit estimate(final Frame outputFrame, final AngularRaDec raDec1,
+                          final AngularRaDec raDec2, final AngularRaDec raDec3,
+                          final double rho1init, final double rho3init) {
+        return estimate(outputFrame, raDec1, raDec2, raDec3, rho1init, rho3init, 0, true);
+    }
+
+    /** Estimate orbit from three angular observations.
+     *
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
      * @param raDec1 first angular observation
      * @param raDec2 second angular observation
      * @param raDec3 third angular observation
@@ -135,39 +212,51 @@ public class IodGooding {
      *         (i.e., date of the second angular observation)
      * @since 11.0
      */
-    public KeplerianOrbit estimate(final Frame frame, final AngularRaDec raDec1,
-                                   final AngularRaDec raDec2, final AngularRaDec raDec3,
-                                   final double rho1init, final double rho3init,
-                                   final int nRev, final boolean direction) {
-        return estimate(frame,
-                        stationPosition(frame, raDec1),
-                        stationPosition(frame, raDec2),
-                        stationPosition(frame, raDec3),
-                        lineOfSight(raDec1), raDec1.getDate(),
-                        lineOfSight(raDec2), raDec2.getDate(),
-                        lineOfSight(raDec3), raDec3.getDate(),
+    public Orbit estimate(final Frame outputFrame, final AngularRaDec raDec1,
+                          final AngularRaDec raDec2, final AngularRaDec raDec3,
+                          final double rho1init, final double rho3init,
+                          final int nRev, final boolean direction) {
+        return estimate(outputFrame,
+                        raDec1.getGroundStationPosition(outputFrame),
+                        raDec2.getGroundStationPosition(outputFrame),
+                        raDec3.getGroundStationPosition(outputFrame),
+                        raDec1.getObservedLineOfSight(outputFrame), raDec1.getDate(),
+                        raDec2.getObservedLineOfSight(outputFrame), raDec2.getDate(),
+                        raDec3.getObservedLineOfSight(outputFrame), raDec3.getDate(),
                         rho1init, rho3init, nRev, direction);
     }
 
-    /** Orbit got from three angular observations.
-     * @param frame inertial frame for observer coordinates and orbit estimate
-     * @param raDec1 first angular observation
-     * @param raDec2 second angular observation
-     * @param raDec3 third angular observation
+    /** Estimate orbit from three line of sight.
+     * <p>
+     * This signature assumes there was less than an half revolution between start and final date
+     * </p>
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
+     * @param O1 Observer position 1
+     * @param O2 Observer position 2
+     * @param O3 Observer position 3
+     * @param lineOfSight1 line of sight 1
+     * @param dateObs1 date of observation 1
+     * @param lineOfSight2 line of sight 2
+     * @param dateObs2 date of observation 1
+     * @param lineOfSight3 line of sight 3
+     * @param dateObs3 date of observation 1
      * @param rho1init initial guess of the range problem. range 1, in meters
      * @param rho3init initial guess of the range problem. range 3, in meters
      * @return an estimate of the Keplerian orbit at the central date
      *         (i.e., date of the second angular observation)
-     * @since 11.0
      */
-    public KeplerianOrbit estimate(final Frame frame, final AngularRaDec raDec1,
-                                   final AngularRaDec raDec2, final AngularRaDec raDec3,
-                                   final double rho1init, final double rho3init) {
-        return estimate(frame, raDec1, raDec2, raDec3, rho1init, rho3init, 0, true);
+    public Orbit estimate(final Frame outputFrame, final Vector3D O1, final Vector3D O2, final Vector3D O3,
+                          final Vector3D lineOfSight1, final AbsoluteDate dateObs1,
+                          final Vector3D lineOfSight2, final AbsoluteDate dateObs2,
+                          final Vector3D lineOfSight3, final AbsoluteDate dateObs3,
+                          final double rho1init, final double rho3init) {
+        return this.estimate(outputFrame, O1, O2, O3, lineOfSight1, dateObs1, lineOfSight2, dateObs2,
+                             lineOfSight3, dateObs3, rho1init, rho3init, 0, true);
     }
 
-    /** Orbit got from Observed Three Lines of Sight (angles only).
-     * @param frame inertial frame for observer coordinates and orbit estimate
+    /** Estimate orbit from three line of sight.
+     *
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
      * @param O1 Observer position 1
      * @param O2 Observer position 2
      * @param O3 Observer position 3
@@ -184,12 +273,13 @@ public class IodGooding {
      * @return an estimate of the Keplerian orbit at the central date
      *         (i.e., date of the second angular observation)
      */
-    public KeplerianOrbit estimate(final Frame frame, final Vector3D O1, final Vector3D O2, final Vector3D O3,
-                                   final Vector3D lineOfSight1, final AbsoluteDate dateObs1,
-                                   final Vector3D lineOfSight2, final AbsoluteDate dateObs2,
-                                   final Vector3D lineOfSight3, final AbsoluteDate dateObs3,
-                                   final double rho1init, final double rho3init, final int nRev,
-                                   final boolean direction) {
+    public Orbit estimate(final Frame outputFrame,
+                          final Vector3D O1, final Vector3D O2, final Vector3D O3,
+                          final Vector3D lineOfSight1, final AbsoluteDate dateObs1,
+                          final Vector3D lineOfSight2, final AbsoluteDate dateObs2,
+                          final Vector3D lineOfSight3, final AbsoluteDate dateObs3,
+                          final double rho1init, final double rho3init, final int nRev,
+                          final boolean direction) {
 
         this.date1 = dateObs1;
 
@@ -205,50 +295,20 @@ public class IodGooding {
         this.vObserverPosition2 = O2.scalarMultiply(1. / R);
         this.vObserverPosition3 = O3.scalarMultiply(1. / R);
 
-        final int maxiter = 100; // maximum iter
-
         // solve the range problem
-        solveRangeProblem(frame,
+        solveRangeProblem(outputFrame,
                           rho1init / R, rho3init / R,
                           dateObs3.durationFrom(dateObs1) / T, dateObs2.durationFrom(dateObs1) / T,
                           nRev,
                           direction,
-                          lineOfSight1, lineOfSight2, lineOfSight3,
-                          maxiter);
+                          lineOfSight1, lineOfSight2, lineOfSight3);
 
         // use the Gibbs problem to get the orbit now that we have three position vectors.
         final IodGibbs gibbs = new IodGibbs(mu);
-        final Vector3D p1 = vObserverPosition1.add(lineOfSight1.scalarMultiply(rho1)).scalarMultiply(R);
-        final Vector3D p2 = vObserverPosition2.add(lineOfSight2.scalarMultiply(rho2)).scalarMultiply(R);
-        final Vector3D p3 = vObserverPosition3.add(lineOfSight3.scalarMultiply(rho3)).scalarMultiply(R);
-        return gibbs.estimate(frame, p1, dateObs1, p2, dateObs2, p3, dateObs3);
-    }
-
-    /** Orbit got from Observed Three Lines of Sight (angles only).
-     * assuming there was less than an half revolution between start and final date
-     * @param frame inertial frame for observer coordinates and orbit estimate
-     * @param O1 Observer position 1
-     * @param O2 Observer position 2
-     * @param O3 Observer position 3
-     * @param lineOfSight1 line of sight 1
-     * @param dateObs1 date of observation 1
-     * @param lineOfSight2 line of sight 2
-     * @param dateObs2 date of observation 1
-     * @param lineOfSight3 line of sight 3
-     * @param dateObs3 date of observation 1
-     * @param rho1init initial guess of the range problem. range 1, in meters
-     * @param rho3init initial guess of the range problem. range 3, in meters
-     * @return an estimate of the Keplerian orbit at the central date
-     *         (i.e., date of the second angular observation)
-     */
-    public KeplerianOrbit estimate(final Frame frame, final Vector3D O1, final Vector3D O2, final Vector3D O3,
-                                   final Vector3D lineOfSight1, final AbsoluteDate dateObs1,
-                                   final Vector3D lineOfSight2, final AbsoluteDate dateObs2,
-                                   final Vector3D lineOfSight3, final AbsoluteDate dateObs3,
-                                   final double rho1init, final double rho3init) {
-
-        return this.estimate(frame, O1, O2, O3, lineOfSight1, dateObs1, lineOfSight2, dateObs2,
-                lineOfSight3, dateObs3, rho1init, rho3init, 0, true);
+        final Vector3D p1    = vObserverPosition1.add(lineOfSight1.scalarMultiply(rho1)).scalarMultiply(R);
+        final Vector3D p2    = vObserverPosition2.add(lineOfSight2.scalarMultiply(rho2)).scalarMultiply(R);
+        final Vector3D p3    = vObserverPosition3.add(lineOfSight3.scalarMultiply(rho3)).scalarMultiply(R);
+        return gibbs.estimate(outputFrame, p1, dateObs1, p2, dateObs2, p3, dateObs3);
     }
 
     /** Solve the range problem when three line of sight are given.
@@ -257,30 +317,27 @@ public class IodGooding {
      * @param rho3init   initial value for range R3, in meters
      * @param T13   time of flight 1->3, in seconds
      * @param T12   time of flight 1->2, in seconds
-     * @param nrev number of revolutions
+     * @param nRev number of revolutions
      * @param direction  posigrade (true) or retrograde
      * @param lineOfSight1  line of sight 1
      * @param lineOfSight2  line of sight 2
      * @param lineOfSight3  line of sight 3
-     * @param maxIterations         max iter
-     * @return nothing
      */
-    private boolean solveRangeProblem(final Frame frame,
-                                      final double rho1init, final double rho3init,
-                                      final double T13, final double T12,
-                                      final int nrev,
-                                      final boolean direction,
-                                      final Vector3D lineOfSight1,
-                                      final Vector3D lineOfSight2,
-                                      final Vector3D lineOfSight3,
-                                      final int maxIterations) {
+    private void solveRangeProblem(final Frame frame,
+                                   final double rho1init, final double rho3init,
+                                   final double T13, final double T12,
+                                   final int nRev,
+                                   final boolean direction,
+                                   final Vector3D lineOfSight1,
+                                   final Vector3D lineOfSight2,
+                                   final Vector3D lineOfSight3) {
+        final int maxIterations = 100;
         final double ARBF = 1e-6;   // finite differences step
         boolean withHalley = true;  // use Halley's method
         final double cvtol = 1e-14; // convergence tolerance
 
         rho1 = rho1init;
         rho3 = rho3init;
-
 
         int iter = 0;
         double stoppingCriterion = 10 * cvtol;
@@ -297,10 +354,10 @@ public class IodGooding {
             final Vector3D P2 = getPositionOnLoS2(frame,
                                                   lineOfSight1, rho1,
                                                   lineOfSight3, rho3,
-                                                  T13, T12, nrev, direction);
+                                                  T13, T12, nRev, direction);
 
             if (P2 == null) {
-                modifyIterate(lineOfSight1, lineOfSight2, lineOfSight3);
+                modifyIterate(lineOfSight1, lineOfSight3);
             } else {
                 //
                 R2 = P2.getNorm();
@@ -308,10 +365,6 @@ public class IodGooding {
                 // compute current line of sight for (2) and the associated range
                 final Vector3D C = P2.subtract(vObserverPosition2);
                 rho2 = C.getNorm();
-
-                final double R10 = R1;
-                final double R30 = R3;
-
                 // indicate how close we are to the direction of sight for measurement (2)
                 // for convergence test
                 final double CR = lineOfSight2.dotProduct(C);
@@ -326,7 +379,7 @@ public class IodGooding {
                 // if ENt is zero we have a solution!
                 final double ENR = ENt.getNorm();
                 if (ENR == 0.) {
-                    return true;
+                    break;
                 }
 
                 //Normalize EN
@@ -341,13 +394,12 @@ public class IodGooding {
                 final double[] GD = new double[2];
                 computeDerivatives(frame,
                                    rho1, rho3,
-                                   R10, R30,
                                    lineOfSight1, lineOfSight3,
                                    P, EN,
                                    Fc,
                                    T13, T12,
                                    withHalley,
-                                   nrev,
+                                   nRev,
                                    direction,
                                    FD, GD);
 
@@ -374,18 +426,14 @@ public class IodGooding {
 
             ++iter;
         } // end while
-
-        return true;
     }
 
     /** Change the current iterate if Lambert's problem solver failed to find a solution.
      *
      * @param lineOfSight1 line of sight 1
-     * @param lineOfSight2 line of sight 2
      * @param lineOfSight3 line of sight 3
      */
     private void modifyIterate(final Vector3D lineOfSight1,
-                               final Vector3D lineOfSight2,
                                final Vector3D lineOfSight3) {
         // This is a modifier proposed in the initial paper of Gooding.
         // Try to avoid Lambert-fail, by common-perpendicular starters
@@ -412,8 +460,6 @@ public class IodGooding {
      * @param frame frame to be used (orbit frame)
      * @param x    current range 1
      * @param y    current range 3
-     * @param R10   current radius 1
-     * @param R30   current radius 3
      * @param lineOfSight1  line of sight
      * @param lineOfSight3  line of sight
      * @param Pin   basis vector
@@ -422,21 +468,20 @@ public class IodGooding {
      * @param T13   time of flight 1->3, in seconds
      * @param T12   time of flight 1->2, in seconds
      * @param withHalley    use Halley iterative method
-     * @param nrev  number of revolutions
+     * @param nRev  number of revolutions
      * @param direction direction of motion
      * @param FD    derivatives of f wrt (rho1, rho3) by finite differences
      * @param GD    derivatives of g wrt (rho1, rho3) by finite differences
      */
     private void computeDerivatives(final Frame frame,
                                     final double x, final double y,
-                                    final double R10, final double R30,
                                     final Vector3D lineOfSight1, final Vector3D lineOfSight3,
                                     final Vector3D Pin,
                                     final Vector3D Ein,
                                     final double F,
                                     final double T13, final double T12,
                                     final boolean withHalley,
-                                    final int nrev,
+                                    final int nRev,
                                     final boolean direction,
                                     final double[] FD, final double[] GD) {
 
@@ -451,7 +496,7 @@ public class IodGooding {
         final Vector3D Cm1 = getPositionOnLoS2 (frame,
                                                 lineOfSight1, x - dx,
                                                 lineOfSight3, y,
-                                                T13, T12, nrev, direction).subtract(vObserverPosition2);
+                                                T13, T12, nRev, direction).subtract(vObserverPosition2);
 
         final double Fm1 = P.dotProduct(Cm1);
         final double Gm1 = EN.dotProduct(Cm1);
@@ -459,7 +504,7 @@ public class IodGooding {
         final Vector3D Cp1 = getPositionOnLoS2 (frame,
                                                 lineOfSight1, x + dx,
                                                 lineOfSight3, y,
-                                                T13, T12, nrev, direction).subtract(vObserverPosition2);
+                                                T13, T12, nRev, direction).subtract(vObserverPosition2);
 
         final double Fp1  = P.dotProduct(Cp1);
         final double Gp1 = EN.dotProduct(Cp1);
@@ -471,7 +516,7 @@ public class IodGooding {
         final Vector3D Cm3 = getPositionOnLoS2 (frame,
                                                 lineOfSight1, x,
                                                 lineOfSight3, y - dy,
-                                                T13, T12, nrev, direction).subtract(vObserverPosition2);
+                                                T13, T12, nRev, direction).subtract(vObserverPosition2);
 
         final double Fm3 = P.dotProduct(Cm3);
         final double Gm3 = EN.dotProduct(Cm3);
@@ -479,7 +524,7 @@ public class IodGooding {
         final Vector3D Cp3 = getPositionOnLoS2 (frame,
                                                 lineOfSight1, x,
                                                 lineOfSight3, y + dy,
-                                                T13, T12, nrev, direction).subtract(vObserverPosition2);
+                                                T13, T12, nRev, direction).subtract(vObserverPosition2);
 
         final double Fp3 = P.dotProduct(Cp3);
         final double Gp3 = EN.dotProduct(Cp3);
@@ -511,7 +556,7 @@ public class IodGooding {
             final Vector3D Cp13 = getPositionOnLoS2 (frame,
                                                      lineOfSight1, x + dx,
                                                      lineOfSight3, y + dy,
-                                                     T13, T12, nrev, direction).subtract(vObserverPosition2);
+                                                     T13, T12, nRev, direction).subtract(vObserverPosition2);
 
             // f function value at (x1+dx1, x3+dx3)
             final double Fp13 = P.dotProduct(Cp13);
@@ -521,18 +566,14 @@ public class IodGooding {
             final Vector3D Cm13 = getPositionOnLoS2 (frame,
                                                      lineOfSight1, x - dx,
                                                      lineOfSight3, y - dy,
-                                                     T13, T12, nrev, direction).subtract(vObserverPosition2);
+                                                     T13, T12, nRev, direction).subtract(vObserverPosition2);
 
             // f function value at (x1-dx1, x3-dx3)
             final double Fm13 = P.dotProduct(Cm13);
             // g function value at (x1-dx1, x3-dx3)
             final double Gm13 = EN.dotProduct(Cm13);
 
-            // Second order derivatives: d^2f / drho1drho3 and d^2g / drho1drho3
-            //double Fxy = Fp13 / (dx * dy) - (Fx / dy + Fy / dx) -
-            //                0.5 * (Fxx * dx / dy + Fyy * dy / dx);
-            //double Gxy = Gp13 / (dx * dy) - (Gx / dy + Gy / dx) -
-            //                0.5 * (Gxx * dx / dy + Gyy * dy / dx);
+            // Second order derivatives:
             final double Fxy = (Fp13 + Fm13) / (2 * dx * dy) - 0.5 * (Fxx * dx / dy + Fyy * dy / dx) - F / (dx * dy);
             final double Gxy = (Gp13 + Gm13) / (2 * dx * dy) - 0.5 * (Gxx * dx / dy + Gyy * dy / dx) - F / (dx * dy);
 
@@ -566,7 +607,7 @@ public class IodGooding {
      * @param RO3 distance along E3
      * @param T12   time of flight
      * @param T13   time of flight
-     * @param nRev number of revolutions
+     * @param nRev  number of revolutions
      * @param posigrade direction of motion
      * @return (R2-O2)
      */
@@ -613,65 +654,13 @@ public class IodGooding {
 
             // estimate the position at the second observation time
             // propagate (P1, V1) during TAU + T12 to get (P2, V2)
-            final Vector3D P2 = propagatePV(frame, P1, Vel1, T12);
+            final PVCoordinates pv1   = new PVCoordinates(P1, Vel1);
+            final Orbit         orbit = new CartesianOrbit(pv1, frame, date1, 1.);
 
-            return P2;
+            return orbit.shiftedBy(T12).getPosition();
         }
 
         return null;
-    }
-
-    /** Propagate a solution (Kepler).
-     * @param frame frame to be used (orbit frame)
-     * @param P1    initial position vector
-     * @param V1    initial velocity vector
-     * @param tau   propagation time
-     * @return final position vector
-     */
-    private Vector3D propagatePV(final Frame frame, final Vector3D P1, final Vector3D V1, final double tau) {
-        final PVCoordinates pv1 = new PVCoordinates(P1, V1);
-        // create a Keplerian orbit. Assume MU = 1.
-        final KeplerianOrbit orbit = new KeplerianOrbit(pv1, frame, date1, 1.);
-        return orbit.shiftedBy(tau).getPVCoordinates().getPosition();
-    }
-
-    /**
-     * Calculates the line of sight vector.
-     * @param alpha right ascension angle, in radians
-     * @param delta declination angle, in radians
-     * @return the line of sight vector
-     * @since 11.0
-     */
-    public static Vector3D lineOfSight(final double alpha, final double delta) {
-        return new Vector3D(FastMath.cos(delta) * FastMath.cos(alpha),
-                            FastMath.cos(delta) * FastMath.sin(alpha),
-                            FastMath.sin(delta));
-    }
-
-    /**
-     * Calculate the line of sight vector from an AngularRaDec measurement.
-     * @param raDec measurement
-     * @return the line of sight vector
-     * @since 11.0
-     */
-    public static Vector3D lineOfSight(final AngularRaDec raDec) {
-
-        // Observed values
-        final double[] observed = raDec.getObservedValue();
-
-        // Return
-        return lineOfSight(observed[0], observed[1]);
-
-    }
-
-    /**
-     * Get the station position from the right ascension / declination measurement.
-     * @param frame inertial frame for station posiiton and orbit estimate
-     * @param raDec measurement
-     * @return the station position
-     */
-    private static Vector3D stationPosition(final Frame frame, final AngularRaDec raDec) {
-        return raDec.getStation().getBaseFrame().getPVCoordinates(raDec.getDate(), frame).getPosition();
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,7 +45,7 @@ import org.orekit.models.earth.atmosphere.SimpleExponentialAtmosphere;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -123,7 +123,7 @@ public class JacobianPropagatorConverterTest {
         NumericalPropagatorBuilder builder =
                         new NumericalPropagatorBuilder(OrbitType.CARTESIAN.convertType(orbit),
                                                        new LutherIntegratorBuilder(10.0),
-                                                       PositionAngle.TRUE, dP);
+                                                       PositionAngleType.TRUE, dP);
         builder.setMass(200.0);
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
@@ -146,7 +146,7 @@ public class JacobianPropagatorConverterTest {
             for (final String name : names) {
                 if (name.equals(driver.getName())) {
                     found = true;
-                    normalized[index++] = driver.getNormalizedValue() + (2 * random.nextDouble() - 1);
+                    normalized[index++] = driver.getNormalizedValue(new AbsoluteDate()) + (2 * random.nextDouble() - 1);
                     selected.add(driver);
                 }
             }

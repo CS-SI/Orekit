@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,27 +16,24 @@
  */
 package org.orekit.propagation.integration;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.ode.FieldDenseOutputModel;
-import org.hipparchus.ode.FieldExpandableODE;
-import org.hipparchus.ode.FieldODEState;
-import org.hipparchus.ode.FieldOrdinaryDifferentialEquation;
-import org.hipparchus.ode.FieldSecondaryODE;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.ode.nonstiff.EulerFieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
@@ -44,12 +41,10 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -57,44 +52,40 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.List;
-
 
 public class FieldIntegratedEphemerisTest {
 
     @Test
     public void testNormalKeplerIntegration() {
-        doTestNormalKeplerIntegration(Decimal64Field.getInstance());
+        doTestNormalKeplerIntegration(Binary64Field.getInstance());
     }
 
     @Test
     public void testGetFrame() {
-        doTestGetFrame(Decimal64Field.getInstance());
+        doTestGetFrame(Binary64Field.getInstance());
     }
 
     @Test
     public void testAdditionalState() {
-        doTestAdditionalState(Decimal64Field.getInstance());
+        doTestAdditionalState(Binary64Field.getInstance());
     }
 
     @Test
     public void testNoReset() {
-        doTestNoReset(Decimal64Field.getInstance());
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-        doTestDeprecated(Decimal64Field.getInstance());
+        doTestNoReset(Binary64Field.getInstance());
     }
 
     @Test
     public void testAdditionalDerivatives() {
-        doTestAdditionalDerivatives(Decimal64Field.getInstance());
+        doTestAdditionalDerivatives(Binary64Field.getInstance());
     }
+
+    /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
+    @Test
+    public void testIssue949() {
+        doTestIssue949(Binary64Field.getInstance());
+    }
+
 
     private <T extends CalculusFieldElement<T>> void doTestNormalKeplerIntegration(Field<T> field) {
         FieldOrbit<T> initialOrbit = createOrbit(field);
@@ -117,8 +108,8 @@ public class FieldIntegratedEphemerisTest {
             FieldAbsoluteDate<T> intermediateDate = initialOrbit.getDate().shiftedBy(dt);
             FieldSpacecraftState<T> keplerIntermediateOrbit = keplerEx.propagate(intermediateDate);
             FieldSpacecraftState<T> numericIntermediateOrbit = ephemeris.propagate(intermediateDate);
-            FieldVector3D<T> kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
-            FieldVector3D<T> numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();
+            FieldVector3D<T> kepPosition = keplerIntermediateOrbit.getPosition();
+            FieldVector3D<T> numPosition = numericIntermediateOrbit.getPosition();
 
             Assertions.assertEquals(0, kepPosition.subtract(numPosition).getNorm().getReal(), 5.0e-2);
         }
@@ -132,8 +123,8 @@ public class FieldIntegratedEphemerisTest {
         numericalPropagator.propagate(initialOrbit.getDate());
         FieldBoundedPropagator<T> invEphemeris = generator2.getGeneratedEphemeris();
         FieldSpacecraftState<T> numericIntermediateOrbit = invEphemeris.propagate(intermediateDate);
-        FieldVector3D<T> kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
-        FieldVector3D<T> numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();
+        FieldVector3D<T> kepPosition = keplerIntermediateOrbit.getPosition();
+        FieldVector3D<T> numPosition = numericIntermediateOrbit.getPosition();
 
         Assertions.assertEquals(0, kepPosition.subtract(numPosition).getNorm().getReal(), 3.0e-3);
 
@@ -223,10 +214,11 @@ public class FieldIntegratedEphemerisTest {
         numericalPropagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
         numericalPropagator.propagate(finalDate);
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
-        ephemeris.addEventDetector(new FieldDateDetector<>(initialOrbit.getDate().shiftedBy(10)).
-                                   withHandler((FieldSpacecraftState<T> s,
-                                                FieldDateDetector<T> detector,
-                                                boolean increasing) -> Action.RESET_STATE));
+        @SuppressWarnings("unchecked")
+        FieldDateDetector<T> detector = new FieldDateDetector<>(initialOrbit.getDate().getField(),
+                                                                initialOrbit.getDate().shiftedBy(10)).
+                                        withHandler((s, d, increasing) -> Action.RESET_STATE);
+        ephemeris.addEventDetector(detector);
 
         try {
             ephemeris.propagate(initialOrbit.getDate(), finalDate);
@@ -234,59 +226,6 @@ public class FieldIntegratedEphemerisTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
-
-    }
-
-    @Deprecated
-    private <T extends CalculusFieldElement<T>> void doTestDeprecated(Field<T> field) {
-
-        EulerFieldIntegrator<T> integ = new EulerFieldIntegrator<>(field, field.getZero().newInstance(1.0));
-        FieldDenseOutputModel<T> dom = new FieldDenseOutputModel<>();
-        integ.addStepHandler(dom);
-        FieldExpandableODE<T> eode = new FieldExpandableODE<T>(new FieldOrdinaryDifferentialEquation<T>() {
-            public int getDimension() { return 1; }
-            public T[] computeDerivatives(T t, T[] y) { return y; }
-        });
-        eode.addSecondaryEquations(new FieldSecondaryODE<T>() {
-            public int getDimension() { return 1; }
-            public T[] computeDerivatives(T t, T[] primary, T[] primaryDot, T[] secondary) { return secondary; }
-        });
-        integ.integrate(eode,
-                        new FieldODEState<>(field.getZero().newInstance(0.0),
-                                            MathArrays.buildArray(field, 1),
-                                            MathArrays.buildArray(field, 1, 1)),
-                        field.getZero().newInstance(1.0));
-
-        FieldStateMapper<T> mapper = new FieldStateMapper<T>(FieldAbsoluteDate.getArbitraryEpoch(field),
-                                                             field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU),
-                                                             OrbitType.CARTESIAN, PositionAngle.TRUE,
-                                                             new InertialProvider(FramesFactory.getEME2000()),
-                                                             FramesFactory.getEME2000()) {
-            public void mapStateToArray(FieldSpacecraftState<T> state, T[] y, T[] yDot) {}
-            public FieldSpacecraftState<T> mapArrayToState(FieldAbsoluteDate<T> date, T[] y, T[] yDot, PropagationType type) {
-                return null;
-            }
-        };
-
-        try {
-            new FieldIntegratedEphemeris<T>(FieldAbsoluteDate.getArbitraryEpoch(field),
-                                            FieldAbsoluteDate.getPastInfinity(field),
-                                            FieldAbsoluteDate.getFutureInfinity(field),
-                                            mapper, PropagationType.OSCULATING,
-                                            dom, Collections.emptyMap(), Collections.emptyList(),
-                                            new String[] { "equation-1", "equation-2" });
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitInternalError oie) {
-            // expected as only one equation could be handled properly by this deprecated constructor
-        }
-
-        FieldIntegratedEphemeris<T> ie = new FieldIntegratedEphemeris<T>(FieldAbsoluteDate.getArbitraryEpoch(field),
-                                                                         FieldAbsoluteDate.getPastInfinity(field),
-                                                                         FieldAbsoluteDate.getFutureInfinity(field),
-                                                                         mapper, PropagationType.OSCULATING,
-                                                                         dom, Collections.emptyMap(), Collections.emptyList(),
-                                                                         new String[] { "equation-1" });
-        Assertions.assertNotNull(ie);
 
     }
 
@@ -316,6 +255,29 @@ public class FieldIntegratedEphemerisTest {
             checkState(dt, state, provider1);
             checkState(dt, state, provider2);
         }
+
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestIssue949(Field<T> field) {
+        // GIVEN
+        final FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field);
+        final FieldOrbit<T> initialOrbit = createOrbit(field);
+        FieldNumericalPropagator<T> numericalPropagator = createPropagator(field);
+        numericalPropagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
+        numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
+
+        // Setup additional state provider which use the initial state in its init method
+        final FieldAdditionalStateProvider<T> additionalStateProvider = TestUtils.getFieldAdditionalProviderWithInit();
+        numericalPropagator.addAdditionalStateProvider(additionalStateProvider);
+
+        // Setup integrated ephemeris
+        final FieldEphemerisGenerator<T> generator = numericalPropagator.getEphemerisGenerator();
+        numericalPropagator.propagate(initialDate.shiftedBy(1));
+
+        final FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
+
+        // WHEN & THEN
+        Assertions.assertDoesNotThrow(() -> ephemeris.propagate(ephemeris.getMaxDate()), "No error should have been thrown");
 
     }
 
@@ -391,8 +353,8 @@ public class FieldIntegratedEphemerisTest {
         public int getDimension() {
             return derivatives.length;
         }
-        public T[] derivatives(final FieldSpacecraftState<T> s) {
-            return derivatives;
+        public FieldCombinedDerivatives<T> combinedDerivatives(final FieldSpacecraftState<T> s) {
+            return new FieldCombinedDerivatives<>(derivatives, null);
         }
     }
 

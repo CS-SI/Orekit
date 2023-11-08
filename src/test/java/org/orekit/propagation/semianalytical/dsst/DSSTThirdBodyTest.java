@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -68,7 +68,7 @@ public class DSSTThirdBodyTest {
                                                  0.15995912655021305,
                                                  -0.5969755874197339,
                                                  15.47576793123677,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  earthFrame,
                                                  initDate,
                                                  mu);
@@ -80,7 +80,7 @@ public class DSSTThirdBodyTest {
         final DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon(), mu);
 
         // Force model parameters
-        final double[] parameters = moon.getParameters();
+        final double[] parameters = moon.getParameters(orbit.getDate());
 
         // Initialize force model
         moon.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
@@ -119,8 +119,8 @@ public class DSSTThirdBodyTest {
 
         for (final DSSTForceModel force : forces) {
             force.registerAttitudeProvider(null);
-            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters()));
-            force.updateShortPeriodTerms(force.getParameters(), meanState);
+            shortPeriodTerms.addAll(force.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, force.getParameters(meanState.getDate())));
+            force.updateShortPeriodTerms(force.getParametersAllValues(), meanState);
         }
 
         double[] y = new double[6];
@@ -148,7 +148,7 @@ public class DSSTThirdBodyTest {
                                                  10e-3,
                                                  FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
                                                  FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3), 0.1,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  FramesFactory.getEME2000(),
                                                  initDate,
                                                  3.986004415E14);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.DenseOutputModel;
 import org.hipparchus.ode.ExpandableODE;
@@ -35,7 +38,8 @@ import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.OrdinaryDifferentialEquation;
 import org.hipparchus.ode.SecondaryODE;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.ode.events.EventHandlerConfiguration;
+import org.hipparchus.ode.events.AdaptableInterval;
+import org.hipparchus.ode.events.ODEEventDetector;
 import org.hipparchus.ode.events.ODEEventHandler;
 import org.hipparchus.ode.sampling.AbstractODEStateInterpolator;
 import org.hipparchus.ode.sampling.ODEStateInterpolator;
@@ -47,13 +51,14 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -102,7 +107,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Type of orbit to output (mean or osculating) <br/>
      * <p>
-     * This is used only in the case of semianalitical propagators where there is a clear separation between
+     * This is used only in the case of semi-analytical propagators where there is a clear separation between
      * mean and short periodic elements. It is ignored by the Numerical propagator.
      * </p>
      */
@@ -138,9 +143,25 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         this.resetAtEnd = resetAtEnd;
     }
 
+    /** Getter for the resetting flag regarding initial state.
+     * @return resetting flag
+     * @since 12.0
+     */
+    public boolean getResetAtEnd() {
+        return this.resetAtEnd;
+    }
+
     /** Initialize the mapper. */
     protected void initMapper() {
         stateMapper = createMapper(null, Double.NaN, null, null, null, null);
+    }
+
+    /** Get the integrator's name.
+     * @return name of underlying integrator
+     * @since 12.0
+     */
+    public String getIntegratorName() {
+        return integrator.getName();
     }
 
     /**  {@inheritDoc} */
@@ -171,16 +192,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         return stateMapper.getOrbitType();
     }
 
-    /** Check if only the mean elements should be used in a semianalitical propagation.
-     * @return {@link PropagationType MEAN} if only mean elements have to be used or
-     *         {@link PropagationType OSCULATING} if osculating elements have to be also used.
-     * @deprecated as of 11.1, replaced by {@link #getPropagationType()}
-     */
-    @Deprecated
-    protected PropagationType isMeanOrbit() {
-        return getPropagationType();
-    }
-
     /** Get the propagation type.
      * @return propagation type.
      * @since 11.1
@@ -198,7 +209,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
-    protected void setPositionAngleType(final PositionAngle positionAngleType) {
+    protected void setPositionAngleType(final PositionAngleType positionAngleType) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
                                    stateMapper.getOrbitType(), positionAngleType,
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());
@@ -207,7 +218,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
-    protected PositionAngle getPositionAngleType() {
+    protected PositionAngleType getPositionAngleType() {
         return stateMapper.getPositionAngleType();
     }
 
@@ -268,15 +279,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         return managed;
     }
 
-    /** Add a set of user-specified equations to be integrated along with the orbit propagation.
-     * @param additional additional equations
-     * @deprecated as of 11.1, replaced by {@link #addAdditionalDerivativesProvider(AdditionalDerivativesProvider)}
-     */
-    @Deprecated
-    public void addAdditionalEquations(final AdditionalEquations additional) {
-        addAdditionalDerivativesProvider(new AdditionalEquationsAdapter(additional, this::getInitialState));
-    }
-
     /** Add a provider for user-specified state derivatives to be integrated along with the orbit propagation.
      * @param provider provider for additional derivatives
      * @see #addAdditionalStateProvider(org.orekit.propagation.AdditionalStateProvider)
@@ -334,10 +336,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param detector event detector to wrap
      */
     protected void setUpEventDetector(final ODEIntegrator integ, final EventDetector detector) {
-        integ.addEventHandler(new AdaptedEventDetector(detector),
-                              detector.getMaxCheckInterval(),
-                              detector.getThreshold(),
-                              detector.getMaxIterationCount());
+        integ.addEventDetector(new AdaptedEventDetector(detector));
     }
 
     /** {@inheritDoc} */
@@ -365,7 +364,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @return new mapper
      */
     protected abstract StateMapper createMapper(AbsoluteDate referenceDate, double mu,
-                                                OrbitType orbitType, PositionAngle positionAngleType,
+                                                OrbitType orbitType, PositionAngleType positionAngleType,
                                                 AttitudeProvider attitudeProvider, Frame frame);
 
     /** Get the differential equations to integrate (for main state only).
@@ -462,14 +461,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             if (getInitialState().getMass() <= 0.0) {
-                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
+                throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS,
                                           getInitialState().getMass());
             }
 
             // convert space flight dynamics API to math API
             final SpacecraftState initialIntegrationState = getInitialIntegrationState();
             final ODEState mathInitialState = createInitialState(initialIntegrationState);
-            final ExpandableODE mathODE = createODE(integrator, mathInitialState);
+            final ExpandableODE mathODE = createODE(integrator);
 
             // mathematical integration
             final ODEStateAndDerivative mathFinalState;
@@ -591,11 +590,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Create an ODE with all equations.
      * @param integ numerical integrator to use for propagation.
-     * @param mathInitialState initial state
      * @return a new ode
      */
-    private ExpandableODE createODE(final ODEIntegrator integ,
-                                    final ODEState mathInitialState) {
+    private ExpandableODE createODE(final ODEIntegrator integ) {
 
         final ExpandableODE ode =
                 new ExpandableODE(new ConvertedMainStateEquations(getMainStateEquations(integ)));
@@ -752,8 +749,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // update space dynamics view
             SpacecraftState currentState = stateMapper.mapArrayToState(t, y, null, PropagationType.MEAN);
-            currentState = updateAdditionalStates(currentState);
 
+            currentState = updateAdditionalStates(currentState);
             // compute main state differentials
             return main.computeDerivatives(currentState);
 
@@ -811,7 +808,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             int yieldCount = 0;
             while (!pending.isEmpty()) {
                 final AdditionalDerivativesProvider provider = pending.remove();
-                if (provider.yield(updated)) {
+                if (provider.yields(updated)) {
                     // this provider has to wait for another one,
                     // we put it again in the pending queue
                     pending.add(provider);
@@ -871,13 +868,18 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** Adapt an {@link org.orekit.propagation.events.EventDetector}
-     * to Hipparchus {@link org.hipparchus.ode.events.ODEEventHandler} interface.
+     * to Hipparchus {@link org.hipparchus.ode.events.ODEEventDetector} interface.
      * @author Fabien Maussion
      */
-    private class AdaptedEventDetector implements ODEEventHandler {
+    private class AdaptedEventDetector implements ODEEventDetector {
 
         /** Underlying event detector. */
         private final EventDetector detector;
+
+        /** Underlying event handler.
+         * @since 12.0
+         */
+        private final EventHandler handler;
 
         /** Time of the previous call to g. */
         private double lastT;
@@ -890,8 +892,27 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         */
         AdaptedEventDetector(final EventDetector detector) {
             this.detector = detector;
+            this.handler  = detector.getHandler();
             this.lastT    = Double.NaN;
             this.lastG    = Double.NaN;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public AdaptableInterval getMaxCheckInterval() {
+            return s -> detector.getMaxCheckInterval().currentInterval(convert(s));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int getMaxIterationCount() {
+            return detector.getMaxIterationCount();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public BracketedUnivariateSolver<UnivariateFunction> getSolver() {
+            return new BracketingNthOrderBrentSolver(0, detector.getThreshold(), 0, 5);
         }
 
         /** {@inheritDoc} */
@@ -911,33 +932,41 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final ODEStateAndDerivative s, final boolean increasing) {
-            return detector.eventOccurred(convert(s), increasing);
-        }
+        public ODEEventHandler getHandler() {
 
-        /** {@inheritDoc} */
-        public ODEState resetState(final ODEStateAndDerivative s) {
+            return new ODEEventHandler() {
 
-            final SpacecraftState oldState = convert(s);
-            final SpacecraftState newState = detector.resetState(oldState);
-            stateChanged(newState);
+                /** {@inheritDoc} */
+                public Action eventOccurred(final ODEStateAndDerivative s, final ODEEventDetector d, final boolean increasing) {
+                    return handler.eventOccurred(convert(s), detector, increasing);
+                }
 
-            // main part
-            final double[] primary    = new double[s.getPrimaryStateDimension()];
-            stateMapper.mapStateToArray(newState, primary, null);
+                /** {@inheritDoc} */
+                public ODEState resetState(final ODEEventDetector d, final ODEStateAndDerivative s) {
 
-            // secondary part
-            final double[][] secondary = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
-            for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
-                final String name      = provider.getName();
-                final int    offset    = secondaryOffsets.get(name);
-                final int    dimension = provider.getDimension();
-                System.arraycopy(newState.getAdditionalState(name), 0, secondary[0], offset, dimension);
-            }
+                    final SpacecraftState oldState = convert(s);
+                    final SpacecraftState newState = handler.resetState(detector, oldState);
+                    stateChanged(newState);
 
-            return new ODEState(newState.getDate().durationFrom(getStartDate()),
-                                primary, secondary);
+                    // main part
+                    final double[] primary    = new double[s.getPrimaryStateDimension()];
+                    stateMapper.mapStateToArray(newState, primary, null);
 
+                    // secondary part
+                    final double[][] secondary = new double[1][secondaryOffsets.get(SECONDARY_DIMENSION)];
+                    for (final AdditionalDerivativesProvider provider : additionalDerivativesProviders) {
+                        final String name      = provider.getName();
+                        final int    offset    = secondaryOffsets.get(name);
+                        final int    dimension = provider.getDimension();
+                        System.arraycopy(newState.getAdditionalState(name), 0, secondary[0], offset, dimension);
+                    }
+
+                    return new ODEState(newState.getDate().durationFrom(getStartDate()),
+                                        primary, secondary);
+
+                }
+
+            };
         }
 
     }
@@ -1177,8 +1206,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Wrapped integrator. */
         private final ODEIntegrator integrator;
 
-        /** Initial event handlers list. */
-        private final List<EventHandlerConfiguration> eventHandlersConfigurations;
+        /** Initial event detectors list. */
+        private final List<ODEEventDetector> detectors;
 
         /** Initial step handlers list. */
         private final List<ODEStepHandler> stepHandlers;
@@ -1187,9 +1216,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @param integrator wrapped integrator
          */
         IntegratorResetter(final ODEIntegrator integrator) {
-            this.integrator                  = integrator;
-            this.eventHandlersConfigurations = new ArrayList<>(integrator.getEventHandlersConfigurations());
-            this.stepHandlers                = new ArrayList<>(integrator.getStepHandlers());
+            this.integrator   = integrator;
+            this.detectors    = new ArrayList<>(integrator.getEventDetectors());
+            this.stepHandlers = new ArrayList<>(integrator.getStepHandlers());
         }
 
         /** {@inheritDoc}
@@ -1201,16 +1230,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public void close() {
 
             // reset event handlers
-            integrator.clearEventHandlers();
-            eventHandlersConfigurations.forEach(c -> integrator.addEventHandler(c.getEventHandler(),
-                                                                                c.getMaxCheckInterval(),
-                                                                                c.getConvergence(),
-                                                                                c.getMaxIterationCount(),
-                                                                                c.getSolver()));
+            integrator.clearEventDetectors();
+            detectors.forEach(integrator::addEventDetector);
 
             // reset step handlers
             integrator.clearStepHandlers();
-            stepHandlers.forEach(stepHandler -> integrator.addStepHandler(stepHandler));
+            stepHandlers.forEach(integrator::addStepHandler);
 
         }
 

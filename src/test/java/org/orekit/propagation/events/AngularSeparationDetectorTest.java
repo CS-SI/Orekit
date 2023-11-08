@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -63,7 +63,7 @@ public class AngularSeparationDetectorTest {
         Assertions.assertEquals(proximityAngle, detector.getProximityAngle(), 1.0e-15);
         Assertions.assertSame(sun,    detector.getBeacon());
         Assertions.assertSame(acatenango,  detector.getObserver());
-        Assertions.assertEquals(maxCheck, detector.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(maxCheck, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         propagator.addEventDetector(detector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(7000.0));
         Assertions.assertEquals(1921.1311, finalState.getDate().durationFrom(iniDate), 1.0e-3);
@@ -80,8 +80,8 @@ public class AngularSeparationDetectorTest {
             new AngularSeparationDetector(sun, acatenango, proximityAngle).
             withMaxCheck(maxCheck).
             withThreshold(1.0e-6).
-            withHandler(new EventHandler<AngularSeparationDetector>() {
-                public Action eventOccurred(SpacecraftState s, AngularSeparationDetector detector, boolean increasing) {
+            withHandler(new EventHandler() {
+                public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
                     if (increasing) {
                         Assertions.assertEquals(1928.3659, s.getDate().durationFrom(iniDate), 1.0e-3);
                     } else {
@@ -93,7 +93,7 @@ public class AngularSeparationDetectorTest {
         Assertions.assertEquals(proximityAngle, detector.getProximityAngle(), 1.0e-15);
         Assertions.assertSame(sun,    detector.getBeacon());
         Assertions.assertSame(acatenango,  detector.getObserver());
-        Assertions.assertEquals(maxCheck, detector.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(maxCheck, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         propagator.addEventDetector(detector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(7000.0));
         Assertions.assertEquals(7000.0, finalState.getDate().durationFrom(iniDate), 1.0e-3);
@@ -115,7 +115,7 @@ public class AngularSeparationDetectorTest {
             iniDate = new AbsoluteDate(2003, 5, 1, 17, 30, 0.0, TimeScalesFactory.getUTC());
             initialOrbit = new KeplerianOrbit(7e6, 1.0e-4, FastMath.toRadians(98.5),
                                               FastMath.toRadians(87.0), FastMath.toRadians(216.59976025619),
-                                              FastMath.toRadians(319.7), PositionAngle.MEAN,
+                                              FastMath.toRadians(319.7), PositionAngleType.MEAN,
                                               FramesFactory.getEME2000(), iniDate,
                                               Constants.EIGEN5C_EARTH_MU);
             propagator = new KeplerianPropagator(initialOrbit);

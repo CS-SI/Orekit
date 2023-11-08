@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,10 +21,10 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
@@ -70,7 +70,7 @@ public class OnBoardAntennaOneWayGNSSPhaseModifier implements EstimationModifier
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<OneWayGNSSPhase> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<OneWayGNSSPhase> estimated) {
 
         // The participants are remote satellite at emission, local satellite at reception
         final TimeStampedPVCoordinates[] phaseParticipants  = estimated.getParticipants();
@@ -80,7 +80,7 @@ public class OnBoardAntennaOneWayGNSSPhaseModifier implements EstimationModifier
         // Transforms from spacecraft to inertial frame at reception date
         final SpacecraftState refStateLocal              = estimated.getStates()[0];
         final SpacecraftState receptionState             = refStateLocal.shiftedBy(phaseReceptionDate.durationFrom(refStateLocal.getDate()));
-        final Transform       receptionSpacecraftToInert = receptionState.toTransform().getInverse();
+        final StaticTransform receptionSpacecraftToInert = receptionState.toStaticTransform().getInverse();
 
         // Orbit of the remote satellite
         final Orbit orbitRemote = new CartesianOrbit(phaseParticipants[0], refStateLocal.getFrame(), receptionState.getMu());
@@ -91,7 +91,7 @@ public class OnBoardAntennaOneWayGNSSPhaseModifier implements EstimationModifier
                                                                                                     orbitRemote.getDate(),
                                                                                                     orbitRemote.getFrame()));
         final SpacecraftState emissionState              = refStateRemote.shiftedBy(phaseEmissionDate.durationFrom(refStateRemote.getDate()));
-        final Transform       emissionSpacecraftToInert  = emissionState.toTransform().getInverse();
+        final StaticTransform emissionSpacecraftToInert  = emissionState.toStaticTransform().getInverse();
 
         // Compute the geometrical value of the one-way GNSS phase directly from participants positions.
         // Note that this may be different from the value returned by estimated.getEstimatedValue(),

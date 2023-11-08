@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ package org.orekit.forces.maneuvers.propulsion;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Precision;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -37,25 +38,23 @@ public interface ThrustPropulsionModel extends PropulsionModel {
      * @return specific impulse (s).
      */
     default double getIsp(SpacecraftState s) {
-        final double thrust   = getThrust(s);
         final double flowRate = getFlowRate(s);
-        return -thrust / (Constants.G0_STANDARD_GRAVITY * flowRate);
+        return -getControl3DVectorCostType().evaluate(getThrustVector(s)) / (Constants.G0_STANDARD_GRAVITY * flowRate);
     }
 
     /** Get the thrust direction in spacecraft frame.
+     * <p>
+     * Return a zero vector if there is no thrust for given spacecraft state.
      * @param s current spacecraft state
      * @return thrust direction in spacecraft frame
      */
     default Vector3D getDirection(SpacecraftState s) {
-        return getThrustVector(s).normalize();
-    }
-
-    /** Get the thrust norm (N).
-     * @param s current spacecraft state
-     * @return thrust norm (N)
-     */
-    default double getThrust(SpacecraftState s) {
-        return getThrustVector(s).getNorm();
+        final Vector3D thrustVector = getThrustVector(s);
+        final double   norm         = thrustVector.getNorm();
+        if (norm <= Precision.EPSILON) {
+            return Vector3D.ZERO;
+        }
+        return thrustVector.scalarMultiply(1. / norm);
     }
 
     /** Get the thrust vector in spacecraft frame (N).
@@ -110,6 +109,9 @@ public interface ThrustPropulsionModel extends PropulsionModel {
 
         final Vector3D thrustVector = getThrustVector(s, parameters);
         final double thrust = thrustVector.getNorm();
+        if (thrust == 0) {
+            return Vector3D.ZERO;
+        }
         final Vector3D direction = thrustVector.normalize();
 
         // Compute thrust acceleration in inertial frame
@@ -130,13 +132,16 @@ public interface ThrustPropulsionModel extends PropulsionModel {
         // Extract thrust & direction from thrust vector
         final FieldVector3D<T> thrustVector = getThrustVector(s, parameters);
         final T thrust = thrustVector.getNorm();
+        if (thrust.isZero()) {
+            return FieldVector3D.getZero(s.getDate().getField());
+        }
         final FieldVector3D<T> direction = thrustVector.normalize();
 
         // Compute thrust acceleration in inertial frame
         // It seems under-efficient to rotate direction and apply thrust
         // instead of just rotating the whole thrust vector itself.
         // However it has to be done that way to avoid numerical discrepancies with legacy tests.
-        return new FieldVector3D<>(s.getMass().reciprocal().multiply(thrust),
+        return new FieldVector3D<>(thrust.divide(s.getMass()),
                         maneuverAttitude.getRotation().applyInverseTo(direction));
     }
 

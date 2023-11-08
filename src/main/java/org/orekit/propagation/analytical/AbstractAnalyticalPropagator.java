@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,9 @@ import org.hipparchus.ode.events.Action;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
@@ -116,8 +118,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
     /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate start, final AbsoluteDate target) {
+        checkStartDateIsNotInfinity(start);
         try {
-
             initializePropagation();
 
             lastPropagationStart = start;
@@ -163,6 +165,16 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         } catch (MathRuntimeException mrte) {
             throw OrekitException.unwrap(mrte);
+        }
+    }
+
+    /**
+     * Check the starting date is not {@code AbsoluteDate.PAST_INFINITY} or {@code AbsoluteDate.FUTURE_INFINITY}.
+     * @param start propagation starting date
+     */
+    private void checkStartDateIsNotInfinity(final AbsoluteDate start) {
+        if (start.isEqualTo(AbsoluteDate.PAST_INFINITY) || start.isEqualTo(AbsoluteDate.FUTURE_INFINITY)) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.CANNOT_START_PROPAGATION_FROM_INFINITY);
         }
     }
 

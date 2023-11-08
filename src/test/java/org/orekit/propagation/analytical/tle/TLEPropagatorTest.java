@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,7 @@ import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
@@ -39,7 +39,6 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
 
 
 public class TLEPropagatorTest {
@@ -170,16 +169,16 @@ public class TLEPropagatorTest {
             Vector3D zSat = rotSat.applyInverseTo(Vector3D.PLUS_K);
 
             // Transform Z axis from inertial frame to ITRF
-            Transform transform = currentState.getFrame().getTransformTo(itrf, currentState.getDate());
+            StaticTransform transform = currentState.getFrame().getStaticTransformTo(itrf, currentState.getDate());
             Vector3D zSatITRF = transform.transformVector(zSat);
 
             // Transform satellite position/velocity from inertial frame to ITRF
-            PVCoordinates pvSatITRF = transform.transformPVCoordinates(currentState.getPVCoordinates());
+            Vector3D posSatITRF = transform.transformPosition(currentState.getPosition());
 
             // Line containing satellite point and following pointing direction
-            Line pointingLine = new Line(pvSatITRF.getPosition(),
-                                         pvSatITRF.getPosition().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                     zSatITRF),
+            Line pointingLine = new Line(posSatITRF,
+                                         posSatITRF.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                        zSatITRF),
                                          1.0e-10);
 
             double distance = pointingLine.distance(Vector3D.ZERO);

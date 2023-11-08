@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,7 @@ public enum OrbitRelativeFrame {
     LVLH_ROTATING(LOFType.LVLH_CCSDS, false),
 
     /** Local vertical, Local Horizontal (Z towards nadir, Y opposite to momentum). */
-    LVLH_INERTIAL(LOFType.LVLH_CCSDS, true),
+    LVLH_INERTIAL(LOFType.LVLH_CCSDS_INERTIAL, true),
 
     /** Local vertical, Local Horizontal (Z towards nadir, Y opposite to momentum). */
     LVLH(LOFType.LVLH_CCSDS, false),
@@ -46,7 +46,7 @@ public enum OrbitRelativeFrame {
     NTW_ROTATING(LOFType.NTW, false),
 
     /** Transverse Velocity Normal coordinate system (Y towards velocity, Z towards momentum). */
-    NTW_INERTIAL(LOFType.NTW, true),
+    NTW_INERTIAL(LOFType.NTW_INERTIAL, true),
 
     /** Perifocal coordinate system (X towards periapsis, Z towards momentum). */
     PQW_INERTIAL(null, true),
@@ -55,7 +55,7 @@ public enum OrbitRelativeFrame {
     RSW_ROTATING(LOFType.QSW, false),
 
     /** Another name for Radial, Transverse (along-track) and Normal (X towards zenith, Z towards momentum). */
-    RSW_INERTIAL(LOFType.QSW, true),
+    RSW_INERTIAL(LOFType.QSW_INERTIAL, true),
 
     /** Another name for Radial, Transverse (along-track) and Normal. */
     RSW(LOFType.QSW, false),
@@ -73,10 +73,10 @@ public enum OrbitRelativeFrame {
     TNW_ROTATING(LOFType.TNW, false),
 
     /** Tangential, Normal, Cross-track coordinate system (X towards velocity, Z towards momentum). */
-    TNW_INERTIAL(LOFType.TNW, true),
+    TNW_INERTIAL(LOFType.TNW_INERTIAL, true),
 
     /** TNW : x-axis along the velocity vector, W along the orbital angular momentum vector and
-    N completes the right handed system. */
+    N completes the right-handed system. */
     TNW(LOFType.TNW, false),
 
     /** South, East, Zenith coordinate system. */
@@ -89,9 +89,9 @@ public enum OrbitRelativeFrame {
     VNC_ROTATING(LOFType.VNC, false),
 
     /** Velocity, Normal, Co-normal coordinate system (X towards velocity, Y towards momentum). */
-    VNC_INERTIAL(LOFType.VNC, true);
+    VNC_INERTIAL(LOFType.VNC_INERTIAL, true);
 
-    /** Type of Local Orbital Frame (may be null). */
+    /** Type of Local Orbital Frame (may-be null). */
     private final LOFType lofType;
 
     /** Flag for inertial orientation. */

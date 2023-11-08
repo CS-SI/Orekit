@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,8 @@ package org.orekit.forces.gravity;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -32,17 +30,16 @@ import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.TideSystemProvider;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -70,12 +67,12 @@ import org.orekit.utils.ParameterDriver;
  * paper but not used due to the large memory requirements. Since 2002, even low end
  * computers and mobile devices do have sufficient memory so this caching has become
  * feasible nowadays.
- * <p>
+ * </p>
  * @author Luc Maisonobe
  * @since 6.0
  */
 
-public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implements TideSystemProvider {
+public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystemProvider {
 
     /** Exponent scaling to avoid floating point overflow.
      * <p>The paper uses 10^280, we prefer a power of two to preserve accuracy thanks to
@@ -174,10 +171,21 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     }
 
     /** Get the central attraction coefficient μ.
-     * @return mu central attraction coefficient (m³/s²)
+     * @return mu central attraction coefficient (m³/s²),
+     * will throw an exception if gm PDriver has several
+     * values driven (in this case the method
+     * {@link #getMu(AbsoluteDate)} must be used.
      */
     public double getMu() {
         return gmParameterDriver.getValue();
+    }
+
+    /** Get the central attraction coefficient μ.
+     * @param date date at which mu wants to be known
+     * @return mu central attraction coefficient (m³/s²)
+     */
+    public double getMu(final AbsoluteDate date) {
+        return gmParameterDriver.getValue(date);
     }
 
     /** Compute the value of the gravity field.
@@ -209,24 +217,25 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         double[] pnm0      = new double[degree + 1];
 
         // compute polar coordinates
-        final double x   = position.getX();
-        final double y   = position.getY();
-        final double z   = position.getZ();
-        final double x2  = x * x;
-        final double y2  = y * y;
-        final double z2  = z * z;
-        final double r2  = x2 + y2 + z2;
-        final double r   = FastMath.sqrt (r2);
-        final double rho = FastMath.sqrt(x2 + y2);
-        final double t   = z / r;   // cos(theta), where theta is the polar angle
-        final double u   = rho / r; // sin(theta), where theta is the polar angle
-        final double tOu = z / rho;
+        final double x    = position.getX();
+        final double y    = position.getY();
+        final double z    = position.getZ();
+        final double x2   = x * x;
+        final double y2   = y * y;
+        final double z2   = z * z;
+        final double rho2 = x2 + y2;
+        final double r2   = rho2 + z2;
+        final double r    = FastMath.sqrt(r2);
+        final double rho  = FastMath.sqrt(rho2);
+        final double t    = z / r;   // cos(theta), where theta is the polar angle
+        final double u    = rho / r; // sin(theta), where theta is the polar angle
+        final double tOu  = z / rho;
 
         // compute distance powers
         final double[] aOrN = createDistancePowersArray(provider.getAe() / r);
 
         // compute longitude cosines/sines
-        final double[][] cosSinLambda = createCosSinArrays(position.getX() / rho, position.getY() / rho);
+        final double[][] cosSinLambda = createCosSinArrays(x / rho, y / rho);
 
         // outer summation over order
         int    index = 0;
@@ -306,7 +315,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final double[] aOrN = createDistancePowersArray(provider.getAe() / r);
 
         // compute longitude cosines/sines
-        final double[][] cosSinLambda = createCosSinArrays(position.getX() / rho, position.getY() / rho);
+        final double[][] cosSinLambda = createCosSinArrays(x / rho, y / rho);
 
         // outer summation over order
         int    index = 0;
@@ -409,11 +418,11 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final T z    = position.getZ();
         final T x2   = x.multiply(x);
         final T y2   = y.multiply(y);
-        final T z2   = z.multiply(z);
-        final T r2   = x2.add(y2).add(z2);
-        final T r    = r2.sqrt();
         final T rho2 = x2.add(y2);
         final T rho  = rho2.sqrt();
+        final T z2   = z.multiply(z);
+        final T r2   = rho2.add(z2);
+        final T r    = r2.sqrt();
         final T t    = z.divide(r);   // cos(theta), where theta is the polar angle
         final T u    = rho.divide(r); // sin(theta), where theta is the polar angle
         final T tOu  = z.divide(rho);
@@ -422,7 +431,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final T[] aOrN = createDistancePowersArray(r.reciprocal().multiply(provider.getAe()));
 
         // compute longitude cosines/sines
-        final T[][] cosSinLambda = createCosSinArrays(rho.reciprocal().multiply(position.getX()), rho.reciprocal().multiply(position.getY()));
+        final T[][] cosSinLambda = createCosSinArrays(x.divide(rho), y.divide(rho));
         // outer summation over order
         int    index = 0;
         T value = zero;
@@ -485,14 +494,14 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         // apply the global mu/r factor
         final T muOr = r.reciprocal().multiply(mu);
         value            = value.multiply(muOr);
-        gradient[0]       = muOr.multiply(gradient[0]).subtract(value.divide(r));
+        gradient[0]      = muOr.multiply(gradient[0]).subtract(value.divide(r));
         gradient[1]      = gradient[1].multiply(muOr);
         gradient[2]      = gradient[2].multiply(muOr);
 
         // convert gradient from spherical to Cartesian
         // Cartesian coordinates
         // remaining spherical coordinates
-        final T rPos     = position.getNorm();
+
         // intermediate variables
         final T xPos    = position.getX();
         final T yPos    = position.getY();
@@ -500,6 +509,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final T rho2Pos = x.multiply(x).add(y.multiply(y));
         final T rhoPos  = rho2.sqrt();
         final T r2Pos   = rho2.add(z.multiply(z));
+        final T rPos    = r2Pos.sqrt();
 
         final T[][] jacobianPos = MathArrays.buildArray(zero.getField(), 3, 3);
 
@@ -514,8 +524,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         // jacobian[1][2] is already set to 0 at allocation time
 
         // row representing the gradient of phi
-        jacobianPos[2][0] = xPos.multiply(zPos).divide(rhoPos.multiply(r2Pos));
-        jacobianPos[2][1] = yPos.multiply(zPos).divide(rhoPos.multiply(r2Pos));
+        final T rhoPosTimesR2Pos = rhoPos.multiply(r2Pos);
+        jacobianPos[2][0] = xPos.multiply(zPos).divide(rhoPosTimesR2Pos);
+        jacobianPos[2][1] = yPos.multiply(zPos).divide(rhoPosTimesR2Pos);
         jacobianPos[2][2] = rhoPos.negate().divide(r2Pos);
         final T[] cartGradPos = MathArrays.buildArray(zero.getField(), 3);
         cartGradPos[0] = gradient[0].multiply(jacobianPos[0][0]).add(gradient[1].multiply(jacobianPos[1][0])).add(gradient[2].multiply(jacobianPos[2][0]));
@@ -552,10 +563,10 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final double x2   = x * x;
         final double y2   = y * y;
         final double z2   = z * z;
-        final double r2   = x2 + y2 + z2;
-        final double r    = FastMath.sqrt (r2);
         final double rho2 = x2 + y2;
         final double rho  = FastMath.sqrt(rho2);
+        final double r2   = rho2 + z2;
+        final double r    = FastMath.sqrt(r2);
         final double t    = z / r;   // cos(theta), where theta is the polar angle
         final double u    = rho / r; // sin(theta), where theta is the polar angle
         final double tOu  = z / rho;
@@ -564,7 +575,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final double[] aOrN = createDistancePowersArray(provider.getAe() / r);
 
         // compute longitude cosines/sines
-        final double[][] cosSinLambda = createCosSinArrays(position.getX() / rho, position.getY() / rho);
+        final double[][] cosSinLambda = createCosSinArrays(x / rho, y / rho);
 
         // outer summation over order
         int    index = 0;
@@ -1036,10 +1047,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
 
         // get the position in body frame
         final AbsoluteDate date       = s.getDate();
-        final StaticTransform fromBodyFrame =
-                bodyFrame.getStaticTransformTo(s.getFrame(), date);
+        final StaticTransform fromBodyFrame = bodyFrame.getStaticTransformTo(s.getFrame(), date);
         final StaticTransform toBodyFrame   = fromBodyFrame.getInverse();
-        final Vector3D position       = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
+        final Vector3D position       = toBodyFrame.transformPosition(s.getPosition());
 
         // gradient of the non-central part of the gravity field
         return fromBodyFrame.transformVector(new Vector3D(gradient(date, position, mu)));
@@ -1055,7 +1065,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         // check for faster computation dedicated to derivatives with respect to state
         if (isGradientStateDerivative(s)) {
             @SuppressWarnings("unchecked")
-            final FieldVector3D<Gradient> p = (FieldVector3D<Gradient>) s.getPVCoordinates().getPosition();
+            final FieldVector3D<Gradient> p = (FieldVector3D<Gradient>) s.getPosition();
             @SuppressWarnings("unchecked")
             final FieldVector3D<T> a = (FieldVector3D<T>) accelerationWrtState(s.getDate().toAbsoluteDate(),
                                                                                s.getFrame(), p,
@@ -1063,7 +1073,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
             return a;
         } else if (isDSStateDerivative(s)) {
             @SuppressWarnings("unchecked")
-            final FieldVector3D<DerivativeStructure> p = (FieldVector3D<DerivativeStructure>) s.getPVCoordinates().getPosition();
+            final FieldVector3D<DerivativeStructure> p = (FieldVector3D<DerivativeStructure>) s.getPosition();
             @SuppressWarnings("unchecked")
             final FieldVector3D<T> a = (FieldVector3D<T>) accelerationWrtState(s.getDate().toAbsoluteDate(),
                                                                                s.getFrame(), p,
@@ -1072,26 +1082,14 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         }
 
         // get the position in body frame
-        final FieldAbsoluteDate<T> date          = s.getDate();
-        final StaticTransform      fromBodyFrame =
-                bodyFrame.getStaticTransformTo(s.getFrame(), date.toAbsoluteDate());
-        final StaticTransform      toBodyFrame   = fromBodyFrame.getInverse();
-        final FieldVector3D<T>     position      = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
+        final FieldAbsoluteDate<T> date             = s.getDate();
+        final FieldStaticTransform<T> fromBodyFrame = bodyFrame.getStaticTransformTo(s.getFrame(), date);
+        final FieldStaticTransform<T> toBodyFrame   = fromBodyFrame.getInverse();
+        final FieldVector3D<T> position             = toBodyFrame.transformPosition(s.getPosition());
 
         // gradient of the non-central part of the gravity field
         return fromBodyFrame.transformVector(new FieldVector3D<>(gradient(date, position, mu)));
 
-    }
-
-    /** {@inheritDoc} */
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
-    @Override
-    /** {@inheritDoc} */
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
     /** Check if a field state corresponds to derivatives with respect to state.
@@ -1206,8 +1204,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final int freeParameters = mu.getFreeParameters();
 
         // get the position in body frame
-        final StaticTransform fromBodyFrame =
-                bodyFrame.getStaticTransformTo(frame, date);
+        final StaticTransform fromBodyFrame = bodyFrame.getStaticTransformTo(frame, date);
         final StaticTransform toBodyFrame   = fromBodyFrame.getInverse();
         final Vector3D positionBody   = toBodyFrame.transformPosition(position.toVector3D());
 

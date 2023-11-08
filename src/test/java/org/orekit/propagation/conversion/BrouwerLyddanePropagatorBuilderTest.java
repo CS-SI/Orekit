@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,13 @@
  */
 package org.orekit.propagation.conversion;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
@@ -27,13 +30,18 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+
+import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
 
 public class BrouwerLyddanePropagatorBuilderTest {
 
@@ -65,7 +73,7 @@ public class BrouwerLyddanePropagatorBuilderTest {
                                                                                       harmonics.getUnnormalizedCnm(4, 0),
                                                                                       harmonics.getUnnormalizedCnm(5, 0),
                                                                                       OrbitType.KEPLERIAN,
-                                                                                      PositionAngle.TRUE,
+                                                                                      PositionAngleType.TRUE,
                                                                                       1.0,
                                                                                       BrouwerLyddanePropagator.M2);
 
@@ -101,7 +109,7 @@ public class BrouwerLyddanePropagatorBuilderTest {
                                                                                       harmonics.getUnnormalizedCnm(4, 0),
                                                                                       harmonics.getUnnormalizedCnm(5, 0),
                                                                                       OrbitType.KEPLERIAN,
-                                                                                      PositionAngle.TRUE,
+                                                                                      PositionAngleType.TRUE,
                                                                                       1.0,
                                                                                       M2);
 
@@ -146,7 +154,35 @@ public class BrouwerLyddanePropagatorBuilderTest {
         final double omega = FastMath.toRadians(180); // perigee argument
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
-        orbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.TRUE, inertialFrame, initDate, mu);
+        orbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.TRUE, inertialFrame, initDate, mu);
+    }
+
+    @Test
+    @DisplayName("Test copy method")
+    void testCopyMethod() {
+
+        // Given
+        final Orbit orbit = new CartesianOrbit(new PVCoordinates(
+                new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
+                new Vector3D(10, 7668.6, 3)), FramesFactory.getGCRF(),
+                                               new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
+        final UnnormalizedSphericalHarmonicsProvider harmonicsProvider =
+                Mockito.mock(UnnormalizedSphericalHarmonicsProvider.class);
+        Mockito.when(harmonicsProvider.getMu()).thenReturn(Constants.EIGEN5C_EARTH_MU);
+
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
+        final double        positionScale = 10;
+        final double        m2            = 0;
+
+        final BrouwerLyddanePropagatorBuilder builder = new BrouwerLyddanePropagatorBuilder(orbit, harmonicsProvider,
+                positionAngleType, positionScale,
+                                                                                            m2);
+
+        // When
+        final BrouwerLyddanePropagatorBuilder copyBuilder = builder.copy();
+
+        // Then
+        assertPropagatorBuilderIsACopy(builder, copyBuilder);
     }
 
 }

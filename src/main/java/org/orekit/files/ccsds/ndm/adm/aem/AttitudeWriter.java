@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import java.util.List;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.utils.FileFormat;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
@@ -42,7 +42,7 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
     private final AemWriter writer;
 
     /** Header. */
-    private final Header header;
+    private final AdmHeader header;
 
     /** Current metadata. */
     private final AemMetadata metadata;
@@ -52,6 +52,11 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
 
     /** Output name for error messages. */
     private final String outputName;
+
+    /** Maximum offset for relative dates.
+     * @since 12.0
+     */
+    private final double maxRelativeOffset;
 
     /** Column number for aligning units. */
     private final int unitsColumn;
@@ -79,19 +84,22 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
      * @param template template for metadata
      * @param fileFormat file format to use
      * @param outputName output name for error messages
+     * @param maxRelativeOffset maximum offset in seconds to use relative dates
+     * (if a date is too far from reference, it will be displayed as calendar elements)
      * @param unitsColumn columns number for aligning units (if negative or zero, units are not output)
-     * @since 11.0
+     * @since 12.0
      */
     public AttitudeWriter(final AemWriter writer,
-                          final Header header, final AemMetadata template,
+                          final AdmHeader header, final AemMetadata template,
                           final FileFormat fileFormat, final String outputName,
-                          final int unitsColumn) {
-        this.writer      = writer;
-        this.header      = header;
-        this.metadata    = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
-        this.fileFormat  = fileFormat;
-        this.outputName  = outputName;
-        this.unitsColumn = unitsColumn;
+                          final double maxRelativeOffset, final int unitsColumn) {
+        this.writer            = writer;
+        this.header            = header;
+        this.metadata          = template.copy(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
+        this.fileFormat        = fileFormat;
+        this.outputName        = outputName;
+        this.maxRelativeOffset = maxRelativeOffset;
+        this.unitsColumn       = unitsColumn;
     }
 
     /** {@inheritDoc}
@@ -101,7 +109,7 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
      * {@code ephemerisFile} will be the start time, stop time, reference frame, interpolation
      * method and interpolation degree. The missing values (like object name, local spacecraft
      * body frame, attitude type...) will be inherited from the template  metadata set at writer
-     * {@link #AttitudeWriter(AemWriter, Header, AemMetadata, FileFormat, String, int) construction}.
+     * {@link #AttitudeWriter(AemWriter, AdmHeader, AemMetadata, FileFormat, String, double, int) construction}.
      * </p>
      */
     @Override
@@ -132,8 +140,10 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
         }
 
         try (Generator generator = fileFormat == FileFormat.KVN ?
-                                   new KvnGenerator(appendable, AemWriter.KVN_PADDING_WIDTH, outputName, unitsColumn) :
-                                   new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName, unitsColumn > 0)) {
+             new KvnGenerator(appendable, AemWriter.KVN_PADDING_WIDTH, outputName,
+                              maxRelativeOffset, unitsColumn) :
+             new XmlGenerator(appendable, XmlGenerator.DEFAULT_INDENT, outputName,
+                              maxRelativeOffset, unitsColumn > 0, null)) {
 
             writer.writeHeader(generator, header);
 
@@ -171,7 +181,10 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
         }
         metadata.setInterpolationMethod(segment.getInterpolationMethod());
         metadata.setInterpolationDegree(segment.getInterpolationSamples() - 1);
-        writer.writeMetadata(generator, metadata);
+        metadata.validate(header == null ? writer.getDefaultVersion() : header.getFormatVersion());
+        writer.writeMetadata(generator,
+                             header == null ? writer.getDefaultVersion() : header.getFormatVersion(),
+                             metadata);
 
         // Loop on attitude data
         writer.startAttitudeBlock(generator);
@@ -179,7 +192,9 @@ public class AttitudeWriter implements AttitudeEphemerisFileWriter {
             generator.writeComments(((AemSegment) segment).getData().getComments());
         }
         for (final TimeStampedAngularCoordinates coordinates : segment.getAngularCoordinates()) {
-            writer.writeAttitudeEphemerisLine(generator, metadata, coordinates);
+            writer.writeAttitudeEphemerisLine(generator,
+                                              header == null ? writer.getDefaultVersion() : header.getFormatVersion(),
+                                              metadata, coordinates);
         }
         writer.endAttitudeBlock(generator);
 

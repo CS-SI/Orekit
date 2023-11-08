@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -81,6 +81,35 @@ public class ConstantThrustManeuver extends Maneuver {
      * @param attitudeOverride the attitude provider to use for the maneuver, or
      * null if the attitude from the propagator should be used
      * @param direction the acceleration direction in satellite frame.
+     * @param name name of the maneuver, used as a prefix for the {@link #getParametersDrivers() parameters drivers}
+     * @since 12.0
+     */
+    public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
+                                  final double thrust, final double isp,
+                                  final AttitudeProvider attitudeOverride,
+                                  final Vector3D direction,
+                                  final String name) {
+        this(date, duration, thrust, isp, attitudeOverride, direction, Control3DVectorCostType.TWO_NORM, name);
+    }
+
+    /** Simple constructor for a constant direction and constant thrust.
+     * <p>
+     * It uses the propulsion model {@link BasicConstantThrustPropulsionModel} and
+     * the maneuver triggers {@link DateBasedManeuverTriggers}
+     * </p><p>
+     * Calling this constructor is equivalent to call {@link
+     * #ConstantThrustManeuver(AbsoluteDate, double, double, double, Vector3D, String)
+     * ConstantThrustManeuver(date, duration, thrust, isp, direction, "")},
+     * hence not using any prefix for the parameters drivers names.
+     * </p>
+     * @param date maneuver date
+     * @param duration the duration of the thrust (s) (if negative,
+     * the date is considered to be the stop date)
+     * @param thrust the thrust force (N)
+     * @param isp engine specific impulse (s)
+     * @param attitudeOverride the attitude provider to use for the maneuver, or
+     * null if the attitude from the propagator should be used
+     * @param direction the acceleration direction in satellite frame.
      * @since 9.2
      */
     public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
@@ -135,14 +164,16 @@ public class ConstantThrustManeuver extends Maneuver {
      * @param attitudeOverride the attitude provider to use for the maneuver, or
      * null if the attitude from the propagator should be used
      * @param direction the acceleration direction in satellite frame
+     * @param control3DVectorCostType control vector's cost type
      * @param name name of the maneuver, used as a prefix for the {@link #getParametersDrivers() parameters drivers}
-     * @since 9.2
+     * @since 12.0
      */
     public ConstantThrustManeuver(final AbsoluteDate date, final double duration,
-                                  final double thrust, final double isp,
-                                  final AttitudeProvider attitudeOverride, final Vector3D direction,
+                                  final double thrust, final double isp, final AttitudeProvider attitudeOverride,
+                                  final Vector3D direction, final Control3DVectorCostType control3DVectorCostType,
                                   final String name) {
-        this(date, duration, attitudeOverride, new BasicConstantThrustPropulsionModel(thrust, isp, direction, name));
+        this(date, duration, attitudeOverride,
+                new BasicConstantThrustPropulsionModel(thrust, isp, direction, control3DVectorCostType, name));
     }
 
     /** Simple constructor for a constant direction and constant thrust.
@@ -191,24 +222,65 @@ public class ConstantThrustManeuver extends Maneuver {
     }
 
     /** Get the thrust vector (N) in S/C frame.
+     * @param date date at which the thrust vector wants to be known,
+     * often the date parameter will not be important and can be whatever
+     * if the thrust parameter driver as only value estimated over the all
+     * orbit determination interval
+     * @return thrust vector (N) in S/C frame.
+     */
+    public Vector3D getThrustVector(final AbsoluteDate date) {
+        return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getThrustVector(date);
+    }
+
+    /** Get the thrust vector (N) in S/C frame.
      * @return thrust vector (N) in S/C frame.
      */
     public Vector3D getThrustVector() {
         return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getThrustVector();
     }
 
-    /** Get the thrust.
+    /** Get the thrust magnitude.
+     * @param date date at which the thrust vector wants to be known,
+     * often the date parameter will not be important and can be whatever
+     * if the thrust parameter driver as only value estimated over the all
+     * orbit determination interval
      * @return thrust force (N).
      */
-    public double getThrust() {
+    public double getThrustMagnitude(final AbsoluteDate date) {
+        return getThrustVector(date).getNorm();
+    }
+
+    /** Get the thrust magnitude.
+     * @return thrust force (N).
+     */
+    public double getThrustMagnitude() {
         return getThrustVector().getNorm();
+    }
+
+    /** Get the specific impulse at given date.
+     * @param date date at which the thrust vector wants to be known,
+     * often the date parameter will not be important and can be whatever
+     * if the thrust parameter driver as only value estimated over the all
+     * orbit determination interval
+     * @return specific impulse (s).
+     */
+    public double getIsp(final AbsoluteDate date) {
+        return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getIsp(date);
     }
 
     /** Get the specific impulse.
      * @return specific impulse (s).
      */
-    public double getISP() {
+    public double getIsp() {
         return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getIsp();
+    }
+
+    /** Get the flow rate at given date.
+     * @param date at which the Thrust wants to be known
+     * @return flow rate (negative, kg/s).
+     */
+    public double getFlowRate(final AbsoluteDate date) {
+        return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getFlowRate(date);
     }
 
     /** Get the flow rate.
@@ -216,6 +288,15 @@ public class ConstantThrustManeuver extends Maneuver {
      */
     public double getFlowRate() {
         return ((AbstractConstantThrustPropulsionModel) getPropulsionModel()).getFlowRate();
+    }
+
+    /** Get the direction.
+     * @param date at which the Thrust wants to be known
+     * @return the direction
+     * @since 9.2
+     */
+    public Vector3D getDirection(final AbsoluteDate date) {
+        return getThrustVector(date).normalize();
     }
 
     /** Get the direction.

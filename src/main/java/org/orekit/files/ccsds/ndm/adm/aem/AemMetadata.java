@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,9 +17,12 @@
 package org.orekit.files.ccsds.ndm.adm.aem;
 
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.adm.AdmMetadata;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.ndm.adm.AttitudeType;
-import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
 import org.orekit.time.AbsoluteDate;
 
 /** This class gathers the meta-data present in the Attitude Data Message (ADM).
@@ -29,7 +32,7 @@ import org.orekit.time.AbsoluteDate;
 public class AemMetadata extends AdmMetadata {
 
     /** Endpoints (i.e. frames A, B and their relationship). */
-    private final AttitudeEndoints endpoints;
+    private final AttitudeEndpoints endpoints;
 
     /** Start of total time span covered by attitude data. */
     private AbsoluteDate startTime;
@@ -52,8 +55,13 @@ public class AemMetadata extends AdmMetadata {
     /** The rotation sequence of the Euler angles. */
     private RotationOrder eulerRotSeq;
 
-    /** The frame in which rates are specified. */
+    /** The frame in which rates are specified (only for ADM V1). */
     private Boolean rateFrameIsA;
+
+    /** The frame in which angular velocities are specified.
+     * @since 12.0
+     */
+    private FrameFacade angvelFrame;
 
     /** The interpolation method to be used. */
     private String interpolationMethod;
@@ -65,7 +73,7 @@ public class AemMetadata extends AdmMetadata {
      * @param defaultInterpolationDegree default interpolation degree
      */
     public AemMetadata(final int defaultInterpolationDegree) {
-        endpoints           = new AttitudeEndoints();
+        endpoints           = new AttitudeEndpoints();
         interpolationDegree = defaultInterpolationDegree;
     }
 
@@ -73,11 +81,18 @@ public class AemMetadata extends AdmMetadata {
     @Override
     public void validate(final double version) {
 
+        super.validate(version);
+
         checkMandatoryEntriesExceptDatesAndExternalFrame(version);
         endpoints.checkExternalFrame(AemMetadataKey.REF_FRAME_A, AemMetadataKey.REF_FRAME_B);
 
-        checkNotNull(startTime, AemMetadataKey.START_TIME);
-        checkNotNull(stopTime,  AemMetadataKey.STOP_TIME);
+        checkNotNull(startTime, AemMetadataKey.START_TIME.name());
+        checkNotNull(stopTime,  AemMetadataKey.STOP_TIME.name());
+
+        if (version >= 2.0 && isFirst()) {
+            throw new OrekitException(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION,
+                                      AemMetadataKey.QUATERNION_TYPE, version);
+        }
 
     }
 
@@ -95,23 +110,29 @@ public class AemMetadata extends AdmMetadata {
 
         super.validate(version);
 
-        endpoints.checkMandatoryEntriesExceptExternalFrame(AemMetadataKey.REF_FRAME_A,
+        endpoints.checkMandatoryEntriesExceptExternalFrame(version,
+                                                           AemMetadataKey.REF_FRAME_A,
                                                            AemMetadataKey.REF_FRAME_B,
                                                            AemMetadataKey.ATTITUDE_DIR);
 
-        checkNotNull(attitudeType, AemMetadataKey.ATTITUDE_TYPE);
-        if (attitudeType == AttitudeType.QUATERNION ||
-            attitudeType == AttitudeType.QUATERNION_DERIVATIVE) {
-            checkNotNull(isFirst, AemMetadataKey.QUATERNION_TYPE);
+        checkNotNull(attitudeType, AemMetadataKey.ATTITUDE_TYPE.name());
+        if (version < 2.0) {
+            if (attitudeType == AttitudeType.QUATERNION ||
+                attitudeType == AttitudeType.QUATERNION_DERIVATIVE) {
+                checkNotNull(isFirst, AemMetadataKey.QUATERNION_TYPE.name());
+            }
+            if (attitudeType == AttitudeType.EULER_ANGLE_DERIVATIVE) {
+                checkNotNull(rateFrameIsA, AemMetadataKey.RATE_FRAME.name());
+            }
+        } else {
+            if (attitudeType == AttitudeType.QUATERNION_ANGVEL) {
+                checkNotNull(angvelFrame, AemMetadataKey.ANGVEL_FRAME.name());
+            }
         }
-        if (attitudeType == AttitudeType.QUATERNION_RATE ||
-            attitudeType == AttitudeType.EULER_ANGLE ||
-            attitudeType == AttitudeType.EULER_ANGLE_RATE) {
-            checkNotNull(eulerRotSeq, AemMetadataKey.EULER_ROT_SEQ);
-        }
-        if (attitudeType == AttitudeType.QUATERNION_RATE ||
-            attitudeType == AttitudeType.EULER_ANGLE_RATE) {
-            checkNotNull(rateFrameIsA, AemMetadataKey.RATE_FRAME);
+
+        if (attitudeType == AttitudeType.EULER_ANGLE ||
+            attitudeType == AttitudeType.EULER_ANGLE_DERIVATIVE) {
+            checkNotNull(eulerRotSeq, AemMetadataKey.EULER_ROT_SEQ.name());
         }
 
     }
@@ -119,23 +140,39 @@ public class AemMetadata extends AdmMetadata {
     /** Get the endpoints (i.e. frames A, B and their relationship).
      * @return endpoints
      */
-    public AttitudeEndoints getEndpoints() {
+    public AttitudeEndpoints getEndpoints() {
         return endpoints;
     }
 
-    /** Check if rates are specified in {@link AttitudeEndoints#getFrameA() frame A}.
-     * @return true if rates are specified in {@link AttitudeEndoints#getFrameA() frame A}
+    /** Check if rates are specified in {@link AttitudeEndpoints#getFrameA() frame A}.
+     * @return true if rates are specified in {@link AttitudeEndpoints#getFrameA() frame A}
      */
     public boolean rateFrameIsA() {
         return rateFrameIsA == null ? false : rateFrameIsA;
     }
 
     /** Set the frame in which rates are specified.
-     * @param rateFrameIsA if true, rates are specified in {@link AttitudeEndoints#getFrameA() frame A}
+     * @param rateFrameIsA if true, rates are specified in {@link AttitudeEndpoints#getFrameA() frame A}
      */
     public void setRateFrameIsA(final boolean rateFrameIsA) {
         refuseFurtherComments();
         this.rateFrameIsA = rateFrameIsA;
+    }
+
+    /** Set frame in which angular velocities are specified.
+     * @param angvelFrame frame in which angular velocities are specified
+     * @since 12.0
+     */
+    public void setAngvelFrame(final FrameFacade angvelFrame) {
+        this.angvelFrame = angvelFrame;
+    }
+
+    /** Get frame in which angular velocities are specified.
+     * @return frame in which angular velocities are specified
+     * @since 12.0
+     */
+    public FrameFacade getFrameAngvelFrame() {
+        return angvelFrame;
     }
 
     /** Check if rates are specified in spacecraft body frame.
@@ -172,10 +209,10 @@ public class AemMetadata extends AdmMetadata {
      * Get the flag for the placement of the quaternion QC in the attitude data.
      *
      * @return true if QC is the first element in the attitude data,
-     * null if not initialized
+     * false if not initialized
      */
     public Boolean isFirst() {
-        return isFirst == null ? Boolean.TRUE : isFirst;
+        return isFirst == null ? Boolean.FALSE : isFirst;
     }
 
     /**

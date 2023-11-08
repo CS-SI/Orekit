@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,13 @@ package org.orekit.frames;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.CelestialBodies;
 import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScales;
+import org.orekit.time.UT1Scale;
+import org.orekit.time.UTCScale;
 import org.orekit.utils.IERSConventions;
 
 
@@ -158,29 +162,34 @@ public class FramesFactory {
     /** Default regular expression for the Rapid Data and Prediction EOP columns files (IAU1980 compatibles). */
     public static final String RAPID_DATA_PREDICTION_COLUMNS_1980_FILENAME = "^finals\\.[^.]*$";
 
-    /** Default regular expression for the Rapid Data and Prediction EOP XML files (IAU1980 compatibles). */
-    public static final String RAPID_DATA_PREDICTION_XML_1980_FILENAME = "^finals\\..*\\.xml$";
+    /** Default regular expression for the EOP XML files (IAU1980 compatibles). */
+    public static final String XML_1980_FILENAME = "^(:finals|eopc04_\\d\\d)\\..*\\.xml$";
 
     /** Default regular expression for the EOPC04 files (IAU1980 compatibles). */
-    public static final String EOPC04_1980_FILENAME = "^eopc04_\\d\\d\\.(\\d\\d)$";
+    public static final String EOPC04_1980_FILENAME = "^eopc04(_\\d\\d)?\\.\\d\\d$";
 
     /** Default regular expression for the BulletinB files (IAU1980 compatibles). */
     public static final String BULLETINB_1980_FILENAME = "^bulletinb(_IAU1980)?((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
 
     /** Default regular expression for the Rapid Data and Prediction EOP columns files (IAU2000 compatibles). */
-    public static final String RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME = "^finals2000A\\.[^.]*$";
+    public static final String RAPID_DATA_PREDICTION_COLUMNS_2000_FILENAME = "^finals2000A\\.[^.]*$";
 
-    /** Default regular expression for the Rapid Data and Prediction EOP XML files (IAU2000 compatibles). */
-    public static final String RAPID_DATA_PREDICITON_XML_2000_FILENAME = "^finals2000A\\..*\\.xml$";
+    /** Default regular expression for the EOP XML files (IAU2000 compatibles). */
+    public static final String XML_2000_FILENAME = "^(:finals2000A|eopc04_\\d\\d_IAU2000)\\..*\\.xml$";
 
     /** Default regular expression for the EOPC04 files (IAU2000 compatibles). */
-    public static final String EOPC04_2000_FILENAME = "^eopc04_\\d\\d_IAU2000\\.(\\d\\d)$";
+    public static final String EOPC04_2000_FILENAME = "^eopc04(_\\d\\d_IAU2000)?\\.\\d\\d$";
 
     /** Default regular expression for the BulletinB files (IAU2000 compatibles). */
     public static final String BULLETINB_2000_FILENAME = "^bulletinb(_IAU2000)?((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
 
     /** Default regular expression for the BulletinA files (IAU1980 and IAU2000 compatibles). */
     public static final String BULLETINA_FILENAME = "^bulletina-[ivxlcdm]+-\\d\\d\\d\\.txt$";
+
+    /** Default regular expression for the csv files (IAU1980 and IAU2000 compatibles).
+     * @since 12.0
+     */
+    public static final String CSV_FILENAME = "^(?:eopc04|bulletina|bulletinb).*\\.csv$";
 
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
@@ -209,8 +218,7 @@ public class FramesFactory {
      * @param rapidDataColumnsSupportedNames regular expression for supported
      * rapid data columns EOP files names
      * (may be null if the default IERS file names are used)
-     * @param rapidDataXMLSupportedNames regular expression for supported
-     * rapid data XML EOP files names
+     * @param rapidDataXMLSupportedNames regular expression for supported XML EOP files names
      * (may be null if the default IERS file names are used)
      * @param eopC04SupportedNames regular expression for supported EOP C04 files names
      * (may be null if the default IERS file names are used)
@@ -218,23 +226,28 @@ public class FramesFactory {
      * (may be null if the default IERS file names are used)
      * @param bulletinASupportedNames regular expression for supported bulletin A files names
      * (may be null if the default IERS file names are used)
+     * @param csvSupportedNames regular expression for supported csv files names
+     * (may be null if the default IERS file names are used)
      * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
      * @see #clearEOPHistoryLoaders()
-     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String, String)
+     * @since 12.0
      */
     @DefaultDataContext
     public static void addDefaultEOP1980HistoryLoaders(final String rapidDataColumnsSupportedNames,
                                                        final String rapidDataXMLSupportedNames,
                                                        final String eopC04SupportedNames,
                                                        final String bulletinBSupportedNames,
-                                                       final String bulletinASupportedNames) {
+                                                       final String bulletinASupportedNames,
+                                                       final String csvSupportedNames) {
         getFrames().addDefaultEOP1980HistoryLoaders(
                 rapidDataColumnsSupportedNames,
                 rapidDataXMLSupportedNames,
                 eopC04SupportedNames,
                 bulletinBSupportedNames,
-                bulletinASupportedNames);
+                bulletinASupportedNames,
+                csvSupportedNames);
     }
 
     /** Add the default loaders for EOP history (IAU 2000/2006 precession/nutation).
@@ -246,8 +259,7 @@ public class FramesFactory {
      * @param rapidDataColumnsSupportedNames regular expression for supported
      * rapid data columns EOP files names
      * (may be null if the default IERS file names are used)
-     * @param rapidDataXMLSupportedNames regular expression for supported
-     * rapid data XML EOP files names
+     * @param xmlSupportedNames regular expression for supported XML EOP files names
      * (may be null if the default IERS file names are used)
      * @param eopC04SupportedNames regular expression for supported EOP C04 files names
      * (may be null if the default IERS file names are used)
@@ -255,39 +267,44 @@ public class FramesFactory {
      * (may be null if the default IERS file names are used)
      * @param bulletinASupportedNames regular expression for supported bulletin A files names
      * (may be null if the default IERS file names are used)
+     * @param csvSupportedNames regular expression for supported csv files names
+     * (may be null if the default IERS file names are used)
      * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
      * @see #clearEOPHistoryLoaders()
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
+     * @since 12.0
      */
     @DefaultDataContext
     public static void addDefaultEOP2000HistoryLoaders(final String rapidDataColumnsSupportedNames,
-                                                       final String rapidDataXMLSupportedNames,
+                                                       final String xmlSupportedNames,
                                                        final String eopC04SupportedNames,
                                                        final String bulletinBSupportedNames,
-                                                       final String bulletinASupportedNames) {
+                                                       final String bulletinASupportedNames,
+                                                       final String csvSupportedNames) {
         getFrames().addDefaultEOP2000HistoryLoaders(
                 rapidDataColumnsSupportedNames,
-                rapidDataXMLSupportedNames,
+                xmlSupportedNames,
                 eopC04SupportedNames,
                 bulletinBSupportedNames,
-                bulletinASupportedNames);
+                bulletinASupportedNames,
+                csvSupportedNames);
     }
 
     /** Add a loader for Earth Orientation Parameters history.
      * @param conventions IERS conventions to which EOP history applies
      * @param loader custom loader to add for the EOP history
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
      * @see #clearEOPHistoryLoaders()
      */
     @DefaultDataContext
-    public static void addEOPHistoryLoader(final IERSConventions conventions, final EOPHistoryLoader loader) {
+    public static void addEOPHistoryLoader(final IERSConventions conventions, final EopHistoryLoader loader) {
         getFrames().addEOPHistoryLoader(conventions, loader);
     }
 
     /** Clear loaders for Earth Orientation Parameters history.
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String)
      */
     @DefaultDataContext
     public static void clearEOPHistoryLoaders() {
@@ -317,12 +334,12 @@ public class FramesFactory {
 
     /** Get Earth Orientation Parameters history.
      * <p>
-     * If no {@link EOPHistoryLoader} has been added by calling {@link
-     * #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader) addEOPHistoryLoader}
+     * If no {@link EopHistoryLoader} has been added by calling {@link
+     * #addEOPHistoryLoader(IERSConventions, EopHistoryLoader) addEOPHistoryLoader}
      * or if {@link #clearEOPHistoryLoaders() clearEOPHistoryLoaders} has been
      * called afterwards, the {@link #addDefaultEOP1980HistoryLoaders(String, String,
-     * String, String, String)} and {@link #addDefaultEOP2000HistoryLoaders(String,
-     * String, String, String, String)} methods will be called automatically with
+     * String, String, String, String)} and {@link #addDefaultEOP2000HistoryLoaders(String,
+     * String, String, String, String, String)} methods will be called automatically with
      * supported file names parameters all set to null, in order to get the default
      * loaders configuration.
      * </p>
@@ -425,7 +442,7 @@ public class FramesFactory {
         return getFrames().getTIRF(conventions);
     }
 
-    /** Get an specific International Terrestrial Reference Frame.
+    /** Get a specific International Terrestrial Reference Frame.
      * <p>
      * Note that if a specific version of ITRF is required, then {@code simpleEOP}
      * should most probably be set to {@code false}, as ignoring tidal effects
@@ -443,6 +460,27 @@ public class FramesFactory {
                                         final IERSConventions conventions,
                                         final boolean simpleEOP) {
         return getFrames().getITRF(version, conventions, simpleEOP);
+    }
+
+    /** Build an uncached International Terrestrial Reference Frame with specific {@link EOPHistory EOP history}.
+     * <p>
+     * This frame and its parent frames (TIRF and CIRF) will <em>not</em> be cached, they are
+     * rebuilt from scratch each time this method is called. This factory method is intended
+     * to be used when EOP history is changed at run time. For regular ITRF use, the
+     * {@link #getITRF(IERSConventions, boolean)} and {link {@link #getITRF(ITRFVersion, IERSConventions, boolean)}
+     * are more suitable.
+     * </p>
+     * @param eopHistory EOP history
+     * @param utc UTC time scale
+     * @return an ITRF frame with specified EOP history
+     * @since 12.0
+     */
+    public static Frame buildUncachedITRF(final EOPHistory eopHistory, final UTCScale utc) {
+        final TimeScales timeScales = TimeScales.of(utc.getBaseOffsets(),
+                                                    (conventions, timescales) -> eopHistory.getEntries());
+        final UT1Scale   ut1        = timeScales.getUT1(eopHistory.getConventions(), eopHistory.isSimpleEop());
+        final Frames     frames     = Frames.of(timeScales, (CelestialBodies) null);
+        return frames.buildUncachedITRF(ut1);
     }
 
     /** Get the TIRF reference frame.
@@ -469,7 +507,7 @@ public class FramesFactory {
     }
 
     /** Get the VEIS 1950 reference frame.
-     * <p>Its parent frame is the GTOD frame with IERS 1996 conventions without EOP corrections.<p>
+     * <p>Its parent frame is the GTOD frame with IERS 1996 conventions without EOP corrections.</p>
      * @return the selected reference frame singleton.
      */
     @DefaultDataContext
@@ -481,7 +519,7 @@ public class FramesFactory {
      * @param conventions IERS conventions to apply
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
-          * @since 6.1
+     * @since 6.1
      */
     @DefaultDataContext
     public static FactoryManagedFrame getITRFEquinox(final IERSConventions conventions,
@@ -772,7 +810,7 @@ public class FramesFactory {
                 peeled = ((ShiftingTransformProvider) peeled).getRawProvider();
             } else if (peeled instanceof EOPBasedTransformProvider &&
                        ((EOPBasedTransformProvider) peeled).getEOPHistory() != null &&
-                       ((EOPBasedTransformProvider) peeled).getEOPHistory().usesInterpolation()) {
+                       ((EOPBasedTransformProvider) peeled).getEOPHistory().cachesTidalCorrection()) {
                 peeled = ((EOPBasedTransformProvider) peeled).getNonInterpolatingProvider();
             } else {
                 peeling = false;

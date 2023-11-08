@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,7 +38,7 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
@@ -73,9 +73,9 @@ public abstract class AbstractForceModelTest {
         final DerivativeStructure[] parametersDS = new DerivativeStructure[drivers.size()];
         for (int i = 0; i < parametersDS.length; ++i) {
             if (drivers.get(i).getName().equals(name)) {
-                parametersDS[i] = factory11.variable(0, drivers.get(i).getValue());
+                parametersDS[i] = factory11.variable(0, drivers.get(i).getValue(state.getDate()));
             } else {
-                parametersDS[i] = factory11.constant(drivers.get(i).getValue());
+                parametersDS[i] = factory11.constant(drivers.get(i).getValue(state.getDate()));
             }
         }
         FieldVector3D<DerivativeStructure> accDer = forceModel.acceleration(stateF, parametersDS);
@@ -86,22 +86,22 @@ public abstract class AbstractForceModelTest {
         int selected = -1;
         final double[] parameters = new double[drivers.size()];
         for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = drivers.get(i).getValue();
+            parameters[i] = drivers.get(i).getValue(state.getDate());
             if (drivers.get(i).getName().equals(name)) {
                 selected = i;
             }
         }
         double p0 = parameters[selected];
         double hParam = hFactor * p0;
-        drivers.get(selected).setValue(p0 - 1 * hParam);
-        parameters[selected] = drivers.get(selected).getValue();
+        drivers.get(selected).setValue(p0 - 1 * hParam, state.getDate());
+        parameters[selected] = drivers.get(selected).getValue(state.getDate());
         Assertions.assertEquals(p0 - 1 * hParam, parameters[selected], 1.0e-10);
         final Vector3D gammaM1h = forceModel.acceleration(state, parameters);
-        drivers.get(selected).setValue(p0 + 1 * hParam);
-        parameters[selected] = drivers.get(selected).getValue();
+        drivers.get(selected).setValue(p0 + 1 * hParam, state.getDate());
+        parameters[selected] = drivers.get(selected).getValue(state.getDate());
         Assertions.assertEquals(p0 + 1 * hParam, parameters[selected], 1.0e-10);
         final Vector3D gammaP1h = forceModel.acceleration(state, parameters);
-        drivers.get(selected).setValue(p0);
+        drivers.get(selected).setValue(p0, state.getDate());
 
         final Vector3D reference = new Vector3D(  1 / (2 * hParam), gammaP1h.subtract(gammaM1h));
         final Vector3D delta = derivative.subtract(reference);
@@ -120,9 +120,9 @@ public abstract class AbstractForceModelTest {
         final Gradient[] parametersDS = new Gradient[drivers.size()];
         for (int i = 0; i < parametersDS.length; ++i) {
             if (drivers.get(i).getName().equals(name)) {
-                parametersDS[i] = Gradient.variable(freeParameters, 0, drivers.get(i).getValue());
+                parametersDS[i] = Gradient.variable(freeParameters, 0, drivers.get(i).getValue(state.getDate()));
             } else {
-                parametersDS[i] = Gradient.constant(freeParameters, drivers.get(i).getValue());
+                parametersDS[i] = Gradient.constant(freeParameters, drivers.get(i).getValue(state.getDate()));
             }
         }
         FieldVector3D<Gradient> accDer = forceModel.acceleration(stateF, parametersDS);
@@ -133,22 +133,22 @@ public abstract class AbstractForceModelTest {
         int selected = -1;
         final double[] parameters = new double[drivers.size()];
         for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = drivers.get(i).getValue();
+            parameters[i] = drivers.get(i).getValue(state.getDate());
             if (drivers.get(i).getName().equals(name)) {
                 selected = i;
             }
         }
         double p0 = parameters[selected];
         double hParam = hFactor * p0;
-        drivers.get(selected).setValue(p0 - 1 * hParam);
-        parameters[selected] = drivers.get(selected).getValue();
+        drivers.get(selected).setValue(p0 - 1 * hParam, state.getDate());
+        parameters[selected] = drivers.get(selected).getValue(state.getDate());
         Assertions.assertEquals(p0 - 1 * hParam, parameters[selected], 1.0e-10);
         final Vector3D gammaM1h = forceModel.acceleration(state, parameters);
-        drivers.get(selected).setValue(p0 + 1 * hParam);
-        parameters[selected] = drivers.get(selected).getValue();
+        drivers.get(selected).setValue(p0 + 1 * hParam, state.getDate());
+        parameters[selected] = drivers.get(selected).getValue(state.getDate());
         Assertions.assertEquals(p0 + 1 * hParam, parameters[selected], 1.0e-10);
         final Vector3D gammaP1h = forceModel.acceleration(state, parameters);
-        drivers.get(selected).setValue(p0);
+        drivers.get(selected).setValue(p0, state.getDate());
 
         final Vector3D reference = new Vector3D(  1 / (2 * hParam), gammaP1h.subtract(gammaM1h));
         final Vector3D delta = derivative.subtract(reference);
@@ -159,7 +159,7 @@ public abstract class AbstractForceModelTest {
     protected FieldSpacecraftState<DerivativeStructure> toDS(final SpacecraftState state,
                                                              final AttitudeProvider attitudeProvider) {
 
-        final Vector3D p = state.getPVCoordinates().getPosition();
+        final Vector3D p = state.getPosition();
         final Vector3D v = state.getPVCoordinates().getVelocity();
         final Vector3D a = state.getPVCoordinates().getAcceleration();
         DSFactory factory = new DSFactory(6, 1);
@@ -188,7 +188,7 @@ public abstract class AbstractForceModelTest {
     protected FieldSpacecraftState<Gradient> toGradient(final SpacecraftState state,
                                                         final AttitudeProvider attitudeProvider) {
 
-        final Vector3D p = state.getPVCoordinates().getPosition();
+        final Vector3D p = state.getPosition();
         final Vector3D v = state.getPVCoordinates().getVelocity();
         final Vector3D a = state.getPVCoordinates().getAcceleration();
         final int freeParameters = 6;
@@ -219,15 +219,15 @@ public abstract class AbstractForceModelTest {
                                                          final double checkTolerance, final boolean print) {
 
         double[][] finiteDifferencesJacobian =
-                        Differentiation.differentiate(state -> forceModel.acceleration(state, forceModel.getParameters()).toArray(),
-                                                      3, provider, OrbitType.CARTESIAN, PositionAngle.MEAN,
+                        Differentiation.differentiate(state -> forceModel.acceleration(state, forceModel.getParameters(state0.getDate())).toArray(),
+                                                      3, provider, OrbitType.CARTESIAN, PositionAngleType.MEAN,
                                                       dP, 5).
                         value(state0);
 
         DSFactory factory = new DSFactory(6, 1);
         Field<DerivativeStructure> field = factory.getDerivativeField();
         final FieldAbsoluteDate<DerivativeStructure> fDate = new FieldAbsoluteDate<>(field, state0.getDate());
-        final Vector3D p = state0.getPVCoordinates().getPosition();
+        final Vector3D p = state0.getPosition();
         final Vector3D v = state0.getPVCoordinates().getVelocity();
         final Vector3D a = state0.getPVCoordinates().getAcceleration();
         final TimeStampedFieldPVCoordinates<DerivativeStructure> fPVA =
@@ -251,7 +251,7 @@ public abstract class AbstractForceModelTest {
                                                    new FieldAttitude<>(state0.getFrame(), fAC),
                                                    field.getZero().add(state0.getMass()));
         FieldVector3D<DerivativeStructure> dsJacobian = forceModel.acceleration(fState,
-                                                                                forceModel.getParameters(fState.getDate().getField()));
+                                                                                forceModel.getParameters(fState.getDate().getField(), fState.getDate()));
 
         Vector3D dFdPXRef = new Vector3D(finiteDifferencesJacobian[0][0],
                                          finiteDifferencesJacobian[1][0],
@@ -316,15 +316,15 @@ public abstract class AbstractForceModelTest {
                                                                  final double checkTolerance, final boolean print) {
 
         double[][] finiteDifferencesJacobian =
-                        Differentiation.differentiate(state -> forceModel.acceleration(state, forceModel.getParameters()).toArray(),
-                                                      3, provider, OrbitType.CARTESIAN, PositionAngle.MEAN,
+                        Differentiation.differentiate(state -> forceModel.acceleration(state, forceModel.getParameters(state0.getDate())).toArray(),
+                                                      3, provider, OrbitType.CARTESIAN, PositionAngleType.MEAN,
                                                       dP, 5).
                         value(state0);
 
         final int freePrameters = 6;
         Field<Gradient> field = GradientField.getField(freePrameters);
         final FieldAbsoluteDate<Gradient> fDate = new FieldAbsoluteDate<>(field, state0.getDate());
-        final Vector3D p = state0.getPVCoordinates().getPosition();
+        final Vector3D p = state0.getPosition();
         final Vector3D v = state0.getPVCoordinates().getVelocity();
         final Vector3D a = state0.getPVCoordinates().getAcceleration();
         final TimeStampedFieldPVCoordinates<Gradient> fPVA =
@@ -348,7 +348,7 @@ public abstract class AbstractForceModelTest {
                                                    new FieldAttitude<>(state0.getFrame(), fAC),
                                                    field.getZero().add(state0.getMass()));
         FieldVector3D<Gradient> gJacobian = forceModel.acceleration(fState,
-                                                                     forceModel.getParameters(fState.getDate().getField()));
+                                                                     forceModel.getParameters(fState.getDate().getField(), fState.getDate()));
 
         Vector3D dFdPXRef = new Vector3D(finiteDifferencesJacobian[0][0],
                                          finiteDifferencesJacobian[1][0],
@@ -468,7 +468,7 @@ public abstract class AbstractForceModelTest {
      *  - Then shift initial state of numerical propagator and compare its final propagated state
      *    with a state obtained through Taylor expansion of the field numerical propagated "real" initial state
      * @param initialOrbit initial Keplerian orbit
-     * @param positionAngle position angle for the anomaly
+     * @param positionAngleType position angle for the anomaly
      * @param duration duration of the propagation
      * @param propagator numerical propagator
      * @param fieldpropagator field numerical propagator
@@ -479,7 +479,7 @@ public abstract class AbstractForceModelTest {
      * @param print if true, print the results of the test
      */
     protected void checkRealFieldPropagation(final FieldKeplerianOrbit<DerivativeStructure> initialOrbit,
-                                             final PositionAngle positionAngle,
+                                             final PositionAngleType positionAngleType,
                                              final double duration,
                                              final NumericalPropagator propagator,
                                              final FieldNumericalPropagator<DerivativeStructure> fieldpropagator,
@@ -534,7 +534,7 @@ public abstract class AbstractForceModelTest {
         double i_R = initialOrbit.getI().getReal();
         double R_R = initialOrbit.getPerigeeArgument().getReal();
         double O_R = initialOrbit.getRightAscensionOfAscendingNode().getReal();
-        double n_R = initialOrbit.getAnomaly(positionAngle).getReal();
+        double n_R = initialOrbit.getAnomaly(positionAngleType).getReal();
 
         // Max P, V, A values initialization
         double maxP = 0.;
@@ -554,7 +554,7 @@ public abstract class AbstractForceModelTest {
             double n_shift = n_R + rand_next[5];
 
             KeplerianOrbit shiftedOrb = new KeplerianOrbit(a_shift, e_shift, i_shift, R_shift, O_shift, n_shift,
-                                                           PositionAngle.MEAN,
+                                                           PositionAngleType.MEAN,
                                                            initialOrbit.getFrame(),
                                                            initialOrbit.getDate().toAbsoluteDate(),
                                                            Constants.EIGEN5C_EARTH_MU
@@ -645,7 +645,7 @@ public abstract class AbstractForceModelTest {
      *  - Then shift initial state of numerical propagator and compare its final propagated state
      *    with a state obtained through Taylor expansion of the field numerical propagated "real" initial state
      * @param initialOrbit initial Keplerian orbit
-     * @param positionAngle position angle for the anomaly
+     * @param positionAngleType position angle for the anomaly
      * @param duration duration of the propagation
      * @param propagator numerical propagator
      * @param fieldpropagator field numerical propagator
@@ -656,7 +656,7 @@ public abstract class AbstractForceModelTest {
      * @param print if true, print the results of the test
      */
     protected void checkRealFieldPropagationGradient(final FieldKeplerianOrbit<Gradient> initialOrbit,
-                                                     final PositionAngle positionAngle,
+                                                     final PositionAngleType positionAngleType,
                                                      final double duration,
                                                      final NumericalPropagator propagator,
                                                      final FieldNumericalPropagator<Gradient> fieldpropagator,
@@ -711,7 +711,7 @@ public abstract class AbstractForceModelTest {
         double i_R = initialOrbit.getI().getReal();
         double R_R = initialOrbit.getPerigeeArgument().getReal();
         double O_R = initialOrbit.getRightAscensionOfAscendingNode().getReal();
-        double n_R = initialOrbit.getAnomaly(positionAngle).getReal();
+        double n_R = initialOrbit.getAnomaly(positionAngleType).getReal();
 
         // Max P, V, A values initialization
         double maxP = 0.;
@@ -731,7 +731,7 @@ public abstract class AbstractForceModelTest {
             double n_shift = n_R + rand_next[5];
 
             KeplerianOrbit shiftedOrb = new KeplerianOrbit(a_shift, e_shift, i_shift, R_shift, O_shift, n_shift,
-                                                           PositionAngle.MEAN,
+                                                           PositionAngleType.MEAN,
                                                            initialOrbit.getFrame(),
                                                            initialOrbit.getDate().toAbsoluteDate(),
                                                            Constants.EIGEN5C_EARTH_MU
@@ -833,7 +833,7 @@ public abstract class AbstractForceModelTest {
                                            final AbsoluteDate targetDate,
                                            final int index, final double h) {
         OrbitType orbitType = propagator.getOrbitType();
-        PositionAngle angleType = propagator.getPositionAngleType();
+        PositionAngleType angleType = propagator.getPositionAngleType();
         double[] a = new double[6];
         double[] aDot = new double[6];
         orbitType.mapOrbitToArray(state0.getOrbit(), angleType, a, aDot);

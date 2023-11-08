@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,20 @@
  */
 package org.orekit.propagation.analytical.tle;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.text.ParseException;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.CombinatoricsUtils;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
@@ -32,24 +38,16 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.FieldCartesianOrbit;
-import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.text.ParseException;
 
 public class FieldTLETest {
 
@@ -57,68 +55,68 @@ public class FieldTLETest {
 
     @Test
     public void testTLEFormat() {
-        doTestTLEFormat(Decimal64Field.getInstance());
+        doTestTLEFormat(Binary64Field.getInstance());
     }
 
     @Test
     public void TestIssue196() {
-        doTestIssue196(Decimal64Field.getInstance());
+        doTestIssue196(Binary64Field.getInstance());
     }
 
     @Test
     public void testSymmetry() {
-        doTestSymmetry(Decimal64Field.getInstance());
+        doTestSymmetry(Binary64Field.getInstance());
     }
 
     @Test
     public void testBug74() {
-        doTestBug74(Decimal64Field.getInstance());
+        doTestBug74(Binary64Field.getInstance());
     }
 
     @Test
     public void testBug77() {
-        doTestBug77(Decimal64Field.getInstance());
+        doTestBug77(Binary64Field.getInstance());
     }
 
     @Test
     public void testDirectConstruction() {
-        doTestDirectConstruction(Decimal64Field.getInstance());
+        doTestDirectConstruction(Binary64Field.getInstance());
     }
 
     @Test
     public void testGenerateAlpha5() {
-        doTestGenerateAlpha5(Decimal64Field.getInstance());
+        doTestGenerateAlpha5(Binary64Field.getInstance());
     }
 
     @Test
     public void testBug77TooLargeSecondDerivative() {
-        doTestBug77TooLargeSecondDerivative(Decimal64Field.getInstance());
+        doTestBug77TooLargeSecondDerivative(Binary64Field.getInstance());
     }
 
     @Test
     public void testBug77TooLargeBStar() {
-        doTestBug77TooLargeBStar(Decimal64Field.getInstance());
+        doTestBug77TooLargeBStar(Binary64Field.getInstance());
     }
 
     @Test
     public void testBug77TooLargeEccentricity() {
-        doTestBug77TooLargeEccentricity(Decimal64Field.getInstance());
+        doTestBug77TooLargeEccentricity(Binary64Field.getInstance());
     }
 
     @Test
     public void testBug77TooLargeSatelliteNumber1() {
-        doTestBug77TooLargeSatelliteNumber1(Decimal64Field.getInstance());
+        doTestBug77TooLargeSatelliteNumber1(Binary64Field.getInstance());
     }
 
     @Test
     public void testBug77TooLargeSatelliteNumber2() {
-        doTestBug77TooLargeSatelliteNumber2(Decimal64Field.getInstance());
+        doTestBug77TooLargeSatelliteNumber2(Binary64Field.getInstance());
     }
 
     @Test
     public void testDifferentSatNumbers() {
         Assertions.assertThrows(OrekitException.class, () -> {
-            doTestDifferentSatNumbers(Decimal64Field.getInstance());
+            doTestDifferentSatNumbers(Binary64Field.getInstance());
         });
     }
 
@@ -139,42 +137,42 @@ public class FieldTLETest {
 
     @Test
     public void testSatCodeCompliance() throws IOException, OrekitException, ParseException {
-        doTestSatCodeCompliance(Decimal64Field.getInstance());
+        doTestSatCodeCompliance(Binary64Field.getInstance());
     }
 
     @Test
     public void testZeroInclination() {
-        doTestZeroInclination(Decimal64Field.getInstance());
+        doTestZeroInclination(Binary64Field.getInstance());
     }
 
     @Test
     public void testSymmetryAfterLeapSecondIntroduction() {
-        doTestSymmetryAfterLeapSecondIntroduction(Decimal64Field.getInstance());
+        doTestSymmetryAfterLeapSecondIntroduction(Binary64Field.getInstance());
     }
 
     @Test
     public void testOldTLE() {
-        doTestOldTLE(Decimal64Field.getInstance());
+        doTestOldTLE(Binary64Field.getInstance());
     }
 
     @Test
     public void testEqualTLE() {
-        doTestEqualTLE(Decimal64Field.getInstance());
+        doTestEqualTLE(Binary64Field.getInstance());
     }
 
     @Test
     public void testNonEqualTLE() {
-        doTestNonEqualTLE(Decimal64Field.getInstance());
+        doTestNonEqualTLE(Binary64Field.getInstance());
     }
 
     @Test
     public void testIssue388() {
-        doTestIssue388(Decimal64Field.getInstance());
+        doTestIssue388(Binary64Field.getInstance());
     }
 
     @Test
     public void testIssue664NegativeRaanPa() {
-        doTestIssue664NegativeRaanPa(Decimal64Field.getInstance());
+        doTestIssue664NegativeRaanPa(Binary64Field.getInstance());
     }
 
     @Test
@@ -183,7 +181,7 @@ public class FieldTLETest {
         String line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62";
         final DSFactory factory = new DSFactory(1, 1);
         FieldTLE<DerivativeStructure> tleA = new FieldTLE<>(factory.getDerivativeField(), line1, line2);
-        FieldTLE<Decimal64> tleB = new FieldTLE<>(Decimal64Field.getInstance(), line1, line2);
+        FieldTLE<Binary64> tleB = new FieldTLE<>(Binary64Field.getInstance(), line1, line2);
         try {
             tleA.equals(tleB);
             Assertions.fail("an exception should have been thrown");
@@ -664,56 +662,8 @@ public class FieldTLETest {
     }
 
     @Test
-    public void testStateToTLELeo() {
-        doTestStateToTLELeo(Decimal64Field.getInstance());
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestStateToTLELeo(final Field<T> field) {
-        final FieldTLE<T> leoTLE = new FieldTLE<>(field, "1 31135U 07013A   11003.00000000  .00000816  00000+0  47577-4 0    11",
-                                                  "2 31135   2.4656 183.9084 0021119 236.4164  60.4567 15.10546832    15");
-        checkConversion(leoTLE, field);
-    }
-
-    @Test
-    public void testStateToTLEGeo() {
-        doTestStateToTLEGeo(Decimal64Field.getInstance());
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestStateToTLEGeo(final Field<T> field) {
-        final FieldTLE<T> geoTLE = new FieldTLE<>(field, "1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
-                                                         "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
-        checkConversion(geoTLE, field);
-    }
-
-    private <T extends CalculusFieldElement<T>> void checkConversion(final FieldTLE<T> tle, final Field<T> field)
-        {
-
-        FieldPropagator<T> p = FieldTLEPropagator.selectExtrapolator(tle, tle.getParameters(field));
-        final FieldTLE<T> converted = FieldTLE.stateToTLE(p.getInitialState(), tle);
-
-        Assertions.assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
-        Assertions.assertEquals(tle.getClassification(),          converted.getClassification());
-        Assertions.assertEquals(tle.getLaunchYear(),              converted.getLaunchYear());
-        Assertions.assertEquals(tle.getLaunchNumber(),            converted.getLaunchNumber());
-        Assertions.assertEquals(tle.getLaunchPiece(),             converted.getLaunchPiece());
-        Assertions.assertEquals(tle.getElementNumber(),           converted.getElementNumber());
-        Assertions.assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
-
-        final double eps = 1.0e-7;
-        Assertions.assertEquals(tle.getMeanMotion().getReal(), converted.getMeanMotion().getReal(), eps * tle.getMeanMotion().getReal());
-        Assertions.assertEquals(tle.getE().getReal(), converted.getE().getReal(), eps * tle.getE().getReal());
-        Assertions.assertEquals(tle.getI().getReal(), converted.getI().getReal(), eps * tle.getI().getReal());
-        Assertions.assertEquals(tle.getPerigeeArgument().getReal(), converted.getPerigeeArgument().getReal(), eps * tle.getPerigeeArgument().getReal());
-        Assertions.assertEquals(tle.getRaan().getReal(), converted.getRaan().getReal(), eps * tle.getRaan().getReal());
-        Assertions.assertEquals(tle.getMeanAnomaly().getReal(), converted.getMeanAnomaly().getReal(), eps * tle.getMeanAnomaly().getReal());
-        Assertions.assertEquals(tle.getMeanAnomaly().getReal(), converted.getMeanAnomaly().getReal(), eps * tle.getMeanAnomaly().getReal());
-        Assertions.assertEquals(tle.getBStar(), converted.getBStar(), eps * tle.getBStar());
-
-    }
-
-    @Test
     public void testStateToTleISS() {
-        doTestStateToTleISS(Decimal64Field.getInstance());
+        doTestStateToTleISS(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestStateToTleISS(final Field<T> field) {
@@ -728,8 +678,11 @@ public class FieldTLETest {
         // State at TLE epoch
         final FieldSpacecraftState<T> state = propagator.propagate(tleISS.getDate());
 
+        // TLE generation algorithm
+        final TleGenerationAlgorithm algorithm = new FixedPointTleGenerationAlgorithm();
+
         // Convert to TLE
-        final FieldTLE<T> rebuilt = FieldTLE.stateToTLE(state, tleISS);
+        final FieldTLE<T> rebuilt = FieldTLE.stateToTLE(state, tleISS, algorithm);
 
         // Verify
         final double eps = 1.0e-7;
@@ -751,38 +704,8 @@ public class FieldTLETest {
     }
 
     @Test
-    public void testIssue802() {
-        doTestIssue802(Decimal64Field.getInstance());
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestIssue802(final Field<T> field) {
-
-        // Initialize TLE
-        final FieldTLE<T> tleISS = new FieldTLE<>(field, "1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
-                                                         "2 25544  51.6455 280.7636 0002243 335.6496 186.1723 15.48938788267977");
-
-        // TLE propagator
-        final FieldTLEPropagator<T> propagator = FieldTLEPropagator.selectExtrapolator(tleISS, tleISS.getParameters(field));
-
-        // State at TLE epoch
-        final FieldSpacecraftState<T> state = propagator.propagate(tleISS.getDate());
-
-        // Changes frame
-        final Frame eme2000 = FramesFactory.getEME2000();
-        final TimeStampedFieldPVCoordinates<T> pv = state.getPVCoordinates(eme2000);
-        final FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<T>(pv, eme2000, state.getMu());
-
-        // Convert to TLE
-        final FieldTLE<T> rebuilt = FieldTLE.stateToTLE(new FieldSpacecraftState<T>(orbit), tleISS);
-
-        // Verify
-        Assertions.assertEquals(tleISS.getLine1(), rebuilt.getLine1());
-        Assertions.assertEquals(tleISS.getLine2(), rebuilt.getLine2());
-    }
-
-    @Test
     public void testToTLE() {
-        doTestToTLE(Decimal64Field.getInstance());
+        doTestToTLE(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestToTLE(final Field<T> field) {
@@ -795,18 +718,24 @@ public class FieldTLETest {
     }
 
     @Test
-    public void testIssue781() {
+    void roundToNextDayError() {
+        //Given
+        final Field<Binary64> field = Binary64Field.getInstance();
+        final Binary64        zero  = field.getZero();
 
-        final DSFactory factory = new DSFactory(6, 3);
-        final String line1 = "1 05709U 71116A   21105.62692147  .00000088  00000-0  00000-0 0  9999";
-        final String line2 = "2 05709  10.8207 310.3659 0014139  71.9531 277.0561  0.99618926100056";
-        Assertions.assertTrue(TLE.isFormatOK(line1, line2));
+        final FieldAbsoluteDate<Binary64> tleDate =
+                new FieldAbsoluteDate<>(field, new AbsoluteDate("2022-01-01T23:59:59.99999999", TimeScalesFactory.getUTC()));
 
-        final FieldTLE<DerivativeStructure> fieldTLE = new FieldTLE<>(factory.getDerivativeField(), line1, line2);
-        final FieldTLEPropagator<DerivativeStructure> tlePropagator = FieldTLEPropagator.selectExtrapolator(fieldTLE, fieldTLE.getParameters(factory.getDerivativeField()));
-        final FieldTLE<DerivativeStructure> fieldTLE1 = FieldTLE.stateToTLE(tlePropagator.getInitialState(), fieldTLE);
-        Assertions.assertEquals(line2, fieldTLE1.getLine2());
+        final FieldTLE<Binary64> tle =
+                new FieldTLE<>(99999, 'U', 2022, 999, "A", 0, 1, tleDate, zero, zero, zero, zero, zero, zero, zero, zero, 99,
+                               11606 * 1e-4, TimeScalesFactory.getUTC());
 
+        //When
+        final FieldAbsoluteDate<Binary64> returnedDate = tle.getDate();
+
+        //Then
+        // Assert that TLE class did not round the date to the next day
+        Assertions.assertEquals(tleDate, returnedDate);
     }
 
     @BeforeEach

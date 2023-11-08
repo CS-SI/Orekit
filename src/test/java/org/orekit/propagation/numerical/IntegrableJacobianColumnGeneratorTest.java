@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.io.IOException;
+import java.text.ParseException;
+
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
@@ -28,7 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.ForceModel;
@@ -47,7 +50,7 @@ import org.orekit.models.earth.atmosphere.HarrisPriester;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -57,9 +60,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-
-import java.io.IOException;
-import java.text.ParseException;
 
 /** Unit tests for {@link IntegrableJacobianColumnGenerator}. */
 public class IntegrableJacobianColumnGeneratorTest {
@@ -97,7 +97,7 @@ public class IntegrableJacobianColumnGeneratorTest {
         ForceModel gravityField =
             new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
         Orbit baseOrbit =
-                new KeplerianOrbit(7000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
+                new KeplerianOrbit(7000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                    provider.getMu());
 
@@ -105,7 +105,7 @@ public class IntegrableJacobianColumnGeneratorTest {
         double dP = 1.0;
         for (OrbitType orbitType : orbitTypes) {
             final Orbit initialOrbit = orbitType.convertType(baseOrbit);
-            for (PositionAngle angleType : PositionAngle.values()) {
+            for (PositionAngleType angleType : PositionAngleType.values()) {
 
                 NumericalPropagator propagator =
                                 setUpPropagator(initialOrbit, dP, orbitType, angleType, drag, gravityField);
@@ -113,7 +113,7 @@ public class IntegrableJacobianColumnGeneratorTest {
                 ParameterDriver selected = null;
                 for (final ForceModel forceModel : propagator.getAllForceModels()) {
                     for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-                        driver.setValue(driver.getReferenceValue());
+                        driver.setValue(driver.getReferenceValue(), initialOrbit.getDate());
                         if (driver.getName().equals(parameterName)) {
                             driver.setSelected(true);
                             selected = driver;
@@ -125,7 +125,7 @@ public class IntegrableJacobianColumnGeneratorTest {
 
                 SpacecraftState initialState = new SpacecraftState(initialOrbit);
                 propagator.setInitialState(initialState);
-                PickUpHandler pickUp = new PickUpHandler(propagator, null, null, selected.getName());
+                PickUpHandler pickUp = new PickUpHandler(propagator, null, null, selected.getNameSpan(new AbsoluteDate()));
                 propagator.setStepHandler(pickUp);
                 propagator.propagate(initialState.getDate().shiftedBy(dt));
                 RealMatrix dYdP = pickUp.getdYdP();
@@ -236,13 +236,14 @@ public class IntegrableJacobianColumnGeneratorTest {
         final double f = 420;
         final double delta = FastMath.toRadians(-7.4978);
         final double alpha = FastMath.toRadians(351);
-        final AttitudeProvider law = new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+        final AttitudeProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(alpha, delta),
+                                                                           Vector3D.PLUS_I));
 
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
                                                        TimeScalesFactory.getUTC());
         final Orbit orbit =
-            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                FramesFactory.getEME2000(), initDate, mu);
         SpacecraftState initialState =
             new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
@@ -270,7 +271,7 @@ public class IntegrableJacobianColumnGeneratorTest {
         selected.setSelected(true);
 
         final OrbitType orbitType = OrbitType.CARTESIAN;
-        final PositionAngle angleType = PositionAngle.TRUE;
+        final PositionAngleType angleType = PositionAngleType.TRUE;
         propagator.setOrbitType(orbitType);
         StateTransitionMatrixGenerator stmGenerator =
                         new StateTransitionMatrixGenerator("stm",
@@ -291,7 +292,7 @@ public class IntegrableJacobianColumnGeneratorTest {
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, PositionAngle angleType, double h,
+                                    OrbitType orbitType, PositionAngleType angleType, double h,
                                     SpacecraftState sM4h, SpacecraftState sM3h,
                                     SpacecraftState sM2h, SpacecraftState sM1h,
                                     SpacecraftState sP1h, SpacecraftState sP2h,
@@ -313,7 +314,7 @@ public class IntegrableJacobianColumnGeneratorTest {
         }
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
+    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
                                   boolean withMass) {
         double[][] array = new double[2][withMass ? 7 : 6];
         orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
@@ -323,7 +324,7 @@ public class IntegrableJacobianColumnGeneratorTest {
         return array;
     }
 
-    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngle angleType,
+    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngleType angleType,
                                          Frame frame, AbsoluteDate date, double mu,
                                          Attitude attitude) {
         Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
@@ -333,7 +334,7 @@ public class IntegrableJacobianColumnGeneratorTest {
     }
 
     private NumericalPropagator setUpPropagator(Orbit orbit, double dP,
-                                                OrbitType orbitType, PositionAngle angleType,
+                                                OrbitType orbitType, PositionAngleType angleType,
                                                 ForceModel... models)
         {
 

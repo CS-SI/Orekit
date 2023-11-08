@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,11 +53,11 @@ public class ElevationExtremumDetectorTest {
                 new ElevationExtremumDetector(new TopocentricFrame(earth, gp, "test")).
                 withMaxCheck(60).
                 withThreshold(1.e-6).
-                withHandler(new ContinueOnEvent<ElevationExtremumDetector>());
+                withHandler(new ContinueOnEvent());
         final EventSlopeFilter<ElevationExtremumDetector> maxElevationDetector =
                 new EventSlopeFilter<ElevationExtremumDetector>(raw, FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
 
-        Assertions.assertEquals(60.0, raw.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(60.0, raw.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-6, raw.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, raw.getMaxIterationCount());
         Assertions.assertEquals("test", raw.getTopocentricFrame().getName());

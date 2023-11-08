@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -84,6 +84,8 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
         super(reference.getAttitudeProvider());
         this.reference = reference;
         this.effects = new ArrayList<DifferentialEffect>();
+        // Sets initial state
+        super.resetInitialState(getInitialState());
     }
 
     /** Add a differential effect.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -75,27 +75,27 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
 
     public void handleStep(final SpacecraftState currentState) {
         for (final GroundStation station : context.getStations()) {
-            final double           groundDft = station.getClockDriftDriver().getValue();
-            final double           satDft    = satellite.getClockDriftDriver().getValue();
-            final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundDft - satDft);
             final AbsoluteDate     date      = currentState.getDate();
             final Frame            inertial  = currentState.getFrame();
-            final Vector3D         position  = currentState.getPVCoordinates().getPosition();
+            final Vector3D         position  = currentState.getPosition();
             final Vector3D         velocity  = currentState.getPVCoordinates().getVelocity();
+            final double           groundDft = station.getClockDriftDriver().getValue(date);
+            final double           satDft    = satellite.getClockDriftDriver().getValue(date);
+            final double           deltaD    = Constants.SPEED_OF_LIGHT * (groundDft - satDft);
 
-            if (station.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
+            if (station.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0)) {
                 final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
                 final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
                     public double value(final double x) {
-                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
+                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x), false);
                         final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                         return d - x * Constants.SPEED_OF_LIGHT;
                     }
                 }, -1.0, 1.0);
                 final AbsoluteDate receptionDate  = currentState.getDate().shiftedBy(downLinkDelay);
                 final PVCoordinates stationAtReception =
-                                station.getOffsetToInertial(inertial, receptionDate).transformPVCoordinates(PVCoordinates.ZERO);
+                                station.getOffsetToInertial(inertial, receptionDate, false).transformPVCoordinates(PVCoordinates.ZERO);
 
                 // line of sight at reception
                 final Vector3D receptionLOS = (position.subtract(stationAtReception.getPosition())).normalize();
@@ -105,14 +105,14 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
 
                 final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
                     public double value(final double x) {
-                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(-x));
+                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(-x), false);
                         final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                         return d - x * Constants.SPEED_OF_LIGHT;
                     }
                 }, -1.0, 1.0);
                 final AbsoluteDate emissionDate   = currentState.getDate().shiftedBy(-upLinkDelay);
                 final PVCoordinates stationAtEmission  =
-                                station.getOffsetToInertial(inertial, emissionDate).transformPVCoordinates(PVCoordinates.ZERO);
+                                station.getOffsetToInertial(inertial, emissionDate, false).transformPVCoordinates(PVCoordinates.ZERO);
 
                 // line of sight at emission
                 final Vector3D emissionLOS = (position.subtract(stationAtEmission.getPosition())).normalize();
@@ -122,8 +122,8 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
 
                 // range rate at the date of reception
                 final double rr = twoWay ?
-                                          0.5 * (deltaVr.dotProduct(receptionLOS) + deltaVe.dotProduct(emissionLOS)) :
-                                              deltaVr.dotProduct(receptionLOS) + deltaD;
+                                  0.5 * (deltaVr.dotProduct(receptionLOS) + deltaVe.dotProduct(emissionLOS)) :
+                                  deltaVr.dotProduct(receptionLOS) + deltaD;
 
                 addMeasurement(new RangeRate(station, receptionDate, rr, 1.0, 10, twoWay, satellite));
             }

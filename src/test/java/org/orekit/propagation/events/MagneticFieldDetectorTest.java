@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+
 import org.hipparchus.geometry.euclidean.twod.PolygonsSet;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.geometry.partitioning.Region.Location;
@@ -25,10 +28,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
-import org.orekit.data.DirectoryCrawler;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.GeoMagneticField;
@@ -36,7 +39,7 @@ import org.orekit.models.earth.GeoMagneticFieldFactory;
 import org.orekit.models.earth.GeoMagneticFieldFactory.FieldModel;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -46,13 +49,10 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Comparator;
+import org.orekit.utils.units.UnitsConverter;
 
 /**
- * test class for MagneticFieldDetector
+ * Test class for MagneticFieldDetector.
  * @author Romaric Her
  */
 public class MagneticFieldDetectorTest {
@@ -66,21 +66,13 @@ public class MagneticFieldDetectorTest {
     GeoMagneticField wmm;
     GeoMagneticField igrf;
 
-    double saaValidationThreshold = 500;
-    double saaValidationWidth = 200;
+    double saaValidationThreshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(500);
+    double saaValidationWidth = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(200);
 
-
-    /**
-     * Prepare the Orekit library.
-     */
     @BeforeEach
-    public void setup()
-    {
-        // Prepare the Orekit library
-        final String orekitCfgPath = "src/test/resources";
-
-        // Initialize Orekit
-        DataContext.getDefault().getDataProvidersManager().addProvider(new DirectoryCrawler(new File(orekitCfgPath)));
+    public void setup() {
+        // Initialize context
+        Utils.setDataRoot("regular-data:earth");
 
         // Initialize constants
         eme2000 = FramesFactory.getEME2000();
@@ -95,12 +87,9 @@ public class MagneticFieldDetectorTest {
 
     }
 
-    /**
-     * Remove the Orekit configuration
-     */
     @AfterEach
-    public void tearDown()
-    {
+    public void tearDown() {
+        // Clear the context
         DataContext.getDefault().getDataProvidersManager().clearProviders();
         DataContext.getDefault().getDataProvidersManager().clearLoadedDataNames();
     }
@@ -111,7 +100,7 @@ public class MagneticFieldDetectorTest {
     private void initializePropagator() {
         double a = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + 600000; // 600 km altitude
         double i = FastMath.toRadians(80); // 80° inclination
-        Orbit initialOrbit = new CircularOrbit(a, 0, 0, i, 0, 0, PositionAngle.TRUE, eme2000, initialDate, Constants.WGS84_EARTH_MU);
+        Orbit initialOrbit = new CircularOrbit(a, 0, 0, i, 0, 0, PositionAngleType.TRUE, eme2000, initialDate, Constants.WGS84_EARTH_MU);
         propagator = new KeplerianPropagator(initialOrbit);
     }
 
@@ -121,7 +110,7 @@ public class MagneticFieldDetectorTest {
     @Test
     public void magneticFieldDetectorWMMSeaLevelTest() {
         initializePropagator();
-        double threshold = 45000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(45000);
 
         CustomEventHandler handler = new CustomEventHandler();
         MagneticFieldDetector detector = new MagneticFieldDetector(threshold, FieldModel.WMM, earth, true).withHandler(handler);
@@ -137,7 +126,7 @@ public class MagneticFieldDetectorTest {
     @Test
     public void magneticFieldDetectorIGRFSeaLevelTest() {
         initializePropagator();
-        double threshold = 45000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(45000);
 
         CustomEventHandler handler = new CustomEventHandler();
         MagneticFieldDetector detector = new MagneticFieldDetector(threshold, FieldModel.IGRF, earth, true).withHandler(handler);
@@ -148,12 +137,12 @@ public class MagneticFieldDetectorTest {
     }
 
     /**
-     * Test for the magnetic field detector based on the WMM at sea level
+     * Test for the magnetic field detector based on the WMM at satellite's altitude.
      */
     @Test
     public void magneticFieldDetectorWMMTrueAltitudeTest() {
         initializePropagator();
-        double threshold = 45000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(45000);
 
         CustomEventHandler handler = new CustomEventHandler();
         MagneticFieldDetector detector = new MagneticFieldDetector(threshold, FieldModel.WMM, earth).withHandler(handler);
@@ -164,12 +153,12 @@ public class MagneticFieldDetectorTest {
     }
 
     /**
-     * Test for the magnetic field detector based on the IGRF at sea level
+     * Test for the magnetic field detector based on the IGRF at satellite's altitude.
      */
     @Test
     public void magneticFieldDetectorIGRFTrueAltitudeTest() {
         initializePropagator();
-        double threshold = 45000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(45000);
 
         CustomEventHandler handler = new CustomEventHandler();
         MagneticFieldDetector detector = new MagneticFieldDetector(threshold, FieldModel.IGRF, earth).withHandler(handler);
@@ -187,7 +176,7 @@ public class MagneticFieldDetectorTest {
         initializePropagator();
 
         double altitude = 0;
-        double threshold = 32000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(32000);
 
         PolygonsSet saaIn = generateGeomagneticMap(wmm, altitude, threshold - saaValidationThreshold, saaValidationWidth);
         PolygonsSet saaOut = generateGeomagneticMap(wmm, altitude, threshold + saaValidationThreshold, saaValidationWidth);
@@ -209,7 +198,7 @@ public class MagneticFieldDetectorTest {
         initializePropagator();
 
         double altitude = 0;
-        double threshold = 32000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(32000);
 
         PolygonsSet saaIn = generateGeomagneticMap(igrf, altitude, threshold - saaValidationThreshold, saaValidationWidth);
         PolygonsSet saaOut = generateGeomagneticMap(igrf, altitude, threshold + saaValidationThreshold, saaValidationWidth);
@@ -224,14 +213,14 @@ public class MagneticFieldDetectorTest {
     }
 
     /**
-     * Test for the SAA detector based on the WMM at sea level
+     * Test for the SAA detector based on the WMM at satellite's altitude.
      */
     @Test
     public void saaDetectorWMMTrueAltitudeTest() {
         initializePropagator();
 
         double altitude = 600000;
-        double threshold = 23000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(23000);
 
         PolygonsSet saaIn = generateGeomagneticMap(wmm, altitude, threshold - saaValidationThreshold, saaValidationWidth);
         PolygonsSet saaOut = generateGeomagneticMap(wmm, altitude, threshold + saaValidationThreshold, saaValidationWidth);
@@ -246,14 +235,14 @@ public class MagneticFieldDetectorTest {
     }
 
     /**
-     * Test for the SAA detector based on the IGRF at sea level
+     * Test for the SAA detector based on the IGRF at satellite's altitude.
      */
     @Test
     public void saaDetectorIGRFTrueAltitudeTest() {
         initializePropagator();
 
         double altitude = 600000;
-        double threshold = 23000;
+        double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(23000);
 
         PolygonsSet saaIn = generateGeomagneticMap(igrf, altitude, threshold - saaValidationThreshold, saaValidationWidth);
         PolygonsSet saaOut = generateGeomagneticMap(igrf, altitude, threshold + saaValidationThreshold, saaValidationWidth);
@@ -268,23 +257,26 @@ public class MagneticFieldDetectorTest {
     }
 
     /**
-     * Build 2 geographical zones, one just bigger than SAA, and another one just smaller than SAA
-     * @param model the geomagnetic field model
-     * @param threshold the value of magnetic field at sea level set in the MagneticFieldDetector
+     * Build a geographical zone covering the SAA.
+     *
+     * @param field     the geomagnetic field
+     * @param altitude  the considered altitude
+     * @param threshold detection threshold for magnetic field
+     * @param width     margin for selecting the points on the boundary
+     * @return the geographical zone covering the SAA
      */
     private PolygonsSet generateGeomagneticMap(GeoMagneticField field, double altitude, double threshold, double width) {
 
         //Find a polygon corresponding to the threshold field line
-
         ArrayList<Double[]> points = new ArrayList<Double[]>();
 
         for(int latitude = -89; latitude < 90; latitude++) {
             for(int longitude = -179; longitude < 180; longitude++) {
 
-                //Check the magnetic field value at sea level for each latitude and longitude, with a 1° step
+                // Check the magnetic field value at the given altitude for each latitude and longitude, with a 1° step
                 double value = field.calculateField(FastMath.toRadians(latitude), FastMath.toRadians(longitude), altitude).getTotalIntensity();
 
-                //add the vertice to the outside polygon
+                // add the vertice to the outside polygon
                 if (value - threshold > -0.5*width && value - threshold < 0.5*width) {
                     Double[] point = {(double)latitude, (double)longitude};
                     points.add(point);
@@ -397,10 +389,9 @@ public class MagneticFieldDetectorTest {
     }
 
     /**
-     * the custom event handler used in tests to check if the event detected is located between the inside and the outside geographical zones
-     * @author Romaric Her
+     * Custom event handler gathering states when events occurred.
      */
-    private class CustomEventHandler implements EventHandler<EventDetector>{
+    private class CustomEventHandler implements EventHandler {
 
         ArrayList<SpacecraftState> events = new ArrayList<SpacecraftState>();
 
@@ -418,23 +409,23 @@ public class MagneticFieldDetectorTest {
     }
 
     /**
-     * Check that the magnetic field value at the event is equals to the expected value
+     * Check that the magnetic field value at the event is equal to the expected value
      * @param events the list of events
      * @param threshold the expected value
-     * @param field the magnetic field model
+     * @param field the magnetic field
      * @param sea if the magnetic field is computed at sea level or at the satellite altitude
      */
     private void checkEvents(ArrayList<SpacecraftState> events, double threshold, GeoMagneticField field, boolean sea) {
 
         for (SpacecraftState s : events) {
             //Get the geodetic point corresponding to the event
-            GeodeticPoint geo = earth.transform(s.getPVCoordinates().getPosition(), s.getFrame(), s.getDate());
+            GeodeticPoint geo = earth.transform(s.getPosition(), s.getFrame(), s.getDate());
             double altitude = geo.getAltitude();
-            if(sea) {
+            if (sea) {
                 altitude = 0;
             }
             double meas = field.calculateField(geo.getLatitude(), geo.getLongitude(), altitude).getTotalIntensity();
-            Assertions.assertEquals(threshold, meas, 1e-3);
+            Assertions.assertEquals(threshold, meas, 1e-12);
         }
     }
 
@@ -448,7 +439,7 @@ public class MagneticFieldDetectorTest {
 
         for (SpacecraftState s : events) {
             //Get the geodetic point corresponding to the event
-            GeodeticPoint geo = earth.transform(s.getPVCoordinates(itrf).getPosition(), itrf, s.getDate());
+            GeodeticPoint geo = earth.transform(s.getPosition(itrf), itrf, s.getDate());
             Vector2D point = new Vector2D(geo.getLongitude(), geo.getLatitude());
 
             //Check that the event is outside the "smaller than SAA" geographical zone

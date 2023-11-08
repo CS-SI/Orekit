@@ -18,18 +18,14 @@ package org.orekit.forces.gravity;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
@@ -45,7 +41,7 @@ import org.orekit.utils.ParameterDriver;
  * @see "Montenbruck, Oliver, and Gill, Eberhard. Satellite orbits : models, methods, and
  * applications. Berlin New York: Springer, 2000."
  */
-public class Relativity extends AbstractForceModel {
+public class Relativity implements ForceModel {
 
     /** Central attraction scaling factor.
      * <p>
@@ -123,18 +119,6 @@ public class Relativity extends AbstractForceModel {
                                    p.dotProduct(v).multiply(4),
                                    v).scalarMultiply(r2.multiply(r).multiply(c2).reciprocal().multiply(gm));
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
     /** {@inheritDoc} */

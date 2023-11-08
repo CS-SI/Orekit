@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.moment.Mean;
 import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
@@ -36,7 +35,7 @@ import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.models.earth.troposphere.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -77,12 +76,12 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = false;
-        double refErrorsPMedian = 6.5e-10;
-        double refErrorsPMean   = 4.1e-09;
-        double refErrorsPMax    = 2.1e-07;
-        double refErrorsVMedian = 2.2e-04;
-        double refErrorsVMean   = 6.2e-04;
-        double refErrorsVMax    = 1.3e-02;
+        double refErrorsPMedian = 6.0e-10;
+        double refErrorsPMean   = 3.0e-09;
+        double refErrorsPMax    = 1.0e-07;
+        double refErrorsVMedian = 2.1e-04;
+        double refErrorsVMean   = 1.3e-03;
+        double refErrorsVMax    = 5.2e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -101,12 +100,12 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = true;
-        double refErrorsPMedian = 6.2e-10;
-        double refErrorsPMean   = 3.8e-09;
-        double refErrorsPMax    = 1.6e-07;
-        double refErrorsVMedian = 2.2e-04;
-        double refErrorsVMean   = 6.2e-04;
-        double refErrorsVMax    = 1.3e-02;
+        double refErrorsPMedian = 7.5e-10;
+        double refErrorsPMean   = 3.2e-09;
+        double refErrorsPMax    = 9.2e-08;
+        double refErrorsVMedian = 2.1e-04;
+        double refErrorsVMean   = 1.3e-03;
+        double refErrorsVMax    = 5.2e-02;
         this.genericTestStateDerivatives(isModifier, printResults,
                                          refErrorsPMedian, refErrorsPMean, refErrorsPMax,
                                          refErrorsVMedian, refErrorsVMean, refErrorsVMax);
@@ -190,7 +189,7 @@ public class RangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -202,7 +201,7 @@ public class RangeTest {
         }
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context, Vector3D.ZERO),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
@@ -233,7 +232,8 @@ public class RangeTest {
 
                     // Values of the Range & errors
                     final double RangeObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
+                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
+                                                                                                         new SpacecraftState[] { state });
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assertions.assertEquals(3, participants.length);
@@ -305,11 +305,11 @@ public class RangeTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, absErrorsMedian, 4.9e-8);
-        Assertions.assertEquals(0.0, absErrorsMin,    2.2e-7);
-        Assertions.assertEquals(0.0, absErrorsMax,    2.1e-7);
-        Assertions.assertEquals(0.0, relErrorsMedian, 1.0e-14);
-        Assertions.assertEquals(0.0, relErrorsMax,    2.6e-14);
+        Assertions.assertEquals(0.0, absErrorsMedian, 6.3e-8);
+        Assertions.assertEquals(0.0, absErrorsMin,    2.0e-7);
+        Assertions.assertEquals(0.0, absErrorsMax,    2.6e-7);
+        Assertions.assertEquals(0.0, relErrorsMedian, 8.5e-15);
+        Assertions.assertEquals(0.0, relErrorsMax,    2.9e-14);
 
         // Test measurement type
         Assertions.assertEquals(Range.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
@@ -322,7 +322,7 @@ public class RangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -330,7 +330,7 @@ public class RangeTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
@@ -373,10 +373,12 @@ public class RangeTest {
                     // Compute a reference value using finite differences
                     jacobianRef = Differentiation.differentiate(new StateFunction() {
                         public double[] value(final SpacecraftState state) {
-                            return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                            return measurement.
+                                   estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                   getEstimatedValue();
                         }
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
-                       OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
+                       OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -467,7 +469,7 @@ public class RangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -481,7 +483,7 @@ public class RangeTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // List to store the results
@@ -531,7 +533,7 @@ public class RangeTest {
                     }
 
                     for (int i = 0; i < drivers.length; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate());
                         Assertions.assertEquals(1, measurement.getDimension());
                         Assertions.assertEquals(1, gradient.length);
 
@@ -540,11 +542,13 @@ public class RangeTest {
                                         Differentiation.differentiate(new ParameterFunction() {
                                             /** {@inheritDoc} */
                                             @Override
-                                            public double value(final ParameterDriver parameterDriver) {
-                                                return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                            public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
+                                                return measurement.
+                                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                       getEstimatedValue()[0];
                                             }
                                         }, 3, 20.0 * drivers[i].getScale());
-                        final double ref = dMkdP.value(drivers[i]);
+                        final double ref = dMkdP.value(drivers[i], date);
 
                         if (printResults) {
                             System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
@@ -610,14 +614,14 @@ public class RangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // List to store the results
@@ -671,7 +675,7 @@ public class RangeTest {
                     }
 
                     for (int i = 0; i < 1; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate());
                         Assertions.assertEquals(1, measurement.getDimension());
                         Assertions.assertEquals(1, gradient.length);
 
@@ -680,11 +684,13 @@ public class RangeTest {
                                         Differentiation.differentiate(new ParameterFunction() {
                                             /** {@inheritDoc} */
                                             @Override
-                                            public double value(final ParameterDriver parameterDriver) {
-                                                return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue()[0];
+                                            public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
+                                                return measurement.
+                                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                                       getEstimatedValue()[0];
                                             }
                                         }, 3, 0.1 * drivers[i].getScale());
-                        final double ref = dMkdP.value(drivers[i]);
+                        final double ref = dMkdP.value(drivers[i], date);
 
                         if (printResults) {
                             System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));

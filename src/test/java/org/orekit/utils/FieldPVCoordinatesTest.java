@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,8 +29,8 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -96,7 +96,7 @@ public class FieldPVCoordinatesTest {
     @Test
     public void testConversionConstructor() {
         PVCoordinates pv = new PVCoordinates(new Vector3D(1, 2, 3), new Vector3D(4, 5, 6), new Vector3D(7, 8, 9));
-        FieldPVCoordinates<Decimal64> pv64 = new FieldPVCoordinates<>(Decimal64Field.getInstance(), pv);
+        FieldPVCoordinates<Binary64> pv64 = new FieldPVCoordinates<>(Binary64Field.getInstance(), pv);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(pv.getPosition(), pv64.getPosition().toVector3D()),
                             1.0e-15);
@@ -111,13 +111,13 @@ public class FieldPVCoordinatesTest {
     @Test
     public void testZero() {
         Assertions.assertEquals(0.0,
-                            FieldPVCoordinates.getZero(Decimal64Field.getInstance()).getPosition().getNorm().getReal(),
+                            FieldPVCoordinates.getZero(Binary64Field.getInstance()).getPosition().getNorm().getReal(),
                             1.0e-15);
         Assertions.assertEquals(0.0,
-                            FieldPVCoordinates.getZero(Decimal64Field.getInstance()).getVelocity().getNorm().getReal(),
+                            FieldPVCoordinates.getZero(Binary64Field.getInstance()).getVelocity().getNorm().getReal(),
                             1.0e-15);
         Assertions.assertEquals(0.0,
-                            FieldPVCoordinates.getZero(Decimal64Field.getInstance()).getAcceleration().getNorm().getReal(),
+                            FieldPVCoordinates.getZero(Binary64Field.getInstance()).getAcceleration().getNorm().getReal(),
                             1.0e-15);
     }
 
@@ -184,7 +184,7 @@ public class FieldPVCoordinatesTest {
     @Test
     public void testToDerivativeStructureVectorNeg() {
         try {
-            FieldPVCoordinates.getZero(Decimal64Field.getInstance()).toDerivativeStructureVector(-1);
+            FieldPVCoordinates.getZero(Binary64Field.getInstance()).toDerivativeStructureVector(-1);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
@@ -195,7 +195,7 @@ public class FieldPVCoordinatesTest {
     @Test
     public void testToDerivativeStructureVector3() {
         try {
-            FieldPVCoordinates.getZero(Decimal64Field.getInstance()).toDerivativeStructureVector(3);
+            FieldPVCoordinates.getZero(Binary64Field.getInstance()).toDerivativeStructureVector(3);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
@@ -205,28 +205,28 @@ public class FieldPVCoordinatesTest {
 
     @Test
     public void testToDerivativeStructureVector0() {
-        FieldVector3D<FieldDerivativeStructure<Decimal64>> fv =
-                new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
-                                         new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
-                                         new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+        FieldVector3D<FieldDerivativeStructure<Binary64>> fv =
+                new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
+                                         new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
+                                         new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).
                                          toDerivativeStructureVector(0);
         Assertions.assertEquals(1, fv.getX().getFreeParameters());
         Assertions.assertEquals(0, fv.getX().getOrder());
         Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
         Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
         Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        checkPV(new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(1), new Decimal64(0.1), new Decimal64(10)),
-                                         FieldVector3D.getZero(Decimal64Field.getInstance()),
-                                         FieldVector3D.getZero(Decimal64Field.getInstance())),
+        checkPV(new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(1), new Binary64(0.1), new Binary64(10)),
+                                         FieldVector3D.getZero(Binary64Field.getInstance()),
+                                         FieldVector3D.getZero(Binary64Field.getInstance())),
                 new FieldPVCoordinates<>(fv), 1.0e-15);
     }
 
     @Test
     public void testToDerivativeStructureVector1() {
-        FieldVector3D<FieldDerivativeStructure<Decimal64>> fv =
-                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
-                                                 new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
-                                                 new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+        FieldVector3D<FieldDerivativeStructure<Binary64>> fv =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
+                                                 new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
+                                                 new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).
                                                  toDerivativeStructureVector(1);
         Assertions.assertEquals(1, fv.getX().getFreeParameters());
         Assertions.assertEquals(1, fv.getX().getOrder());
@@ -236,18 +236,18 @@ public class FieldPVCoordinatesTest {
         Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1).getReal(), 1.0e-15);
         Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1).getReal(), 1.0e-15);
         Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1).getReal(), 1.0e-15);
-        checkPV(new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(1), new Decimal64(0.1), new Decimal64(10)),
-                                         new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
-                                         FieldVector3D.getZero(Decimal64Field.getInstance())),
+        checkPV(new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(1), new Binary64(0.1), new Binary64(10)),
+                                         new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
+                                         FieldVector3D.getZero(Binary64Field.getInstance())),
                 new FieldPVCoordinates<>(fv), 1.0e-15);
     }
 
     @Test
     public void testUnivariateDerivative1Vector() {
-        FieldVector3D<FieldUnivariateDerivative1<Decimal64>> fv =
-                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
-                                                 new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
-                                                 new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+        FieldVector3D<FieldUnivariateDerivative1<Binary64>> fv =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
+                                                 new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
+                                                 new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).
                                                  toUnivariateDerivative1Vector();
         Assertions.assertEquals(1, fv.getX().getOrder());
         Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
@@ -257,7 +257,7 @@ public class FieldPVCoordinatesTest {
         Assertions.assertEquals(  -0.1, fv.getY().getDerivative(1).getReal(), 1.0e-15);
         Assertions.assertEquals( -10.0, fv.getZ().getDerivative(1).getReal(), 1.0e-15);
 
-        FieldPVCoordinates<Decimal64> fpv = new FieldPVCoordinates<>(fv);
+        FieldPVCoordinates<Binary64> fpv = new FieldPVCoordinates<>(fv);
         Assertions.assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
         Assertions.assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
         Assertions.assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
@@ -269,10 +269,10 @@ public class FieldPVCoordinatesTest {
 
     @Test
     public void testToDerivativeStructureVector2() {
-        FieldVector3D<FieldDerivativeStructure<Decimal64>> fv =
-                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
-                                                 new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
-                                                 new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+        FieldVector3D<FieldDerivativeStructure<Binary64>> fv =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
+                                                 new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
+                                                 new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).
                                                  toDerivativeStructureVector(2);
         Assertions.assertEquals(1, fv.getX().getFreeParameters());
         Assertions.assertEquals(2, fv.getX().getOrder());
@@ -285,22 +285,22 @@ public class FieldPVCoordinatesTest {
         Assertions.assertEquals(  10.0, fv.getX().getPartialDerivative(2).getReal(), 1.0e-15);
         Assertions.assertEquals(  -1.0, fv.getY().getPartialDerivative(2).getReal(), 1.0e-15);
         Assertions.assertEquals(-100.0, fv.getZ().getPartialDerivative(2).getReal(), 1.0e-15);
-        checkPV(new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(1), new Decimal64(0.1), new Decimal64(10)),
-                                         new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
-                                         new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))),
+        checkPV(new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(1), new Binary64(0.1), new Binary64(10)),
+                                         new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
+                                         new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))),
                 new FieldPVCoordinates<>(fv), 1.0e-15);
 
         for (double dt = 0; dt < 10; dt += 0.125) {
-            FieldVector3D<Decimal64> p = new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
-                                                                  new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
-                                                                  new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+            FieldVector3D<Binary64> p = new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
+                                                                  new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
+                                                                  new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).
                                          shiftedBy(dt).getPosition();
             Assertions.assertEquals(p.getX().doubleValue(), fv.getX().taylor(dt).doubleValue(), 1.0e-14);
             Assertions.assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
             Assertions.assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
         }
 
-        FieldPVCoordinates<Decimal64> fpv = new FieldPVCoordinates<>(fv);
+        FieldPVCoordinates<Binary64> fpv = new FieldPVCoordinates<>(fv);
         Assertions.assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
         Assertions.assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
         Assertions.assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
@@ -315,10 +315,10 @@ public class FieldPVCoordinatesTest {
 
     @Test
     public void testUnivariateDerivative2Vector() {
-        FieldVector3D<FieldUnivariateDerivative2<Decimal64>> fv =
-                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1),  new Decimal64(0.1),  new Decimal64(10)),
-                                                 new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
-                                                 new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).toUnivariateDerivative2Vector();
+        FieldVector3D<FieldUnivariateDerivative2<Binary64>> fv =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64( 1),  new Binary64(0.1),  new Binary64(10)),
+                                                 new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
+                                                 new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).toUnivariateDerivative2Vector();
         Assertions.assertEquals(2, fv.getX().getOrder());
         Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
         Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
@@ -331,15 +331,15 @@ public class FieldPVCoordinatesTest {
         Assertions.assertEquals(-100.0, fv.getZ().getDerivative(2).getReal(), 1.0e-15);
 
         for (double dt = 0; dt < 10; dt += 0.125) {
-            FieldVector3D<Decimal64> p = new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1),  new Decimal64(0.1),  new Decimal64(10)),
-                                                                  new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
-                                                                  new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).shiftedBy(dt).getPosition();
+            FieldVector3D<Binary64> p = new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64( 1),  new Binary64(0.1),  new Binary64(10)),
+                                                                  new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
+                                                                  new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).shiftedBy(dt).getPosition();
             Assertions.assertEquals(p.getX().doubleValue(), fv.getX().taylor(dt).doubleValue(), 1.0e-14);
             Assertions.assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
             Assertions.assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
         }
 
-        FieldPVCoordinates<Decimal64> fpv = new FieldPVCoordinates<>(fv);
+        FieldPVCoordinates<Binary64> fpv = new FieldPVCoordinates<>(fv);
         Assertions.assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
         Assertions.assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
         Assertions.assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
@@ -355,7 +355,7 @@ public class FieldPVCoordinatesTest {
     @Test
     public void testToDerivativeStructurePVNeg() {
         try {
-            FieldPVCoordinates.getZero(Decimal64Field.getInstance()).toDerivativeStructurePV(-1);
+            FieldPVCoordinates.getZero(Binary64Field.getInstance()).toDerivativeStructurePV(-1);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
@@ -366,7 +366,7 @@ public class FieldPVCoordinatesTest {
     @Test
     public void testToDerivativeStructurePV3() {
         try {
-            FieldPVCoordinates.getZero(Decimal64Field.getInstance()).toDerivativeStructurePV(3);
+            FieldPVCoordinates.getZero(Binary64Field.getInstance()).toDerivativeStructurePV(3);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
@@ -395,10 +395,10 @@ public class FieldPVCoordinatesTest {
 
     @Test
     public void testToDerivativeStructurePV1() {
-        FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv =
-                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
-                                                 new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
-                                                 new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+        FieldPVCoordinates<FieldDerivativeStructure<Binary64>> fv =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
+                                                 new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
+                                                 new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).
                                                  toDerivativeStructurePV(1);
         Assertions.assertEquals(1, fv.getPosition().getX().getFreeParameters());
         Assertions.assertEquals(1, fv.getPosition().getX().getOrder());
@@ -424,10 +424,10 @@ public class FieldPVCoordinatesTest {
 
     @Test
     public void testToUnivariateDerivative1PV() {
-        FieldPVCoordinates<FieldUnivariateDerivative1<Decimal64>> fv =
-                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
-                                                 new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
-                                                 new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+        FieldPVCoordinates<FieldUnivariateDerivative1<Binary64>> fv =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
+                                                 new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
+                                                 new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).
                                                  toUnivariateDerivative1PV();
         Assertions.assertEquals(1, fv.getPosition().getX().getOrder());
         Assertions.assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
@@ -450,10 +450,10 @@ public class FieldPVCoordinatesTest {
 
     @Test
     public void testToDerivativeStructurePV2() {
-        FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv =
-                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
-                                                 new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
-                                                 new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+        FieldPVCoordinates<FieldDerivativeStructure<Binary64>> fv =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
+                                                 new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
+                                                 new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).
                                                  toDerivativeStructurePV(2);
         Assertions.assertEquals(1, fv.getPosition().getX().getFreeParameters());
         Assertions.assertEquals(2, fv.getPosition().getX().getOrder());
@@ -493,10 +493,10 @@ public class FieldPVCoordinatesTest {
 
     @Test
     public void testToUnivariateDerivative2PV() {
-        FieldPVCoordinates<FieldUnivariateDerivative2<Decimal64>> fv =
-                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64( 1), new Decimal64( 0.1), new Decimal64( 10)),
-                                                 new FieldVector3D<>(new Decimal64(-1), new Decimal64(-0.1), new Decimal64(-10)),
-                                                 new FieldVector3D<>(new Decimal64(10), new Decimal64(-1.0), new Decimal64(-100))).
+        FieldPVCoordinates<FieldUnivariateDerivative2<Binary64>> fv =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
+                                                 new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
+                                                 new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).
                                                  toUnivariateDerivative2PV();
         Assertions.assertEquals(2, fv.getPosition().getX().getOrder());
         Assertions.assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
@@ -534,14 +534,14 @@ public class FieldPVCoordinatesTest {
 
     @Test
     public void testJerkIsVelocitySecondDerivative() {
-        final FieldCartesianOrbit<Decimal64> orbit =
-                        new FieldCartesianOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(-4947831.), new Decimal64(-3765382.), new Decimal64(-3708221.)),
-                                                                           new FieldVector3D<>(new Decimal64(-2079.), new Decimal64(5291.), new Decimal64(-7842.))),
+        final FieldCartesianOrbit<Binary64> orbit =
+                        new FieldCartesianOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(-4947831.), new Binary64(-3765382.), new Binary64(-3708221.)),
+                                                                           new FieldVector3D<>(new Binary64(-2079.), new Binary64(5291.), new Binary64(-7842.))),
                                                         FramesFactory.getEME2000(),
-                                                        FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance()),
-                                                        new Decimal64(Constants.EIGEN5C_EARTH_MU));
-        FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv = orbit.getPVCoordinates().toDerivativeStructurePV(2);
-        FieldVector3D<Decimal64> numericalJerk = differentiate(orbit, o -> o.getPVCoordinates().getAcceleration());
+                                                        FieldAbsoluteDate.getJ2000Epoch(Binary64Field.getInstance()),
+                                                        new Binary64(Constants.EIGEN5C_EARTH_MU));
+        FieldPVCoordinates<FieldDerivativeStructure<Binary64>> fv = orbit.getPVCoordinates().toDerivativeStructurePV(2);
+        FieldVector3D<Binary64> numericalJerk = differentiate(orbit, o -> o.getPVCoordinates().getAcceleration());
         Assertions.assertEquals(numericalJerk.getX().getReal(),
                             fv.getVelocity().getX().getPartialDerivative(2).getReal(),
                             3.0e-13);
@@ -556,14 +556,14 @@ public class FieldPVCoordinatesTest {
 
     @Test
     public void testJerkIsAccelerationDerivative() {
-        final FieldCartesianOrbit<Decimal64> orbit =
-                        new FieldCartesianOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(-4947831.), new Decimal64(-3765382.), new Decimal64(-3708221.)),
-                                                                           new FieldVector3D<>(new Decimal64(-2079.), new Decimal64(5291.), new Decimal64(-7842.))),
+        final FieldCartesianOrbit<Binary64> orbit =
+                        new FieldCartesianOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(-4947831.), new Binary64(-3765382.), new Binary64(-3708221.)),
+                                                                           new FieldVector3D<>(new Binary64(-2079.), new Binary64(5291.), new Binary64(-7842.))),
                                                         FramesFactory.getEME2000(),
-                                                        FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance()),
-                                                        new Decimal64(Constants.EIGEN5C_EARTH_MU));
-        FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv1 = orbit.getPVCoordinates().toDerivativeStructurePV(1);
-        FieldVector3D<Decimal64> numericalJerk = differentiate(orbit, o -> o.getPVCoordinates().getAcceleration());
+                                                        FieldAbsoluteDate.getJ2000Epoch(Binary64Field.getInstance()),
+                                                        new Binary64(Constants.EIGEN5C_EARTH_MU));
+        FieldPVCoordinates<FieldDerivativeStructure<Binary64>> fv1 = orbit.getPVCoordinates().toDerivativeStructurePV(1);
+        FieldVector3D<Binary64> numericalJerk = differentiate(orbit, o -> o.getPVCoordinates().getAcceleration());
         Assertions.assertEquals(numericalJerk.getX().getReal(),
                             fv1.getAcceleration().getX().getPartialDerivative(1).getReal(),
                             3.0e-13);
@@ -574,7 +574,7 @@ public class FieldPVCoordinatesTest {
                             fv1.getAcceleration().getZ().getPartialDerivative(1).getReal(),
                             3.0e-13);
 
-        FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv2 = orbit.getPVCoordinates().toDerivativeStructurePV(2);
+        FieldPVCoordinates<FieldDerivativeStructure<Binary64>> fv2 = orbit.getPVCoordinates().toDerivativeStructurePV(2);
         Assertions.assertEquals(numericalJerk.getX().getReal(),
                             fv2.getAcceleration().getX().getPartialDerivative(1).getReal(),
                             3.0e-13);
@@ -589,15 +589,15 @@ public class FieldPVCoordinatesTest {
 
     @Test
     public void testJounceIsAccelerationSecondDerivative() {
-        final FieldCartesianOrbit<Decimal64> orbit =
-                        new FieldCartesianOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(-4947831.), new Decimal64(-3765382.), new Decimal64(-3708221.)),
-                                                                           new FieldVector3D<>(new Decimal64(-2079.), new Decimal64(5291.), new Decimal64(-7842.))),
+        final FieldCartesianOrbit<Binary64> orbit =
+                        new FieldCartesianOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(-4947831.), new Binary64(-3765382.), new Binary64(-3708221.)),
+                                                                           new FieldVector3D<>(new Binary64(-2079.), new Binary64(5291.), new Binary64(-7842.))),
                                                         FramesFactory.getEME2000(),
-                                                        FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance()),
-                                                        new Decimal64(Constants.EIGEN5C_EARTH_MU));
-        FieldPVCoordinates<FieldDerivativeStructure<Decimal64>> fv = orbit.getPVCoordinates().toDerivativeStructurePV(2);
-        FieldVector3D<Decimal64> numericalJounce = differentiate(orbit, o -> {
-        FieldVector3D<FieldDerivativeStructure<Decimal64>> a = o.getPVCoordinates().toDerivativeStructurePV(1).getAcceleration();
+                                                        FieldAbsoluteDate.getJ2000Epoch(Binary64Field.getInstance()),
+                                                        new Binary64(Constants.EIGEN5C_EARTH_MU));
+        FieldPVCoordinates<FieldDerivativeStructure<Binary64>> fv = orbit.getPVCoordinates().toDerivativeStructurePV(2);
+        FieldVector3D<Binary64> numericalJounce = differentiate(orbit, o -> {
+        FieldVector3D<FieldDerivativeStructure<Binary64>> a = o.getPVCoordinates().toDerivativeStructurePV(1).getAcceleration();
             return new FieldVector3D<>(a.getX().getPartialDerivative(1),
                                        a.getY().getPartialDerivative(1),
                                        a.getZ().getPartialDerivative(1));
@@ -616,21 +616,21 @@ public class FieldPVCoordinatesTest {
 
     @Test
     public void testMomentumDerivative() {
-        final FieldPVCoordinates<Decimal64> pva =
-                        new FieldPVCoordinates<>(new FieldVector3D<>(new Decimal64(-4947831.), new Decimal64(-3765382.), new Decimal64(-3708221.)),
-                                                 new FieldVector3D<>(new Decimal64(-2079.), new Decimal64(5291.), new Decimal64(-7842.)));
-        final FieldVector3D<Decimal64> p  = pva.getPosition();
-        final FieldVector3D<Decimal64>  v  = pva.getVelocity();
-        final FieldVector3D<Decimal64>  a  = pva.getAcceleration();
-        final Decimal64   r2 = p.getNormSq();
-        final Decimal64   r  = r2.sqrt();
-        final FieldVector3D<Decimal64>  keplerianJerk = new FieldVector3D<>(FieldVector3D.dotProduct(p, v).multiply(-2).divide(r2), a,
+        final FieldPVCoordinates<Binary64> pva =
+                        new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64(-4947831.), new Binary64(-3765382.), new Binary64(-3708221.)),
+                                                 new FieldVector3D<>(new Binary64(-2079.), new Binary64(5291.), new Binary64(-7842.)));
+        final FieldVector3D<Binary64> p  = pva.getPosition();
+        final FieldVector3D<Binary64>  v  = pva.getVelocity();
+        final FieldVector3D<Binary64>  a  = pva.getAcceleration();
+        final Binary64   r2 = p.getNormSq();
+        final Binary64   r  = r2.sqrt();
+        final FieldVector3D<Binary64>  keplerianJerk = new FieldVector3D<>(FieldVector3D.dotProduct(p, v).multiply(-2).divide(r2), a,
                                                                             a.getNorm().negate().divide(r), v);
-        final FieldPVCoordinates<Decimal64> velocity = new FieldPVCoordinates<>(v, a, keplerianJerk);
-        final FieldVector3D<Decimal64>  momentumRef    = pva.getMomentum();
-        final FieldVector3D<Decimal64>  momentumDotRef = pva.crossProduct(velocity).getVelocity();
+        final FieldPVCoordinates<Binary64> velocity = new FieldPVCoordinates<>(v, a, keplerianJerk);
+        final FieldVector3D<Binary64>  momentumRef    = pva.getMomentum();
+        final FieldVector3D<Binary64>  momentumDotRef = pva.crossProduct(velocity).getVelocity();
 
-        final FieldVector3D<FieldDerivativeStructure<Decimal64>> momentumDot = pva.toDerivativeStructurePV(1).getMomentum();
+        final FieldVector3D<FieldDerivativeStructure<Binary64>> momentumDot = pva.toDerivativeStructurePV(1).getMomentum();
         Assertions.assertEquals(momentumRef.getX().getReal(),    momentumDot.getX().getReal(),                         1.0e-15);
         Assertions.assertEquals(momentumRef.getY().getReal(),    momentumDot.getY().getReal(),                         1.0e-15);
         Assertions.assertEquals(momentumRef.getZ().getReal(),    momentumDot.getZ().getReal(),                         1.0e-15);

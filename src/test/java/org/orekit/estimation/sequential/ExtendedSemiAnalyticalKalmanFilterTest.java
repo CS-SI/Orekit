@@ -1,5 +1,14 @@
 package org.orekit.estimation.sequential;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
@@ -7,11 +16,10 @@ import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataFilter;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DataSource;
 import org.orekit.data.GzipFilter;
 import org.orekit.data.UnixCompressFilter;
@@ -22,6 +30,7 @@ import org.orekit.estimation.measurements.Position;
 import org.orekit.files.ilrs.CPF;
 import org.orekit.files.ilrs.CPF.CPFCoordinate;
 import org.orekit.files.ilrs.CPF.CPFEphemeris;
+import org.orekit.files.rinex.HatanakaCompressFilter;
 import org.orekit.files.ilrs.CPFParser;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
@@ -34,7 +43,6 @@ import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.gnss.HatanakaCompressFilter;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.NRLMSISE00;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
@@ -42,13 +50,13 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.conversion.ClassicalRungeKuttaIntegratorBuilder;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
@@ -61,15 +69,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Validation against real data of the ESKF. This test is a short version of the one presented in:
@@ -123,9 +122,9 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         final boolean useSrp  = true;
         final boolean useMoon = true;
         final boolean useSun  = true;
-        final OrbitDeterminationPropagatorBuilder propagator = initializePropagator(initialOrbit, centralBody, gravityField, step,
-                                                                                    mass, surface, useDrag, useSrp, useSun, useMoon,
-                                                                                    initialStateType);
+        final PropagatorBuilder propagator = initializePropagator(initialOrbit, centralBody, gravityField, step,
+                                                                  mass, surface, useDrag, useSrp, useSun, useMoon,
+                                                                  initialStateType);
 
         // Measurements
         final double sigma = 2.0;
@@ -139,7 +138,7 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit orbit = OrbitType.EQUINOCTIAL.convertType(initialOrbit);
         final double[][] dYdC = new double[6][6];
-        orbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
+        orbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
 
         // Equinoctial initial covariance matrix
@@ -243,7 +242,7 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         final Frame orbitFrame = FramesFactory.getEME2000();
 
         // Bounded propagator from the CPF file
-        final BoundedPropagator bounded = ephemeris.getPropagator();
+        final BoundedPropagator bounded = ephemeris.getPropagator(new FrameAlignedProvider(ephemeris.getInertialFrame()));
 
         // Initial date
         final AbsoluteDate initialDate = bounded.getMinDate();
@@ -280,19 +279,19 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
      * @param initialStateType initial state type (MEAN or OSCULATING)
      * @return a configured propagator builder
      */
-    private static OrbitDeterminationPropagatorBuilder initializePropagator(final Orbit orbit,
-                                                                            final OneAxisEllipsoid centralBody,
-                                                                            final SphericalHarmonicsProvider gravityField,
-                                                                            final double step, final double mass, final double surface,
-                                                                            final boolean useDrag, final boolean useSrp,
-                                                                            final boolean useSun, final boolean useMoon,
-                                                                            final PropagationType initialStateType) {
+    private static PropagatorBuilder initializePropagator(final Orbit orbit,
+                                                          final OneAxisEllipsoid centralBody,
+                                                          final SphericalHarmonicsProvider gravityField,
+                                                          final double step, final double mass, final double surface,
+                                                          final boolean useDrag, final boolean useSrp,
+                                                          final boolean useSun, final boolean useMoon,
+                                                          final PropagationType initialStateType) {
 
         // Initialize numerical integrator
         final ODEIntegratorBuilder integrator = new ClassicalRungeKuttaIntegratorBuilder(step);
 
         // Initialize the builder
-        final OrbitDeterminationPropagatorBuilder builder;
+        final PropagatorBuilder builder;
 
         // Convert initial orbit in equinoctial elements
         final EquinoctialOrbit equinoctial = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
@@ -342,8 +341,6 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
             final MarshallSolarActivityFutureEstimation msafe =
                             new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
                                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-            final DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
-            manager.feed(msafe.getSupportedNames(), msafe);
             final Atmosphere atmosphere = new NRLMSISE00(msafe, CelestialBodyFactory.getSun(), centralBody);
 
             // Drag force
@@ -367,7 +364,7 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
             final RadiationSensitive spacecraft = new IsotropicRadiationSingleCoefficient(surface, 1.13);
 
             // Solar radiation pressure
-            final DSSTForceModel srp = new DSSTSolarRadiationPressure(CelestialBodyFactory.getSun(), gravityField.getAe(), spacecraft, gravityField.getMu());
+            final DSSTForceModel srp = new DSSTSolarRadiationPressure(CelestialBodyFactory.getSun(), centralBody, spacecraft, gravityField.getMu());
             for (final ParameterDriver driver : srp.getParametersDrivers()) {
                 if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
                     //driver.setSelected(true);
@@ -420,11 +417,11 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         for (final CPFCoordinate coordinate : ephemeris.getCoordinates()) {
 
             // Position in inertial frames
-            final TimeStampedPVCoordinates pvInertial = ephemeris.getFrame().getTransformTo(orbit.getFrame(), coordinate.getDate()).
-                                                                             transformPVCoordinates(coordinate);
+            final Vector3D posInertial = ephemeris.getFrame().getStaticTransformTo(orbit.getFrame(), coordinate.getDate()).
+                            transformPosition(coordinate.getPosition());
 
             // Initialize measurement
-            final Position measurement = new Position(coordinate.getDate(), pvInertial.getPosition(), sigma, 1.0, satellite);
+            final Position measurement = new Position(coordinate.getDate(), posInertial, sigma, 1.0, satellite);
 
             // Add the measurement to the list
             measurements.add(measurement);
@@ -442,9 +439,9 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
      * @param measurements list of measurements
      * @param provider covariance matrix provider
      */
-    private static Observer initializeEstimator(final OrbitDeterminationPropagatorBuilder propagator,
-                                            final List<ObservedMeasurement<?>> measurements,
-                                            final CovarianceMatrixProvider provider) {
+    private static Observer initializeEstimator(final PropagatorBuilder propagator,
+                                                final List<ObservedMeasurement<?>> measurements,
+                                                final CovarianceMatrixProvider provider) {
 
        // Initialize builder
        final SemiAnalyticalKalmanEstimatorBuilder builder = new SemiAnalyticalKalmanEstimatorBuilder();

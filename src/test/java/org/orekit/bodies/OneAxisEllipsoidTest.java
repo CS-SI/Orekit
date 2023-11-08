@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,18 @@
  */
 package org.orekit.bodies;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
+
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -27,8 +39,8 @@ import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.random.SobolSequenceGenerator;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
@@ -41,11 +53,12 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -53,16 +66,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.DoubleStream;
-import java.util.stream.Stream;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 
 public class OneAxisEllipsoidTest {
@@ -198,18 +202,19 @@ public class OneAxisEllipsoidTest {
 
         for (double dt = 0; dt < 3600.0; dt += 60.0) {
 
-            TimeStampedPVCoordinates pv = orbit.getPVCoordinates(orbit.getDate().shiftedBy(dt), eme2000);
-            TimeStampedPVCoordinates groundPV = model.projectToGround(pv, eme2000);
-            Vector3D groundP = model.projectToGround(pv.getPosition(), pv.getDate(), eme2000);
+            AbsoluteDate date = orbit.getDate().shiftedBy(dt);
+            Vector3D pos = orbit.getPosition(date, eme2000);
+            Vector3D groundPV = model.projectToGround(pos, date, eme2000);
+            Vector3D groundP = model.projectToGround(pos, date, eme2000);
 
             // check methods projectToGround and transform are consistent with each other
-            Assertions.assertEquals(model.transform(pv.getPosition(), eme2000, pv.getDate()).getLatitude(),
-                                model.transform(groundPV.getPosition(), eme2000, pv.getDate()).getLatitude(),
+            Assertions.assertEquals(model.transform(pos, eme2000, date).getLatitude(),
+                                model.transform(groundPV, eme2000, date).getLatitude(),
                                 1.0e-10);
-            Assertions.assertEquals(model.transform(pv.getPosition(), eme2000, pv.getDate()).getLongitude(),
-                                model.transform(groundPV.getPosition(), eme2000, pv.getDate()).getLongitude(),
+            Assertions.assertEquals(model.transform(pos, eme2000, date).getLongitude(),
+                                model.transform(groundPV, eme2000, date).getLongitude(),
                                 1.0e-10);
-            Assertions.assertEquals(0.0, Vector3D.distance(groundP, groundPV.getPosition()), 1.0e-15 * groundP.getNorm());
+            Assertions.assertEquals(0.0, Vector3D.distance(groundP, groundPV), 1.0e-15 * groundP.getNorm());
 
         }
 
@@ -272,15 +277,16 @@ public class OneAxisEllipsoidTest {
             groundPVList.add(new TimeStampedPVCoordinates(shiftedPV.getDate(),
                                                           p, Vector3D.ZERO, Vector3D.ZERO));
         }
-        TimeStampedPVCoordinates computed =
-                model.projectToGround(TimeStampedPVCoordinates.interpolate(date,
-                                                                           CartesianDerivativesFilter.USE_P,
-                                                                           pvList),
-                                                                           frame);
-        TimeStampedPVCoordinates reference =
-                TimeStampedPVCoordinates.interpolate(date,
-                                                     CartesianDerivativesFilter.USE_P,
-                                                     groundPVList);
+
+        // create interpolators
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                new TimeStampedPVCoordinatesHermiteInterpolator(pvList.size(), CartesianDerivativesFilter.USE_P);
+
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolatorGround =
+                new TimeStampedPVCoordinatesHermiteInterpolator(groundPVList.size(), CartesianDerivativesFilter.USE_P);
+
+        TimeStampedPVCoordinates computed = model.projectToGround(interpolator.interpolate(date, pvList), frame);
+        TimeStampedPVCoordinates reference = interpolatorGround.interpolate(date, groundPVList);
 
         TimeStampedPVCoordinates pv0 = provider.getPVCoordinates(date, frame);
         Vector3D p0 = pv0.getPosition();
@@ -321,8 +327,8 @@ public class OneAxisEllipsoidTest {
         Vector3D alongTrack   = Vector3D.crossProduct(acrossTrack, zenith).normalize();
         for (double dt = -1; dt < 1; dt += 0.01) {
             AbsoluteDate date = orbit.getDate().shiftedBy(dt);
-            Vector3D taylorP = groundTaylor.getPVCoordinates(date, model.getBodyFrame()).getPosition();
-            Vector3D refP    = model.projectToGround(orbit.getPVCoordinates(date, model.getBodyFrame()).getPosition(),
+            Vector3D taylorP = groundTaylor.getPosition(date, model.getBodyFrame());
+            Vector3D refP    = model.projectToGround(orbit.getPosition(date, model.getBodyFrame()),
                                                      date, model.getBodyFrame());
             Vector3D delta = taylorP.subtract(refP);
             Assertions.assertEquals(0.0, Vector3D.dotProduct(delta, alongTrack),  0.0015);
@@ -407,16 +413,15 @@ public class OneAxisEllipsoidTest {
     public void testNumerousIteration() {
         // this test, which corresponds to an unrealistic extremely flat ellipsoid,
         // is designed to need more than the usual 2 or 3 iterations in the iterative
-        // version of the Toshio Fukushima's algorithm. It in fact would reach
-        // convergence at iteration 17. However, despite we interrupt the loop
-        // at iteration 9, the result is nevertheless very accurate
+        // version of the Toshio Fukushima's algorithm. It reaches convergence at
+        // iteration 17
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 999.0 / 1000.0, frame);
         Vector3D point     = new Vector3D(100.001, 0.0, 1.0);
         GeodeticPoint gp = model.transform(point, frame, date);
         Vector3D rebuilt = model.transform(gp);
-        Assertions.assertEquals(0.0, rebuilt.distance(point), 8.0e-12);
+        Assertions.assertEquals(0.0, rebuilt.distance(point), 1.2e-11);
     }
 
     @Test
@@ -491,13 +496,12 @@ public class OneAxisEllipsoidTest {
         final double mu = 3.9860047e14;
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., FastMath.toRadians(90.), FastMath.toRadians(60.),
-                                   FastMath.toRadians(90.), PositionAngle.MEAN,
+                                   FastMath.toRadians(90.), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
-        PVCoordinates pvSatItrf  = frame.getTransformTo(FramesFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
-        Vector3D pSatItrf  = pvSatItrf.getPosition();
+        Vector3D pSatItrf  = frame.getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(pvSatEME2000.getPosition());
 
         // Test first visible surface points
         GeodeticPoint geoPoint = new GeodeticPoint(FastMath.toRadians(70.), FastMath.toRadians(60.), 0.);
@@ -530,13 +534,12 @@ public class OneAxisEllipsoidTest {
         // ********************************
         circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., FastMath.toRadians(1.e-4), FastMath.toRadians(0.),
-                                   FastMath.toRadians(0.), PositionAngle.MEAN,
+                                   FastMath.toRadians(0.), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
         pvSatEME2000 = circ.getPVCoordinates();
-        pvSatItrf  = frame.getTransformTo(FramesFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
-        pSatItrf  = pvSatItrf.getPosition();
+        pSatItrf  = frame.getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(pvSatEME2000.getPosition());
 
         // Test first visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(5.), FastMath.toRadians(0.), 0.);
@@ -573,13 +576,12 @@ public class OneAxisEllipsoidTest {
         // *************************
         circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., FastMath.toRadians(50.), FastMath.toRadians(0.),
-                                   FastMath.toRadians(90.), PositionAngle.MEAN,
+                                   FastMath.toRadians(90.), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
         pvSatEME2000 = circ.getPVCoordinates();
-        pvSatItrf  = frame.getTransformTo(FramesFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
-        pSatItrf  = pvSatItrf.getPosition();
+        pSatItrf  = frame.getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(pvSatEME2000.getPosition());
 
         // Test first visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(40.), FastMath.toRadians(90.), 0.);
@@ -731,15 +733,15 @@ public class OneAxisEllipsoidTest {
         Vector3D rebuiltNadir = Vector3D.crossProduct(gp.getSouth(), gp.getWest());
         Assertions.assertEquals(0, rebuiltNadir.subtract(gp.getNadir()).getNorm(), 1.0e-15);
 
-        FieldGeodeticPoint<Decimal64> gp64 = model.transform(new FieldVector3D<Decimal64>(new Decimal64(x),
-                                                                                          new Decimal64(y),
-                                                                                          new Decimal64(z)),
+        FieldGeodeticPoint<Binary64> gp64 = model.transform(new FieldVector3D<Binary64>(new Binary64(x),
+                                                                                          new Binary64(y),
+                                                                                          new Binary64(z)),
                                                              frame,
-                                                             new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date));
+                                                             new FieldAbsoluteDate<>(Binary64Field.getInstance(), date));
         Assertions.assertEquals(longitude, MathUtils.normalizeAngle(gp64.getLongitude().getReal(), longitude), 1.0e-10);
         Assertions.assertEquals(latitude,  gp64.getLatitude().getReal(),  1.0e-10);
         Assertions.assertEquals(altitude,  gp64.getAltitude().getReal(),  1.0e-10 * FastMath.abs(ae));
-        FieldVector3D<Decimal64> rebuiltNadir64 = FieldVector3D.crossProduct(gp64.getSouth(), gp64.getWest());
+        FieldVector3D<Binary64> rebuiltNadir64 = FieldVector3D.crossProduct(gp64.getSouth(), gp64.getWest());
         Assertions.assertEquals(0, rebuiltNadir64.subtract(gp64.getNadir()).getNorm().getReal(), 1.0e-15);
 
         // project to ground
@@ -831,19 +833,19 @@ public class OneAxisEllipsoidTest {
         final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1. / 298.257223563, ecef);
 
-        final Decimal64Field field = Decimal64Field.getInstance();
-        Assertions.assertEquals(Decimal64Field.getInstance().getZero(), earth.geodeticToIsometricLatitude(field.getOne().newInstance(0.)));
-        Assertions.assertEquals(Decimal64Field.getInstance().getZero(), earth.geodeticToIsometricLatitude(field.getOne().newInstance(2.0e-13)));
+        final Binary64Field field = Binary64Field.getInstance();
+        Assertions.assertEquals(Binary64Field.getInstance().getZero(), earth.geodeticToIsometricLatitude(field.getOne().newInstance(0.)));
+        Assertions.assertEquals(Binary64Field.getInstance().getZero(), earth.geodeticToIsometricLatitude(field.getOne().newInstance(2.0e-13)));
 
-        final Decimal64 ecc = field.getZero().newInstance(earth.getEccentricity());
-        for (final Decimal64 lat: new Decimal64[] {
+        final Binary64 ecc = field.getZero().newInstance(earth.getEccentricity());
+        for (final Binary64 lat: new Binary64[] {
                     field.getOne().newInstance(FastMath.toRadians(10)),
                     field.getOne().newInstance(FastMath.toRadians(-45)),
                     field.getOne().newInstance(FastMath.toRadians(80)),
                     field.getOne().newInstance(FastMath.toRadians(-90))}) {
-            final Decimal64 eSinLat = ecc.multiply(FastMath.sin(lat));
-            final Decimal64 term1 = FastMath.log(FastMath.tan(lat.getPi().divide(4.).add(lat.divide(2.))));
-            final Decimal64 term2 = ecc.divide(2.).multiply(FastMath.log(field.getOne().subtract(eSinLat).divide(field.getOne().add(eSinLat))));
+            final Binary64 eSinLat = ecc.multiply(FastMath.sin(lat));
+            final Binary64 term1 = FastMath.log(FastMath.tan(lat.getPi().divide(4.).add(lat.divide(2.))));
+            final Binary64 term2 = ecc.divide(2.).multiply(FastMath.log(field.getOne().subtract(eSinLat).divide(field.getOne().add(eSinLat))));
 
             Assertions.assertEquals(term1.add(term2), earth.geodeticToIsometricLatitude(lat));
         }
@@ -874,23 +876,23 @@ public class OneAxisEllipsoidTest {
         final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid earth  = new OneAxisEllipsoid(6378137, 1. / 298.257223563, ecef);
 
-        final Decimal64Field field = Decimal64Field.getInstance();
+        final Binary64Field field = Binary64Field.getInstance();
 
         // values from https://distance.to
-        final FieldGeodeticPoint<Decimal64> newYork = new FieldGeodeticPoint<>(
+        final FieldGeodeticPoint<Binary64> newYork = new FieldGeodeticPoint<>(
                 FastMath.toRadians(field.getZero().add(40.71427)),
                 FastMath.toRadians(field.getZero().add(-74.00597)), field.getZero());
-        final FieldGeodeticPoint<Decimal64> chicago = new FieldGeodeticPoint<>(
+        final FieldGeodeticPoint<Binary64> chicago = new FieldGeodeticPoint<>(
                 FastMath.toRadians(field.getZero().add(41.85003)),
                 FastMath.toRadians(field.getZero().add(-87.65005)), field.getZero());
 
-        final FieldGeodeticPoint<Decimal64> london = new FieldGeodeticPoint<>(
+        final FieldGeodeticPoint<Binary64> london = new FieldGeodeticPoint<>(
             FastMath.toRadians(field.getZero().add(51.5)),
             FastMath.toRadians(field.getZero().add(-0.16667)), field.getZero());
-        final FieldGeodeticPoint<Decimal64> berlin = new FieldGeodeticPoint<>(
+        final FieldGeodeticPoint<Binary64> berlin = new FieldGeodeticPoint<>(
             FastMath.toRadians(field.getZero().add(52.523403)),
             FastMath.toRadians(field.getZero().add(13.4114)), field.getZero());
-        final FieldGeodeticPoint<Decimal64> perth = new FieldGeodeticPoint<>(
+        final FieldGeodeticPoint<Binary64> perth = new FieldGeodeticPoint<>(
             FastMath.toRadians(field.getZero().add(-31.952712)),
             FastMath.toRadians(field.getZero().add(115.8604796)), field.getZero());
 
@@ -900,6 +902,109 @@ public class OneAxisEllipsoidTest {
         Assertions.assertEquals(83.0357553, FastMath.toDegrees(earth.azimuthBetweenPoints(london, berlin)).getReal(), 1.0e-6);
         Assertions.assertEquals(132.894864, FastMath.toDegrees(earth.azimuthBetweenPoints(berlin, perth)).getReal(), 1.0e-6);
         Assertions.assertEquals(65.3853195, FastMath.toDegrees(earth.azimuthBetweenPoints(perth, newYork)).getReal(), 1.0e-6);
+    }
+
+    @Test
+    public void testPointNearCenter1() {
+        final OneAxisEllipsoid earth  = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                             Constants.WGS84_EARTH_FLATTENING,
+                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, false));
+        final Vector3D p1   = new Vector3D( 14605530.402633,  7681001.886684,  24582223.005261);
+        final Vector3D p2   = new Vector3D(-14650836.411867, -7561887.405778, -24575352.170908);
+        final Vector3D pMid = new Vector3D(0.5, p1, 0.5, p2);
+        final GeodeticPoint gp = earth.transform(pMid, earth.getFrame(), null);
+        Vector3D rebuilt = earth.transform(gp);
+        Assertions.assertEquals(0.0, rebuilt.distance(pMid), 1.5e-9);
+    }
+
+    @Test
+    public void testPointNearCenter2() {
+        final OneAxisEllipsoid earth  = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                             Constants.WGS84_EARTH_FLATTENING,
+                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, false));
+        final Vector3D pMid = new Vector3D(-20923.23737959098, 56464.586571323685, -7647.317096056417);
+        final GeodeticPoint gp = earth.transform(pMid, earth.getFrame(), null);
+        Vector3D rebuilt = earth.transform(gp);
+        // we exited loop without convergence
+        Assertions.assertEquals(540.598, rebuilt.distance(pMid), 1.0e-3);
+    }
+
+
+    @Test
+    public void testLowestAltitudeIntermediate() {
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, false));
+        final Vector3D close = earth.transform(new GeodeticPoint(FastMath.toRadians(12.0),
+                                                                 FastMath.toRadians(34.0),
+                                                                 100000.0));
+        final Vector3D far   = earth.transform(new GeodeticPoint(FastMath.toRadians(-47.0),
+                                                                 FastMath.toRadians( 43.0),
+                                                                 10000000.0));
+        final GeodeticPoint lowestA = earth.lowestAltitudeIntermediate(close, far);
+        Assertions.assertEquals(0.0, Vector3D.distance(close, earth.transform(lowestA)), 2.0e-9);
+        final GeodeticPoint lowestB = earth.lowestAltitudeIntermediate(far, close);
+        Assertions.assertEquals(0.0, Vector3D.distance(close, earth.transform(lowestB)), 2.0e-9);
+
+        final double h = 5000000.0;
+        final Vector3D p1 = earth.transform(new GeodeticPoint(FastMath.toRadians(-20.0),
+                                                              FastMath.toRadians(-12.0),
+                                                              h));
+        final Vector3D p2 = earth.transform(new GeodeticPoint(FastMath.toRadians(17.0),
+                                                              FastMath.toRadians(13.0),
+                                                              h));
+        final GeodeticPoint lowest = earth.lowestAltitudeIntermediate(p1, p2);
+        Assertions.assertTrue(lowest.getAltitude() < h);
+        final GeodeticPoint oneCentimeterBefore = earth.transform(new Vector3D( 1.0,    earth.transform(lowest),
+                                                                               -1.0e-2, p2.subtract(p1).normalize()),
+                                                                  earth.getBodyFrame(), null);
+        Assertions.assertTrue(oneCentimeterBefore.getAltitude() > lowest.getAltitude());
+        final GeodeticPoint oneCentimeterAfter = earth.transform(new Vector3D( 1.0,    earth.transform(lowest),
+                                                                              +1.0e-2, p2.subtract(p1).normalize()),
+                                                                 earth.getBodyFrame(), null);
+         Assertions.assertTrue(oneCentimeterAfter.getAltitude() > lowest.getAltitude());
+
+    }
+
+    @Test
+    public void testLowestAltitudeIntermediateField() {
+        doTestLowestAltitudeIntermediateField(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestLowestAltitudeIntermediateField(final Field<T> field) {
+
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, false));
+        final FieldVector3D<T> close = earth.transform(new FieldGeodeticPoint<>(FastMath.toRadians(field.getZero().newInstance(12.0)),
+                                                                                FastMath.toRadians(field.getZero().newInstance(34.0)),
+                                                                                field.getZero().newInstance(100000.0)));
+        final FieldVector3D<T> far   = earth.transform(new FieldGeodeticPoint<>(FastMath.toRadians(field.getZero().newInstance(-47.0)),
+                                                                                FastMath.toRadians(field.getZero().newInstance( 43.0)),
+                                                                                field.getZero().newInstance(10000000.0)));
+        final FieldGeodeticPoint<T> lowestA = earth.lowestAltitudeIntermediate(close, far);
+        Assertions.assertEquals(0.0, FieldVector3D.distance(close, earth.transform(lowestA)).getReal(), 2.0e-9);
+        final FieldGeodeticPoint<T> lowestB = earth.lowestAltitudeIntermediate(far, close);
+        Assertions.assertEquals(0.0, FieldVector3D.distance(close, earth.transform(lowestB)).getReal(), 2.0e-9);
+
+        final double h =5000000.0;
+        final FieldVector3D<T> p1 = earth.transform(new FieldGeodeticPoint<>(FastMath.toRadians(field.getZero().newInstance(-20.0)),
+                                                                             FastMath.toRadians(field.getZero().newInstance(-12.0)),
+                                                                             field.getZero().newInstance(h)));
+        final FieldVector3D<T> p2 = earth.transform(new FieldGeodeticPoint<>(FastMath.toRadians(field.getZero().newInstance(17.0)),
+                                                                             FastMath.toRadians(field.getZero().newInstance(13.0)),
+                                                                             field.getZero().newInstance(h)));
+        final FieldGeodeticPoint<T> lowest = earth.lowestAltitudeIntermediate(p1, p2);
+        Assertions.assertTrue(lowest.getAltitude().getReal() < h);
+        final FieldGeodeticPoint<T> oneCentimeterBefore = earth.transform(new FieldVector3D<>( 1.0,    earth.transform(lowest),
+                                                                                              -1.0e-2, p2.subtract(p1).normalize()),
+                                                                          earth.getBodyFrame(), null);
+        Assertions.assertTrue(oneCentimeterBefore.getAltitude().subtract(lowest.getAltitude()).getReal() > 0);
+        final FieldGeodeticPoint<T> oneCentimeterAfter = earth.transform(new FieldVector3D<>( 1.0,    earth.transform(lowest),
+                                                                                             +1.0e-2, p2.subtract(p1).normalize()),
+                                                                         earth.getBodyFrame(), null);
+        Assertions.assertTrue(oneCentimeterAfter.getAltitude().subtract(lowest.getAltitude()).getReal() > 0);
+
     }
 
     private void doTestTransformVsOldIterative(OneAxisEllipsoid model,

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -36,10 +36,11 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.analytical.tle.FieldTLE;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
@@ -82,8 +83,9 @@ import org.orekit.utils.ParameterDriver;
  * @author Melina Vanel
  * @author Bryan Cazabonne
  * @since 11.1
+ * @param <T> type of the field elements
  */
-public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T>  {
+public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
     /** Default convergence threshold for mean parameters conversion. */
     private static final double EPSILON_DEFAULT = 1.0e-13;
@@ -134,7 +136,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
                                          final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              initialOrbit.getMu().newInstance(DEFAULT_MASS), provider,
              provider.onDate(initialOrbit.getDate().toAbsoluteDate()), M2);
     }
@@ -196,7 +198,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final double referenceRadius, final T mu,
                                          final double c20, final double c30, final double c40,
                                          final double c50, final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              initialOrbit.getMu().newInstance(DEFAULT_MASS),
              referenceRadius, mu, c20, c30, c40, c50, M2);
     }
@@ -216,7 +218,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     public FieldBrouwerLyddanePropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                          final UnnormalizedSphericalHarmonicsProvider provider,
                                          final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()), M2);
     }
 
@@ -250,7 +252,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final double referenceRadius, final T mu,
                                          final double c20, final double c30, final double c40,
                                          final double c50, final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              mass, referenceRadius, mu, c20, c30, c40, c50, M2);
     }
 
@@ -375,7 +377,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final UnnormalizedSphericalHarmonicsProvider provider,
                                          final PropagationType initialType,
                                          final double M2) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              initialOrbit.getMu().newInstance(DEFAULT_MASS), provider,
              provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType, M2);
     }
@@ -633,7 +635,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                                                                              final double epsilon, final int maxIterations) {
         final FieldBrouwerLyddanePropagator<T> propagator =
                         new FieldBrouwerLyddanePropagator<>(osculating,
-                                                            InertialProvider.of(osculating.getFrame()),
+                                                            FrameAlignedProvider.of(osculating.getFrame()),
                                                             osculating.getMu().newInstance(DEFAULT_MASS),
                                                             referenceRadius, osculating.getMu().newInstance(mu),
                                                             c20, c30, c40, c50,
@@ -735,7 +737,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         while (i++ < maxIterations) {
 
             // recompute the osculating parameters from the current mean parameters
-            final FieldKeplerianOrbit<T> parameters = current.propagateParameters(current.mean.getDate(), getParameters(mass.getField()));
+            final FieldKeplerianOrbit<T> parameters = current.propagateParameters(current.mean.getDate(), getParameters(mass.getField(), current.mean.getDate()));
 
             // adapted parameters residuals
             final T deltaA     = osculating.getA()  .subtract(parameters.getA());
@@ -753,7 +755,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                                      current.mean.getPerigeeArgument()              .add(deltaOmega),
                                                      current.mean.getRightAscensionOfAscendingNode().add(deltaRAAN),
                                                      current.mean.getMeanAnomaly()                  .add(deltaAnom),
-                                                     PositionAngle.MEAN,
+                                                     PositionAngleType.MEAN,
                                                      current.mean.getFrame(),
                                                      current.mean.getDate(), mu),
                                   mass, referenceRadius, mu, ck0);
@@ -784,6 +786,15 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      */
     public double getM2() {
         return M2Driver.getValue();
+    }
+
+    /**
+     * Get the value of the M2 drag parameter.
+     * @param date date at which the model parameters want to be known
+     * @return the value of the M2 drag parameter
+     */
+    public double getM2(final AbsoluteDate date) {
+        return M2Driver.getValue(date);
     }
 
     /** Local class for Brouwer-Lyddane model. */
@@ -1386,7 +1397,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                              g.getValue(), h.getValue(), l.getValue(),
                                              a.getFirstDerivative(), e.getFirstDerivative(), i.getFirstDerivative(),
                                              g.getFirstDerivative(), h.getFirstDerivative(), l.getFirstDerivative(),
-                                             PositionAngle.MEAN, mean.getFrame(), date, this.mu);
+                                             PositionAngleType.MEAN, mean.getFrame(), date, this.mu);
 
         }
     }
@@ -1399,7 +1410,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
 
     /** {@inheritDoc} */
     @Override
-    protected List<ParameterDriver> getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
         return Collections.singletonList(M2Driver);
     }
 

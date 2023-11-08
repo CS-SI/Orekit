@@ -20,8 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.analysis.interpolation.LinearInterpolator;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
@@ -179,6 +179,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
      */
     private SaastamoinenModel(final double t0, final double p0, final double r0,
                               final BilinearInterpolatingFunction deltaR) {
+        checkParameterRangeInclusive("humidity", r0, 0.0, 1.0);
         this.t0             = t0;
         this.p0             = p0;
         this.r0             = r0;
@@ -200,6 +201,28 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
      */
     public static SaastamoinenModel getStandardModel() {
         return new SaastamoinenModel(273.16 + 18, 1013.25, 0.5);
+    }
+
+    /** Check if the given parameter is within an acceptable range.
+     * The bounds are inclusive: an exception is raised when either of those conditions are met:
+     * <ul>
+     *     <li>The parameter is strictly greater than upperBound</li>
+     *     <li>The parameter is strictly lower than lowerBound</li>
+     * </ul>
+     * <p>
+     * In either of these cases, an OrekitException is raised.
+     * </p>
+     * @param parameterName name of the parameter
+     * @param parameter value of the parameter
+     * @param lowerBound lower bound of the acceptable range (inclusive)
+     * @param upperBound upper bound of the acceptable range (inclusive)
+     */
+    private void checkParameterRangeInclusive(final String parameterName, final double parameter,
+                                              final double lowerBound, final double upperBound) {
+        if (parameter < lowerBound || parameter > upperBound) {
+            throw new OrekitException(OrekitMessages.INVALID_PARAMETER_RANGE, parameterName,
+                                      parameter, lowerBound, upperBound);
+        }
     }
 
     /** {@inheritDoc}

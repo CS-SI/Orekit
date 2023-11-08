@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,30 +58,30 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      */
     public ApsideDetector(final double threshold, final Orbit orbit) {
         super(orbit.getKeplerianPeriod() / 3, threshold,
-              DEFAULT_MAX_ITER, new StopOnIncreasing<ApsideDetector>());
+              DEFAULT_MAX_ITER, new StopOnIncreasing());
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @since 6.1
      */
-    private ApsideDetector(final double maxCheck, final double threshold,
-                           final int maxIter, final EventHandler<? super ApsideDetector> handler) {
+    protected ApsideDetector(final AdaptableInterval maxCheck, final double threshold,
+                             final int maxIter, final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ApsideDetector create(final double newMaxCheck, final double newThreshold,
-                                    final int newMaxIter, final EventHandler<? super ApsideDetector> newHandler) {
+    protected ApsideDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                    final int newMaxIter, final EventHandler newHandler) {
         return new ApsideDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 

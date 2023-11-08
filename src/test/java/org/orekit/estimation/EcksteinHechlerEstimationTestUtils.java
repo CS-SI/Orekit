@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,7 +43,7 @@ import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.models.earth.displacement.TidalDisplacement;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
@@ -90,7 +90,7 @@ public class EcksteinHechlerEstimationTestUtils {
                                                                          map));
         context.gravity = GravityFieldFactory.getUnnormalizedProvider(6, 0);
         context.initialOrbit = new KeplerianOrbit(15000000.0, 0.001, 1.25,
-                                                  0.250, 1.375, 0.0625, PositionAngle.TRUE,
+                                                  0.250, 1.375, 0.0625, PositionAngleType.TRUE,
                                                   FramesFactory.getEME2000(),
                                                   new AbsoluteDate(2000, 2, 24, 11, 35, 47.0, context.utc),
                                                   context.gravity.getMu());
@@ -122,10 +122,11 @@ public class EcksteinHechlerEstimationTestUtils {
         // override orbital parameters
         double[] orbitArray = new double[6];
         propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
-                                                         propagatorBuilder.getPositionAngle(),
+                                                         propagatorBuilder.getPositionAngleType(),
                                                          orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
-            propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
+            // here orbital paramaters drivers have only 1 estimated values on the all time period for orbit determination
+            propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i], initialOrbit.getDate());
         }
 
         return propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
@@ -180,7 +181,7 @@ public class EcksteinHechlerEstimationTestUtils {
                                 final double expectedDeltaVel, final double velEps) {
 
         final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
-        final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+        final Vector3D estimatedPosition = estimatedOrbit.getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
         Assertions.assertEquals(iterations, estimator.getIterationsCount());
@@ -209,7 +210,7 @@ public class EcksteinHechlerEstimationTestUtils {
         }
 
         final double rms = FastMath.sqrt(sum / k);
-        final double deltaPos = Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(), estimatedPosition);
+        final double deltaPos = Vector3D.distance(context.initialOrbit.getPosition(), estimatedPosition);
         final double deltaVel = Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity);
         Assertions.assertEquals(expectedRMS,
                             rms,
@@ -243,7 +244,7 @@ public class EcksteinHechlerEstimationTestUtils {
      */
     public static void checkKalmanFit(final EcksteinHechlerContext context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
-                                      final Orbit refOrbit, final PositionAngle positionAngle,
+                                      final Orbit refOrbit, final PositionAngleType positionAngleType,
                                       final double expectedDeltaPos, final double posEps,
                                       final double expectedDeltaVel, final double velEps,
                                       final double[] expectedSigmasPos,final double sigmaPosEps,
@@ -251,7 +252,7 @@ public class EcksteinHechlerEstimationTestUtils {
         {
         checkKalmanFit(context, kalman, measurements,
                        new Orbit[] { refOrbit },
-                       new PositionAngle[] { positionAngle },
+                       new PositionAngleType[] {positionAngleType},
                        new double[] { expectedDeltaPos }, new double[] { posEps },
                        new double[] { expectedDeltaVel }, new double[] { velEps },
                        new double[][] { expectedSigmasPos }, new double[] { sigmaPosEps },
@@ -275,7 +276,7 @@ public class EcksteinHechlerEstimationTestUtils {
      */
     public static void checkKalmanFit(final EcksteinHechlerContext context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
-                                      final Orbit[] refOrbit, final PositionAngle[] positionAngle,
+                                      final Orbit[] refOrbit, final PositionAngleType[] positionAngleType,
                                       final double[] expectedDeltaPos, final double[] posEps,
                                       final double[] expectedDeltaVel, final double []velEps,
                                       final double[][] expectedSigmasPos,final double[] sigmaPosEps,
@@ -291,7 +292,7 @@ public class EcksteinHechlerEstimationTestUtils {
         for (int k = 0; k < refOrbit.length; ++k) {
             // Get the last estimation
             final Orbit    estimatedOrbit    = estimated[k].getInitialState().getOrbit();
-            final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+            final Vector3D estimatedPosition = estimatedOrbit.getPosition();
             final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
             // Get the last covariance matrix estimation
@@ -300,7 +301,7 @@ public class EcksteinHechlerEstimationTestUtils {
             // Convert the orbital part to Cartesian formalism
             // Assuming all 6 orbital parameters are estimated by the filter
             final double[][] dCdY = new double[6][6];
-            estimatedOrbit.getJacobianWrtParameters(positionAngle[k], dCdY);
+            estimatedOrbit.getJacobianWrtParameters(positionAngleType[k], dCdY);
             final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
             final RealMatrix estimatedCartesianP =
                             Jacobian.
@@ -314,7 +315,7 @@ public class EcksteinHechlerEstimationTestUtils {
             }
 
             // Check the final orbit estimation & PV sigmas
-            final double deltaPosK = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
+            final double deltaPosK = Vector3D.distance(refOrbit[k].getPosition(), estimatedPosition);
             final double deltaVelK = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
             Assertions.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
             Assertions.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);

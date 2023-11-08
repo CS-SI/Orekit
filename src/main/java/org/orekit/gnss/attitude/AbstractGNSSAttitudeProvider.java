@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -114,8 +114,8 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                        final FieldAbsoluteDate<T> date,
-                                                                        final Frame frame) {
+                                                                            final FieldAbsoluteDate<T> date,
+                                                                            final Frame frame) {
 
         // compute yaw correction
         final FieldTurnSpan<T>                      turnSpan  = getTurnSpan(date);
@@ -180,6 +180,21 @@ abstract class AbstractGNSSAttitudeProvider implements GNSSAttitudeProvider {
         // no turn covers the date
         return null;
 
+    }
+
+    /** Get provider for Sun position.
+     * @return provider for Sun position
+     * @since 12.0
+     */
+    protected ExtendedPVCoordinatesProvider getSun() {
+        return sun;
+    }
+
+    /** Get inertial frame where velocity are computed.
+     * @return inertial frame where velocity are computed
+     */
+    protected Frame getInertialFrame() {
+        return inertialFrame;
     }
 
     /** Select the

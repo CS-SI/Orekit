@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -42,7 +42,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
@@ -163,7 +163,7 @@ public class TriggersDerivativesTest {
     private void doTestDerivativeWrtStartStopTime(final boolean start, final OrbitType orbitType, final boolean forward,
                                                   final double...tolerance) {
 
-        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final int           degree        = 20;
         final double        duration      = 200.0;
         final double        h             = 1.0;
@@ -181,7 +181,7 @@ public class TriggersDerivativesTest {
             final DateBasedManeuverTriggers trigger = start ?
                                                       new DateBasedManeuverTriggers("MAN_0", firing.shiftedBy(k * h), duration - k * h) :
                                                       new DateBasedManeuverTriggers("MAN_0", firing, duration + k * h);
-            propagators.add(buildPropagator(orbitType, positionAngle, degree, firing, duration, trigger));
+            propagators.add(buildPropagator(orbitType, positionAngleType, degree, firing, duration, trigger));
         }
 
         // the central propagator (k = 4) will compute derivatives autonomously using State and TriggersDerivatives
@@ -197,9 +197,9 @@ public class TriggersDerivativesTest {
                           forEach(d -> d.setSelected(true)));
 
         DerivativesSampler sampler = start ?
-                                     new DerivativesSampler(harvester, 4, null, -1, null, -1, null, -1, orbitType, positionAngle,
+                                     new DerivativesSampler(harvester, 4, null, -1, null, -1, null, -1, orbitType, positionAngleType,
                                                             firing, duration, h, samplingtep) :
-                                     new DerivativesSampler(null, -1, harvester, 4, null, -1, null, -1, orbitType, positionAngle,
+                                     new DerivativesSampler(null, -1, harvester, 4, null, -1, null, -1, orbitType, positionAngleType,
                                                             firing, duration, h, samplingtep);
 
         final PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(propagators, sampler);
@@ -228,7 +228,7 @@ public class TriggersDerivativesTest {
     private void doTestDerivativeWrtMedianDuration(final boolean median, final OrbitType orbitType, final boolean forward,
                                                    final double...tolerance) {
 
-        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final int           degree        = 20;
         final double        duration      = 200.0;
         final double        h             = 1.0;
@@ -246,17 +246,17 @@ public class TriggersDerivativesTest {
             final DateBasedManeuverTriggers triggers = median ?
                             new DateBasedManeuverTriggers("MAN_0", firing.shiftedBy(k * h), duration) :
                             new DateBasedManeuverTriggers("MAN_0", firing.shiftedBy(-0.5 * k * h), duration + k * h);
-            propagators.add(buildPropagator(orbitType, positionAngle, degree, firing, duration, triggers));
+            propagators.add(buildPropagator(orbitType, positionAngleType, degree, firing, duration, triggers));
         }
         for (int k = -4; k <= 4; ++k) {
             final DateBasedManeuverTriggers triggers =
                             new DateBasedManeuverTriggers("MAN_1", firing.shiftedBy(k * h), duration - k * h);
-            propagators.add(buildPropagator(orbitType, positionAngle, degree, firing, duration, triggers));
+            propagators.add(buildPropagator(orbitType, positionAngleType, degree, firing, duration, triggers));
         }
         for (int k = -4; k <= 4; ++k) {
             final DateBasedManeuverTriggers triggers =
                             new DateBasedManeuverTriggers("MAN_2", firing, duration + k * h);
-            propagators.add(buildPropagator(orbitType, positionAngle, degree, firing, duration, triggers));
+            propagators.add(buildPropagator(orbitType, positionAngleType, degree, firing, duration, triggers));
         }
 
         // the central propagators (k = 4, 13, 22) will compute derivatives autonomously
@@ -297,10 +297,10 @@ public class TriggersDerivativesTest {
 
         DerivativesSampler sampler = median ?
                                      new DerivativesSampler(harvesterStart, 13, harvesterStop, 22, harvester, 4, null, -1,
-                                                            orbitType, positionAngle,
+                                                            orbitType, positionAngleType,
                                                             firing, duration, h, samplingtep) :
                                      new DerivativesSampler(harvesterStart, 13, harvesterStop, 22, null, -1, harvester, 4,
-                                                            orbitType, positionAngle,
+                                                            orbitType, positionAngleType,
                                                             firing, duration, h, samplingtep);
 
         final PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(propagators, sampler);
@@ -326,7 +326,7 @@ public class TriggersDerivativesTest {
 
     }
 
-    private NumericalPropagator buildPropagator(final OrbitType orbitType, final PositionAngle positionAngle,
+    private NumericalPropagator buildPropagator(final OrbitType orbitType, final PositionAngleType positionAngleType,
                                                 final int degree, final AbsoluteDate firing, final double duration,
                                                 final DateBasedManeuverTriggers triggers) {
 
@@ -343,7 +343,7 @@ public class TriggersDerivativesTest {
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
 
         propagator.setOrbitType(orbitType);
-        propagator.setPositionAngleType(positionAngle);
+        propagator.setPositionAngleType(positionAngleType);
         propagator.setAttitudeProvider(attitudeProvider);
         if (degree > 0) {
             propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
@@ -354,7 +354,7 @@ public class TriggersDerivativesTest {
         propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
             public String getName() { return triggers.getName().concat("-acc"); }
             public double[] getAdditionalState(SpacecraftState state) {
-                double[] parameters = Arrays.copyOfRange(maneuver.getParameters(), 0, propulsionModel.getParametersDrivers().size());
+                double[] parameters = Arrays.copyOfRange(maneuver.getParameters(initialState.getDate()), 0, propulsionModel.getParametersDrivers().size());
                 return new double[] {
                     propulsionModel.getAcceleration(state, state.getAttitude(), parameters).getNorm()
                 };
@@ -376,7 +376,7 @@ public class TriggersDerivativesTest {
 
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 1, 1), new TimeComponents(23, 30, 00.000),
                                                        TimeScalesFactory.getUTC());
-        final Orbit        orbit    = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+        final Orbit        orbit    = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                                          FramesFactory.getEME2000(), initDate, Constants.EIGEN5C_EARTH_MU);
         return new SpacecraftState(orbit, attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
     }
@@ -384,7 +384,7 @@ public class TriggersDerivativesTest {
     private AttitudeProvider buildAttitudeProvider() {
         final double delta = FastMath.toRadians(-7.4978);
         final double alpha = FastMath.toRadians(351);
-        return new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+        return new FrameAlignedProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
     }
 
     private class DerivativesSampler implements MultiSatStepHandler {
@@ -398,7 +398,7 @@ public class TriggersDerivativesTest {
         final MatricesHarvester harvesterDuration;
         final int               indexDuration;
         final OrbitType         orbitType;
-        final PositionAngle     positionAngle;
+        final PositionAngleType positionAngleType;
         final AbsoluteDate      firing;
         final double            duration;
         final double            h;
@@ -411,7 +411,7 @@ public class TriggersDerivativesTest {
                            final MatricesHarvester harvesterStop,     final int indexStop,
                            final MatricesHarvester harvesterMedian,   final int indexMedian,
                            final MatricesHarvester harvesterDuration, final int indexDuration,
-                           final OrbitType orbitType, final PositionAngle positionAngle,
+                           final OrbitType orbitType, final PositionAngleType positionAngleType,
                            final AbsoluteDate firing, final double duration,
                            final double h, final double samplingtep) {
             this.harvesterStart    = harvesterStart;
@@ -423,7 +423,7 @@ public class TriggersDerivativesTest {
             this.harvesterDuration = harvesterDuration;
             this.indexDuration     = indexDuration;
             this.orbitType         = orbitType;
-            this.positionAngle     = positionAngle;
+            this.positionAngleType = positionAngleType;
             this.firing            = firing;
             this.duration          = duration;
             this.h                 = h;
@@ -466,7 +466,7 @@ public class TriggersDerivativesTest {
                 final double[][] o = new double[9][6];
                 for (int i = 0; i < o.length; ++i) {
                     orbitType.mapOrbitToArray(interpolators.get(index + i - 4).getInterpolatedState(next).getOrbit(),
-                                              positionAngle, o[i], null);
+                            positionAngleType, o[i], null);
                 }
                 final SpacecraftState centralState = interpolators.get(index).getInterpolatedState(next);
                 final RealMatrix jacobian = harvester.getParametersJacobian(centralState);

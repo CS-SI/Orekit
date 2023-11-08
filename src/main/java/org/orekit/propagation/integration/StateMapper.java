@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.propagation.integration;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -37,7 +37,7 @@ public abstract class StateMapper {
     private final OrbitType orbitType;
 
     /** Position angle type. */
-    private final PositionAngle angleType;
+    private final PositionAngleType angleType;
 
     /** Central attraction coefficient. */
     private final double mu;
@@ -65,7 +65,7 @@ public abstract class StateMapper {
      * @param frame inertial frame
      */
     protected StateMapper(final AbsoluteDate referenceDate, final double mu,
-                          final OrbitType orbitType, final PositionAngle positionAngleType,
+                          final OrbitType orbitType, final PositionAngleType positionAngleType,
                           final AttitudeProvider attitudeProvider, final Frame frame) {
         this.referenceDate    = referenceDate;
         this.mu               = mu;
@@ -92,7 +92,7 @@ public abstract class StateMapper {
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
-    public PositionAngle getPositionAngleType() {
+    public PositionAngleType getPositionAngleType() {
         return angleType;
     }
 

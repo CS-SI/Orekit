@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,10 +31,10 @@ import org.orekit.utils.IERSConventions;
  */
 public class SinexEopEntry implements TimeStamped {
 
-    /** Length of day. */
+    /** Length of day (seconds). */
     private double lod;
 
-    /** UT1-UTC. */
+    /** UT1-UTC (seconds). */
     private double ut1MinusUtc;
 
     /** X polar motion (radians). */
@@ -74,7 +74,7 @@ public class SinexEopEntry implements TimeStamped {
 
     /**
      * Get the length of day.
-     * @return the length of day
+     * @return the length of day in seconds
      */
     public double getLod() {
         return lod;
@@ -82,7 +82,7 @@ public class SinexEopEntry implements TimeStamped {
 
     /**
      * Set the length of day.
-     * @param lod the length of day to set
+     * @param lod the length of day to set in seconds
      */
     public void setLod(final double lod) {
         this.lod = lod;
@@ -90,7 +90,7 @@ public class SinexEopEntry implements TimeStamped {
 
     /**
      * Get the UT1-UTC offset.
-     * @return the UT1-UTC offset
+     * @return the UT1-UTC offset in seconds
      */
     public double getUt1MinusUtc() {
         return ut1MinusUtc;
@@ -98,7 +98,7 @@ public class SinexEopEntry implements TimeStamped {
 
     /**
      * Set the UT1-UTC offset.
-     * @param ut1MinusUtc the value to set
+     * @param ut1MinusUtc the value to set in seconds
      */
     public void setUt1MinusUtc(final double ut1MinusUtc) {
         this.ut1MinusUtc = ut1MinusUtc;
@@ -138,7 +138,7 @@ public class SinexEopEntry implements TimeStamped {
 
     /**
      * Get the nutation correction in longitude.
-     * @return the nutation correction in longitude
+     * @return the nutation correction in longitude in radians
      */
     public double getNutLn() {
         return nutLn;
@@ -146,7 +146,7 @@ public class SinexEopEntry implements TimeStamped {
 
     /**
      * Set the nutation correction in longitude.
-     * @param nutLn the nutation correction in longitude to set
+     * @param nutLn the nutation correction in longitude to set in radians
      */
     public void setNutLn(final double nutLn) {
         this.nutLn = nutLn;
@@ -219,7 +219,7 @@ public class SinexEopEntry implements TimeStamped {
 
         // Create a new EOPEntry object storing the extracted data, then add it to the list of EOPEntries.
         return new EOPEntry(mjd, ut1MinusUtc, lod,
-                            xPo, yPo,
+                            xPo, yPo, Double.NaN, Double.NaN,
                             equinox[0], equinox[1],
                             nro[0], nro[1],
                             version, epoch);

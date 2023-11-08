@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -210,7 +210,7 @@ public class PolygonalFieldOfView extends AbstractFieldOfView {
             // none of the Field Of View loops cross the body
             // either the body is outside of Field Of View, or it is fully contained
             // we check the center
-            final Vector3D bodyCenter = fovToBody.getInverse().transformPosition(Vector3D.ZERO);
+            final Vector3D bodyCenter = fovToBody.toStaticTransform().getInverse().transformPosition(Vector3D.ZERO);
             if (zone.checkPoint(new S2Point(bodyCenter)) != Region.Location.OUTSIDE) {
                 // the body is fully contained in the Field Of View
                 // we use the full limb as the footprint

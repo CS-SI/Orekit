@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,7 +49,7 @@ import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.time.TimeScalesFactory;
@@ -79,7 +79,6 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
         final int order  = FastMath.min(degree, parser.getInt(ParameterKey.CENTRAL_BODY_ORDER));
         gravityField = GravityFieldFactory.getNormalizedProvider(degree, order);
-
     }
 
     /** {@inheritDoc} */
@@ -93,7 +92,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
     protected NumericalPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
                                                                  final ODEIntegratorBuilder builder,
                                                                  final double positionScale) {
-        return new NumericalPropagatorBuilder(referenceOrbit, builder, PositionAngle.MEAN,
+        return new NumericalPropagatorBuilder(referenceOrbit, builder, PositionAngleType.MEAN,
                                               positionScale);
     }
 
@@ -151,6 +150,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         return thirdBodyModel.getParametersDrivers();
     }
 
+    
     /** {@inheritDoc} */
     @Override
     protected List<ParameterDriver> setDrag(final NumericalPropagatorBuilder propagatorBuilder,
@@ -159,12 +159,12 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         propagatorBuilder.addForceModel(dragModel);
         return dragModel.getParametersDrivers();
     }
-
+    
     /** {@inheritDoc} */
     @Override
     protected List<ParameterDriver> setSolarRadiationPressure(final NumericalPropagatorBuilder propagatorBuilder, final CelestialBody sun,
-                                                              final double equatorialRadius, final RadiationSensitive spacecraft) {
-        final ForceModel srpModel = new SolarRadiationPressure(sun, equatorialRadius, spacecraft);
+                                                              final OneAxisEllipsoid earth, final RadiationSensitive spacecraft) {
+        final ForceModel srpModel = new SolarRadiationPressure(sun, earth, spacecraft);
         propagatorBuilder.addForceModel(srpModel);
         return srpModel.getParametersDrivers();
     }
@@ -211,7 +211,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
 
-        // input in resources directory
+    	// input in resources directory
         final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/od_test_Lageos2.in").toURI().getPath();
         final File input  = new File(inputPath);
 
@@ -259,7 +259,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         throws URISyntaxException, IllegalArgumentException, IOException,
                OrekitException, ParseException {
 
-        // input in resources directory
+    	// input in resources directory
         final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/od_test_GPS07.in").toURI().getPath();
         final File input  = new File(inputPath);
 
@@ -309,7 +309,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         throws URISyntaxException, IllegalArgumentException, IOException,
               OrekitException, ParseException {
 
-        // input in resources directory
+    	// input in resources directory
         final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/W3B/od_test_W3.in").toURI().getPath();
         final File input  = new File(inputPath);
 
@@ -318,8 +318,7 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
         //orbit determination run.
-        ResultBatchLeastSquares odsatW3 = runBLS(input, false);
-
+        ResultBatchLeastSquares odsatW3 = runBLS(input, false);   
         //test
         //definition of the accuracy for the test
         final double distanceAccuracy = 0.1;
@@ -337,7 +336,6 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         final Vector3D refVel = new Vector3D(759.0685, -1476.5156, 54.793);
         Assertions.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
         Assertions.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
-
 
         //test on propagator parameters
         final double dragCoef  = -0.2154;

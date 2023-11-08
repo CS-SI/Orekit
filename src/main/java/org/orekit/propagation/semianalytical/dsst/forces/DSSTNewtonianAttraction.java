@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,23 +19,22 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Force model for Newtonian central body attraction for the {@link DSSTPropagator DSST propagator}.
@@ -68,11 +67,12 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
                                                 0.0, Double.POSITIVE_INFINITY);
     }
 
-    /** Get the central attraction coefficient μ.
+    /** Get the central attraction coefficient μ at specific date.
+     * @param date date at which mu wants to be known
      * @return mu central attraction coefficient (m³/s²)
      */
-    public double getMu() {
-        return gmParameterDriver.getValue();
+    public double getMu(final AbsoluteDate date) {
+        return gmParameterDriver.getValue(date);
     }
 
     /** {@inheritDoc} */
@@ -128,7 +128,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
 
         final double[] yDot = new double[7];
         final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());
-        orbit.addKeplerContribution(PositionAngle.MEAN, context.getGM(), yDot);
+        orbit.addKeplerContribution(PositionAngleType.MEAN, context.getGM(), yDot);
 
         return yDot;
 
@@ -147,21 +147,9 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
 
         final T[] yDot = MathArrays.buildArray(field, 7);
         final FieldEquinoctialOrbit<T> orbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());
-        orbit.addKeplerContribution(PositionAngle.MEAN, context.getGM(), yDot);
+        orbit.addKeplerContribution(PositionAngleType.MEAN, context.getGM(), yDot);
 
         return yDot;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public EventDetector[] getEventsDetectors() {
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
-        return null;
     }
 
     /** {@inheritDoc} */

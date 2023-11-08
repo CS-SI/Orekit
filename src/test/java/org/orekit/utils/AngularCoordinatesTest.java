@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,6 +45,84 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class AngularCoordinatesTest {
+
+    @Test
+    public void testAccelerationModeling() {
+        double rate = 2 * FastMath.PI / (12 * 60);
+        double acc  = 0.01;
+        double dt   = 1.0;
+        int    n    = 2000;
+        final AngularCoordinates quadratic =
+                new AngularCoordinates(Rotation.IDENTITY,
+                                       new Vector3D(rate, Vector3D.PLUS_K),
+                                       new Vector3D(acc,  Vector3D.PLUS_J));
+
+        final OrdinaryDifferentialEquation ode = new OrdinaryDifferentialEquation() {
+            public int getDimension() {
+                return 4;
+            }
+            public double[] computeDerivatives(final double t, final double[] q) {
+                final double omegaX = quadratic.getRotationRate().getX() + t * quadratic.getRotationAcceleration().getX();
+                final double omegaY = quadratic.getRotationRate().getY() + t * quadratic.getRotationAcceleration().getY();
+                final double omegaZ = quadratic.getRotationRate().getZ() + t * quadratic.getRotationAcceleration().getZ();
+                return new double[] {
+                    0.5 * MathArrays.linearCombination(-q[1], omegaX, -q[2], omegaY, -q[3], omegaZ),
+                    0.5 * MathArrays.linearCombination( q[0], omegaX, -q[3], omegaY,  q[2], omegaZ),
+                    0.5 * MathArrays.linearCombination( q[3], omegaX,  q[0], omegaY, -q[1], omegaZ),
+                    0.5 * MathArrays.linearCombination(-q[2], omegaX,  q[1], omegaY,  q[0], omegaZ)
+                };
+            }
+        };
+        ODEIntegrator integrator = new DormandPrince853Integrator(1.0e-6, 1.0, 1.0e-12, 1.0e-12);
+        integrator.addStepHandler(new StepNormalizer(dt / n, new ODEFixedStepHandler() {
+            private double   tM4, tM3, tM2, tM1, t0, tP1, tP2, tP3, tP4;
+            private double[] yM4, yM3, yM2, yM1, y0, yP1, yP2, yP3, yP4;
+            private double[] ydM4, ydM3, ydM2, ydM1, yd0, ydP1, ydP2, ydP3, ydP4;
+            public void handleStep(ODEStateAndDerivative s, boolean isLast) {
+                tM4 = tM3; yM4 = yM3; ydM4 = ydM3;
+                tM3 = tM2; yM3 = yM2; ydM3 = ydM2;
+                tM2 = tM1; yM2 = yM1; ydM2 = ydM1;
+                tM1 = t0 ; yM1 = y0 ; ydM1 = yd0 ;
+                t0  = tP1; y0  = yP1; yd0  = ydP1;
+                tP1 = tP2; yP1 = yP2; ydP1 = ydP2;
+                tP2 = tP3; yP2 = yP3; ydP2 = ydP3;
+                tP3 = tP4; yP3 = yP4; ydP3 = ydP4;
+                tP4  = s.getTime();
+                yP4  = s.getPrimaryState();
+                ydP4 = s.getPrimaryDerivative();
+
+                if (yM4 != null) {
+                    double dt = (tP4 - tM4) / 8;
+                    final double c = 1.0 / (840 * dt);
+                    final double[] ydd0 = {
+                        -3 * c * (ydP4[0] - ydM4[0]) + 32 * c * (ydP3[0] - ydM3[0]) - 168 * c * (ydP2[0] - ydM2[0]) + 672 * c * (ydP1[0] - ydM1[0]),
+                        -3 * c * (ydP4[1] - ydM4[1]) + 32 * c * (ydP3[1] - ydM3[1]) - 168 * c * (ydP2[1] - ydM2[1]) + 672 * c * (ydP1[1] - ydM1[1]),
+                        -3 * c * (ydP4[2] - ydM4[2]) + 32 * c * (ydP3[2] - ydM3[2]) - 168 * c * (ydP2[2] - ydM2[2]) + 672 * c * (ydP1[2] - ydM1[2]),
+                        -3 * c * (ydP4[3] - ydM4[3]) + 32 * c * (ydP3[3] - ydM3[3]) - 168 * c * (ydP2[3] - ydM2[3]) + 672 * c * (ydP1[3] - ydM1[3]),
+                    };
+                    AngularCoordinates ac = new AngularCoordinates(new FieldRotation<>(new UnivariateDerivative2(y0[0], yd0[0], ydd0[0]),
+                                    new UnivariateDerivative2(y0[1], yd0[1], ydd0[1]),
+                                    new UnivariateDerivative2(y0[2], yd0[2], ydd0[2]),
+                                    new UnivariateDerivative2(y0[3], yd0[3], ydd0[3]),
+                                    false));
+                    Assertions.assertEquals(0.0,
+                                            Vector3D.distance(quadratic.getRotationAcceleration(),
+                                                              ac.getRotationAcceleration()),
+                                            4.0e-13);
+                }
+
+           }
+        }));
+
+        double[] y = new double[] {
+            quadratic.getRotation().getQ0(),
+            quadratic.getRotation().getQ1(),
+            quadratic.getRotation().getQ2(),
+            quadratic.getRotation().getQ3()
+        };
+        integrator.integrate(ode, new ODEState(0, y), dt);
+
+    }
 
     @Test
     public void testDefaultConstructor() {

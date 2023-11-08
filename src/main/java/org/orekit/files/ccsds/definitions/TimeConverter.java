@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -91,6 +91,14 @@ public class TimeConverter {
      */
     public TimeScale getTimeScale() {
         return timeScale;
+    }
+
+    /** Get the reference date for relative dates (may be null if no relative dates are used).
+     * @return reference date for relative dates (may be null if no relative dates are used)
+     * @since 12.0
+     */
+    public AbsoluteDate getReferenceDate() {
+        return referenceDate;
     }
 
 }

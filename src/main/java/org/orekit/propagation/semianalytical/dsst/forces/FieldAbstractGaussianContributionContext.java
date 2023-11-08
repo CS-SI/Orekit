@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
+import org.orekit.time.AbsoluteDate;
 
 /**
  * This class is a container for the common "field" parameters used in {@link AbstractGaussianContribution}.
@@ -27,6 +28,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * </p>
  * @author Bryan Cazabonne
  * @since 10.0
+ * @param <T> type of the field elements
  */
 public class FieldAbstractGaussianContributionContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 
@@ -66,6 +68,11 @@ public class FieldAbstractGaussianContributionContext<T extends CalculusFieldEle
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param parameters        parameters values of the force model parameters
+     *                          (only 1 values for each parameters corresponding
+     *                          to state date) obtained by calling the extract
+     *                          parameter method {@link #extractParameters(double[], AbsoluteDate)}
+     *                          to selected the right value for state date or by
+     *                          getting the parameters for a specific date.
      */
     FieldAbstractGaussianContributionContext(final FieldAuxiliaryElements<T> auxiliaryElements, final T[] parameters) {
 

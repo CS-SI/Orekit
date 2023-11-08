@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.io.IOException;
 import java.util.List;
 
-import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.FileFormat;
@@ -51,11 +50,36 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
         this.timeConverter = timeConverter;
     }
 
+    /** Get state history.
+     * @return state history
+     * @since 12.0
+     */
+    TrajectoryStateHistory getHistory() {
+        return history;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void writeContent(final Generator generator) throws IOException {
 
-        // trajectory state history block
+        // metadata
+        writeMetadata(generator);
+
+        // data
+        final List<Unit> units = history.getMetadata().getTrajType().getUnits();
+        for (final TrajectoryState state : history.getTrajectoryStates()) {
+            writeState(generator, state, units);
+        }
+
+    }
+
+    /** Write trajectory state history metadata.
+     * @param generator generator to use for producing output
+     * @throws IOException if any buffer writing operations fails
+     * @since 12.0
+     */
+    protected void writeMetadata(final Generator generator) throws IOException {
+
         final TrajectoryStateHistoryMetadata metadata = history.getMetadata();
         generator.writeComments(metadata.getComments());
 
@@ -67,8 +91,11 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_BASIS_ID.name(), metadata.getTrajBasisID(), null, false);
 
         // interpolation
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.INTERPOLATION.name(),        metadata.getInterpolationMethod(), false);
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.INTERPOLATION_DEGREE.name(), metadata.getInterpolationDegree(), false);
+        if (metadata.getInterpolationMethod() != TrajectoryStateHistoryMetadata.DEFAULT_INTERPOLATION_METHOD ||
+            metadata.getInterpolationDegree() != TrajectoryStateHistoryMetadata.DEFAULT_INTERPOLATION_DEGREE) {
+            generator.writeEntry(TrajectoryStateHistoryMetadataKey.INTERPOLATION.name(),        metadata.getInterpolationMethod(), false);
+            generator.writeEntry(TrajectoryStateHistoryMetadataKey.INTERPOLATION_DEGREE.name(), metadata.getInterpolationDegree(), false);
+        }
 
         // propagation
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.PROPAGATOR.name(),       metadata.getPropagator(), null, false);
@@ -76,41 +103,52 @@ class TrajectoryStateHistoryWriter extends AbstractWriter {
         // references
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.CENTER_NAME.name(),      metadata.getCenter().getName(),              null, false);
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_REF_FRAME.name(),   metadata.getTrajReferenceFrame().getName(),  null, false);
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_FRAME_EPOCH.name(), timeConverter, metadata.getTrajFrameEpoch(),       false);
+        if (!metadata.getTrajFrameEpoch().equals(timeConverter.getReferenceDate())) {
+            generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_FRAME_EPOCH.name(), timeConverter, metadata.getTrajFrameEpoch(), true, false);
+        }
 
         // time
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.USEABLE_START_TIME.name(), timeConverter, metadata.getUseableStartTime(), false);
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.USEABLE_STOP_TIME.name(),  timeConverter, metadata.getUseableStopTime(),  false);
+        generator.writeEntry(TrajectoryStateHistoryMetadataKey.USEABLE_START_TIME.name(), timeConverter, metadata.getUseableStartTime(), false, false);
+        generator.writeEntry(TrajectoryStateHistoryMetadataKey.USEABLE_STOP_TIME.name(),  timeConverter, metadata.getUseableStopTime(),  false, false);
 
         // revolution  numbers
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.ORB_REVNUM.name(),       metadata.getOrbRevNum(),      false);
-        generator.writeEntry(TrajectoryStateHistoryMetadataKey.ORB_REVNUM_BASIS.name(), metadata.getOrbRevNumBasis(), false);
+        if (metadata.getOrbRevNum() > 0) {
+            generator.writeEntry(TrajectoryStateHistoryMetadataKey.ORB_REVNUM.name(),       metadata.getOrbRevNum(),      false);
+            generator.writeEntry(TrajectoryStateHistoryMetadataKey.ORB_REVNUM_BASIS.name(), metadata.getOrbRevNumBasis(), false);
+        }
 
         // elements
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_TYPE.name(),        metadata.getTrajType(),     true);
-        if (metadata.getTrajType() != ElementsType.CARTP   &&
-            metadata.getTrajType() != ElementsType.CARTPV  &&
-            metadata.getTrajType() != ElementsType.CARTPVA) {
+        if (metadata.getTrajType() != OrbitElementsType.CARTP   &&
+            metadata.getTrajType() != OrbitElementsType.CARTPV  &&
+            metadata.getTrajType() != OrbitElementsType.CARTPVA) {
             generator.writeEntry(TrajectoryStateHistoryMetadataKey.ORB_AVERAGING.name(), metadata.getOrbAveraging(), null,  true);
         }
         generator.writeEntry(TrajectoryStateHistoryMetadataKey.TRAJ_UNITS.name(), generator.unitsListToString(metadata.getTrajUnits()), null, false);
+    }
 
-        // data
-        final List<Unit> units = metadata.getTrajType().getUnits();
-        for (final TrajectoryState state : history.getTrajectoryStates()) {
-            final double[]      elements = state.getElements();
-            final StringBuilder line     = new StringBuilder();
-            line.append(generator.dateToString(timeConverter, state.getDate()));
-            for (int i = 0; i < units.size(); ++i) {
-                line.append(' ');
-                line.append(AccurateFormatter.format(units.get(i).fromSI(elements[i])));
-            }
-            if (generator.getFormat() == FileFormat.XML) {
-                generator.writeEntry(Ocm.TRAJ_LINE, line.toString(), null, true);
-            } else {
-                generator.writeRawData(line);
-                generator.newLine();
-            }
+    /** Write one trajectory state.
+     * @param generator generator to use for producing output
+     * @param state state to write
+     * @param units elements units
+     * @throws IOException if any buffer writing operations fails
+     * @since 12.0
+     */
+    protected void writeState(final Generator generator, final TrajectoryState state, final List<Unit> units)
+        throws IOException {
+
+        final double[]      elements = state.getElements();
+        final StringBuilder line     = new StringBuilder();
+        line.append(generator.dateToString(timeConverter, state.getDate()));
+        for (int i = 0; i < units.size(); ++i) {
+            line.append(' ');
+            line.append(AccurateFormatter.format(units.get(i).fromSI(elements[i])));
+        }
+        if (generator.getFormat() == FileFormat.XML) {
+            generator.writeEntry(Ocm.TRAJ_LINE, line.toString(), null, true);
+        } else {
+            generator.writeRawData(line);
+            generator.newLine();
         }
 
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -27,7 +28,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractGradientConverter;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParametersDriversProvider;
+import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Utility class for bistatic measurements.
  * @author Pascal Parraud
@@ -45,20 +47,40 @@ class BistaticModifierUtil {
      * @param estimated estimated measurement to modify
      * @param emitter emitter station
      * @param receiver receiver station
+     * @param modelEffect model effect
+     */
+    public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurementBase<T> estimated,
+                                                                 final GroundStation emitter, final GroundStation receiver,
+                                                                 final ParametricModelEffect modelEffect) {
+
+        // update estimated value taking into account the model effect.
+        // The model effect delay is directly added to the measurement.
+        final SpacecraftState state    = estimated.getStates()[0];
+        final double[]        newValue = estimated.getEstimatedValue().clone();
+        newValue[0] += modelEffect.evaluate(emitter, state);
+        newValue[0] += modelEffect.evaluate(receiver, state);
+        estimated.setEstimatedValue(newValue);
+
+    }
+
+    /** Apply a modifier to an estimated measurement.
+     * @param <T> type of the measurement
+     * @param estimated estimated measurement to modify
+     * @param emitter emitter station
+     * @param receiver receiver station
      * @param converter gradient converter
      * @param parametricModel parametric modifier model
      * @param modelEffect model effect
      * @param modelEffectGradient model effect gradient
      */
     public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurement<T> estimated,
-                                                                 final ParametersDriversProvider parametricModel,
+                                                                 final ParameterDriversProvider parametricModel,
                                                                  final AbstractGradientConverter converter,
                                                                  final GroundStation emitter, final GroundStation receiver,
                                                                  final ParametricModelEffect modelEffect,
                                                                  final ParametricModelEffectGradient modelEffectGradient) {
 
         final SpacecraftState state    = estimated.getStates()[0];
-        final double[]        oldValue = estimated.getEstimatedValue();
 
         // update estimated derivatives with Jacobian of the measure wrt state
         final FieldSpacecraftState<Gradient> gState = converter.getState(parametricModel);
@@ -81,12 +103,15 @@ class BistaticModifierUtil {
         int index = 0;
         for (final ParameterDriver driver : parametricModel.getParametersDrivers()) {
             if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt model parameters
-                double parameterDerivative  = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += derivativesUp[index + converter.getFreeStateParameters()];
-                parameterDerivative += derivativesDown[index + converter.getFreeStateParameters()];
-                estimated.setParameterDerivatives(driver, parameterDerivative);
-                index++;
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    // update estimated derivatives with derivative of the modification wrt model parameters
+                    double parameterDerivative  = estimated.getParameterDerivatives(driver, span.getStart())[0];
+                    parameterDerivative += derivativesUp[index + converter.getFreeStateParameters()];
+                    parameterDerivative += derivativesDown[index + converter.getFreeStateParameters()];
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
+                    index++;
+                }
             }
 
         }
@@ -95,11 +120,14 @@ class BistaticModifierUtil {
                                                           emitter.getNorthOffsetDriver(),
                                                           emitter.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt station parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += Differentiation.differentiate(d -> modelEffect.evaluate(emitter, state),
-                                                                     3, 10.0 * driver.getScale()).value(driver);
-                estimated.setParameterDerivatives(driver, parameterDerivative);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    // update estimated derivatives with derivative of the modification wrt station parameters
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
+                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(emitter, state),
+                                                                         3, 10.0 * driver.getScale()).value(driver, state.getDate());
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
+                }
             }
         }
 
@@ -108,20 +136,19 @@ class BistaticModifierUtil {
                                                           receiver.getNorthOffsetDriver(),
                                                           receiver.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt station parameters
-                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
-                parameterDerivative += Differentiation.differentiate(d -> modelEffect.evaluate(receiver, state),
-                                                                     3, 10.0 * driver.getScale()).value(driver);
-                estimated.setParameterDerivatives(driver, parameterDerivative);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    // update estimated derivatives with derivative of the modification wrt station parameters
+                    double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
+                    parameterDerivative += Differentiation.differentiate((d, t) -> modelEffect.evaluate(receiver, state),
+                                                                         3, 10.0 * driver.getScale()).value(driver, state.getDate());
+                    estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative);
+                }
             }
         }
 
-        // update estimated value taking into account the model effect.
-        // The model effect delay is directly added to the measurement.
-        final double[] newValue = oldValue.clone();
-        newValue[0] += delayUp.getValue();
-        newValue[0] += delayDown.getValue();
-        estimated.setEstimatedValue(newValue);
+        // modify the value
+        modify(estimated, emitter, receiver, modelEffect);
 
     }
 

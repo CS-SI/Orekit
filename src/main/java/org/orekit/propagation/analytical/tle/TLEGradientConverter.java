@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
 /** Converter for TLE propagator.
  * @author Luc Maisonobe
@@ -32,7 +33,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Thomas Paulet
  * @since 11.0
  */
-class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
+class TLEGradientConverter extends AbstractAnalyticalGradientConverter implements ParameterDriversProvider {
 
     /** Fixed dimension of the state. */
     public static final int FREE_STATE_PARAMETERS = 6;
@@ -78,7 +79,7 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
         final int ephemerisType           = tle.getEphemerisType();
         final int elementNumber           = tle.getElementNumber();
         final int revolutionNumberAtEpoch = tle.getRevolutionNumberAtEpoch();
-        final double bStar                = tle.getBStar();
+        final double bStar                = tle.getBStar(state.getDate().toAbsoluteDate());
 
         // Initialize the new TLE
         final FieldTLE<Gradient> templateTLE = new FieldTLE<>(satelliteNumber, classification,
@@ -87,7 +88,7 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
                         revolutionNumberAtEpoch, bStar, utc);
 
         // TLE
-        final FieldTLE<Gradient> gTLE = FieldTLE.stateToTLE(state, templateTLE, utc, teme);
+        final FieldTLE<Gradient> gTLE = TLEPropagator.getDefaultTleGenerationAlgorithm(utc, teme).generate(state, templateTLE);
 
         // Return the "Field" propagator
         return FieldTLEPropagator.selectExtrapolator(gTLE, provider, state.getMass(), teme, parameters);

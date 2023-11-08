@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,8 +47,6 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * NeQuick ionospheric delay model.
@@ -64,9 +62,6 @@ public class NeQuickModel implements IonosphericModel {
 
     /** NeQuick resources base directory. */
     private static final String NEQUICK_BASE = "/assets/org/orekit/nequick/";
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 201928051L;
 
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile("\\s+");
@@ -146,8 +141,7 @@ public class NeQuickModel implements IonosphericModel {
         // Reference body shape
         final BodyShape ellipsoid = baseFrame.getParentShape();
         // Satellite geodetic coordinates
-        final TimeStampedPVCoordinates pv = state.getPVCoordinates(ellipsoid.getBodyFrame());
-        final GeodeticPoint satPoint = ellipsoid.transform(pv.getPosition(), ellipsoid.getBodyFrame(), state.getDate());
+        final GeodeticPoint satPoint = ellipsoid.transform(state.getPosition(ellipsoid.getBodyFrame()), ellipsoid.getBodyFrame(), state.getDate());
 
         // Total Electron Content
         final double tec = stec(date, recPoint, satPoint);
@@ -169,8 +163,7 @@ public class NeQuickModel implements IonosphericModel {
         // Reference body shape
         final BodyShape ellipsoid = baseFrame.getParentShape();
         // Satellite geodetic coordinates
-        final TimeStampedFieldPVCoordinates<T> pv = state.getPVCoordinates(ellipsoid.getBodyFrame());
-        final FieldGeodeticPoint<T> satPoint = ellipsoid.transform(pv.getPosition(), ellipsoid.getBodyFrame(), state.getDate());
+        final FieldGeodeticPoint<T> satPoint = ellipsoid.transform(state.getPosition(ellipsoid.getBodyFrame()), ellipsoid.getBodyFrame(), state.getDate());
 
         // Total Electron Content
         final T tec = stec(date, recPoint, satPoint);

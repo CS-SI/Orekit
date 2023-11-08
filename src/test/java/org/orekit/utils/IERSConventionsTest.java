@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
-import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
@@ -119,7 +119,7 @@ public class IERSConventionsTest {
         final TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_1996, true);
         checkScalarFunctionConsistency(IERSConventions.IERS_1996.getGMSTFunction(ut1),
                                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 9.0e-16, 8.0e-13);
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.8e-15, 8.0e-13);
     }
 
     @Test
@@ -992,9 +992,9 @@ public class IERSConventionsTest {
         {
         double maxError = 0;
         for (double dt = 0; dt < span; dt += sampleStep) {
-            double rateDouble    = gmstRate.value(date.shiftedBy(dt));
-            double rateDecimal64 = gmstRate.value(new FieldAbsoluteDate<>(date, new Decimal64(dt))).doubleValue();
-            maxError = FastMath.max(maxError, FastMath.abs(rateDouble - rateDecimal64));
+            double rateDouble   = gmstRate.value(date.shiftedBy(dt));
+            double rateBinary64 = gmstRate.value(new FieldAbsoluteDate<>(date, new Binary64(dt))).doubleValue();
+            maxError = FastMath.max(maxError, FastMath.abs(rateDouble - rateBinary64));
         }
         Assertions.assertEquals(0, maxError, tolerance);
     }
@@ -1141,7 +1141,7 @@ public class IERSConventionsTest {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2003, false);
         checkVectorFunctionConsistency(IERSConventions.IERS_2003.getSolidPoleTide(eopHistory), 2,
                                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-25, 3.0e-26);
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.5e-14, 6.9e-19);
     }
 
     @Test
@@ -1149,7 +1149,7 @@ public class IERSConventionsTest {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
         checkVectorFunctionConsistency(IERSConventions.IERS_2010.getSolidPoleTide(eopHistory), 2,
                                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-25, 2.0e-26);
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.5e-14, 6.9e-19);
     }
 
     @Test
@@ -1173,7 +1173,7 @@ public class IERSConventionsTest {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
         checkVectorFunctionConsistency(IERSConventions.IERS_2010.getOceanPoleTide(eopHistory), 2,
                                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-26, 2.0e-27);
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.9e-15, 8.9e-20);
     }
 
     private void checkScalarFunctionConsistency(final TimeScalarFunction function,

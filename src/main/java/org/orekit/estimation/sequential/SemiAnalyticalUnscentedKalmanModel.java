@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
@@ -73,7 +73,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
     private final CovarianceMatrixProvider measurementProcessNoiseMatrix;
 
     /** Position angle type used during orbit determination. */
-    private final PositionAngle angleType;
+    private final PositionAngleType angleType;
 
     /** Orbit type used during orbit determination. */
     private final OrbitType orbitType;
@@ -132,7 +132,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
                                                  final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
 
         this.builder                         = propagatorBuilder;
-        this.angleType                       = propagatorBuilder.getPositionAngle();
+        this.angleType                       = propagatorBuilder.getPositionAngleType();
         this.orbitType                       = propagatorBuilder.getOrbitType();
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
         this.currentMeasurementNumber        = 0;
@@ -312,27 +312,12 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         // STM for the prediction of the filter correction
         final RealMatrix stm = getStm();
 
-        // Estimate the measurement for each predicted state
-        final RealVector[] predictedStates       = new RealVector[sigmaPoints.length];
-        final RealVector[] predictedMeasurements = new RealVector[sigmaPoints.length];
+        // Predicted states
+        final RealVector[] predictedStates = new RealVector[sigmaPoints.length];
         for (int k = 0; k < sigmaPoints.length; ++k) {
-
             // Predict filter correction for the current sigma point
             final RealVector predicted = stm.operate(sigmaPoints[k]);
             predictedStates[k] = predicted;
-
-            // Calculate the predicted osculating elements for the current mean state
-            final RealVector osculating = computeOsculatingElements(predicted, nominalMeanSpacecraftState, shortPeriodicTerms);
-            final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null, angleType,
-                                                                    currentDate, builder.getMu(), builder.getFrame());
-
-            // Then, estimate the measurement
-            final EstimatedMeasurement<?> estimated = observedMeasurement.estimate(currentMeasurementNumber,
-                                                                                   currentMeasurementNumber,
-                                                                                   new SpacecraftState[] {
-                                                                                       new SpacecraftState(osculatingOrbit)
-                                                                                   });
-            predictedMeasurements[k] = new ArrayRealVector(estimated.getEstimatedValue());
         }
 
         // Number of estimated measurement parameters
@@ -357,7 +342,40 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
                                            estimatedMeasurementsParameters);
 
         // Return
-        return new UnscentedEvolution(measurement.getTime(), predictedStates, predictedMeasurements, noiseK);
+        return new UnscentedEvolution(measurement.getTime(), predictedStates, noiseK);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealVector[] getPredictedMeasurements(final RealVector[] predictedSigmaPoints, final MeasurementDecorator measurement) {
+
+        // Observed measurement
+        final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
+
+        // Initialize arrays of predicted states and measurements
+        final RealVector[] predictedMeasurements = new RealVector[predictedSigmaPoints.length];
+
+        // Loop on sigma points
+        for (int k = 0; k < predictedSigmaPoints.length; ++k) {
+
+            // Calculate the predicted osculating elements for the current mean state
+            final RealVector osculating = computeOsculatingElements(predictedSigmaPoints[k], nominalMeanSpacecraftState, shortPeriodicTerms);
+            final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null, angleType,
+                                                                    currentDate, builder.getMu(), builder.getFrame());
+
+            // Then, estimate the measurement
+            final EstimatedMeasurement<?> estimated = observedMeasurement.estimate(currentMeasurementNumber,
+                                                                                   currentMeasurementNumber,
+                                                                                   new SpacecraftState[] {
+                                                                                       new SpacecraftState(osculatingOrbit)
+                                                                                   });
+            predictedMeasurements[k] = new ArrayRealVector(estimated.getEstimatedValue());
+
+        }
+
+        // Return
+        return predictedMeasurements;
 
     }
 
@@ -375,6 +393,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
                                                                 currentDate, builder.getMu(), builder.getFrame());
         predictedSpacecraftState = new SpacecraftState(osculatingOrbit);
         predictedMeasurement = measurement.getObservedMeasurement().estimate(currentMeasurementNumber, currentMeasurementNumber, getPredictedSpacecraftStates());
+        predictedMeasurement.setEstimatedValue(predictedMeas.toArray());
 
         // Apply the dynamic outlier filter, if it exists
         KalmanEstimatorUtil.applyDynamicOutlierFilter(predictedMeasurement, innovationCovarianceMatrix);
@@ -400,7 +419,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         // Update the previous nominal mean spacecraft state
         // Calculate the corrected osculating elements
         final RealVector osculating = computeOsculatingElements(correctedFilterCorrection, nominalMeanSpacecraftState, shortPeriodicTerms);
-        final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null, builder.getPositionAngle(),
+        final Orbit osculatingOrbit = orbitType.mapArrayToOrbit(osculating.toArray(), null, builder.getPositionAngleType(),
                                                                 currentDate, builder.getMu(), builder.getFrame());
 
         // Compute the corrected measurements

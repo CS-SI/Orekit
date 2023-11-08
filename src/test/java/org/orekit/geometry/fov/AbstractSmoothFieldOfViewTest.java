@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -83,7 +83,7 @@ public abstract class AbstractSmoothFieldOfViewTest {
                                               state.toTransform().getInverse(),
                                               inertToBody);
         List<List<GeodeticPoint>> footprint = fov.getFootprint(fovToBody, earth, FastMath.toRadians(0.1));
-        Vector3D subSat = earth.projectToGround(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
+        Vector3D subSat = earth.projectToGround(state.getPosition(earth.getBodyFrame()),
                                                 state.getDate(), earth.getBodyFrame());
         Assertions.assertEquals(1, footprint.size());
         List<GeodeticPoint> loop = footprint.get(0);
@@ -97,14 +97,16 @@ public abstract class AbstractSmoothFieldOfViewTest {
 
             Assertions.assertEquals(0.0, loop.get(i).getAltitude(), 9.0e-9);
 
-            Vector3D los = fovToBody.getInverse().transformPosition(earth.transform(loop.get(i)));
+            Vector3D los = fovToBody.toStaticTransform().getInverse().transformPosition(earth.transform(loop.get(i)));
             double offset = Vector3D.angle(fov.getCenter(), los);
             minOffset = FastMath.min(minOffset, offset);
             maxOffset = FastMath.max(maxOffset, offset);
 
             TopocentricFrame topo = new TopocentricFrame(earth, loop.get(i), "onFootprint");
-            final double elevation = topo.getElevation(state.getPVCoordinates().getPosition(),
-                                                       state.getFrame(), state.getDate());
+            final double elevation = topo.getTrackingCoordinates(state.getPosition(),
+                                                                 state.getFrame(),
+                                                                 state.getDate()).
+                                     getElevation();
             if (elevation > 0.001) {
                 Assertions.assertEquals(-fov.getMargin(),
                                     fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),

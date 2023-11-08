@@ -1,5 +1,7 @@
 package org.orekit.propagation.analytical;
 
+import java.io.IOException;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -10,19 +12,17 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.stat.descriptive.StorelessUnivariateStatistic;
 import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Min;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
@@ -43,7 +43,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -58,14 +58,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 
-import java.io.IOException;
-
 public class FieldBrouwerLyddanePropagatorTest {
     private static final AttitudeProvider DEFAULT_LAW = Utils.defaultLaw();
 
     @Test
     public void sameDateCartesian() {
-        doSameDateCartesian(Decimal64Field.getInstance());
+        doSameDateCartesian(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doSameDateCartesian(Field<T> field) {
 
@@ -90,9 +88,9 @@ public class FieldBrouwerLyddanePropagatorTest {
 
         // positions  velocity and semi major axis match perfectly
         Assertions.assertEquals(0.0,
-                FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
-                                       finalOrbit.getPVCoordinates().getPosition()).getReal(),
-                            5.3e-9);
+                FieldVector3D.distance(initialOrbit.getPosition(),
+                                       finalOrbit.getPosition()).getReal(),
+                            5.8e-9);
 
         Assertions.assertEquals(0.0,
                 FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
@@ -105,7 +103,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void sameDateKeplerian() {
-        doSameDateKeplerian(Decimal64Field.getInstance());
+        doSameDateKeplerian(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doSameDateKeplerian(Field<T> field) {
 
@@ -115,7 +113,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         // ------------------------------------------------------------
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(6767924.41), zero.add(.005),  zero.add(1.7),zero.add( 2.1),
-                                                               zero.add(2.9), zero.add(6.2), PositionAngle.TRUE,
+                                                               zero.add(2.9), zero.add(6.2), PositionAngleType.TRUE,
                                                                FramesFactory.getEME2000(), initDate, zero.add(provider.getMu()));
 
         FieldBrouwerLyddanePropagator<T> extrapolator =
@@ -139,7 +137,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void almostSphericalBody() {
-        doAlmostSphericalBody(Decimal64Field.getInstance());
+        doAlmostSphericalBody(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doAlmostSphericalBody(Field<T> field) {
 
@@ -216,7 +214,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void compareToNumericalPropagation() {
-        doCompareToNumericalPropagation(Decimal64Field.getInstance());
+        doCompareToNumericalPropagation(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doCompareToNumericalPropagation(Field<T> field) {
 
@@ -234,7 +232,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
         // Initial state definition
@@ -293,7 +291,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void compareToNumericalPropagationWithDrag() {
-        doCompareToNumericalPropagationWithDrag(Decimal64Field.getInstance());
+        doCompareToNumericalPropagationWithDrag(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doCompareToNumericalPropagationWithDrag(Field<T> field) {
@@ -313,7 +311,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
         // Initial state definition
         final FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(initialOrbit);
@@ -342,7 +340,6 @@ public class FieldBrouwerLyddanePropagatorTest {
         MarshallSolarActivityFutureEstimation msafe =
                         new MarshallSolarActivityFutureEstimation("Jan2000F10-edited-data\\.txt",
                                                                   MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-        DataContext.getDefault().getDataProvidersManager().feed(msafe.getSupportedNames(), msafe);
         DTM2000 atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), earth);
 
         // Force model
@@ -398,7 +395,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void compareToNumericalPropagationMeanInitialOrbit() {
-        doCompareToNumericalPropagationMeanInitialOrbit(Decimal64Field.getInstance());
+        doCompareToNumericalPropagationMeanInitialOrbit(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doCompareToNumericalPropagationMeanInitialOrbit(Field<T> field) {
 
@@ -417,7 +414,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
         FieldBrouwerLyddanePropagator<T> BLextrapolator =
@@ -477,7 +474,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void compareToNumericalPropagationResetInitialIntermediate() {
-        doCompareToNumericalPropagationResetInitialIntermediate(Decimal64Field.getInstance());
+        doCompareToNumericalPropagationResetInitialIntermediate(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doCompareToNumericalPropagationResetInitialIntermediate(Field<T> field) {
 
@@ -495,7 +492,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                      zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                      zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                       inertialFrame, initDate, zero.add(provider.getMu()));
         // Initial state definition
         final FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(initialOrbit);
@@ -514,7 +511,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         FieldBrouwerLyddanePropagator<T> BLextrapolator2 =
                 new FieldBrouwerLyddanePropagator<>( new FieldKeplerianOrbit<>(zero.add(a + 3000), zero.add(e + 0.001),
                                                                                zero.add(i - FastMath.toRadians(12.0)), zero.add(omega),
-                                                                               zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                               zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                      inertialFrame, initDate, zero.add(provider.getMu())),DEFAULT_LAW,
                                                      zero.add(Propagator.DEFAULT_MASS),
                                                      GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
@@ -542,7 +539,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void compareConstructors() {
-        doCompareConstructors(Decimal64Field.getInstance());
+        doCompareConstructors(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doCompareConstructors(Field<T> field) {
 
@@ -560,7 +557,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = 0; // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
 
@@ -604,7 +601,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void undergroundOrbit() {
-        doUndergroundOrbit(Decimal64Field.getInstance());
+        doUndergroundOrbit(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doUndergroundOrbit(Field<T> field) {
 
@@ -640,7 +637,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void tooEllipticalOrbit() {
-        doTooEllipticalOrbit(Decimal64Field.getInstance());
+        doTooEllipticalOrbit(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doTooEllipticalOrbit(Field<T> field) {
         // for an eccentricity too big for the model
@@ -648,7 +645,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
         FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(67679244.0), zero.add(1.0), zero.add(1.85850),
-                                                               zero.add(2.1), zero.add(2.9), zero.add(6.2), PositionAngle.TRUE,
+                                                               zero.add(2.1), zero.add(2.9), zero.add(6.2), PositionAngleType.TRUE,
                                                                FramesFactory.getEME2000(), initDate, zero.add(provider.getMu()));
         try {
         // Extrapolator definition
@@ -671,7 +668,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void criticalInclination() {
-        doCriticalInclination(Decimal64Field.getInstance());
+        doCriticalInclination(Binary64Field.getInstance());
     }
     private <T extends CalculusFieldElement<T>> void doCriticalInclination(Field<T> field) {
 
@@ -688,7 +685,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         T zero = field.getZero();
         FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field);
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
         // Extrapolator definition
@@ -702,8 +699,8 @@ public class FieldBrouwerLyddanePropagatorTest {
 
         // Verify
         Assertions.assertEquals(0.0,
-                            FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
-                                                   finalOrbit.getPVCoordinates().getPosition()).getReal(),
+                            FieldVector3D.distance(initialOrbit.getPosition(),
+                                                   finalOrbit.getPosition()).getReal(),
                             7.0e-8);
 
         Assertions.assertEquals(0.0,
@@ -718,7 +715,7 @@ public class FieldBrouwerLyddanePropagatorTest {
     @Test
     public void testUnableToComputeBLMeanParameters() {
         Assertions.assertThrows(OrekitException.class, () -> {
-            doTestUnableToComputeBLMeanParameters(Decimal64Field.getInstance());
+            doTestUnableToComputeBLMeanParameters(Binary64Field.getInstance());
         });
     }
 
@@ -737,7 +734,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = FastMath.toRadians(0); // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
         // Extrapolator definition
@@ -754,7 +751,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     @Test
     public void testMeanComparisonWithNonField() {
-        doTestMeanComparisonWithNonField(Decimal64Field.getInstance());
+        doTestMeanComparisonWithNonField(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMeanComparisonWithNonField(Field<T> field) {
@@ -773,7 +770,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = FastMath.toRadians(0); // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
         // Initial state definition
@@ -801,13 +798,13 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(finalOrbitFieldReal.getRightAscensionOfAscendingNode(), + finalOrbit.getRightAscensionOfAscendingNode(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getPerigeeArgument(), finalOrbit.getPerigeeArgument(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getMeanAnomaly(), finalOrbit.getMeanAnomaly(), Double.MIN_VALUE);
-        Assertions.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getPosition().distance(finalOrbit.getPVCoordinates().getPosition()), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, finalOrbitFieldReal.getPosition().distance(finalOrbit.getPosition()), Double.MIN_VALUE);
         Assertions.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getVelocity().distance(finalOrbit.getPVCoordinates().getVelocity()), Double.MIN_VALUE);
     }
 
     @Test
     public void testOsculatingComparisonWithNonField() {
-        doTestOsculatingComparisonWithNonField(Decimal64Field.getInstance());
+        doTestOsculatingComparisonWithNonField(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestOsculatingComparisonWithNonField(Field<T> field) {
@@ -826,7 +823,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final double raan = FastMath.toRadians(261); // right ascention of ascending node
         final double lM = FastMath.toRadians(0); // mean anomaly
         final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(zero.add(a), zero.add(e), zero.add(i), zero.add(omega),
-                                                                     zero.add(raan), zero.add(lM), PositionAngle.TRUE,
+                                                                     zero.add(raan), zero.add(lM), PositionAngleType.TRUE,
                                                                      inertialFrame, initDate, zero.add(provider.getMu()));
 
         // Initial state definition
@@ -853,13 +850,13 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(finalOrbitFieldReal.getRightAscensionOfAscendingNode(), + finalOrbit.getRightAscensionOfAscendingNode(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getPerigeeArgument(), finalOrbit.getPerigeeArgument(), Double.MIN_VALUE);
         Assertions.assertEquals(finalOrbitFieldReal.getMeanAnomaly(), finalOrbit.getMeanAnomaly(), Double.MIN_VALUE);
-        Assertions.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getPosition().distance(finalOrbit.getPVCoordinates().getPosition()), Double.MIN_VALUE);
+        Assertions.assertEquals(0.0, finalOrbitFieldReal.getPosition().distance(finalOrbit.getPosition()), Double.MIN_VALUE);
         Assertions.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getVelocity().distance(finalOrbit.getPVCoordinates().getVelocity()), Double.MIN_VALUE);
     }
 
     @Test
     public void testMeanOrbit() throws IOException {
-        doTestMeanOrbit(Decimal64Field.getInstance());
+        doTestMeanOrbit(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMeanOrbit(Field<T> field) {
@@ -869,7 +866,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final FieldKeplerianOrbit<T> initialOsculating =
             new FieldKeplerianOrbit<>(zero.newInstance(7.8e6), zero.newInstance(0.032), zero.newInstance(0.4),
                                       zero.newInstance(0.1), zero.newInstance(0.2), zero.newInstance(0.3),
-                                      PositionAngle.TRUE,
+                                      PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(), date, zero.add(provider.getMu()));
         final UnnormalizedSphericalHarmonics ush = ushp.onDate(initialOsculating.getDate().toAbsoluteDate());
 

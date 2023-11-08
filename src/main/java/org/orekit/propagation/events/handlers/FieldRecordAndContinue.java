@@ -32,25 +32,24 @@ import org.orekit.propagation.events.FieldEventDetector;
  *
  * <p> As this handler stores all observed events it may consume large amounts
  * of memory depending on the duration of propagation and the frequency of events.
+ * </p>
  *
- * @param <T> the type of {@link EventDetector} that this event handler will handle events
- *            for.
- * @param <E> the type of {@link CalculusFieldElement} to use instead of {@code double}.
  * @author Evan Ward
  * @see RecordAndContinue
  * @since 9.3
+ * @param <T> type of the field element
  */
-public class FieldRecordAndContinue
-        <T extends FieldEventDetector<E>, E extends CalculusFieldElement<E>>
-        implements FieldEventHandler<T, E> {
+public class FieldRecordAndContinue <T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
-    /** A single event detected during propagation. */
-    public static class Event<T, F extends CalculusFieldElement<F>> {
+    /** A single event detected during propagation.
+     * @param <T> type of the field element
+     */
+    public static class Event<T extends CalculusFieldElement<T>> {
 
         /** The observed state. */
-        private final FieldSpacecraftState<F> state;
+        private final FieldSpacecraftState<T> state;
         /** The detector. */
-        private final T detector;
+        private final FieldEventDetector<T> detector;
         /** The sign of the derivative of the g function. */
         private final boolean increasing;
 
@@ -61,8 +60,8 @@ public class FieldRecordAndContinue
          * @param state      of the event.
          * @param increasing if the g function is increasing.
          */
-        private Event(final T detector,
-                      final FieldSpacecraftState<F> state,
+        private Event(final FieldEventDetector<T> detector,
+                      final FieldSpacecraftState<T> state,
                       final boolean increasing) {
             this.detector = detector;
             this.state = state;
@@ -75,7 +74,7 @@ public class FieldRecordAndContinue
          * @return the detector that found the event.
          * @see EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
          */
-        public T getDetector() {
+        public FieldEventDetector<T> getDetector() {
             return detector;
         }
 
@@ -96,7 +95,7 @@ public class FieldRecordAndContinue
          * @return the satellite's state when the event was triggered.
          * @see EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
          */
-        public FieldSpacecraftState<F> getState() {
+        public FieldSpacecraftState<T> getState() {
             return state;
         }
 
@@ -111,7 +110,7 @@ public class FieldRecordAndContinue
     }
 
     /** Observed events. */
-    private final List<Event<T, E>> events;
+    private final List<Event<T>> events;
 
     /** Create a new handler using an {@link ArrayList} to store events. */
     public FieldRecordAndContinue() {
@@ -123,7 +122,7 @@ public class FieldRecordAndContinue
      *
      * @param events collection.
      */
-    public FieldRecordAndContinue(final List<Event<T, E>> events) {
+    public FieldRecordAndContinue(final List<Event<T>> events) {
         this.events = events;
     }
 
@@ -141,7 +140,7 @@ public class FieldRecordAndContinue
      *
      * @return the events observed by the handler in the order they were observed.
      */
-    public List<Event<T, E>> getEvents() {
+    public List<Event<T>> getEvents() {
         return Collections.unmodifiableList(this.events);
     }
 
@@ -151,8 +150,8 @@ public class FieldRecordAndContinue
     }
 
     @Override
-    public Action eventOccurred(final FieldSpacecraftState<E> s,
-                                final T detector,
+    public Action eventOccurred(final FieldSpacecraftState<T> s,
+                                final FieldEventDetector<T> detector,
                                 final boolean increasing) {
         events.add(new Event<>(detector, s, increasing));
         return Action.CONTINUE;

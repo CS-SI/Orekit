@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -91,7 +91,7 @@ public class AlongTrackAimingTest {
     public void testTooNorthernLatitudeRetrograde() {
         final AlongTrackAiming tileAiming = new AlongTrackAiming(ellipsoid,
                                                                  new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(130.), FastMath.toRadians(270.),
-                                                                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                                                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                                                                    FramesFactory.getEME2000(),
                                                                                    new AbsoluteDate(2008, 4, 7, 0, 0, 0, TimeScalesFactory.getUTC()),
                                                                                    Constants.EIGEN5C_EARTH_MU),
@@ -113,7 +113,7 @@ public class AlongTrackAimingTest {
     public void testTooSouthernLatitudeRetrrograde() {
         final AlongTrackAiming tileAiming = new AlongTrackAiming(ellipsoid,
                                                                  new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(130.), FastMath.toRadians(270.),
-                                                                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                                                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                                                                    FramesFactory.getEME2000(),
                                                                                    new AbsoluteDate(2008, 4, 7, 0, 0, 0, TimeScalesFactory.getUTC()),
                                                                                    Constants.EIGEN5C_EARTH_MU),
@@ -127,7 +127,7 @@ public class AlongTrackAimingTest {
     public void setUp() {
         Utils.setDataRoot("regular-data");
         orbit = new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
-                                  FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                  FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                   FramesFactory.getEME2000(),
                                   new AbsoluteDate(2008, 4, 7, 0, 0, 0, TimeScalesFactory.getUTC()),
                                   Constants.EIGEN5C_EARTH_MU);

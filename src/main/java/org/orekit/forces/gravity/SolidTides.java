@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,12 +19,11 @@ package org.orekit.forces.gravity;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.CachedNormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
@@ -45,7 +44,7 @@ import org.orekit.utils.ParameterDriver;
  * @since 6.1
  * @author Luc Maisonobe
  */
-public class SolidTides extends AbstractForceModel {
+public class SolidTides implements ForceModel {
 
     /** Default step for tides field sampling (seconds). */
     public static final double DEFAULT_STEP = 600.0;
@@ -141,16 +140,16 @@ public class SolidTides extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
+    public Stream<EventDetector> getEventDetectors() {
         // delegate to underlying attraction model
-        return attractionModel.getEventsDetectors();
+        return attractionModel.getEventDetectors();
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
         // delegate to underlying attraction model
-        return attractionModel.getFieldEventsDetectors(field);
+        return attractionModel.getFieldEventDetectors(field);
     }
 
     /** {@inheritDoc} */

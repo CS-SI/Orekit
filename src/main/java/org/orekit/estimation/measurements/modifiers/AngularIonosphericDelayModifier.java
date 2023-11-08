@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.orekit.estimation.measurements.AngularAzEl;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
@@ -31,6 +31,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 
 /** Class modifying theoretical angular measurement with ionospheric delay.
  * The effect of ionospheric correction on the angular measurement is computed
@@ -76,7 +77,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
         // Base frame associated with the station
         final TopocentricFrame baseFrame = station.getBaseFrame();
         // delay in meters
-        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters());
+        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
         return delay;
     }
 
@@ -87,7 +88,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
     }
 
     @Override
-    public void modify(final EstimatedMeasurement<AngularAzEl> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<AngularAzEl> estimated) {
         final AngularAzEl     measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
         final SpacecraftState state   = estimated.getStates()[0];
@@ -101,17 +102,17 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
 
         // Update estimated value taking into account the ionospheric delay.
         final AbsoluteDate date     = transitState.getDate();
-        final Vector3D     position = transitState.getPVCoordinates().getPosition();
+        final Vector3D     position = transitState.getPosition();
         final Frame        inertial = transitState.getFrame();
 
         // Elevation and azimuth in radians
-        final double elevation = station.getBaseFrame().getElevation(position, inertial, date);
-        final double baseAzimuth = station.getBaseFrame().getAzimuth(position, inertial, date);
-        final double twoPiWrap   = MathUtils.normalizeAngle(baseAzimuth, measure.getObservedValue()[0]) - baseAzimuth;
-        final double azimuth     = baseAzimuth + twoPiWrap;
+        final TrackingCoordinates tc = station.getBaseFrame().getTrackingCoordinates(position, inertial, date);
+        final double twoPiWrap   = MathUtils.normalizeAngle(tc.getAzimuth(), measure.getObservedValue()[0]) - tc.getAzimuth();
+        final double azimuth     = tc.getAzimuth() + twoPiWrap;
 
         // Update estimated value taking into account the ionospheric delay.
         // Azimuth - elevation values
-        estimated.setEstimatedValue(azimuth, elevation);
+        estimated.setEstimatedValue(azimuth, tc.getElevation());
     }
+
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +30,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ElevationMask;
+import org.orekit.utils.TrackingCoordinates;
 
 /**
  * This class aims at computing the dilution of precision.
@@ -144,13 +145,13 @@ public class DOPComputer {
         final double[][] satDir = new double[gnss.size()][4];
         int satNb = 0;
         for (Propagator prop : gnss) {
-            final Vector3D pos = prop.getPVCoordinates(date, frame).getPosition();
-            final double elev  = frame.getElevation(pos, frame, date);
-            final double elMin = (elevationMask != null) ?
-                                 elevationMask.getElevation(frame.getAzimuth(pos, frame, date)) :
-                                 minElevation;
+            final Vector3D            pos   = prop.getPosition(date, frame);
+            final TrackingCoordinates tc    = frame.getTrackingCoordinates(pos, frame, date);
+            final double              elMin = (elevationMask != null) ?
+                                              elevationMask.getElevation(tc.getAzimuth()) :
+                                                  minElevation;
             // Only visible satellites are considered
-            if (elev > elMin) {
+            if (tc.getElevation() > elMin) {
                 // Create the rows of the H matrix
                 final Vector3D r = pos.normalize();
                 satDir[satNb][0] = r.getX();

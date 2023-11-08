@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -125,7 +125,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         double pa = 0.0;
         double raan = 0.0;
         double anomaly = 0.0;
-        PositionAngle type = PositionAngle.MEAN;
+        PositionAngleType type = PositionAngleType.MEAN;
         Frame frame = FramesFactory.getEME2000();
         double mu = Constants.EGM96_EARTH_MU;
         Orbit orbit = new KeplerianOrbit(a, e, i, pa, raan, anomaly,

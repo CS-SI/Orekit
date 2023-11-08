@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,6 +37,16 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
     /** IERS conventions used. */
     private final IERSConventions conventions;
 
+    /** Central body equatorial radius.
+     * @since 12.0
+     */
+    private final double equatorialRadius;
+
+    /** Central body flattening.
+     * @since 12.0
+     */
+    private final double flattening;
+
     /** Data context. */
     private final DataContext dataContext;
 
@@ -49,14 +59,20 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
     /**
      * Complete constructor.
      * @param conventions IERS Conventions
+     * @param equatorialRadius central body equatorial radius
+     * @param flattening central body flattening
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param rangeUnitsConverter converter for {@link RangeUnits#RU Range Units}
      */
-    protected AbstractBuilder(final IERSConventions conventions, final DataContext dataContext,
+    protected AbstractBuilder(final IERSConventions conventions,
+                              final double equatorialRadius, final double flattening,
+                              final DataContext dataContext,
                               final AbsoluteDate missionReferenceDate,
                               final RangeUnitsConverter rangeUnitsConverter) {
         this.conventions          = conventions;
+        this.equatorialRadius     = equatorialRadius;
+        this.flattening           = flattening;
         this.dataContext          = dataContext;
         this.missionReferenceDate = missionReferenceDate;
         this.rangeUnitsConverter  = rangeUnitsConverter;
@@ -64,12 +80,15 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
 
     /** Build an instance.
      * @param newConventions IERS Conventions
+     * @param newEquatorialRadius central body equatorial radius
+     * @param newFlattening central body flattening
      * @param newDataContext used to retrieve frames, time scales, etc.
      * @param newMissionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param newRangeUnitsConverter converter for {@link RangeUnits#RU Range Units}
      * @return new instance
      */
-    protected abstract T create(IERSConventions newConventions, DataContext newDataContext,
+    protected abstract T create(IERSConventions newConventions, double newEquatorialRadius, double newFlattening,
+                                DataContext newDataContext,
                                 AbsoluteDate newMissionReferenceDate, RangeUnitsConverter newRangeUnitsConverter);
 
     /** Set up IERS conventions.
@@ -77,7 +96,8 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public T withConventions(final IERSConventions newConventions) {
-        return create(newConventions, getDataContext(), getMissionReferenceDate(), getRangeUnitsConverter());
+        return create(newConventions, getEquatorialRadius(), getFlattening(), getDataContext(),
+                      getMissionReferenceDate(), getRangeUnitsConverter());
     }
 
     /** Get the IERS conventions.
@@ -87,12 +107,45 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
         return conventions;
     }
 
+    /** Set up the central body equatorial radius.
+     * @param newEquatorialRadius central body equatorial radius
+     * @return a new builder with updated configuration (the instance is not changed)
+     */
+    public T withEquatorialRadius(final double newEquatorialRadius) {
+        return create(getConventions(), newEquatorialRadius, getFlattening(), getDataContext(),
+                      getMissionReferenceDate(), getRangeUnitsConverter());
+    }
+
+    /** Get the central body equatorial radius.
+     * @return central body equatorial radius
+     */
+    public double getEquatorialRadius() {
+        return equatorialRadius;
+    }
+
+    /** Set up the central body flattening.
+     * @param newFlattening central body flattening
+     * @return a new builder with updated configuration (the instance is not changed)
+     */
+    public T withFlattening(final double newFlattening) {
+        return create(getConventions(), getEquatorialRadius(), newFlattening, getDataContext(),
+                      getMissionReferenceDate(), getRangeUnitsConverter());
+    }
+
+    /** Get the central body flattening.
+     * @return central body flattening
+     */
+    public double getFlattening() {
+        return flattening;
+    }
+
     /** Set up data context used to retrieve frames, time scales, etc..
      * @param newDataContext data context used to retrieve frames, time scales, etc.
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public T withDataContext(final DataContext newDataContext) {
-        return create(getConventions(), newDataContext, getMissionReferenceDate(), getRangeUnitsConverter());
+        return create(getConventions(), getEquatorialRadius(), getFlattening(), newDataContext,
+                      getMissionReferenceDate(), getRangeUnitsConverter());
     }
 
     /** Get the data context.
@@ -113,7 +166,8 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public T withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return create(getConventions(), getDataContext(), newMissionReferenceDate, getRangeUnitsConverter());
+        return create(getConventions(), getEquatorialRadius(), getFlattening(), getDataContext(),
+                      newMissionReferenceDate, getRangeUnitsConverter());
     }
 
     /** Get the mission reference date or Mission Elapsed Time or Mission Relative Time time systems.
@@ -128,7 +182,8 @@ public abstract class AbstractBuilder<T extends AbstractBuilder<T>> {
      * @return a new builder with updated configuration (the instance is not changed)
      */
     public T withRangeUnitsConverter(final RangeUnitsConverter newRangeUnitsConverter) {
-        return create(getConventions(), getDataContext(), getMissionReferenceDate(), newRangeUnitsConverter);
+        return create(getConventions(), getEquatorialRadius(), getFlattening(), getDataContext(),
+                      getMissionReferenceDate(), newRangeUnitsConverter);
     }
 
     /** Get the converter for {@link RangeUnits#RU Range Units}.

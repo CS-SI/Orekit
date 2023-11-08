@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -89,10 +89,11 @@ public interface Generator extends AutoCloseable {
      * @param key   the keyword to write
      * @param converter converter to use for dates
      * @param date the date to write
+     * @param forceCalendar if true, the date is forced to calendar format
      * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
-    void writeEntry(String key, TimeConverter converter, AbsoluteDate date, boolean mandatory) throws IOException;
+    void writeEntry(String key, TimeConverter converter, AbsoluteDate date, boolean forceCalendar, boolean mandatory) throws IOException;
 
     /** Write a single key/value entry.
      * @param key   the keyword to write
@@ -165,9 +166,17 @@ public interface Generator extends AutoCloseable {
     /** Convert a date to string value with high precision.
      * @param converter converter for dates
      * @param date date to write
-     * @return date as a string
+     * @return date as a string (may be either a relative date or a calendar date)
      */
     String dateToString(TimeConverter converter, AbsoluteDate date);
+
+    /** Convert a date to calendar string value with high precision.
+     * @param converter converter for dates
+     * @param date date to write
+     * @return date as a calendar string
+     * @since 12.0
+     */
+    String dateToCalendarString(TimeConverter converter, AbsoluteDate date);
 
     /** Convert a date to string value with high precision.
      * @param year year

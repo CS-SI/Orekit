@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
@@ -32,7 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.trigger.AbstractManeuverTriggers;
@@ -44,7 +44,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -132,20 +132,20 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         final Maneuver maneuver = new Maneuver(null,
                                                configureTrigger(fireDate, fireDate.shiftedBy(duration)),
                                                new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
-        Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrust(), 1.0e-10);
+        Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrustMagnitude(), 1.0e-10);
         Assertions.assertEquals(isp, ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getIsp(),    1.0e-10);
 
         final SpacecraftState finalorb = buildPropagator(attitudeProvider, initialState, maneuver).
                                          propagate(fireDate.shiftedBy(3800));
 
         final double flowRate = ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getFlowRate();
-        final double massTolerance = FastMath.abs(flowRate) * maneuver.getEventsDetectors().findFirst().get().getThreshold();
+        final double massTolerance = FastMath.abs(flowRate) * maneuver.getEventDetectors().findFirst().get().getThreshold();
         Assertions.assertEquals(2007.8824544261233, finalorb.getMass(), massTolerance);
         Assertions.assertEquals(2.6872, FastMath.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), FastMath.PI)), 1e-4);
         Assertions.assertEquals(28970, finalorb.getA()/1000, 1);
 
-        final List<EventDetector> list1 = maneuver.getManeuverTriggers().getEventsDetectors().collect(Collectors.toList());
-        final List<EventDetector> list2 = maneuver.getManeuverTriggers().getEventsDetectors().collect(Collectors.toList());
+        final List<EventDetector> list1 = maneuver.getManeuverTriggers().getEventDetectors().collect(Collectors.toList());
+        final List<EventDetector> list2 = maneuver.getManeuverTriggers().getEventDetectors().collect(Collectors.toList());
         Assertions.assertEquals(list1.size(), list2.size());
         for (int i = 0; i < list1.size(); ++i ) {
             Assertions.assertSame(list1.get(i), list2.get(i));
@@ -171,7 +171,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         final Maneuver maneuver = new Maneuver(null,
                                                configureTrigger(fireDate, fireDate.shiftedBy(duration)),
                                                new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
-        Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrust(), 1.0e-10);
+        Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrustMagnitude(), 1.0e-10);
         Assertions.assertEquals(isp, ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getIsp(),    1.0e-10);
 
         final SpacecraftState finalorb = buildPropagator(attitudeProvider,
@@ -188,7 +188,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
 
     @Test
     public void testRoughBehaviourField() {
-        doTestRoughBehaviourField(Decimal64Field.getInstance());
+        doTestRoughBehaviourField(Binary64Field.getInstance());
     }
 
     private <S extends CalculusFieldElement<S>> void doTestRoughBehaviourField(Field<S> field) {
@@ -205,20 +205,20 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         final Maneuver maneuver = new Maneuver(null,
                                                configureTrigger(field, fireDate, fireDate.shiftedBy(duration)),
                                                new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
-        Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrust(), 1.0e-10);
+        Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrustMagnitude(), 1.0e-10);
         Assertions.assertEquals(isp, ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getIsp(),    1.0e-10);
 
         final FieldSpacecraftState<S> finalorb = buildPropagator(field, attitudeProvider, initialState, maneuver).
                                                  propagate(new FieldAbsoluteDate<>(field, fireDate).shiftedBy(3800));
 
         final double flowRate = ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getFlowRate();
-        final double massTolerance = FastMath.abs(flowRate) * maneuver.getEventsDetectors().findFirst().get().getThreshold();
+        final double massTolerance = FastMath.abs(flowRate) * maneuver.getEventDetectors().findFirst().get().getThreshold();
         Assertions.assertEquals(2007.8824544261233, finalorb.getMass().getReal(), massTolerance);
         Assertions.assertEquals(2.6872, FastMath.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), field.getZero().newInstance(FastMath.PI))).getReal(), 1e-4);
         Assertions.assertEquals(28970, finalorb.getA().divide(1000).getReal(), 1);
 
-        final List<FieldEventDetector<?>> list1 = maneuver.getManeuverTriggers().getFieldEventsDetectors(field).collect(Collectors.toList());
-        final List<FieldEventDetector<?>> list2 = maneuver.getManeuverTriggers().getFieldEventsDetectors(field).collect(Collectors.toList());
+        final List<FieldEventDetector<?>> list1 = maneuver.getManeuverTriggers().getFieldEventDetectors(field).collect(Collectors.toList());
+        final List<FieldEventDetector<?>> list2 = maneuver.getManeuverTriggers().getFieldEventDetectors(field).collect(Collectors.toList());
         Assertions.assertEquals(list1.size(), list2.size());
         for (int i = 0; i < list1.size(); ++i ) {
             Assertions.assertSame(list1.get(i), list2.get(i));
@@ -231,7 +231,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
 
     @Test
     public void testBackwardField() {
-        doTestBackwardField(Decimal64Field.getInstance());
+        doTestBackwardField(Binary64Field.getInstance());
     }
 
     private <S extends CalculusFieldElement<S>> void doTestBackwardField(Field<S> field) {
@@ -248,7 +248,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         final Maneuver maneuver = new Maneuver(null,
                                                configureTrigger(field, fireDate, fireDate.shiftedBy(duration)),
                                                new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
-        Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrust(), 1.0e-10);
+        Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrustMagnitude(), 1.0e-10);
         Assertions.assertEquals(isp, ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getIsp(),    1.0e-10);
 
         final FieldSpacecraftState<S> finalorb = buildPropagator(field, attitudeProvider,
@@ -266,7 +266,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     private AttitudeProvider buildAttitudeProvider() {
         final double delta = FastMath.toRadians(-7.4978);
         final double alpha = FastMath.toRadians(351);
-        return new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+        return new FrameAlignedProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
     }
 
     private SpacecraftState buildInitialState(final AttitudeProvider attitudeProvider) {
@@ -282,7 +282,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
                                                        new TimeComponents(23, 30, 00.000),
                                                        TimeScalesFactory.getUTC());
         final Orbit orbit =
-            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                FramesFactory.getEME2000(), initDate, Constants.EIGEN5C_EARTH_MU);
         return new SpacecraftState(orbit, attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
     }
@@ -303,7 +303,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
                         new TimeComponents(23, 30, 00.000),
                         TimeScalesFactory.getUTC());
         final FieldOrbit<S> orbit =
-                        new FieldKeplerianOrbit<>(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+                        new FieldKeplerianOrbit<>(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                         FramesFactory.getEME2000(), initDate, zero.newInstance(Constants.EIGEN5C_EARTH_MU));
         return new FieldSpacecraftState<>(orbit, attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
     }

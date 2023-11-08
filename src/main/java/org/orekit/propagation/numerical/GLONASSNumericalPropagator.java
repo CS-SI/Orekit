@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GLONASSAlmanac;
@@ -182,7 +182,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
         setAttitudeProvider(provider);
         setOrbitType(OrbitType.CARTESIAN);
         // It is not meaningful for propagation in Cartesian parameters
-        setPositionAngleType(PositionAngle.TRUE);
+        setPositionAngleType(PositionAngleType.TRUE);
         setMu(GNSSConstants.GLONASS_MU);
 
         // As recommended by GLONASS ICD (2016), the direction cosines and distance
@@ -575,7 +575,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
 
     @Override
     protected StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,
-                                       final OrbitType orbitType, final PositionAngle positionAngleType,
+                                       final OrbitType orbitType, final PositionAngleType positionAngleType,
                                        final AttitudeProvider attitudeProvider, final Frame frame) {
         return new Mapper(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
     }
@@ -594,7 +594,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
          * @param frame inertial frame
          */
         Mapper(final AbsoluteDate referenceDate, final double mu,
-               final OrbitType orbitType, final PositionAngle positionAngleType,
+               final OrbitType orbitType, final PositionAngleType positionAngleType,
                final AttitudeProvider attitudeProvider, final Frame frame) {
             super(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
         }
@@ -605,7 +605,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
             // The parameter meanOnly is ignored for the GLONASS Propagator
             final double mass = y[6];
             if (mass <= 0.0) {
-                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
+                throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS, mass);
             }
 
             final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, yDot, getPositionAngleType(), date, getMu(), getFrame());
@@ -651,7 +651,7 @@ public class GLONASSNumericalPropagator extends AbstractIntegratedPropagator {
 
             // Position and Velocity vectors
             final Vector3D vel = state.getPVCoordinates().getVelocity();
-            final Vector3D pos = state.getPVCoordinates().getPosition();
+            final Vector3D pos = state.getPosition();
 
             Arrays.fill(yDot, 0.0);
 

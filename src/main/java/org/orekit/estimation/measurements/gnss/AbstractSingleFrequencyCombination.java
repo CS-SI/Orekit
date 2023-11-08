@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,14 +22,11 @@ import java.util.List;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.CombinedObservationData;
-import org.orekit.gnss.CombinedObservationDataSet;
+import org.orekit.files.rinex.observation.ObservationData;
+import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.MeasurementType;
-import org.orekit.gnss.ObservationData;
-import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.ObservationType;
-import org.orekit.gnss.RinexObservationHeader;
 import org.orekit.gnss.SatelliteSystem;
 
 /** Base class for single frequency combination of measurements.
@@ -64,11 +61,6 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
     @Override
     public CombinedObservationDataSet combine(final ObservationDataSet observations) {
 
-        // Rinex file header
-        final RinexObservationHeader header = observations.getHeader();
-        // Rinex version to integer
-        final int version = (int) header.getRinexVersion();
-
         // Initialize list of measurements
         final List<ObservationData> pseudoRanges = new ArrayList<>();
         final List<ObservationData> phases       = new ArrayList<>();
@@ -87,17 +79,19 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
         // Initialize list of combined observation data
         final List<CombinedObservationData> combined = new ArrayList<>();
 
-        for (int i = 0; i < phases.size(); i++) {
-            for (int j = 0; j < pseudoRanges.size(); j++) {
-                final boolean combine = isCombinationPossible(version, phases.get(i), pseudoRanges.get(j));
-                if (combine) {
-                    combined.add(combine(phases.get(i), pseudoRanges.get(j)));
+        for (final ObservationData phase : phases) {
+            for (final ObservationData pseudoRange : pseudoRanges) {
+                // Single-frequency combination is possible only if data frequencies are the same
+                if (phase.getObservationType().getFrequency(system) == pseudoRange.getObservationType().getFrequency(system) &&
+                    phase.getObservationType().getSignalCode()      == pseudoRange.getObservationType().getSignalCode()) {
+                    combined.add(combine(phase, pseudoRange));
                 }
             }
         }
 
-        return new CombinedObservationDataSet(observations.getHeader(), observations.getSatelliteSystem(),
-                                              observations.getPrnNumber(), observations.getDate(),
+        return new CombinedObservationDataSet(observations.getSatellite().getSystem(),
+                                              observations.getSatellite().getPRN(),
+                                              observations.getDate(),
                                               observations.getRcvrClkOffset(), combined);
     }
 
@@ -151,30 +145,5 @@ public abstract class AbstractSingleFrequencyCombination implements MeasurementC
      * @return combined observed value
      */
     protected abstract double getCombinedValue(double phase, double pseudoRange);
-
-    /**
-     * Verifies if two observation data can be combine.
-     * @param version Rinex file version (integer part)
-     * @param phase phase measurement
-     * @param pseudoRange pseudoRange measurement
-     * @return true if observation data can be combined
-     */
-    private boolean isCombinationPossible(final int version, final ObservationData phase, final ObservationData pseudoRange) {
-        // Observation types
-        final ObservationType obsType1 = phase.getObservationType();
-        final ObservationType obsType2 = pseudoRange.getObservationType();
-        // Single-frequency combination is possible only if data frequencies are the same
-        if (obsType1.getFrequency(system) == obsType2.getFrequency(system)) {
-            // Switch on Rinex version
-            switch (version) {
-                case 2 : return true;
-                case 3 : return obsType1.getSignalCode() == obsType2.getSignalCode();
-                default: return false;
-            }
-        } else {
-            // False because observation data have different frequency
-            return false;
-        }
-    }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,7 +51,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -82,7 +82,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     private NumericalPropagator setUpPropagator(Orbit orbit, double dP,
-                                                OrbitType orbitType, PositionAngle angleType,
+                                                OrbitType orbitType, PositionAngleType angleType,
                                                 ForceModel... models)
         {
 
@@ -100,7 +100,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         return propagator;
     }
 
-    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
+    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
                                        double delta, int column) {
 
         double[][] array = stateToArray(state, orbitType, angleType, true);
@@ -111,7 +111,7 @@ public class ECOM2Test extends AbstractForceModelTest {
 
     }
 
-    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngle angleType,
+    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngleType angleType,
                                          Frame frame, AbsoluteDate date, double mu,
                                          Attitude attitude) {
         Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
@@ -120,7 +120,7 @@ public class ECOM2Test extends AbstractForceModelTest {
                new SpacecraftState(orbit, attitude, array[0][6]);
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
+    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
                                     boolean withMass) {
           double[][] array = new double[2][withMass ? 7 : 6];
           orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
@@ -131,11 +131,11 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     private void fillJacobianModelColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, PositionAngle angleType, double h,
-                                    Vector3D sM4h, Vector3D sM3h,
-                                    Vector3D sM2h, Vector3D sM1h,
-                                    Vector3D sP1h, Vector3D sP2h,
-                                    Vector3D sP3h, Vector3D sP4h) {
+                                         OrbitType orbitType, PositionAngleType angleType, double h,
+                                         Vector3D sM4h, Vector3D sM3h,
+                                         Vector3D sM2h, Vector3D sM1h,
+                                         Vector3D sP1h, Vector3D sP2h,
+                                         Vector3D sP3h, Vector3D sP4h) {
 
         jacobian[0][column] = ( -3 * (sP4h.getX() - sM4h.getX()) +
                         32 * (sP3h.getX() - sM3h.getX()) -
@@ -191,7 +191,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         final SpacecraftState state     = dsState.toSpacecraftState();
         final double[][] refDeriv = new double[3][6];
         final OrbitType     orbitType = orbit.getType();
-        final PositionAngle angleType = PositionAngle.MEAN;
+        final PositionAngleType angleType = PositionAngleType.MEAN;
         double dP = 0.001;
         double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
         AbstractIntegratedPropagator propagator = setUpPropagator(orbit, dP, orbitType, angleType, gravityField, forceModel);
@@ -200,35 +200,35 @@ public class ECOM2Test extends AbstractForceModelTest {
         for(int i = 0; i < 6; i++) {
             propagator.resetInitialState(shiftState(state, orbitType, angleType, -4 * steps[i], i));
             SpacecraftState sM4h = propagator.propagate(state.getDate());
-            Vector3D accM4 = forceModel.acceleration(sM4h, forceModel.getParameters());
-
+            Vector3D accM4 = forceModel.acceleration(sM4h, forceModel.getParameters()); 
+            
             propagator.resetInitialState(shiftState(state, orbitType, angleType, -3 * steps[i], i));
             SpacecraftState sM3h = propagator.propagate(state.getDate());
-            Vector3D accM3 = forceModel.acceleration(sM3h, forceModel.getParameters());
-
+            Vector3D accM3 = forceModel.acceleration(sM3h, forceModel.getParameters()); 
+            
             propagator.resetInitialState(shiftState(state, orbitType, angleType, -2 * steps[i], i));
             SpacecraftState sM2h = propagator.propagate(state.getDate());
-            Vector3D accM2 = forceModel.acceleration(sM2h, forceModel.getParameters());
-
+            Vector3D accM2 = forceModel.acceleration(sM2h, forceModel.getParameters()); 
+ 
             propagator.resetInitialState(shiftState(state, orbitType, angleType, -1 * steps[i] , i));
             SpacecraftState sM1h = propagator.propagate(state.getDate());
-            Vector3D accM1 = forceModel.acceleration(sM1h, forceModel.getParameters());
-
+            Vector3D accM1 = forceModel.acceleration(sM1h, forceModel.getParameters()); 
+           
             propagator.resetInitialState(shiftState(state, orbitType, angleType, 1 * steps[i], i));
             SpacecraftState  sP1h = propagator.propagate(state.getDate());
-            Vector3D accP1 = forceModel.acceleration(sP1h, forceModel.getParameters());
-
+            Vector3D accP1 = forceModel.acceleration(sP1h, forceModel.getParameters()); 
+            
             propagator.resetInitialState(shiftState(state, orbitType, angleType, 2 * steps[i], i));
             SpacecraftState sP2h = propagator.propagate(state.getDate());
-            Vector3D accP2 = forceModel.acceleration(sP2h, forceModel.getParameters());
-
+            Vector3D accP2 = forceModel.acceleration(sP2h, forceModel.getParameters()); 
+            
             propagator.resetInitialState(shiftState(state, orbitType, angleType, 3 * steps[i], i));
             SpacecraftState sP3h = propagator.propagate(state.getDate());
-            Vector3D accP3 = forceModel.acceleration(sP3h, forceModel.getParameters());
-
+            Vector3D accP3 = forceModel.acceleration(sP3h, forceModel.getParameters()); 
+            
             propagator.resetInitialState(shiftState(state, orbitType, angleType, 4 * steps[i], i));
             SpacecraftState sP4h = propagator.propagate(state.getDate());
-            Vector3D accP4 = forceModel.acceleration(sP4h, forceModel.getParameters());
+            Vector3D accP4 = forceModel.acceleration(sP4h, forceModel.getParameters()); 
             fillJacobianModelColumn(refDeriv, i, orbitType, angleType, steps[i],
                                accM4, accM3, accM2, accM1,
                                accP1, accP2, accP3, accP4);
@@ -270,7 +270,7 @@ public class ECOM2Test extends AbstractForceModelTest {
 
         // Create initial field Keplerian orbit
         FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
+                                                                                 PositionAngleType.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
@@ -302,7 +302,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         NP.addForceModel(forceModel);
 
         // Do the test
-        checkRealFieldPropagation(FKO, PositionAngle.MEAN, 300., NP, FNP,
+        checkRealFieldPropagation(FKO, PositionAngleType.MEAN, 300., NP, FNP,
                                   1.0e-30, 1.3e-8, 6.7e-11, 1.4e-10,
                                   1, false);
     }
@@ -331,7 +331,7 @@ public class ECOM2Test extends AbstractForceModelTest {
 
         // Create initial field Keplerian orbit
         FieldKeplerianOrbit<Gradient> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                      PositionAngle.MEAN,
+                                                                      PositionAngleType.MEAN,
                                                                       EME,
                                                                       J2000,
                                                                       zero.add(Constants.EIGEN5C_EARTH_MU));
@@ -363,7 +363,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         NP.addForceModel(forceModel);
 
         // Do the test
-        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 300., NP, FNP,
+        checkRealFieldPropagationGradient(FKO, PositionAngleType.MEAN, 300., NP, FNP,
                                   1.0e-30, 1.3e-2, 9.6e-5, 1.4e-4,
                                   1, false);
     }
@@ -421,7 +421,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
 
         final ECOM2 forceModel = new ECOM2(2, 2, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
@@ -443,7 +443,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
 
         final ECOM2 forceModel = new ECOM2(2, 2, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
@@ -464,7 +464,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3,
                                            FastMath.tan(0.001745329)*FastMath.cos(2*FastMath.PI/3),
                                            FastMath.tan(0.001745329)*FastMath.sin(2*FastMath.PI/3),
-                                           0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), date, Constants.WGS84_EARTH_MU);
+                                           0.1, PositionAngleType.TRUE, FramesFactory.getEME2000(), date, Constants.WGS84_EARTH_MU);
         final double period = orbit.getKeplerianPeriod();
         Assertions.assertEquals(86164, period, 1);
         ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
@@ -516,7 +516,7 @@ public class ECOM2Test extends AbstractForceModelTest {
 
         // Create a Keplerian orbit
         FieldKeplerianOrbit<Gradient> orbit = new FieldKeplerianOrbit<>(sma, ecc, inc, aop, raan, lm,
-                                                                        PositionAngle.MEAN,
+                                                                        PositionAngleType.MEAN,
                                                                         FramesFactory.getEME2000(),
                                                                         epoch,
                                                                         field.getZero().add(Constants.EIGEN5C_EARTH_MU));
@@ -525,10 +525,10 @@ public class ECOM2Test extends AbstractForceModelTest {
         final ECOM2 forceModel = new ECOM2(2, 2, 1e-7, CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
 
         // Field acceleration
-        final FieldVector3D<Gradient> accField = forceModel.acceleration(new FieldSpacecraftState<>(orbit), forceModel.getParameters(field));
+        final FieldVector3D<Gradient> accField = forceModel.acceleration(new FieldSpacecraftState<>(orbit), forceModel.getParameters(field, epoch));
 
         // Real acceleration
-        final Vector3D accReal = forceModel.acceleration(new SpacecraftState(orbit.toOrbit()), forceModel.getParameters());
+        final Vector3D accReal = forceModel.acceleration(new SpacecraftState(orbit.toOrbit()), forceModel.getParameters(epoch.toAbsoluteDate()));
 
         // Verify
         Assertions.assertEquals(0.0, accReal.distance(accField.toVector3D()), 1.0e-20);
@@ -543,7 +543,7 @@ public class ECOM2Test extends AbstractForceModelTest {
             final double alpha = FastMath.toDegrees(FastMath.atan2(dey, dex));
             Assertions.assertTrue(alpha > 100.0);
             Assertions.assertTrue(alpha < 112.0);
-            checkRadius(FastMath.sqrt(dex * dex + dey * dey), 0.003469, 0.003525);
+            checkRadius(FastMath.sqrt(dex * dex + dey * dey), 0.003469, 0.003529);
         }
 
     }

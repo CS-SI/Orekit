@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,9 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.ode.events.Action;
+import java.util.Collections;
+import java.util.NoSuchElementException;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,9 +26,6 @@ import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
-
-import java.util.Collections;
-import java.util.NoSuchElementException;
 
 /**
  * Unit tests for {@link BooleanDetector#orCombine(EventDetector...)}.
@@ -124,13 +123,12 @@ public class OrDetectorTest {
     public void testInit() {
         // setup
         EventDetector a = Mockito.mock(EventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(AbstractDetector.DEFAULT_MAXCHECK);
+        Mockito.when(a.getMaxCheckInterval()).thenReturn(s -> AbstractDetector.DEFAULT_MAXCHECK);
         Mockito.when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
         EventDetector b = Mockito.mock(EventDetector.class);
-        Mockito.when(b.getMaxCheckInterval()).thenReturn(AbstractDetector.DEFAULT_MAXCHECK);
+        Mockito.when(b.getMaxCheckInterval()).thenReturn(s -> AbstractDetector.DEFAULT_MAXCHECK);
         Mockito.when(b.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
-        @SuppressWarnings("unchecked")
-        EventHandler<EventDetector> c = Mockito.mock(EventHandler.class);
+        EventHandler c = Mockito.mock(EventHandler.class);
         BooleanDetector or = BooleanDetector.orCombine(a, b).withHandler(c);
         AbsoluteDate t = AbsoluteDate.CCSDS_EPOCH;
         s = Mockito.mock(SpacecraftState.class);
@@ -180,8 +178,8 @@ public class OrDetectorTest {
         }
 
         @Override
-        public double getMaxCheckInterval() {
-            return AbstractDetector.DEFAULT_MAXCHECK;
+        public AdaptableInterval getMaxCheckInterval() {
+            return s -> AbstractDetector.DEFAULT_MAXCHECK;
         }
 
         @Override
@@ -190,13 +188,8 @@ public class OrDetectorTest {
         }
 
         @Override
-        public Action eventOccurred(SpacecraftState s, boolean increasing) {
-            return null;
-        }
-
-        @Override
-        public SpacecraftState resetState(SpacecraftState oldState) {
-            return null;
+        public EventHandler getHandler() {
+            return (state, detector, increasing) -> null;
         }
     }
 }

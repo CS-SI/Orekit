@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,9 +24,9 @@ public class WindUpFactoryTest {
 
     @Test
     public void testDifferentFactories() {
-        WindUp windUp1 = new WindUpFactory().getWindUp(SatelliteSystem.GALILEO, 1, "ABC123");
+        WindUp windUp1 = new WindUpFactory().getWindUp(SatelliteSystem.GALILEO, 1, Dipole.CANONICAL_I_J, "ABC123");
         Assertions.assertEquals(0, windUp1.getParametersDrivers().size());
-        WindUp windUp2 = new WindUpFactory().getWindUp(SatelliteSystem.GALILEO, 1, "ABC123");
+        WindUp windUp2 = new WindUpFactory().getWindUp(SatelliteSystem.GALILEO, 1, Dipole.CANONICAL_I_J, "ABC123");
         Assertions.assertEquals(0, windUp2.getParametersDrivers().size());
         Assertions.assertNotSame(windUp1, windUp2);
     }
@@ -34,9 +34,9 @@ public class WindUpFactoryTest {
     @Test
     public void testSameFactory() {
         WindUpFactory factory = new WindUpFactory();
-        WindUp windUp1 = factory.getWindUp(SatelliteSystem.GALILEO, 1, "ABC123");
+        WindUp windUp1 = factory.getWindUp(SatelliteSystem.GALILEO, 1, Dipole.CANONICAL_I_J, "ABC123");
         Assertions.assertEquals(0, windUp1.getParametersDrivers().size());
-        WindUp windUp2 = factory.getWindUp(SatelliteSystem.GALILEO, 1, "ABC123");
+        WindUp windUp2 = factory.getWindUp(SatelliteSystem.GALILEO, 1, Dipole.CANONICAL_I_J, "ABC123");
         Assertions.assertEquals(0, windUp2.getParametersDrivers().size());
         Assertions.assertSame(windUp1, windUp2);
     }
@@ -46,24 +46,24 @@ public class WindUpFactoryTest {
 
         WindUpFactory factory = new WindUpFactory();
         WindUp[] windUp1 = {
-            factory.getWindUp(SatelliteSystem.GALILEO, 1, "ABC123"),
-            factory.getWindUp(SatelliteSystem.GLONASS, 1, "ABC123"),
-            factory.getWindUp(SatelliteSystem.GALILEO, 2, "ABC123"),
-            factory.getWindUp(SatelliteSystem.GLONASS, 2, "ABC123"),
-            factory.getWindUp(SatelliteSystem.GALILEO, 1, "XYZ789"),
-            factory.getWindUp(SatelliteSystem.GLONASS, 1, "XYZ789"),
-            factory.getWindUp(SatelliteSystem.GALILEO, 2, "XYZ789"),
-            factory.getWindUp(SatelliteSystem.GLONASS, 2, "XYZ789")
+            factory.getWindUp(SatelliteSystem.GALILEO, 1, Dipole.CANONICAL_I_J, "ABC123"),
+            factory.getWindUp(SatelliteSystem.GLONASS, 1, Dipole.CANONICAL_I_J, "ABC123"),
+            factory.getWindUp(SatelliteSystem.GALILEO, 2, Dipole.CANONICAL_I_J, "ABC123"),
+            factory.getWindUp(SatelliteSystem.GLONASS, 2, Dipole.CANONICAL_I_J, "ABC123"),
+            factory.getWindUp(SatelliteSystem.GALILEO, 1, Dipole.CANONICAL_I_J, "XYZ789"),
+            factory.getWindUp(SatelliteSystem.GLONASS, 1, Dipole.CANONICAL_I_J, "XYZ789"),
+            factory.getWindUp(SatelliteSystem.GALILEO, 2, Dipole.CANONICAL_I_J, "XYZ789"),
+            factory.getWindUp(SatelliteSystem.GLONASS, 2, Dipole.CANONICAL_I_J, "XYZ789")
         };
         WindUp[] windUp2 = {
-            factory.getWindUp(SatelliteSystem.GALILEO, 1, "ABC123"),
-            factory.getWindUp(SatelliteSystem.GLONASS, 1, "ABC123"),
-            factory.getWindUp(SatelliteSystem.GALILEO, 2, "ABC123"),
-            factory.getWindUp(SatelliteSystem.GLONASS, 2, "ABC123"),
-            factory.getWindUp(SatelliteSystem.GALILEO, 1, "XYZ789"),
-            factory.getWindUp(SatelliteSystem.GLONASS, 1, "XYZ789"),
-            factory.getWindUp(SatelliteSystem.GALILEO, 2, "XYZ789"),
-            factory.getWindUp(SatelliteSystem.GLONASS, 2, "XYZ789")
+            factory.getWindUp(SatelliteSystem.GALILEO, 1, Dipole.CANONICAL_I_J, "ABC123"),
+            factory.getWindUp(SatelliteSystem.GLONASS, 1, Dipole.CANONICAL_I_J, "ABC123"),
+            factory.getWindUp(SatelliteSystem.GALILEO, 2, Dipole.CANONICAL_I_J, "ABC123"),
+            factory.getWindUp(SatelliteSystem.GLONASS, 2, Dipole.CANONICAL_I_J, "ABC123"),
+            factory.getWindUp(SatelliteSystem.GALILEO, 1, Dipole.CANONICAL_I_J, "XYZ789"),
+            factory.getWindUp(SatelliteSystem.GLONASS, 1, Dipole.CANONICAL_I_J, "XYZ789"),
+            factory.getWindUp(SatelliteSystem.GALILEO, 2, Dipole.CANONICAL_I_J, "XYZ789"),
+            factory.getWindUp(SatelliteSystem.GLONASS, 2, Dipole.CANONICAL_I_J, "XYZ789")
         };
 
         for (int i = 0; i < windUp1.length; ++i) {

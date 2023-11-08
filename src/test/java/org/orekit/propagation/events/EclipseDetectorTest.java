@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.LocalizedODEFormats;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
@@ -37,7 +38,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
@@ -69,7 +70,7 @@ public class EclipseDetectorTest {
         final KeplerianOrbit polar    = new KeplerianOrbit(original.getA(), original.getE(),
                                                            0.5 * FastMath.PI, original.getPerigeeArgument(),
                                                            original.getRightAscensionOfAscendingNode(),
-                                                           original.getTrueAnomaly(), PositionAngle.TRUE,
+                                                           original.getTrueAnomaly(), PositionAngleType.TRUE,
                                                            original.getFrame(), original.getDate(),
                                                            original.getMu());
         propagator.resetInitialState(new SpacecraftState(polar));
@@ -81,7 +82,7 @@ public class EclipseDetectorTest {
         EclipseDetector withoutFlattening = new EclipseDetector(sun, sunRadius, sphericalEarth).
                                             withMaxCheck(60.0).
                                             withThreshold(1.0e-3).
-                                            withHandler(new ContinueOnEvent<>()).
+                                            withHandler(new ContinueOnEvent()).
                                             withUmbra();
         OneAxisEllipsoid obateEarth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                            Constants.WGS84_EARTH_FLATTENING,
@@ -90,7 +91,7 @@ public class EclipseDetectorTest {
         EclipseDetector withFlattening    = new EclipseDetector(sun, sunRadius, obateEarth).
                                             withMaxCheck(60.0).
                                             withThreshold(1.0e-3).
-                                            withHandler(new ContinueOnEvent<>()).
+                                            withHandler(new ContinueOnEvent()).
                                             withUmbra();
         propagator.addEventDetector(logger.monitorDetector(withoutFlattening));
         propagator.addEventDetector(logger.monitorDetector(withFlattening));
@@ -137,11 +138,12 @@ public class EclipseDetectorTest {
         EclipseDetector e = new EclipseDetector(sun, sunRadius, earth).
                             withMaxCheck(60.0).
                             withThreshold(1.0e-3).
-                            withHandler(new StopOnDecreasing<EclipseDetector>()).
+                            withHandler(new StopOnDecreasing()).
                             withUmbra();
-        Assertions.assertEquals(60.0, e.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(60.0, e.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-3, e.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, e.getMaxIterationCount());
+        Assertions.assertEquals(0.0, e.getMargin(), 1.0e-15);
         Assertions.assertTrue(e.getTotalEclipse());
         propagator.addEventDetector(e);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
@@ -163,16 +165,17 @@ public class EclipseDetectorTest {
     @Test
     public void testWithMethods() {
         EclipseDetector e = new EclipseDetector(sun, sunRadius, earth).
-                             withHandler(new StopOnDecreasing<EclipseDetector>()).
+                             withHandler(new StopOnDecreasing()).
                              withMaxCheck(120.0).
                              withThreshold(1.0e-4).
-                             withMaxIter(12);
-        Assertions.assertEquals(120.0, e.getMaxCheckInterval(), 1.0e-15);
+                             withMaxIter(12).
+                             withMargin(0.001);
+        Assertions.assertEquals(120.0, e.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-4, e.getThreshold(), 1.0e-15);
         Assertions.assertEquals(12, e.getMaxIterationCount());
         propagator.addEventDetector(e);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
-        Assertions.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertEquals(2304.188978, finalState.getDate().durationFrom(iniDate), 1.0e-4);
 
     }
 
@@ -195,8 +198,7 @@ public class EclipseDetectorTest {
     @Test
     public void testInsideOcculted() {
         EclipseDetector e = new EclipseDetector(sun, sunRadius, earth);
-        Vector3D p = sun.getPVCoordinates(AbsoluteDate.J2000_EPOCH,
-                                          FramesFactory.getGCRF()).getPosition();
+        Vector3D p = sun.getPosition(AbsoluteDate.J2000_EPOCH, FramesFactory.getGCRF());
         SpacecraftState s = new SpacecraftState(new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH,
                                                                                                 p.add(Vector3D.PLUS_I),
                                                                                                 Vector3D.PLUS_K),
@@ -209,7 +211,7 @@ public class EclipseDetectorTest {
     public void testTooSmallMaxIterationCount() {
         int n = 5;
         EclipseDetector e = new EclipseDetector(sun, sunRadius, earth).
-                             withHandler(new StopOnDecreasing<EclipseDetector>()).
+                             withHandler(new StopOnDecreasing()).
                              withMaxCheck(120.0).
                              withThreshold(1.0e-4).
                              withMaxIter(n);
@@ -218,7 +220,8 @@ public class EclipseDetectorTest {
             propagator.propagate(iniDate.shiftedBy(6000));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(n, ((Integer) ((MathRuntimeException) oe.getCause()).getParts()[0]).intValue());
+            Assertions.assertEquals(LocalizedODEFormats.FIND_ROOT,
+                                    ((MathRuntimeException) oe.getCause()).getSpecifier());
         }
     }
 

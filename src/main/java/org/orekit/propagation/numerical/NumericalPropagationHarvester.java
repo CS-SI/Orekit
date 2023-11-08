@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,8 @@ import java.util.List;
 
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.DoubleArrayDictionary;
@@ -40,7 +42,7 @@ class NumericalPropagationHarvester extends AbstractMatricesHarvester {
     /** Simple constructor.
      * <p>
      * The arguments for initial matrices <em>must</em> be compatible with the {@link org.orekit.orbits.OrbitType orbit type}
-     * and {@link org.orekit.orbits.PositionAngle position angle} that will be used by propagator
+     * and {@link PositionAngleType position angle} that will be used by propagator
      * </p>
      * @param propagator propagator bound to this harvester
      * @param stmName State Transition Matrix state name
@@ -90,6 +92,18 @@ class NumericalPropagationHarvester extends AbstractMatricesHarvester {
     @Override
     public List<String> getJacobiansColumnsNames() {
         return columnsNames == null ? propagator.getJacobiansColumnsNames() : columnsNames;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OrbitType getOrbitType() {
+        return propagator.getOrbitType();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PositionAngleType getPositionAngleType() {
+        return propagator.getPositionAngleType();
     }
 
 }

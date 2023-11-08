@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,24 +16,22 @@
  */
 package org.orekit.forces;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.MathArrays;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.EventDetectorsProvider;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParametersDriversProvider;
+import org.orekit.utils.ParameterDriversProvider;
 
 /** This interface represents a force modifying spacecraft motion.
  *
@@ -55,7 +53,7 @@ import org.orekit.utils.ParametersDriversProvider;
  * Force models which create discontinuous acceleration patterns (typically for maneuvers
  * start/stop or solar eclipses entry/exit) must provide one or more {@link
  * org.orekit.propagation.events.EventDetector events detectors} to the
- * propagator thanks to their {@link #getEventsDetectors()} method. This method
+ * propagator thanks to their {@link #getEventDetectors()} method. This method
  * is called once just before propagation starts. The events states will be checked by
  * the propagator to ensure accurate propagation and proper events handling.
  * </p>
@@ -63,8 +61,9 @@ import org.orekit.utils.ParametersDriversProvider;
  * @author Mathieu Rom&eacute;ro
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
+ * @author Melina Vanel
  */
-public interface ForceModel extends ParametersDriversProvider {
+public interface ForceModel extends ParameterDriversProvider, EventDetectorsProvider {
 
     /**
      * Initialize the force model at the start of propagation. This method will be called
@@ -96,6 +95,18 @@ public interface ForceModel extends ParametersDriversProvider {
         init(initialState.toSpacecraftState(), target.toAbsoluteDate());
     }
 
+    /** {@inheritDoc}.*/
+    @Override
+    default Stream<EventDetector> getEventDetectors() {
+        return getEventDetectors(getParametersDrivers());
+    }
+
+    /** {@inheritDoc}.*/
+    @Override
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
+        return getFieldEventDetectors(field, getParametersDrivers());
+    }
+
     /** Compute the contribution of the force model to the perturbing
      * acceleration.
      * <p>
@@ -106,7 +117,7 @@ public interface ForceModel extends ParametersDriversProvider {
      * @param adder object where the contribution should be added
      */
     default void addContribution(SpacecraftState s, TimeDerivativesEquations adder) {
-        adder.addNonKeplerianAcceleration(acceleration(s, getParameters()));
+        adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate())));
     }
 
     /** Compute the contribution of the force model to the perturbing
@@ -116,35 +127,7 @@ public interface ForceModel extends ParametersDriversProvider {
      * @param <T> type of the elements
      */
     default <T extends CalculusFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder) {
-        adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate().getField())));
-    }
-
-    /** Get force model parameters.
-     * @return force model parameters
-     * @since 9.0
-     */
-    default double[] getParameters() {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.size()];
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = drivers.get(i).getValue();
-        }
-        return parameters;
-    }
-
-    /** Get force model parameters.
-     * @param field field to which the elements belong
-     * @param <T> type of the elements
-     * @return force model parameters
-     * @since 9.0
-     */
-    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.size());
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = field.getZero().add(drivers.get(i).getValue());
-        }
-        return parameters;
+        adder.addNonKeplerianAcceleration(acceleration(s, getParameters(s.getDate().getField(), s.getDate())));
     }
 
     /** Check if force models depends on position only.
@@ -157,7 +140,8 @@ public interface ForceModel extends ParametersDriversProvider {
 
     /** Compute acceleration.
      * @param s current state information: date, kinematics, attitude
-     * @param parameters values of the force model parameters
+     * @param parameters values of the force model parameters at state date,
+     * only 1 value for each parameterDriver
      * @return acceleration in same frame as state
      * @since 9.0
      */
@@ -165,38 +149,11 @@ public interface ForceModel extends ParametersDriversProvider {
 
     /** Compute acceleration.
      * @param s current state information: date, kinematics, attitude
-     * @param parameters values of the force model parameters
+     * @param parameters values of the force model parameters at state date,
+     * only 1 value for each parameterDriver
      * @return acceleration in same frame as state
      * @param <T> type of the elements
      * @since 9.0
      */
     <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters);
-
-    /** Get the discrete events related to the model.
-     * @return stream of events detectors
-     */
-    Stream<EventDetector> getEventsDetectors();
-
-    /** Get the discrete events related to the model.
-     * @param field field to which the state belongs
-     * @param <T> extends CalculusFieldElement&lt;T&gt;
-     * @return stream of events detectors
-     */
-    <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(Field<T> field);
-
-    /** Get parameter value from its name.
-     * @param name parameter name
-     * @return parameter value
-     * @since 8.0
-     */
-    ParameterDriver getParameterDriver(String name);
-
-    /** Check if a parameter is supported.
-     * <p>Supported parameters are those listed by {@link #getParametersDrivers()}.</p>
-     * @param name parameter name to check
-     * @return true if the parameter is supported
-     * @see #getParametersDrivers()
-     */
-    boolean isSupported(String name);
-
 }

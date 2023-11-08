@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,15 +22,15 @@ import org.orekit.propagation.SpacecraftState;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public interface EnablingPredicate<S extends EventDetector> {
+public interface EnablingPredicate {
 
     /** Compute an event enabling function of state.
      * @param state current state
-     * @param eventDetector underlying detector
+     * @param detector underlying detector
      * @param g value of the underlying detector for the current state
      * @return true if the event is enabled (i.e. it can be
      * triggered), false if it should be ignored
      */
-    boolean eventIsEnabled(SpacecraftState state, S eventDetector, double g);
+    boolean eventIsEnabled(SpacecraftState state, EventDetector detector, double g);
 
 }

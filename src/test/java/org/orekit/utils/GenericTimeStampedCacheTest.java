@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,10 +22,22 @@ import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.TimeStampedCacheException;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.TopocentricFrame;
+import org.orekit.models.earth.ReferenceEllipsoid;
+import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -379,6 +391,38 @@ public class GenericTimeStampedCacheTest {
 
     }
 
+    @Test
+    @DisplayName("Test that the cache of the detector does not get corrupted when a propagation to infinity has been run")
+    void testIssue1108() {
+        // GIVEN
+        final TLE aTle = new TLE("1 27424U 02022A   23173.43403823  .00001056  00000+0  23935-3 0  9994",
+                           "2 27424  98.2874 117.8299 0001810 103.6635   5.7337 14.58117998124128");
+
+        final Frame            itrf      = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final GeodeticPoint    site      = new GeodeticPoint(0.0, 0.0, 0.0);
+        final TopocentricFrame siteFrame = new TopocentricFrame(ReferenceEllipsoid.getIers2010(itrf), site, "site");
+        final ElevationDetector siteVisDetector =
+              new ElevationDetector(60, 0.001, siteFrame).withConstantElevation(5.0);
+
+        // Create TLE propagator
+        final TLEPropagator tlePropagator = TLEPropagator.selectExtrapolator(aTle);
+        tlePropagator.addEventDetector(siteVisDetector);
+
+        try {
+            // WHEN
+            // Propagation from and to infinity throws an exception
+            tlePropagator.propagate(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY);
+        } catch (OrekitIllegalArgumentException e) {
+            // THEN
+            TimeScale          utc                = TimeScalesFactory.getUTC();
+            final AbsoluteDate ephemerisStartDate = new AbsoluteDate(23, 6, 15, 0, 0, 0, utc);
+            final AbsoluteDate ephemerisEndDate   = new AbsoluteDate(23, 6, 15, 0, 0, 1, utc);
+
+            // New propagation should not throw an ArithmeticException
+            Assertions.assertDoesNotThrow(() -> tlePropagator.propagate(ephemerisStartDate, ephemerisEndDate));
+        }
+    }
+
     private int testMultipleSingleThread(GenericTimeStampedCache<AbsoluteDate> cache, Mode mode, int slots)
         throws TimeStampedCacheException {
         double step = ((Generator) cache.getGenerator()).getStep();
@@ -415,7 +459,7 @@ public class GenericTimeStampedCacheTest {
                                        final GenericTimeStampedCache<AbsoluteDate> cache)
         throws TimeStampedCacheException {
 
-        final int n = cache.getNeighborsSize();
+        final int n = cache.getMaxNeighborsSize();
         final double step = ((Generator) cache.getGenerator()).getStep();
 
         for (final AbsoluteDate central : centralDates) {
@@ -436,7 +480,7 @@ public class GenericTimeStampedCacheTest {
                                       final int threadPoolSize)
         throws TimeStampedCacheException {
 
-        final int n = cache.getNeighborsSize();
+        final int n = cache.getMaxNeighborsSize();
         final double step = ((Generator) cache.getGenerator()).getStep();
         final AtomicReference<AbsoluteDate[]> failedDates = new AtomicReference<AbsoluteDate[]>();
         final AtomicReference<TimeStampedCacheException> caught = new AtomicReference<TimeStampedCacheException>();

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,15 +17,10 @@
 package org.orekit.orbits;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
-import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
@@ -77,8 +72,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class CircularOrbit
-    extends Orbit {
+public class CircularOrbit extends Orbit implements PositionAngleBased {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20170414L;
@@ -142,7 +136,7 @@ public class CircularOrbit
      */
     public CircularOrbit(final double a, final double ex, final double ey,
                          final double i, final double raan, final double alpha,
-                         final PositionAngle type,
+                         final PositionAngleType type,
                          final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         this(a, ex, ey, i, raan, alpha,
@@ -175,7 +169,7 @@ public class CircularOrbit
                          final double i, final double raan, final double alpha,
                          final double aDot, final double exDot, final double eyDot,
                          final double iDot, final double raanDot, final double alphaDot,
-                         final PositionAngle type,
+                         final PositionAngleType type,
                          final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
@@ -306,13 +300,12 @@ public class CircularOrbit
         final double r  = FastMath.sqrt(r2);
         final double V2 = pvV.getNormSq();
         final double rV2OnMu = r * V2 / mu;
+        a = r / (2 - rV2OnMu);
 
-        if (rV2OnMu > 2) {
+        if (!isElliptical()) {
             throw new OrekitIllegalArgumentException(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS,
                                                      getClass().getName());
         }
-
-        a = r / (2 - rV2OnMu);
 
         // compute inclination
         final Vector3D momentum = pvCoordinates.getMomentum();
@@ -352,7 +345,7 @@ public class CircularOrbit
             // we have a relevant acceleration, we can compute derivatives
 
             final double[][] jacobian = new double[6][6];
-            getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+            getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
 
             final Vector3D keplerianAcceleration    = new Vector3D(-mu / (r * r2), pvP);
             final Vector3D nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
@@ -636,9 +629,9 @@ public class CircularOrbit
      * @param type type of the angle
      * @return latitude argument (rad)
      */
-    public double getAlpha(final PositionAngle type) {
-        return (type == PositionAngle.MEAN) ? getAlphaM() :
-                                              ((type == PositionAngle.ECCENTRIC) ? getAlphaE() :
+    public double getAlpha(final PositionAngleType type) {
+        return (type == PositionAngleType.MEAN) ? getAlphaM() :
+                                              ((type == PositionAngleType.ECCENTRIC) ? getAlphaE() :
                                                                                    getAlphaV());
     }
 
@@ -650,9 +643,9 @@ public class CircularOrbit
      * @return latitude argument derivative (rad/s)
      * @since 9.0
      */
-    public double getAlphaDot(final PositionAngle type) {
-        return (type == PositionAngle.MEAN) ? getAlphaMDot() :
-                                              ((type == PositionAngle.ECCENTRIC) ? getAlphaEDot() :
+    public double getAlphaDot(final PositionAngleType type) {
+        return (type == PositionAngleType.MEAN) ? getAlphaMDot() :
+                                              ((type == PositionAngleType.ECCENTRIC) ? getAlphaEDot() :
                                                                                    getAlphaVDot());
     }
 
@@ -864,7 +857,7 @@ public class CircularOrbit
     private Vector3D nonKeplerianAcceleration() {
 
         final double[][] dCdP = new double[6][6];
-        getJacobianWrtParameters(PositionAngle.MEAN, dCdP);
+        getJacobianWrtParameters(PositionAngleType.MEAN, dCdP);
 
         final double nonKeplerianMeanMotion = getAlphaMDot() - getKeplerianMeanMotion();
         final double nonKeplerianAx = dCdP[3][0] * aDot    + dCdP[3][1] * exDot   + dCdP[3][2] * eyDot   +
@@ -875,6 +868,51 @@ public class CircularOrbit
                                       dCdP[5][3] * iDot    + dCdP[5][4] * raanDot + dCdP[5][5] * nonKeplerianMeanMotion;
 
         return new Vector3D(nonKeplerianAx, nonKeplerianAy, nonKeplerianAz);
+
+    }
+
+    /** {@inheritDoc} */
+    protected Vector3D initPosition() {
+
+        // get equinoctial parameters
+        final double equEx = getEquinoctialEx();
+        final double equEy = getEquinoctialEy();
+        final double hx = getHx();
+        final double hy = getHy();
+        final double lE = getLE();
+
+        // inclination-related intermediate parameters
+        final double hx2   = hx * hx;
+        final double hy2   = hy * hy;
+        final double factH = 1. / (1 + hx2 + hy2);
+
+        // reference axes defining the orbital plane
+        final double ux = (1 + hx2 - hy2) * factH;
+        final double uy =  2 * hx * hy * factH;
+        final double uz = -2 * hy * factH;
+
+        final double vx = uy;
+        final double vy = (1 - hx2 + hy2) * factH;
+        final double vz =  2 * hx * factH;
+
+        // eccentricity-related intermediate parameters
+        final double exey = equEx * equEy;
+        final double ex2  = equEx * equEx;
+        final double ey2  = equEy * equEy;
+        final double e2   = ex2 + ey2;
+        final double eta  = 1 + FastMath.sqrt(1 - e2);
+        final double beta = 1. / eta;
+
+        // eccentric latitude argument
+        final SinCos scLe   = FastMath.sinCos(lE);
+        final double cLe    = scLe.cos();
+        final double sLe    = scLe.sin();
+
+        // coordinates of position and velocity in the orbital plane
+        final double x      = a * ((1 - beta * ey2) * cLe + beta * exey * sLe - equEx);
+        final double y      = a * ((1 - beta * ex2) * sLe + beta * exey * cLe - equEy);
+
+        return new Vector3D(x * ux + y * vx, x * uy + y * vy, x * uz + y * vz);
 
     }
 
@@ -901,7 +939,7 @@ public class CircularOrbit
         // use Keplerian-only motion
         final CircularOrbit keplerianShifted = new CircularOrbit(a, ex, ey, i, raan,
                                                                  getAlphaM() + getKeplerianMeanMotion() * dt,
-                                                                 PositionAngle.MEAN, getFrame(),
+                                                                 PositionAngleType.MEAN, getFrame(),
                                                                  getDate().shiftedBy(dt), getMu());
 
         if (hasDerivatives()) {
@@ -929,100 +967,6 @@ public class CircularOrbit
             // Keplerian-only motion is all we can do
             return keplerianShifted;
         }
-
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * on circular elements, without derivatives (which means the interpolation
-     * falls back to Lagrange interpolation only).
-     * </p>
-     * <p>
-     * As this implementation of interpolation is polynomial, it should be used only
-     * with small samples (about 10-20 points) in order to avoid <a
-     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
-     * and numerical problems (including NaN appearing).
-     * </p>
-     * <p>
-     * If orbit interpolation on large samples is needed, using the {@link
-     * org.orekit.propagation.analytical.Ephemeris} class is a better way than using this
-     * low-level interpolation. The Ephemeris class automatically handles selection of
-     * a neighboring sub-sample with a predefined number of point from a large global sample
-     * in a thread-safe way.
-     * </p>
-     */
-    public CircularOrbit interpolate(final AbsoluteDate date, final Stream<Orbit> sample) {
-
-        // first pass to check if derivatives are available throughout the sample
-        final List<Orbit> list = sample.collect(Collectors.toList());
-        boolean useDerivatives = true;
-        for (final Orbit orbit : list) {
-            useDerivatives = useDerivatives && orbit.hasDerivatives();
-        }
-
-        // set up an interpolator
-        final HermiteInterpolator interpolator = new HermiteInterpolator();
-
-        // second pass to feed interpolator
-        AbsoluteDate previousDate   = null;
-        double       previousRAAN   = Double.NaN;
-        double       previousAlphaM = Double.NaN;
-        for (final Orbit orbit : list) {
-            final CircularOrbit circ = (CircularOrbit) OrbitType.CIRCULAR.convertType(orbit);
-            final double continuousRAAN;
-            final double continuousAlphaM;
-            if (previousDate == null) {
-                continuousRAAN   = circ.getRightAscensionOfAscendingNode();
-                continuousAlphaM = circ.getAlphaM();
-            } else {
-                final double dt       = circ.getDate().durationFrom(previousDate);
-                final double keplerAM = previousAlphaM + circ.getKeplerianMeanMotion() * dt;
-                continuousRAAN   = MathUtils.normalizeAngle(circ.getRightAscensionOfAscendingNode(), previousRAAN);
-                continuousAlphaM = MathUtils.normalizeAngle(circ.getAlphaM(), keplerAM);
-            }
-            previousDate   = circ.getDate();
-            previousRAAN   = continuousRAAN;
-            previousAlphaM = continuousAlphaM;
-            if (useDerivatives) {
-                interpolator.addSamplePoint(circ.getDate().durationFrom(date),
-                                            new double[] {
-                                                circ.getA(),
-                                                circ.getCircularEx(),
-                                                circ.getCircularEy(),
-                                                circ.getI(),
-                                                continuousRAAN,
-                                                continuousAlphaM
-                                            }, new double[] {
-                                                circ.getADot(),
-                                                circ.getCircularExDot(),
-                                                circ.getCircularEyDot(),
-                                                circ.getIDot(),
-                                                circ.getRightAscensionOfAscendingNodeDot(),
-                                                circ.getAlphaMDot()
-                                            });
-            } else {
-                interpolator.addSamplePoint(circ.getDate().durationFrom(date),
-                                            new double[] {
-                                                circ.getA(),
-                                                circ.getCircularEx(),
-                                                circ.getCircularEy(),
-                                                circ.getI(),
-                                                continuousRAAN,
-                                                continuousAlphaM
-                                            });
-            }
-        }
-
-        // interpolate
-        final double[][] interpolated = interpolator.derivatives(0.0, 1);
-
-        // build a new interpolated instance
-        return new CircularOrbit(interpolated[0][0], interpolated[0][1], interpolated[0][2],
-                                 interpolated[0][3], interpolated[0][4], interpolated[0][5],
-                                 interpolated[1][0], interpolated[1][1], interpolated[1][2],
-                                 interpolated[1][3], interpolated[1][4], interpolated[1][5],
-                                 PositionAngle.MEAN, getFrame(), date, getMu());
 
     }
 
@@ -1232,7 +1176,7 @@ public class CircularOrbit
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final double gm,
+    public void addKeplerContribution(final PositionAngleType type, final double gm,
                                       final double[] pDot) {
         final double oMe2;
         final double ksi;
@@ -1268,6 +1212,26 @@ public class CircularOrbit
                                   append(", raan: ").append(FastMath.toDegrees(raan)).
                                   append(", alphaV: ").append(FastMath.toDegrees(alphaV)).
                                   append(";}").toString();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PositionAngleType getCachedPositionAngleType() {
+        return PositionAngleType.TRUE;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasRates() {
+        return hasDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CircularOrbit removeRates() {
+        final PositionAngleType positionAngleType = getCachedPositionAngleType();
+        return new CircularOrbit(getA(), getCircularEx(), getCircularEy(), getI(), getRightAscensionOfAscendingNode(),
+                getAlpha(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
     }
 
     /** Replace the instance with a data transfer object for serialization.
@@ -1381,11 +1345,11 @@ public class CircularOrbit
                 case 15 : // date + mu + orbit + derivatives
                     return new CircularOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
                                              d[ 9], d[10], d[11], d[12], d[13], d[14],
-                                             PositionAngle.TRUE,
+                                             PositionAngleType.TRUE,
                                              frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                              d[2]);
                 default : // date + mu + orbit
-                    return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngle.TRUE,
+                    return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngleType.TRUE,
                                              frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
                                              d[2]);
 

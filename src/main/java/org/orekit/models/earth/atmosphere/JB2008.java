@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -503,7 +503,7 @@ public class JB2008 implements Atmosphere {
      * @param y10B Solar X-Ray &amp; Lya 81-day ave. centered index<br>
      *        (Tabular time 5.0 days earlier)
      * @param dstdtc Temperature change computed from Dst index
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return total mass-Density at input position (kg/m³)
      */
     public <T extends CalculusFieldElement<T>> T getDensity(final T dateMJD, final T sunRA, final T sunDecli,
@@ -869,7 +869,7 @@ public class JB2008 implements Atmosphere {
      * @param fs scaled flux f10
      * @param st local solar time in [0, 1[
      * @param cs cosine of satLat
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return the value of the polynomial
      */
     private static <T extends CalculusFieldElement<T>>  T poly1CDTC(final double fs, final T st, final T cs) {
@@ -906,7 +906,7 @@ public class JB2008 implements Atmosphere {
      * @param fs scaled flux f10
      * @param st local solar time in [0, 1[
      * @param cs cosine of satLat
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return the value of the polynomial
      */
     private static <T extends CalculusFieldElement<T>>  T poly2CDTC(final double fs, final T st, final T cs) {
@@ -937,7 +937,7 @@ public class JB2008 implements Atmosphere {
      * @param st local solar time in [0, 1[
      * @param cs cosine of satLat
      * @param hp scaled height * poly2BDTC
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return the value of the polynomial
      */
     private static <T extends CalculusFieldElement<T>>  T poly1BDTC(final double fs, final T st, final T cs, final T hp) {
@@ -966,7 +966,7 @@ public class JB2008 implements Atmosphere {
 
     /** Calculates second polynomial with BDTC array.
      * @param st local solar time in [0, 1[
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return the value of the polynomial
      */
     private static <T extends CalculusFieldElement<T>>  T poly2BDTC(final T st) {
@@ -994,7 +994,7 @@ public class JB2008 implements Atmosphere {
     /** Evaluates mean molecualr mass - Equation (1).
      * @param z altitude (km)
      * @return mean molecular mass
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      */
     private static <T extends CalculusFieldElement<T>>  T mBar(final T z) {
         final T dz = z.subtract(100.);
@@ -1023,7 +1023,7 @@ public class JB2008 implements Atmosphere {
      * @param z altitude
      * @param tc tc array
      * @return temperature profile
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      */
     private static <T extends CalculusFieldElement<T>>  T localTemp(final T z, final T[] tc) {
         final T dz = z.subtract(125.);
@@ -1046,7 +1046,7 @@ public class JB2008 implements Atmosphere {
     /** Evaluates the gravity at the altitude - Equation (8).
      * @param z altitude (km)
      * @return the gravity (m/s2)
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      */
     private static <T extends CalculusFieldElement<T>>  T gravity(final T z) {
         final T tmp = z.divide(EARTH_RADIUS).add(1);
@@ -1093,7 +1093,7 @@ public class JB2008 implements Atmosphere {
      * @param s10B average 81-day centered s10
      * @param xm10B average 81-day centered xn10
      * @return semi-annual variation
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      */
     private static <T extends CalculusFieldElement<T>>  T semian08(final T doy, final T alt,
                                                                final double f10B, final double s10B, final double xm10B) {
@@ -1178,7 +1178,7 @@ public class JB2008 implements Atmosphere {
     /** Compute min of two values, one double and one field element.
      * @param d double value
      * @param f field element
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return min value
      */
     private <T extends CalculusFieldElement<T>> T min(final double d, final T f) {
@@ -1188,7 +1188,7 @@ public class JB2008 implements Atmosphere {
     /** Compute max of two values, one double and one field element.
      * @param d double value
      * @param f field element
-     * @param <T> type fo the field elements
+     * @param <T> type of the field elements
      * @return max value
      */
     private <T extends CalculusFieldElement<T>> T max(final double d, final T f) {
@@ -1220,7 +1220,7 @@ public class JB2008 implements Atmosphere {
 
         // compute sun position
         final Frame ecef = earth.getBodyFrame();
-        final Vector3D sunPos = sun.getPVCoordinates(date, ecef).getPosition();
+        final Vector3D sunPos = sun.getPosition(date, ecef);
         final GeodeticPoint sunInBody = earth.transform(sunPos, ecef, date);
 
         return getDensity(dateMJD,
@@ -1262,7 +1262,7 @@ public class JB2008 implements Atmosphere {
         // compute sun position
         final Frame ecef = earth.getBodyFrame();
         final FieldVector3D<T> sunPos = new FieldVector3D<>(date.getField(),
-                        sun.getPVCoordinates(dateD, ecef).getPosition());
+                        sun.getPosition(dateD, ecef));
         final FieldGeodeticPoint<T> sunInBody = earth.transform(sunPos, ecef, date);
 
         return getDensity(dateMJD,

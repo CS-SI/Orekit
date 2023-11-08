@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,20 +19,17 @@ package org.orekit.propagation.conversion;
 import java.util.List;
 
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.AbstractKalmanModel;
-import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.utils.ParameterDriversList;
@@ -41,7 +38,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Provider for un-normalized coefficients. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -54,25 +51,26 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * used together with the {@code positionScale} to convert from the {@link
      * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
      * callers of this builder to the real orbital parameters.
+     * The default attitude provider is aligned with the orbit's inertial frame.
      * </p>
      *
      * @param templateOrbit reference orbit from which real orbits will be built
      * (note that the mu from this orbit will be overridden with the mu from the
      * {@code provider})
      * @param provider for un-normalized zonal coefficients
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @since 8.0
      * @see #EcksteinHechlerPropagatorBuilder(Orbit,
-     * UnnormalizedSphericalHarmonicsProvider, PositionAngle, double, AttitudeProvider)
+     * UnnormalizedSphericalHarmonicsProvider, PositionAngleType, double, AttitudeProvider)
      */
     public EcksteinHechlerPropagatorBuilder(final Orbit templateOrbit,
                                             final UnnormalizedSphericalHarmonicsProvider provider,
-                                            final PositionAngle positionAngle,
+                                            final PositionAngleType positionAngleType,
                                             final double positionScale) {
-        this(templateOrbit, provider, positionAngle, positionScale,
-                InertialProvider.of(templateOrbit.getFrame()));
+        this(templateOrbit, provider, positionAngleType, positionScale,
+             FrameAlignedProvider.of(templateOrbit.getFrame()));
     }
 
     /** Build a new instance.
@@ -88,7 +86,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * (note that the mu from this orbit will be overridden with the mu from the
      * {@code provider})
      * @param provider for un-normalized zonal coefficients
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @param attitudeProvider attitude law to use.
@@ -96,11 +94,11 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      */
     public EcksteinHechlerPropagatorBuilder(final Orbit templateOrbit,
                                             final UnnormalizedSphericalHarmonicsProvider provider,
-                                            final PositionAngle positionAngle,
+                                            final PositionAngleType positionAngleType,
                                             final double positionScale,
                                             final AttitudeProvider attitudeProvider) {
-        super(overrideMu(templateOrbit, provider, positionAngle), positionAngle,
-                positionScale, true, attitudeProvider);
+        super(overrideMu(templateOrbit, provider, positionAngleType), positionAngleType,
+              positionScale, true, attitudeProvider);
         this.provider = provider;
     }
 
@@ -126,12 +124,12 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
      * @param orbitType orbit type to use
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @since 8.0
      * @see #EcksteinHechlerPropagatorBuilder(Orbit,
-     * UnnormalizedSphericalHarmonicsProvider, PositionAngle, double, AttitudeProvider)
+     * UnnormalizedSphericalHarmonicsProvider, PositionAngleType, double, AttitudeProvider)
      */
     public EcksteinHechlerPropagatorBuilder(final Orbit templateOrbit,
                                             final double referenceRadius,
@@ -143,7 +141,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
                                             final double c50,
                                             final double c60,
                                             final OrbitType orbitType,
-                                            final PositionAngle positionAngle,
+                                            final PositionAngleType positionAngleType,
                                             final double positionScale) {
         this(templateOrbit,
              GravityFieldFactory.getUnnormalizedProvider(referenceRadius, mu, tideSystem,
@@ -180,22 +178,22 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
                                                                  0
                                                              }
                                                          }),
-             positionAngle, positionScale);
+                positionAngleType, positionScale);
     }
 
     /** Override central attraction coefficient.
      * @param templateOrbit template orbit
      * @param provider gravity field provider
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @return orbit with overridden central attraction coefficient
      */
     private static Orbit overrideMu(final Orbit templateOrbit,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
-                                    final PositionAngle positionAngle) {
+                                    final PositionAngleType positionAngleType) {
         final double[] parameters    = new double[6];
         final double[] parametersDot = templateOrbit.hasDerivatives() ? new double[6] : null;
-        templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngle, parameters, parametersDot);
-        return templateOrbit.getType().mapArrayToOrbit(parameters, parametersDot, positionAngle,
+        templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngleType, parameters, parametersDot);
+        return templateOrbit.getType().mapArrayToOrbit(parameters, parametersDot, positionAngleType,
                                                        templateOrbit.getDate(),
                                                        provider.getMu(),
                                                        templateOrbit.getFrame());
@@ -210,20 +208,17 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
 
     /** {@inheritDoc} */
     @Override
-    public AbstractBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                                             final List<ObservedMeasurement<?>> measurements,
-                                             final ParameterDriversList estimatedMeasurementsParameters,
-                                             final ModelObserver observer) {
+    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                       final List<ObservedMeasurement<?>> measurements,
+                                                       final ParameterDriversList estimatedMeasurementsParameters,
+                                                       final ModelObserver observer) {
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
     /** {@inheritDoc} */
     @Override
-    public AbstractKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                                                final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                                final ParameterDriversList estimatedMeasurementsParameters,
-                                                final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
+    public EcksteinHechlerPropagatorBuilder copy() {
+        return new EcksteinHechlerPropagatorBuilder(createInitialOrbit(), provider, getPositionAngleType(),
+                                                    getPositionScale(), getAttitudeProvider());
     }
-
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,10 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.BistaticRangeRate;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
@@ -46,6 +47,18 @@ public class BistaticRangeRateTroposphericDelayModifier extends BaseRangeRateTro
 
     /** {@inheritDoc} */
     @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<BistaticRangeRate> estimated) {
+
+        final BistaticRangeRate measurement = estimated.getObservedMeasurement();
+        final GroundStation     emitter     = measurement.getEmitterStation();
+        final GroundStation     receiver    = measurement.getReceiverStation();
+
+        BistaticModifierUtil.modify(estimated, emitter, receiver, this::rangeRateErrorTroposphericModel);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void modify(final EstimatedMeasurement<BistaticRangeRate> estimated) {
 
         final BistaticRangeRate measurement = estimated.getObservedMeasurement();
@@ -54,10 +67,11 @@ public class BistaticRangeRateTroposphericDelayModifier extends BaseRangeRateTro
         final SpacecraftState   state       = estimated.getStates()[0];
 
         BistaticModifierUtil.modify(estimated, getTropoModel(),
-                                    new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame())),
+                                    new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                     emitter, receiver,
                                     this::rangeRateErrorTroposphericModel,
                                     this::rangeRateErrorTroposphericModel);
+
     }
 
 }

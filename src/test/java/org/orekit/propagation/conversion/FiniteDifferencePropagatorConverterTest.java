@@ -24,7 +24,7 @@ import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -56,7 +56,7 @@ public class FiniteDifferencePropagatorConverterTest {
         double gm = Constants.EIGEN5C_EARTH_MU;
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Propagator source = new KeplerianPropagator(new KeplerianOrbit(
-                6878137, 0, 0, 0, 0, 0, PositionAngle.TRUE, eci, date, gm));
+                6878137, 0, 0, 0, 0, 0, PositionAngleType.TRUE, eci, date, gm));
         // Create a mock builder that allows us to check the values passed to it
         PropagatorBuilder builder = Mockito.mock(PropagatorBuilder.class);
         ParameterDriversList list = new ParameterDriversList();

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,11 @@
 package org.orekit.propagation.sampling;
 
 import org.hipparchus.CalculusFieldElement;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This interface is a space-dynamics aware step interpolator.
  *
@@ -26,8 +29,9 @@ import org.orekit.time.FieldAbsoluteDate;
  * href="http://commons.apache.org/math/"> commons-math</a> but
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
-public interface FieldOrekitStepInterpolator<T extends CalculusFieldElement<T>> {
+public interface FieldOrekitStepInterpolator<T extends CalculusFieldElement<T>> extends FieldPVCoordinatesProvider<T> {
 
     /**
      * Get the state at previous grid point date.
@@ -65,5 +69,13 @@ public interface FieldOrekitStepInterpolator<T extends CalculusFieldElement<T>> 
      * @since 11.0
      */
     FieldOrekitStepInterpolator<T> restrictStep(FieldSpacecraftState<T> newPreviousState, FieldSpacecraftState<T> newCurrentState);
+
+    /** {@inheritDoc}
+     * @since 12.0
+     */
+    @Override
+    default TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
+        return getInterpolatedState(date).getPVCoordinates(frame);
+    }
 
 }

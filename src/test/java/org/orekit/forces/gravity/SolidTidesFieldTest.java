@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -209,7 +209,7 @@ public class SolidTidesFieldTest {
     @Test
     public void testDeltaCnmSnm() {
         NormalizedSphericalHarmonicsProvider gravityField =
-                GravityFieldFactory.getConstantNormalizedProvider(8, 8);
+                GravityFieldFactory.getNormalizedProvider(8, 8);
         UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -240,7 +240,7 @@ public class SolidTidesFieldTest {
             {           0.0,           -4.897228975221076E-12, -4.1034042689652575E-12,         0.0,                  0.0 }
         };
         for (int n = 0; n < refDeltaCnm.length; ++n) {
-            double threshold = (n == 2) ? 1.3e-17 : 1.0e-24;
+            double threshold = (n == 2) ? 1.3e-17 : 3.1e-21;
             for (int m = 0; m <= n; ++m) {
                 Assertions.assertEquals(refDeltaCnm[n][m], harmonics.getNormalizedCnm(n, m), threshold);
                 Assertions.assertEquals(refDeltaSnm[n][m], harmonics.getNormalizedSnm(n, m), threshold);
@@ -263,7 +263,7 @@ public class SolidTidesFieldTest {
         TimeScale utc = TimeScalesFactory.getUTC();
         UT1Scale  ut1 = TimeScalesFactory.getUT1(conventions, true);
         NormalizedSphericalHarmonicsProvider gravityField =
-                GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+                GravityFieldFactory.getNormalizedProvider(5, 5);
 
         SolidTidesField raw = new SolidTidesField(conventions.getLoveNumbers(),
                                         conventions.getTideFrequencyDependenceFunction(ut1),
@@ -308,7 +308,7 @@ public class SolidTidesFieldTest {
                 }
             }
         }
-        Assertions.assertEquals(0.0, stat.getMean(), 2.0e-12);
+        Assertions.assertEquals(0.0, stat.getMean(), 2.7e-12);
         Assertions.assertTrue(stat.getStandardDeviation() < 2.0e-9);
         Assertions.assertTrue(stat.getMin() > -9.0e-8);
         Assertions.assertTrue(stat.getMax() <  2.2e-7);

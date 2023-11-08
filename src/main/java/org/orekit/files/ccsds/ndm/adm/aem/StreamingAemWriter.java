@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.propagation.Propagator;
@@ -70,7 +71,7 @@ public class StreamingAemWriter implements AutoCloseable {
     private final AemWriter writer;
 
     /** Header. */
-    private final Header header;
+    private final AdmHeader header;
 
     /** Current metadata. */
     private final AemMetadata metadata;
@@ -86,7 +87,7 @@ public class StreamingAemWriter implements AutoCloseable {
      * @since 11.0
      */
     public StreamingAemWriter(final Generator generator, final AemWriter writer,
-                              final Header header, final AemMetadata template) {
+                              final AdmHeader header, final AemMetadata template) {
         this.generator          = generator;
         this.writer             = writer;
         this.header             = header;
@@ -113,12 +114,23 @@ public class StreamingAemWriter implements AutoCloseable {
     /** A writer for a segment of an AEM. */
     public class SegmentWriter implements OrekitFixedStepHandler {
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public SegmentWriter() {
+            // nothing to do
+        }
+
         /**
          * {@inheritDoc}
          *
          * <p> Sets the {@link AemMetadataKey#START_TIME} and {@link AemMetadataKey#STOP_TIME} in this
          * segment's metadata if not already set by the user. Then calls {@link AemWriter#writeHeader(Generator, Header)
-         * writeHeader} if it is the first segment) and {@link AemWriter#writeMetadata(Generator, AemMetadata)} to start the segment.
+         * writeHeader} if it is the first segment) and {@link AemWriter#writeMetadata(Generator, double, AemMetadata)} to start the segment.
          */
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
@@ -147,7 +159,9 @@ public class StreamingAemWriter implements AutoCloseable {
                     // the external frame must be frame B
                     metadata.getEndpoints().setFrameB(FrameFacade.map(s0.getAttitude().getReferenceFrame()));
                 }
-                writer.writeMetadata(generator, metadata);
+                writer.writeMetadata(generator,
+                                     header == null ? writer.getDefaultVersion() : header.getFormatVersion(),
+                                     metadata);
                 writer.startAttitudeBlock(generator);
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
@@ -158,7 +172,9 @@ public class StreamingAemWriter implements AutoCloseable {
         @Override
         public void handleStep(final SpacecraftState currentState) {
             try {
-                writer.writeAttitudeEphemerisLine(generator, metadata, currentState.getAttitude().getOrientation());
+                writer.writeAttitudeEphemerisLine(generator,
+                                                  header == null ? writer.getDefaultVersion() : header.getFormatVersion(),
+                                                  metadata, currentState.getAttitude().getOrientation());
             } catch (IOException e) {
                 throw new OrekitException(e, LocalizedCoreFormats.SIMPLE_MESSAGE, e.getLocalizedMessage());
             }

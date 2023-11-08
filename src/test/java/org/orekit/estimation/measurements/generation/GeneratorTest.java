@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.events.ElevationDetector;
@@ -74,8 +74,11 @@ public class GeneratorTest {
         genR.addPropagator(numProp);
         genR.addScheduler(aeBS);
         genR.addScheduler(eBS);
+        final GatheringSubscriber gatherer = new GatheringSubscriber();
+        genR.addSubscriber(gatherer);
 
-        SortedSet<ObservedMeasurement<?>> generated = genR.generate(initialDate, finalDate);
+        genR.generate(initialDate, finalDate);
+        SortedSet<ObservedMeasurement<?>> generated = gatherer.getGeneratedMeasurements();
 
         int nbAzEl  = 0;
         int nbRange = 0;
@@ -97,7 +100,7 @@ public class GeneratorTest {
     public void setUp() {
         context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
-        propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+        propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                                   1.0e-6, 300.0, 0.001, Force.POTENTIAL,
                                                   Force.THIRD_BODY_SUN, Force.THIRD_BODY_MOON);
     }

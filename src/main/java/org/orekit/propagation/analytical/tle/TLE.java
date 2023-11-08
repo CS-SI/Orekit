@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,29 +25,24 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.util.ArithmeticUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.Frame;
-import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
 /** This class is a container for a single set of TLE data.
  *
@@ -65,7 +60,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */
-public class TLE implements TimeStamped, Serializable {
+public class TLE implements TimeStamped, Serializable, ParameterDriversProvider {
 
     /** Identifier for SGP type of ephemeris. */
     public static final int SGP = 1;
@@ -87,12 +82,6 @@ public class TLE implements TimeStamped, Serializable {
 
     /** Parameter name for B* coefficient. */
     public static final String B_STAR = "BSTAR";
-
-    /** Default value for epsilon. */
-    private static final double EPSILON_DEFAULT = 1.0e-10;
-
-    /** Default value for maxIterations. */
-    private static final int MAX_ITERATIONS_DEFAULT = 100;
 
     /** B* scaling factor.
      * <p>
@@ -196,7 +185,7 @@ public class TLE implements TimeStamped, Serializable {
      * DataContext#getDefault() default data context}.
      *
      * <p>The static method {@link #isFormatOK(String, String)} should be called
-     * before trying to build this object.<p>
+     * before trying to build this object.</p>
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)
      * @see #TLE(String, String, TimeScale)
@@ -209,7 +198,7 @@ public class TLE implements TimeStamped, Serializable {
     /** Simple constructor from unparsed two lines using the given time scale as UTC.
      *
      * <p>The static method {@link #isFormatOK(String, String)} should be called
-     * before trying to build this object.<p>
+     * before trying to build this object.</p>
      * @param line1 the first element (69 char String)
      * @param line2 the second element (69 char String)
      * @param utc the UTC time scale.
@@ -472,12 +461,17 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(ParseUtils.addPadding("launchPiece",  launchPiece, ' ', 3, false, satelliteNumber));
 
         buffer.append(' ');
-        final DateTimeComponents dtc = epoch.getComponents(utc);
+        DateTimeComponents dtc = epoch.getComponents(utc);
+        int fraction = (int) FastMath.rint(31250 * dtc.getTime().getSecondsInUTCDay() / 27.0);
+        if (fraction >= 100000000) {
+            dtc =  epoch.shiftedBy(Constants.JULIAN_DAY).getComponents(utc);
+            fraction -= 100000000;
+        }
         buffer.append(ParseUtils.addPadding("year", dtc.getDate().getYear() % 100, '0', 2, true, satelliteNumber));
         buffer.append(ParseUtils.addPadding("day",  dtc.getDate().getDayOfYear(),  '0', 3, true, satelliteNumber));
         buffer.append('.');
         // nota: 31250/27 == 100000000/86400
-        final int fraction = (int) FastMath.rint(31250 * dtc.getTime().getSecondsInUTCDay() / 27.0);
+
         buffer.append(ParseUtils.addPadding("fraction", fraction,  '0', 8, true, satelliteNumber));
 
         buffer.append(' ');
@@ -692,11 +686,19 @@ public class TLE implements TimeStamped, Serializable {
         return revolutionNumberAtEpoch;
     }
 
-    /** Get the ballistic coefficient.
+    /** Get the ballistic coefficient at tle date.
      * @return bStar
      */
     public double getBStar() {
-        return bStarParameterDriver.getValue();
+        return bStarParameterDriver.getValue(getDate());
+    }
+
+    /** Get the ballistic coefficient at a specific date.
+     * @param date at which the ballistic coefficient wants to be known.
+     * @return bStar
+     */
+    public double getBStar(final AbsoluteDate date) {
+        return bStarParameterDriver.getValue(date);
     }
 
     /** Get a string representation of this TLE set.
@@ -710,196 +712,16 @@ public class TLE implements TimeStamped, Serializable {
 
     /**
      * Convert Spacecraft State into TLE.
-     * This converter uses Fixed Point method to reverse SGP4 and SDP4 propagation algorithm
-     * and generates a usable TLE version of a state.
-     * Equinocital orbital parameters are used in order to get a stiff method.
-     * New TLE epoch is state epoch.
-     *
-     * <p>
-     * This method uses the {@link DataContext#getDefault() default data context},
-     * as well as {@link #EPSILON_DEFAULT} and {@link #MAX_ITERATIONS_DEFAULT} for method convergence.
      *
      * @param state Spacecraft State to convert into TLE
      * @param templateTLE first guess used to get identification and estimate new TLE
-     * @return TLE matching with Spacecraft State and template identification
-     * @see #stateToTLE(SpacecraftState, TLE, TimeScale, Frame)
-     * @see #stateToTLE(SpacecraftState, TLE, TimeScale, Frame, double, int)
-     * @since 11.0
-     */
-    @DefaultDataContext
-    public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE) {
-        return stateToTLE(state, templateTLE,
-                          DataContext.getDefault().getTimeScales().getUTC(),
-                          DataContext.getDefault().getFrames().getTEME());
-    }
-
-    /**
-     * Convert Spacecraft State into TLE.
-     * This converter uses Fixed Point method to reverse SGP4 and SDP4 propagation algorithm
-     * and generates a usable TLE version of a state.
-     * Equinocital orbital parameters are used in order to get a stiff method.
-     * New TLE epoch is state epoch.
-     *
-     * <p>
-     * This method uses {@link #EPSILON_DEFAULT} and {@link #MAX_ITERATIONS_DEFAULT}
-     * for method convergence.
-     *
-     * @param state Spacecraft State to convert into TLE
-     * @param templateTLE first guess used to get identification and estimate new TLE
-     * @param utc the UTC time scale
-     * @param teme the TEME frame to use for propagation
-     * @return TLE matching with Spacecraft State and template identification
-     * @see #stateToTLE(SpacecraftState, TLE, TimeScale, Frame, double, int)
-     * @since 11.0
+     * @param generationAlgorithm TLE generation algorithm
+     * @return a generated TLE
+     * @since 12.0
      */
     public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE,
-                                 final TimeScale utc, final Frame teme) {
-        return stateToTLE(state, templateTLE, utc, teme, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
-    }
-
-    /**
-     * Convert Spacecraft State into TLE.
-     * This converter uses Newton method to reverse SGP4 and SDP4 propagation algorithm
-     * and generates a usable TLE version of a state.
-     * New TLE epoch is state epoch.
-     *
-     * @param state Spacecraft State to convert into TLE
-     * @param templateTLE first guess used to get identification and estimate new TLE
-     * @param utc the UTC time scale
-     * @param teme the TEME frame to use for propagation
-     * @param epsilon used to compute threshold for convergence check
-     * @param maxIterations maximum number of iterations for convergence
-     * @return TLE matching with Spacecraft State and template identification
-     * @since 11.0
-     */
-    public static TLE stateToTLE(final SpacecraftState state, final TLE templateTLE,
-                                 final TimeScale utc, final Frame teme,
-                                 final double epsilon, final int maxIterations) {
-
-        // Gets equinoctial parameters in TEME frame from state
-        final EquinoctialOrbit equiOrbit = convert(state.getOrbit(), teme);
-        double sma = equiOrbit.getA();
-        double ex  = equiOrbit.getEquinoctialEx();
-        double ey  = equiOrbit.getEquinoctialEy();
-        double hx  = equiOrbit.getHx();
-        double hy  = equiOrbit.getHy();
-        double lv  = equiOrbit.getLv();
-
-        // Rough initialization of the TLE
-        final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(equiOrbit);
-        TLE current = newTLE(keplerianOrbit, templateTLE, utc);
-
-        // threshold for each parameter
-        final double thrA = epsilon * (1 + sma);
-        final double thrE = epsilon * (1 + FastMath.hypot(ex, ey));
-        final double thrH = epsilon * (1 + FastMath.hypot(hx, hy));
-        final double thrV = epsilon * FastMath.PI;
-
-        int k = 0;
-        while (k++ < maxIterations) {
-
-            // recompute the state from the current TLE
-            final TLEPropagator propagator = TLEPropagator.selectExtrapolator(current, new InertialProvider(Rotation.IDENTITY, teme), state.getMass(), teme);
-            final Orbit recovOrbit = propagator.getInitialState().getOrbit();
-            final EquinoctialOrbit recovEquiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(recovOrbit);
-
-            // adapted parameters residuals
-            final double deltaSma = equiOrbit.getA() - recovEquiOrbit.getA();
-            final double deltaEx  = equiOrbit.getEquinoctialEx() - recovEquiOrbit.getEquinoctialEx();
-            final double deltaEy  = equiOrbit.getEquinoctialEy() - recovEquiOrbit.getEquinoctialEy();
-            final double deltaHx  = equiOrbit.getHx() - recovEquiOrbit.getHx();
-            final double deltaHy  = equiOrbit.getHy() - recovEquiOrbit.getHy();
-            final double deltaLv  = MathUtils.normalizeAngle(equiOrbit.getLv() - recovEquiOrbit.getLv(), 0.0);
-
-            // check convergence
-            if (FastMath.abs(deltaSma) < thrA &&
-                FastMath.abs(deltaEx)  < thrE &&
-                FastMath.abs(deltaEy)  < thrE &&
-                FastMath.abs(deltaHx)  < thrH &&
-                FastMath.abs(deltaHy)  < thrH &&
-                FastMath.abs(deltaLv)  < thrV) {
-
-                // Verify if parameters are estimated
-                for (final ParameterDriver templateDrivers : templateTLE.getParametersDrivers()) {
-                    if (templateDrivers.isSelected()) {
-                        // Set to selected for the new TLE
-                        current.getParameterDriver(templateDrivers.getName()).setSelected(true);
-                    }
-                }
-
-                // Return
-                return current;
-            }
-
-            // update state
-            sma += deltaSma;
-            ex  += deltaEx;
-            ey  += deltaEy;
-            hx  += deltaHx;
-            hy  += deltaHy;
-            lv  += deltaLv;
-            final EquinoctialOrbit newEquiOrbit =
-                                    new EquinoctialOrbit(sma, ex, ey, hx, hy, lv, PositionAngle.TRUE,
-                                    equiOrbit.getFrame(), equiOrbit.getDate(), equiOrbit.getMu());
-            final KeplerianOrbit newKeplOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(newEquiOrbit);
-
-            // update TLE
-            current = newTLE(newKeplOrbit, templateTLE, utc);
-        }
-
-        throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_TLE, k);
-    }
-
-    /**
-     * Converts an orbit into an equinoctial orbit expressed in TEME frame.
-     *
-     * @param orbitIn the orbit to convert
-     * @param teme the TEME frame to use for propagation
-     * @return the converted orbit, i.e. equinoctial in TEME frame
-     */
-    private static EquinoctialOrbit convert(final Orbit orbitIn, final Frame teme) {
-        return new EquinoctialOrbit(orbitIn.getPVCoordinates(teme), teme, orbitIn.getMu());
-    }
-
-    /**
-     * Builds a new TLE from Keplerian parameters and a template for TLE data.
-     * @param keplerianOrbit the Keplerian parameters to build the TLE from
-     * @param templateTLE TLE used to get object identification
-     * @param utc the UTC time scale
-     * @return TLE with template identification and new orbital parameters
-     */
-    private static TLE newTLE(final KeplerianOrbit keplerianOrbit, final TLE templateTLE,
-                              final TimeScale utc) {
-        // Keplerian parameters
-        final double meanMotion  = keplerianOrbit.getKeplerianMeanMotion();
-        final double e           = keplerianOrbit.getE();
-        final double i           = keplerianOrbit.getI();
-        final double raan        = keplerianOrbit.getRightAscensionOfAscendingNode();
-        final double pa          = keplerianOrbit.getPerigeeArgument();
-        final double meanAnomaly = keplerianOrbit.getMeanAnomaly();
-        // TLE epoch is state epoch
-        final AbsoluteDate epoch = keplerianOrbit.getDate();
-        // Identification
-        final int satelliteNumber = templateTLE.getSatelliteNumber();
-        final char classification = templateTLE.getClassification();
-        final int launchYear = templateTLE.getLaunchYear();
-        final int launchNumber = templateTLE.getLaunchNumber();
-        final String launchPiece = templateTLE.getLaunchPiece();
-        final int ephemerisType = templateTLE.getEphemerisType();
-        final int elementNumber = templateTLE.getElementNumber();
-        // Updates revolutionNumberAtEpoch
-        final int revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
-        final double dt = epoch.durationFrom(templateTLE.getDate());
-        final int newRevolutionNumberAtEpoch = (int) (revolutionNumberAtEpoch + FastMath.floor((MathUtils.normalizeAngle(meanAnomaly, FastMath.PI) + dt * meanMotion) / (2 * FastMath.PI)));
-        // Gets B*
-        final double bStar = templateTLE.getBStar();
-        // Gets Mean Motion derivatives
-        final double meanMotionFirstDerivative = templateTLE.getMeanMotionFirstDerivative();
-        final double meanMotionSecondDerivative = templateTLE.getMeanMotionSecondDerivative();
-        // Returns the new TLE
-        return new TLE(satelliteNumber, classification, launchYear, launchNumber, launchPiece, ephemerisType,
-                       elementNumber, epoch, meanMotion, meanMotionFirstDerivative, meanMotionSecondDerivative,
-                       e, i, pa, raan, meanAnomaly, newRevolutionNumberAtEpoch, bStar, utc);
+                                 final TleGenerationAlgorithm generationAlgorithm) {
+        return generationAlgorithm.generate(state, templateTLE);
     }
 
     /** Check the lines format validity.
@@ -1021,33 +843,6 @@ public class TLE implements TimeStamped, Serializable {
      */
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.singletonList(bStarParameterDriver);
-    }
-
-    /** Get parameter driver from its name.
-     * @param name parameter name
-     * @return parameter driver
-     * @since 11.1
-     */
-    public ParameterDriver getParameterDriver(final String name) {
-        // Loop on known drivers
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            if (name.equals(driver.getName())) {
-                // we have found a parameter with that name
-                return driver;
-            }
-        }
-
-        // build the list of supported parameters
-        final StringBuilder sBuilder = new StringBuilder();
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            if (sBuilder.length() > 0) {
-                sBuilder.append(", ");
-            }
-            sBuilder.append(driver.getName());
-        }
-        throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                  name, sBuilder.toString());
-
     }
 
     /** Replace the instance with a data transfer object for serialization.

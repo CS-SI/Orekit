@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,23 +19,20 @@ package org.orekit.propagation.conversion;
 import java.util.List;
 
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.AbstractKalmanModel;
-import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.time.TimeScale;
+import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -44,13 +41,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Thomas Paulet
  * @since 6.0
  */
-public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
-
-    /** Default value for epsilon. */
-    private static final double EPSILON_DEFAULT = 1.0e-10;
-
-    /** Default value for maxIterations. */
-    private static final int MAX_ITERATIONS_DEFAULT = 100;
+public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Data context used to access frames and time scales. */
     private final DataContext dataContext;
@@ -58,64 +49,8 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
     /** Template TLE. */
     private final TLE templateTLE;
 
-    /** Threshold for convergence used in TLE generation. */
-    private final double epsilon;
-
-    /** Maximum number of iterations for convergence used in TLE generation. */
-    private final int maxIterations;
-
-    /** Build a new instance. This constructor uses the {@link DataContext#getDefault()
-     * default data context}.
-     * <p>
-     * The template TLE is used as a model to {@link
-     * #createInitialOrbit() create initial orbit}. It defines the
-     * inertial frame, the central attraction coefficient, orbit type, satellite number,
-     * classification, .... and is also used together with the {@code positionScale} to
-     * convert from the {@link ParameterDriver#setNormalizedValue(double) normalized}
-     * parameters used by the callers of this builder to the real orbital parameters.
-     * </p><p>
-     * Using this constructor, {@link #EPSILON_DEFAULT} and {@link #MAX_ITERATIONS_DEFAULT}
-     * are used for spacecraft's state to TLE transformation
-     * </p>
-     * @param templateTLE reference TLE from which real orbits will be built
-     * @param positionAngle position angle type to use
-     * @param positionScale scaling factor used for orbital parameters normalization
-     * (typically set to the expected standard deviation of the position)
-     * @since 7.1
-     * @see #TLEPropagatorBuilder(TLE, PositionAngle, double, DataContext)
-     */
-    @DefaultDataContext
-    public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngle positionAngle,
-                                final double positionScale) {
-        this(templateTLE, positionAngle, positionScale, DataContext.getDefault());
-    }
-
-    /** Build a new instance.
-     * <p>
-     * The template TLE is used as a model to {@link
-     * #createInitialOrbit() create initial orbit}. It defines the
-     * inertial frame, the central attraction coefficient, orbit type, satellite number,
-     * classification, .... and is also used together with the {@code positionScale} to
-     * convert from the {@link ParameterDriver#setNormalizedValue(double) normalized}
-     * parameters used by the callers of this builder to the real orbital parameters.
-     * </p><p>
-     * Using this constructor, {@link #EPSILON_DEFAULT} and {@link #MAX_ITERATIONS_DEFAULT}
-     * are used for spacecraft's state to TLE transformation
-     * </p>
-     * @param templateTLE reference TLE from which real orbits will be built
-     * @param positionAngle position angle type to use
-     * @param positionScale scaling factor used for orbital parameters normalization
-     * (typically set to the expected standard deviation of the position)
-     * @param dataContext used to access frames and time scales.
-     * @since 10.1
-     * @see #TLEPropagatorBuilder(TLE, PositionAngle, double, DataContext, double, int)
-     */
-    public TLEPropagatorBuilder(final TLE templateTLE,
-                                final PositionAngle positionAngle,
-                                final double positionScale,
-                                final DataContext dataContext) {
-        this(templateTLE, positionAngle, positionScale, dataContext, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
-    }
+    /** TLE generation algorithm. */
+    private final TleGenerationAlgorithm generationAlgorithm;
 
     /** Build a new instance. This constructor uses the {@link DataContext#getDefault()
      * default data context}.
@@ -128,19 +63,17 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
      * parameters used by the callers of this builder to the real orbital parameters.
      * </p>
      * @param templateTLE reference TLE from which real orbits will be built
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
-     * @param epsilon used to compute threshold for convergence check
-     * @param maxIterations maximum number of iterations for convergence
-     * @since 11.0.2
-     * @see #TLEPropagatorBuilder(TLE, PositionAngle, double, DataContext, double, int)
+     * @param generationAlgorithm TLE generation algorithm
+     * @since 12.0
+     * @see #TLEPropagatorBuilder(TLE, PositionAngleType, double, DataContext, TleGenerationAlgorithm)
      */
     @DefaultDataContext
-    public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngle positionAngle,
-                                final double positionScale, final double epsilon,
-                                final int maxIterations) {
-        this(templateTLE, positionAngle, positionScale, DataContext.getDefault(), epsilon, maxIterations);
+    public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngleType positionAngleType,
+                                final double positionScale, final TleGenerationAlgorithm generationAlgorithm) {
+        this(templateTLE, positionAngleType, positionScale, DataContext.getDefault(), generationAlgorithm);
     }
 
     /** Build a new instance.
@@ -151,33 +84,35 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
      * classification, .... and is also used together with the {@code positionScale} to
      * convert from the {@link ParameterDriver#setNormalizedValue(double) normalized}
      * parameters used by the callers of this builder to the real orbital parameters.
+     * The default attitude provider is aligned with the orbit's inertial frame.
      * </p>
      * @param templateTLE reference TLE from which real orbits will be built
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @param dataContext used to access frames and time scales.
-     * @param epsilon used to compute threshold for convergence check
-     * @param maxIterations maximum number of iterations for convergence
-     * @since 11.0.2
+     * @param generationAlgorithm TLE generation algorithm
+     * @since 12.0
      */
-    public TLEPropagatorBuilder(final TLE templateTLE,
-                                final PositionAngle positionAngle,
-                                final double positionScale,
-                                final DataContext dataContext,
-                                final double epsilon,
-                                final int maxIterations) {
-        super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames())
-                        .getInitialState().getOrbit(),
-              positionAngle, positionScale, false,
-              InertialProvider.of(dataContext.getFrames().getTEME()));
-        for (final ParameterDriver driver : templateTLE.getParametersDrivers()) {
-            addSupportedParameter(driver);
-        }
-        this.templateTLE   = templateTLE;
-        this.dataContext   = dataContext;
-        this.epsilon       = epsilon;
-        this.maxIterations = maxIterations;
+    public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngleType positionAngleType,
+                                final double positionScale, final DataContext dataContext,
+                                final TleGenerationAlgorithm generationAlgorithm) {
+        super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames().getTEME()).getInitialState().getOrbit(),
+                positionAngleType, positionScale, false, FrameAlignedProvider.of(dataContext.getFrames().getTEME()));
+
+        // Supported parameters: Bstar
+        addSupportedParameters(templateTLE.getParametersDrivers());
+
+        this.templateTLE         = templateTLE;
+        this.dataContext         = dataContext;
+        this.generationAlgorithm = generationAlgorithm;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public TLEPropagatorBuilder copy() {
+        return new TLEPropagatorBuilder(templateTLE, getPositionAngleType(), getPositionScale(),
+                                        dataContext, generationAlgorithm);
     }
 
     /** {@inheritDoc} */
@@ -189,10 +124,9 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
         final Orbit           orbit = createInitialOrbit();
         final SpacecraftState state = new SpacecraftState(orbit);
         final Frame           teme  = dataContext.getFrames().getTEME();
-        final TimeScale       utc   = dataContext.getTimeScales().getUTC();
 
         // TLE related to the orbit
-        final TLE tle = TLE.stateToTLE(state, templateTLE, utc, teme, epsilon, maxIterations);
+        final TLE tle = generationAlgorithm.generate(state, templateTLE);
         final List<ParameterDriver> drivers = templateTLE.getParametersDrivers();
         for (int index = 0; index < drivers.size(); index++) {
             if (drivers.get(index).isSelected()) {
@@ -201,10 +135,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
         }
 
         // propagator
-        return TLEPropagator.selectExtrapolator(tle,
-                                                getAttitudeProvider(),
-                                                Propagator.DEFAULT_MASS,
-                                                teme);
+        return TLEPropagator.selectExtrapolator(tle, getAttitudeProvider(), Propagator.DEFAULT_MASS, teme);
 
     }
 
@@ -216,20 +147,12 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder implements O
     }
 
     /** {@inheritDoc} */
-    public AbstractBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                                final List<ObservedMeasurement<?>> measurements,
-                                final ParameterDriversList estimatedMeasurementsParameters,
-                                final ModelObserver observer) {
-        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
-    }
-
     @Override
-    public AbstractKalmanModel
-        buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                         final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                         final ParameterDriversList estimatedMeasurementsParameters,
-                         final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
+    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                       final List<ObservedMeasurement<?>> measurements,
+                                                       final ParameterDriversList estimatedMeasurementsParameters,
+                                                       final ModelObserver observer) {
+        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
 }

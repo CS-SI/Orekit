@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,47 +18,30 @@ package org.orekit.forces;
 
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
 
 
 public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTest {
 
     protected abstract FieldVector3D<DerivativeStructure> accelerationDerivatives(ForceModel forceModel,
-                                                                                  final AbsoluteDate date, final  Frame frame,
-                                                                                  final FieldVector3D<DerivativeStructure> position,
-                                                                                  final FieldVector3D<DerivativeStructure> velocity,
-                                                                                  final FieldRotation<DerivativeStructure> rotation,
-                                                                                  final DerivativeStructure mass);
+                                                                                  FieldSpacecraftState<DerivativeStructure> state);
 
     protected abstract FieldVector3D<Gradient> accelerationDerivativesGradient(ForceModel forceModel,
-                                                                               final AbsoluteDate date, final  Frame frame,
-                                                                               final FieldVector3D<Gradient> position,
-                                                                               final FieldVector3D<Gradient> velocity,
-                                                                               final FieldRotation<Gradient> rotation,
-                                                                               final Gradient mass);
+                                                                               FieldSpacecraftState<Gradient> state);
 
     protected void checkStateJacobianVs80Implementation(final SpacecraftState state, final ForceModel forceModel,
                                                         final AttitudeProvider attitudeProvider,
-                                                        final double checkTolerance, final boolean print)
-        {
+                                                        final double checkTolerance, final boolean print) {
         FieldSpacecraftState<DerivativeStructure> fState = toDS(state, attitudeProvider);
         FieldVector3D<DerivativeStructure> dsNew = forceModel.acceleration(fState,
-                                                                           forceModel.getParameters(fState.getDate().getField()));
-        FieldVector3D<DerivativeStructure> dsOld = accelerationDerivatives(forceModel, fState.getDate().toAbsoluteDate(),
-                                                                           fState.getFrame(),
-                                                                           fState.getPVCoordinates().getPosition(),
-                                                                           fState.getPVCoordinates().getVelocity(),
-                                                                           fState.getAttitude().getRotation(),
-                                                                           fState.getMass());
+                                                                           forceModel.getParameters(fState.getDate().getField(), fState.getDate()));
+        FieldVector3D<DerivativeStructure> dsOld = accelerationDerivatives(forceModel, fState);
         Vector3D dFdPXRef = new Vector3D(dsOld.getX().getPartialDerivative(1, 0, 0, 0, 0, 0),
                                          dsOld.getY().getPartialDerivative(1, 0, 0, 0, 0, 0),
                                          dsOld.getZ().getPartialDerivative(1, 0, 0, 0, 0, 0));
@@ -118,13 +101,8 @@ public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTes
         {
         FieldSpacecraftState<Gradient> fState = toGradient(state, attitudeProvider);
         FieldVector3D<Gradient> gNew = forceModel.acceleration(fState,
-                                                                           forceModel.getParameters(fState.getDate().getField()));
-        FieldVector3D<Gradient> gOld = accelerationDerivativesGradient(forceModel, fState.getDate().toAbsoluteDate(),
-                                                                       fState.getFrame(),
-                                                                       fState.getPVCoordinates().getPosition(),
-                                                                       fState.getPVCoordinates().getVelocity(),
-                                                                       fState.getAttitude().getRotation(),
-                                                                       fState.getMass());
+                                                               forceModel.getParameters(fState.getDate().getField(), fState.getDate()));
+        FieldVector3D<Gradient> gOld = accelerationDerivativesGradient(forceModel, fState);
         Vector3D dFdPXRef = new Vector3D(gOld.getX().getPartialDerivative(0),
                                          gOld.getY().getPartialDerivative(0),
                                          gOld.getZ().getPartialDerivative(0));

@@ -22,7 +22,7 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
@@ -37,13 +37,15 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p> Each instance corresponds to a single OEM file. A new OEM ephemeris segment is
  * started by calling {@link #newSegment()}.
  *
- * <p> This class can be used as a step handler for a {@link Propagator}.
+ * <p>
+ * The segments returned by this class can be used as step handlers for a {@link Propagator}.
+ * </p>
  *
  * <pre>{@code
  * Propagator propagator = ...; // pre-configured propagator
  * OEMWriter  aemWriter  = ...; // pre-configured writer
  *   try (Generator out = ...;  // set-up output stream
- *        StreamingOemWriter sw = new StreamingOemWriter(out, oemWriter)) { // set-up streaming writer
+ *        StreamingOemWriter sw = new StreamingOemWriter(out, oemWriter, header, metadata)) { // set-up streaming writer
  *
  *     // write segment 1
  *     propagator.getMultiplexer().add(step, sw.newSegment());
@@ -76,7 +78,7 @@ public class StreamingOemWriter implements AutoCloseable {
     private final OemWriter writer;
 
     /** Header. */
-    private final Header header;
+    private final OdmHeader header;
 
     /** Current metadata. */
     private final OemMetadata metadata;
@@ -99,10 +101,10 @@ public class StreamingOemWriter implements AutoCloseable {
      * @param header    file header (may be null)
      * @param template  template for metadata
      * @since 11.0
-     * @see #StreamingOemWriter(Generator, OemWriter, Header, OemMetadata, boolean)
+     * @see #StreamingOemWriter(Generator, OemWriter, OdmHeader, OemMetadata, boolean)
      */
     public StreamingOemWriter(final Generator generator, final OemWriter writer,
-                              final Header header, final OemMetadata template) {
+                              final OdmHeader header, final OemMetadata template) {
         this(generator, writer, header, template, true);
     }
 
@@ -118,12 +120,11 @@ public class StreamingOemWriter implements AutoCloseable {
      *                         segment is taken from the first state's attitude.
      *                         Otherwise the {@code template}'s reference frame
      *                         is used, {@link OemMetadata#getReferenceFrame()}.
-     * @see #StreamingOemWriter(Generator, OemWriter, Header, OemMetadata,
-     * boolean, boolean)
+     * @see #StreamingOemWriter(Generator, OemWriter, OdmHeader, OemMetadata, boolean, boolean)
      * @since 11.1.2
      */
     public StreamingOemWriter(final Generator generator, final OemWriter writer,
-                              final Header header, final OemMetadata template,
+                              final OdmHeader header, final OemMetadata template,
                               final boolean useAttitudeFrame) {
         this(generator, writer, header, template, useAttitudeFrame, true);
     }
@@ -146,7 +147,7 @@ public class StreamingOemWriter implements AutoCloseable {
      * @since 11.1.2
      */
     public StreamingOemWriter(final Generator generator, final OemWriter writer,
-                              final Header header, final OemMetadata template,
+                              final OdmHeader header, final OemMetadata template,
                               final boolean useAttitudeFrame,
                               final boolean includeAcceleration) {
         this.generator          = generator;
@@ -180,13 +181,23 @@ public class StreamingOemWriter implements AutoCloseable {
         /** Reference frame of this segment. */
         private Frame frame;
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public SegmentWriter() {
+            // nothing to do
+        }
+
         /**
          * {@inheritDoc}
          *
-         * <p> Sets the {@link OemMetadataKey#START_TIME} and {@link OemMetadataKey#STOP_TIME} in this
-         * segment's metadata if not already set by the user. Then calls {@link OemWriter#writeHeader(Generator, Header)
-         * writeHeader} if it is the first segment) and {@link OemWriter#writeMetadata(Generator, OemMetadata)}
-         * to start the segment.
+         * <p>Writes the header automatically on first segment.
+         * Sets the {@link OemMetadataKey#START_TIME} and {@link OemMetadataKey#STOP_TIME} in this
+         * segment's metadata if not already set by the user.
          */
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {

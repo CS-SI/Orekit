@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,10 @@
  */
 package org.orekit.gnss.attitude;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.orekit.frames.Frame;
@@ -92,18 +92,18 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
             if (context.inTurnTimeRange()) {
 
                 // handling both noon and midnight turns at once
-                final DerivativeStructure              beta     = context.betaDS();
-                final FieldSinCos<DerivativeStructure> scBeta   = FastMath.sinCos(beta);
-                final DerivativeStructure              cosBeta  = scBeta.cos();
-                final DerivativeStructure              sinBeta  = scBeta.sin();
-                final double                           sinY     = FastMath.copySign(FastMath.sin(beta0), context.getSecuredBeta());
-                final DerivativeStructure              sd       = FastMath.sin(context.getDeltaDS()).
-                                                                  multiply(FastMath.copySign(1.0, -context.getSVBcos() * context.getDeltaDS().getPartialDerivative(1)));
-                final DerivativeStructure              c        = sd.multiply(cosBeta);
-                final DerivativeStructure              shy      = sinBeta.negate().subtract(sinY).
-                                                                  add(sinBeta.subtract(sinY).multiply(c.abs().multiply(c.getPi().divide(FastMath.sin(BETA_X))).cos())).
-                                                                  multiply(0.5);
-                final DerivativeStructure              phi      = FastMath.atan2(shy, c);
+                final UnivariateDerivative2              beta     = context.betaD2();
+                final FieldSinCos<UnivariateDerivative2> scBeta   = FastMath.sinCos(beta);
+                final UnivariateDerivative2              cosBeta  = scBeta.cos();
+                final UnivariateDerivative2              sinBeta  = scBeta.sin();
+                final double                             sinY     = FastMath.copySign(FastMath.sin(beta0), context.getSecuredBeta());
+                final UnivariateDerivative2              sd       = FastMath.sin(context.getDeltaDS()).
+                                                                    multiply(FastMath.copySign(1.0, -context.getSVBcos() * context.getDeltaDS().getPartialDerivative(1)));
+                final UnivariateDerivative2              c        = sd.multiply(cosBeta);
+                final UnivariateDerivative2              shy      = sinBeta.negate().subtract(sinY).
+                                                                    add(sinBeta.subtract(sinY).multiply(c.abs().multiply(c.getPi().divide(FastMath.sin(BETA_X))).cos())).
+                                                                    multiply(0.5);
+                final UnivariateDerivative2              phi      = FastMath.atan2(shy, c);
 
                 return context.turnCorrectedAttitude(phi);
 
@@ -135,18 +135,18 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
             if (context.inTurnTimeRange()) {
 
                 // handling both noon and midnight turns at once
-                final FieldDerivativeStructure<T>              beta    = context.betaDS();
-                final FieldSinCos<FieldDerivativeStructure<T>> scBeta  = FastMath.sinCos(beta);
-                final FieldDerivativeStructure<T>              cosBeta = scBeta.cos();
-                final FieldDerivativeStructure<T>              sinBeta = scBeta.sin();
-                final T                                        sinY    = FastMath.sin(field.getZero().add(beta0)).copySign(context.getSecuredBeta());
-                final FieldDerivativeStructure<T>              sd      = FastMath.sin(context.getDeltaDS()).
-                                                                         multiply(FastMath.copySign(1.0, -context.getSVBcos().getReal() * context.getDeltaDS().getPartialDerivative(1).getReal()));
-                final FieldDerivativeStructure<T>              c       = sd.multiply(cosBeta);
-                final FieldDerivativeStructure<T>              shy     = sinBeta.negate().subtract(sinY).
-                                                                         add(sinBeta.subtract(sinY).multiply(c.abs().multiply(c.getPi().divide(FastMath.sin(BETA_X))).cos())).
-                                                                         multiply(0.5);
-                final FieldDerivativeStructure<T>              phi     = FastMath.atan2(shy, c);
+                final FieldUnivariateDerivative2<T>              beta    = context.betaD2();
+                final FieldSinCos<FieldUnivariateDerivative2<T>> scBeta  = FastMath.sinCos(beta);
+                final FieldUnivariateDerivative2<T>              cosBeta = scBeta.cos();
+                final FieldUnivariateDerivative2<T>              sinBeta = scBeta.sin();
+                final T                                          sinY    = FastMath.sin(field.getZero().add(beta0)).copySign(context.getSecuredBeta());
+                final FieldUnivariateDerivative2<T>              sd      = FastMath.sin(context.getDeltaDS()).
+                                                                           multiply(FastMath.copySign(1.0, -context.getSVBcos().getReal() * context.getDeltaDS().getPartialDerivative(1).getReal()));
+                final FieldUnivariateDerivative2<T>              c       = sd.multiply(cosBeta);
+                final FieldUnivariateDerivative2<T>              shy     = sinBeta.negate().subtract(sinY).
+                                                                           add(sinBeta.subtract(sinY).multiply(c.abs().multiply(c.getPi().divide(FastMath.sin(BETA_X))).cos())).
+                                                                           multiply(0.5);
+                final FieldUnivariateDerivative2<T>              phi     = FastMath.atan2(shy, c);
 
                 return context.turnCorrectedAttitude(phi);
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,7 @@ import org.orekit.time.TimeStamped;
 public class EOPEntry implements TimeStamped, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20180330L;
+    private static final long serialVersionUID = 20231017L;
 
     /** Entry date (modified julian day, 00h00 UTC scale). */
     private final int mjd;
@@ -46,6 +46,16 @@ public class EOPEntry implements TimeStamped, Serializable {
 
     /** Y component of pole motion. */
     private final double y;
+
+    /** X component of pole motion rate.
+     * @since 12.0
+     */
+    private final double xRate;
+
+    /** Y component of pole motion rate.
+     * @since 12.0
+     */
+    private final double yRate;
 
     /** Correction for nutation in longitude. */
     private final double ddPsi;
@@ -68,16 +78,18 @@ public class EOPEntry implements TimeStamped, Serializable {
      * @param lod length of day
      * @param x X component of pole motion
      * @param y Y component of pole motion
+     * @param xRate X component of pole motion rate (NaN if absent)
+     * @param yRate Y component of pole motion rate (NaN if absent)
      * @param ddPsi correction for nutation in longitude δΔΨ
      * @param ddEps correction for nutation in obliquity δΔε
      * @param dx correction for Celestial Intermediate Pole (CIP) coordinates
      * @param dy correction for Celestial Intermediate Pole (CIP) coordinates
      * @param itrfType ITRF version this entry defines
      * @param date corresponding to {@code mjd}.
-     * @since 10.1
+     * @since 12.0
      */
     public EOPEntry(final int mjd, final double dt, final double lod,
-                    final double x, final double y,
+                    final double x, final double y, final double xRate, final double yRate,
                     final double ddPsi, final double ddEps,
                     final double dx, final double dy,
                     final ITRFVersion itrfType, final AbsoluteDate date) {
@@ -88,6 +100,8 @@ public class EOPEntry implements TimeStamped, Serializable {
         this.lod      = lod;
         this.x        = x;
         this.y        = y;
+        this.xRate    = xRate;
+        this.yRate    = yRate;
         this.ddPsi    = ddPsi;
         this.ddEps    = ddEps;
         this.dx       = dx;
@@ -135,6 +149,22 @@ public class EOPEntry implements TimeStamped, Serializable {
      */
     public double getY() {
         return y;
+    }
+
+    /** Get the X component of the pole motion rate.
+     * @return X component of pole motion rate
+     * @since 12.0
+     */
+    public double getXRate() {
+        return xRate;
+    }
+
+    /** Get the Y component of the pole motion rate.
+     * @return Y component of pole motion rate
+     * @since 12.0
+     */
+    public double getYRate() {
+        return yRate;
     }
 
     /** Get the correction for nutation in longitude δΔΨ.

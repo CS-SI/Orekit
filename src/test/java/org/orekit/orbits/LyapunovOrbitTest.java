@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -150,11 +150,11 @@ public class LyapunovOrbitTest {
         final PVCoordinates initialUnstableManifold = h.getManifolds(finalState, false);
         final PVCoordinates initialStableManifold = h.getManifolds(finalState, true);
 
-        Assertions.assertNotEquals(finalState.getPVCoordinates().getPosition().getX(), initialUnstableManifold.getPosition().getX(), 1E-7);
-        Assertions.assertNotEquals(finalState.getPVCoordinates().getPosition().getY(), initialUnstableManifold.getPosition().getY(), 1E-7);
+        Assertions.assertNotEquals(finalState.getPosition().getX(), initialUnstableManifold.getPosition().getX(), 1E-7);
+        Assertions.assertNotEquals(finalState.getPosition().getY(), initialUnstableManifold.getPosition().getY(), 1E-7);
 
-        Assertions.assertNotEquals(finalState.getPVCoordinates().getPosition().getX(), initialStableManifold.getPosition().getX(), 1E-7);
-        Assertions.assertNotEquals(finalState.getPVCoordinates().getPosition().getY(), initialStableManifold.getPosition().getY(), 1E-7);
+        Assertions.assertNotEquals(finalState.getPosition().getX(), initialStableManifold.getPosition().getX(), 1E-7);
+        Assertions.assertNotEquals(finalState.getPosition().getY(), initialStableManifold.getPosition().getY(), 1E-7);
     }
 
     @Test

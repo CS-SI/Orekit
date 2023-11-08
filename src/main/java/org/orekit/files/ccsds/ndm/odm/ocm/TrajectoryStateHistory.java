@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFile;
@@ -44,17 +45,25 @@ public class TrajectoryStateHistory implements EphemerisFile.EphemerisSegment<Ti
     /** Gravitational parameter in m³/s². */
     private final double mu;
 
+    /** Central body.
+     * @since 12.0
+     */
+    private final OneAxisEllipsoid body;
+
     /** Simple constructor.
      * @param metadata metadata
      * @param states orbital states
+     * @param body central body (may be null if {@link TrajectoryStateHistoryMetadata#getTrajType() type}
+     * is <em>not</em> {@link OrbitElementsType#GEODETIC})
      * @param mu gravitational parameter in m³/s²
      */
-    TrajectoryStateHistory(final TrajectoryStateHistoryMetadata metadata,
-                      final List<TrajectoryState> states,
-                      final double mu) {
+    public TrajectoryStateHistory(final TrajectoryStateHistoryMetadata metadata,
+                                  final List<TrajectoryState> states,
+                                  final OneAxisEllipsoid body, final double mu) {
         this.metadata = metadata;
         this.states   = states;
         this.mu       = mu;
+        this.body     = body;
     }
 
     /** Get metadata.
@@ -75,6 +84,14 @@ public class TrajectoryStateHistory implements EphemerisFile.EphemerisSegment<Ti
     @Override
     public double getMu() {
         return mu;
+    }
+
+    /** Get central body.
+     * @return central body
+     * @since 12.0
+     */
+    public OneAxisEllipsoid getBody() {
+        return body;
     }
 
     /** {@inheritDoc} */
@@ -115,7 +132,7 @@ public class TrajectoryStateHistory implements EphemerisFile.EphemerisSegment<Ti
     /** {@inheritDoc} */
     @Override
     public List<TimeStampedPVCoordinates> getCoordinates() {
-        return states.stream().map(os -> os.toCartesian(mu)).collect(Collectors.toList());
+        return states.stream().map(os -> os.toCartesian(body, mu)).collect(Collectors.toList());
     }
 
 }

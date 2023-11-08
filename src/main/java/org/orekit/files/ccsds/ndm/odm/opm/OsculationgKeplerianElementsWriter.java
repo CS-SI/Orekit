@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import org.orekit.files.ccsds.ndm.odm.KeplerianElements;
 import org.orekit.files.ccsds.ndm.odm.KeplerianElementsKey;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.utils.units.Unit;
 
 /** Writer for Keplerian elements data in OPM files.
@@ -58,7 +58,7 @@ class OsculationgKeplerianElementsWriter extends AbstractWriter {
         generator.writeEntry(KeplerianElementsKey.INCLINATION.name(),       keplerianElements.getI(), Unit.DEGREE,    true);
         generator.writeEntry(KeplerianElementsKey.RA_OF_ASC_NODE.name(),    keplerianElements.getRaan(), Unit.DEGREE, true);
         generator.writeEntry(KeplerianElementsKey.ARG_OF_PERICENTER.name(), keplerianElements.getPa(), Unit.DEGREE,   true);
-        generator.writeEntry(keplerianElements.getAnomalyType() == PositionAngle.TRUE ?
+        generator.writeEntry(keplerianElements.getAnomalyType() == PositionAngleType.TRUE ?
                                                                    KeplerianElementsKey.TRUE_ANOMALY.name() : KeplerianElementsKey.MEAN_ANOMALY.name(),
                                                                    keplerianElements.getAnomaly(),
                                                                    Unit.DEGREE,

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
+import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -140,6 +141,10 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         this.eci  = eci;
         // Sets the Earth Centered Earth Fixed frame
         this.ecef = ecef;
+        // Sets initial state
+        final Orbit orbit = propagateOrbit(getStartDate());
+        final Attitude attitude = provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+        super.resetInitialState(new SpacecraftState(orbit, attitude, mass));
     }
 
     /**

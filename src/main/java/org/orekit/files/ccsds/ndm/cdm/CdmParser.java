@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm.cdm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
@@ -49,7 +50,7 @@ import org.orekit.utils.IERSConventions;
  * @author Melina Vanel
  * @since 11.2
  */
-public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
+public class CdmParser extends AbstractConstituentParser<CdmHeader, Cdm, CdmParser> {
 
     /** Comment key. */
     private static String COMMENT = "COMMENT";
@@ -122,10 +123,13 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
     public CdmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
-                     final ParsedUnitsBehavior parsedUnitsBehavior) {
-        super(Cdm.ROOT, Cdm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, parsedUnitsBehavior);
+                     final ParsedUnitsBehavior parsedUnitsBehavior,
+                     final Function<ParseToken, List<ParseToken>>[] filters) {
+        super(Cdm.ROOT, Cdm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, parsedUnitsBehavior, filters);
         this.doRelativeMetadata = true;
         this.isDatafinished = false;
     }
@@ -139,7 +143,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header                    = new CdmHeader(1.0);
+        header                    = new CdmHeader();
         segments                  = new ArrayList<>();
         metadata                  = null;
         relativeMetadata          = null;
@@ -196,7 +200,7 @@ public class CdmParser extends AbstractConstituentParser<Cdm, CdmParser> {
             relativeMetadata = new CdmRelativeMetadata();
             relativeMetadata.setTimeSystem(TimeSystem.UTC);
         }
-        metadata  = new CdmMetadata();
+        metadata  = new CdmMetadata(getDataContext());
         metadata.setRelativeMetadata(relativeMetadata);
 
         // As no time system is defined in CDM because all dates are given in UTC,

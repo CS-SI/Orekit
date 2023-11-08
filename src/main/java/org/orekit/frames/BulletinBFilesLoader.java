@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -74,14 +74,21 @@ import org.orekit.utils.units.UnitsConverter;
  * files with different name was published each month between March 2003 and January 2010).
  * </p>
  * <p>
+ * Bulletin B in csv format must be read using {@link EopCsvFilesLoader} rather
+ * than using this loader. Bulletin B in xml format must be read using {@link EopXmlLoader}
+ * rather than using this loader.
+ * </p>
+ * <p>
  * This class handles both the old and the new format.
  * </p>
  * <p>
  * This class is immutable and hence thread-safe
  * </p>
  * @author Luc Maisonobe
+ * @see EopCsvFilesLoader
+ * @see EopXmlLoader
  */
-class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
+class BulletinBFilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
     /** Section 1 header pattern. */
     private static final Pattern SECTION_1_HEADER;
@@ -337,6 +344,7 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                             configuration = getItrfVersionProvider().getConfiguration(name, mjd);
                         }
                         history.add(new EOPEntry(mjd, array[0], array[1], array[2], array[3],
+                                                 Double.NaN, Double.NaN,
                                                  equinox[0], equinox[1], array[4], array[5],
                                                  configuration.getVersion(), mjdDate));
                     }
@@ -454,7 +462,8 @@ class BulletinBFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                             // get a configuration for current name and date range
                             configuration = getItrfVersionProvider().getConfiguration(name, mjd);
                         }
-                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, Double.NaN, Double.NaN,
+                                                 equinox[0], equinox[1], nro[0], nro[1],
                                                  configuration.getVersion(), mjdDate));
                         line = mjd < mjdMax ? reader.readLine() : null;
                     } else {

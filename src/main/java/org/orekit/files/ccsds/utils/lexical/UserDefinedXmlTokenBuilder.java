@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,13 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.orekit.files.ccsds.ndm.odm.UserDefined;
 import org.orekit.utils.units.Unit;
-import org.xml.sax.Attributes;
 
 /** Builder for user-defined parameters.
  * <p>
@@ -41,25 +42,37 @@ import org.xml.sax.Attributes;
  */
 public class UserDefinedXmlTokenBuilder implements XmlTokenBuilder {
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public UserDefinedXmlTokenBuilder() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
-    public List<ParseToken> buildTokens(final boolean startTag, final String qName,
-                                        final String content, final Attributes attributes,
+    public List<ParseToken> buildTokens(final boolean startTag, final boolean isLeaf, final String qName,
+                                        final String content, final Map<String, String> attributes,
                                         final int lineNumber, final String fileName) {
 
-        // elaborate the token type
-        final TokenType tokenType = (content == null) ?
-                                    (startTag ? TokenType.START : TokenType.STOP) :
-                                    TokenType.ENTRY;
+        // elaborate name
+        final String name = UserDefined.USER_DEFINED_PREFIX +
+                            attributes.get(UserDefined.USER_DEFINED_XML_ATTRIBUTE);
 
-        // final build
-        final String name = attributes.getValue(UserDefined.USER_DEFINED_XML_ATTRIBUTE);
-        final ParseToken token = new ParseToken(tokenType,
-                                                UserDefined.USER_DEFINED_PREFIX + name,
-                                                content, Unit.NONE,
-                                                lineNumber, fileName);
-
-        return Collections.singletonList(token);
+        if (startTag) {
+            return Collections.singletonList(new ParseToken(TokenType.START, name, content, Unit.NONE, lineNumber, fileName));
+        } else {
+            final List<ParseToken> built = new ArrayList<>(2);
+            if (isLeaf) {
+                built.add(new ParseToken(TokenType.ENTRY, name, content, Unit.NONE, lineNumber, fileName));
+            }
+            built.add(new ParseToken(TokenType.STOP, name, null, Unit.NONE, lineNumber, fileName));
+            return built;
+        }
 
     }
 

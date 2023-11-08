@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,12 +34,11 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -53,7 +52,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<MeasurementDecorator> {
 
     /** Builders for propagators. */
-    private final List<NumericalPropagatorBuilder> builders;
+    private final List<PropagatorBuilder> builders;
 
     /** Estimated orbital parameters. */
     private final ParameterDriversList allEstimatedOrbitalParameters;
@@ -92,7 +91,7 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
     private final int[][] covarianceIndirection;
 
     /** Position angle types used during orbit determination. */
-    private final PositionAngle[] angleTypes;
+    private final PositionAngleType[] angleTypes;
 
     /** Orbit types used during orbit determination. */
     private final OrbitType[] orbitTypes;
@@ -127,7 +126,7 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      */
-    protected UnscentedKalmanModel(final List<NumericalPropagatorBuilder> propagatorBuilders,
+    protected UnscentedKalmanModel(final List<PropagatorBuilder> propagatorBuilders,
                                    final List<CovarianceMatrixProvider> covarianceMatrixProviders,
                                    final ParameterDriversList estimatedMeasurementParameters,
                                    final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
@@ -210,10 +209,10 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         }
 
         // set angle and orbit types
-        angleTypes = new PositionAngle[builders.size()];
+        angleTypes = new PositionAngleType[builders.size()];
         orbitTypes = new OrbitType[builders.size()];
         for (int k = 0; k < builders.size(); k++) {
-            angleTypes[k] = builders.get(k).getPositionAngle();
+            angleTypes[k] = builders.get(k).getPositionAngleType();
             orbitTypes[k] = builders.get(k).getOrbitType();
         }
 
@@ -325,10 +324,6 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
 
         // Initialize arrays of predicted states and measurements
         final RealVector[] predictedStates       = new RealVector[sigmaPoints.length];
-        final RealVector[] predictedMeasurements = new RealVector[sigmaPoints.length];
-
-        // Initialize the relevant states used for measurement estimation
-        final SpacecraftState[][] statesForMeasurementEstimation = new SpacecraftState[sigmaPoints.length][builders.size()];
 
         // Loop on builders
         for (int k = 0; k < builders.size(); k++ ) {
@@ -353,18 +348,8 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
                 final double[] predictedArray = new double[currentSigmaPoints[i].getDimension()];
                 orbitTypes[k].mapOrbitToArray(predicted.getOrbit(), angleTypes[k], predictedArray, null);
                 predictedStates[i].setSubVector(orbitsStartColumns[k], new ArrayRealVector(predictedArray));
-                // One has the same information in predictedStates
-                // and statesForMeasurementEstimation but differently arranged
-                statesForMeasurementEstimation[i][k] = predicted;
             }
-        }
 
-        // Loop on sigma points to predict measurements
-        for (int i = 0; i < sigmaPoints.length; i++) {
-            final EstimatedMeasurement<?> estimated = observedMeasurement.estimate(currentMeasurementNumber, currentMeasurementNumber,
-                                                                                   KalmanEstimatorUtil.filterRelevant(observedMeasurement,
-                                                                                                                      statesForMeasurementEstimation[i]));
-            predictedMeasurements[i] = new ArrayRealVector(estimated.getEstimatedValue());
         }
 
         // compute process noise matrix
@@ -414,7 +399,46 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
         previousDate = currentDate;
 
         // Return
-        return new UnscentedEvolution(measurement.getTime(), predictedStates, predictedMeasurements, processNoise);
+        return new UnscentedEvolution(measurement.getTime(), predictedStates, processNoise);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealVector[] getPredictedMeasurements(final RealVector[] predictedSigmaPoints, final MeasurementDecorator measurement) {
+
+        // Observed measurement
+        final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
+
+        // Initialize arrays of predicted states and measurements
+        final RealVector[] predictedMeasurements = new RealVector[predictedSigmaPoints.length];
+
+        // Initialize the relevant states used for measurement estimation
+        final SpacecraftState[][] statesForMeasurementEstimation = new SpacecraftState[predictedSigmaPoints.length][builders.size()];
+
+        // Convert sigma points to spacecraft states
+        for (int k = 0; k < builders.size(); k++ ) {
+
+            // Loop on sigma points
+            for (int i = 0; i < predictedSigmaPoints.length; i++) {
+                final SpacecraftState state = new SpacecraftState(orbitTypes[k].mapArrayToOrbit(predictedSigmaPoints[i].toArray(), null,
+                                                                                                angleTypes[k], currentDate, builders.get(k).getMu(),
+                                                                                                builders.get(k).getFrame()));
+                statesForMeasurementEstimation[i][k] = state;
+            }
+
+        }
+
+        // Loop on sigma points to predict measurements
+        for (int i = 0; i < predictedSigmaPoints.length; i++) {
+            final EstimatedMeasurement<?> estimated = observedMeasurement.estimate(currentMeasurementNumber, currentMeasurementNumber,
+                                                                                   KalmanEstimatorUtil.filterRelevant(observedMeasurement,
+                                                                                                                      statesForMeasurementEstimation[i]));
+            predictedMeasurements[i] = new ArrayRealVector(estimated.getEstimatedValue());
+        }
+
+        // Return the predicted measurements
+        return predictedMeasurements;
+
     }
 
     /** {@inheritDoc} */
@@ -487,13 +511,13 @@ public class UnscentedKalmanModel implements KalmanEstimation, UnscentedProcess<
      */
     private Propagator createPropagator(final double[] point, final int index) {
         // Create a new instance of the current propagator builder
-        final NumericalPropagatorBuilder copy = builders.get(index).copy();
+        final PropagatorBuilder copy = builders.get(index).copy();
         // Convert the given sigma point to an orbit
         final Orbit orbit = orbitTypes[index].mapArrayToOrbit(point, null, angleTypes[index], copy.getInitialOrbitDate(),
                                                       copy.getMu(), copy.getFrame());
         copy.resetOrbit(orbit);
         // Create the propagator
-        final NumericalPropagator propagator = copy.buildPropagator(copy.getSelectedNormalizedParameters());
+        final Propagator propagator = copy.buildPropagator(copy.getSelectedNormalizedParameters());
         return propagator;
     }
 

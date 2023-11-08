@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,7 @@ import org.orekit.estimation.TLEContext;
 import org.orekit.estimation.TLEEstimationTestUtils;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
@@ -72,11 +72,13 @@ public class TLEPVTest {
             final double[][] finiteDifferencesJacobian =
                 Differentiation.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) {
-                        return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                        return measurement.
+                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                               getEstimatedValue();
                     }
                                                   }, measurement.getDimension(),
                                                   propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
-                                                  PositionAngle.TRUE, 1.0, 3).value(state);
+                                                  PositionAngleType.TRUE, 1.0, 3).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -109,7 +111,7 @@ public class TLEPVTest {
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
 
         // Dummy P, V, T
-        final Vector3D     position = initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = initialOrbit.getPosition();
         final Vector3D     velocity = initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = initialOrbit.getDate();
 
@@ -180,7 +182,7 @@ public class TLEPVTest {
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
 
         // Dummy P, V, T
-        final Vector3D     position = initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = initialOrbit.getPosition();
         final Vector3D     velocity = initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = initialOrbit.getDate();
 
@@ -255,7 +257,7 @@ public class TLEPVTest {
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
 
         // Dummy P, V, T
-        final Vector3D     position = initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = initialOrbit.getPosition();
         final Vector3D     velocity = initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = initialOrbit.getDate();
 
@@ -343,7 +345,7 @@ public class TLEPVTest {
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
 
         // Dummy P, V, T
-        final Vector3D     position = initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = initialOrbit.getPosition();
         final Vector3D     velocity = initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = initialOrbit.getDate();
 
@@ -421,7 +423,7 @@ public class TLEPVTest {
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
 
         // Dummy P, V, T
-        final Vector3D     position = initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D     position = initialOrbit.getPosition();
         final Vector3D     velocity = initialOrbit.getPVCoordinates().getVelocity();
         final AbsoluteDate date     = initialOrbit.getDate();
         final double       weight   = 1.;

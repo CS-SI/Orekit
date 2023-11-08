@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,7 @@ import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeInterpolable;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeShiftable;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -37,8 +37,10 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedAngularCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 
 /** Transformation class in three dimensional space.
@@ -97,7 +99,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Fabien Maussion
  */
 public class Transform implements
-        TimeInterpolable<Transform>,
         TimeShiftable<Transform>,
         Serializable,
         StaticTransform {
@@ -122,8 +123,7 @@ public class Transform implements
      * @param cartesian Cartesian coordinates of the target frame with respect to the original frame
      * @param angular angular coordinates of the target frame with respect to the original frame
      */
-    private Transform(final AbsoluteDate date,
-                      final PVCoordinates cartesian, final AngularCoordinates angular) {
+    public Transform(final AbsoluteDate date, final PVCoordinates cartesian, final AngularCoordinates angular) {
         this.date      = date;
         this.cartesian = cartesian;
         this.angular   = angular;
@@ -361,7 +361,19 @@ public class Transform implements
                 angular.rotationShiftedBy(dt));
     }
 
-    /** {@inheritDoc}
+    /**
+     * Create a so-called static transform from the instance.
+     *
+     * @return static part of the transform. It is static in the
+     * sense that it can only be used to transform directions and positions, but
+     * not velocities or accelerations.
+     * @see StaticTransform
+     */
+    public StaticTransform toStaticTransform() {
+        return StaticTransform.of(date, cartesian.getPosition(), angular.getRotation());
+    }
+
+    /** Interpolate a transform from a sample set of existing transforms.
      * <p>
      * Calling this method is equivalent to call {@link #interpolate(AbsoluteDate,
      * CartesianDerivativesFilter, AngularDerivativesFilter, Collection)} with {@code cFilter}
@@ -369,6 +381,9 @@ public class Transform implements
      * {@link AngularDerivativesFilter#USE_RRA}
      * set to true.
      * </p>
+     * @param interpolationDate interpolation date
+     * @param sample sample points on which interpolation should be done
+     * @return a new instance, interpolated at specified date
      */
     public Transform interpolate(final AbsoluteDate interpolationDate, final Stream<Transform> sample) {
         return interpolate(interpolationDate,
@@ -398,20 +413,31 @@ public class Transform implements
      * @param aFilter filter for derivatives from the sample to use in interpolation
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
-          * @since 7.0
+     * @since 7.0
      */
     public static Transform interpolate(final AbsoluteDate date,
                                         final CartesianDerivativesFilter cFilter,
                                         final AngularDerivativesFilter aFilter,
                                         final Collection<Transform> sample) {
+
+        // Create samples
         final List<TimeStampedPVCoordinates>      datedPV = new ArrayList<>(sample.size());
         final List<TimeStampedAngularCoordinates> datedAC = new ArrayList<>(sample.size());
         for (final Transform t : sample) {
             datedPV.add(new TimeStampedPVCoordinates(t.getDate(), t.getTranslation(), t.getVelocity(), t.getAcceleration()));
             datedAC.add(new TimeStampedAngularCoordinates(t.getDate(), t.getRotation(), t.getRotationRate(), t.getRotationAcceleration()));
         }
-        final TimeStampedPVCoordinates      interpolatedPV = TimeStampedPVCoordinates.interpolate(date, cFilter, datedPV);
-        final TimeStampedAngularCoordinates interpolatedAC = TimeStampedAngularCoordinates.interpolate(date, aFilter, datedAC);
+
+        // Create interpolators
+        final TimeInterpolator<TimeStampedPVCoordinates> pvInterpolator =
+                new TimeStampedPVCoordinatesHermiteInterpolator(datedPV.size(), cFilter);
+
+        final TimeInterpolator<TimeStampedAngularCoordinates> angularInterpolator =
+                new TimeStampedAngularCoordinatesHermiteInterpolator(datedPV.size(), aFilter);
+
+        // Interpolate
+        final TimeStampedPVCoordinates      interpolatedPV = pvInterpolator.interpolate(date, datedPV);
+        final TimeStampedAngularCoordinates interpolatedAC = angularInterpolator.interpolate(date, datedAC);
         return new Transform(date, interpolatedPV, interpolatedAC);
     }
 

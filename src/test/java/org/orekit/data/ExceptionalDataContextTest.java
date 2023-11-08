@@ -23,14 +23,14 @@ import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LazyLoadedFrames;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -39,7 +39,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.LazyLoadedTimeScales;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Test for {@link ExceptionalDataContext}.
@@ -106,13 +105,12 @@ public class ExceptionalDataContextTest {
         double a = 6378e3 + 500e3;
         Orbit orbit = new KeplerianOrbit(
                 a, 0, 0, 0, 0, 0,
-                PositionAngle.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU);
-        AttitudeProvider attitude = new InertialProvider(eci);
+                PositionAngleType.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU);
+        AttitudeProvider attitude = new FrameAlignedProvider(eci);
         Propagator propagator = new KeplerianPropagator(orbit, attitude);
         SpacecraftState state = propagator.propagate(date.shiftedBy(86400));
-        TimeStampedPVCoordinates pv = state.getPVCoordinates(ecef);
         MatcherAssert.assertThat(
-                pv.getPosition().getNorm(),
+                state.getPosition(ecef).getNorm(),
                 OrekitMatchers.relativelyCloseTo(a, 10));
 
         // verify using default data context throws an exception

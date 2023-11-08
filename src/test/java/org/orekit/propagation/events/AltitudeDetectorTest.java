@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.StopOnEvent;
@@ -51,13 +51,13 @@ public class AltitudeDetectorTest {
 
 
         // initial state is at apogee
-        final Orbit initialOrbit = new KeplerianOrbit(a, e, 0, 0, 0, FastMath.PI, PositionAngle.MEAN, EME2000,
+        final Orbit initialOrbit = new KeplerianOrbit(a, e, 0, 0, 0, FastMath.PI, PositionAngleType.MEAN, EME2000,
                                                       initialDate, CelestialBodyFactory.getEarth().getGM());
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         final KeplerianPropagator kepPropagator = new KeplerianPropagator(initialOrbit);
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(earthRadius, earthF, EME2000);
         final AltitudeDetector altDetector = new AltitudeDetector(alt, earth).
-                                             withHandler(new StopOnEvent<AltitudeDetector>());
+                                             withHandler(new StopOnEvent());
         Assertions.assertEquals(alt, altDetector.getAltitude(), 1.0e-15);
         Assertions.assertSame(earth, altDetector.getBodyShape());
 
@@ -66,13 +66,13 @@ public class AltitudeDetectorTest {
 
         // propagation to the future
         SpacecraftState finalState = kepPropagator.propagate(initialDate.shiftedBy(1000));
-        Assertions.assertEquals(finalState.getPVCoordinates().getPosition().getNorm()-earthRadius, alt, 1e-5);
+        Assertions.assertEquals(finalState.getPosition().getNorm()-earthRadius, alt, 1e-5);
         Assertions.assertEquals(44.079, finalState.getDate().durationFrom(initialDate), 1.0e-3);
 
         // propagation to the past
         kepPropagator.resetInitialState(initialState);
         finalState = kepPropagator.propagate(initialDate.shiftedBy(-1000));
-        Assertions.assertEquals(finalState.getPVCoordinates().getPosition().getNorm()-earthRadius, alt, 1e-5);
+        Assertions.assertEquals(finalState.getPosition().getNorm()-earthRadius, alt, 1e-5);
         Assertions.assertEquals(-44.079, finalState.getDate().durationFrom(initialDate), 1.0e-3);
 
     }

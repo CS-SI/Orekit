@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements;
 import java.util.List;
 
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
 
 /** Interface for measurements used for orbit determination.
@@ -40,7 +40,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends ComparableMeasurement {
+public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends ComparableMeasurement, ParameterDriversProvider {
 
     /** Enable or disable a measurement.
      * <p>
@@ -113,18 +113,26 @@ public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends C
      */
     List<EstimationModifier<T>> getModifiers();
 
-    /** Get the drivers for this measurement parameters, including its modifiers parameters.
-     * @return drivers for this measurement parameters, including its modifiers parameters
-     */
-    List<ParameterDriver> getParametersDrivers();
-
     /** Get the satellites related to this measurement.
      * @return satellites related to this measurement
      * @since 9.3
      */
     List<ObservableSatellite> getSatellites();
 
-    /** Estimate the theoretical value of the measurement.
+    /** Estimate the theoretical value of the measurement, without derivatives.
+     * <p>
+     * The estimated value is the <em>combination</em> of the raw estimated
+     * value and all the modifiers that apply to the measurement.
+     * </p>
+     * @param iteration iteration number
+     * @param evaluation evaluations number
+     * @param states orbital states corresponding to {@link #getSatellites()} at measurement date
+     * @return estimated measurement
+     * @since 12.0
+     */
+    EstimatedMeasurementBase<T> estimateWithoutDerivatives(int iteration, int evaluation, SpacecraftState[] states);
+
+    /** Estimate the theoretical value of the measurement, with derivatives.
      * <p>
      * The estimated value is the <em>combination</em> of the raw estimated
      * value and all the modifiers that apply to the measurement.

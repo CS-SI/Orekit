@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 Joseph Reed
+/* Copyright 2002-2023 Joseph Reed
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.bodies;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -89,10 +90,11 @@ public class LoxodromeTest {
     GeodeticPoint highFidelityPointAtDistance(final GeodeticPoint start, final double azimuth, final double distance) {
         GeodeticPoint point = start;
         double d = distance;
-        final Vector3D step = new Vector3D(FastMath.sin(azimuth), FastMath.cos(azimuth), 0);
+        final SinCos scAzimuth = FastMath.sinCos(azimuth);
+        final Vector3D step = new Vector3D(scAzimuth.sin(), scAzimuth.cos(), 0);
         while (d > 0) {
             final GeodeticPoint tmp = earth.transform(
-                new TopocentricFrame(earth, point, "frame").getTransformTo(earth.getBodyFrame(), AbsoluteDate.ARBITRARY_EPOCH).transformPosition(step),
+                new TopocentricFrame(earth, point, "frame").getStaticTransformTo(earth.getBodyFrame(), AbsoluteDate.ARBITRARY_EPOCH).transformPosition(step),
                 earth.getBodyFrame(),
                 AbsoluteDate.ARBITRARY_EPOCH);
             d -= 1.;

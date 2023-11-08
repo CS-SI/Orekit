@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -59,7 +59,7 @@ public class BackAndForthDetectorTest {
         final double raan = FastMath.toRadians(12.5);
         final double lM = FastMath.toRadians(60.);
         Orbit iniOrb = new KeplerianOrbit(a, e, i, w, raan, lM,
-                                          PositionAngle.MEAN, FramesFactory.getEME2000(), date0,
+                                          PositionAngleType.MEAN, FramesFactory.getEME2000(), date0,
                                           Constants.WGS84_EARTH_MU);
 
         // Propagator
@@ -89,7 +89,7 @@ public class BackAndForthDetectorTest {
 
     }
 
-    private static class Visibility implements EventHandler<ElevationDetector> {
+    private static class Visibility implements EventHandler {
         private int _visiNb;
 
         public Visibility() {
@@ -100,7 +100,7 @@ public class BackAndForthDetectorTest {
             return _visiNb;
         }
 
-        public Action eventOccurred(SpacecraftState s, ElevationDetector ed, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, EventDetector ed, boolean increasing) {
             _visiNb++;
             return Action.CONTINUE;
         }

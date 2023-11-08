@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,20 +17,19 @@
 package org.orekit.orbits;
 
 import java.io.Serializable;
-import java.util.stream.Stream;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -75,6 +74,9 @@ public class CartesianOrbit extends Orbit {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20170414L;
+
+    /** 6x6 identity matrix. */
+    private static final double[][] SIX_BY_SIX_IDENTITY = MatrixUtils.createRealIdentityMatrix(6).getData();
 
     /** Indicator for non-Keplerian derivatives. */
     private final transient boolean hasNonKeplerianAcceleration;
@@ -154,7 +156,7 @@ public class CartesianOrbit extends Orbit {
             } else {
                 // get rid of Keplerian acceleration so we don't assume
                 // we have derivatives when in fact we don't have them
-                equinoctial = new EquinoctialOrbit(new PVCoordinates(getPVCoordinates().getPosition(),
+                equinoctial = new EquinoctialOrbit(new PVCoordinates(getPosition(),
                                                                      getPVCoordinates().getVelocity()),
                                                    getFrame(), getDate(), getMu());
             }
@@ -183,7 +185,7 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public double getA() {
-        final double r  = getPVCoordinates().getPosition().getNorm();
+        final double r  = getPosition().getNorm();
         final double V2 = getPVCoordinates().getVelocity().getNormSq();
         return r / (2 - r * V2 / getMu());
     }
@@ -204,9 +206,9 @@ public class CartesianOrbit extends Orbit {
     /** {@inheritDoc} */
     public double getE() {
         final double muA = getMu() * getA();
-        if (muA > 0) {
+        if (isElliptical()) {
             // elliptic or circular orbit
-            final Vector3D pvP   = getPVCoordinates().getPosition();
+            final Vector3D pvP   = getPosition();
             final Vector3D pvV   = getPVCoordinates().getVelocity();
             final double rV2OnMu = pvP.getNorm() * pvV.getNormSq() / getMu();
             final double eSE     = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(muA);
@@ -382,6 +384,12 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    protected Vector3D initPosition() {
+        // nothing to do here, as the canonical elements are already the Cartesian ones
+        return getPVCoordinates().getPosition();
+    }
+
+    /** {@inheritDoc} */
     protected TimeStampedPVCoordinates initPVCoordinates() {
         // nothing to do here, as the canonical elements are already the Cartesian ones
         return getPVCoordinates();
@@ -389,34 +397,8 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public CartesianOrbit shiftedBy(final double dt) {
-        final PVCoordinates shiftedPV = (getA() < 0) ? shiftPVHyperbolic(dt) : shiftPVElliptic(dt);
+        final PVCoordinates shiftedPV = isElliptical() ? shiftPVElliptic(dt) : shiftPVHyperbolic(dt);
         return new CartesianOrbit(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * ensuring velocity remains the exact derivative of position.
-     * </p>
-     * <p>
-     * As this implementation of interpolation is polynomial, it should be used only
-     * with small samples (about 10-20 points) in order to avoid <a
-     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
-     * and numerical problems (including NaN appearing).
-     * </p>
-     * <p>
-     * If orbit interpolation on large samples is needed, using the {@link
-     * org.orekit.propagation.analytical.Ephemeris} class is a better way than using this
-     * low-level interpolation. The Ephemeris class automatically handles selection of
-     * a neighboring sub-sample with a predefined number of point from a large global sample
-     * in a thread-safe way.
-     * </p>
-     */
-    public CartesianOrbit interpolate(final AbsoluteDate date, final Stream<Orbit> sample) {
-        final TimeStampedPVCoordinates interpolated =
-                TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_PVA,
-                                                     sample.map(orbit -> orbit.getPVCoordinates()));
-        return new CartesianOrbit(interpolated, getFrame(), date, getMu());
     }
 
     /** Compute shifted position and velocity in elliptic case.
@@ -425,6 +407,7 @@ public class CartesianOrbit extends Orbit {
      */
     private PVCoordinates shiftPVElliptic(final double dt) {
 
+        // preliminary computation
         final PVCoordinates pv = getPVCoordinates();
         final Vector3D pvP     = pv.getPosition();
         final Vector3D pvV     = pv.getVelocity();
@@ -567,35 +550,23 @@ public class CartesianOrbit extends Orbit {
 
     }
 
-    /** Create a 6x6 identity matrix.
-     * @return 6x6 identity matrix
-     */
-    private double[][] create6x6Identity() {
-        // this is the fastest way to set the 6x6 identity matrix
-        final double[][] identity = new double[6][6];
-        for (int i = 0; i < 6; i++) {
-            identity[i][i] = 1.0;
-        }
-        return identity;
-    }
-
     @Override
     protected double[][] computeJacobianMeanWrtCartesian() {
-        return create6x6Identity();
+        return SIX_BY_SIX_IDENTITY;
     }
 
     @Override
     protected double[][] computeJacobianEccentricWrtCartesian() {
-        return create6x6Identity();
+        return SIX_BY_SIX_IDENTITY;
     }
 
     @Override
     protected double[][] computeJacobianTrueWrtCartesian() {
-        return create6x6Identity();
+        return SIX_BY_SIX_IDENTITY;
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final double gm,
+    public void addKeplerContribution(final PositionAngleType type, final double gm,
                                       final double[] pDot) {
 
         final PVCoordinates pv = getPVCoordinates();

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,21 +18,20 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
@@ -90,15 +89,15 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param cr satellite radiation pressure coefficient (assuming total specular reflection)
      * @param area cross sectional area of satellite
      * @param sun Sun model
-     * @param equatorialRadius central body equatorial radius (for shadow computation)
+     * @param centralBody central body (for shadow computation)
      * @param mu central attraction coefficient
-     * @since 9.2
+     * @since 12.0
      */
     public DSSTSolarRadiationPressure(final double cr, final double area,
                                       final ExtendedPVCoordinatesProvider sun,
-                                      final double equatorialRadius,
+                                      final OneAxisEllipsoid centralBody,
                                       final double mu) {
-        this(D_REF, P_REF, cr, area, sun, equatorialRadius, mu);
+        this(D_REF, P_REF, cr, area, sun, centralBody, mu);
     }
 
     /**
@@ -112,16 +111,16 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * </ul>
      *
      * @param sun Sun model
-     * @param equatorialRadius central body equatorial radius (for shadow computation)
+     * @param centralBody central body (for shadow computation)
      * @param spacecraft spacecraft model
      * @param mu central attraction coefficient
-     * @since 9.2
+     * @since 12.0
      */
     public DSSTSolarRadiationPressure(final ExtendedPVCoordinatesProvider sun,
-                                      final double equatorialRadius,
+                                      final OneAxisEllipsoid centralBody,
                                       final RadiationSensitive spacecraft,
                                       final double mu) {
-        this(D_REF, P_REF, sun, equatorialRadius, spacecraft, mu);
+        this(D_REF, P_REF, sun, centralBody, spacecraft, mu);
     }
 
     /**
@@ -138,21 +137,21 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param cr satellite radiation pressure coefficient (assuming total specular reflection)
      * @param area cross sectional area of satellite
      * @param sun Sun model
-     * @param equatorialRadius central body equatorial radius (for shadow computation)
+     * @param centralBody central body (for shadow computation)
      * @param mu central attraction coefficient
-     * @since 9.2
+     * @since 12.0
      */
     public DSSTSolarRadiationPressure(final double dRef, final double pRef,
                                       final double cr, final double area,
                                       final ExtendedPVCoordinatesProvider sun,
-                                      final double equatorialRadius,
+                                      final OneAxisEllipsoid centralBody,
                                       final double mu) {
 
         // cR being the DSST SRP coef and assuming a spherical spacecraft,
         // the conversion is:
         // cR = 1 + (1 - kA) * (1 - kR) * 4 / 9
         // with kA arbitrary sets to 0
-        this(dRef, pRef, sun, equatorialRadius, new IsotropicRadiationSingleCoefficient(area, cr), mu);
+        this(dRef, pRef, sun, centralBody, new IsotropicRadiationSingleCoefficient(area, cr), mu);
     }
 
     /**
@@ -167,23 +166,23 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param dRef reference distance for the solar radiation pressure (m)
      * @param pRef reference solar radiation pressure at dRef (N/m²)
      * @param sun Sun model
-     * @param equatorialRadius central body equatorial radius (for shadow computation)
+     * @param centralBody central body shape model (for umbra/penumbra computation)
      * @param spacecraft spacecraft model
      * @param mu central attraction coefficient
-     * @since 9.2
+     * @since 12.0
      */
     public DSSTSolarRadiationPressure(final double dRef, final double pRef,
                                       final ExtendedPVCoordinatesProvider sun,
-                                      final double equatorialRadius,
+                                      final OneAxisEllipsoid centralBody,
                                       final RadiationSensitive spacecraft,
                                       final double mu) {
 
         //Call to the constructor from superclass using the numerical SRP model as ForceModel
         super(PREFIX, GAUSS_THRESHOLD,
-              new SolarRadiationPressure(dRef, pRef, sun, equatorialRadius, spacecraft), mu);
+              new SolarRadiationPressure(dRef, pRef, sun, centralBody, spacecraft), mu);
 
         this.sun  = sun;
-        this.ae   = equatorialRadius;
+        this.ae   = centralBody.getEquatorialRadius();
         this.spacecraft = spacecraft;
     }
 
@@ -192,17 +191,6 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      */
     public RadiationSensitive getSpacecraft() {
         return spacecraft;
-    }
-
-    /** {@inheritDoc} */
-    public EventDetector[] getEventsDetectors() {
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
-        return null;
     }
 
     /** {@inheritDoc} */
@@ -218,7 +206,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
                              FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0)};
 
         // Direction cosines of the Sun in the equinoctial frame
-        final Vector3D sunDir = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();
+        final Vector3D sunDir = sun.getPosition(state.getDate(), state.getFrame()).normalize();
         final double alpha = sunDir.dotProduct(auxiliaryElements.getVectorF());
         final double beta  = sunDir.dotProduct(auxiliaryElements.getVectorG());
         final double gamma = sunDir.dotProduct(auxiliaryElements.getVectorW());
@@ -314,7 +302,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         ll[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(pi);
 
         // Direction cosines of the Sun in the equinoctial frame
-        final FieldVector3D<T> sunDir = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();
+        final FieldVector3D<T> sunDir = sun.getPosition(state.getDate(), state.getFrame()).normalize();
         final T alpha = sunDir.dotProduct(auxiliaryElements.getVectorF());
         final T beta  = sunDir.dotProduct(auxiliaryElements.getVectorG());
         final T gamma = sunDir.dotProduct(auxiliaryElements.getVectorW());

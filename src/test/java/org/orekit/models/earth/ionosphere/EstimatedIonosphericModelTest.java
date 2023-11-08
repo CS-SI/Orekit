@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
@@ -42,7 +42,7 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -71,14 +71,14 @@ public class EstimatedIonosphericModelTest {
         // Delay
         final double delay = model.pathDelay(0.5 * FastMath.PI,
                                              Frequency.G01.getMHzFrequency() * 1.0e6,
-                                             model.getParameters());
+                                             model.getParameters(new AbsoluteDate()));
         // Verify
         Assertions.assertEquals(0.162, delay, 0.001);
     }
 
     @Test
     public void testFieldL1GPS() {
-        doTestFieldL1GPS(Decimal64Field.getInstance());
+        doTestFieldL1GPS(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldL1GPS(final Field<T> field) {
@@ -101,7 +101,9 @@ public class EstimatedIonosphericModelTest {
 
         final IonosphericMappingFunction mapping = new SingleLayerModelMappingFunction();
         final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 50.0);
-
+        
+        // the pamater driver has no validity period, so only 1 values estimated over
+        // the all period, that is why getParameters is called with no argument
         double delayMeters = model.pathDelay(FastMath.toRadians(elevation),
                                              Frequency.G01.getMHzFrequency() * 1.0e6,
                                              model.getParameters());
@@ -112,7 +114,7 @@ public class EstimatedIonosphericModelTest {
 
     @Test
     public void testFieldDelay() {
-        doTestFieldDelay(Decimal64Field.getInstance());
+        doTestFieldDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
@@ -153,7 +155,7 @@ public class EstimatedIonosphericModelTest {
         final Frame           frame   = FramesFactory.getEME2000();
         final Orbit           orbit   = new KeplerianOrbit(24464560.0, 0.05, 0.122138,
                                                3.10686, 1.00681, 0.048363,
-                                               PositionAngle.MEAN, frame, date, Constants.WGS84_EARTH_MU);
+                                               PositionAngleType.MEAN, frame, date, Constants.WGS84_EARTH_MU);
         final SpacecraftState state = new SpacecraftState(orbit);
 
         // Delay
@@ -163,7 +165,7 @@ public class EstimatedIonosphericModelTest {
 
     @Test
     public void testFieldZeroDelay() {
-        doTestFieldZeroDelay(Decimal64Field.getInstance());
+        doTestFieldZeroDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldZeroDelay(final Field<T> field) {
@@ -190,7 +192,7 @@ public class EstimatedIonosphericModelTest {
         final Frame                   frame   = FramesFactory.getEME2000();
         final FieldOrbit<T>           orbit   = new FieldKeplerianOrbit<>(zero.add(24464560.0), zero.add(0.05), zero.add(0.122138),
                                                                           zero.add(3.10686), zero.add(1.00681), zero.add(0.048363),
-                                                                          PositionAngle.MEAN, frame, date, zero.add(Constants.WGS84_EARTH_MU));
+                                                                          PositionAngleType.MEAN, frame, date, zero.add(Constants.WGS84_EARTH_MU));
         final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit);
 
         // Delay
@@ -200,7 +202,7 @@ public class EstimatedIonosphericModelTest {
 
     @Test
     public void testEquality() {
-        doTestEquality(Decimal64Field.getInstance());
+        doTestEquality(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestEquality(final Field<T> field) {
@@ -259,14 +261,14 @@ public class EstimatedIonosphericModelTest {
         // Field Orbit
         final Frame frame = FramesFactory.getEME2000();
         final FieldOrbit<DerivativeStructure> dsOrbit = new FieldKeplerianOrbit<>(a0, e0, i0, pa0, raan0, anomaly0,
-                                                                                  PositionAngle.MEAN, frame,
+                                                                                  PositionAngleType.MEAN, frame,
                                                                                   dsDate, zero.add(3.9860047e14));
         // Field State
         final FieldSpacecraftState<DerivativeStructure> dsState = new FieldSpacecraftState<>(dsOrbit);
 
         // Initial satellite elevation
-        final FieldVector3D<DerivativeStructure> position = dsState.getPVCoordinates().getPosition();
-        final DerivativeStructure dsElevation = baseFrame.getElevation(position, frame, dsDate);
+        final FieldVector3D<DerivativeStructure> position = dsState.getPosition();
+        final DerivativeStructure dsElevation = baseFrame.getTrackingCoordinates(position, frame, dsDate).getElevation();
 
         // Set drivers reference date
         for (final ParameterDriver driver : model.getParametersDrivers()) {
@@ -276,7 +278,7 @@ public class EstimatedIonosphericModelTest {
         // Verify delay equality
         final double delayR = model.pathDelay(dsState.toSpacecraftState(), baseFrame, frequency, model.getParameters());
         final DerivativeStructure delayD = model.pathDelay(dsState, baseFrame, frequency, model.getParameters(field));
-        Assertions.assertEquals(delayR, delayD.getValue(), 1e-15);
+        Assertions.assertEquals(delayR, delayD.getValue(), 5e-15);
 
         // Compute Delay with state derivatives
         final DerivativeStructure delay = model.pathDelay(dsElevation, frequency, model.getParameters(field));
@@ -290,50 +292,66 @@ public class EstimatedIonosphericModelTest {
         // Finite differences for reference values
         final double[][] refDeriv = new double[1][6];
         final OrbitType orbitType = OrbitType.KEPLERIAN;
-        final PositionAngle angleType = PositionAngle.MEAN;
+        final PositionAngleType angleType = PositionAngleType.MEAN;
         double dP = 0.001;
         double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
         for (int i = 0; i < 6; i++) {
             SpacecraftState stateM4 = shiftState(state, orbitType, angleType, -4 * steps[i], i);
-            final Vector3D positionM4 = stateM4.getPVCoordinates().getPosition();
-            final double elevationM4  = station.getBaseFrame().getElevation(positionM4, stateM4.getFrame(), stateM4.getDate());
+            final Vector3D positionM4 = stateM4.getPosition();
+            final double elevationM4  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionM4, stateM4.getFrame(), stateM4.getDate()).
+                                        getElevation();
             double  delayM4 = model.pathDelay(elevationM4, frequency, model.getParameters());
-
+            
             SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
-            final Vector3D positionM3 = stateM3.getPVCoordinates().getPosition();
-            final double elevationM3  = station.getBaseFrame().getElevation(positionM3, stateM3.getFrame(), stateM3.getDate());
+            final Vector3D positionM3 = stateM3.getPosition();
+            final double elevationM3  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionM3, stateM3.getFrame(), stateM3.getDate()).
+                                        getElevation();
             double  delayM3 = model.pathDelay(elevationM3, frequency, model.getParameters());
-
+            
             SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
-            final Vector3D positionM2 = stateM2.getPVCoordinates().getPosition();
-            final double elevationM2  = station.getBaseFrame().getElevation(positionM2, stateM2.getFrame(), stateM2.getDate());
+            final Vector3D positionM2 = stateM2.getPosition();
+            final double elevationM2  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionM2, stateM2.getFrame(), stateM2.getDate()).
+                                        getElevation();
             double  delayM2 = model.pathDelay(elevationM2, frequency, model.getParameters());
-
+ 
             SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
-            final Vector3D positionM1 = stateM1.getPVCoordinates().getPosition();
-            final double elevationM1  = station.getBaseFrame().getElevation(positionM1, stateM1.getFrame(), stateM1.getDate());
+            final Vector3D positionM1 = stateM1.getPosition();
+            final double elevationM1  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionM1, stateM1.getFrame(), stateM1.getDate()).
+                                        getElevation();
             double  delayM1 = model.pathDelay(elevationM1, frequency, model.getParameters());
-
+           
             SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
-            final Vector3D positionP1 = stateP1.getPVCoordinates().getPosition();
-            final double elevationP1  = station.getBaseFrame().getElevation(positionP1, stateP1.getFrame(), stateP1.getDate());
+            final Vector3D positionP1 = stateP1.getPosition();
+            final double elevationP1  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionP1, stateP1.getFrame(), stateP1.getDate()).
+                                        getElevation();
             double  delayP1 = model.pathDelay(elevationP1, frequency, model.getParameters());
-
+            
             SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
-            final Vector3D positionP2 = stateP2.getPVCoordinates().getPosition();
-            final double elevationP2  = station.getBaseFrame().getElevation(positionP2, stateP2.getFrame(), stateP2.getDate());
+            final Vector3D positionP2 = stateP2.getPosition();
+            final double elevationP2  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionP2, stateP2.getFrame(), stateP2.getDate()).
+                                        getElevation();
             double  delayP2 = model.pathDelay(elevationP2, frequency, model.getParameters());
-
+            
             SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
-            final Vector3D positionP3 = stateP3.getPVCoordinates().getPosition();
-            final double elevationP3  = station.getBaseFrame().getElevation(positionP3, stateP3.getFrame(), stateP3.getDate());
+            final Vector3D positionP3 = stateP3.getPosition();
+            final double elevationP3  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionP3, stateP3.getFrame(), stateP3.getDate()).
+                                        getElevation();
             double  delayP3 = model.pathDelay(elevationP3, frequency, model.getParameters());
-
+            
             SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
-            final Vector3D positionP4 = stateP4.getPVCoordinates().getPosition();
-            final double elevationP4  = station.getBaseFrame().getElevation(positionP4, stateP4.getFrame(), stateP4.getDate());
+            final Vector3D positionP4 = stateP4.getPosition();
+            final double elevationP4  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionP4, stateP4.getFrame(), stateP4.getDate()).
+                                        getElevation();
             double  delayP4 = model.pathDelay(elevationP4, frequency, model.getParameters());
-
+            
             fillJacobianColumn(refDeriv, i, steps[i],
                                delayM4, delayM3, delayM2, delayM1,
                                delayP1, delayP2, delayP3, delayP4);
@@ -344,7 +362,7 @@ public class EstimatedIonosphericModelTest {
         }
     }
 
-    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
+    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
                                        double delta, int column) {
 
         double[][] array = stateToArray(state, orbitType, angleType, true);
@@ -414,15 +432,15 @@ public class EstimatedIonosphericModelTest {
         // Field Orbit
         final Frame frame = FramesFactory.getEME2000();
         final FieldOrbit<DerivativeStructure> dsOrbit = new FieldKeplerianOrbit<>(a0, e0, i0, pa0, raan0, anomaly0,
-                                                                                  PositionAngle.MEAN, frame,
+                                                                                  PositionAngleType.MEAN, frame,
                                                                                   dsDate, zero.add(3.9860047e14));
 
         // Field State
         final FieldSpacecraftState<DerivativeStructure> dsState = new FieldSpacecraftState<>(dsOrbit);
 
         // Initial satellite elevation
-        final FieldVector3D<DerivativeStructure> position = dsState.getPVCoordinates().getPosition();
-        final DerivativeStructure dsElevation = baseFrame.getElevation(position, frame, dsState.getDate());
+        final FieldVector3D<DerivativeStructure> position = dsState.getPosition();
+        final DerivativeStructure dsElevation = baseFrame.getTrackingCoordinates(position, frame, dsState.getDate()).getElevation();
 
         // Add parameter as a variable
         final List<ParameterDriver> drivers = model.getParametersDrivers();
@@ -459,10 +477,10 @@ public class EstimatedIonosphericModelTest {
 
         selected.setValue(p0 - 4 * h);
         double  delayM4 = model.pathDelay(elevation, frequency, model.getParameters());
-
+        
         selected.setValue(p0 - 3 * h);
         double  delayM3 = model.pathDelay(elevation, frequency, model.getParameters());
-
+        
         selected.setValue(p0 - 2 * h);
         double  delayM2 = model.pathDelay(elevation, frequency, model.getParameters());
 
@@ -480,7 +498,7 @@ public class EstimatedIonosphericModelTest {
 
         selected.setValue(p0 + 4 * h);
         double  delayP4 = model.pathDelay(elevation, frequency, model.getParameters());
-
+            
         fillJacobianColumn(refDeriv, 0, h,
                            delayM4, delayM3, delayM2, delayM1,
                            delayP1, delayP2, delayP3, delayP4);
@@ -489,7 +507,7 @@ public class EstimatedIonosphericModelTest {
 
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngle angleType,
+    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
                                   boolean withMass) {
         double[][] array = new double[2][withMass ? 7 : 6];
         orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
@@ -499,7 +517,7 @@ public class EstimatedIonosphericModelTest {
         return array;
     }
 
-    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngle angleType,
+    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngleType angleType,
                                          Frame frame, AbsoluteDate date, double mu,
                                          Attitude attitude) {
         Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);

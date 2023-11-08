@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,12 +35,11 @@ import org.hipparchus.util.MerweUnscentedTransform;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataFilter;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DataSource;
 import org.orekit.data.GzipFilter;
 import org.orekit.data.UnixCompressFilter;
@@ -51,6 +50,7 @@ import org.orekit.estimation.measurements.Position;
 import org.orekit.files.ilrs.CPF;
 import org.orekit.files.ilrs.CPF.CPFCoordinate;
 import org.orekit.files.ilrs.CPF.CPFEphemeris;
+import org.orekit.files.rinex.HatanakaCompressFilter;
 import org.orekit.files.ilrs.CPFParser;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
@@ -69,18 +69,17 @@ import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.gnss.HatanakaCompressFilter;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.NRLMSISE00;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -142,10 +141,10 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final boolean useMoon  = true;
         final boolean useSun   = true;
         final boolean useTides = true;
-        final OrbitDeterminationPropagatorBuilder propagator = initializePropagator(initialOrbit, centralBody, gravityField,
-                                                                                    convention, simpleEop, minStep, maxStep,
-                                                                                    mass, surface, useDrag, useSrp,
-                                                                                    useSun, useMoon, useTides);
+        final PropagatorBuilder propagator = initializePropagator(initialOrbit, centralBody, gravityField,
+                                                                  convention, simpleEop, minStep, maxStep,
+                                                                  mass, surface, useDrag, useSrp,
+                                                                  useSun, useMoon, useTides);
 
         // Measurements
         final double sigma = 1.0;
@@ -168,8 +167,8 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final StreamingStatistics statX      = observer.getXStatistics();
         final StreamingStatistics statY      = observer.getYStatistics();
         final StreamingStatistics statZ      = observer.getZStatistics();
-        Assertions.assertEquals(0.0, statX.getMean(), 1.38e-3);
-        Assertions.assertEquals(0.0, statY.getMean(), 1.87e-4);
+        Assertions.assertEquals(0.0, statX.getMean(), 1.39e-3);
+        Assertions.assertEquals(0.0, statY.getMean(), 1.86e-4);
         Assertions.assertEquals(0.0, statZ.getMean(), 2.85e-4);
         Assertions.assertEquals(0.0, statX.getMin(),  0.031); // Value is negative
         Assertions.assertEquals(0.0, statY.getMin(),  0.028); // Value is negative
@@ -184,7 +183,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final Vector3D estimated = new Vector3D(estimatedState.getEntry(0),
                                                 estimatedState.getEntry(1),
                                                 estimatedState.getEntry(2));
-        final double dP = 0.046;
+        final double dP = 0.029;
         Assertions.assertEquals(0.0, Vector3D.distance(ref, estimated), dP);
 
         // Check that "physical" matrices are not null
@@ -266,7 +265,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final Frame orbitFrame = FramesFactory.getEME2000();
 
         // Bounded propagator from the CPF file
-        final BoundedPropagator bounded = ephemeris.getPropagator();
+        final BoundedPropagator bounded = ephemeris.getPropagator(new FrameAlignedProvider(orbitFrame));
 
         // Initial date
         final AbsoluteDate initialDate = bounded.getMinDate();
@@ -306,24 +305,24 @@ public class UnscentedKalmanOrbitDeterminationTest {
      * @param useTides true if solid Earth tides must be added
      * @return a configured propagator builder
      */
-    private static OrbitDeterminationPropagatorBuilder initializePropagator(final Orbit orbit,
-                                                                            final OneAxisEllipsoid centralBody,
-                                                                            final SphericalHarmonicsProvider gravityField,
-                                                                            final IERSConventions convention, final boolean simpleEop,
-                                                                            final double minStep, final double maxStep,
-                                                                            final double mass, final double surface,
-                                                                            final boolean useDrag, final boolean useSrp,
-                                                                            final boolean useSun, final boolean useMoon,
-                                                                            final boolean useTides) {
+    private static PropagatorBuilder initializePropagator(final Orbit orbit,
+                                                          final OneAxisEllipsoid centralBody,
+                                                          final SphericalHarmonicsProvider gravityField,
+                                                          final IERSConventions convention, final boolean simpleEop,
+                                                          final double minStep, final double maxStep,
+                                                          final double mass, final double surface,
+                                                          final boolean useDrag, final boolean useSrp,
+                                                          final boolean useSun, final boolean useMoon,
+                                                          final boolean useTides) {
 
         // Initialize numerical integrator
         final ODEIntegratorBuilder integrator = new DormandPrince853IntegratorBuilder(minStep, maxStep, 10.0);
 
         // Initialize the builder
-        final OrbitDeterminationPropagatorBuilder builder;
+        final PropagatorBuilder builder;
 
         // Initialize the numerical builder
-        final NumericalPropagatorBuilder propagator = new NumericalPropagatorBuilder(orbit, integrator, PositionAngle.MEAN, 10.0);
+        final NumericalPropagatorBuilder propagator = new NumericalPropagatorBuilder(orbit, integrator, PositionAngleType.MEAN, 10.0);
 
         // Add force models to the numerical propagator
         addNumericalForceModels(propagator, orbit, centralBody, gravityField, convention, simpleEop, surface, useDrag, useSrp, useSun, useMoon, useTides);
@@ -377,8 +376,6 @@ public class UnscentedKalmanOrbitDeterminationTest {
             final MarshallSolarActivityFutureEstimation msafe =
                             new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
                                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-            final DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
-            manager.feed(msafe.getSupportedNames(), msafe);
             final Atmosphere atmosphere = new NRLMSISE00(msafe, CelestialBodyFactory.getSun(), centralBody);
 
             // Drag force
@@ -402,7 +399,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
             final RadiationSensitive spacecraft = new IsotropicRadiationSingleCoefficient(surface, 1.13);
 
             // Solar radiation pressure
-            final ForceModel srp = new SolarRadiationPressure(CelestialBodyFactory.getSun(), gravityField.getAe(), spacecraft);
+            final ForceModel srp = new SolarRadiationPressure(CelestialBodyFactory.getSun(), centralBody, spacecraft);
             for (final ParameterDriver driver : srp.getParametersDrivers()) {
                 if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
                     //driver.setSelected(true);
@@ -464,11 +461,11 @@ public class UnscentedKalmanOrbitDeterminationTest {
         for (final CPFCoordinate coordinate : ephemeris.getCoordinates()) {
 
             // Position in inertial frames
-            final TimeStampedPVCoordinates pvInertial = ephemeris.getFrame().getTransformTo(orbit.getFrame(), coordinate.getDate()).
-                                                                             transformPVCoordinates(coordinate);
+            final Vector3D posInertial = ephemeris.getFrame().getStaticTransformTo(orbit.getFrame(), coordinate.getDate()).
+                                                              transformPosition(coordinate.getPosition());
 
             // Initialize measurement
-            final Position measurement = new Position(coordinate.getDate(), pvInertial.getPosition(), sigma, 1.0, satellite);
+            final Position measurement = new Position(coordinate.getDate(), posInertial, sigma, 1.0, satellite);
 
             // Add the measurement to the list
             measurements.add(measurement);
@@ -486,9 +483,9 @@ public class UnscentedKalmanOrbitDeterminationTest {
      * @param measurements list of measurements
      * @param provider covariance matrix provider
      */
-    private static Observer initializeEstimator(final OrbitDeterminationPropagatorBuilder propagator,
-                                            final List<ObservedMeasurement<?>> measurements,
-                                            final CovarianceMatrixProvider provider) {
+    private static Observer initializeEstimator(final PropagatorBuilder propagator,
+                                                final List<ObservedMeasurement<?>> measurements,
+                                                final CovarianceMatrixProvider provider) {
 
         // Initialize builder
         final UnscentedKalmanEstimatorBuilder builder = new UnscentedKalmanEstimatorBuilder();

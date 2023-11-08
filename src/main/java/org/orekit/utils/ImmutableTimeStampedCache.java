@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
@@ -45,11 +46,6 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
     implements TimeStampedCache<T> {
 
     /**
-     * A single chronological comparator since instances are thread safe.
-     */
-    private static final ChronologicalComparator CMP = new ChronologicalComparator();
-
-    /**
      * An empty immutable cache that always throws an exception on attempted
      * access.
      */
@@ -64,52 +60,73 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
     private final List<T> data;
 
     /**
-     * the size list to return from {@link #getNeighbors(AbsoluteDate)}.
+     * the maximum size list to return from {@link #getNeighbors(AbsoluteDate, int)}.
+     * @since 12.0
      */
-    private final int neighborsSize;
+    private final int maxNeighborsSize;
+
+    /** Earliest date.
+     * @since 12.0
+     */
+    private final AbsoluteDate earliestDate;
+
+    /** Latest date.
+     * @since 12.0
+     */
+    private final AbsoluteDate latestDate;
 
     /**
      * Create a new cache with the given neighbors size and data.
      *
-     * @param neighborsSize the size of the list returned from
-     *        {@link #getNeighbors(AbsoluteDate)}. Must be less than or equal to
+     * @param maxNeighborsSize the maximum size of the list returned from
+     *        {@link #getNeighbors(AbsoluteDate, int)}. Must be less than or equal to
      *        {@code data.size()}.
      * @param data the backing data for this cache. The list will be copied to
      *        ensure immutability. To guarantee immutability the entries in
      *        {@code data} must be immutable themselves. There must be more data
-     *        than {@code neighborsSize}.
+     *        than {@code maxNeighborsSize}.
      * @throws IllegalArgumentException if {@code neightborsSize > data.size()}
      *         or if {@code neighborsSize} is negative
      */
-    public ImmutableTimeStampedCache(final int neighborsSize,
+    public ImmutableTimeStampedCache(final int maxNeighborsSize,
                                      final Collection<? extends T> data) {
         // parameter check
-        if (neighborsSize > data.size()) {
+        if (maxNeighborsSize > data.size()) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS,
-                                                     data.size(), neighborsSize);
+                                                     data.size(), maxNeighborsSize);
         }
-        if (neighborsSize < 1) {
+        if (maxNeighborsSize < 1) {
             throw new OrekitIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_SMALL,
-                                                     neighborsSize, 0);
+                                                     maxNeighborsSize, 0);
         }
 
         // assign instance variables
-        this.neighborsSize = neighborsSize;
+        this.maxNeighborsSize = maxNeighborsSize;
         // sort and copy data first
-        this.data = new ArrayList<T>(data);
-        Collections.sort(this.data, CMP);
+        this.data = new ArrayList<>(data);
+        Collections.sort(this.data, new ChronologicalComparator());
+
+        this.earliestDate = this.data.get(0).getDate();
+        this.latestDate   = this.data.get(this.data.size() - 1).getDate();
+
     }
 
     /**
      * private constructor for {@link #EMPTY_CACHE}.
      */
     private ImmutableTimeStampedCache() {
-        this.data = null;
-        this.neighborsSize = 0;
+        this.data             = null;
+        this.maxNeighborsSize = 0;
+        this.earliestDate     = AbsoluteDate.ARBITRARY_EPOCH;
+        this.latestDate       = AbsoluteDate.ARBITRARY_EPOCH;
     }
 
     /** {@inheritDoc} */
-    public Stream<T> getNeighbors(final AbsoluteDate central) {
+    public Stream<T> getNeighbors(final AbsoluteDate central, final int n) {
+
+        if (n > maxNeighborsSize) {
+            throw new OrekitException(OrekitMessages.NOT_ENOUGH_DATA, maxNeighborsSize);
+        }
 
         // find central index
         final int i = findIndex(central);
@@ -126,10 +143,9 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
         }
 
         // force unbalanced range if necessary
-        int start = FastMath.max(0, i - (this.neighborsSize - 1) / 2);
-        final int end = FastMath.min(this.data.size(), start +
-                                                       this.neighborsSize);
-        start = end - this.neighborsSize;
+        int start = FastMath.max(0, i - (n - 1) / 2);
+        final int end = FastMath.min(this.data.size(), start + n);
+        start = end - n;
 
         // return list without copying
         return this.data.subList(start, end).stream();
@@ -145,21 +161,46 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
      *         {@code t} is after the last entry.
      */
     private int findIndex(final AbsoluteDate t) {
-        // Guaranteed log(n) time
-        int i = Collections.binarySearch(this.data, t, CMP);
-        if (i == -this.data.size() - 1) {
-            // beyond last entry
-            i = this.data.size();
-        } else if (i < 0) {
-            // did not find exact match, but contained in data interval
-            i = -i - 2;
+
+        // left bracket of search algorithm
+        int    iInf  = 0;
+        double dtInf = t.durationFrom(earliestDate);
+        if (dtInf < 0) {
+            // before first entry
+            return -1;
         }
-        return i;
+
+        // right bracket of search algorithm
+        int    iSup  = data.size() - 1;
+        double dtSup = t.durationFrom(latestDate);
+        if (dtSup > 0) {
+            // after last entry
+            return data.size();
+        }
+
+        // search entries, using linear interpolation
+        // this should take only 2 iterations for near linear entries (most frequent use case)
+        // regardless of the number of entries
+        // this is much faster than binary search for large number of entries
+        while (iSup - iInf > 1) {
+            final int    iInterp = (int) FastMath.rint((iInf * dtSup - iSup * dtInf) / (dtSup - dtInf));
+            final int    iMed    = FastMath.max(iInf + 1, FastMath.min(iInterp, iSup - 1));
+            final double dtMed   = t.durationFrom(data.get(iMed).getDate());
+            if (dtMed < 0) {
+                iSup  = iMed;
+                dtSup = dtMed;
+            } else {
+                iInf  = iMed;
+                dtInf = dtMed;
+            }
+        }
+
+        return iInf;
     }
 
     /** {@inheritDoc} */
-    public int getNeighborsSize() {
-        return this.neighborsSize;
+    public int getMaxNeighborsSize() {
+        return maxNeighborsSize;
     }
 
     /** {@inheritDoc} */
@@ -202,7 +243,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
 
         /** {@inheritDoc} */
         @Override
-        public int getNeighborsSize() {
+        public int getMaxNeighborsSize() {
             return 0;
         }
 

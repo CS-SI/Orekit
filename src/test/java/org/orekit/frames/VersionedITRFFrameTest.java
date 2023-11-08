@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,8 @@ package org.orekit.frames;
 
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -96,10 +96,10 @@ public class VersionedITRFFrameTest {
         Assertions.assertEquals(expectedDistance2014, Vector3D.distance(pUnspecifiedNI, p2014NI), tolerance);
 
         // field transform
-        FieldAbsoluteDate<Decimal64> dateField     = new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date);
-        FieldVector3D<Decimal64> pUnspecifiedField = unspecifiedITRF.getTransformTo(eme2000, dateField).transformPosition(p);
-        FieldVector3D<Decimal64> p2008Field        = itrf2008.getTransformTo(eme2000, dateField).transformPosition(p);
-        FieldVector3D<Decimal64> p2014Field        = itrf2014.getTransformTo(eme2000, dateField).transformPosition(p);
+        FieldAbsoluteDate<Binary64> dateField     = new FieldAbsoluteDate<>(Binary64Field.getInstance(), date);
+        FieldVector3D<Binary64> pUnspecifiedField = unspecifiedITRF.getTransformTo(eme2000, dateField).transformPosition(p);
+        FieldVector3D<Binary64> p2008Field        = itrf2008.getTransformTo(eme2000, dateField).transformPosition(p);
+        FieldVector3D<Binary64> p2014Field        = itrf2014.getTransformTo(eme2000, dateField).transformPosition(p);
         Assertions.assertEquals(expectedDistance2008, FieldVector3D.distance(pUnspecifiedField, p2008Field).getReal(), tolerance);
         Assertions.assertEquals(expectedDistance2014, FieldVector3D.distance(pUnspecifiedField, p2014Field).getReal(), tolerance);
 
@@ -113,8 +113,8 @@ public class VersionedITRFFrameTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(itrf2008);
 
-        Assertions.assertTrue(bos.size() > 40000);
-        Assertions.assertTrue(bos.size() < 45000);
+        Assertions.assertTrue(bos.size() > 45000);
+        Assertions.assertTrue(bos.size() < 50000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

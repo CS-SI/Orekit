@@ -1,4 +1,4 @@
-' Copyright 2002-2022 CS GROUP
+' Copyright 2002-2023 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -36,9 +36,6 @@
     package forces #DDEBD8 {
 
       interface ForceModel
-      abstract class AbstractForceModel
-
-      ForceModel <|.. AbstractForceModel
 
       package maneuvers #CBDBC8 {
 
@@ -52,7 +49,7 @@
 
         interface Maneuver
 
-        AbstractForceModel <|-- Maneuver
+        ForceModel <|.. Maneuver
         AttitudeProvider <--o Maneuver : "optional attitude override"
         Maneuver o--> PropulsionModel
         Maneuver o--> ManeuverTriggers
@@ -61,6 +58,6 @@
 
     }
 
- }
+  }
 
 @enduml

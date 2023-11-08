@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,48 +16,51 @@
  */
 package org.orekit.files.ilrs;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 /**
  * Container for Consolidated laser ranging Data Format (CDR) configuration records.
  * @author Bryan Cazabonne
+ * @author Rongwang Li
  * @since 10.3
  */
 public class CRDConfiguration {
 
-    /** System configuration record. */
-    private SystemConfiguration systemRecord;
+    /** Dict of configuration record. **/
+    private Map<String, BaseConfiguration> mapConfigurationRecords;
 
-    /** Laser configuration record. */
-    private LaserConfiguration laserRecord;
+    /** List of system configuration. **/
+    private List<SystemConfiguration> systemConfigurationRecords;
 
-    /** Detector configuration record. */
-    private DetectorConfiguration detectorRecord;
-
-    /** Timing system configuration record. */
-    private TimingSystemConfiguration timingRecord;
-
-    /** Transponder configuration record. */
-    private TransponderConfiguration transponderRecord;
-
-    /** Software configuration record. */
-    private SoftwareConfiguration softwareRecord;
-
-    /** Meteorological configuration record. */
-    private MeteorologicalConfiguration meteorologicalRecord;
+    /**
+     * Constructor.
+     */
+    public CRDConfiguration() {
+        systemConfigurationRecords = new ArrayList<>();
+        mapConfigurationRecords = new Hashtable<>();
+    }
 
     /**
      * Get the system configuration record.
      * @return the system configuration record
      */
     public SystemConfiguration getSystemRecord() {
-        return systemRecord;
+        return systemConfigurationRecords.isEmpty() ? null : systemConfigurationRecords.get(0);
     }
 
     /**
-     * Set the system configuration record.
-     * @param systemRecord the record to set
+     * Get the system configuration record.
+     * @return the system configuration record
      */
-    public void setSystemRecord(final SystemConfiguration systemRecord) {
-        this.systemRecord = systemRecord;
+    public SystemConfiguration getLastSystemRecord() {
+        return systemConfigurationRecords.isEmpty() ? null : systemConfigurationRecords.get(systemConfigurationRecords.size() - 1);
     }
 
     /**
@@ -65,15 +68,7 @@ public class CRDConfiguration {
      * @return the laser configuration record
      */
     public LaserConfiguration getLaserRecord() {
-        return laserRecord;
-    }
-
-    /**
-     * Set the laser configuration record.
-     * @param laserRecord the record to set
-     */
-    public void setLaserRecord(final LaserConfiguration laserRecord) {
-        this.laserRecord = laserRecord;
+        return getLaserRecord(getSystemRecord());
     }
 
     /**
@@ -81,15 +76,7 @@ public class CRDConfiguration {
      * @return the detector configuration record
      */
     public DetectorConfiguration getDetectorRecord() {
-        return detectorRecord;
-    }
-
-    /**
-     * Set the detector configuration record.
-     * @param detectorRecord the record to set
-     */
-    public void setDetectorRecord(final DetectorConfiguration detectorRecord) {
-        this.detectorRecord = detectorRecord;
+        return getDetectorRecord(getSystemRecord());
     }
 
     /**
@@ -97,15 +84,7 @@ public class CRDConfiguration {
      * @return the timing system configuration record
      */
     public TimingSystemConfiguration getTimingRecord() {
-        return timingRecord;
-    }
-
-    /**
-     * Set the timing system configuration record.
-     * @param timingRecord the record to set
-     */
-    public void setTimingRecord(final TimingSystemConfiguration timingRecord) {
-        this.timingRecord = timingRecord;
+        return getTimingRecord(getSystemRecord());
     }
 
     /**
@@ -113,31 +92,16 @@ public class CRDConfiguration {
      * @return the transponder configuration record
      */
     public TransponderConfiguration getTransponderRecord() {
-        return transponderRecord;
+        return getTransponderRecord(getSystemRecord());
     }
 
-    /**
-     * Set the transponder configuration record.
-     * @param transponderRecord the record to set
-     */
-    public void setTransponderRecord(final TransponderConfiguration transponderRecord) {
-        this.transponderRecord = transponderRecord;
-    }
 
     /**
      * Get the software configuration record.
      * @return the software configuration record
      */
     public SoftwareConfiguration getSoftwareRecord() {
-        return softwareRecord;
-    }
-
-    /**
-     * Set the software configuration record.
-     * @param softwareRecord the record to set
-     */
-    public void setSoftwareRecord(final SoftwareConfiguration softwareRecord) {
-        this.softwareRecord = softwareRecord;
+        return getSoftwareRecord(getSystemRecord());
     }
 
     /**
@@ -145,25 +109,264 @@ public class CRDConfiguration {
      * @return the meteorological record
      */
     public MeteorologicalConfiguration getMeteorologicalRecord() {
-        return meteorologicalRecord;
+        return getMeteorologicalRecord(getSystemRecord());
     }
 
     /**
-     * Set the meteorological record.
-     * @param meteorologicalRecord the meteorological record to set
+     * Add a configuration record, such as SystemConfiguation, LaserConfiguration, DetectorConfiguration, etc.
+     * @param config the configuration record
+     * @since 12.0
      */
-    public void setMeteorologicalRecord(final MeteorologicalConfiguration meteorologicalRecord) {
-        this.meteorologicalRecord = meteorologicalRecord;
+    public void addConfigurationRecord(final BaseConfiguration config) {
+        if (config == null) {
+            return;
+        }
+
+        mapConfigurationRecords.put(config.getConfigurationId(), config);
+
+        if (config instanceof SystemConfiguration) {
+            // Add to the list systemConfigurationRecords if it is a SystemConfiguration
+            systemConfigurationRecords.add((SystemConfiguration) config);
+        }
+    }
+
+    /**
+     * Get the configuration records map.
+     * @return the configuration records map
+     * @since 12.0
+     */
+    public Map<String, BaseConfiguration> getConfigurationRecordMap() {
+        return Collections.unmodifiableMap(mapConfigurationRecords);
+    }
+
+    /**
+     * Get configuration record corresponding to the configId.
+     * @param configId the id of configuration
+     * @return the configuration with configId, or null
+     * @since 12.0
+     */
+    public BaseConfiguration getConfigurationRecord(final String configId) {
+        return mapConfigurationRecords.get(configId);
+    }
+
+    /**
+     * Get a set of configuration ids.
+     * @return an unmodifiable set of configuration ids
+     * @since 12.0
+     */
+    public Set<String> getSystemConfigurationIds() {
+        return Collections.unmodifiableSet(mapConfigurationRecords.keySet());
+    }
+
+    /**
+     * Get a list of system configurations.
+     * @return an unmodifiable list of system configurations
+     * @since 12.0
+     */
+    public List<SystemConfiguration> getSystemConfigurationRecords() {
+        return Collections.unmodifiableList(systemConfigurationRecords);
+    }
+
+    /**
+     * Get configuration record related to systemRecord and the given class.
+     * @param systemRecord system configuration record
+     * @param c the class, such as LaserConfiguration, DetectorConfiguration, TimingSystemConfiguration, etc
+     * @return the configuration record
+     * @since 12.0
+     */
+    private BaseConfiguration getRecord(final SystemConfiguration systemRecord,
+            final Class<? extends BaseConfiguration> c) {
+        BaseConfiguration config;
+        for (final String configId : systemRecord.getComponents()) {
+            config = getConfigurationRecord(configId);
+            if (config != null && config.getClass() == c) {
+                return config;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get system configuration record. If configId is null, the default(first system configuration record) is returned.
+     * @param configId system configuration id, it can be null.
+     * @return the system configuration record
+     * @since 12.0
+     */
+    public SystemConfiguration getSystemRecord(final String configId) {
+        if (configId == null) {
+            // default
+            return getSystemRecord();
+        }
+
+        final BaseConfiguration config = mapConfigurationRecords.get(configId);
+        return config == null ? null : (SystemConfiguration) config;
+    }
+
+    /**
+     * Get laser configuration record related to the systemRecord.
+     * @param systemRecord the system configuration
+     * @return the laser configuration record related the the systemRecord
+     * @since 12.0
+     */
+    public LaserConfiguration getLaserRecord(final SystemConfiguration systemRecord) {
+        final BaseConfiguration config = getRecord(systemRecord, LaserConfiguration.class);
+        return config == null ? null : (LaserConfiguration) config;
+    }
+
+    /**
+     * Get detector configuration record related to the systemRecord.
+     * @param systemRecord the system configuration
+     * @return the detector configuration record related the the systemRecord
+     * @since 12.0
+     */
+    public DetectorConfiguration getDetectorRecord(final SystemConfiguration systemRecord) {
+        final BaseConfiguration config = getRecord(systemRecord, DetectorConfiguration.class);
+        return config == null ? null : (DetectorConfiguration) config;
+    }
+
+    /**
+     * Get timing system configuration record related to the systemRecord.
+     * @param systemRecord the system configuration
+     * @return the timing system configuration record related the the systemRecord
+     * @since 12.0
+     */
+    public TimingSystemConfiguration getTimingRecord(final SystemConfiguration systemRecord) {
+        final BaseConfiguration config = getRecord(systemRecord, TimingSystemConfiguration.class);
+        return config == null ? null : (TimingSystemConfiguration) config;
+    }
+
+    /**
+     * Get transponder configuration record related to the systemRecord.
+     * @param systemRecord the system configuration
+     * @return the transponder configuration record related the the systemRecord
+     * @since 12.0
+     */
+    public TransponderConfiguration getTransponderRecord(final SystemConfiguration systemRecord) {
+        final BaseConfiguration config = getRecord(systemRecord, TransponderConfiguration.class);
+        return config == null ? null : (TransponderConfiguration) config;
+    }
+
+    /**
+     * Get software configuration record related to the systemRecord.
+     * @param systemRecord the system configuration
+     * @return the software configuration record related the the systemRecord
+     * @since 12.0
+     */
+    public SoftwareConfiguration getSoftwareRecord(final SystemConfiguration systemRecord) {
+        final BaseConfiguration config = getRecord(systemRecord, SoftwareConfiguration.class);
+        return config == null ? null : (SoftwareConfiguration) config;
+    }
+
+    /**
+     * Get meteorological configuration record related to the systemRecord.
+     * @param systemRecord the system configuration
+     * @return the meteorological configuration record related the the systemRecord
+     * @since 12.0
+     */
+    public MeteorologicalConfiguration getMeteorologicalRecord(final SystemConfiguration systemRecord) {
+        final BaseConfiguration config = getRecord(systemRecord, MeteorologicalConfiguration.class);
+        return config == null ? null : (MeteorologicalConfiguration) config;
+    }
+
+    /**
+     * Get calibration target configuration record related to the systemRecord.
+     * @param systemRecord the system configuration
+     * @return the calibration target configuration record related the the systemRecord
+     * @since 12.0
+     */
+    public CalibrationTargetConfiguration getCalibrationTargetRecord(final SystemConfiguration systemRecord) {
+        final BaseConfiguration config = getRecord(systemRecord, CalibrationTargetConfiguration.class);
+        return config == null ? null : (CalibrationTargetConfiguration) config;
+    }
+
+    /**
+     * Get the calibration target configuration record.
+     * @return the calibration target configuration record
+     * @since 12.0
+     */
+    public CalibrationTargetConfiguration getCalibrationTargetRecord() {
+        return getCalibrationTargetRecord(getSystemRecord());
+    }
+
+    /**
+     * Base class for configuration record.
+     * @since 12.0
+     */
+    public abstract static class BaseConfiguration {
+
+        /** Configuration ID. */
+        private String configurationId;
+
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public BaseConfiguration() {
+            // nothing to do
+        }
+
+        /**
+         * Get the configuration ID.
+         * @return the configuration ID
+         */
+        public String getConfigurationId() {
+            return configurationId;
+        }
+
+        /**
+         * Set the configuration ID.
+         * @param configurationId the configuration ID to set
+         */
+        public void setConfigurationId(final String configurationId) {
+            this.configurationId = configurationId;
+        }
+
+        @Override
+        public int hashCode() {
+            return toString().hashCode();
+        }
+
+        @Override
+        public boolean equals(final Object record) {
+            if (record == null) {
+                return false;
+            }
+
+            if (record == this) {
+                return true;
+            }
+
+            return toString().equals(record.toString());
+
+        }
+
+        /**
+         * Get a string representation of the instance in the CRD format.
+         * @return a string representation of the instance, in the CRD format.
+         * @since 12.0
+         */
+        public abstract String toCrdString();
     }
 
     /** Container for system configuration record. */
-    public static class SystemConfiguration {
+    public static class SystemConfiguration extends BaseConfiguration {
 
         /** Transmit Wavelength [m]. */
         private double wavelength;
 
-        /** System configuration ID. */
-        private String systemId;
+        /** List of components. **/
+        private List<String> components;
+
+        /**
+         * Constructor.
+         */
+        public SystemConfiguration() {
+            this.components = new ArrayList<>();
+        }
 
         /**
          * Get the transmit wavelength.
@@ -186,7 +389,7 @@ public class CRDConfiguration {
          * @return the system configuration ID
          */
         public String getSystemId() {
-            return systemId;
+            return getConfigurationId();
         }
 
         /**
@@ -194,16 +397,47 @@ public class CRDConfiguration {
          * @param systemId the system configuration ID to set
          */
         public void setSystemId(final String systemId) {
-            this.systemId = systemId;
+            setConfigurationId(systemId);
         }
 
+        /**
+         * Get the components (config ids) for system configuration.
+         * @return an unmodifiable list of components
+         * @since 12.0
+         */
+        public List<String> getComponents() {
+            return Collections.unmodifiableList(components);
+        }
+
+        /**
+         * Set the components (config ids) for system configuration.
+         * @param components the components (config ids)
+         * @since 12.0
+         */
+        public void setComponents(final String[] components) {
+            this.components = Arrays.asList(components);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String toCrdString() {
+            return String.format("C0 0 %s", toString());
+        }
+
+        @Override
+        public String toString() {
+            // CRD suggested format, excluding the record type
+            final StringBuilder sb = new StringBuilder();
+            sb.append(String.format("%10.3f %s", wavelength * 1e9, getConfigurationId()));
+            for (final String comp : components) {
+                sb.append(String.format(" %s", comp));
+            }
+            return sb.toString().replace(',', '.');
+        }
     }
 
     /** Container for laser configuration record. */
-    public static class LaserConfiguration {
-
-        /** Laser configuration ID. */
-        private String laserId;
+    public static class LaserConfiguration extends BaseConfiguration {
 
         /** Laser Type. */
         private String laserType;
@@ -217,7 +451,7 @@ public class CRDConfiguration {
         /** Pulse Energy [mJ]. */
         private double pulseEnergy;
 
-        /** Pulse Width. */
+        /** Pulse Width [ps]. */
         private double pulseWidth;
 
         /** Bean divergence [arcsec]. */
@@ -226,13 +460,23 @@ public class CRDConfiguration {
         /** Number of pulses in outgoing semi-train. */
         private int pulseInOutgoingSemiTrain;
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public LaserConfiguration() {
+            // nothing to do
+        }
 
         /**
          * Get the laser configuration ID.
          * @return the laser configuration ID
          */
         public String getLaserId() {
-            return laserId;
+            return getConfigurationId();
         }
 
         /**
@@ -240,7 +484,7 @@ public class CRDConfiguration {
          * @param laserId the laser configuration ID to set
          */
         public void setLaserId(final String laserId) {
-            this.laserId = laserId;
+            setConfigurationId(laserId);
         }
 
         /**
@@ -317,7 +561,7 @@ public class CRDConfiguration {
 
         /**
          * Set the pulse width.
-         * @param pulseWidth the pulse width to set
+         * @param pulseWidth the pulse width to set, ps
          */
         public void setPulseWidth(final double pulseWidth) {
             this.pulseWidth = pulseWidth;
@@ -355,13 +599,28 @@ public class CRDConfiguration {
             this.pulseInOutgoingSemiTrain = pulseInOutgoingSemiTrain;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public String toCrdString() {
+            return String.format("C1 0 %s", toString());
+        }
+
+        @Override
+        public String toString() {
+            // CRD suggested format, excluding the record type
+            // primaryWavelength: m --> nm
+            final String str = String.format(
+                    "%s %s %.2f %.2f %.2f %.1f %.2f %d", getConfigurationId(),
+                    laserType, primaryWavelength * 1e9, nominalFireRate,
+                    pulseEnergy, pulseWidth, beamDivergence,
+                    pulseInOutgoingSemiTrain);
+            return CRD.handleNaN(str).replace(',', '.');
+        }
+
     }
 
     /** Container for detector configuration record. */
-    public static class DetectorConfiguration {
-
-        /** Detector configuration ID. */
-        private String detectorId;
+    public static class DetectorConfiguration extends BaseConfiguration {
 
         /** Detector Type. */
         private String detectorType;
@@ -405,12 +664,23 @@ public class CRDConfiguration {
         /** Amplifier In Use. */
         private String amplifierInUse;
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public DetectorConfiguration() {
+            // nothing to do
+        }
+
         /**
          * Get the detector configuration ID.
          * @return the detector configuration ID
          */
         public String getDetectorId() {
-            return detectorId;
+            return getConfigurationId();
         }
 
         /**
@@ -418,7 +688,7 @@ public class CRDConfiguration {
          * @param detectorId the detector configuration ID to set
          */
         public void setDetectorId(final String detectorId) {
-            this.detectorId = detectorId;
+            setConfigurationId(detectorId);
         }
 
         /**
@@ -466,7 +736,12 @@ public class CRDConfiguration {
          * @param quantumEfficiency the efficiency to set in percents
          */
         public void setQuantumEfficiency(final double quantumEfficiency) {
-            this.quantumEfficiency = quantumEfficiency;
+            // NOTE: The quantumEfficiency may be -1.0, which means 'not available'
+            if (quantumEfficiency == -1.0) {
+                this.quantumEfficiency = Double.NaN;
+            } else {
+                this.quantumEfficiency = quantumEfficiency;
+            }
         }
 
         /**
@@ -482,7 +757,12 @@ public class CRDConfiguration {
          * @param appliedVoltage the applied voltage to set in Volts
          */
         public void setAppliedVoltage(final double appliedVoltage) {
-            this.appliedVoltage = appliedVoltage;
+            // NOTE: The quantumEfficiency may be -1.0, which means 'not available' or 'not applicable'
+            if (appliedVoltage == -1.0) {
+                this.appliedVoltage = Double.NaN;
+            } else {
+                this.appliedVoltage = appliedVoltage;
+            }
         }
 
         /**
@@ -498,7 +778,12 @@ public class CRDConfiguration {
          * @param darkCount the dark count to set in Hz
          */
         public void setDarkCount(final double darkCount) {
-            this.darkCount = darkCount;
+         // NOTE: The quantumEfficiency may be -1.0, which means 'not available'
+            if (darkCount == -1.0e3) { // -1=na, kHz --> Hz
+                this.darkCount = Double.NaN;
+            } else {
+                this.darkCount = darkCount;
+            }
         }
 
         /**
@@ -530,7 +815,12 @@ public class CRDConfiguration {
          * @param outputPulseWidth the output pulse width to set in ps
          */
         public void setOutputPulseWidth(final double outputPulseWidth) {
-            this.outputPulseWidth = outputPulseWidth;
+            // NOTE: The quantumEfficiency may be -1.0, which means 'not available' or 'not applicable'
+            if (outputPulseWidth == -1.0) {
+                this.outputPulseWidth = Double.NaN;
+            } else {
+                this.outputPulseWidth = outputPulseWidth;
+            }
         }
 
         /**
@@ -645,13 +935,32 @@ public class CRDConfiguration {
             this.amplifierInUse = amplifierInUse;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public String toCrdString() {
+            return String.format("C2 0 %s", toString());
+        }
+
+        @Override
+        public String toString() {
+            // CRD suggested format, excluding the record type
+            // applicableWavelength, spectralFilter: m --> nm
+            // darkCount, amplifierBandwidth: Hz --> kHz
+            final String str = String.format(
+                    "%s %s %.3f %.2f %.1f %.1f %s %.1f %.2f %.1f %.1f %s %.1f %.1f %s",
+                    getConfigurationId(), detectorType,
+                    applicableWavelength * 1e9, quantumEfficiency,
+                    appliedVoltage, darkCount * 1e-3, outputPulseType,
+                    outputPulseWidth, spectralFilter * 1e9,
+                    transmissionOfSpectralFilter, spatialFilter,
+                    externalSignalProcessing, amplifierGain,
+                    amplifierBandwidth * 1e-3, amplifierInUse);
+            return CRD.handleNaN(str).replace(',', '.');
+        }
     }
 
     /** Container for timing system configuration record. */
-    public static class TimingSystemConfiguration {
-
-        /** Local timing system configuration ID. */
-        private String localTimingId;
+    public static class TimingSystemConfiguration extends BaseConfiguration {
 
         /** Time Source. */
         private String timeSource;
@@ -668,6 +977,17 @@ public class CRDConfiguration {
         /** Epoch delay correction [s]. */
         private double epochDelayCorrection;
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public TimingSystemConfiguration() {
+            // nothing to do
+        }
+
         /**
          * Get the time source.
          * @return the time source
@@ -681,7 +1001,7 @@ public class CRDConfiguration {
          * @return the local timing system configuration ID
          */
         public String getLocalTimingId() {
-            return localTimingId;
+            return getConfigurationId();
         }
 
         /**
@@ -689,7 +1009,7 @@ public class CRDConfiguration {
          * @param localTimingId the local timing system configuration ID to set
          */
         public void setLocalTimingId(final String localTimingId) {
-            this.localTimingId = localTimingId;
+            setConfigurationId(localTimingId);
         }
 
         /**
@@ -764,13 +1084,25 @@ public class CRDConfiguration {
             this.epochDelayCorrection = epochDelayCorrection;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public String toCrdString() {
+            return String.format("C3 0 %s", toString());
+        }
+
+        @Override
+        public String toString() {
+            // CRD suggested format, excluding the record type
+            // epochDelayCorrection: s --> us
+            final String str = String.format("%s %s %s %s %s %.1f",
+                    getConfigurationId(), timeSource, frequencySource, timer,
+                    timerSerialNumber, epochDelayCorrection * 1e6);
+            return CRD.handleNaN(str).replace(',', '.');
+        }
     }
 
     /** Container for transponder configuration record. */
-    public static class TransponderConfiguration {
-
-        /** Transponder configuration ID. */
-        private String transponderId;
+    public static class TransponderConfiguration extends BaseConfiguration {
 
         /** Estimated Station UTC offset [s]. */
         private double stationUTCOffset;
@@ -796,12 +1128,23 @@ public class CRDConfiguration {
         /** Spacecraft time simplified flag. */
         private boolean isSpacecraftTimeSimplified;
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public TransponderConfiguration() {
+            // nothing to do
+        }
+
         /**
          * Get the transponder configuration ID.
          * @return the transponder configuration ID
          */
         public String getTransponderId() {
-            return transponderId;
+            return getConfigurationId();
         }
 
         /**
@@ -809,7 +1152,7 @@ public class CRDConfiguration {
          * @param transponderId the transponder configuration ID to set
          */
         public void setTransponderId(final String transponderId) {
-            this.transponderId = transponderId;
+            setConfigurationId(transponderId);
         }
 
         /**
@@ -940,13 +1283,34 @@ public class CRDConfiguration {
             this.isSpacecraftTimeSimplified = isSpacecraftTimeSimplified;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public String toCrdString() {
+            return String.format("C4 0 %s", toString());
+        }
+
+        @Override
+        public String toString() {
+            // CRD suggested format, excluding the record type
+            // stationUTCOffset, transpUTCOffset: s --> ns
+            final String str = String.format(
+                    "%s %.3f %.2f %.3f %.2f %.12f %d %d %d",
+                    getConfigurationId(),
+                    stationUTCOffset * 1e9, stationOscDrift,
+                    transpUTCOffset * 1e9, transpOscDrift,
+                    transpClkRefTime,
+                    stationClockAndDriftApplied, spacecraftClockAndDriftApplied,
+                    isSpacecraftTimeSimplified ? 1 : 0);
+            return CRD.handleNaN(str).replace(',', '.');
+        }
+
     }
 
     /** Container for software configuration record. */
-    public static class SoftwareConfiguration {
+    public static class SoftwareConfiguration extends BaseConfiguration {
 
-        /** Software configuration ID. */
-        private String softwareId;
+        /** Pattern of "[\\s+\\[\\]]". */
+        private static final Pattern PATTERN_WHITESPACE_OR_SQUAREBRACKET = Pattern.compile("[\\s+\\[\\]]");
 
         /** Tracking software in measurement path. */
         private String[] trackingSoftwares;
@@ -960,12 +1324,23 @@ public class CRDConfiguration {
         /** Processing software version(s). */
         private String[] processingSoftwareVersions;
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public SoftwareConfiguration() {
+            // nothing to do
+        }
+
         /**
          * Get the software configuration ID.
          * @return the software configuration ID.
          */
         public String getSoftwareId() {
-            return softwareId;
+            return getConfigurationId();
         }
 
         /**
@@ -973,7 +1348,7 @@ public class CRDConfiguration {
          * @param softwareId the software configuration ID
          */
         public void setSoftwareId(final String softwareId) {
-            this.softwareId = softwareId;
+            setConfigurationId(softwareId);
         }
 
         /**
@@ -1040,13 +1415,34 @@ public class CRDConfiguration {
             this.processingSoftwareVersions = processingSoftwareVersions.clone();
         }
 
+        private static String formatArray(final String[] arr) {
+            // comma delimited
+            // "[Monitor, Sattrk]" ==> "Monitor,Sattrk"
+            // "[conpro, crd_cal, PoissonCRD, gnp]" ==> "conpro,crd_cal,PoissonCRD,gnp"
+            final String s = Arrays.toString(arr);
+            return PATTERN_WHITESPACE_OR_SQUAREBRACKET.matcher(s).replaceAll("");
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String toCrdString() {
+            return String.format("C5 0 %s", toString());
+        }
+
+        @Override
+        public String toString() {
+            // CRD suggested format, excluding the record type
+            return String.format("%s %s %s %s %s", getConfigurationId(),
+                    formatArray(trackingSoftwares),
+                    formatArray(trackingSoftwareVersions),
+                    formatArray(processingSoftwares),
+                    formatArray(processingSoftwareVersions));
+        }
+
     }
 
     /** Container for meteorological configuration record. */
-    public static class MeteorologicalConfiguration {
-
-        /** Meteorological configuration ID. */
-        private String meteorologicalId;
+    public static class MeteorologicalConfiguration extends BaseConfiguration {
 
         /** Pressure Sensor Manufacturer. */
         private String pressSensorManufacturer;
@@ -1075,12 +1471,23 @@ public class CRDConfiguration {
         /** Humidity Sensor Serial Number. */
         private String humiSensorSerialNumber;
 
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public MeteorologicalConfiguration() {
+            // nothing to do
+        }
+
         /**
          * Get the meteorological configuration ID.
          * @return the meteorological configuration ID
          */
         public String getMeteorologicalId() {
-            return meteorologicalId;
+            return getConfigurationId();
         }
 
         /**
@@ -1088,7 +1495,7 @@ public class CRDConfiguration {
          * @param meteorologicalId the meteorological configuration ID to set
          */
         public void setMeteorologicalId(final String meteorologicalId) {
-            this.meteorologicalId = meteorologicalId;
+            setConfigurationId(meteorologicalId);
         }
 
         /**
@@ -1235,6 +1642,194 @@ public class CRDConfiguration {
             this.humiSensorSerialNumber = humiSensorSerialNumber;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public String toCrdString() {
+            return String.format("C6 0 %s", toString());
+        }
+
+        @Override
+        public String toString() {
+            // CRD suggested format, excluding the record type
+            return String.format("%s %s %s %s %s %s %s %s %s %s",
+                    getConfigurationId(), pressSensorManufacturer,
+                    pressSensorModel, pressSensorSerialNumber,
+                    tempSensorManufacturer, tempSensorModel,
+                    tempSensorSerialNumber, humiSensorManufacturer,
+                    humiSensorModel, humiSensorSerialNumber);
+        }
     }
 
+    /**
+     * Container for calibration target configuration record.
+     * @since 12.0
+     */
+    public static class CalibrationTargetConfiguration extends BaseConfiguration {
+
+        /** Target name or ID. */
+        private String targetName;
+
+        /** Surveyed target distance. */
+        private double surveyedTargetDistance;
+
+        /** Survey error. */
+        private double surveyError;
+
+        /** Sum of all constant delays (m, one way). */
+        private double sumOfAllConstantDelays;
+
+        /** Pulse Energy [mJ]. */
+        private double pulseEnergy;
+
+        /** Processing software name. */
+        private String processingSoftwareName;
+
+        /** Processing software version. */
+        private String processingSoftwareVersion;
+
+        /** Empty constructor.
+         * <p>
+         * This constructor is not strictly necessary, but it prevents spurious
+         * javadoc warnings with JDK 18 and later.
+         * </p>
+         * @since 12.0
+         */
+        public CalibrationTargetConfiguration() {
+            // nothing to do
+        }
+
+        /**
+         * Get the target name or ID.
+         * @return the target name or ID
+         */
+        public String getTargetName() {
+            return targetName;
+        }
+
+        /**
+         * Set the target name or ID.
+         * @param targetName target name or ID to set
+         */
+        public void setTargetName(final String targetName) {
+            this.targetName = targetName;
+        }
+
+        /**
+         * Get the surveyed target distance.
+         * @return the surveyed target distance in meters
+         */
+        public double getSurveyedTargetDistance() {
+            return surveyedTargetDistance;
+        }
+
+        /**
+         * Set the surveyed target distance.
+         * @param surveyedTargetDistance the surveyed target distance to set, in meters
+         */
+        public void setSurveyedTargetDistance(final double surveyedTargetDistance) {
+            this.surveyedTargetDistance = surveyedTargetDistance;
+        }
+
+        /**
+         * Get the survey error.
+         * @return the survey error in meters
+         */
+        public double getSurveyError() {
+            return surveyError;
+        }
+
+        /**
+         * Set the survey error.
+         * @param surveyError the survey error to set, in meters
+         */
+        public void setSurveyError(final double surveyError) {
+            this.surveyError = surveyError;
+        }
+
+        /**
+         * Get the sum of all constant delays (electronic, geometric, optical) that
+         * are not included in the time of flight measurements or time- variant
+         * or point angle-variant delays in the “42” record below (m, one way).
+         * @return the sum of all constant delays
+         */
+        public double getSumOfAllConstantDelays() {
+            return sumOfAllConstantDelays;
+        }
+
+        /**
+         * Set the sum of all constant delays (electronic, geometric, optical) that
+         * are not included in the time of flight measurements or time- variant
+         * or point angle-variant delays in the “42” record below (m, one way).
+         * @param sumOfAllConstantDelays the sum of all constant delays
+         */
+        public void setSumOfAllConstantDelays(final double sumOfAllConstantDelays) {
+            this.sumOfAllConstantDelays = sumOfAllConstantDelays;
+        }
+
+        /**
+         * Get the pulse energy.
+         * @return the pulse energy in mJ
+         */
+        public double getPulseEnergy() {
+            return pulseEnergy;
+        }
+
+        /**
+         * Set the pulse energy.
+         * @param pulseEnergy the pulse energy to set, in mJ
+         */
+        public void setPulseEnergy(final double pulseEnergy) {
+            this.pulseEnergy = pulseEnergy;
+        }
+
+        /**
+         * Get the processing software name.
+         * @return the processing software name
+         */
+        public String getProcessingSoftwareName() {
+            return processingSoftwareName;
+        }
+
+        /**
+         * Set the processing software name.
+         * @param processingSoftwareName the processing software name to set
+         */
+        public void setProcessingSoftwareName(final String processingSoftwareName) {
+            this.processingSoftwareName = processingSoftwareName;
+        }
+
+        /**
+         * Get the processing software version.
+         * @return the processing software version
+         */
+        public String getProcessingSoftwareVersion() {
+            return processingSoftwareVersion;
+        }
+
+        /**
+         * Set the processing software version.
+         * @param processingSoftwareVersion the processing software version to set
+         */
+        public void setProcessingSoftwareVersion(final String processingSoftwareVersion) {
+            this.processingSoftwareVersion = processingSoftwareVersion;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String toCrdString() {
+            return String.format("C7 0 %s", toString());
+        }
+
+        @Override
+        public String toString() {
+            // CRD suggested format, excluding the record type
+            // surveyError: m --> mm
+            final String str = String.format("%s %s %.5f %.2f %.4f %.2f %s %s",
+                    getConfigurationId(), targetName, surveyedTargetDistance,
+                    surveyError * 1e3, sumOfAllConstantDelays, pulseEnergy,
+                    processingSoftwareName, processingSoftwareVersion);
+            return CRD.handleNaN(str).replace(',', '.');
+        }
+
+    }
 }

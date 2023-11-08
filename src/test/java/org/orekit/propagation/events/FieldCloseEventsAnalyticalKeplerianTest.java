@@ -17,8 +17,8 @@
 
 package org.orekit.propagation.events;
 
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.propagation.FieldPropagator;
@@ -32,14 +32,14 @@ import org.orekit.propagation.events.handlers.FieldRecordAndContinue;
  *
  * @author Evan Ward
  */
-public class FieldCloseEventsAnalyticalKeplerianTest extends FieldCloseEventsAbstractTest<Decimal64> {
+public class FieldCloseEventsAnalyticalKeplerianTest extends FieldCloseEventsAbstractTest<Binary64> {
 
     public FieldCloseEventsAnalyticalKeplerianTest(){
-        super(Decimal64Field.getInstance());
+        super(Binary64Field.getInstance());
     }
 
     @Override
-    public FieldPropagator<Decimal64> getPropagator(double stepSize) {
+    public FieldPropagator<Binary64> getPropagator(double stepSize) {
         return new FieldKeplerianPropagator<>(initialOrbit);
     }
 
@@ -49,15 +49,14 @@ public class FieldCloseEventsAnalyticalKeplerianTest extends FieldCloseEventsAbs
     @Test
     public void testBigStep() {
         // setup
-        FieldPropagator<Decimal64> propagator = getPropagator(1e100);
+        FieldPropagator<Binary64> propagator = getPropagator(1e100);
         propagator.setStepHandler(interpolator -> {});
         double period = 2 * initialOrbit.getKeplerianPeriod().getReal();
 
-        FieldRecordAndContinue<TimeDetector, Decimal64> handler =
-                new FieldRecordAndContinue<>();
+        FieldRecordAndContinue<Binary64> handler = new FieldRecordAndContinue<>();
         TimeDetector detector = new TimeDetector(1, period - 1)
                 .withHandler(handler)
-                .withMaxCheck(v(1e100))
+                .withMaxCheck(1e100)
                 .withThreshold(v(1));
         propagator.addEventDetector(detector);
 
@@ -72,15 +71,14 @@ public class FieldCloseEventsAnalyticalKeplerianTest extends FieldCloseEventsAbs
     @Test
     public void testBigStepReverse() {
         // setup
-        FieldPropagator<Decimal64> propagator = getPropagator(1e100);
+        FieldPropagator<Binary64> propagator = getPropagator(1e100);
         propagator.setStepHandler(interpolator -> {});
         double period = -2 * initialOrbit.getKeplerianPeriod().getReal();
 
-        FieldRecordAndContinue<TimeDetector, Decimal64> handler =
-                new FieldRecordAndContinue<>();
+        FieldRecordAndContinue<Binary64> handler = new FieldRecordAndContinue<>();
         TimeDetector detector = new TimeDetector(-1, period + 1)
                 .withHandler(handler)
-                .withMaxCheck(v(1e100))
+                .withMaxCheck(1e100)
                 .withThreshold(v(1));
         propagator.addEventDetector(detector);
 

@@ -23,9 +23,9 @@
              <TRAJ_TYPE>CARTPVA</TRAJ_TYPE>
              <trajLine>0.0  2854.5 -2916.2 -5360.7 5.90 4.86 0.52 0.0037 -0.0038 -0.0070</trajLine>
           </traj>
-          <userDef>
+          <user>
              <USER_DEFINED parameter="EARTH_MODEL">WGS-84</USER_DEFINED>
-          </userDef>
+          </user>
         </data>
       </segment>
     </body>

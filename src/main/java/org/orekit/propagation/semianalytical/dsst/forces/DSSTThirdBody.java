@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,8 +42,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CjSjCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
@@ -156,7 +154,7 @@ public class DSSTThirdBody implements DSSTForceModel {
                                                  0.0, Double.POSITIVE_INFINITY));
 
         this.body = body;
-        this.Vns  = CoefficientsFactory.computeVnsCoefficients(MAX_POWER);
+        this.Vns  = CoefficientsFactory.computeVns(MAX_POWER);
         this.doesStaticContextNeedsInitialization = true;
 
         fieldShortPeriods  = new HashMap<>();
@@ -194,7 +192,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  </p>
      *  @param auxiliaryElements auxiliary elements related to the current orbit
      *  @param type type of the elements used during the propagation
-     *  @param parameters values of the force model parameters
+     *  @param parameters values of the force model parameters for state date (1 value for each parameters)
      */
     @Override
     public List<ShortPeriodTerms> initializeShortPeriodTerms(final AuxiliaryElements auxiliaryElements,
@@ -257,7 +255,10 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  This method aims at being called before mean elements rates computation.
      *  </p>
      *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @param parameters values of the force model parameters
+     *  @param parameters values of the force model parameters  (only 1 values for each parameters corresponding
+     * to state date) obtained by calling the extract parameter method {@link #extractParameters(double[], AbsoluteDate)}
+     * to selected the right value for state date or by getting the parameters for a specific date
+     * {@link #getParameters(AbsoluteDate)}.
      *  @return new force model context
      */
     private DSSTThirdBodyDynamicContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
@@ -270,7 +271,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  </p>
      *  @param <T> type of the elements
      *  @param auxiliaryElements auxiliary elements related to the current orbit
-     *  @param parameters values of the force model parameters
+     *  @param parameters values of the force model parameters at state date (1 value per parameter driver)
      *  @return new force model context
      */
     private <T extends CalculusFieldElement<T>> FieldDSSTThirdBodyDynamicContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
@@ -381,8 +382,11 @@ public class DSSTThirdBody implements DSSTForceModel {
             // Auxiliary elements related to the current orbit
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
+            // Extract the proper parameters valid for the corresponding meanState date from the input array
+            final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
+
             // Container of attributes
-            final DSSTThirdBodyDynamicContext context = initializeStep(auxiliaryElements, parameters);
+            final DSSTThirdBodyDynamicContext context = initializeStep(auxiliaryElements, extractedParameters);
 
             // a / R3 up to power maxAR3Pow
             final double[] aoR3Pow = computeAoR3Pow(context);
@@ -479,8 +483,11 @@ public class DSSTThirdBody implements DSSTForceModel {
             // Auxiliary elements related to the current orbit
             final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
 
+            // Extract the proper parameters valid for the corresponding meanState date from the input array
+            final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
+
             // Container of attributes
-            final FieldDSSTThirdBodyDynamicContext<T> context = initializeStep(auxiliaryElements, parameters);
+            final FieldDSSTThirdBodyDynamicContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
 
             // a / R3 up to power maxAR3Pow
             final T[] aoR3Pow = computeAoR3Pow(context);
@@ -594,19 +601,6 @@ public class DSSTThirdBody implements DSSTForceModel {
             aoR3Pow[i] = aoR3.multiply(aoR3Pow[i - 1]);
         }
         return aoR3Pow;
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public EventDetector[] getEventsDetectors() {
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
-        return null;
     }
 
     /** {@inheritDoc} */

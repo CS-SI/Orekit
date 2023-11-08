@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,9 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.TDOA;
@@ -70,7 +71,7 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
         // base frame associated with the station
         final TopocentricFrame baseFrame = station.getBaseFrame();
         // delay in meters
-        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters());
+        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
         // return delay in seconds
         return delay / Constants.SPEED_OF_LIGHT;
     }
@@ -100,14 +101,26 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
     }
 
     @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<TDOA> estimated) {
+
+        final TDOA measurement              = estimated.getObservedMeasurement();
+        final GroundStation   primeStation  = measurement.getPrimeStation();
+        final GroundStation   secondStation = measurement.getSecondStation();
+
+        TDOAModifierUtil.modifyWithoutDerivatives(estimated,  primeStation, secondStation, this::timeErrorIonosphericModel);
+
+    }
+
+    @Override
     public void modify(final EstimatedMeasurement<TDOA> estimated) {
+
         final TDOA measurement              = estimated.getObservedMeasurement();
         final GroundStation   primeStation  = measurement.getPrimeStation();
         final GroundStation   secondStation = measurement.getSecondStation();
         final SpacecraftState state         = estimated.getStates()[0];
 
         TDOAModifierUtil.modify(estimated, ionoModel,
-                                new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame())),
+                                new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                 primeStation, secondStation,
                                 this::timeErrorIonosphericModel,
                                 this::timeErrorIonosphericModel);

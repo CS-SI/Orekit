@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,7 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DatesSelector;
 
@@ -58,30 +52,9 @@ public class ContinuousScheduler<T extends ObservedMeasurement<T>> extends Abstr
 
     /** {@inheritDoc} */
     @Override
-    public SortedSet<T> generate(final List<OrekitStepInterpolator> interpolators) {
-
-        // select dates in the current step, using arbitrarily interpolator 0
-        // as all interpolators cover the same range
-        final List<AbsoluteDate> dates = getSelector().selectDates(interpolators.get(0).getPreviousState().getDate(),
-                                                                   interpolators.get(0).getCurrentState().getDate());
-
-        // generate measurements when feasible
-        final SortedSet<T> measurements = new TreeSet<>();
-        for (final AbsoluteDate date : dates) {
-
-            // interpolate states at measurement date
-            final SpacecraftState[] states = new SpacecraftState[interpolators.size()];
-            for (int i = 0; i < states.length; ++i) {
-                states[i] = interpolators.get(i).getInterpolatedState(date);
-            }
-
-            // generate measurement
-            measurements.add(getBuilder().build(states));
-
-        }
-
-        return measurements;
-
+    public boolean measurementIsFeasible(final AbsoluteDate date) {
+        return true;
     }
+
 
 }

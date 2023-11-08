@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -81,24 +81,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Fabien Maussion (java translation)
  */
 public class DTM2000 implements Atmosphere {
-
-    /** Identifier for hydrogen. */
-    public static final int HYDROGEN = 1;
-
-    /** Identifier for helium. */
-    public static final int HELIUM = 2;
-
-    /** Identifier for atomic oxygen. */
-    public static final int ATOMIC_OXYGEN = 3;
-
-    /** Identifier for molecular nitrogen. */
-    public static final int MOLECULAR_NITROGEN = 4;
-
-    /** Identifier for molecular oxygen. */
-    public static final int MOLECULAR_OXYGEN = 5;
-
-    /** Identifier for atomic nitrogen. */
-    public static final int ATOMIC_NITROGEN = 6;
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20170705L;
@@ -365,7 +347,7 @@ public class DTM2000 implements Atmosphere {
         final double lat = inBody.getLatitude();
 
         // compute local solar time
-        final Vector3D sunPos = sun.getPVCoordinates(date, ecef).getPosition();
+        final Vector3D sunPos = sun.getPosition(date, ecef);
         final double hl = FastMath.PI + FastMath.atan2(
                 sunPos.getX() * pEcef.getY() - sunPos.getY() * pEcef.getX(),
                 sunPos.getX() * pEcef.getX() + sunPos.getY() * pEcef.getY());
@@ -394,7 +376,7 @@ public class DTM2000 implements Atmosphere {
         final int day = date.getComponents(utc).getDate().getDayOfYear();
         // position in ECEF so we only have to do the transform once
         final Frame ecef = earth.getBodyFrame();
-        final FieldVector3D<T> pEcef = frame.getTransformTo(ecef, date).transformPosition(position);
+        final FieldVector3D<T> pEcef = frame.getStaticTransformTo(ecef, date).transformPosition(position);
         // compute geodetic position
         final FieldGeodeticPoint<T> inBody = earth.transform(pEcef, ecef, date);
         final T alti = inBody.getAltitude();
@@ -402,7 +384,7 @@ public class DTM2000 implements Atmosphere {
         final T lat = inBody.getLatitude();
 
         // compute local solar time
-        final Vector3D sunPos = sun.getPVCoordinates(dateD, ecef).getPosition();
+        final Vector3D sunPos = sun.getPosition(dateD, ecef);
         final T y  = pEcef.getY().multiply(sunPos.getX()).subtract(pEcef.getX().multiply(sunPos.getY()));
         final T x  = pEcef.getX().multiply(sunPos.getX()).add(pEcef.getY().multiply(sunPos.getY()));
         final T hl = y.atan2(x).add(y.getPi());

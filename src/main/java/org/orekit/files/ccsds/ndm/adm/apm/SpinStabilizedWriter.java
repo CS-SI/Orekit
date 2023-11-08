@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 import java.io.IOException;
 
 import org.orekit.files.ccsds.definitions.Units;
-import org.orekit.files.ccsds.ndm.adm.AttitudeEndoints;
+import org.orekit.files.ccsds.ndm.adm.AttitudeEndpoints;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.utils.units.Unit;
@@ -31,17 +31,24 @@ import org.orekit.utils.units.Unit;
  */
 class SpinStabilizedWriter extends AbstractWriter {
 
+    /** Format version.
+     * @since 12.0
+     */
+    private final double formatVersion;
+
     /** Spin stabilized block. */
     private final SpinStabilized spinStabilized;
 
     /** Create a writer.
+     * @param formatVersion format version
      * @param xmlTag name of the XML tag surrounding the section
      * @param kvnTag name of the KVN tag surrounding the section (may be null)
      * @param spinStabilized spin stabilized data to write
      */
-    SpinStabilizedWriter(final String xmlTag, final String kvnTag,
-                        final SpinStabilized spinStabilized) {
+    SpinStabilizedWriter(final double formatVersion, final String xmlTag, final String kvnTag,
+                         final SpinStabilized spinStabilized) {
         super(xmlTag, kvnTag);
+        this.formatVersion  = formatVersion;
         this.spinStabilized = spinStabilized;
     }
 
@@ -52,11 +59,16 @@ class SpinStabilizedWriter extends AbstractWriter {
         generator.writeComments(spinStabilized.getComments());
 
         // endpoints
-        generator.writeEntry(SpinStabilizedKey.SPIN_FRAME_A.name(), spinStabilized.getEndpoints().getFrameA().getName(), null, true);
-        generator.writeEntry(SpinStabilizedKey.SPIN_FRAME_B.name(), spinStabilized.getEndpoints().getFrameB().getName(), null, true);
-        generator.writeEntry(SpinStabilizedKey.SPIN_DIR.name(),
-                             spinStabilized.getEndpoints().isA2b() ? AttitudeEndoints.A2B : AttitudeEndoints.B2A,
-                             null, true);
+        if (formatVersion < 2.0) {
+            generator.writeEntry(SpinStabilizedKey.SPIN_FRAME_A.name(), spinStabilized.getEndpoints().getFrameA().getName(), null, true);
+            generator.writeEntry(SpinStabilizedKey.SPIN_FRAME_B.name(), spinStabilized.getEndpoints().getFrameB().getName(), null, true);
+            generator.writeEntry(SpinStabilizedKey.SPIN_DIR.name(),
+                                 spinStabilized.getEndpoints().isA2b() ? AttitudeEndpoints.A2B : AttitudeEndpoints.B2A,
+                                                                       null, true);
+        } else {
+            generator.writeEntry(SpinStabilizedKey.REF_FRAME_A.name(), spinStabilized.getEndpoints().getFrameA().getName(), null, true);
+            generator.writeEntry(SpinStabilizedKey.REF_FRAME_B.name(), spinStabilized.getEndpoints().getFrameB().getName(), null, true);
+        }
 
         // spin
         generator.writeEntry(SpinStabilizedKey.SPIN_ALPHA.name(),     spinStabilized.getSpinAlpha(), Unit.DEGREE,        true);
@@ -64,10 +76,17 @@ class SpinStabilizedWriter extends AbstractWriter {
         generator.writeEntry(SpinStabilizedKey.SPIN_ANGLE.name(),     spinStabilized.getSpinAngle(), Unit.DEGREE,        true);
         generator.writeEntry(SpinStabilizedKey.SPIN_ANGLE_VEL.name(), spinStabilized.getSpinAngleVel(), Units.DEG_PER_S, true);
 
-        // nutation
-        generator.writeEntry(SpinStabilizedKey.NUTATION.name(),       spinStabilized.getNutation(), Unit.DEGREE,       false);
-        generator.writeEntry(SpinStabilizedKey.NUTATION_PER.name(),   spinStabilized.getNutationPeriod(), Unit.SECOND, false);
-        generator.writeEntry(SpinStabilizedKey.NUTATION_PHASE.name(), spinStabilized.getNutationPhase(), Unit.DEGREE,  false);
+        if (spinStabilized.hasMomentum()) {
+            // momentum
+            generator.writeEntry(SpinStabilizedKey.MOMENTUM_ALPHA.name(), spinStabilized.getMomentumAlpha(), Unit.DEGREE,     true);
+            generator.writeEntry(SpinStabilizedKey.MOMENTUM_DELTA.name(), spinStabilized.getMomentumDelta(), Unit.DEGREE,     true);
+            generator.writeEntry(SpinStabilizedKey.NUTATION_VEL.name(),   spinStabilized.getNutationVel(),   Units.DEG_PER_S, true);
+        } else if (spinStabilized.hasNutation()) {
+            // nutation
+            generator.writeEntry(SpinStabilizedKey.NUTATION.name(),       spinStabilized.getNutation(),       Unit.DEGREE, true);
+            generator.writeEntry(SpinStabilizedKey.NUTATION_PER.name(),   spinStabilized.getNutationPeriod(), Unit.SECOND, true);
+            generator.writeEntry(SpinStabilizedKey.NUTATION_PHASE.name(), spinStabilized.getNutationPhase(),  Unit.DEGREE, true);
+        }
 
     }
 

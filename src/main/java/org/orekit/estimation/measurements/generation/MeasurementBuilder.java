@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,10 +17,12 @@
 package org.orekit.estimation.measurements.generation;
 
 import java.util.List;
+import java.util.Map;
 
 import org.orekit.estimation.measurements.EstimationModifier;
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -53,10 +55,18 @@ public interface MeasurementBuilder<T extends ObservedMeasurement<T>> {
      */
     List<EstimationModifier<T>> getModifiers();
 
-    /** Generate a single measurement.
-     * @param states all spacecraft states (i.e. including ones that may not be relevant for the current builder)
-     * @return generated measurement
+    /** Get the satellites related to this measurement.
+     * @return satellites related to this measurement
+     * @since 12.0
      */
-    T build(SpacecraftState[] states);
+    ObservableSatellite[] getSatellites();
+
+    /** Generate a single measurement.
+     * @param date measurement date
+     * @param interpolators interpolators relevant for this builder
+     * @return generated measurement
+     * @since 12.0
+     */
+    T build(AbsoluteDate date, Map<ObservableSatellite, OrekitStepInterpolator> interpolators);
 
 }

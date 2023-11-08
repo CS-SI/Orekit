@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -77,7 +77,7 @@ public class KeplerianConverterTest {
         }
 
         PropagatorBuilder builder = new KeplerianPropagatorBuilder(OrbitType.KEPLERIAN.convertType(orbit),
-                                                                   PositionAngle.MEAN,
+                                                                   PositionAngleType.MEAN,
                                                                    1.0);
 
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder, threshold, 1000);
@@ -90,15 +90,15 @@ public class KeplerianConverterTest {
         Orbit fitted = prop.getInitialState().getOrbit();
 
         final double eps = 1.0e-12;
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getX(),
-                            fitted.getPVCoordinates().getPosition().getX(),
-                            eps * orbit.getPVCoordinates().getPosition().getX());
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getY(),
-                            fitted.getPVCoordinates().getPosition().getY(),
-                            eps * orbit.getPVCoordinates().getPosition().getY());
-        Assertions.assertEquals(orbit.getPVCoordinates().getPosition().getZ(),
-                            fitted.getPVCoordinates().getPosition().getZ(),
-                            eps * orbit.getPVCoordinates().getPosition().getZ());
+        Assertions.assertEquals(orbit.getPosition().getX(),
+                            fitted.getPosition().getX(),
+                            eps * orbit.getPosition().getX());
+        Assertions.assertEquals(orbit.getPosition().getY(),
+                            fitted.getPosition().getY(),
+                            eps * orbit.getPosition().getY());
+        Assertions.assertEquals(orbit.getPosition().getZ(),
+                            fitted.getPosition().getZ(),
+                            eps * orbit.getPosition().getZ());
 
         Assertions.assertEquals(orbit.getPVCoordinates().getVelocity().getX(),
                             fitted.getPVCoordinates().getVelocity().getX(),

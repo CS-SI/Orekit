@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,7 +45,7 @@ import org.orekit.frames.TransformProvider;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.models.earth.displacement.TidalDisplacement;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
@@ -185,9 +185,10 @@ public class TLEEstimationTestUtils {
 
         // override orbital parameters
         double[] orbitArray = new double[6];
-        initialOrbit.getType().mapOrbitToArray(initialOrbit, PositionAngle.MEAN, orbitArray, null);
+        initialOrbit.getType().mapOrbitToArray(initialOrbit, PositionAngleType.MEAN, orbitArray, null);
         for (int i = 0; i < orbitArray.length; ++i) {
-            propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
+        	// here orbital paramaters drivers have only 1 estimated values on the all time period for orbit determination
+            propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i], initialOrbit.getDate());
         }
 
         return propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
@@ -243,7 +244,7 @@ public class TLEEstimationTestUtils {
 
         final Orbit initialOrbit = TLEPropagator.selectExtrapolator(context.initialTLE).getInitialState().getOrbit();
         final Orbit estimatedOrbit = estimator.estimate()[0].getInitialState().getOrbit();
-        final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+        final Vector3D estimatedPosition = estimatedOrbit.getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
         Assertions.assertEquals(iterations, estimator.getIterationsCount());
@@ -278,7 +279,7 @@ public class TLEEstimationTestUtils {
                             max,
                             maxEps);
         Assertions.assertEquals(expectedDeltaPos,
-                            Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(), estimatedPosition),
+                            Vector3D.distance(initialOrbit.getPosition(), estimatedPosition),
                             posEps);
         Assertions.assertEquals(expectedDeltaVel,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity),
@@ -299,12 +300,12 @@ public class TLEEstimationTestUtils {
      */
     public static void checkKalmanFit(final TLEContext context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
-                                      final Orbit refOrbit, final PositionAngle positionAngle,
+                                      final Orbit refOrbit, final PositionAngleType positionAngleType,
                                       final double expectedDeltaPos, final double posEps,
                                       final double expectedDeltaVel, final double velEps) {
         checkKalmanFit(context, kalman, measurements,
                        new Orbit[] { refOrbit },
-                       new PositionAngle[] { positionAngle },
+                       new PositionAngleType[] {positionAngleType},
                        new double[] { expectedDeltaPos }, new double[] { posEps },
                        new double[] { expectedDeltaVel }, new double[] { velEps });
     }
@@ -322,7 +323,7 @@ public class TLEEstimationTestUtils {
      */
     public static void checkKalmanFit(final TLEContext context, final KalmanEstimator kalman,
                                       final List<ObservedMeasurement<?>> measurements,
-                                      final Orbit[] refOrbit, final PositionAngle[] positionAngle,
+                                      final Orbit[] refOrbit, final PositionAngleType[] positionAngleType,
                                       final double[] expectedDeltaPos, final double[] posEps,
                                       final double[] expectedDeltaVel, final double []velEps) {
 
@@ -335,7 +336,7 @@ public class TLEEstimationTestUtils {
         for (int k = 0; k < refOrbit.length; ++k) {
             // Get the last estimation
             final Orbit    estimatedOrbit    = estimated[k].getInitialState().getOrbit();
-            final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+            final Vector3D estimatedPosition = estimatedOrbit.getPosition();
             final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
             // Get the last covariance matrix estimation
@@ -344,7 +345,7 @@ public class TLEEstimationTestUtils {
             // Convert the orbital part to Cartesian formalism
             // Assuming all 6 orbital parameters are estimated by the filter
             final double[][] dCdY = new double[6][6];
-            estimatedOrbit.getJacobianWrtParameters(positionAngle[k], dCdY);
+            estimatedOrbit.getJacobianWrtParameters(positionAngleType[k], dCdY);
             final RealMatrix Jacobian = MatrixUtils.createRealMatrix(dCdY);
             final RealMatrix estimatedCartesianP =
                             Jacobian.
@@ -357,7 +358,7 @@ public class TLEEstimationTestUtils {
                 sigmas[i] = FastMath.sqrt(estimatedCartesianP.getEntry(i, i));
             }
 //          // FIXME: debug print values
-//          final double dPos = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
+//          final double dPos = Vector3D.distance(refOrbit[k].getPosition(), estimatedPosition);
 //          final double dVel = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
 //          System.out.println("Nb Meas = " + kalman.getCurrentMeasurementNumber());
 //          System.out.println("dPos    = " + dPos + " m");
@@ -371,7 +372,7 @@ public class TLEEstimationTestUtils {
 //          //debug
 
             // Check the final orbit estimation & PV sigmas
-            final double deltaPosK = Vector3D.distance(refOrbit[k].getPVCoordinates().getPosition(), estimatedPosition);
+            final double deltaPosK = Vector3D.distance(refOrbit[k].getPosition(), estimatedPosition);
             final double deltaVelK = Vector3D.distance(refOrbit[k].getPVCoordinates().getVelocity(), estimatedVelocity);
             Assertions.assertEquals(expectedDeltaPos[k], deltaPosK, posEps[k]);
             Assertions.assertEquals(expectedDeltaVel[k], deltaVelK, velEps[k]);

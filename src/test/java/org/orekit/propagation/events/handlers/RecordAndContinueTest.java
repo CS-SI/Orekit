@@ -23,7 +23,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.handlers.RecordAndContinue.Event;
@@ -45,13 +45,12 @@ public class RecordAndContinueTest {
     @Test
     public void testGetEvents() {
         // setup
-        RecordAndContinue<DateDetector> handler =
-                new RecordAndContinue<DateDetector>();
+        RecordAndContinue handler = new RecordAndContinue();
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         DateDetector detector = new DateDetector(date);
         Frame eci = FramesFactory.getGCRF();
         Orbit orbit = new KeplerianOrbit(6378137 + 500e3, 0, 0, 0, 0, 0,
-                PositionAngle.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU);
+                PositionAngleType.TRUE, eci, date, Constants.EIGEN5C_EARTH_MU);
         SpacecraftState s1 = new SpacecraftState(orbit);
         SpacecraftState s2 = s1.shiftedBy(-10);
         SpacecraftState s3 = s2.shiftedBy(1);
@@ -63,7 +62,7 @@ public class RecordAndContinueTest {
         Assertions.assertEquals(Action.CONTINUE, handler.eventOccurred(s3, detector, false));
 
         // verify
-        List<Event<DateDetector>> events = handler.getEvents();
+        List<Event> events = handler.getEvents();
         Assertions.assertEquals(3, events.size());
         Assertions.assertEquals(s1, events.get(0).getState());
         Assertions.assertEquals(s2, events.get(1).getState());
@@ -71,7 +70,7 @@ public class RecordAndContinueTest {
         Assertions.assertEquals(true, events.get(0).isIncreasing());
         Assertions.assertEquals(true, events.get(1).isIncreasing());
         Assertions.assertEquals(false, events.get(2).isIncreasing());
-        for (Event<DateDetector> event : events) {
+        for (Event event : events) {
             Assertions.assertEquals(detector, event.getDetector());
         }
 

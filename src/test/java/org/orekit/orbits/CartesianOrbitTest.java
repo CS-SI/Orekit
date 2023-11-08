@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,6 @@ import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
-import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -47,8 +46,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 
 
@@ -71,9 +68,9 @@ public class CartesianOrbitTest {
 
         CartesianOrbit p = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
-        Assertions.assertEquals(p.getPVCoordinates().getPosition().getX(), pvCoordinates.getPosition().getX(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getPosition().getX()));
-        Assertions.assertEquals(p.getPVCoordinates().getPosition().getY(), pvCoordinates.getPosition().getY(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getPosition().getY()));
-        Assertions.assertEquals(p.getPVCoordinates().getPosition().getZ(), pvCoordinates.getPosition().getZ(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getPosition().getZ()));
+        Assertions.assertEquals(p.getPosition().getX(), pvCoordinates.getPosition().getX(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getPosition().getX()));
+        Assertions.assertEquals(p.getPosition().getY(), pvCoordinates.getPosition().getY(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getPosition().getY()));
+        Assertions.assertEquals(p.getPosition().getZ(), pvCoordinates.getPosition().getZ(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getPosition().getZ()));
         Assertions.assertEquals(p.getPVCoordinates().getVelocity().getX(), pvCoordinates.getVelocity().getX(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getVelocity().getX()));
         Assertions.assertEquals(p.getPVCoordinates().getVelocity().getY(), pvCoordinates.getVelocity().getY(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getVelocity().getY()));
         Assertions.assertEquals(p.getPVCoordinates().getVelocity().getZ(), pvCoordinates.getVelocity().getZ(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getVelocity().getZ()));
@@ -166,8 +163,8 @@ public class CartesianOrbitTest {
 
         // validation of: r = a .(1 - e2) / (1 + e.cos(v))
         Assertions.assertEquals(a * epsilon * epsilon / ksi,
-                     p.getPVCoordinates().getPosition().getNorm(),
-                     Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getPosition().getNorm()));
+                     p.getPosition().getNorm(),
+                     Utils.epsilonTest * FastMath.abs(p.getPosition().getNorm()));
 
         // validation of: V = sqrt(mu.(1+2e.cos(v)+e2)/a.(1-e2) )
         Assertions.assertEquals(na * FastMath.sqrt(ksi * ksi + nu * nu) / epsilon,
@@ -192,8 +189,8 @@ public class CartesianOrbitTest {
 
         for (double lv = 0; lv <= 2 * FastMath.PI; lv += 2 * FastMath.PI/100.) {
             p = new EquinoctialOrbit(p.getA(), p.getEquinoctialEx(), p.getEquinoctialEy(),
-                                          p.getHx(), p.getHy(), lv, PositionAngle.TRUE, p.getFrame(), date, mu);
-            position = p.getPVCoordinates().getPosition();
+                                          p.getHx(), p.getHy(), lv, PositionAngleType.TRUE, p.getFrame(), date, mu);
+            position = p.getPosition();
 
             // test if the norm of the position is in the range [perigee radius, apogee radius]
             // Warning: these tests are without absolute value by choice
@@ -217,10 +214,10 @@ public class CartesianOrbitTest {
     @Test
     public void testHyperbola1() {
         CartesianOrbit orbit = new CartesianOrbit(new KeplerianOrbit(-10000000.0, 2.5, 0.3, 0, 0, 0.0,
-                                                                     PositionAngle.TRUE,
+                                                                     PositionAngleType.TRUE,
                                                                      FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                                                      mu));
-        Vector3D perigeeP  = orbit.getPVCoordinates().getPosition();
+        Vector3D perigeeP  = orbit.getPosition();
         Vector3D u = perigeeP.normalize();
         Vector3D focus1 = Vector3D.ZERO;
         Vector3D focus2 = new Vector3D(-2 * orbit.getA() * orbit.getE(), u);
@@ -239,11 +236,11 @@ public class CartesianOrbitTest {
     @Test
     public void testHyperbola2() {
         CartesianOrbit orbit = new CartesianOrbit(new KeplerianOrbit(-10000000.0, 1.2, 0.3, 0, 0, -1.75,
-                                                                     PositionAngle.MEAN,
+                                                                     PositionAngleType.MEAN,
                                                                      FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                                                      mu));
-        Vector3D perigeeP  = new KeplerianOrbit(-10000000.0, 1.2, 0.3, 0, 0, 0.0, PositionAngle.TRUE, orbit.getFrame(),
-                                                orbit.getDate(), orbit.getMu()).getPVCoordinates().getPosition();
+        Vector3D perigeeP  = new KeplerianOrbit(-10000000.0, 1.2, 0.3, 0, 0, 0.0, PositionAngleType.TRUE, orbit.getFrame(),
+                                                orbit.getDate(), orbit.getMu()).getPosition();
         Vector3D u = perigeeP.normalize();
         Vector3D focus1 = Vector3D.ZERO;
         Vector3D focus2 = new Vector3D(-2 * orbit.getA() * orbit.getE(), u);
@@ -367,7 +364,7 @@ public class CartesianOrbitTest {
             Assertions.assertTrue(converted.hasDerivatives());
             CartesianOrbit rebuilt = (CartesianOrbit) OrbitType.CARTESIAN.convertType(converted);
             Assertions.assertTrue(rebuilt.hasDerivatives());
-            Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getPosition(),     position),     2.0e-9);
+            Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPosition(),     position),     2.0e-9);
             Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getVelocity(),     velocity),     2.5e-12);
             Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getAcceleration(), acceleration), 4.9e-15);
         }
@@ -394,7 +391,7 @@ public class CartesianOrbitTest {
         Assertions.assertTrue(converted.hasDerivatives());
         CartesianOrbit rebuilt = (CartesianOrbit) OrbitType.CARTESIAN.convertType(converted);
         Assertions.assertTrue(rebuilt.hasDerivatives());
-        Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getPosition(),     position),     1.0e-15);
+        Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPosition(),     position),     1.0e-15);
         Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getVelocity(),     velocity),     1.0e-15);
         Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getAcceleration(), acceleration), 1.0e-15);
 
@@ -494,7 +491,7 @@ public class CartesianOrbitTest {
         CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
         double[][] jacobian = new double[6][6];
-        orbit.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+        orbit.getJacobianWrtCartesian(PositionAngleType.MEAN, jacobian);
 
         for (int i = 0; i < jacobian.length; i++) {
             double[] row    = jacobian[i];
@@ -504,7 +501,7 @@ public class CartesianOrbitTest {
         }
 
         double[][] invJacobian = new double[6][6];
-        orbit.getJacobianWrtParameters(PositionAngle.MEAN, invJacobian);
+        orbit.getJacobianWrtParameters(PositionAngleType.MEAN, invJacobian);
         MatrixUtils.createRealMatrix(jacobian).
                         multiply(MatrixUtils.createRealMatrix(invJacobian)).
         walkInRowOrder(new RealMatrixPreservingVisitor() {
@@ -520,115 +517,6 @@ public class CartesianOrbitTest {
                 return Double.NaN;
             }
         });
-
-    }
-
-    @Test
-    public void testInterpolationWithDerivatives() {
-        doTestInterpolation(true,
-                            394, 2.28e-8, 3.21, 1.39e-9,
-                            2474, 6842, 6.55, 186);
-    }
-
-    @Test
-    public void testInterpolationWithoutDerivatives() {
-        doTestInterpolation(false,
-                            394, 2.61, 3.21, 0.154,
-                            2474, 2.28e12, 6.55, 6.22e10);
-    }
-
-    private void doTestInterpolation(boolean useDerivatives,
-                                     double shiftPositionErrorWithin, double interpolationPositionErrorWithin,
-                                     double shiftVelocityErrorWithin, double interpolationVelocityErrorWithin,
-                                     double shiftPositionErrorFarPast, double interpolationPositionErrorFarPast,
-                                     double shiftVelocityErrorFarPast, double interpolationVelocityErrorFarPast)
-        {
-
-        final double ehMu  = 3.9860047e14;
-        final double ae  = 6.378137e6;
-        final double c20 = -1.08263e-3;
-        final double c30 = 2.54e-6;
-        final double c40 = 1.62e-6;
-        final double c50 = 2.3e-7;
-        final double c60 = -5.5e-7;
-
-        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
-        final Vector3D position = new Vector3D(3220103., 69623., 6449822.);
-        final Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
-        final CartesianOrbit initialOrbit = new CartesianOrbit(new PVCoordinates(position, velocity),
-                                                               FramesFactory.getEME2000(), date, ehMu);
-
-        EcksteinHechlerPropagator propagator =
-                new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
-
-        // set up a 5 points sample
-        List<Orbit> sample = new ArrayList<Orbit>();
-        for (double dt = 0; dt < 251.0; dt += 60.0) {
-            Orbit orbit = propagator.propagate(date.shiftedBy(dt)).getOrbit();
-            if (!useDerivatives) {
-                // remove derivatives
-                double[] stateVector = new double[6];
-                orbit.getType().mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
-                orbit = orbit.getType().mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
-                                                        orbit.getDate(), orbit.getMu(), orbit.getFrame());
-            }
-            sample.add(orbit);
-        }
-
-        // well inside the sample, interpolation should be much better than Keplerian shift
-        // this is because we take the full non-Keplerian acceleration into account in
-        // the Cartesian parameters, which in this case is preserved by the
-        // Eckstein-Hechler propagator
-        double maxShiftPError = 0;
-        double maxInterpolationPError = 0;
-        double maxShiftVError = 0;
-        double maxInterpolationVError = 0;
-        for (double dt = 0; dt < 240.0; dt += 1.0) {
-            AbsoluteDate t                   = initialOrbit.getDate().shiftedBy(dt);
-            PVCoordinates propagated         = propagator.propagate(t).getPVCoordinates();
-            PVCoordinates shiftError         = new PVCoordinates(propagated,
-                                                                 initialOrbit.shiftedBy(dt).getPVCoordinates());
-            PVCoordinates interpolationError = new PVCoordinates(propagated,
-                                                                 initialOrbit.interpolate(t, sample).getPVCoordinates());
-            maxShiftPError                   = FastMath.max(maxShiftPError,
-                                                            shiftError.getPosition().getNorm());
-            maxInterpolationPError           = FastMath.max(maxInterpolationPError,
-                                                            interpolationError.getPosition().getNorm());
-            maxShiftVError                   = FastMath.max(maxShiftVError,
-                                                            shiftError.getVelocity().getNorm());
-            maxInterpolationVError           = FastMath.max(maxInterpolationVError,
-                                                            interpolationError.getVelocity().getNorm());
-        }
-        Assertions.assertEquals(shiftPositionErrorWithin,         maxShiftPError,         0.01 * shiftPositionErrorWithin);
-        Assertions.assertEquals(interpolationPositionErrorWithin, maxInterpolationPError, 0.01 * interpolationPositionErrorWithin);
-        Assertions.assertEquals(shiftVelocityErrorWithin,         maxShiftVError,         0.01 * shiftVelocityErrorWithin);
-        Assertions.assertEquals(interpolationVelocityErrorWithin, maxInterpolationVError, 0.01 * interpolationVelocityErrorWithin);
-
-        // if we go far past sample end, interpolation becomes worse than Keplerian shift
-        maxShiftPError = 0;
-        maxInterpolationPError = 0;
-        maxShiftVError = 0;
-        maxInterpolationVError = 0;
-        for (double dt = 500.0; dt < 650.0; dt += 1.0) {
-            AbsoluteDate t                   = initialOrbit.getDate().shiftedBy(dt);
-            PVCoordinates propagated         = propagator.propagate(t).getPVCoordinates();
-            PVCoordinates shiftError         = new PVCoordinates(propagated,
-                                                                 initialOrbit.shiftedBy(dt).getPVCoordinates());
-            PVCoordinates interpolationError = new PVCoordinates(propagated,
-                                                                 initialOrbit.interpolate(t, sample).getPVCoordinates());
-            maxShiftPError                   = FastMath.max(maxShiftPError,
-                                                            shiftError.getPosition().getNorm());
-            maxInterpolationPError           = FastMath.max(maxInterpolationPError,
-                                                            interpolationError.getPosition().getNorm());
-            maxShiftVError                   = FastMath.max(maxShiftVError,
-                                                            shiftError.getVelocity().getNorm());
-            maxInterpolationVError           = FastMath.max(maxInterpolationVError,
-                                                            interpolationError.getVelocity().getNorm());
-        }
-        Assertions.assertEquals(shiftPositionErrorFarPast,         maxShiftPError,         0.01 * shiftPositionErrorFarPast);
-        Assertions.assertEquals(interpolationPositionErrorFarPast, maxInterpolationPError, 0.01 * interpolationPositionErrorFarPast);
-        Assertions.assertEquals(shiftVelocityErrorFarPast,         maxShiftVError,         0.01 * shiftVelocityErrorFarPast);
-        Assertions.assertEquals(interpolationVelocityErrorFarPast, maxInterpolationVError, 0.01 * interpolationVelocityErrorFarPast);
 
     }
 
@@ -741,8 +629,8 @@ public class CartesianOrbitTest {
         final Orbit shiftedOrbitCopy = orbitCopy.shiftedBy(10); // This does not work
 
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(shiftedOrbit.getPVCoordinates().getPosition(),
-                                              shiftedOrbitCopy.getPVCoordinates().getPosition()),
+                            Vector3D.distance(shiftedOrbit.getPosition(),
+                                              shiftedOrbitCopy.getPosition()),
                             1.0e-10);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
@@ -758,6 +646,31 @@ public class CartesianOrbitTest {
                                        new Vector3D(0, FastMath.sqrt(mu / position.getNorm()), 0));
         final Orbit orbit = new CartesianOrbit(pv, FramesFactory.getEME2000(), date, mu);
         Assertions.assertSame(orbit, orbit.getType().normalize(orbit, null));
+    }
+
+    @Test
+    public void testIssue1139() {
+
+        // Create
+        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
+
+        CartesianOrbit p = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+
+        double dt = 60.0;
+        AbsoluteDate shiftedEpoch = date.shiftedBy(dt);
+
+        CartesianOrbit p2 = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), shiftedEpoch, mu);
+
+        // Verify
+        Assertions.assertEquals(dt, shiftedEpoch.durationFrom(date));
+        Assertions.assertEquals(dt, p2.durationFrom(p));
+        Assertions.assertEquals(dt, p2.getDate().durationFrom(p));
+        Assertions.assertEquals(dt, p2.durationFrom(p.getDate()));
+        Assertions.assertEquals(dt, p2.getDate().durationFrom(p.getDate()));
+        Assertions.assertEquals(-dt, p.durationFrom(p2));
+        
     }
 
     @BeforeEach

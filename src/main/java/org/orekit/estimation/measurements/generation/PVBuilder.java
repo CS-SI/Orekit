@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,15 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.Map;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
@@ -31,6 +34,11 @@ import org.orekit.utils.ParameterDriver;
  * @since 9.3
  */
 public class PVBuilder extends AbstractMeasurementBuilder<PV> {
+
+    /** Satellite related to this builder.
+     * @since 12.0
+     */
+    private final ObservableSatellite satellite;
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
@@ -48,16 +56,16 @@ public class PVBuilder extends AbstractMeasurementBuilder<PV> {
               }, new double[] {
                   baseWeight
               }, satellite);
+        this.satellite = satellite;
     }
 
     /** {@inheritDoc} */
     @Override
-    public PV build(final SpacecraftState[] states) {
+    public PV build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
 
-        final ObservableSatellite satellite = getSatellites()[0];
         final double[] sigma                = getTheoreticalStandardDeviation();
         final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState[] relevant    = new SpacecraftState[] { states[satellite.getPropagatorIndex()] };
+        final SpacecraftState[] relevant    = new SpacecraftState[] { interpolators.get(satellite).getInterpolatedState(date) };
 
         // create a dummy measurement
         final PV dummy = new PV(relevant[0].getDate(), Vector3D.NaN, Vector3D.NaN,
@@ -76,7 +84,7 @@ public class PVBuilder extends AbstractMeasurementBuilder<PV> {
         }
 
         // estimate the perfect value of the measurement
-        final double[] pv = dummy.estimate(0, 0, relevant).getEstimatedValue();
+        final double[] pv = dummy.estimateWithoutDerivatives(0, 0, relevant).getEstimatedValue();
 
         // add the noise
         final double[] noise = getNoise();

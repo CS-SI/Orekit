@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -35,12 +35,12 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -70,7 +70,7 @@ public class TargetPointingTest {
     private Frame itrf;
 
     // Transform from EME2000 to ITRF
-    private Transform eme2000ToItrf;
+    private StaticTransform eme2000ToItrf;
 
     /** Test if both constructors are equivalent
      */
@@ -81,7 +81,7 @@ public class TargetPointingTest {
         // ********************
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         //  Attitude laws
@@ -122,7 +122,7 @@ public class TargetPointingTest {
         // ********************
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         //  Attitude law
@@ -154,7 +154,7 @@ public class TargetPointingTest {
         // ********************
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         //  Attitude law
@@ -203,7 +203,7 @@ public class TargetPointingTest {
         // Satellite on any position
         CircularOrbit circOrbit =
             new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(50.), 0.,
-                                   FastMath.toRadians(90.), PositionAngle.TRUE,
+                                   FastMath.toRadians(90.), PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
         //  Target attitude provider with target under satellite nadir
@@ -284,7 +284,7 @@ public class TargetPointingTest {
         // Create satellite position as circular parameters
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Transform satellite position to position/velocity parameters in EME2000 frame
@@ -324,7 +324,7 @@ public class TargetPointingTest {
         // Create satellite position as circular parameters
         CircularOrbit circ =
             new CircularOrbit(42164000.0, 0.5e-8, -0.5e-8, 0., 0.,
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Create nadir pointing attitude provider
@@ -354,7 +354,7 @@ public class TargetPointingTest {
         // Get attitude rotation
         Rotation rotSatEME2000 = targetLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
 
-        checkField(Decimal64Field.getInstance(), targetLaw, circ, circ.getDate(), circ.getFrame());
+        checkField(Binary64Field.getInstance(), targetLaw, circ, circ.getDate(), circ.getFrame());
 
         // Compute difference between both attitude providers
         // *********************************************
@@ -385,7 +385,7 @@ public class TargetPointingTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngle.MEAN,
+                              FastMath.toRadians(30.), PositionAngleType.MEAN,
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);
@@ -454,7 +454,7 @@ public class TargetPointingTest {
             itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             // Transform from EME2000 to ITRF
-            eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(itrf, date);
+            eme2000ToItrf = FramesFactory.getEME2000().getStaticTransformTo(itrf, date);
 
         } catch (OrekitException oe) {
             Assertions.fail(oe.getMessage());

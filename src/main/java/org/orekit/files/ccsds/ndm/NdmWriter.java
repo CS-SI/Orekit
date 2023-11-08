@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.io.IOException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.ndm.adm.acm.Acm;
 import org.orekit.files.ccsds.ndm.adm.aem.Aem;
 import org.orekit.files.ccsds.ndm.adm.apm.Apm;
 import org.orekit.files.ccsds.ndm.odm.ocm.Ocm;
@@ -166,6 +167,8 @@ public class NdmWriter {
             return (MessageWriter<H, S, F>) builder.buildApmWriter();
         } else if (constituent instanceof Aem) {
             return (MessageWriter<H, S, F>) builder.buildAemWriter();
+        } else if (constituent instanceof Acm) {
+            return (MessageWriter<H, S, F>) builder.buildAcmWriter();
         } else {
             // this should never happen
             throw new OrekitInternalError(null);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,12 +41,12 @@ import org.orekit.time.DateComponents;
  * the {@link ITRFVersion ITRF versions} that each
  * type of Earth Orientation Parameter file contains
  * for each date. This configuration file is used to
- * interpret {@link EOPC04FilesLoader EOP C04} files,
+ * interpret {@link EopC04FilesLoader EOP C04} files,
  * {@link BulletinAFilesLoader Bulletin A} files,
  * {@link BulletinBFilesLoader Bulletin B} files,
  * {@link RapidDataAndPredictionColumnsLoader rapid data
  * and prediction files in columns format} files,
- * {@link RapidDataAndPredictionXMLLoader rapid data
+ * {@link EopXmlLoader rapid data
  * and prediction files in XML format} files...
  * </p>
  * <p>This file is an Orekit-specific configuration file.
@@ -54,11 +54,11 @@ import org.orekit.time.DateComponents;
  * <p>
  * This class is immutable and hence thread-safe
  * </p>
- * @see EOPC04FilesLoader
+ * @see EopC04FilesLoader
  * @see BulletinAFilesLoader
  * @see BulletinBFilesLoader
  * @see RapidDataAndPredictionColumnsLoader
- * @see RapidDataAndPredictionXMLLoader
+ * @see EopXmlLoader
  * @author Luc Maisonobe
  * @since 9.2
  */

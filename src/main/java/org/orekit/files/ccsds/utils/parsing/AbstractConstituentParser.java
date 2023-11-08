@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,14 @@
  */
 package org.orekit.files.ccsds.utils.parsing;
 
+import java.util.List;
+import java.util.function.Function;
+
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.utils.IERSConventions;
 
 /** Parser for CCSDS messages.
@@ -32,12 +36,13 @@ import org.orekit.utils.IERSConventions;
  * way to use parsers is to either dedicate one parser for each message
  * and drop it afterwards, or to use a single-thread loop.
  * </p>
+ * @param <H> type of the header
  * @param <T> type of the file
  * @param <P> type of the parser
  * @author Luc Maisonobe
  * @since 11.0
  */
-public abstract class AbstractConstituentParser<T extends NdmConstituent<?, ?>, P extends AbstractConstituentParser<T, ?>>
+public abstract class AbstractConstituentParser<H extends Header, T extends NdmConstituent<H, ?>, P extends AbstractConstituentParser<H, T, ?>>
     extends AbstractMessageParser<T> {
 
     /** IERS Conventions. */
@@ -59,14 +64,17 @@ public abstract class AbstractConstituentParser<T extends NdmConstituent<?, ?>, 
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param dataContext used to retrieve frames and time scales
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
     protected AbstractConstituentParser(final String root,
                                         final String formatVersionKey,
                                         final IERSConventions conventions,
                                         final boolean simpleEOP,
                                         final DataContext dataContext,
-                                        final ParsedUnitsBehavior parsedUnitsBehavior) {
-        super(root, formatVersionKey);
+                                        final ParsedUnitsBehavior parsedUnitsBehavior,
+                                        final Function<ParseToken, List<ParseToken>>[] filters) {
+        super(root, formatVersionKey, filters);
         this.conventions         = conventions;
         this.simpleEOP           = simpleEOP;
         this.dataContext         = dataContext;
@@ -104,7 +112,7 @@ public abstract class AbstractConstituentParser<T extends NdmConstituent<?, ?>, 
     /** Get file header to fill.
      * @return file header to fill
      */
-    public abstract Header getHeader();
+    public abstract H getHeader();
 
     /** Prepare header for parsing.
      * @return true if parser was able to perform the action

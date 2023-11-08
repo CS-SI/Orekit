@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,10 +52,16 @@ public class SatelliteTypeTest {
                                                                    FramesFactory.getEME2000(),
                                                                    1);
 
-            if (type == SatelliteType.BEIDOU_3I  ||
-                type == SatelliteType.GALILEO_0A ||
-                type == SatelliteType.GALILEO_0B ||
-                type == SatelliteType.GALILEO_1  ||
+            if (type == SatelliteType.BEIDOU_3I        ||
+                type == SatelliteType.BEIDOU_3M_SECM   ||
+                type == SatelliteType.BEIDOU_3SI_SECM  ||
+                type == SatelliteType.BEIDOU_3SI_CAST  ||
+                type == SatelliteType.BEIDOU_3G_CAST   ||
+                type == SatelliteType.BEIDOU_3M_CAST   ||
+                type == SatelliteType.BEIDOU_3SM_CAST  ||
+                type == SatelliteType.GALILEO_0A       ||
+                type == SatelliteType.GALILEO_0B       ||
+                type == SatelliteType.GALILEO_1        ||
                 type == SatelliteType.GALILEO_2) {
                 Assertions.assertEquals(Galileo.class, provider.getClass());
             } else if (type == SatelliteType.BEIDOU_2G) {

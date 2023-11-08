@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,12 +34,11 @@ import org.hipparchus.util.MerweUnscentedTransform;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataFilter;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DataSource;
 import org.orekit.data.GzipFilter;
 import org.orekit.data.UnixCompressFilter;
@@ -50,6 +49,7 @@ import org.orekit.estimation.measurements.Position;
 import org.orekit.files.ilrs.CPF;
 import org.orekit.files.ilrs.CPF.CPFCoordinate;
 import org.orekit.files.ilrs.CPF.CPFEphemeris;
+import org.orekit.files.rinex.HatanakaCompressFilter;
 import org.orekit.files.ilrs.CPFParser;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
@@ -62,7 +62,6 @@ import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.gnss.HatanakaCompressFilter;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.NRLMSISE00;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
@@ -166,15 +165,15 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
         final StreamingStatistics statX      = observer.getXStatistics();
         final StreamingStatistics statY      = observer.getYStatistics();
         final StreamingStatistics statZ      = observer.getZStatistics();
-        Assertions.assertEquals(0.0, statX.getMean(), 7.85e-5);
-        Assertions.assertEquals(0.0, statY.getMean(), 3.34e-5);
-        Assertions.assertEquals(0.0, statZ.getMean(), 2.07e-4);
-        Assertions.assertEquals(0.0, statX.getMin(),  0.0016); // Value is negative
-        Assertions.assertEquals(0.0, statY.getMin(),  0.0021); // Value is negative
-        Assertions.assertEquals(0.0, statZ.getMin(),  0.0709); // Value is negative
-        Assertions.assertEquals(0.0, statX.getMax(),  0.0103);
-        Assertions.assertEquals(0.0, statY.getMax(),  0.0073);
-        Assertions.assertEquals(0.0, statZ.getMax(),  0.0082);
+        Assertions.assertEquals(0.0, statX.getMean(), 1.37e-4);
+        Assertions.assertEquals(0.0, statY.getMean(), 4.93e-4);
+        Assertions.assertEquals(0.0, statZ.getMean(), 3.80e-4);
+        Assertions.assertEquals(0.0, statX.getMin(),  0.027); // Value is negative
+        Assertions.assertEquals(0.0, statY.getMin(),  0.028); // Value is negative
+        Assertions.assertEquals(0.0, statZ.getMin(),  0.026); // Value is negative
+        Assertions.assertEquals(0.0, statX.getMax(),  0.029);
+        Assertions.assertEquals(0.0, statY.getMax(),  0.027);
+        Assertions.assertEquals(0.0, statZ.getMax(),  0.026);
 
         // Check that "physical" matrices are not null
         Assertions.assertNotNull(estimation.getPhysicalInnovationCovarianceMatrix());
@@ -255,7 +254,7 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
         final Frame orbitFrame = FramesFactory.getEME2000();
 
         // Bounded propagator from the CPF file
-        final BoundedPropagator bounded = ephemeris.getPropagator();
+        final BoundedPropagator bounded = ephemeris.getPropagator(new FrameAlignedProvider(orbitFrame));
 
         // Initial date
         final AbsoluteDate initialDate = bounded.getMinDate();
@@ -284,8 +283,6 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
      * @param gravityField gravity field
      * @param convention IERS convention
      * @param simpleEop if true, tidal effects are ignored when interpolating EOP
-     * @param minStep min integration step (s)
-     * @param maxStep max integration step (s)
      * @param mass spacecraft mass (kg)
      * @param surface surface (m²)
      * @param useDrag true if drag acceleration must be added
@@ -358,8 +355,6 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
             final MarshallSolarActivityFutureEstimation msafe =
                             new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
                                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-            final DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
-            manager.feed(msafe.getSupportedNames(), msafe);
             final Atmosphere atmosphere = new NRLMSISE00(msafe, CelestialBodyFactory.getSun(), centralBody);
 
             // Drag force
@@ -383,7 +378,7 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
             final RadiationSensitive spacecraft = new IsotropicRadiationSingleCoefficient(surface, 1.13);
 
             // Solar radiation pressure
-            final DSSTForceModel srp = new DSSTSolarRadiationPressure(CelestialBodyFactory.getSun(), gravityField.getAe(), spacecraft, gravityField.getMu());
+            final DSSTForceModel srp = new DSSTSolarRadiationPressure(CelestialBodyFactory.getSun(), centralBody, spacecraft, gravityField.getMu());
             for (final ParameterDriver driver : srp.getParametersDrivers()) {
                 if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
                     //driver.setSelected(true);
@@ -437,11 +432,11 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
         for (final CPFCoordinate coordinate : ephemeris.getCoordinates()) {
 
             // Position in inertial frames
-            final TimeStampedPVCoordinates pvInertial = ephemeris.getFrame().getTransformTo(orbit.getFrame(), coordinate.getDate()).
-                                                                             transformPVCoordinates(coordinate);
+            final Vector3D posInertial = ephemeris.getFrame().getStaticTransformTo(orbit.getFrame(), coordinate.getDate()).
+                                                              transformPosition(coordinate.getPosition());
 
             // Initialize measurement
-            final Position measurement = new Position(coordinate.getDate(), pvInertial.getPosition(), sigma, 1.0, satellite);
+            final Position measurement = new Position(coordinate.getDate(), posInertial, sigma, 1.0, satellite);
 
             // Add the measurement to the list
             measurements.add(measurement);
@@ -499,7 +494,7 @@ public class UnscentedSemiAnalyticalKalmanOrbitDeterminationTest {
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = OrbitType.EQUINOCTIAL.convertType(orbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(propagatorBuilder.getPositionAngle(), dYdC);
+        initialOrbit.getJacobianWrtCartesian(propagatorBuilder.getPositionAngleType(), dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
 
         // Keplerian initial covariance matrix

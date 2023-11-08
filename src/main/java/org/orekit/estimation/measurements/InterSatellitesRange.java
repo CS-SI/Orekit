@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** One-way or two-way range measurements between two satellites.
  * <p>
@@ -109,6 +110,83 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
 
     /** {@inheritDoc} */
     @Override
+    protected EstimatedMeasurementBase<InterSatellitesRange> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                                     final int evaluation,
+                                                                                                     final SpacecraftState[] states) {
+
+        // coordinates of both satellites
+        final SpacecraftState local = states[0];
+        final TimeStampedPVCoordinates pvaL = local.getPVCoordinates();
+        final SpacecraftState remote = states[1];
+        final TimeStampedPVCoordinates pvaR = remote.getPVCoordinates();
+
+        // compute propagation times
+        // (if state has already been set up to pre-compensate propagation delay,
+        //  we will have delta == tauD and transitState will be the same as state)
+
+        // downlink delay
+        final double dtl = getSatellites().get(0).getClockOffsetDriver().getValue(local.getDate());
+        final AbsoluteDate arrivalDate = getDate().shiftedBy(-dtl);
+
+        final TimeStampedPVCoordinates s1Downlink =
+                        pvaL.shiftedBy(arrivalDate.durationFrom(pvaL.getDate()));
+        final double tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate);
+
+        // Transit state
+        final double delta      = getDate().durationFrom(remote.getDate());
+        final double deltaMTauD = delta - tauD;
+
+        // prepare the evaluation
+        final EstimatedMeasurementBase<InterSatellitesRange> estimated;
+
+        final double range;
+        if (twoway) {
+            // Transit state (re)computed with derivative structures
+            final TimeStampedPVCoordinates transitState = pvaR.shiftedBy(deltaMTauD);
+
+            // uplink delay
+            final double tauU = signalTimeOfFlight(pvaL,
+                                                   transitState.getPosition(),
+                                                   transitState.getDate());
+            estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       new SpacecraftState[] {
+                                                           local.shiftedBy(deltaMTauD),
+                                                           remote.shiftedBy(deltaMTauD)
+                                                       }, new TimeStampedPVCoordinates[] {
+                                                           local.shiftedBy(delta - tauD - tauU).getPVCoordinates(),
+                                                           remote.shiftedBy(delta - tauD).getPVCoordinates(),
+                                                           local.shiftedBy(delta).getPVCoordinates()
+                                                       });
+
+            // Range value
+            range  = (tauD + tauU) * (0.5 * Constants.SPEED_OF_LIGHT);
+
+        } else {
+
+            estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       new SpacecraftState[] {
+                                                           local.shiftedBy(deltaMTauD),
+                                                           remote.shiftedBy(deltaMTauD)
+                                                       }, new TimeStampedPVCoordinates[] {
+                                                           remote.shiftedBy(delta - tauD).getPVCoordinates(),
+                                                           local.shiftedBy(delta).getPVCoordinates()
+                                                       });
+
+            // Clock offsets
+            final double dtr = getSatellites().get(1).getClockOffsetDriver().getValue(remote.getDate());
+
+            // Range value
+            range  = (tauD + dtl - dtr) * Constants.SPEED_OF_LIGHT;
+
+        }
+        estimated.setEstimatedValue(range);
+
+        return estimated;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected EstimatedMeasurement<InterSatellitesRange> theoreticalEvaluation(final int iteration,
                                                                                final int evaluation,
                                                                                final SpacecraftState[] states) {
@@ -126,7 +204,12 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver driver : getParametersDrivers()) {
             if (driver.isSelected()) {
-                indices.put(driver.getName(), nbParams++);
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    if (!indices.containsKey(span.getData())) {
+                        indices.put(span.getData(), nbParams++);
+                    }
+                }
             }
         }
 
@@ -141,7 +224,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         //  we will have delta == tauD and transitState will be the same as state)
 
         // downlink delay
-        final Gradient dtl = getSatellites().get(0).getClockOffsetDriver().getValue(nbParams, indices);
+        final Gradient dtl = getSatellites().get(0).getClockOffsetDriver().getValue(nbParams, indices, local.getDate());
         final FieldAbsoluteDate<Gradient> arrivalDate =
                         new FieldAbsoluteDate<>(getDate(), dtl.negate());
 
@@ -190,7 +273,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
                                                    });
 
             // Clock offsets
-            final Gradient dtr = getSatellites().get(1).getClockOffsetDriver().getValue(nbParams, indices);
+            final Gradient dtr = getSatellites().get(1).getClockOffsetDriver().getValue(nbParams, indices, remote.getDate());
 
             // Range value
             range  = tauD.add(dtl).subtract(dtr).multiply(Constants.SPEED_OF_LIGHT);
@@ -205,9 +288,11 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
 
         // Set partial derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
-            final Integer index = indices.get(driver.getName());
-            if (index != null) {
-                estimated.setParameterDerivatives(driver, derivatives[index]);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimated.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
+                }
             }
         }
 

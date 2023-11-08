@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -48,12 +48,12 @@ public class EcksteinHechlerConverterTest {
 
     @Test
     public void testConversionPositionVelocity() {
-        checkFit(orbit, 86400, 300, 1.0e-3, false, 1.803e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, false, 2.610e-8);
     }
 
     @Test
     public void testConversionPositionOnly() {
-        checkFit(orbit, 86400, 300, 1.0e-3, true, 3.208e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, true, 3.673e-8);
     }
 
     protected void checkFit(final Orbit orbit,
@@ -66,7 +66,7 @@ public class EcksteinHechlerConverterTest {
 
         // shift position by 3m
         CircularOrbit modified = new CircularOrbit(new TimeStampedPVCoordinates(orbit.getDate(),
-                                                                                new Vector3D(1, orbit.getPVCoordinates().getPosition(),
+                                                                                new Vector3D(1, orbit.getPosition(),
                                                                                              3.0, Vector3D.PLUS_J),
                                                                                 orbit.getPVCoordinates().getVelocity()),
                                                    orbit.getFrame(),
@@ -88,7 +88,7 @@ public class EcksteinHechlerConverterTest {
                                                                          harmonics.getUnnormalizedCnm(5, 0),
                                                                          harmonics.getUnnormalizedCnm(6, 0),
                                                                          OrbitType.CIRCULAR,
-                                                                         PositionAngle.TRUE,
+                                                                         PositionAngleType.TRUE,
                                                                          1.0);
 
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder,
@@ -103,15 +103,15 @@ public class EcksteinHechlerConverterTest {
         Orbit fitted = prop.getInitialState().getOrbit();
 
         final double eps = 1.0e-12;
-        Assertions.assertEquals(modified.getPVCoordinates().getPosition().getX(),
-                            fitted.getPVCoordinates().getPosition().getX(),
-                            eps * modified.getPVCoordinates().getPosition().getX());
-        Assertions.assertEquals(modified.getPVCoordinates().getPosition().getY(),
-                            fitted.getPVCoordinates().getPosition().getY(),
-                            eps * modified.getPVCoordinates().getPosition().getY());
-        Assertions.assertEquals(modified.getPVCoordinates().getPosition().getZ(),
-                            fitted.getPVCoordinates().getPosition().getZ(),
-                            eps * modified.getPVCoordinates().getPosition().getZ());
+        Assertions.assertEquals(modified.getPosition().getX(),
+                            fitted.getPosition().getX(),
+                            eps * modified.getPosition().getX());
+        Assertions.assertEquals(modified.getPosition().getY(),
+                            fitted.getPosition().getY(),
+                            eps * modified.getPosition().getY());
+        Assertions.assertEquals(modified.getPosition().getZ(),
+                            fitted.getPosition().getZ(),
+                            eps * modified.getPosition().getZ());
 
         Assertions.assertEquals(modified.getPVCoordinates().getVelocity().getX(),
                             fitted.getPVCoordinates().getVelocity().getX(),

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -82,8 +82,8 @@ public interface Constants {
     double G0_STANDARD_GRAVITY = 9.80665;
 
 
-    /** Sun radius: 695500000 m. */
-    double SUN_RADIUS = 6.955e8;
+    /** Sun radius: 695700000 m (source: resolution B3 from IAU 2015). */
+    double SUN_RADIUS = 6.957e8;
 
     /** Moon equatorial radius: 1737400 m. */
     double MOON_EQUATORIAL_RADIUS = 1737400.0;

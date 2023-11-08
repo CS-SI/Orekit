@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,10 +41,9 @@ import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
@@ -56,7 +55,7 @@ public class UnscentedKalmanModelTest {
     private final OrbitType orbitType = OrbitType.CARTESIAN;
 
     /** Position angle for propagation. */
-    private final PositionAngle positionAngle = PositionAngle.TRUE;
+    private final PositionAngleType positionAngleType = PositionAngleType.TRUE;
 
     /** Initial orbit. */
     private Orbit orbit0;
@@ -107,13 +106,13 @@ public class UnscentedKalmanModelTest {
         ObservableSatellite sat = new ObservableSatellite(0);
 
         // Create propagator builder
-        this.propagatorBuilder = context.createBuilder(orbitType, positionAngle, true,
+        this.propagatorBuilder = context.createBuilder(orbitType, positionAngleType, true,
                                                        1.0e-6, 60.0, 10., Force.SOLAR_RADIATION_PRESSURE);
 
         // Create PV at t0
         final AbsoluteDate date0 = context.initialOrbit.getDate();
         this.pv = new PV(date0,
-                             context.initialOrbit.getPVCoordinates().getPosition(),
+                             context.initialOrbit.getPosition(),
                              context.initialOrbit.getPVCoordinates().getVelocity(),
                              new double[] {1., 1., 1., 1.e-3, 1.e-3, 1.e-3}, 1.,
                              sat);
@@ -199,33 +198,8 @@ public class UnscentedKalmanModelTest {
         // Predicted orbit is equal to initial orbit at t0
         Orbit orbitPred = orbit0;
 
-        // Expected state transition matrix
-        // State transition matrix is the identity matrix at t0
-        RealMatrix expPhi = MatrixUtils.createRealIdentityMatrix(M);
         // Add PV measurement and check model afterwards
         checkModelAfterMeasurementAdded(1, pv, Ppred, orbitPred);
-
-
-        // Check model after range measurement after t0 is added
-        // -----------------------------------------------------
-
-        // Get the estimated propagator from Kalman filter and propagate it to
-        // range measurement date
-        NumericalPropagator propagator =
-                        propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
-
-        // Propagate to range date and get predicted orbit
-        final SpacecraftState scPred = propagator.propagate(range.getDate());
-        orbitPred = scPred.getOrbit();
-
-        // Estimated cov matrix from last measurement
-        RealMatrix Pest = kalman.getPhysicalEstimatedCovarianceMatrix();
-
-        // Predicted covariance matrix for this measurement
-        Ppred = expPhi.multiply(Pest.multiplyTransposed(expPhi)).add(Q);
-
-        // Add range measurement and check model afterwards
-        checkModelAfterMeasurementAdded(2, range, Ppred, orbitPred);
     }
 
     /** Check the model physical outputs at t0 before any measurement is added. */
@@ -250,7 +224,7 @@ public class UnscentedKalmanModelTest {
         // Physical state
         final RealVector expX = MatrixUtils.createRealVector(M);
         final double[] orbitState0 = new double[6];
-        orbitType.mapOrbitToArray(orbit0, positionAngle, orbitState0, null);
+        orbitType.mapOrbitToArray(orbit0, positionAngleType, orbitState0, null);
         expX.setSubVector(0, MatrixUtils.createRealVector(orbitState0));
         expX.setEntry(6, srpCoefDriver.getReferenceValue());
         expX.setEntry(7, satRangeBiasDriver.getReferenceValue());
@@ -342,7 +316,7 @@ public class UnscentedKalmanModelTest {
 
         // Predicted state
         final double[] orbitPredState = new double[6];
-        orbitPred.getType().mapOrbitToArray(orbitPred, PositionAngle.TRUE, orbitPredState, null);
+        orbitPred.getType().mapOrbitToArray(orbitPred, PositionAngleType.TRUE, orbitPredState, null);
         final RealVector expXpred = MatrixUtils.createRealVector(M);
         for (int i = 0; i < 6; i++) {
             expXpred.setEntry(i, orbitPredState[i]);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,19 +19,16 @@ package org.orekit.propagation.conversion;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.leastsquares.DSSTBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.AbstractKalmanModel;
-import org.orekit.estimation.sequential.CovarianceMatrixProvider;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -46,7 +43,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;
@@ -71,6 +68,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      * with the {@code positionScale} to convert from the {@link
      * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
      * callers of this builder to the real orbital parameters.
+     * The default attitude provider is aligned with the orbit's inertial frame.
      * </p>
      *
      * @param referenceOrbit reference orbit from which real orbits will be built
@@ -88,7 +86,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
                                  final PropagationType propagationType,
                                  final PropagationType stateType) {
         this(referenceOrbit, builder, positionScale, propagationType, stateType,
-                InertialProvider.of(referenceOrbit.getFrame()));
+             FrameAlignedProvider.of(referenceOrbit.getFrame()));
     }
 
     /** Build a new instance.
@@ -115,7 +113,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
                                  final PropagationType propagationType,
                                  final PropagationType stateType,
                                  final AttitudeProvider attitudeProvider) {
-        super(referenceOrbit, PositionAngle.MEAN, positionScale, true, attitudeProvider);
+        super(referenceOrbit, PositionAngleType.MEAN, positionScale, true, attitudeProvider);
         this.builder           = builder;
         this.forceModels       = new ArrayList<DSSTForceModel>();
         this.mass              = Propagator.DEFAULT_MASS;
@@ -142,7 +140,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
      */
     public DSSTPropagatorBuilder copy() {
         final DSSTPropagatorBuilder copyBuilder =
-                        new DSSTPropagatorBuilder((EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(createInitialOrbit()),
+                        new DSSTPropagatorBuilder(createInitialOrbit(),
                                                   builder,
                                                   getPositionScale(),
                                                   propagationType,
@@ -213,9 +211,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
             }
         }
 
-        for (final ParameterDriver driver : model.getParametersDrivers()) {
-            addSupportedParameter(driver);
-        }
+        addSupportedParameters(model.getParametersDrivers());
     }
 
     /** Reset the orbit in the propagator builder.
@@ -228,7 +224,6 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("deprecation")
     public DSSTPropagator buildPropagator(final double[] normalizedParameters) {
 
         setParameters(normalizedParameters);
@@ -257,41 +252,21 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder implements 
             propagator.addAdditionalDerivativesProvider(provider);
         }
 
-        // FIXME: remove in 12.0 when AdditionalEquations is removed
-        for (org.orekit.propagation.integration.AdditionalEquations equations : getAdditionalEquations()) {
-            propagator.addAdditionalDerivativesProvider(new org.orekit.propagation.integration.AdditionalEquationsAdapter(equations, propagator::getInitialState));
-        }
-
         return propagator;
 
     }
 
     /** {@inheritDoc} */
     @Override
-    public DSSTBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                                final List<ObservedMeasurement<?>> measurements,
-                                final ParameterDriversList estimatedMeasurementsParameters,
-                                final ModelObserver observer) {
+    public DSSTBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                   final List<ObservedMeasurement<?>> measurements,
+                                                   final ParameterDriversList estimatedMeasurementsParameters,
+                                                   final ModelObserver observer) {
         return new DSSTBatchLSModel(builders,
                                     measurements,
                                     estimatedMeasurementsParameters,
                                     observer,
-                                    propagationType, stateType);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @SuppressWarnings("deprecation")
-    public AbstractKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                                                final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                                final ParameterDriversList estimatedMeasurementsParameters,
-                                                final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        // FIXME: remove in 12.0 when DSSTKalmanModel is removed
-        return new org.orekit.estimation.sequential.DSSTKalmanModel(propagatorBuilders,
-                                                                    covarianceMatricesProviders,
-                                                                    estimatedMeasurementsParameters,
-                                                                    measurementProcessNoiseMatrix,
-                                                                    propagationType, stateType);
+                                    propagationType);
     }
 
     /** Check if Newtonian attraction force model is available.

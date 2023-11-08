@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -102,6 +102,11 @@ public class OrbitDetermination extends CommentsContainer {
     /** Description of consider parameters. */
     private List<String> considerParameters;
 
+    /** Specific Energy Dissipation Rate.
+     * @since 12.0
+     */
+    private double sedr;
+
     /** Number of sensors used. */
     private int sensorsN;
 
@@ -116,7 +121,8 @@ public class OrbitDetermination extends CommentsContainer {
 
     /** Simple constructor.
      */
-    OrbitDetermination() {
+    public OrbitDetermination() {
+        sedr               = Double.NaN;
         solveStates        = Collections.emptyList();
         considerParameters = Collections.emptyList();
         sensors            = Collections.emptyList();
@@ -127,9 +133,9 @@ public class OrbitDetermination extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(id,     OrbitDeterminationKey.OD_ID);
-        checkNotNull(method, OrbitDeterminationKey.OD_METHOD);
-        checkNotNull(epoch,  OrbitDeterminationKey.OD_EPOCH);
+        checkNotNull(id,     OrbitDeterminationKey.OD_ID.name());
+        checkNotNull(method, OrbitDeterminationKey.OD_METHOD.name());
+        checkNotNull(epoch,  OrbitDeterminationKey.OD_EPOCH.name());
     }
 
     /** Get identification number.
@@ -466,6 +472,22 @@ public class OrbitDetermination extends CommentsContainer {
      */
     public void setConsiderParameters(final List<String> considerParameters) {
         this.considerParameters = considerParameters;
+    }
+
+    /** Get Specific Energy Dissipation Rate.
+     * @return Specific Energy Dissipation Rate
+     * @since 12.0
+     */
+    public double getSedr() {
+        return sedr;
+    }
+
+    /** Set Specific Energy Dissipation Rate.
+     * @param sedr Specific Energy Dissipation Rate (W/kg)
+     * @since 12.0
+     */
+    public void setSedr(final double sedr) {
+        this.sedr = sedr;
     }
 
     /** Get number of sensors used.

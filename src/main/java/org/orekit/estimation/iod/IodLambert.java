@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,20 +20,23 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 /**
- * Lambert initial orbit determination, assuming Keplerian motion.
+ * Lambert position-based Initial Orbit Determination (IOD) algorithm, assuming Keplerian motion.
+ * <p>
  * An orbit is determined from two position vectors.
  *
  * References:
  *  Battin, R.H., An Introduction to the Mathematics and Methods of Astrodynamics, AIAA Education, 1999.
  *  Lancaster, E.R. and Blanchard, R.C., A Unified Form of Lambert’s Theorem, Goddard Space Flight Center, 1968.
- *
+ * </p>
  * @author Joris Olympio
  * @since 8.0
  */
@@ -81,10 +84,47 @@ public class IodLambert {
      * @return an initial Keplerian orbit estimation at the first observation date t1
      * @since 11.0
      */
-    public KeplerianOrbit estimate(final Frame frame, final boolean posigrade,
-                                   final int nRev, final Position p1,  final Position p2) {
+    public Orbit estimate(final Frame frame, final boolean posigrade,
+                          final int nRev, final Position p1,  final Position p2) {
         return estimate(frame, posigrade, nRev,
                         p1.getPosition(), p1.getDate(), p2.getPosition(), p2.getDate());
+    }
+
+    /** Estimate an initial orbit from two PV measurements.
+     * <p>
+     * The logic for setting {@code posigrade} and {@code nRev} is that the
+     * sweep angle Δυ travelled by the object between {@code t1} and {@code t2} is
+     * 2π {@code nRev +1} - α if {@code posigrade} is false and 2π {@code nRev} + α
+     * if {@code posigrade} is true, where α is the separation angle between
+     * {@code p1} and {@code p2}, which is always computed between 0 and π
+     * (because in 3D without a normal reference, vector angles cannot go past π).
+     * </p>
+     * <p>
+     * This implies that {@code posigrade} should be set to true if {@code p2} is
+     * located in the half orbit starting at {@code p1} and it should be set to
+     * false if {@code p2} is located in the half orbit ending at {@code p1},
+     * regardless of the number of periods between {@code t1} and {@code t2},
+     * and {@code nRev} should be set accordingly.
+     * </p>
+     * <p>
+     * As an example, if {@code t2} is less than half a period after {@code t1},
+     * then {@code posigrade} should be {@code true} and {@code nRev} should be 0.
+     * If {@code t2} is more than half a period after {@code t1} but less than
+     * one period after {@code t1}, {@code posigrade} should be {@code false} and
+     * {@code nRev} should be 0.
+     * </p>
+     * @param frame     measurements frame
+     * @param posigrade flag indicating the direction of motion
+     * @param nRev      number of revolutions
+     * @param pv1       first PV measurement
+     * @param pv2       second PV measurement
+     * @return an initial Keplerian orbit estimation at the first observation date t1
+     * @since 12.0
+     */
+    public Orbit estimate(final Frame frame, final boolean posigrade,
+                          final int nRev, final PV pv1,  final PV pv2) {
+        return estimate(frame, posigrade, nRev,
+                        pv1.getPosition(), pv1.getDate(), pv2.getPosition(), pv2.getDate());
     }
 
     /** Estimate a Keplerian orbit given two position vectors and a duration.
@@ -119,10 +159,10 @@ public class IodLambert {
      * @param t2        date of observation 2
      * @return  an initial Keplerian orbit estimate at the first observation date t1
      */
-    public KeplerianOrbit estimate(final Frame frame, final boolean posigrade,
-                                   final int nRev,
-                                   final Vector3D p1, final AbsoluteDate t1,
-                                   final Vector3D p2, final AbsoluteDate t2) {
+    public Orbit estimate(final Frame frame, final boolean posigrade,
+                          final int nRev,
+                          final Vector3D p1, final AbsoluteDate t1,
+                          final Vector3D p2, final AbsoluteDate t2) {
 
         final double r1 = p1.getNorm();
         final double r2 = p2.getNorm();
@@ -168,8 +208,8 @@ public class IodLambert {
             final Vector3D Vel1 = new Vector3D(V * Vdep[0] / r1, p1,
                                                V * Vdep[1] / RT, Pt);
 
-            // compute the equivalent Keplerian orbit
-            return new KeplerianOrbit(new PVCoordinates(p1, Vel1), frame, t1, mu);
+            // compute the equivalent Cartesian orbit
+            return new CartesianOrbit(new PVCoordinates(p1, Vel1), frame, t1, mu);
         }
 
         return null;
@@ -198,10 +238,9 @@ public class IodLambert {
 
         final int m = FastMath.abs(mRev);
         final double rtof = FastMath.abs(tau);
-        final double theta = dth;
 
         // non-dimensional chord ||r2-r1||
-        final double chord = FastMath.sqrt(r1 * r1 + r2 * r2 - 2 * r1 * r2 * FastMath.cos(theta));
+        final double chord = FastMath.sqrt(r1 * r1 + r2 * r2 - 2 * r1 * r2 * FastMath.cos(dth));
 
         // non-dimensional semi-perimeter of the triangle
         final double speri = 0.5 * (r1 + r2 + chord);

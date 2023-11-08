@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,8 +22,9 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.TDOA;
@@ -62,18 +63,18 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
      * @return the measurement error due to Troposphere (s)
      */
     private double timeErrorTroposphericModel(final GroundStation station, final SpacecraftState state) {
-        final Vector3D position = state.getPVCoordinates().getPosition();
+        final Vector3D position = state.getPosition();
 
         // elevation
-        final double elevation = station.getBaseFrame().getElevation(position,
-                                                                     state.getFrame(),
-                                                                     state.getDate());
+        final double elevation =
+                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate()).
+                        getElevation();
 
         // only consider measurements above the horizon
         if (elevation > 0) {
             // Delay in meters
             final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(),
-                                                      tropoModel.getParameters(), state.getDate());
+                                                      tropoModel.getParameters(state.getDate()), state.getDate());
             // return delay in seconds
             return delay / Constants.SPEED_OF_LIGHT;
         }
@@ -96,10 +97,10 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
         final T zero         = field.getZero();
 
         // elevation
-        final FieldVector3D<T> pos = state.getPVCoordinates().getPosition();
-        final T elevation          = station.getBaseFrame().getElevation(pos,
-                                                                         state.getFrame(),
-                                                                         state.getDate());
+        final FieldVector3D<T> pos = state.getPosition();
+        final T elevation =
+                        station.getBaseFrame().getTrackingCoordinates(pos, state.getFrame(), state.getDate()).
+                        getElevation();
 
         // only consider measurements above the horizon
         if (elevation.getReal() > 0) {
@@ -121,6 +122,18 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
 
     /** {@inheritDoc} */
     @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<TDOA> estimated) {
+
+        final TDOA            measurement   = estimated.getObservedMeasurement();
+        final GroundStation   primeStation  = measurement.getPrimeStation();
+        final GroundStation   secondStation = measurement.getSecondStation();
+
+        TDOAModifierUtil.modifyWithoutDerivatives(estimated,  primeStation, secondStation, this::timeErrorTroposphericModel);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void modify(final EstimatedMeasurement<TDOA> estimated) {
 
         final TDOA            measurement   = estimated.getObservedMeasurement();
@@ -129,7 +142,7 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
         final SpacecraftState state         = estimated.getStates()[0];
 
         TDOAModifierUtil.modify(estimated, tropoModel,
-                                new ModifierGradientConverter(state, 6, new InertialProvider(state.getFrame())),
+                                new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                 primeStation, secondStation,
                                 this::timeErrorTroposphericModel,
                                 this::timeErrorTroposphericModel);

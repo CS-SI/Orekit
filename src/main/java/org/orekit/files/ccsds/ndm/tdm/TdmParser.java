@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,10 +18,10 @@ package org.orekit.files.ccsds.ndm.tdm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderProcessingState;
 import org.orekit.files.ccsds.section.KvnStructureProcessingState;
 import org.orekit.files.ccsds.section.MetadataKey;
@@ -47,14 +47,16 @@ import org.orekit.utils.IERSConventions;
  * and drop it afterwards, or to use a single-thread loop.
  * </p>
  *
- * <p>References:<p>
- *  - <a href="https://public.ccsds.org/Pubs/503x0b1c1.pdf">CCSDS 503.0-B-1 recommended standard</a> ("Tracking Data Message", Blue Book, Issue 1, November 2007).<p>
- *  - <a href="https://public.ccsds.org/Pubs/505x0b1.pdf">CCSDS 505.0-B-1 recommended standard</a> ("XML Specification for Navigation Data Message", Blue Book, Issue 1, December 2010).<p>
+ * <p>References:</p>
+ * <ul>
+ *   <li><a href="https://public.ccsds.org/Pubs/503x0b1c1.pdf">CCSDS 503.0-B-1 recommended standard</a> ("Tracking Data Message", Blue Book, Issue 1, November 2007)</li>
+ *   <li><a href="https://public.ccsds.org/Pubs/505x0b1.pdf">CCSDS 505.0-B-1 recommended standard</a> ("XML Specification for Navigation Data Message", Blue Book, Issue 1, December 2010)</li>
+ * </ul>
  *
  * @author Maxime Journot
  * @since 9.0
  */
-public class TdmParser extends AbstractConstituentParser<Tdm, TdmParser> {
+public class TdmParser extends AbstractConstituentParser<TdmHeader, Tdm, TdmParser> {
 
     /** Converter for {@link RangeUnits#RU Range Units} (may be null). */
     private final RangeUnitsConverter converter;
@@ -69,7 +71,7 @@ public class TdmParser extends AbstractConstituentParser<Tdm, TdmParser> {
     private ObservationsBlock observationsBlock;
 
     /** File header. */
-    private Header header;
+    private TdmHeader header;
 
     /** File segments. */
     private List<Segment<TdmMetadata, ObservationsBlock>> segments;
@@ -89,23 +91,26 @@ public class TdmParser extends AbstractConstituentParser<Tdm, TdmParser> {
      * @param parsedUnitsBehavior behavior to adopt for handling parsed units
      * @param converter converter for {@link RangeUnits#RU Range Units} (may be null if there
      * are no range observations in {@link RangeUnits#RU Range Units})
+     * @param filters filters to apply to parse tokens
+     * @since 12.0
      */
     public TdmParser(final IERSConventions conventions, final boolean simpleEOP, final DataContext dataContext,
-                     final ParsedUnitsBehavior parsedUnitsBehavior, final RangeUnitsConverter converter) {
-        super(Tdm.ROOT, Tdm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, parsedUnitsBehavior);
+                     final ParsedUnitsBehavior parsedUnitsBehavior, final RangeUnitsConverter converter,
+                     final Function<ParseToken, List<ParseToken>>[] filters) {
+        super(Tdm.ROOT, Tdm.FORMAT_VERSION_KEY, conventions, simpleEOP, dataContext, parsedUnitsBehavior, filters);
         this.converter = converter;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Header getHeader() {
+    public TdmHeader getHeader() {
         return header;
     }
 
     /** {@inheritDoc} */
     @Override
     public void reset(final FileFormat fileFormat) {
-        header             = new Header(2.0);
+        header             = new TdmHeader();
         segments           = new ArrayList<>();
         metadata           = null;
         context            = null;

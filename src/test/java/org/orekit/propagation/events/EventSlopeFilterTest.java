@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -190,17 +190,23 @@ public class EventSlopeFilterTest {
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.addEventDetector(new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS));
+        final EventSlopeFilter<EclipseDetector> outOfEclipseDetector =
+              new EventSlopeFilter<>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS);
+        propagator.addEventDetector(outOfEclipseDetector);
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
         Assertions.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
+        Assertions.assertEquals(0, ((Counter) detector.getHandler()).getDecreasingCounter());
+        Assertions.assertEquals(FilterType.TRIGGER_ONLY_INCREASING_EVENTS, outOfEclipseDetector.getFilter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.addEventDetector(new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS));
+        final EventSlopeFilter<EclipseDetector> enteringEclipseDetector =
+              new EventSlopeFilter<>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
+        propagator.addEventDetector(enteringEclipseDetector);
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assertions.assertEquals(0, ((Counter) detector.getHandler()).getIncreasingCounter());
         Assertions.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
+        Assertions.assertEquals(FilterType.TRIGGER_ONLY_DECREASING_EVENTS, enteringEclipseDetector.getFilter());
 
     }
 
@@ -208,7 +214,7 @@ public class EventSlopeFilterTest {
     public void testForwardIncreasingStartPos() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is positive
@@ -220,7 +226,7 @@ public class EventSlopeFilterTest {
     public void testForwardIncreasingStartZero() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is exactly 0
@@ -232,7 +238,7 @@ public class EventSlopeFilterTest {
     public void testForwardIncreasingStartNeg() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is negative
@@ -244,7 +250,7 @@ public class EventSlopeFilterTest {
     public void testForwardDecreasingStartPos() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is positive
@@ -255,7 +261,7 @@ public class EventSlopeFilterTest {
     public void testForwardDecreasingStartZero() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is exactly 0
@@ -266,7 +272,7 @@ public class EventSlopeFilterTest {
     public void testForwardDecreasingStartNeg() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is negative
@@ -277,7 +283,7 @@ public class EventSlopeFilterTest {
     public void testBackwardIncreasingStartPos() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is positive
@@ -289,7 +295,7 @@ public class EventSlopeFilterTest {
     public void testBackwardIncreasingStartZero() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is exactly 0
@@ -301,7 +307,7 @@ public class EventSlopeFilterTest {
     public void testBackwardIncreasingStartNeg() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is negative
@@ -313,7 +319,7 @@ public class EventSlopeFilterTest {
     public void testBackwardDecreasingStartPos() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is positive
@@ -324,7 +330,7 @@ public class EventSlopeFilterTest {
     public void testBackwardDecreasingStartZero() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is exactly 0
@@ -335,7 +341,7 @@ public class EventSlopeFilterTest {
     public void testBackwardDecreasingStartNeg() {
 
         SpacecraftState s = propagator.getInitialState();
-        double startLatitude = earth.transform(s.getPVCoordinates().getPosition(),
+        double startLatitude = earth.transform(s.getPosition(),
                                               s.getFrame(), s.getDate()).getLatitude();
 
         // at start time, the g function is negative
@@ -350,20 +356,17 @@ public class EventSlopeFilterTest {
                 withMaxCheck(300.0).
                 withMaxIter(100).
                 withThreshold(1.0e-3).
-                withHandler(new EventHandler<LatitudeCrossingDetector>() {
+                withHandler(new EventHandler() {
 
                     @Override
-                    public Action eventOccurred(SpacecraftState s,
-                                                LatitudeCrossingDetector detector,
-                                                boolean increasing) {
+                    public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
                         Assertions.assertEquals(filter.getTriggeredIncreasing(), increasing);
                         count[0]++;
                         return Action.RESET_STATE;
                     }
 
                     @Override
-                    public SpacecraftState resetState(LatitudeCrossingDetector detector,
-                                                      SpacecraftState oldState) {
+                    public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
                         count[1]++;
                         return oldState;
                     }
@@ -378,7 +381,7 @@ public class EventSlopeFilterTest {
         Assertions.assertEquals(expected, count[1]);
     }
 
-    private static class Counter implements EventHandler<EclipseDetector> {
+    private static class Counter implements EventHandler {
 
         private int increasingCounter;
         private int decreasingCounter;
@@ -393,7 +396,7 @@ public class EventSlopeFilterTest {
         }
 
         @Override
-        public Action eventOccurred(SpacecraftState s, EclipseDetector ed, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, EventDetector ed, boolean increasing) {
             if (increasing) {
                 increasingCounter++;
             } else {

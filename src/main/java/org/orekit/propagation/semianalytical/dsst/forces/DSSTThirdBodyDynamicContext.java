@@ -28,7 +28,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * It performs parameters initialization at each integration step for the third
  * body attraction perturbation. These parameters change for each integration
  * step.
- * <p>
+ * </p>
  * @author Bryan Cazabonne
  * @since 11.3.3
  */
@@ -115,7 +115,7 @@ public class DSSTThirdBodyDynamicContext extends ForceModelContext {
         motion = FastMath.sqrt(mu / absA) / absA;
 
         // Distance from center of mass of the central body to the 3rd body
-        final Vector3D bodyPos = body.getPVCoordinates(aux.getDate(), aux.getFrame()).getPosition();
+        final Vector3D bodyPos = body.getPosition(aux.getDate(), aux.getFrame());
         R3 = bodyPos.getNorm();
 
         // Direction cosines

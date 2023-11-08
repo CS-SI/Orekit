@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -65,7 +65,7 @@ public class FramesTest {
                 leapSeconds,
                 (conventions, timeScales) -> {
                     try {
-                        return EOPHistoryLoader.Parser
+                        return EopHistoryLoader.Parser
                                 .newFinalsColumnsParser(
                                         conventions,
                                         itrfVersionProvider,
@@ -103,7 +103,7 @@ public class FramesTest {
         Assertions.assertSame(
                 eopHistory,
                 ((ITRFProvider) itrfEquinox.getTransformProvider()).getEOPHistory());
-        // changing tidal corrections still shares the same data.
+        // changing tidal corrections still shares the same data, with derivatives added
         Assertions.assertNotEquals(eopFull, eopHistory);
         final int n = 181;
         List<EOPEntry> entries = eopHistory.getEntries();
@@ -111,7 +111,16 @@ public class FramesTest {
         Assertions.assertEquals(n, entries.size());
         Assertions.assertEquals(n, entriesFull.size());
         for (int i = 0; i < n; i++) {
-            Assertions.assertSame(entries.get(i), entriesFull.get(i));
+            Assertions.assertEquals(entries.get(i).getMjd(),         entriesFull.get(i).getMjd());
+            Assertions.assertEquals(entries.get(i).getDate(),        entriesFull.get(i).getDate());
+            Assertions.assertEquals(entries.get(i).getUT1MinusUTC(), entriesFull.get(i).getUT1MinusUTC(), 1.0e-15);
+            Assertions.assertEquals(entries.get(i).getX(),           entriesFull.get(i).getX(),           1.0e-15);
+            Assertions.assertEquals(entries.get(i).getY(),           entriesFull.get(i).getY(),           1.0e-15);
+            Assertions.assertEquals(entries.get(i).getDdPsi(),       entriesFull.get(i).getDdPsi(),       1.0e-15);
+            Assertions.assertEquals(entries.get(i).getDdEps(),       entriesFull.get(i).getDdEps(),       1.0e-15);
+            Assertions.assertEquals(entries.get(i).getDx(),          entriesFull.get(i).getDx(),          1.0e-15);
+            Assertions.assertEquals(entries.get(i).getDy(),          entriesFull.get(i).getDy(),          1.0e-15);
+            Assertions.assertEquals(entries.get(i).getITRFType(),    entriesFull.get(i).getITRFType());
         }
         // ICRF
         Assertions.assertEquals(null, frames.getICRF());

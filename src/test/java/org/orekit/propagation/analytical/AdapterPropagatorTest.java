@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
@@ -39,7 +40,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
@@ -54,6 +55,8 @@ import org.orekit.utils.PVCoordinates;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdapterPropagatorTest {
 
@@ -63,7 +66,7 @@ public class AdapterPropagatorTest {
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
                                       FastMath.toRadians(98.0),
                                       FastMath.toRadians(123.456),
-                                      0.0, PositionAngle.MEAN,
+                                      0.0, PositionAngleType.MEAN,
                                       FramesFactory.getEME2000(),
                                       new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
@@ -125,7 +128,7 @@ public class AdapterPropagatorTest {
         Orbit heo = new KeplerianOrbit(90000000.0, 0.92, FastMath.toRadians(98.0),
                                        FastMath.toRadians(12.3456),
                                        FastMath.toRadians(123.456),
-                                       FastMath.toRadians(1.23456), PositionAngle.MEAN,
+                                       FastMath.toRadians(1.23456), PositionAngleType.MEAN,
                                        FramesFactory.getEME2000(),
                                        new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                         new TimeComponents(23, 30, 00.000),
@@ -186,7 +189,7 @@ public class AdapterPropagatorTest {
 
         Orbit leo = new CircularOrbit(7204319.233600575, 4.434564637450575E-4, 0.0011736728299091088,
                                       1.7211611441767323, 5.5552084166959474,
-                                      24950.321259193086, PositionAngle.TRUE,
+                                      24950.321259193086, PositionAngleType.TRUE,
                                       FramesFactory.getEME2000(),
                                       new AbsoluteDate(new DateComponents(2003, 9, 16),
                                                        new TimeComponents(23, 11, 20.264),
@@ -257,6 +260,31 @@ public class AdapterPropagatorTest {
         }
         Assertions.assertTrue(maxDelta   < 120);
         Assertions.assertTrue(maxNominal > 2800);
+
+    }
+
+    /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
+    @Test
+    public void testIssue949() {
+        // GIVEN
+        final AbsoluteDate initialDate  = new AbsoluteDate();
+        final Orbit        initialOrbit = TestUtils.getDefaultOrbit(initialDate);
+
+        // Setup propagator
+        final Orbit                 finalOrbit = initialOrbit.shiftedBy(1);
+        final List<SpacecraftState> states     = new ArrayList<>();
+        states.add(new SpacecraftState(initialOrbit));
+        states.add(new SpacecraftState(finalOrbit));
+
+        final Ephemeris ephemeris = new Ephemeris(states, 2);
+        final AdapterPropagator adapterPropagator = new AdapterPropagator(ephemeris);
+
+        // Setup additional state provider which use the initial state in its init method
+        final AdditionalStateProvider additionalStateProvider = TestUtils.getAdditionalProviderWithInit();
+        adapterPropagator.addAdditionalStateProvider(additionalStateProvider);
+
+        // WHEN & THEN
+        Assertions.assertDoesNotThrow(() -> adapterPropagator.propagate(finalOrbit.getDate()), "No error should have been thrown");
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import org.orekit.estimation.BrouwerLyddaneEstimationTestUtils;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.conversion.BrouwerLyddanePropagatorBuilder;
@@ -44,11 +44,11 @@ public class BrouwerLyddaneKalmanEstimatorTest {
         BrouwerLyddaneContext context = BrouwerLyddaneEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         // Create initial orbit and propagator builder
-        final PositionAngle positionAngle = PositionAngle.TRUE;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final boolean       perfectStart  = true;
         final double        dP            = 1.;
         final BrouwerLyddanePropagatorBuilder propagatorBuilder =
-                        context.createBuilder(positionAngle, perfectStart, dP);
+                        context.createBuilder(positionAngleType, perfectStart, dP);
 
         // Create perfect PV measurements
         final Propagator propagator = BrouwerLyddaneEstimationTestUtils.createPropagator(context.initialOrbit,
@@ -91,7 +91,7 @@ public class BrouwerLyddaneKalmanEstimatorTest {
         final double[] expectedSigmasVel = {9.475737e-4, 9.904671e-4, 5.060183e-4};
         final double   sigmaVelEps       = 1e-10;
         BrouwerLyddaneEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                                         refOrbit, positionAngle,
+                                                         refOrbit, positionAngleType,
                                                          expectedDeltaPos, posEps,
                                                          expectedDeltaVel, velEps,
                                                          expectedsigmasPos, sigmaPosEps,

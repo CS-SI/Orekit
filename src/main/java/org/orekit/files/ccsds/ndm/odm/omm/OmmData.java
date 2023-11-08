@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -87,11 +87,11 @@ public class OmmData implements Data {
         if (tleBlock == null) {
             // semi-major axis was not checked above, we do it now
             keplerianElementsBlock.checkNotNaN(keplerianElementsBlock.getA(),
-                                               KeplerianElementsKey.SEMI_MAJOR_AXIS);
+                                               KeplerianElementsKey.SEMI_MAJOR_AXIS.name());
         } else {
             // in OMM with TLE block, only mean motion is allowed, not semi-major axis
             keplerianElementsBlock.checkNotNaN(keplerianElementsBlock.getMeanMotion(),
-                                               KeplerianElementsKey.MEAN_MOTION);
+                                               KeplerianElementsKey.MEAN_MOTION.name());
             tleBlock.validate(version);
         }
         if (covarianceBlock != null) {

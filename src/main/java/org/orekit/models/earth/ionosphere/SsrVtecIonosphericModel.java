@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,9 +56,6 @@ import org.orekit.utils.ParameterDriver;
  */
 public class SsrVtecIonosphericModel implements IonosphericModel {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20210322L;
-
     /** Earth radius in meters (see reference). */
     private static final double EARTH_RADIUS = 6370000.0;
 
@@ -82,7 +79,7 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
                             final double frequency, final double[] parameters) {
 
         // Elevation in radians
-        final Vector3D position  = state.getPVCoordinates(baseFrame).getPosition();
+        final Vector3D position  = state.getPosition(baseFrame);
         final double   elevation = position.getDelta();
 
         // Only consider measures above the horizon
@@ -124,7 +121,7 @@ public class SsrVtecIonosphericModel implements IonosphericModel {
         final Field<T> field = state.getDate().getField();
 
         // Elevation in radians
-        final FieldVector3D<T> position  = state.getPVCoordinates(baseFrame).getPosition();
+        final FieldVector3D<T> position  = state.getPosition(baseFrame);
         final T                elevation = position.getDelta();
 
         // Only consider measures above the horizon

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-GALILEO.txt", 2.9e-12, 1.1e-15, false);
+        doTestAxes("patched-eclips/beta-small-negative-GALILEO.txt", 2.9e-12, 1.3e-15, false);
     }
 
     @Test
@@ -38,7 +38,7 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testPatchedSmallPositiveBeta() {
-        doTestAxes("patched-eclips/beta-small-positive-GALILEO.txt", 8.7e-12, 8.4e-16, false);
+        doTestAxes("patched-eclips/beta-small-positive-GALILEO.txt", 8.7e-12, 9.8e-16, false);
     }
 
     @Test
@@ -53,7 +53,7 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testOriginalSmallNegativeBeta() {
-        doTestAxes("original-eclips/beta-small-negative-GALILEO.txt", 5.9e-3, 1.1e-15, false);
+        doTestAxes("original-eclips/beta-small-negative-GALILEO.txt", 5.9e-3, 1.3e-15, false);
     }
 
     @Test
@@ -63,7 +63,7 @@ public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
     public void testOriginalSmallPositiveBeta() {
-        doTestAxes("original-eclips/beta-small-positive-GALILEO.txt", 9.5e-3, 8.4e-16, false);
+        doTestAxes("original-eclips/beta-small-positive-GALILEO.txt", 9.5e-3, 9.8e-16, false);
     }
 
     @Test

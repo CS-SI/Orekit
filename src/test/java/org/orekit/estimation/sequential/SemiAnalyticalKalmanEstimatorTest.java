@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,13 +33,13 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
@@ -85,7 +85,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, builder);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                                   new RangeMeasurementCreator(context),
+                                                                   new TwoWayRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
         // DSST propagator builder (used for orbit determination)
         final DSSTPropagatorBuilder propagatorBuilder = context.createBuilder(perfectStart, minStep, maxStep, dP);
@@ -98,7 +98,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.MEAN, dYdC);
+        initialOrbit.getJacobianWrtCartesian(PositionAngleType.MEAN, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
 
         // Equinoctial initial covariance matrix
@@ -139,7 +139,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
         // Create initial orbit and DSST propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngle positionAngle = PositionAngle.MEAN;
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -152,7 +152,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, builder);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                                   new RangeMeasurementCreator(context),
+                                                                   new TwoWayRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
         final AbsoluteDate lastMeasurementEpoch = measurements.get(measurements.size() - 1).getDate();
 
@@ -175,7 +175,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.MEAN, dYdC);
+        initialOrbit.getJacobianWrtCartesian(PositionAngleType.MEAN, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
 
         // Equinoctial initial covariance matrix
@@ -197,7 +197,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 1.0e-15;
         DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
@@ -227,7 +227,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngle positionAngle = PositionAngle.MEAN;
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -241,7 +241,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, builder);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                                   new RangeMeasurementCreator(context),
+                                                                   new TwoWayRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
         final AbsoluteDate lastMeasurementEpoch = measurements.get(measurements.size() - 1).getDate();
 
@@ -269,7 +269,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
+        initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
 
         // Keplerian initial covariance matrix
@@ -291,7 +291,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 2.0e-5;
         DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
@@ -322,7 +322,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngle positionAngle = PositionAngle.MEAN;
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -341,7 +341,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, builder);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                                   new RangeMeasurementCreator(context),
+                                                                   new TwoWayRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
         final AbsoluteDate lastMeasurementEpoch = measurements.get(measurements.size() - 1).getDate();
 
@@ -373,7 +373,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
+        initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
 
         // Keplerian initial covariance matrix
@@ -395,7 +395,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 2.5e-5;
         DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
@@ -456,7 +456,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngle positionAngle = PositionAngle.MEAN;
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -472,7 +472,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final Propagator propagator = DSSTEstimationTestUtils.createPropagator(context.initialOrbit, builder);
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                                   new RangeMeasurementCreator(context),
+                                                                   new TwoWayRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
         final AbsoluteDate lastMeasurementEpoch = measurements.get(measurements.size() - 1).getDate();
 
@@ -502,7 +502,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
+        initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
         final RealMatrix orbitalP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
 
@@ -527,7 +527,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 1.6e-5;
         DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
@@ -550,7 +550,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
         // Create initial orbit and propagator builder
         final OrbitType     orbitType     = OrbitType.EQUINOCTIAL;
-        final PositionAngle positionAngle = PositionAngle.MEAN;
+        final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final boolean       perfectStart  = true;
         final double        minStep       = 120.0;
         final double        maxStep       = 1200.0;
@@ -572,7 +572,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         }
         final List<ObservedMeasurement<?>> measurements =
                         DSSTEstimationTestUtils.createMeasurements(propagator,
-                                                                   new RangeMeasurementCreator(context),
+                                                                   new TwoWayRangeMeasurementCreator(context),
                                                                    0.0, 6.0, 60.0);
         final AbsoluteDate lastMeasurementEpoch = measurements.get(measurements.size() - 1).getDate();
 
@@ -604,7 +604,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         // Jacobian of the orbital parameters w/r to Cartesian
         final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
         final double[][] dYdC = new double[6][6];
-        initialOrbit.getJacobianWrtCartesian(PositionAngle.TRUE, dYdC);
+        initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
         final RealMatrix orbitalP = Jac.multiply(cartesianP.multiply(Jac.transpose()));
 
@@ -637,7 +637,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
         final double   expectedDeltaVel  = 0.;
         final double   velEps            = 1.6e-5;
         DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
-                                           refOrbit, positionAngle,
+                                           refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 

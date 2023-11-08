@@ -44,7 +44,7 @@ public class FunctionalDetectorTest {
     public void testFunctionalDetector() {
         // setup
         ToDoubleFunction<SpacecraftState> g = SpacecraftState::getMass;
-        EventHandler<EventDetector> handler = (s, detector, increasing) -> Action.STOP;
+        EventHandler handler = (s, detector, increasing) -> Action.STOP;
 
         // action
         FunctionalDetector detector = new FunctionalDetector()
@@ -57,7 +57,7 @@ public class FunctionalDetectorTest {
         // verify
         MatcherAssert.assertThat(detector.getMaxIterationCount(), CoreMatchers.is(1));
         MatcherAssert.assertThat(detector.getThreshold(), CoreMatchers.is(2.0));
-        MatcherAssert.assertThat(detector.getMaxCheckInterval(), CoreMatchers.is(3.0));
+        MatcherAssert.assertThat(detector.getMaxCheckInterval().currentInterval(null), CoreMatchers.is(3.0));
         MatcherAssert.assertThat(detector.getHandler(), CoreMatchers.is(handler));
         SpacecraftState state = new SpacecraftState(
                 new CartesianOrbit(
@@ -69,8 +69,7 @@ public class FunctionalDetectorTest {
                         4),
                 5);
         MatcherAssert.assertThat(detector.g(state), CoreMatchers.is(5.0));
-        MatcherAssert.assertThat(detector.eventOccurred(null, false),
-                CoreMatchers.is(Action.STOP));
+        MatcherAssert.assertThat(detector.getHandler().eventOccurred(null, detector, false), CoreMatchers.is(Action.STOP));
         MatcherAssert.assertThat(detector.getFunction(), CoreMatchers.is(g));
     }
 

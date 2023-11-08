@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import java.util.List;
 
-import org.orekit.files.ccsds.definitions.ElementsType;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -33,7 +33,7 @@ import org.orekit.utils.units.Unit;
 public class TrajectoryState implements TimeStamped {
 
     /** Type of the elements. */
-    private final ElementsType type;
+    private final OrbitElementsType type;
 
     /** Entry date. */
     private final AbsoluteDate date;
@@ -45,10 +45,10 @@ public class TrajectoryState implements TimeStamped {
      * @param type type of the elements
      * @param date entry date
      * @param fields trajectory elements
-     * @param first index of first field to consider
+     * @param first index of first field to consider when parsing
      * @param units units to use for parsing
      */
-    public TrajectoryState(final ElementsType type, final AbsoluteDate date,
+    public TrajectoryState(final OrbitElementsType type, final AbsoluteDate date,
                            final String[] fields, final int first, final List<Unit> units) {
         this.type     = type;
         this.date     = date;
@@ -56,6 +56,19 @@ public class TrajectoryState implements TimeStamped {
         for (int i = 0; i < elements.length; ++i) {
             elements[i] = units.get(i).toSI(Double.parseDouble(fields[first + i]));
         }
+    }
+
+    /** Simple constructor.
+     * @param type type of the elements
+     * @param date entry date
+     * @param elements trajectory elements in SI units
+     * @since 12.0
+     */
+    public TrajectoryState(final OrbitElementsType type, final AbsoluteDate date,
+                           final double[] elements) {
+        this.type     = type;
+        this.date     = date;
+        this.elements = elements.clone();
     }
 
     /** {@inheritDoc} */
@@ -74,7 +87,7 @@ public class TrajectoryState implements TimeStamped {
     /** Get the type of the elements.
      * @return type of the elements
      */
-    public ElementsType getType() {
+    public OrbitElementsType getType() {
         return type;
     }
 
@@ -82,19 +95,21 @@ public class TrajectoryState implements TimeStamped {
      * @return a value indicating if the file contains velocity and/or acceleration
       */
     public CartesianDerivativesFilter getAvailableDerivatives() {
-        return type ==  ElementsType.CARTP ?
+        return type ==  OrbitElementsType.CARTP ?
                         CartesianDerivativesFilter.USE_P :
-                        (type == ElementsType.CARTPVA ?
+                        (type == OrbitElementsType.CARTPVA ?
                          CartesianDerivativesFilter.USE_PVA :
                          CartesianDerivativesFilter.USE_PV);
     }
 
     /** Convert to Cartesian coordinates.
+     * @param body central body
+     * (may be null if {@link #getType() type} is <em>not</em> {@link OrbitElementsType#GEODETIC})
      * @param mu gravitational parameter in m³/s²
      * @return Cartesian coordinates
      */
-    public TimeStampedPVCoordinates toCartesian(final double mu) {
-        return type.toCartesian(date, elements, mu);
+    public TimeStampedPVCoordinates toCartesian(final OneAxisEllipsoid body, final double mu) {
+        return type.toCartesian(date, elements, body, mu);
     }
 
 }

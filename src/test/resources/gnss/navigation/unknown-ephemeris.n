@@ -1,0 +1,19 @@
+     4.00           NAVIGATION DATA     M                   RINEX VERSION / TYPE
+Manual              Orekit              20230226 221319 UTC PGM / RUN BY / DATE
+https://doi.org/10.xxxx                                     DOI
+Apache V2                                                   LICENSE OF USE
+not really a station                                        STATION INFORMATION
+extracted from BRD400DLR_S_20222780000_01D_MN.rnx           COMMENT
+https://cddis.nasa.gov/archive/gnss/data/daily/2022/brdc/   COMMENT
+      102                                                   MERGED FILE         
+    18    18  2185     7                                    LEAP SECONDS        
+                                                            END OF HEADER       
+> EPH Ω01 LNAV
+Ω01 2022 10 05 00 00 00 2.727881073952e-04-6.252776074689e-12 0.000000000000e+00
+     7.000000000000e+01 7.334375000000e+01 3.794800925833e-09 2.948187988778e+00
+     3.667548298836e-06 1.200602215249e-02 4.000961780548e-06 5.153660102844e+03
+     2.592000000000e+05-3.911554813385e-08 2.410755371695e-01-1.192092895508e-07
+     9.889225508565e-01 3.138750000000e+02 9.444071913331e-01-7.813182593274e-09
+     2.167947446570e-10 1.000000000000e+00 2.230000000000e+03 0.000000000000e+00
+     2.000000000000e+00 0.000000000000e+00 5.122274160385e-09 7.000000000000e+01
+     2.520180000000e+05 4.000000000000e+00                                      

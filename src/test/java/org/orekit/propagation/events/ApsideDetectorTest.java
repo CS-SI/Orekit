@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
@@ -47,9 +48,9 @@ public class ApsideDetectorTest {
         EventDetector detector = new ApsideDetector(propagator.getInitialState().getOrbit()).
                                  withMaxCheck(600.0).
                                  withThreshold(1.0e-12).
-                                 withHandler(new ContinueOnEvent<ApsideDetector>());
+                                 withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(600.0, detector.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(600.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
 
@@ -66,6 +67,36 @@ public class ApsideDetectorTest {
             Assertions.assertEquals(expected, MathUtils.normalizeAngle(o.getMeanAnomaly(), expected), 4.0e-14);
         }
 
+    }
+
+    @Test
+    public void testFixedMaxCheck() {
+        doTestMaxcheck(s -> 20.0, 4738);
+    }
+
+    @Test
+    public void testAnomalyAwareMaxCheck() {
+        doTestMaxcheck(s -> {
+            final double         baseMaxCheck             = 20.0;
+            final KeplerianOrbit orbit                    = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(s.getOrbit());
+            final double         period                   = orbit.getKeplerianPeriod();
+            final double         timeSincePreviousPerigee = MathUtils.normalizeAngle(orbit.getMeanAnomaly(), FastMath.PI) /
+                                                            orbit.getKeplerianMeanMotion();
+            final double         timeToNextPerigee        = period - timeSincePreviousPerigee;
+            final double         timeToApogee             = FastMath.abs(0.5 * period - timeSincePreviousPerigee);
+            final double         timeToClosestApside      = FastMath.min(timeSincePreviousPerigee,
+                                                                         FastMath.min(timeToApogee, timeToNextPerigee));
+            return (timeToClosestApside < 2 * baseMaxCheck) ? baseMaxCheck : timeToClosestApside - 0.5 * baseMaxCheck;
+        }, 730);
+    }
+
+    private void doTestMaxcheck(final AdaptableInterval maxCheck, int expectedCalls) {
+        CountingApsideDetector detector = new CountingApsideDetector(maxCheck);
+        EventsLogger logger = new EventsLogger();
+        propagator.addEventDetector(logger.monitorDetector(detector));
+        propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(Constants.JULIAN_DAY));
+        Assertions.assertEquals(30, logger.getLoggedEvents().size());
+        Assertions.assertEquals(expectedCalls, detector.count);
     }
 
     @BeforeEach
@@ -88,6 +119,29 @@ public class ApsideDetectorTest {
                                           Constants.EIGEN5C_EARTH_C40,
                                           Constants.EIGEN5C_EARTH_C50,
                                           Constants.EIGEN5C_EARTH_C60);
+    }
+
+    private class CountingApsideDetector extends AdapterDetector {
+
+        private int count;
+        
+        public CountingApsideDetector(final AdaptableInterval maxCheck) {
+            super(new ApsideDetector(propagator.getInitialState().getOrbit()).
+                  withMaxCheck(maxCheck).
+                  withThreshold(1.0e-12).
+                  withHandler(new ContinueOnEvent()));
+        }
+
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+            super.init(s0, t);
+            count = 0;
+        }
+
+        public double g(final SpacecraftState s) {
+            ++count;
+            return super.g(s);
+        }
+
     }
 
 }

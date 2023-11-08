@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,10 +43,11 @@ import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
@@ -75,7 +76,7 @@ public class GroundStationTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -83,7 +84,7 @@ public class GroundStationTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // change one station clock
@@ -146,7 +147,7 @@ public class GroundStationTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -154,7 +155,7 @@ public class GroundStationTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // move one station
@@ -165,7 +166,7 @@ public class GroundStationTest {
         final Vector3D deltaTopo = new Vector3D(2 * random.nextDouble() - 1,
                                                 2 * random.nextDouble() - 1,
                                                 2 * random.nextDouble() - 1);
-        final Transform topoToParent = base.getTransformTo(parent.getBodyFrame(), (AbsoluteDate) null);
+        final StaticTransform topoToParent = base.getStaticTransformTo(parent.getBodyFrame(), (AbsoluteDate) null);
         final Vector3D deltaParent   = topoToParent.transformVector(deltaTopo);
         final String movedSuffix     = "-moved";
         final GroundStation moved = new GroundStation(new TopocentricFrame(parent,
@@ -232,8 +233,8 @@ public class GroundStationTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(moved.getEstimatedEarthFrame().getTransformProvider());
 
-        Assertions.assertTrue(bos.size() > 155000);
-        Assertions.assertTrue(bos.size() < 160000);
+        Assertions.assertTrue(bos.size() > 138000);
+        Assertions.assertTrue(bos.size() < 139000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -287,7 +288,7 @@ public class GroundStationTest {
                                 1.0e-15);
         }
         final NumericalPropagatorBuilder linearPropagatorBuilder =
-                        linearEOPContext.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        linearEOPContext.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -295,7 +296,7 @@ public class GroundStationTest {
                                                                            linearPropagatorBuilder);
         final List<ObservedMeasurement<?>> linearMeasurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(linearEOPContext),
+                                                               new TwoWayRangeMeasurementCreator(linearEOPContext),
                                                                1.0, 5.0, 60.0);
 
         Utils.clearFactories();
@@ -318,7 +319,7 @@ public class GroundStationTest {
 
         // create orbit estimator
         final NumericalPropagatorBuilder zeroPropagatorBuilder =
-                        linearEOPContext.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        linearEOPContext.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         final BatchLSEstimator estimator = new BatchLSEstimator(new LevenbergMarquardtOptimizer(),
                                                                 zeroPropagatorBuilder);
@@ -1278,7 +1279,7 @@ public class GroundStationTest {
                                                                              new GeodeticPoint(0.1, 0.2, 100),
                                                                              "dummy"));
         try {
-            station.getOffsetToInertial(eme2000, date);
+            station.getOffsetToInertial(eme2000, date, false);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
@@ -1298,7 +1299,7 @@ public class GroundStationTest {
                                                               station.getEastOffsetDriver(),
                                                               station.getNorthOffsetDriver(),
                                                               station.getZenithOffsetDriver())) {
-                indices.put(driver.getName(), indices.size());
+                indices.put(driver.getNameSpan(date), indices.size());
             }
             station.getOffsetToInertial(eme2000, date, freeParameters, indices);
             Assertions.fail("an exception should have been thrown");
@@ -1337,7 +1338,7 @@ public class GroundStationTest {
                 if (allDrivers[i].getName().matches(parameterPattern[k])) {
                     selectedDrivers[k] = allDrivers[i];
                     dFCartesian[k] = differentiatedStationPV(station, eme2000, date, selectedDrivers[k], stepFactor);
-                    indices.put(selectedDrivers[k].getName(), k);
+                    indices.put(selectedDrivers[k].getNameSpan(date0), k);
                 }
             }
         };
@@ -1406,8 +1407,8 @@ public class GroundStationTest {
             maxPositionDerivativeRelativeError > relativeTolerancePositionDerivative ||
             maxVelocityValueRelativeError      > relativeToleranceVelocityValue      ||
             maxVelocityDerivativeRelativeError > relativeToleranceVelocityDerivative) {
-            print("relativeTolerancePositionValue",          maxPositionValueRelativeError);
-            print("relativeTolerancePositionDerivative",     maxPositionDerivativeRelativeError);
+            print("relativeTolerancePositionValue",      maxPositionValueRelativeError);
+            print("relativeTolerancePositionDerivative", maxPositionDerivativeRelativeError);
             print("relativeToleranceVelocityValue",      maxVelocityValueRelativeError);
             print("relativeToleranceVelocityDerivative", maxVelocityDerivativeRelativeError);
         }
@@ -1445,7 +1446,7 @@ public class GroundStationTest {
                 if (allDrivers[i].getName().matches(parameterPattern[k])) {
                     selectedDrivers[k] = allDrivers[i];
                     dFAngular[k]   = differentiatedTransformAngular(station, eme2000, date, selectedDrivers[k], stepFactor);
-                    indices.put(selectedDrivers[k].getName(), k);
+                    indices.put(selectedDrivers[k].getNameSpan(date0), k);
                 }
             }
         };
@@ -1549,10 +1550,10 @@ public class GroundStationTest {
             public double[] value(double x) {
                 final double[] result = new double[6];
                 try {
-                    final double previouspI = driver.getValue();
-                    driver.setValue(x);
-                    Transform t = station.getOffsetToInertial(eme2000, date);
-                    driver.setValue(previouspI);
+                    final double previouspI = driver.getValue(date);
+                    driver.setValue(x, new AbsoluteDate());
+                    Transform t = station.getOffsetToInertial(eme2000, date, false);
+                    driver.setValue(previouspI, date);
                     PVCoordinates stationPV = t.transformPVCoordinates(PVCoordinates.ZERO);
                     result[ 0] = stationPV.getPosition().getX();
                     result[ 1] = stationPV.getPosition().getY();
@@ -1586,10 +1587,10 @@ public class GroundStationTest {
             public double[] value(double x) {
                 final double[] result = new double[7];
                 try {
-                    final double previouspI = driver.getValue();
-                    driver.setValue(x);
-                    Transform t = station.getOffsetToInertial(eme2000, date);
-                    driver.setValue(previouspI);
+                    final double previouspI = driver.getValue(date);
+                    driver.setValue(x, date);
+                    Transform t = station.getOffsetToInertial(eme2000, date, false);
+                    driver.setValue(previouspI, date);
                     final double sign;
                     if (Double.isNaN(previous0)) {
                         sign = +1;

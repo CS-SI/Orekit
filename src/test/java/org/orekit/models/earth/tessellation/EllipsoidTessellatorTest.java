@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,7 +35,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -406,7 +406,7 @@ public class EllipsoidTessellatorTest {
                                   -4.029194321683225E-4, 0.0013530362644647786,
                                   FastMath.toRadians(98.63218182243709),
                                   FastMath.toRadians(77.55565567747836),
-                                  FastMath.PI, PositionAngle.TRUE,
+                                  FastMath.PI, PositionAngleType.TRUE,
                                   eme2000, date, Constants.EIGEN5C_EARTH_MU);
         ellipsoid =
                 new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,

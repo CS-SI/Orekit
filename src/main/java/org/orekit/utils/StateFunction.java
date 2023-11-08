@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import org.orekit.propagation.SpacecraftState;
 
 /** Interface representing a vector function depending on {@link SpacecraftState}.
  * @see Differentiation#differentiate(StateFunction, int, org.orekit.attitudes.AttitudeProvider,
- * org.orekit.orbits.OrbitType, org.orekit.orbits.PositionAngle, double, int)
+ * org.orekit.orbits.OrbitType, org.orekit.orbits.PositionAngleType, double, int)
  * @see StateJacobian
  * @author Luc Maisonobe
  * @since 8.0

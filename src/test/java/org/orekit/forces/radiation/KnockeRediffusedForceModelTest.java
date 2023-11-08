@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,7 +39,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -81,7 +81,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
 
         // Sun
@@ -141,7 +141,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
         double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
@@ -194,7 +194,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
         // Create initial field Keplerian orbit
         FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
+                                                                                 PositionAngleType.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
@@ -235,7 +235,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         NP.addForceModel(forceModel);
 
         // Do the test
-        checkRealFieldPropagation(FKO, PositionAngle.MEAN, 300., NP, FNP,
+        checkRealFieldPropagation(FKO, PositionAngleType.MEAN, 300., NP, FNP,
                                   1.0e-30, 1.3e-8, 6.7e-11, 1.4e-10,
                                   1, false);
     }
@@ -264,7 +264,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
         // Create initial field Keplerian orbit
         final FieldKeplerianOrbit<Gradient> FKO = new FieldKeplerianOrbit<>(a, e, i, pa, raan, meanAnomaly,
-                                                                            PositionAngle.MEAN,
+                                                                            PositionAngleType.MEAN,
                                                                             EME,
                                                                             J2000,
                                                                             zero.add(Constants.EIGEN5C_EARTH_MU));
@@ -305,7 +305,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         NP.addForceModel(forceModel);
 
         // Do the test
-        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 300., NP, FNP,
+        checkRealFieldPropagationGradient(FKO, PositionAngleType.MEAN, 300., NP, FNP,
                                           1.0e-30, 1.3e-2, 9.6e-5, 1.4e-4,
                                           1, false);
     }
@@ -344,7 +344,7 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         // Frame
         final Frame frame = FramesFactory.getTEME();
 
-        final KeplerianOrbit keplerian = new KeplerianOrbit(a, e, i, pa, raan, nu, PositionAngle.TRUE, frame, date0, Constants.IERS2010_EARTH_MU);
+        final KeplerianOrbit keplerian = new KeplerianOrbit(a, e, i, pa, raan, nu, PositionAngleType.TRUE, frame, date0, Constants.IERS2010_EARTH_MU);
         final SpacecraftState initState = new SpacecraftState(keplerian, mass);
 
         // Celestial objects
@@ -404,10 +404,11 @@ public class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         public void handleStep(SpacecraftState currentState) {
 
             // Get Knocke model acceleration
-            final Vector3D knockeAcceleration = knockeModel.acceleration(currentState, knockeModel.getParameters());
+
+            final Vector3D knockeAcceleration = knockeModel.acceleration(currentState, knockeModel.getParameters(currentState.getDate()));
 
             // Get radial direction
-            final Vector3D radialUnit = currentState.getOrbit().getPVCoordinates().getPosition().normalize();
+            final Vector3D radialUnit = currentState.getOrbit().getPosition().normalize();
 
             // Get along track direction
             final Vector3D velocity = currentState.getOrbit().getPVCoordinates().getVelocity();

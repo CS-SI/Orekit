@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.models.earth.atmosphere;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -150,7 +150,7 @@ public class DTM2000Test {
         Rotation rotation = new Rotation(Vector3D.PLUS_I, FastMath.PI / 2, RotationConvention.VECTOR_OPERATOR);
         Frame frame = new Frame(ecef, new Transform(date, rotation), "other");
         Vector3D pEcef = new Vector3D(6378137 + 300e3, 0, 0);
-        Vector3D pFrame = ecef.getTransformTo(frame, date)
+        Vector3D pFrame = ecef.getStaticTransformTo(frame, date)
                 .transformPosition(pEcef);
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(
@@ -181,9 +181,9 @@ public class DTM2000Test {
                 for (double lat = -1.5; lat < 1.5; lat += 0.5) {
                     for (double hl = 0; hl < 6; hl += 0.5) {
                         double rhoD = atm.getDensity(185, alti*1000, lon, lat, hl, 50, 150, 0, 0);
-                        Decimal64 rho64 = atm.getDensity(185, new Decimal64(alti*1000),
-                                                         new Decimal64(lon), new Decimal64(lat),
-                                                         new Decimal64(hl), 50, 150, 0, 0);
+                        Binary64 rho64 = atm.getDensity(185, new Binary64(alti*1000),
+                                                         new Binary64(lon), new Binary64(lat),
+                                                         new Binary64(hl), 50, 150, 0, 0);
                         Assertions.assertEquals(rhoD, rho64.getReal(), rhoD * 1e-14);
                     }
                 }

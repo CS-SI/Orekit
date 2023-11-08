@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ import java.io.IOException;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.generation.AbstractMessageWriter;
@@ -34,7 +33,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata, ObservationsBlock>, Tdm> {
+public class TdmWriter extends AbstractMessageWriter<TdmHeader, Segment<TdmMetadata, ObservationsBlock>, Tdm> {
 
     /** Version number implemented. **/
     public static final double CCSDS_TDM_VERS = 2.0;
@@ -69,8 +68,8 @@ public class TdmWriter extends AbstractMessageWriter<Header, Segment<TdmMetadata
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegmentContent(final Generator generator, final double formatVersion,
-                                    final Segment<TdmMetadata, ObservationsBlock> segment)
+    protected void writeSegmentContent(final Generator generator, final double formatVersion,
+                                       final Segment<TdmMetadata, ObservationsBlock> segment)
         throws IOException {
 
         // write the metadata

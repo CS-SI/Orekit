@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,8 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -32,6 +34,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /**
  * Base class harvester between two-dimensional Jacobian
@@ -61,7 +65,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
      * <p>
      * The arguments for initial matrices <em>must</em> be compatible with the
      * {@link org.orekit.orbits.OrbitType orbit type}
-     * and {@link org.orekit.orbits.PositionAngle position angle} that will be used by propagator
+     * and {@link PositionAngleType position angle} that will be used by propagator
      * </p>
      * @param propagator propagator bound to this harvester
      * @param stmName State Transition Matrix state name
@@ -160,7 +164,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
 
         final AbstractAnalyticalGradientConverter converter           = getGradientConverter();
         final FieldSpacecraftState<Gradient> gState                   = converter.getState();
-        final Gradient[] gParameters                                  = converter.getParameters(gState);
+        final Gradient[] gParameters                                  = converter.getParameters(gState, converter);
         final FieldAbstractAnalyticalPropagator<Gradient> gPropagator = converter.getPropagator(gState, gParameters);
 
         // Compute Jacobian
@@ -190,21 +194,24 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
         for (ParameterDriver driver : converter.getParametersDrivers()) {
             if (driver.isSelected()) {
 
-                // get the partials derivatives for this driver
-                DoubleArrayDictionary.Entry entry = analyticalDerivativesJacobianColumns.getEntry(driver.getName());
-                if (entry == null) {
-                    // create an entry filled with zeroes
-                    analyticalDerivativesJacobianColumns.put(driver.getName(), new double[STATE_DIMENSION]);
-                    entry = analyticalDerivativesJacobianColumns.getEntry(driver.getName());
+                final TimeSpanMap<String> driverNameSpanMap = driver.getNamesSpanMap();
+                // for each span (for each estimated value) corresponding name is added
+                for (Span<String> span = driverNameSpanMap.getFirstSpan(); span != null; span = span.next()) {
+                    // get the partials derivatives for this driver
+                    DoubleArrayDictionary.Entry entry = analyticalDerivativesJacobianColumns.getEntry(span.getData());
+                    if (entry == null) {
+                        // create an entry filled with zeroes
+                        analyticalDerivativesJacobianColumns.put(span.getData(), new double[STATE_DIMENSION]);
+                        entry = analyticalDerivativesJacobianColumns.getEntry(span.getData());
+                    }
+
+                    // add the contribution of the current force model
+                    entry.increment(new double[] {
+                        derivativesX[paramsIndex], derivativesY[paramsIndex], derivativesZ[paramsIndex],
+                        derivativesVx[paramsIndex], derivativesVy[paramsIndex], derivativesVz[paramsIndex]
+                    });
+                    ++paramsIndex;
                 }
-
-                // add the contribution of the current force model
-                entry.increment(new double[] {
-                    derivativesX[paramsIndex], derivativesY[paramsIndex], derivativesZ[paramsIndex],
-                    derivativesVx[paramsIndex], derivativesVy[paramsIndex], derivativesVz[paramsIndex]
-                });
-                ++paramsIndex;
-
             }
         }
 
@@ -261,6 +268,20 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
             }
         }
         return array;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public OrbitType getOrbitType() {
+        // Set to CARTESIAN because analytical gradient converter uses cartesian representation
+        return OrbitType.CARTESIAN;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PositionAngleType getPositionAngleType() {
+        // Irrelevant: set a default value
+        return PositionAngleType.MEAN;
     }
 
     /**

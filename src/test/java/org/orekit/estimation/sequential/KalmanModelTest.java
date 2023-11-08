@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,7 @@ import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -46,6 +46,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.TimeSpanMap.Span;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,7 +65,7 @@ public class KalmanModelTest {
     private final OrbitType orbitType = OrbitType.CARTESIAN;
 
     /** Position angle for propagation. */
-    private final PositionAngle positionAngle = PositionAngle.TRUE;
+    private final PositionAngleType positionAngleType = PositionAngleType.TRUE;
 
     /** Initial orbit. */
     private Orbit orbit0;
@@ -121,13 +122,13 @@ public class KalmanModelTest {
         ObservableSatellite sat = new ObservableSatellite(0);
 
         // Create propagator builder
-        this.propagatorBuilder = context.createBuilder(orbitType, positionAngle, true,
+        this.propagatorBuilder = context.createBuilder(orbitType, positionAngleType, true,
                                                        1.0e-6, 60.0, 10., Force.SOLAR_RADIATION_PRESSURE);
 
         // Create PV at t0
         final AbsoluteDate date0 = context.initialOrbit.getDate();
         this.pv = new PV(date0,
-                             context.initialOrbit.getPVCoordinates().getPosition(),
+                             context.initialOrbit.getPosition(),
                              context.initialOrbit.getPVCoordinates().getVelocity(),
                              new double[] {1., 2., 3., 1e-3, 2e-3, 3e-3}, 1.,
                              sat);
@@ -268,8 +269,8 @@ public class KalmanModelTest {
         final RealMatrix dMdCr = dMdY.multiply(MatrixUtils.createRealMatrix(dYdPpTransition));
         expH.setEntry(0, 6, dMdCr.getEntry(0, 0));
         // Sat range bias part
-        expH.setEntry(0, 7, rangeEstimated.getParameterDerivatives(satRangeBiasDriver)[0]);
-
+        expH.setEntry(0, 7, rangeEstimated.getParameterDerivatives(satRangeBiasDriver, new AbsoluteDate())[0]);
+        
         // Add range measurement and check model afterwards
         checkModelAfterMeasurementAdded(2, range, Ppred, orbitPred, expPhi, expH);
     }
@@ -301,7 +302,7 @@ public class KalmanModelTest {
         final RealVector x = model.getPhysicalEstimatedState();
         final RealVector expX = MatrixUtils.createRealVector(M);
         final double[] orbitState0 = new double[6];
-        orbitType.mapOrbitToArray(orbit0, positionAngle, orbitState0, null);
+        orbitType.mapOrbitToArray(orbit0, positionAngleType, orbitState0, null);
         expX.setSubVector(0, MatrixUtils.createRealVector(orbitState0));
         expX.setEntry(6, srpCoefDriver.getReferenceValue());
         expX.setEntry(7, satRangeBiasDriver.getReferenceValue());
@@ -351,7 +352,7 @@ public class KalmanModelTest {
         // (= value before adding measurement to the filter)
         final double srpCoefPred = srpCoefDriver.getValue();
         final double satRangeBiasPred = satRangeBiasDriver.getValue();
-
+        
         // Expected predicted measurement
         final double[] expMeasPred =
                         meas.estimate(0, 0,
@@ -422,7 +423,7 @@ public class KalmanModelTest {
 
         // Predicted state
         final double[] orbitPredState = new double[6];
-        orbitPred.getType().mapOrbitToArray(orbitPred, PositionAngle.TRUE, orbitPredState, null);
+        orbitPred.getType().mapOrbitToArray(orbitPred, PositionAngleType.TRUE, orbitPredState, null);
         final RealVector expXpred = MatrixUtils.createRealVector(M);
         for (int i = 0; i < 6; i++) {
             expXpred.setEntry(i, orbitPredState[i]);
@@ -501,21 +502,27 @@ public class KalmanModelTest {
         // Orbital parameters
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
-                scaleList.add(driver.getScale());
+            	for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    scaleList.add(driver.getScale());
+            	}
             }
         }
 
         // Propagation parameters
         for (ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
-                scaleList.add(driver.getScale());
+            	for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    scaleList.add(driver.getScale());
+            	}
             }
         }
 
         // Measurement parameters
         for (ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
             if (driver.isSelected()) {
-                scaleList.add(driver.getScale());
+            	for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    scaleList.add(driver.getScale());
+            	}
             }
         }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.orekit.frames;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -30,6 +30,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Transform provider for the rotating frame of the CR3BP System.
@@ -128,4 +129,22 @@ class CR3BPRotatingTransformProvider implements TransformProvider {
         final FieldTransform<T> transform2 = new FieldTransform<>(date, rotationField, rotationRate, rotationAcc);
         return new FieldTransform<>(date, transform2, transform1);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+        final Field<T> field = date.getField();
+        final TimeStampedFieldPVCoordinates<T> pv = secondaryBody.getPVCoordinates(date, frame);
+        final FieldVector3D<T> translation = FieldVector3D.getPlusI(field).
+                scalarMultiply(pv.getPosition().getNorm().multiply(mu)).negate();
+
+        final FieldRotation<T> rotation = new FieldRotation<>(
+                pv.getPosition(), pv.getMomentum(),
+                FieldVector3D.getPlusI(field), FieldVector3D.getMinusK(field));
+
+        final FieldStaticTransform<T> transform1 = FieldStaticTransform.of(date, translation);
+        final FieldStaticTransform<T> transform2 = FieldStaticTransform.of(date, rotation);
+        return FieldStaticTransform.compose(date, transform2, transform1);
+    }
+
 }

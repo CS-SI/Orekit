@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,8 +22,8 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
@@ -202,7 +202,7 @@ public class FundamentalNutationArgumentsTest {
         final IERSConventions conventions = IERSConventions.IERS_2010;
         final TimeScale ut1 = TimeScalesFactory.getUT1(conventions, false);
         final FundamentalNutationArguments fna = conventions.getNutationArguments(ut1);
-        final FieldAbsoluteDate<Decimal64> t0 = new FieldAbsoluteDate<>(Decimal64Field.getInstance(),
+        final FieldAbsoluteDate<Binary64> t0 = new FieldAbsoluteDate<>(Binary64Field.getInstance(),
                                                                         2002, 4, 7, 12, 34, 22.5, TimeScalesFactory.getUTC());
         final UnivariateDifferentiableFunction gamma  = differentiate(fna, t0, b -> b.getGamma());
         final UnivariateDifferentiableFunction l      = differentiate(fna, t0, b -> b.getL());
@@ -234,7 +234,7 @@ public class FundamentalNutationArgumentsTest {
         double maxErrorLNe    = 0;
         double maxErrorPa     = 0;
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 60.0) {
-            FieldBodiesElements<Decimal64> be = fna.evaluateAll(t0.shiftedBy(dt));
+            FieldBodiesElements<Binary64> be = fna.evaluateAll(t0.shiftedBy(dt));
             DerivativeStructure dtDS = factory.variable(0, dt);
             maxErrorGamma  = FastMath.max(maxErrorGamma,  FastMath.abs(gamma .value(dtDS).getPartialDerivative(1) - be.getGammaDot().getReal()));
             maxErrorL      = FastMath.max(maxErrorL,      FastMath.abs(l     .value(dtDS).getPartialDerivative(1) - be.getLDot().getReal()));
@@ -284,14 +284,14 @@ public class FundamentalNutationArgumentsTest {
     public void testSerializationNoTidalCorrection() throws IOException, ClassNotFoundException {
         IERSConventions conventions = IERSConventions.IERS_2010;
         TimeScale ut1 = TimeScalesFactory.getUT1(conventions, true);
-        checkSerialization(295000, 300000, conventions.getNutationArguments(ut1));
+        checkSerialization(340000, 350000, conventions.getNutationArguments(ut1));
     }
 
     @Test
     public void testSerializationTidalCorrection() throws IOException, ClassNotFoundException {
         IERSConventions conventions = IERSConventions.IERS_2010;
         TimeScale ut1 = TimeScalesFactory.getUT1(conventions, false);
-        checkSerialization(295000, 300000, conventions.getNutationArguments(ut1));
+        checkSerialization(340000, 350000, conventions.getNutationArguments(ut1));
     }
 
     @Test

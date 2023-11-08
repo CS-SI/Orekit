@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,11 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.NdmConstituent;
-import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.general.AttitudeEphemerisFile;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -38,7 +35,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author Bryan Cazabonne
  * @since 10.2
  */
-public class Aem extends NdmConstituent<Header, AemSegment>
+public class Aem extends NdmConstituent<AdmHeader, AemSegment>
     implements AttitudeEphemerisFile<TimeStampedAngularCoordinates, AemSegment> {
 
     /** Root element for XML files. */
@@ -53,7 +50,7 @@ public class Aem extends NdmConstituent<Header, AemSegment>
      * @param conventions IERS conventions
      * @param dataContext used for creating frames, time scales, etc.
      */
-    public Aem(final Header header, final List<AemSegment> segments,
+    public Aem(final AdmHeader header, final List<AemSegment> segments,
                final IERSConventions conventions, final DataContext dataContext) {
         super(header, segments, conventions, dataContext);
     }
@@ -72,22 +69,6 @@ public class Aem extends NdmConstituent<Header, AemSegment>
             ret.put(entry.getKey(), new AemSatelliteEphemeris(entry.getKey(), entry.getValue()));
         }
         return ret;
-    }
-
-    /**
-     * Check that, according to the CCSDS standard, every AEMBlock has the same time system.
-     */
-    public void checkTimeSystems() {
-        TimeSystem referenceTimeSystem = null;
-        for (final AemSegment segment : getSegments()) {
-            final TimeSystem timeSystem = segment.getMetadata().getTimeSystem();
-            if (referenceTimeSystem == null) {
-                referenceTimeSystem = timeSystem;
-            } else if (!referenceTimeSystem.equals(timeSystem)) {
-                throw new OrekitException(OrekitMessages.CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS,
-                                          referenceTimeSystem.name(), timeSystem.name());
-            }
-        }
     }
 
 }

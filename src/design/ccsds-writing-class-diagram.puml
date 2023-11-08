@@ -1,4 +1,4 @@
-' Copyright 2002-2022 CS GROUP
+' Copyright 2002-2023 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -35,7 +35,7 @@
           +getSatellites()
         }
 
-        interface EphemerisFile.EphemerisSegment {
+        interface "EphemerisFile.EphemerisSegment" as EphemerisSegment {
           +getMu()
           +getFrame()
           +getInertialFrame()
@@ -47,7 +47,7 @@
           +getPropagator()
         }
 
-        interface EphemerisFile.SatelliteEphemeris {
+        interface "EphemerisFile.SatelliteEphemeris" as SatelliteEphemeris {
           +getId()
           +getMu()
           +getSegments()
@@ -122,8 +122,8 @@
   FileFormat <-left- Generator
   MessageWriter <|.. OpmWriter
   MessageWriter <|.. OemWriter
-  EphemerisFile.EphemerisSegment <--o EphemerisFile.SatelliteEphemeris
-  EphemerisFile.SatelliteEphemeris <--* EphemerisFile
+  EphemerisSegment <--o SatelliteEphemeris
+  SatelliteEphemeris <--* EphemerisFile
   EphemerisFile <-- EphemerisFileWriter
   OemWriter ..|> EphemerisFileWriter
   StreamingOemWriter o-right-> OemWriter

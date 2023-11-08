@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -153,11 +153,11 @@ public class DataSourceTest {
         Assertions.assertEquals(" UTC-TAI.history", br.readLine());
         Assertions.assertEquals(" ---------------", br.readLine());
         Assertions.assertEquals(" RELATIONSHIP BETWEEN TAI AND UTC", br.readLine());
-        for (int lineNumber = 6; lineNumber < 47; ++lineNumber) {
+        for (int lineNumber = 6; lineNumber < 48; ++lineNumber) {
             br.readLine();
         }
-        Assertions.assertEquals(" 2012  Jul   1 - 2015  Jul   1    35s", br.readLine());
-        Assertions.assertEquals(" 2015  Jul   1 -                  36s", br.readLine());
+        Assertions.assertEquals(" 2015  Jul   1 - 2017  Jan   1    36s", br.readLine());
+        Assertions.assertEquals(" 2017  Jan   1 -                  37s", br.readLine());
         Assertions.assertEquals(" ----------------------------------------------------------------------", br.readLine());
         Assertions.assertNull(br.readLine());
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,7 +46,7 @@ import org.orekit.geometry.fov.PolygonalFieldOfView.DefiningConeType;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -183,7 +183,7 @@ public class FieldOfViewDetectorTest {
         final Vector3D centerInert = toInert.applyTo(center);
         final Vector3D axis1Inert  = toInert.applyTo(axis1);
         final Vector3D axis2Inert  = toInert.applyTo(axis2);
-        final Vector3D direction   = target.getPosition().subtract(s.getPVCoordinates().getPosition()).normalize();
+        final Vector3D direction   = target.getPosition().subtract(s.getPosition()).normalize();
         return new double[] {
             dihedralAngle(centerInert, axis1Inert, direction),
             dihedralAngle(centerInert, axis2Inert, direction)
@@ -215,7 +215,7 @@ public class FieldOfViewDetectorTest {
         //iss like orbit
         KeplerianOrbit orbit = new KeplerianOrbit(
                 6378137 + 400e3, 0, FastMath.toRadians(51.65), 0, 0, 0,
-                PositionAngle.TRUE, eci, date, Constants.EGM96_EARTH_MU);
+                PositionAngleType.TRUE, eci, date, Constants.EGM96_EARTH_MU);
         AttitudeProvider attitude = new NadirPointing(eci, earth);
 
         //action
@@ -263,7 +263,7 @@ public class FieldOfViewDetectorTest {
                         new FieldOfViewDetector(sun, fov).
                         withMaxCheck(maxCheck).
                         withThreshold(threshold).
-                        withHandler(new ContinueOnEvent<>());
+                        withHandler(new ContinueOnEvent());
 
         final EventDetector sunFull =
                         new FieldOfViewDetector(sun, Constants.SUN_RADIUS,
@@ -271,7 +271,7 @@ public class FieldOfViewDetectorTest {
                                                 fov).
                         withMaxCheck(maxCheck).
                         withThreshold(threshold).
-                        withHandler(new ContinueOnEvent<>());
+                        withHandler(new ContinueOnEvent());
 
         final EventDetector sunPartial =
                         new FieldOfViewDetector(sun, Constants.SUN_RADIUS,
@@ -279,7 +279,7 @@ public class FieldOfViewDetectorTest {
                                                 fov).
                         withMaxCheck(maxCheck).
                         withThreshold(threshold).
-                        withHandler(new ContinueOnEvent<>());
+                        withHandler(new ContinueOnEvent());
 
         Assertions.assertSame(sun, ((FieldOfViewDetector) sunCenter).getPVTarget());
         Assertions.assertEquals(0, ((FieldOfViewDetector) sunCenter).getFOV().getMargin(), 1.0e-15);
@@ -301,17 +301,17 @@ public class FieldOfViewDetectorTest {
         List<LoggedEvent>  events = logger.getLoggedEvents();
         Assertions.assertEquals(6, events.size());
         Assertions.assertSame(sunPartial, events.get(0).getEventDetector());
-        Assertions.assertEquals(460.884444, events.get(0).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(460.876793, events.get(0).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
         Assertions.assertSame(sunCenter, events.get(1).getEventDetector());
         Assertions.assertEquals(488.299210, events.get(1).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
         Assertions.assertSame(sunFull, events.get(2).getEventDetector());
-        Assertions.assertEquals(517.527656, events.get(2).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(517.536353, events.get(2).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
         Assertions.assertSame(sunFull, events.get(3).getEventDetector());
-        Assertions.assertEquals(1749.292351, events.get(3).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(1749.277930, events.get(3).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
         Assertions.assertSame(sunCenter, events.get(4).getEventDetector());
         Assertions.assertEquals(1798.478948, events.get(4).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
         Assertions.assertSame(sunPartial, events.get(5).getEventDetector());
-        Assertions.assertEquals(1845.966183, events.get(5).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
+        Assertions.assertEquals(1845.979622, events.get(5).getState().getDate().durationFrom(initialOrbit.getDate()), 1.0e-6);
 
     }
 
@@ -339,7 +339,7 @@ public class FieldOfViewDetectorTest {
                             new FieldOfViewDetector(sun, circFov).
                             withMaxCheck(maxCheck).
                             withThreshold(threshold).
-                            withHandler(new ContinueOnEvent<>());
+                            withHandler(new ContinueOnEvent());
             detectors.add(circDetector);
             propagator.addEventDetector(logger.monitorDetector(circDetector));
 
@@ -352,7 +352,7 @@ public class FieldOfViewDetectorTest {
                             new FieldOfViewDetector(sun, polyFov).
                             withMaxCheck(maxCheck).
                             withThreshold(threshold).
-                            withHandler(new ContinueOnEvent<>());
+                            withHandler(new ContinueOnEvent());
             detectors.add(polyDetector);
             propagator.addEventDetector(logger.monitorDetector(polyDetector));
 
@@ -403,7 +403,7 @@ public class FieldOfViewDetectorTest {
         propagator.addEventDetector(logger.monitorDetector(new FieldOfViewDetector(sun, fov).
                                                            withMaxCheck(maxCheck).
                                                            withThreshold(threshold).
-                                                           withHandler(new ContinueOnEvent<>())));
+                                                           withHandler(new ContinueOnEvent())));
 
        // Extrapolate from the initial to the final date
         propagator.propagate(initDate.shiftedBy(6000.));
@@ -454,9 +454,9 @@ public class FieldOfViewDetectorTest {
 
 
     /** Handler for visibility event. */
-    private static class DihedralSunVisiHandler implements EventHandler<FieldOfViewDetector> {
+    private static class DihedralSunVisiHandler implements EventHandler {
 
-        public Action eventOccurred(final SpacecraftState s, final FieldOfViewDetector detector,
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector,
                                     final boolean increasing) {
             if (increasing) {
                 //System.err.println(" Sun visibility starts " + s.getDate());

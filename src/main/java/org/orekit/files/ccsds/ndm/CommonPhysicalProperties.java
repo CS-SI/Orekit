@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,11 +20,11 @@ import org.hipparchus.complex.Quaternion;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.ndm.cdm.AdditionalParameters;
-import org.orekit.files.ccsds.ndm.odm.ocm.PhysicalProperties;
+import org.orekit.files.ccsds.ndm.odm.ocm.OrbitPhysicalProperties;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.time.AbsoluteDate;
 
-/** Container for common physical properties for both {@link PhysicalProperties} and {@link AdditionalParameters}.
+/** Container for common physical properties for both {@link OrbitPhysicalProperties} and {@link AdditionalParameters}.
  *
  * @author Maxime Journot
  * @since 11.3

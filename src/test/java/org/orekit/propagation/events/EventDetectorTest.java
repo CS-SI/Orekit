@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.Locale;
+import java.util.function.Function;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -30,7 +33,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
@@ -38,7 +40,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -54,9 +56,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-import java.util.Locale;
-import java.util.function.Function;
-
 public class EventDetectorTest {
 
     private double mu;
@@ -71,11 +70,11 @@ public class EventDetectorTest {
                                               FramesFactory.getEME2000(), date, mu);
         // mutable boolean
         final boolean[] eventOccurred = new boolean[1];
-        EventHandler<DateDetector> handler = new EventHandler<DateDetector>() {
+        EventHandler handler = new EventHandler() {
             private boolean initCalled;
             @Override
             public Action eventOccurred(SpacecraftState s,
-                                        DateDetector detector,
+                                        EventDetector detector,
                                         boolean increasing) {
                 if (!initCalled) {
                     throw new RuntimeException("init() not called before eventOccurred()");
@@ -87,7 +86,7 @@ public class EventDetectorTest {
             @Override
             public void init(SpacecraftState initialState,
                              AbsoluteDate target,
-                             DateDetector detector) {
+                             EventDetector detector) {
                 initCalled = true;
             }
         };
@@ -120,7 +119,7 @@ public class EventDetectorTest {
 
     }
 
-    private static class OutOfOrderChecker implements EventHandler<DateDetector>, OrekitFixedStepHandler {
+    private static class OutOfOrderChecker implements EventHandler, OrekitFixedStepHandler {
 
         private AbsoluteDate triggerDate;
         private boolean outOfOrderCallDetected;
@@ -132,7 +131,7 @@ public class EventDetectorTest {
             this.stepSize = stepSize;
         }
 
-        public Action eventOccurred(SpacecraftState s, DateDetector detector, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
             triggerDate = s.getDate();
             return Action.CONTINUE;
         }
@@ -172,7 +171,7 @@ public class EventDetectorTest {
         final int    n    = 100;
         NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(step));
         propagator.resetInitialState(new SpacecraftState(orbit));
-        GCallsCounter counter = new GCallsCounter(100000.0, 1.0e-6, 20, new StopOnEvent<GCallsCounter>());
+        GCallsCounter counter = new GCallsCounter(s -> 100000.0, 1.0e-6, 20, new StopOnEvent());
         propagator.addEventDetector(counter);
         propagator.propagate(date.shiftedBy(n * step));
         Assertions.assertEquals(n + 1, counter.getCount());
@@ -189,7 +188,7 @@ public class EventDetectorTest {
         final double step = 60.0;
         final int    n    = 100;
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        GCallsCounter counter = new GCallsCounter(100000.0, 1.0e-6, 20, new StopOnEvent<GCallsCounter>());
+        GCallsCounter counter = new GCallsCounter(s -> 100000.0, 1.0e-6, 20, new StopOnEvent());
         propagator.addEventDetector(counter);
         propagator.setStepHandler(step, currentState -> {});
         propagator.propagate(date.shiftedBy(n * step));
@@ -201,14 +200,14 @@ public class EventDetectorTest {
 
         private int count;
 
-        public GCallsCounter(final double maxCheck, final double threshold,
-                             final int maxIter, final EventHandler<? super GCallsCounter> handler) {
+        public GCallsCounter(final AdaptableInterval maxCheck, final double threshold,
+                             final int maxIter, final EventHandler handler) {
             super(maxCheck, threshold, maxIter, handler);
             count = 0;
         }
 
-        protected GCallsCounter create(final double newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler<? super GCallsCounter> newHandler) {
+        protected GCallsCounter create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                       final int newMaxIter, final EventHandler newHandler) {
             return new GCallsCounter(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
@@ -241,10 +240,12 @@ public class EventDetectorTest {
                 new KeplerianPropagator(new EquinoctialOrbit(new PVCoordinates(new Vector3D(4008912.4039522274, -3155453.3125615157, -5044297.6484738905),
                                                                                new Vector3D(-5012.5883854112530, 1920.6332221785074, -5172.2177085540500)),
                                                              eme2000, initialDate, Constants.WGS84_EARTH_MU));
-        k2.addEventDetector(new CloseApproachDetector(2015.243454166727, 0.0001, 100,
-                                                      new ContinueOnEvent<CloseApproachDetector>(),
+        k2.addEventDetector(new CloseApproachDetector(s -> 2015.243454166727, 0.0001, 100,
+                                                      new ContinueOnEvent(),
                                                       k1));
-        k2.addEventDetector(new DateDetector(Constants.JULIAN_DAY, 1.0e-6, interruptDate));
+        k2.addEventDetector(new DateDetector(interruptDate).
+                            withMaxCheck(Constants.JULIAN_DAY).
+                            withThreshold(1.0e-6));
         SpacecraftState s = k2.propagate(startDate, targetDate);
         Assertions.assertEquals(0.0, interruptDate.durationFrom(s.getDate()), 1.1e-6);
     }
@@ -253,8 +254,8 @@ public class EventDetectorTest {
 
         private final PVCoordinatesProvider provider;
 
-        public CloseApproachDetector(double maxCheck, double threshold,
-                                     final int maxIter, final EventHandler<? super CloseApproachDetector> handler,
+        public CloseApproachDetector(AdaptableInterval maxCheck, double threshold,
+                                     final int maxIter, final EventHandler handler,
                                      PVCoordinatesProvider provider) {
             super(maxCheck, threshold, maxIter, handler);
             this.provider = provider;
@@ -269,9 +270,9 @@ public class EventDetectorTest {
             return radialVelocity;
         }
 
-        protected CloseApproachDetector create(final double newMaxCheck, final double newThreshold,
+        protected CloseApproachDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                                final int newMaxIter,
-                                               final EventHandler<? super CloseApproachDetector> newHandler) {
+                                               final EventHandler newHandler) {
             return new CloseApproachDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                              provider);
         }
@@ -329,8 +330,8 @@ public class EventDetectorTest {
             }
 
             @Override
-            public double getMaxCheckInterval() {
-                return 60;
+            public AdaptableInterval getMaxCheckInterval() {
+                return s -> 60;
             }
 
             @Override
@@ -339,8 +340,8 @@ public class EventDetectorTest {
             }
 
             @Override
-            public Action eventOccurred(SpacecraftState s, boolean increasing) {
-                return Action.RESET_STATE;
+            public EventHandler getHandler() {
+                return (state, detector, increasing) -> Action.RESET_STATE;
             }
        };
 
@@ -349,9 +350,9 @@ public class EventDetectorTest {
 
        // by default, this method returns its argument
        SpacecraftState s = new SpacecraftState(new KeplerianOrbit(7e6, 0.01, 0.3, 0, 0, 0,
-                                                                  PositionAngle.TRUE, FramesFactory.getEME2000(),
+                                                                  PositionAngleType.TRUE, FramesFactory.getEME2000(),
                                                                   AbsoluteDate.J2000_EPOCH, Constants.EIGEN5C_EARTH_MU));
-       Assertions.assertSame(s, dummyDetector.resetState(s));
+       Assertions.assertSame(s, dummyDetector.getHandler().resetState(dummyDetector, s));
 
     }
 
@@ -374,17 +375,6 @@ public class EventDetectorTest {
         SpacecraftState finalState = propagator.propagate(finalTime);
         Assertions.assertEquals(0.0, finalState.getDate().durationFrom(eventTime), noise);
 
-    }
-
-    @Test
-    public void testWrongConfiguration() {
-        try {
-            new DateDetector(-1.0, 1.0e-6, AbsoluteDate.ARBITRARY_EPOCH);
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NOT_STRICTLY_POSITIVE, oe.getSpecifier());
-            Assertions.assertEquals(-1.0, ((Double) oe.getParts()[0]).doubleValue(), 1.0e-15);
-        }
     }
 
     @Test

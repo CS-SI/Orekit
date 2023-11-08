@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,6 +49,7 @@ import org.orekit.time.FieldAbsoluteDate;
 * @see org.orekit.propagation.integration.FieldAbstractIntegratedPropagator
 * @author Luc Maisonobe
 * @since 11.1
+* @param <T> type of the field elements
 */
 public interface FieldAdditionalDerivativesProvider<T extends CalculusFieldElement<T>> {
 
@@ -86,43 +87,24 @@ public interface FieldAdditionalDerivativesProvider<T extends CalculusFieldEleme
      * }</pre>
      * <p>
      * The default implementation returns {@code false}, meaning that derivative data can be
-     * {@link #derivatives(FieldSpacecraftState) computed} immediately.
+     * {@link #combinedDerivatives(FieldSpacecraftState) computed} immediately.
      * </p>
      * @param state state to handle
      * @return true if this provider should yield so another provider has an opportunity to add missing parts
      * as the state is incrementally built up
      */
-    default boolean yield(FieldSpacecraftState<T> state) {
+    default boolean yields(FieldSpacecraftState<T> state) {
         return false;
     }
 
-    /** Compute the derivatives related to the additional state parameters.
-     * @param s current state information: date, kinematics, attitude, and
-     * additional states this equations depend on (according to the
-     * {@link #yield(FieldSpacecraftState) yield} method)
-     * @return computed derivatives
-     * @deprecated as of 11.2, replaced by {@link #combinedDerivatives(FieldSpacecraftState)}
-     */
-    @Deprecated
-    T[] derivatives(FieldSpacecraftState<T> s);
-
     /** Compute the derivatives related to the additional state (and optionally main state increments).
-     * <p>
-     * As of 11.2, there is a default implementation that calls the deprecated
-     * {@link #derivatives(FieldSpacecraftState)} method. This has been done for
-     * backward compatibility only and will be removed in 12.0.
-     * </p>
      * @param s current state information: date, kinematics, attitude, and
      * additional states this equations depend on (according to the
-     * {@link #yield(FieldSpacecraftState) yield} method)
+     * {@link #yields(FieldSpacecraftState) yield} method)
      * @return computed combined derivatives, which may include some incremental
      * coupling effect to add to main state derivatives
      * @since 11.2
      */
-    default FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<T> s) {
-        // this default implementation will be removed
-        // when the deprecated derivatives method above is removed
-        return new FieldCombinedDerivatives<>(derivatives(s), null);
-    }
+    FieldCombinedDerivatives<T> combinedDerivatives(FieldSpacecraftState<T> s);
 
 }

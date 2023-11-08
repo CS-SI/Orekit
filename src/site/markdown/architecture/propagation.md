@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2022 CS GROUP
+<!--- Copyright 2002-2023 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -177,7 +177,9 @@ There are also several predefined events detectors already available, amongst wh
   true, eccentric or mean angles),
 * `LatitudeCrossingDetector`, `LatitudeExtremumDetector`, `LongitudeCrossingDetector`,
   `LongitudeExtremumDetector`, which are triggered when satellite position with respect
-  to central body reaches some predefined values, 
+  to central body reaches some predefined values,
+* `ExtremumApproachDetector`, which is triggered when satellite distance with respect to
+  some moving object reaches a local maximum or minimum value,
 * an `AlignmentDetector`, which is triggered when satellite and some body projected
   in the orbital plane have a specified angular separation (the term `AlignmentDetector`
   is clearly a misnomer as the angular separation may be non-zero),
@@ -193,7 +195,7 @@ There are also several predefined events detectors already available, amongst wh
 * a `HaloXZPlaneCrossingDetector`, which is triggered when a spacecraft on a halo orbit
   crosses the XZ plane
 * an `IntersatDirectViewDetector`, which is triggered when two spacecraft are in direct view,
-  i.e. when the central body limb does not obstruct view
+  i.e. when the central body limb to which a customizable skimming altitude is added does not obstruct view
 * a `MagneticFieldDetector`, which is triggered when South-Atlantic anomaly frontier is crossed
 * a `ParameterDrivenDateIntervalDetector`, which is triggered at time interval boundaries, with
   the additional feature that these boundaries can be offset thanks to parameter drivers

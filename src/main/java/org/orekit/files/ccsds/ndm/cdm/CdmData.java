@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,22 +33,22 @@ public class CdmData implements Data {
     private final CommentsContainer commentsBlock;
 
     /** Quaternion block. */
-    private final ODParameters ODparametersBlock;
+    private ODParameters ODParametersBlock;
 
     /** Euler angles block. */
-    private final AdditionalParameters additionalParametersBlock;
+    private AdditionalParameters additionalParametersBlock;
 
     /** Spin-stabilized block. */
     private final StateVector stateVectorBlock;
 
     /** Spacecraft parameters block. */
-    private final RTNCovariance covarianceMatrixBlock;
+    private RTNCovariance covarianceMatrixBlock;
 
     /** XYZ covariance block. */
     private final XYZCovariance xyzCovarianceMatrixBlock;
 
     /** Sigma/Eigenvectors covariance block. */
-    private final SigmaEigenvectorsCovariance sig3eigvec3CovarianceBlock;
+    private final SigmaEigenvectorsCovariance sig3EigVec3CovarianceBlock;
 
     /** Type of alternate covariance, if present. */
     private AltCovarianceType altCovarianceType;
@@ -65,31 +65,31 @@ public class CdmData implements Data {
 
      /** Default constructor.
      * @param commentsBlock general comments block
-     * @param ODparametersBlock OD parameters block (may be null)
+     * @param ODParametersBlock OD parameters block (may be null)
      * @param additionalParametersBlock additionnal parameters block (may be null)
      * @param stateVectorBlock state vector block
      * @param covarianceMatrixBlock covariance matrix in RTN coordinates frame block
      * @param xyzCovarianceBlock XYZ covariance matrix block
-     * @param sig3eigvec3CovarianceBlock sigma/eigenvector covariance block
+     * @param sig3EigVec3CovarianceBlock sigma/eigenvector covariance block
      * @param altCovarianceType type of alternate covariance
      * @param additionalCovMetadata additional covariance metadata
      */
     private CdmData(final CommentsContainer commentsBlock,
-                   final ODParameters ODparametersBlock,
+                   final ODParameters ODParametersBlock,
                    final AdditionalParameters additionalParametersBlock,
                    final StateVector stateVectorBlock,
                    final RTNCovariance covarianceMatrixBlock,
                    final XYZCovariance xyzCovarianceBlock,
-                   final SigmaEigenvectorsCovariance sig3eigvec3CovarianceBlock,
+                   final SigmaEigenvectorsCovariance sig3EigVec3CovarianceBlock,
                    final AltCovarianceType altCovarianceType,
                    final AdditionalCovarianceMetadata additionalCovMetadata) {
-        this.commentsBlock                  = commentsBlock;
-        this.ODparametersBlock              = ODparametersBlock;
-        this.additionalParametersBlock      = additionalParametersBlock;
+        this.commentsBlock             = commentsBlock;
+        this.ODParametersBlock         = ODParametersBlock;
+        this.additionalParametersBlock = additionalParametersBlock;
         this.stateVectorBlock               = stateVectorBlock;
         this.covarianceMatrixBlock          = covarianceMatrixBlock;
         this.xyzCovarianceMatrixBlock       = xyzCovarianceBlock;
-        this.sig3eigvec3CovarianceBlock     = sig3eigvec3CovarianceBlock;
+        this.sig3EigVec3CovarianceBlock     = sig3EigVec3CovarianceBlock;
         this.altCovarianceType              = altCovarianceType;
         this.additionalCovMetadata          = additionalCovMetadata;
         this.userDefinedBlock               = null;
@@ -97,42 +97,42 @@ public class CdmData implements Data {
 
      /**  Constructor with RTN covariance.
      * @param commentsBlock general comments block
-     * @param ODparametersBlock OD parameters block (may be null)
+     * @param ODParametersBlock OD parameters block (may be null)
      * @param additionalParametersBlock additionnal parameters block (may be null)
      * @param stateVectorBlock state vector block
      * @param covarianceMatrixBlock covariance matrix in RTN coordinates frame block
 
      */
     public CdmData(final CommentsContainer commentsBlock,
-                   final ODParameters ODparametersBlock,
+                   final ODParameters ODParametersBlock,
                    final AdditionalParameters additionalParametersBlock,
                    final StateVector stateVectorBlock,
                    final RTNCovariance covarianceMatrixBlock) {
-        this(commentsBlock, ODparametersBlock, additionalParametersBlock, stateVectorBlock,
-                covarianceMatrixBlock, null, null, null, null);
+        this(commentsBlock, ODParametersBlock, additionalParametersBlock, stateVectorBlock,
+             covarianceMatrixBlock, null, null, null, null);
     }
 
      /**  Constructor with RTN covariance.
      * @param commentsBlock general comments block
-     * @param ODparametersBlock OD parameters block (may be null)
+     * @param ODParametersBlock OD parameters block (may be null)
      * @param additionalParametersBlock additionnal parameters block (may be null)
      * @param stateVectorBlock state vector block
      * @param covarianceMatrixBlock covariance matrix in RTN coordinates frame block
      * @param additionalCovMetadata additional covariance metadata
      */
     public CdmData(final CommentsContainer commentsBlock,
-                   final ODParameters ODparametersBlock,
+                   final ODParameters ODParametersBlock,
                    final AdditionalParameters additionalParametersBlock,
                    final StateVector stateVectorBlock,
                    final RTNCovariance covarianceMatrixBlock,
                    final AdditionalCovarianceMetadata additionalCovMetadata) {
-        this(commentsBlock, ODparametersBlock, additionalParametersBlock, stateVectorBlock,
-                covarianceMatrixBlock, null, null, null, additionalCovMetadata);
+        this(commentsBlock, ODParametersBlock, additionalParametersBlock, stateVectorBlock,
+             covarianceMatrixBlock, null, null, null, additionalCovMetadata);
     }
 
      /**  Constructor with RTN and XYZ covariance.
      * @param commentsBlock general comments block
-     * @param ODparametersBlock OD parameters block (may be null)
+     * @param ODParametersBlock OD parameters block (may be null)
      * @param additionalParametersBlock additionnal parameters block (may be null)
      * @param stateVectorBlock state vector block
      * @param covarianceMatrixBlock covariance matrix in RTN coordinates frame block
@@ -140,41 +140,41 @@ public class CdmData implements Data {
      * @param additionalCovMetadata additional covariance metadata
      */
     public CdmData(final CommentsContainer commentsBlock,
-                   final ODParameters ODparametersBlock,
+                   final ODParameters ODParametersBlock,
                    final AdditionalParameters additionalParametersBlock,
                    final StateVector stateVectorBlock,
                    final RTNCovariance covarianceMatrixBlock,
                    final XYZCovariance xyzCovarianceBlock,
                    final AdditionalCovarianceMetadata additionalCovMetadata) {
-        this(commentsBlock, ODparametersBlock, additionalParametersBlock, stateVectorBlock,
-                covarianceMatrixBlock, xyzCovarianceBlock, null, AltCovarianceType.XYZ, additionalCovMetadata);
+        this(commentsBlock, ODParametersBlock, additionalParametersBlock, stateVectorBlock,
+             covarianceMatrixBlock, xyzCovarianceBlock, null, AltCovarianceType.XYZ, additionalCovMetadata);
     }
 
      /**  Constructor with RTN and sigma/eigenvector covariance.
      * @param commentsBlock general comments block
-     * @param ODparametersBlock OD parameters block (may be null)
+     * @param ODParametersBlock OD parameters block (may be null)
      * @param additionalParametersBlock additionnal parameters block (may be null)
      * @param stateVectorBlock state vector block
      * @param covarianceMatrixBlock covariance matrix in RTN coordinates frame block
-     * @param sig3eigvec3CovarianceBlock sigma/eigenvector covariance block
+     * @param sig3EigVec3CovarianceBlock sigma/eigenvector covariance block
      * @param additionalCovMetadata additional covariance metadata
      */
     public CdmData(final CommentsContainer commentsBlock,
-                   final ODParameters ODparametersBlock,
+                   final ODParameters ODParametersBlock,
                    final AdditionalParameters additionalParametersBlock,
                    final StateVector stateVectorBlock,
                    final RTNCovariance covarianceMatrixBlock,
-                   final SigmaEigenvectorsCovariance sig3eigvec3CovarianceBlock,
+                   final SigmaEigenvectorsCovariance sig3EigVec3CovarianceBlock,
                    final AdditionalCovarianceMetadata additionalCovMetadata) {
-        this(commentsBlock, ODparametersBlock, additionalParametersBlock, stateVectorBlock,
-                covarianceMatrixBlock, null, sig3eigvec3CovarianceBlock, AltCovarianceType.CSIG3EIGVEC3, additionalCovMetadata);
+        this(commentsBlock, ODParametersBlock, additionalParametersBlock, stateVectorBlock,
+             covarianceMatrixBlock, null, sig3EigVec3CovarianceBlock, AltCovarianceType.CSIG3EIGVEC3, additionalCovMetadata);
     }
 
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
-        if (ODparametersBlock != null) {
-            ODparametersBlock.validate(version);
+        if (ODParametersBlock != null) {
+            ODParametersBlock.validate(version);
         }
         if (additionalParametersBlock != null) {
             additionalParametersBlock.validate(version);
@@ -187,7 +187,7 @@ public class CdmData implements Data {
         } else if (altCovarianceType == AltCovarianceType.XYZ) {
             xyzCovarianceMatrixBlock.validate(version);
         } else if (altCovarianceType == AltCovarianceType.CSIG3EIGVEC3) {
-            sig3eigvec3CovarianceBlock.validate(version);
+            sig3EigVec3CovarianceBlock.validate(version);
         }
 
     }
@@ -203,7 +203,14 @@ public class CdmData implements Data {
      * @return OD parameters block (may be null)
      */
     public ODParameters getODParametersBlock() {
-        return ODparametersBlock;
+        return ODParametersBlock;
+    }
+
+    /** Set the OD parameters logical block.
+     * @param ODParametersBlock the OD Parameters logical block
+     */
+    public void setODParametersBlock(final ODParameters ODParametersBlock) {
+        this.ODParametersBlock = ODParametersBlock;
     }
 
     /** Get the additional parameters logical block.
@@ -211,6 +218,13 @@ public class CdmData implements Data {
      */
     public AdditionalParameters getAdditionalParametersBlock() {
         return additionalParametersBlock;
+    }
+
+    /** Set the additional parameters logical block.
+     * @param additionalParametersBlock the additional parameters logical block
+     */
+    public void setAdditionalParametersBlock(final AdditionalParameters additionalParametersBlock) {
+        this.additionalParametersBlock = additionalParametersBlock;
     }
 
     /** Get the state vector logical block.
@@ -243,8 +257,8 @@ public class CdmData implements Data {
      * <p> This method will return null if the block is not defined in the CDM. </p>
      * @return the Sigma / Eigenvector covariance block
      */
-    public SigmaEigenvectorsCovariance getSig3Eigvec3CovarianceBlock() {
-        return sig3eigvec3CovarianceBlock;
+    public SigmaEigenvectorsCovariance getSig3EigVec3CovarianceBlock() {
+        return sig3EigVec3CovarianceBlock;
     }
 
     /** Get the additional covariance metadata logical block.
@@ -255,7 +269,14 @@ public class CdmData implements Data {
         return additionalCovMetadata;
     }
 
-     /** Get the user defined logical block.
+    /** Set the additional covariance metadata logical block.
+     * @param covarianceMatrixBlock the additional covariance metadata logical block
+     */
+    public void setCovarianceMatrixBlock(final RTNCovariance covarianceMatrixBlock) {
+        this.covarianceMatrixBlock = covarianceMatrixBlock;
+    }
+
+    /** Get the user defined logical block.
      * <p> This method will return null if the block is not defined in the CDM. </p>
      * @return the additional covariance metadata logical block
      */

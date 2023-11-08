@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.data.LazyLoadedDataContext;
-import org.orekit.frames.EOPHistoryLoader;
+import org.orekit.frames.EopHistoryLoader;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.frames.ITRFVersionLoader.ITRFVersionConfiguration;
 import org.orekit.frames.ItrfVersionProvider;
@@ -63,7 +63,7 @@ public class PreloadedTimeScalesTest {
                 leapSeconds,
                 (conventions, timeScales) -> {
                     try {
-                        return EOPHistoryLoader.Parser
+                        return EopHistoryLoader.Parser
                                 .newFinalsXmlParser(conventions, itrfVersionProvider, timeScales)
                                 .parse(PreloadedTimeScales.class.getResourceAsStream(eopPath), eopPath);
                     } catch (IOException e) {

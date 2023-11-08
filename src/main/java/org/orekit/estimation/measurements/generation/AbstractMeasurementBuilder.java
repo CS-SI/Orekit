@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -163,10 +163,9 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
         return baseWeight.clone();
     }
 
-    /** Get the satellites related to this measurement.
-     * @return satellites related to this measurement
-     */
-    protected ObservableSatellite[] getSatellites() {
+    /** {@inheritDoc} */
+    @Override
+    public ObservableSatellite[] getSatellites() {
         return satellites.clone();
     }
 

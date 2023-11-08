@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -71,27 +71,27 @@ public class XYZCovariance extends CommentsContainer {
         }
 
         // We only check values that are mandatory in a cdm file
-        checkNotNaN(getCxx(),              XYZCovarianceKey.CX_X);
-        checkNotNaN(getCyx(),              XYZCovarianceKey.CY_X);
-        checkNotNaN(getCyy(),              XYZCovarianceKey.CY_Y);
-        checkNotNaN(getCzx(),              XYZCovarianceKey.CZ_X);
-        checkNotNaN(getCzy(),              XYZCovarianceKey.CZ_Y);
-        checkNotNaN(getCzz(),              XYZCovarianceKey.CZ_Z);
-        checkNotNaN(getCxdotx(),           XYZCovarianceKey.CXDOT_X);
-        checkNotNaN(getCxdoty(),           XYZCovarianceKey.CXDOT_Y);
-        checkNotNaN(getCxdotz(),           XYZCovarianceKey.CXDOT_Z);
-        checkNotNaN(getCxdotxdot(),        XYZCovarianceKey.CXDOT_XDOT);
-        checkNotNaN(getCydotx(),           XYZCovarianceKey.CYDOT_X);
-        checkNotNaN(getCydoty(),           XYZCovarianceKey.CYDOT_Y);
-        checkNotNaN(getCydotz(),           XYZCovarianceKey.CYDOT_Z);
-        checkNotNaN(getCydotxdot(),        XYZCovarianceKey.CYDOT_XDOT);
-        checkNotNaN(getCydotydot(),        XYZCovarianceKey.CYDOT_YDOT);
-        checkNotNaN(getCzdotx(),           XYZCovarianceKey.CZDOT_X);
-        checkNotNaN(getCzdoty(),           XYZCovarianceKey.CZDOT_Y);
-        checkNotNaN(getCzdotz(),           XYZCovarianceKey.CZDOT_Z);
-        checkNotNaN(getCzdotxdot(),        XYZCovarianceKey.CZDOT_XDOT);
-        checkNotNaN(getCzdotydot(),        XYZCovarianceKey.CZDOT_YDOT);
-        checkNotNaN(getCzdotzdot(),        XYZCovarianceKey.CZDOT_ZDOT);
+        checkNotNaN(getCxx(),              XYZCovarianceKey.CX_X.name());
+        checkNotNaN(getCyx(),              XYZCovarianceKey.CY_X.name());
+        checkNotNaN(getCyy(),              XYZCovarianceKey.CY_Y.name());
+        checkNotNaN(getCzx(),              XYZCovarianceKey.CZ_X.name());
+        checkNotNaN(getCzy(),              XYZCovarianceKey.CZ_Y.name());
+        checkNotNaN(getCzz(),              XYZCovarianceKey.CZ_Z.name());
+        checkNotNaN(getCxdotx(),           XYZCovarianceKey.CXDOT_X.name());
+        checkNotNaN(getCxdoty(),           XYZCovarianceKey.CXDOT_Y.name());
+        checkNotNaN(getCxdotz(),           XYZCovarianceKey.CXDOT_Z.name());
+        checkNotNaN(getCxdotxdot(),        XYZCovarianceKey.CXDOT_XDOT.name());
+        checkNotNaN(getCydotx(),           XYZCovarianceKey.CYDOT_X.name());
+        checkNotNaN(getCydoty(),           XYZCovarianceKey.CYDOT_Y.name());
+        checkNotNaN(getCydotz(),           XYZCovarianceKey.CYDOT_Z.name());
+        checkNotNaN(getCydotxdot(),        XYZCovarianceKey.CYDOT_XDOT.name());
+        checkNotNaN(getCydotydot(),        XYZCovarianceKey.CYDOT_YDOT.name());
+        checkNotNaN(getCzdotx(),           XYZCovarianceKey.CZDOT_X.name());
+        checkNotNaN(getCzdoty(),           XYZCovarianceKey.CZDOT_Y.name());
+        checkNotNaN(getCzdotz(),           XYZCovarianceKey.CZDOT_Z.name());
+        checkNotNaN(getCzdotxdot(),        XYZCovarianceKey.CZDOT_XDOT.name());
+        checkNotNaN(getCzdotydot(),        XYZCovarianceKey.CZDOT_YDOT.name());
+        checkNotNaN(getCzdotzdot(),        XYZCovarianceKey.CZDOT_ZDOT.name());
     }
 
     /** Set an entry in the XYZ covariance matrix.

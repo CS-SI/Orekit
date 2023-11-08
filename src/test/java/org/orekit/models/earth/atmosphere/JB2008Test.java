@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,8 +22,8 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
@@ -193,11 +193,11 @@ public class JB2008Test {
 
                     final GeodeticPoint point = new GeodeticPoint(lat, lon, alt * 1000.);
                     final Vector3D pos = earth.transform(point);
-                    Field<Decimal64> field = Decimal64Field.getInstance();
+                    Field<Binary64> field = Binary64Field.getInstance();
 
                     // Run
                     final double    rho = atm.getDensity(date, pos, itrf);
-                    final Decimal64 rho64 = atm.getDensity(new FieldAbsoluteDate<>(field, date),
+                    final Binary64 rho64 = atm.getDensity(new FieldAbsoluteDate<>(field, date),
                                                            new FieldVector3D<>(field.getOne(), pos),
                                                            itrf);
 

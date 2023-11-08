@@ -242,7 +242,7 @@ public class OrekitEphemerisFile
             }
 
             if (interpolationSampleSize < minimumSampleSize) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION,
+                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA,
                         interpolationSampleSize);
             }
 
@@ -272,6 +272,7 @@ public class OrekitEphemerisFile
         }
     }
 
+    /** Ephemeris segment. */
     public static class OrekitEphemerisSegment
         implements EphemerisFile.EphemerisSegment<TimeStampedPVCoordinates> {
 

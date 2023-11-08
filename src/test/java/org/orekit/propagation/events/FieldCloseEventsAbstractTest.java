@@ -28,7 +28,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -72,7 +72,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         this.field = field;
         this.epoch = new FieldAbsoluteDate<>(field, AbsoluteDate.J2000_EPOCH);
         this.initialOrbit = new FieldKeplerianOrbit<>(
-            v(6378137 + 500e3), v(0), v(0), v(0), v(0), v(0), PositionAngle.TRUE,
+            v(6378137 + 500e3), v(0), v(0), v(0), v(0), v(0), PositionAngleType.TRUE,
             eci, epoch, v(mu));
     }
 
@@ -99,15 +99,15 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         FieldPropagator<T> propagator = getPropagator(10.0);
 
         double t1 = 49, t2 = t1 + 1e-15, t3 = t1 + 4.9;
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         TimeDetector detector1 = new TimeDetector(t1)
                 .withHandler(new Handler<>(events, Action.RESET_DERIVATIVES))
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(1e-9));
         propagator.addEventDetector(detector1);
         TimeDetector detector2 = new TimeDetector(t2, t3)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(11))
+                .withMaxCheck(11)
                 .withThreshold(v(1e-9));
         propagator.addEventDetector(detector2);
 
@@ -126,15 +126,15 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1;
         FieldPropagator<T> propagator = getPropagator(10);
 
-        FieldRecordAndContinue<FieldEventDetector<T>, T> handler = new FieldRecordAndContinue<>();
+        FieldRecordAndContinue<T> handler = new FieldRecordAndContinue<>();
         TimeDetector detector1 = new TimeDetector(5)
                 .withHandler(handler)
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(tolerance));
         propagator.addEventDetector(detector1);
         TimeDetector detector2 = new TimeDetector(5.5)
                 .withHandler(handler)
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(tolerance));
         propagator.addEventDetector(detector2);
 
@@ -142,7 +142,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(20));
 
         // verify
-        List<Event<FieldEventDetector<T>, T>> events = handler.getEvents();
+        List<Event<T>> events = handler.getEvents();
         Assertions.assertEquals(2, events.size());
         Assertions.assertEquals(5, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
         Assertions.assertEquals(detector1, events.get(0).getDetector());
@@ -155,16 +155,16 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         // setup
         FieldPropagator<T> propagator = getPropagator(10);
 
-        FieldRecordAndContinue<FieldEventDetector<T>, T> handler1 = new FieldRecordAndContinue<>();
+        FieldRecordAndContinue<T> handler1 = new FieldRecordAndContinue<>();
         TimeDetector detector1 = new TimeDetector(5)
                 .withHandler(handler1)
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(1));
         propagator.addEventDetector(detector1);
-        FieldRecordAndContinue<FieldEventDetector<T>, T> handler2 = new FieldRecordAndContinue<>();
+        FieldRecordAndContinue<T> handler2 = new FieldRecordAndContinue<>();
         TimeDetector detector2 = new TimeDetector(5)
                 .withHandler(handler2)
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(1));
         propagator.addEventDetector(detector2);
 
@@ -172,10 +172,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(20));
 
         // verify
-        List<Event<FieldEventDetector<T>, T>> events1 = handler1.getEvents();
+        List<Event<T>> events1 = handler1.getEvents();
         Assertions.assertEquals(1, events1.size());
         Assertions.assertEquals(5, events1.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
-        List<Event<FieldEventDetector<T>, T>> events2 = handler2.getEvents();
+        List<Event<T>> events2 = handler2.getEvents();
         Assertions.assertEquals(1, events2.size());
         Assertions.assertEquals(5, events2.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
     }
@@ -191,10 +191,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tol = 1e-10;
         FieldPropagator<T> propagator = getPropagator(10);
         boolean[] firstEventOccurred = {false};
-        List<FieldRecordAndContinue.Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<FieldRecordAndContinue.Event<T>> events = new ArrayList<>();
 
         TimeDetector detector1 = new TimeDetector(5)
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(tol))
                 .withHandler(new Handler<FieldEventDetector<T>>(events, Action.RESET_STATE) {
                     @Override
@@ -211,7 +211,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.addEventDetector(detector1);
         // this detector changes it's g function definition when detector1 fires
         FieldFunctionalDetector<T> detector2 = new FieldFunctionalDetector<>(field)
-                .withMaxCheck(v(1))
+                .withMaxCheck(1)
                 .withThreshold(v(tol))
                 .withHandler(new FieldRecordAndContinue<>(events))
                 .withFunction(state -> {
@@ -249,13 +249,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double t = FastMath.PI;
         double tol = 1e-10;
         FieldPropagator<T> propagator = getPropagator(10);
-        List<FieldRecordAndContinue.Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<FieldRecordAndContinue.Event<T>> events = new ArrayList<>();
         FieldSpacecraftState<T> newState = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(
-                v(42e6), v(0), v(0), v(0), v(0), v(0), PositionAngle.TRUE, eci, epoch.shiftedBy(t), v(mu)));
+                v(42e6), v(0), v(0), v(0), v(0), v(0), PositionAngleType.TRUE, eci, epoch.shiftedBy(t), v(mu)));
 
         TimeDetector resetDetector = new TimeDetector(t)
                 .withHandler(new ResetHandler<>(events, newState))
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(tol));
         propagator.addEventDetector(resetDetector);
         List<FieldEventDetector<T>> detectors = new ArrayList<>();
@@ -263,7 +263,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
             FieldFunctionalDetector<T> detector1 = new FieldFunctionalDetector<>(field)
                     .withFunction(s -> s.getA().subtract(10e6))
                     .withThreshold(v(tol))
-                    .withMaxCheck(v(10))
+                    .withMaxCheck(10)
                     .withHandler(new FieldRecordAndContinue<>(events));
             propagator.addEventDetector(detector1);
             detectors.add(detector1);
@@ -297,10 +297,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         // step size of 10 to land in between two events we would otherwise miss
         FieldPropagator<T> propagator = getPropagator(10);
 
-        FieldRecordAndContinue<FieldEventDetector<T>, T> handler = new FieldRecordAndContinue<>();
+        FieldRecordAndContinue<T> handler = new FieldRecordAndContinue<>();
         TimeDetector detector1 = new TimeDetector(9.9, 10.1, 12)
                 .withHandler(handler)
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(0.2));
         propagator.addEventDetector(detector1);
 
@@ -309,7 +309,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         //verify
         // finds one or three events. Not 2.
-        List<Event<FieldEventDetector<T>, T>> events1 = handler.getEvents();
+        List<Event<T>> events1 = handler.getEvents();
         Assertions.assertEquals(1, events1.size());
         Assertions.assertEquals(9.9, events1.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.1);
         Assertions.assertEquals(true, events1.get(0).isIncreasing());
@@ -323,18 +323,18 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = 1.0, t2 = 15, t3 = 16, t4 = 17, t5 = 18;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t3)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         TimeDetector detectorB = new TimeDetector(-10, t1, t2, t5)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         TimeDetector detectorC = new TimeDetector(t4)
                 .withHandler(new Handler<>(events, Action.RESET_DERIVATIVES))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
 
         FieldPropagator<T> propagator = getPropagator(10);
@@ -371,14 +371,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         //setup
         double maxCheck = 10;
         double t2 = 11, t3 = t2 + 1e-5;
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t2)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(1e-6));
         FlatDetector detectorB = new FlatDetector(t3)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(0.5));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -412,14 +412,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         final double toleranceB = 0.3;
         double t1 = 11, t2 = 11.1, t3 = 11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t2)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(1e-6));
         TimeDetector detectorB = new TimeDetector(t1, t3)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(toleranceB));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -466,10 +466,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 0.5;
         double t1 = 11, t2 = 11.4, t3 = 12.0;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         FlatDetector detectorB = new FlatDetector(t1, t2, t3)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorB);
@@ -496,14 +496,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = 11;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         TimeDetector detectorB = new TimeDetector(t1, t1)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -534,14 +534,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = 11;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         ContinuousDetector detectorB = new ContinuousDetector(-20, t1, t1)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -569,10 +569,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = 10, t2 = 20;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t1, t2)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -597,10 +597,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = 10, t2 = 20;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(-10, t1, t2)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -626,18 +626,18 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = 1.0, t2 = 2, t3 = 3, t4 = 4, t5 = 5, t6 = 6.5, t7 = 7;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t6)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FlatDetector detectorB = new FlatDetector(t1, t3, t4, t7)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         ContinuousDetector detectorC = new ContinuousDetector(t2, t5)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
 
         FieldPropagator<T> propagator = getPropagator(10);
@@ -687,9 +687,9 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double t1 = 15.0;
         FieldSpacecraftState<T> newState = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(
                 v(6378137 + 500e3), v(0), v(FastMath.PI / 2), v(0), v(0),
-                v(FastMath.PI / 2), PositionAngle.TRUE, eci, epoch.shiftedBy(t1), v(mu)));
+                v(FastMath.PI / 2), PositionAngleType.TRUE, eci, epoch.shiftedBy(t1), v(mu)));
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
                 .withHandler(new Handler<FieldEventDetector<T>>(events, Action.RESET_STATE) {
                     @Override
@@ -698,12 +698,12 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
                         return newState;
                     }
                 })
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldLatitudeCrossingDetector<T> detectorB =
                 new FieldLatitudeCrossingDetector<T>(field, earth, FastMath.toRadians(80))
                         .withHandler(new FieldRecordAndContinue<>(events))
-                        .withMaxCheck(v(maxCheck))
+                        .withMaxCheck(maxCheck)
                         .withThreshold(v(tolerance));
 
         FieldPropagator<T> propagator = getPropagator(10);
@@ -732,10 +732,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-18;
         double t1 = 15;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -763,13 +763,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = 11, t2 = 19;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
-                .withThreshold(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance))
-                .withHandler(new FieldRecordAndContinue<FieldEventDetector<T>, T>(events) {
+                .withHandler(new FieldRecordAndContinue<T>(events) {
                     @Override
                     public Action eventOccurred(FieldSpacecraftState<T> s,
                                                 FieldEventDetector<T> detector,
@@ -779,27 +779,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
                     }
                 });
         ContinuousDetector detectorB = new ContinuousDetector(t2);
-        FieldEventDetector<T> detectorC = new FieldAbstractDetector<FieldEventDetector<T>, T>
-                (v(maxCheck), v(tolerance), 100, new FieldRecordAndContinue<>(events)) {
-
-            @Override
-            public T g(FieldSpacecraftState<T> s) {
-                if (swap[0]) {
-                    return detectorB.g(s);
-                } else {
-                    return v(-1);
-                }
-            }
-
-            @Override
-            protected FieldEventDetector<T> create(
-                    T newMaxCheck,
-                    T newThreshold,
-                    int newMaxIter,
-                    FieldEventHandler<? super FieldEventDetector<T>, T> newHandler) {
-                return null;
-            }
-        };
+        FieldEventDetector<T> detectorC = new Definition(maxCheck, tolerance, swap, detectorB, detectorB, events);
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -829,13 +809,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = 11, t2 = 11.1;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance))
-                .withHandler(new FieldRecordAndContinue<FieldEventDetector<T>, T>(events) {
+                .withHandler(new FieldRecordAndContinue<T>(events) {
                     @Override
                     public Action eventOccurred(FieldSpacecraftState<T> state,
                                                 FieldEventDetector<T> detector,
@@ -846,28 +826,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
                     }
                 });
         final ContinuousDetector detectorB = new ContinuousDetector(t2);
-        FieldEventDetector<T> detectorC = new FieldAbstractDetector<FieldEventDetector<T>, T>
-                (v(maxCheck), v(tolerance), 100, new FieldRecordAndContinue<>(events)) {
-
-            @Override
-            public T g(FieldSpacecraftState<T> state) {
-                if (!swap[0]) {
-                    return detectorB.g(state);
-                } else {
-                    return v(-1);
-                }
-            }
-
-            @Override
-            protected FieldEventDetector<T> create(
-                    T newMaxCheck,
-                    T newThreshold,
-                    int newMaxIter,
-                    FieldEventHandler<? super FieldEventDetector<T>, T> newHandler) {
-                return null;
-            }
-
-        };
+        FieldEventDetector<T> detectorC = new Cancel(maxCheck, tolerance, swap, detectorB, detectorB, events);
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -894,13 +853,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = 11, t2 = 11.1, t3 = 11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance))
-                .withHandler(new FieldRecordAndContinue<FieldEventDetector<T>, T>(events) {
+                .withHandler(new FieldRecordAndContinue<T>(events) {
                     @Override
                     public Action eventOccurred(FieldSpacecraftState<T> state,
                                                 FieldEventDetector<T> detector,
@@ -912,28 +871,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
                 });
         final ContinuousDetector detectorB = new ContinuousDetector(t2);
         final ContinuousDetector detectorD = new ContinuousDetector(t3);
-        FieldEventDetector<T> detectorC = new FieldAbstractDetector<FieldEventDetector<T>, T>
-                (v(maxCheck), v(tolerance), 100, new FieldRecordAndContinue<>(events)) {
-
-            @Override
-            public T g(FieldSpacecraftState<T> state) {
-                if (!swap[0]) {
-                    return detectorB.g(state);
-                } else {
-                    return detectorD.g(state);
-                }
-            }
-
-            @Override
-            protected FieldEventDetector<T> create(
-                    T newMaxCheck,
-                    T newThreshold,
-                    int newMaxIter,
-                    FieldEventHandler<? super FieldEventDetector<T>, T> newHandler) {
-                return null;
-            }
-
-        };
+        FieldEventDetector<T> detectorC = new Delay(maxCheck, tolerance, swap, detectorB, detectorD, events);
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -963,13 +901,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = 11, t2 = 11.1, t3 = 11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance))
-                .withHandler(new FieldRecordAndContinue<FieldEventDetector<T>, T>(events) {
+                .withHandler(new FieldRecordAndContinue<T>(events) {
                     @Override
                     public Action eventOccurred(FieldSpacecraftState<T> state,
                                                 FieldEventDetector<T> detector,
@@ -981,28 +919,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
                 });
         final ContinuousDetector detectorB = new ContinuousDetector(t2);
         final ContinuousDetector detectorD = new ContinuousDetector(t3);
-        FieldEventDetector<T> detectorC = new FieldAbstractDetector<FieldEventDetector<T>, T>
-                (v(maxCheck), v(tolerance), 100, new FieldRecordAndContinue<>(events)) {
-
-            @Override
-            public T g(FieldSpacecraftState<T> state) {
-                if (swap[0]) {
-                    return detectorB.g(state);
-                } else {
-                    return detectorD.g(state);
-                }
-            }
-
-            @Override
-            protected FieldEventDetector<T> create(
-                    T newMaxCheck,
-                    T newThreshold,
-                    int newMaxIter,
-                    FieldEventHandler<? super FieldEventDetector<T>, T> newHandler) {
-                return null;
-            }
-
-        };
+        FieldEventDetector<T> detectorC = new Accelerate(maxCheck, tolerance, swap, detectorB, detectorD, events);
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -1028,10 +945,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-18; // less than 1 ulp
         double t1 = 15.1;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         FlatDetector detectorA = new FlatDetector(t1)
                 .withHandler(new Handler<>(events, Action.STOP))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1066,35 +983,12 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         final double t1 = FastMath.nextUp(10.0), t2 = 10.5;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         // never zero so there is no easy way out
-        FieldEventDetector<T> detectorA = new FieldAbstractDetector<FieldEventDetector<T>, T>
-                (v(maxCheck), v(tolerance), 100, new FieldRecordAndContinue<>(events)) {
-
-            @Override
-            public T g(FieldSpacecraftState<T> state) {
-                final FieldAbsoluteDate<T> t = state.getDate();
-                if (t.compareTo(epoch.shiftedBy(t1)) < 0) {
-                    return v(-1);
-                } else if (t.compareTo(epoch.shiftedBy(t2)) < 0) {
-                    return v(1);
-                } else {
-                    return v(-1);
-                }
-            }
-
-            @Override
-            protected FieldEventDetector<T> create(
-                    T newMaxCheck,
-                    T newThreshold,
-                    int newMaxIter,
-                    FieldEventHandler<? super FieldEventDetector<T>, T> newHandler) {
-                return null;
-            }
-        };
+        FieldEventDetector<T> detectorA = new ShortInfDetector(maxCheck, tolerance, t1, t2, events);
         TimeDetector detectorB = new TimeDetector(t1)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1124,10 +1018,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-18; // less than 1 ulp
         FieldAbsoluteDate<T> t1 = epoch.shiftedBy(15).shiftedBy(FastMath.ulp(15.0) / 8);
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         FlatDetector detectorA = new FlatDetector(t1)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1189,12 +1083,12 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         TimeDetector detectorA = new TimeDetector(15.0)
                 .withHandler(new Handler<TimeDetector>(Action.RESET_STATE){
                     @Override
-                    public FieldSpacecraftState<T> resetState(TimeDetector d,
+                    public FieldSpacecraftState<T> resetState(FieldEventDetector<T> d,
                                                               FieldSpacecraftState<T> s) {
                         return null;
                     }
                 })
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(1e-6));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1233,13 +1127,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         Handler<FieldEventDetector<T>> handler1 = new Handler<>(Action.RESET_DERIVATIVES);
         TimeDetector detector1 = new TimeDetector(t1)
                 .withHandler(handler1)
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(1e-9));
         propagator.addEventDetector(detector1);
-        FieldRecordAndContinue<FieldEventDetector<T>, T> handler2 = new FieldRecordAndContinue<>();
+        FieldRecordAndContinue<T> handler2 = new FieldRecordAndContinue<>();
         TimeDetector detector2 = new TimeDetector(t1 - 1e-15, t1 - 4.9)
                 .withHandler(handler2)
-                .withMaxCheck(v(11))
+                .withMaxCheck(11)
                 .withThreshold(v(1e-9));
         propagator.addEventDetector(detector2);
 
@@ -1247,10 +1141,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(-20));
 
         // verify
-        List<Event<FieldEventDetector<T>, T>> events1 = handler1.getEvents();
+        List<Event<T>> events1 = handler1.getEvents();
         Assertions.assertEquals(1, events1.size());
         Assertions.assertEquals(t1, events1.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
-        List<Event<FieldEventDetector<T>, T>> events2 = handler2.getEvents();
+        List<Event<T>> events2 = handler2.getEvents();
         Assertions.assertEquals(0, events2.size());
     }
 
@@ -1260,16 +1154,16 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1;
         FieldPropagator<T> propagator = getPropagator(10);
 
-        FieldRecordAndContinue<FieldEventDetector<T>, T> handler1 = new FieldRecordAndContinue<>();
+        FieldRecordAndContinue<T> handler1 = new FieldRecordAndContinue<>();
         TimeDetector detector1 = new TimeDetector(-5)
                 .withHandler(handler1)
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(tolerance));
         propagator.addEventDetector(detector1);
-        FieldRecordAndContinue<FieldEventDetector<T>, T> handler2 = new FieldRecordAndContinue<>();
+        FieldRecordAndContinue<T> handler2 = new FieldRecordAndContinue<>();
         TimeDetector detector2 = new TimeDetector(-5.5)
                 .withHandler(handler2)
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(tolerance));
         propagator.addEventDetector(detector2);
 
@@ -1277,10 +1171,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(-20));
 
         // verify
-        List<Event<FieldEventDetector<T>, T>> events1 = handler1.getEvents();
+        List<Event<T>> events1 = handler1.getEvents();
         Assertions.assertEquals(1, events1.size());
         Assertions.assertEquals(-5, events1.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        List<Event<FieldEventDetector<T>, T>> events2 = handler2.getEvents();
+        List<Event<T>> events2 = handler2.getEvents();
         Assertions.assertEquals(1, events2.size());
         Assertions.assertEquals(-5.5, events2.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
     }
@@ -1290,16 +1184,16 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         // setup
         FieldPropagator<T> propagator = getPropagator(10);
 
-        FieldRecordAndContinue<FieldEventDetector<T>, T> handler1 = new FieldRecordAndContinue<>();
+        FieldRecordAndContinue<T> handler1 = new FieldRecordAndContinue<>();
         TimeDetector detector1 = new TimeDetector(-5)
                 .withHandler(handler1)
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(1));
         propagator.addEventDetector(detector1);
-        FieldRecordAndContinue<FieldEventDetector<T>, T> handler2 = new FieldRecordAndContinue<>();
+        FieldRecordAndContinue<T> handler2 = new FieldRecordAndContinue<>();
         TimeDetector detector2 = new TimeDetector(-5)
                 .withHandler(handler2)
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(1));
         propagator.addEventDetector(detector2);
 
@@ -1307,10 +1201,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(-20));
 
         // verify
-        List<Event<FieldEventDetector<T>, T>> events1 = handler1.getEvents();
+        List<Event<T>> events1 = handler1.getEvents();
         Assertions.assertEquals(1, events1.size());
         Assertions.assertEquals(-5, events1.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
-        List<Event<FieldEventDetector<T>, T>> events2 = handler2.getEvents();
+        List<Event<T>> events2 = handler2.getEvents();
         Assertions.assertEquals(1, events2.size());
         Assertions.assertEquals(-5, events2.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
     }
@@ -1326,10 +1220,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tol = 1e-10;
         FieldPropagator<T> propagator = getPropagator(10);
         boolean[] firstEventOccurred = {false};
-        List<FieldRecordAndContinue.Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<FieldRecordAndContinue.Event<T>> events = new ArrayList<>();
 
         TimeDetector detector1 = new TimeDetector(-5)
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(tol))
                 .withHandler(new Handler<FieldEventDetector<T>>(events, Action.RESET_STATE) {
                     @Override
@@ -1346,7 +1240,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.addEventDetector(detector1);
         // this detector changes it's g function definition when detector1 fires
         FieldFunctionalDetector<T> detector2 = new FieldFunctionalDetector<>(field)
-                .withMaxCheck(v(1))
+                .withMaxCheck(1)
                 .withThreshold(v(tol))
                 .withHandler(new FieldRecordAndContinue<>(events))
                 .withFunction(state -> {
@@ -1384,13 +1278,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double t = -FastMath.PI;
         double tol = 1e-10;
         FieldPropagator<T> propagator = getPropagator(10);
-        List<FieldRecordAndContinue.Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<FieldRecordAndContinue.Event<T>> events = new ArrayList<>();
         FieldSpacecraftState<T> newState = new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(
-                v(42e6), v(0), v(0), v(0), v(0), v(0), PositionAngle.TRUE, eci, epoch.shiftedBy(t), v(mu)));
+                v(42e6), v(0), v(0), v(0), v(0), v(0), PositionAngleType.TRUE, eci, epoch.shiftedBy(t), v(mu)));
 
         TimeDetector resetDetector = new TimeDetector(t)
                 .withHandler(new ResetHandler<>(events, newState))
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(tol));
         propagator.addEventDetector(resetDetector);
         List<FieldEventDetector<T>> detectors = new ArrayList<>();
@@ -1398,7 +1292,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
             FieldFunctionalDetector<T> detector1 = new FieldFunctionalDetector<>(field)
                     .withFunction(s -> s.getA().subtract(10e6))
                     .withThreshold(v(tol))
-                    .withMaxCheck(v(10))
+                    .withMaxCheck(10)
                     .withHandler(new FieldRecordAndContinue<>(events));
             propagator.addEventDetector(detector1);
             detectors.add(detector1);
@@ -1432,10 +1326,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         // step size of 10 to land in between two events we would otherwise miss
         FieldPropagator<T> propagator = getPropagator(10);
 
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         TimeDetector detector1 = new TimeDetector(-9.9, -10.1, -12)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(0.2));
         propagator.addEventDetector(detector1);
 
@@ -1457,18 +1351,18 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = -1.0, t2 = -15, t3 = -16, t4 = -17, t5 = -18;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t3)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         TimeDetector detectorB = new TimeDetector(-50, t1, t2, t5)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         TimeDetector detectorC = new TimeDetector(t4)
                 .withHandler(new Handler<>(events, Action.RESET_DERIVATIVES))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
 
         FieldPropagator<T> propagator = getPropagator(10);
@@ -1505,14 +1399,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         //setup
         double maxCheck = 10;
         double t2 = -11, t3 = t2 - 1e-5;
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t2)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(1e-6));
         FlatDetector detectorB = new FlatDetector(t3)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(0.5));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1546,14 +1440,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         final double toleranceB = 0.3;
         double t1 = -11, t2 = -11.1, t3 = -11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t2)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         TimeDetector detectorB = new TimeDetector(-50, t1, t3)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(toleranceB));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1590,10 +1484,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 0.5;
         double t1 = -11, t2 = -11.4, t3 = -12.0;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         FlatDetector detectorB = new FlatDetector(t1, t2, t3)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorB);
@@ -1620,14 +1514,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = -11;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         TimeDetector detectorB = new TimeDetector(t1, t1)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1658,14 +1552,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = -11;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         ContinuousDetector detectorB = new ContinuousDetector(-50, t1, t1)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         detectorB.g(state(t1));
         FieldPropagator<T> propagator = getPropagator(10);
@@ -1694,10 +1588,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = -10, t2 = -20;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(-50, t1, t2)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1723,10 +1617,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = -10, t2 = -20;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t1, t2)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1752,18 +1646,18 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = -1.0, t2 = -2, t3 = -3, t4 = -4, t5 = -5, t6 = -6.5, t7 = -7;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t6)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         ContinuousDetector detectorB = new ContinuousDetector(-50, t1, t3, t4, t7)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         ContinuousDetector detectorC = new ContinuousDetector(-50, t2, t5)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
 
         FieldPropagator<T> propagator = getPropagator(10);
@@ -1813,9 +1707,9 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double t1 = -15.0;
         FieldSpacecraftState<T> newState = new FieldSpacecraftState<T>(new FieldKeplerianOrbit<T>(
                 v(6378137 + 500e3), v(0), v(FastMath.PI / 2), v(0), v(0),
-                v(FastMath.PI / 2), PositionAngle.TRUE, eci, epoch.shiftedBy(t1), v(mu)));
+                v(FastMath.PI / 2), PositionAngleType.TRUE, eci, epoch.shiftedBy(t1), v(mu)));
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
                 .withHandler(new Handler<FieldEventDetector<T>>(events, Action.RESET_STATE) {
                     @Override
@@ -1824,12 +1718,12 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
                         return newState;
                     }
                 })
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldLatitudeCrossingDetector<T> detectorB =
                 new FieldLatitudeCrossingDetector<T>(field, earth, FastMath.toRadians(80))
                         .withHandler(new FieldRecordAndContinue<>(events))
-                        .withMaxCheck(v(maxCheck))
+                        .withMaxCheck(maxCheck)
                         .withThreshold(v(tolerance));
 
         FieldPropagator<T> propagator = getPropagator(10);
@@ -1858,10 +1752,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-18;
         double t1 = -15;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1889,13 +1783,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = -11, t2 = -19;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         ContinuousDetector detectorA = new ContinuousDetector(t1)
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance))
-                .withHandler(new FieldRecordAndContinue<FieldEventDetector<T>, T>(events) {
+                .withHandler(new FieldRecordAndContinue<T>(events) {
                     @Override
                     public Action eventOccurred(FieldSpacecraftState<T> s,
                                                 FieldEventDetector<T> detector,
@@ -1905,28 +1799,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
                     }
                 });
         ContinuousDetector detectorB = new ContinuousDetector(t2);
-        FieldEventDetector<T> detectorC = new FieldAbstractDetector<FieldEventDetector<T>, T>
-                (v(maxCheck), v(tolerance), 100, new FieldRecordAndContinue<>(events)) {
-
-            @Override
-            public T g(FieldSpacecraftState<T> state) {
-                if (swap[0]) {
-                    return detectorB.g(state);
-                } else {
-                    return v(1);
-                }
-            }
-
-            @Override
-            protected FieldEventDetector<T> create(
-                    T newMaxCheck,
-                    T newThreshold,
-                    int newMaxIter,
-                    FieldEventHandler<? super FieldEventDetector<T>, T> newHandler) {
-                return null;
-            }
-
-        };
+        FieldEventDetector<T> detectorC = new Reverse(maxCheck, tolerance, swap, detectorB, detectorB, events);
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -1956,13 +1829,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = -11, t2 = -11.1;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance))
-                .withHandler(new FieldRecordAndContinue<FieldEventDetector<T>, T>(events) {
+                .withHandler(new FieldRecordAndContinue<T>(events) {
                     @Override
                     public Action eventOccurred(FieldSpacecraftState<T> state,
                                                 FieldEventDetector<T> detector,
@@ -1973,28 +1846,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
                     }
                 });
         final ContinuousDetector detectorB = new ContinuousDetector(t2);
-        FieldEventDetector<T> detectorC = new FieldAbstractDetector<FieldEventDetector<T>, T>
-                (v(maxCheck), v(tolerance), 100, new FieldRecordAndContinue<>(events)) {
-
-            @Override
-            public T g(FieldSpacecraftState<T> state) {
-                if (!swap[0]) {
-                    return detectorB.g(state);
-                } else {
-                    return v(1);
-                }
-            }
-
-            @Override
-            protected FieldEventDetector<T> create(
-                    T newMaxCheck,
-                    T newThreshold,
-                    int newMaxIter,
-                    FieldEventHandler<? super FieldEventDetector<T>, T> newHandler) {
-                return null;
-            }
-
-        };
+        FieldEventDetector<T> detectorC = new CancelReverse(maxCheck, tolerance, swap, detectorB, detectorB, events);
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -2021,13 +1873,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = -11, t2 = -11.1, t3 = -11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance))
-                .withHandler(new FieldRecordAndContinue<FieldEventDetector<T>, T>(events) {
+                .withHandler(new FieldRecordAndContinue<T>(events) {
                     @Override
                     public Action eventOccurred(FieldSpacecraftState<T> state,
                                                 FieldEventDetector<T> detector,
@@ -2039,28 +1891,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
                 });
         final ContinuousDetector detectorB = new ContinuousDetector(t2);
         final ContinuousDetector detectorD = new ContinuousDetector(t3);
-        FieldEventDetector<T> detectorC = new FieldAbstractDetector<FieldEventDetector<T>, T>
-                (v(maxCheck), v(tolerance), 100, new FieldRecordAndContinue<>(events)) {
-
-            @Override
-            public T g(FieldSpacecraftState<T> state) {
-                if (!swap[0]) {
-                    return detectorB.g(state);
-                } else {
-                    return detectorD.g(state);
-                }
-            }
-
-            @Override
-            protected FieldEventDetector<T> create(
-                    T newMaxCheck,
-                    T newThreshold,
-                    int newMaxIter,
-                    FieldEventHandler<? super FieldEventDetector<T>, T> newHandler) {
-                return null;
-            }
-
-        };
+        FieldEventDetector<T> detectorC = new DelayReverse(maxCheck, tolerance, swap, detectorB, detectorD, events);
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -2090,13 +1921,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         double t1 = -11, t2 = -11.1, t3 = -11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance))
-                .withHandler(new FieldRecordAndContinue<FieldEventDetector<T>, T>(events) {
+                .withHandler(new FieldRecordAndContinue<T>(events) {
                     @Override
                     public Action eventOccurred(FieldSpacecraftState<T> state,
                                                 FieldEventDetector<T> detector,
@@ -2108,28 +1939,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
                 });
         final ContinuousDetector detectorB = new ContinuousDetector(t2);
         final ContinuousDetector detectorD = new ContinuousDetector(t3);
-        FieldEventDetector<T> detectorC = new FieldAbstractDetector<FieldEventDetector<T>, T>
-                (v(maxCheck), v(tolerance), 100, new FieldRecordAndContinue<>(events)) {
-
-            @Override
-            public T g(FieldSpacecraftState<T> state) {
-                if (swap[0]) {
-                    return detectorB.g(state);
-                } else {
-                    return detectorD.g(state);
-                }
-            }
-
-            @Override
-            protected FieldEventDetector<T> create(
-                    T newMaxCheck,
-                    T newThreshold,
-                    int newMaxIter,
-                    FieldEventHandler<? super FieldEventDetector<T>, T> newHandler) {
-                return null;
-            }
-
-        };
+        FieldEventDetector<T> detectorC = new AccelerateReverse(maxCheck, tolerance, swap, detectorB, detectorD, events);
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
@@ -2147,6 +1957,164 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         Assertions.assertSame(detectorC, events.get(1).getDetector());
     }
 
+    private abstract class AbstractTestDetector<D extends AbstractTestDetector<D>> extends FieldAbstractDetector<D, T> {
+        AbstractTestDetector(final double maxCheck, final double tolerance, final List<Event<T>> events) {
+            super(s -> maxCheck, v(tolerance), 100, new FieldRecordAndContinue<>(events));
+        }
+
+        @Override
+        protected D create(FieldAdaptableInterval<T> newMaxCheck, T newThreshold, int newMaxIter, FieldEventHandler<T> newHandler) {
+            return null;
+        }
+    }
+
+    private abstract class AbstractChangeDetector<D extends AbstractTestDetector<D>> extends AbstractTestDetector<D> {
+        final boolean[] swap;
+        final ContinuousDetector detectorB;
+        final ContinuousDetector detectorD;
+        AbstractChangeDetector(final double maxCheck, final double tolerance, final boolean[] swap,
+                               final ContinuousDetector detectorB, final ContinuousDetector detectorD,
+                               final List<Event<T>> events) {
+            super(maxCheck, tolerance, events);
+            this.swap      = swap;
+            this.detectorB = detectorB;
+            this.detectorD = detectorD;
+        }
+
+        @Override
+        protected D create(FieldAdaptableInterval<T> newMaxCheck, T newThreshold, int newMaxIter, FieldEventHandler<T> newHandler) {
+            return null;
+        }
+    }
+
+    private class Definition extends AbstractChangeDetector<Definition> {
+        Definition(final double maxCheck, final double tolerance, final boolean[] swap,
+                   final ContinuousDetector detectorB, final ContinuousDetector detectorD,
+                   final List<Event<T>> events) {
+            super(maxCheck, tolerance, swap, detectorB, detectorD, events);
+        }
+        @Override
+        public T g(FieldSpacecraftState<T> state) {
+            if (swap[0]) {
+                return detectorB.g(state);
+            } else {
+                return v(-1);
+            }
+        }
+    }
+
+    private class Reverse extends AbstractChangeDetector<Reverse> {
+        Reverse(final double maxCheck, final double tolerance, final boolean[] swap,
+                final ContinuousDetector detectorB, final ContinuousDetector detectorD,
+                final List<Event<T>> events) {
+            super(maxCheck, tolerance, swap, detectorB, detectorD, events);
+        }
+        @Override
+        public T g(FieldSpacecraftState<T> state) {
+            if (swap[0]) {
+                return detectorB.g(state);
+            } else {
+                return v(1);
+            }
+        }
+    }
+
+    private class Cancel extends AbstractChangeDetector<Cancel> {
+        Cancel(final double maxCheck, final double tolerance, final boolean[] swap,
+               final ContinuousDetector detectorB, final ContinuousDetector detectorD,
+               final List<Event<T>> events) {
+            super(maxCheck, tolerance, swap, detectorB, detectorD, events);
+        }
+        @Override
+        public T g(FieldSpacecraftState<T> state) {
+            if (!swap[0]) {
+                return detectorB.g(state);
+            } else {
+                return v(-1);
+            }
+        }
+    }
+
+    private class CancelReverse extends AbstractChangeDetector<CancelReverse> {
+        CancelReverse(final double maxCheck, final double tolerance, final boolean[] swap,
+                      final ContinuousDetector detectorB, final ContinuousDetector detectorD,
+                      final List<Event<T>> events) {
+            super(maxCheck, tolerance, swap, detectorB, detectorD, events);
+        }
+        @Override
+        public T g(FieldSpacecraftState<T> state) {
+            if (!swap[0]) {
+                return detectorB.g(state);
+            } else {
+                return v(1);
+            }
+        }
+    }
+
+    private class Delay extends AbstractChangeDetector<Delay> {
+        Delay(final double maxCheck, final double tolerance, final boolean[] swap,
+              final ContinuousDetector detectorB, final ContinuousDetector detectorD,
+              final List<Event<T>> events) {
+            super(maxCheck, tolerance, swap, detectorB, detectorD, events);
+        }
+        @Override
+        public T g(FieldSpacecraftState<T> state) {
+            if (!swap[0]) {
+                return detectorB.g(state);
+            } else {
+                return detectorD.g(state);
+            }
+        }
+    }
+
+    private class DelayReverse extends AbstractChangeDetector<DelayReverse> {
+        DelayReverse(final double maxCheck, final double tolerance, final boolean[] swap,
+                         final ContinuousDetector detectorB, final ContinuousDetector detectorD,
+                         final List<Event<T>> events) {
+            super(maxCheck, tolerance, swap, detectorB, detectorD, events);
+        }
+        @Override
+        public T g(FieldSpacecraftState<T> state) {
+            if (!swap[0]) {
+                return detectorB.g(state);
+            } else {
+                return detectorD.g(state);
+            }
+        }
+    }
+
+    private class Accelerate extends AbstractChangeDetector<Accelerate> {
+        Accelerate(final double maxCheck, final double tolerance, final boolean[] swap,
+                   final ContinuousDetector detectorB, final ContinuousDetector detectorD,
+                   final List<Event<T>> events) {
+            super(maxCheck, tolerance, swap, detectorB, detectorD, events);
+        }
+        @Override
+        public T g(FieldSpacecraftState<T> state) {
+            if (swap[0]) {
+                return detectorB.g(state);
+            } else {
+                return detectorD.g(state);
+            }
+        }
+    }
+
+    private class AccelerateReverse extends AbstractChangeDetector<AccelerateReverse> {
+        AccelerateReverse(final double maxCheck, final double tolerance, final boolean[] swap,
+                         final ContinuousDetector detectorB, final ContinuousDetector detectorD,
+                         final List<Event<T>> events) {
+            super(maxCheck, tolerance, swap, detectorB, detectorD, events);
+        }
+        @Override
+        public T g(FieldSpacecraftState<T> state) {
+            if (swap[0]) {
+                return detectorB.g(state);
+            } else {
+                return detectorD.g(state);
+            }
+        }
+    }
+
     /** check when root finding tolerance > event finding tolerance. */
     @Test
     public void testToleranceStopReverse() {
@@ -2155,10 +2123,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-18; // less than 1 ulp
         double t1 = -15.1;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         FlatDetector detectorA = new FlatDetector(t1)
                 .withHandler(new Handler<>(events, Action.STOP))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -2193,35 +2161,12 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-6;
         final double t1 = FastMath.nextDown(-10.0), t2 = -10.5;
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         // never zero so there is no easy way out
-        FieldEventDetector<T> detectorA = new FieldAbstractDetector<FieldEventDetector<T>, T>
-                (v(maxCheck), v(tolerance), 100, new FieldRecordAndContinue<>(events)) {
-
-            @Override
-            public T g(FieldSpacecraftState<T> state) {
-                final FieldAbsoluteDate<T> t = state.getDate();
-                if (t.compareTo(epoch.shiftedBy(t1)) > 0) {
-                    return v(-1);
-                } else if (t.compareTo(epoch.shiftedBy(t2)) > 0) {
-                    return v(1);
-                } else {
-                    return v(-1);
-                }
-            }
-
-            @Override
-            protected FieldEventDetector<T> create(
-                    T newMaxCheck,
-                    T newThreshold,
-                    int newMaxIter,
-                    FieldEventHandler<? super FieldEventDetector<T>, T> newHandler) {
-                return null;
-            }
-        };
+        FieldEventDetector<T> detectorA = new ShortSupDetector(maxCheck, tolerance, t1, t2, events);
         TimeDetector detectorB = new TimeDetector(t1)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -2243,6 +2188,56 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         Assertions.assertSame(detectorA, events.get(2).getDetector());
     }
 
+    private class ShortInfDetector extends AbstractTestDetector<ShortInfDetector> {
+
+        final double t1;
+        final double t2;
+
+        ShortInfDetector(final double maxCheck, final double tolerance,
+                         final double t1, final double t2, final List<Event<T>> events) {
+            super(maxCheck, tolerance, events);
+            this.t1 = t1;
+            this.t2 = t2;
+        }
+
+        @Override
+        public T g(FieldSpacecraftState<T> state) {
+            final FieldAbsoluteDate<T> t = state.getDate();
+            if (t.compareTo(epoch.shiftedBy(t1)) < 0) {
+                return v(-1);
+            } else if (t.compareTo(epoch.shiftedBy(t2)) < 0) {
+                return v(1);
+            } else {
+                return v(-1);
+            }
+        }
+    }
+
+    private class ShortSupDetector extends AbstractTestDetector<ShortSupDetector> {
+
+        final double t1;
+        final double t2;
+
+        ShortSupDetector(final double maxCheck, final double tolerance,
+                         final double t1, final double t2, final List<Event<T>> events) {
+            super(maxCheck, tolerance, events);
+            this.t1 = t1;
+            this.t2 = t2;
+        }
+
+        @Override
+        public T g(FieldSpacecraftState<T> state) {
+            final FieldAbsoluteDate<T> t = state.getDate();
+            if (t.compareTo(epoch.shiftedBy(t1)) > 0) {
+                return v(-1);
+            } else if (t.compareTo(epoch.shiftedBy(t2)) > 0) {
+                return v(1);
+            } else {
+                return v(-1);
+            }
+        }
+    }
+
     /** check when root finding tolerance > event finding tolerance. */
     @Test
     public void testToleranceMaxIterationsReverse() {
@@ -2251,10 +2246,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         double tolerance = 1e-18; // less than 1 ulp
         FieldAbsoluteDate<T> t1 = epoch.shiftedBy(-15).shiftedBy(FastMath.ulp(-15.0) / 8);
         // shared event list so we know the order in which they occurred
-        List<Event<FieldEventDetector<T>, T>> events = new ArrayList<>();
+        List<Event<T>> events = new ArrayList<>();
         FlatDetector detectorA = new FlatDetector(t1)
                 .withHandler(new FieldRecordAndContinue<>(events))
-                .withMaxCheck(v(maxCheck))
+                .withMaxCheck(maxCheck)
                 .withThreshold(v(tolerance));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -2317,12 +2312,11 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         TimeDetector detectorA = new TimeDetector(-15.0)
                 .withHandler(new Handler<TimeDetector>(Action.RESET_STATE){
                     @Override
-                    public FieldSpacecraftState<T> resetState(TimeDetector d,
-                                                              FieldSpacecraftState<T> s) {
+                    public FieldSpacecraftState<T> resetState(FieldEventDetector<T> d, FieldSpacecraftState<T> s) {
                         return null;
                     }
                 })
-                .withMaxCheck(v(10))
+                .withMaxCheck(10)
                 .withThreshold(v(1e-6));
         FieldPropagator<T> propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -2342,7 +2336,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         FieldAbsoluteDate<T> t0 = propagator.getInitialState().getDate();
         final double small = 1.25e-11;
         ResetChangesSignGenerator eventsGenerator = new ResetChangesSignGenerator(t0, 0.75, 1.125, -0.5 * small).
-                                                    withMaxCheck(t0.getField().getZero().newInstance(1)).
+                                                    withMaxCheck(1).
                                                     withThreshold(t0.getField().getZero().newInstance(small)).
                                                     withMaxIter(1000);
         propagator.addEventDetector(eventsGenerator);
@@ -2362,7 +2356,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
     private FieldSpacecraftState<T> state(double t) {
         return new FieldSpacecraftState<>(new FieldKeplerianOrbit<>(
                 v(6378137 + 500e3), v(0), v(0), v(0), v(0), v(0),
-                PositionAngle.TRUE, eci, epoch.shiftedBy(t),
+                PositionAngleType.TRUE, eci, epoch.shiftedBy(t),
                 v(mu)));
     }
 
@@ -2396,7 +2390,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
          * @param eventTs event times past epoch.
          */
         public TimeDetector(double... eventTs) {
-            this(v(DEFAULT_MAXCHECK), v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+            this(s -> DEFAULT_MAXCHECK, v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
                     new FieldStopOnEvent<>(), toDates(eventTs));
         }
 
@@ -2407,14 +2401,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
          */
         @SafeVarargs
         public TimeDetector(FieldAbsoluteDate<T>... eventTs) {
-            this(v(DEFAULT_MAXCHECK), v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+            this(s -> DEFAULT_MAXCHECK, v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
                     new FieldStopOnEvent<>(), Arrays.asList(eventTs));
         }
 
-        private TimeDetector(T newMaxCheck,
+        private TimeDetector(FieldAdaptableInterval<T> newMaxCheck,
                              T newThreshold,
                              int newMaxIter,
-                             FieldEventHandler<? super TimeDetector, T> newHandler,
+                             FieldEventHandler<T> newHandler,
                              List<FieldAbsoluteDate<T>> dates) {
             super(newMaxCheck, newThreshold, newMaxIter, newHandler);
             this.eventTs = dates;
@@ -2437,12 +2431,11 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         }
 
         @Override
-        protected TimeDetector create(T newMaxCheck,
+        protected TimeDetector create(FieldAdaptableInterval<T> newMaxCheck,
                                       T newThreshold,
                                       int newMaxIter,
-                                      FieldEventHandler<? super TimeDetector, T> newHandler) {
-            return new TimeDetector(
-                    newMaxCheck, newThreshold, newMaxIter, newHandler, eventTs);
+                                      FieldEventHandler<T> newHandler) {
+            return new TimeDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, eventTs);
         }
 
     }
@@ -2456,20 +2449,20 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         private final FieldEventDetector<T> g;
 
         public FlatDetector(double... eventTs) {
-            this(v(DEFAULT_MAXCHECK), v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+            this(s -> DEFAULT_MAXCHECK, v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
                     new FieldStopOnEvent<>(), new TimeDetector(eventTs));
         }
 
         @SafeVarargs
         public FlatDetector(FieldAbsoluteDate<T>... eventTs) {
-            this(v(DEFAULT_MAXCHECK), v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+            this(s -> DEFAULT_MAXCHECK, v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
                     new FieldStopOnEvent<>(), new TimeDetector(eventTs));
         }
 
-        private FlatDetector(T newMaxCheck,
+        private FlatDetector(FieldAdaptableInterval<T> newMaxCheck,
                              T newThreshold,
                              int newMaxIter,
-                             FieldEventHandler<? super FlatDetector, T> newHandler,
+                             FieldEventHandler<T> newHandler,
                              FieldEventDetector<T> g) {
             super(newMaxCheck, newThreshold, newMaxIter, newHandler);
             this.g = g;
@@ -2481,10 +2474,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         }
 
         @Override
-        protected FlatDetector create(T newMaxCheck,
+        protected FlatDetector create(FieldAdaptableInterval<T> newMaxCheck,
                                       T newThreshold,
                                       int newMaxIter,
-                                      FieldEventHandler<? super FlatDetector, T> newHandler) {
+                                      FieldEventHandler<T> newHandler) {
             return new FlatDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, g);
         }
 
@@ -2497,14 +2490,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         private final List<FieldAbsoluteDate<T>> eventTs;
 
         public ContinuousDetector(double... eventTs) {
-            this(v(DEFAULT_MAXCHECK), v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+            this(s -> DEFAULT_MAXCHECK, v(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
                     new FieldStopOnEvent<>(), toDates(eventTs));
         }
 
-        private ContinuousDetector(T newMaxCheck,
+        private ContinuousDetector(FieldAdaptableInterval<T> newMaxCheck,
                                    T newThreshold,
                                    int newMaxIter,
-                                   FieldEventHandler<? super ContinuousDetector, T> newHandler,
+                                   FieldEventHandler<T> newHandler,
                                    List<FieldAbsoluteDate<T>> eventDates) {
             super(newMaxCheck, newThreshold, newMaxIter, newHandler);
             this.eventTs = eventDates;
@@ -2532,18 +2525,16 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         @Override
         protected ContinuousDetector create(
-                T newMaxCheck,
+                FieldAdaptableInterval<T> newMaxCheck,
                 T newThreshold,
                 int newMaxIter,
-                FieldEventHandler<? super ContinuousDetector, T> newHandler) {
-            return new ContinuousDetector(
-                    newMaxCheck, newThreshold, newMaxIter, newHandler, eventTs);
+                FieldEventHandler<T> newHandler) {
+            return new ContinuousDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, eventTs);
         }
 
     }
 
-    private class Handler<D extends FieldEventDetector<T>>
-            extends FieldRecordAndContinue<D, T> {
+    private class Handler<D extends FieldEventDetector<T>> extends FieldRecordAndContinue<T> {
 
         private final Action action;
 
@@ -2551,14 +2542,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
             this.action = action;
         }
 
-        public Handler(List<Event<D, T>> events, Action action) {
+        public Handler(List<Event<T>> events, Action action) {
             super(events);
             this.action = action;
         }
 
         @Override
         public Action eventOccurred(FieldSpacecraftState<T> s,
-                                    D detector,
+                                    FieldEventDetector<T> detector,
                                     boolean increasing) {
             super.eventOccurred(s, detector, increasing);
             return this.action;
@@ -2572,18 +2563,18 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         private final int times;
         private long i = 0;
 
-        public ResetHandler(List<Event<D, T>> events, FieldSpacecraftState<T> newState) {
+        public ResetHandler(List<Event<T>> events, FieldSpacecraftState<T> newState) {
             this(events, newState, Integer.MAX_VALUE);
         }
 
-        public ResetHandler(List<Event<D, T>> events, FieldSpacecraftState<T> newState, int times) {
+        public ResetHandler(List<Event<T>> events, FieldSpacecraftState<T> newState, int times) {
             super(events, Action.RESET_STATE);
             this.newState = newState;
             this.times = times;
         }
 
         @Override
-        public Action eventOccurred(final FieldSpacecraftState<T> s, final D detector, final boolean increasing) {
+        public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldEventDetector<T> detector, final boolean increasing) {
             super.eventOccurred(s, detector, increasing);
             if (i++ < times) {
                 return Action.RESET_STATE;
@@ -2592,7 +2583,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         }
 
         @Override
-        public FieldSpacecraftState<T> resetState(D detector, FieldSpacecraftState<T> oldState) {
+        public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
             Assertions.assertEquals(0, newState.getDate().durationFrom(oldState.getDate()).getReal(), 0);
             return newState;
         }
@@ -2633,14 +2624,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         int count;
 
         public ResetChangesSignGenerator(final FieldAbsoluteDate<T> t0, final double y1, final double y2, final double change) {
-            this(t0.getField().getZero().newInstance(DEFAULT_MAXCHECK),
+            this(s -> DEFAULT_MAXCHECK,
                  t0.getField().getZero().newInstance(DEFAULT_THRESHOLD),
                  DEFAULT_MAX_ITER,
                  new FieldContinueOnEvent<>(), t0, y1, y2, change);
         }
 
-        private ResetChangesSignGenerator(final T newMaxCheck, final T newThreshold, final int newMaxIter,
-                                          final FieldEventHandler<? super ResetChangesSignGenerator, T> newHandler,
+        private ResetChangesSignGenerator(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold, final int newMaxIter,
+                                          final FieldEventHandler<T> newHandler,
                                           final FieldAbsoluteDate<T> t0, final double y1, final double y2, final double change ) {
             super(newMaxCheck, newThreshold, newMaxIter, newHandler);
             this.t0     = t0;
@@ -2651,8 +2642,8 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
             this.count  = 0;
         }
 
-        protected ResetChangesSignGenerator create(final T newMaxCheck, final T newThreshold, final int newMaxIter,
-                                                   final FieldEventHandler<? super ResetChangesSignGenerator, T> newHandler) {
+        protected ResetChangesSignGenerator create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold, final int newMaxIter,
+                                                   final FieldEventHandler<T> newHandler) {
             return new ResetChangesSignGenerator(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                                  t0, y1, y2, change);
         }
@@ -2662,13 +2653,17 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
             return dt.subtract(y1).multiply(dt.subtract(y2));
         }
 
-        public Action eventOccurred(FieldSpacecraftState<T> s, boolean increasing) {
-            return ++count < 2 ? Action.RESET_STATE : Action.STOP;
-        }
+        public FieldEventHandler<T> getHandler() {
+            return new FieldEventHandler<T>() {
+                public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
+                    return ++count < 2 ? Action.RESET_STATE : Action.STOP;
+                }
 
-        public FieldSpacecraftState<T> resetState(FieldSpacecraftState<T> s) {
-            delta = change;
-            return s;
+                public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> s) {
+                    delta = change;
+                    return s;
+                }
+            };
         }
 
         public int getCount() {

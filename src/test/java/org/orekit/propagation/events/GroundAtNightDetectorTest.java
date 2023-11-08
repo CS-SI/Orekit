@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.orbits.CircularOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
@@ -101,7 +101,7 @@ public class GroundAtNightDetectorTest {
         TimeScale utc = TimeScalesFactory.getUTC();
         CircularOrbit o = new CircularOrbit(7200000.0, 1.0e-3, 2.0e-4,
                                             FastMath.toRadians(50.0), FastMath.toRadians(134.0),
-                                            FastMath.toRadians(21.0), PositionAngle.MEAN, FramesFactory.getGCRF(),
+                                            FastMath.toRadians(21.0), PositionAngleType.MEAN, FramesFactory.getGCRF(),
                                             new AbsoluteDate("2003-02-14T14:02:03.000", utc),
                                             Constants.EIGEN5C_EARTH_MU);
 

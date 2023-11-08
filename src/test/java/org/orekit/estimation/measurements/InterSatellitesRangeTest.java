@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,7 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
@@ -47,6 +47,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 public class InterSatellitesRangeTest {
 
@@ -120,7 +121,7 @@ public class InterSatellitesRangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect inter-satellites range measurements
@@ -171,11 +172,11 @@ public class InterSatellitesRangeTest {
 
                     // Values of the Range & errors
                     final double RangeObserved  = measurement.getObservedValue()[0];
-                    final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0,
-                                                                                   new SpacecraftState[] {
-                                                                                       state,
-                                                                                       ephemeris.propagate(state.getDate())
-                                                                                   });
+                    final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(0, 0,
+                                                                                                         new SpacecraftState[] {
+                                                                                                             state,
+                                                                                                             ephemeris.propagate(state.getDate())
+                                                                                                         });
 
                     final InterSatellitesRange isr = (InterSatellitesRange) estimated.getObservedMeasurement();
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
@@ -267,7 +268,7 @@ public class InterSatellitesRangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect inter-satellites range measurements
@@ -329,10 +330,10 @@ public class InterSatellitesRangeTest {
                         public double[] value(final SpacecraftState state) {
                             final SpacecraftState[] s = states.clone();
                             s[index] = state;
-                            return measurement.estimate(0, 0, s).getEstimatedValue();
+                            return measurement.estimateWithoutDerivatives(0, 0, s).getEstimatedValue();
                         }
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
-                       OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(states[index]);
+                       OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(states[index]);
 
                     Assertions.assertEquals(jacobianRef.length, jacobian.length);
                     Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
@@ -436,7 +437,7 @@ public class InterSatellitesRangeTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect inter-satellites phase measurements
@@ -504,23 +505,28 @@ public class InterSatellitesRangeTest {
                     }
 
                     for (int i = 0; i < drivers.length; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i]);
-                        Assertions.assertEquals(1, measurement.getDimension());
-                        Assertions.assertEquals(1, gradient.length);
+                        for (Span<String> span = drivers[i].getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
-                        // Compute a reference value using finite differences
-                        final ParameterFunction dMkdP =
-                                        Differentiation.differentiate(new ParameterFunction() {
-                                            /** {@inheritDoc} */
-                                            @Override
-                                            public double value(final ParameterDriver parameterDriver) {
-                                                return measurement.estimate(0, 0, states).getEstimatedValue()[0];
-                                            }
-                                        }, 3, 20.0 * drivers[i].getScale());
-                        final double ref = dMkdP.value(drivers[i]);
+                            final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i], span.getStart());
+                            Assertions.assertEquals(1, measurement.getDimension());
+                            Assertions.assertEquals(1, gradient.length);
 
-                        final double relError = FastMath.abs((ref-gradient[0])/ref);
-                        relErrorList.add(relError);
+                            // Compute a reference value using finite differences
+                            final ParameterFunction dMkdP =
+                                            Differentiation.differentiate(new ParameterFunction() {
+                                                /** {@inheritDoc} */
+                                                @Override
+                                                public double value(final ParameterDriver parameterDriver, final AbsoluteDate date) {
+                                                    return measurement.
+                                                           estimateWithoutDerivatives(0, 0, states).
+                                                           getEstimatedValue()[0];
+                                                }
+                                            }, 3, 20.0 * drivers[i].getScale());
+                            final double ref = dMkdP.value(drivers[i], span.getStart());
+                            
+                            final double relError = FastMath.abs((ref-gradient[0])/ref);
+                            relErrorList.add(relError);
+                        }
                     }
 
                 } // End if measurement date between previous and current interpolator step

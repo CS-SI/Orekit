@@ -1,4 +1,4 @@
-' Copyright 2002-2022 CS GROUP
+' Copyright 2002-2023 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -33,6 +33,10 @@
       interface AttitudeProvider
     }
 
+    package utils #DDEBD8 {
+      class TimeSpanMap
+    }
+
     package forces.maneuvers.propulsion #DDEBD8 {
 
       interface PropulsionModel {
@@ -41,6 +45,8 @@
         +getAcceleration()
         +getMassDerivatives()
         +getParametersDrivers()
+        +getEventsDetectors()
+        +getFieldEventsDetectors()
       }
 
       interface ThrustPropulsionModel {
@@ -58,19 +64,30 @@
       abstract class AbstractConstantThrustPropulsionModel
       class BasicConstantThrustPropulsionModel
       class ScaledConstantThrustPropulsionModel
+      class ProfileThrustPropulsionModel
+      class PolynomialThrustSegment
 
       class ThrustDirectionAndAttitudeProvider
 
       PropulsionModel <|.. ThrustPropulsionModel
       ThrustPropulsionModel <|-- AbstractConstantThrustPropulsionModel
+      ThrustPropulsionModel <|-right- ProfileThrustPropulsionModel
       AbstractConstantThrustPropulsionModel <|-- BasicConstantThrustPropulsionModel
       AbstractConstantThrustPropulsionModel <|-- ScaledConstantThrustPropulsionModel
 
       AttitudeProvider <|.. ThrustDirectionAndAttitudeProvider
       ThrustDirectionAndAttitudeProvider <-- "1" ThrustDirectionProvider
 
+      TimeSpanMap <-- ProfileThrustPropulsionModel
+      TimeSpanMap --> PolynomialThrustSegment
+
     }
 
- }
+  }
+
+  package org.hipparchus.analysis.polynomials #ECEBD8 {
+    class PolynomialFunction
+    PolynomialThrustSegment -right-> PolynomialFunction
+  }
 
 @enduml

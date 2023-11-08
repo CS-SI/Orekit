@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,8 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.AbstractSelfFeedingLoader;
@@ -190,12 +192,29 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
          */
         PVCoordinates getRawPV(AbsoluteDate date);
 
+        /** Get the position at date.
+         * @param date date at which the position is desired
+         * @return position at the specified date
+         */
+        default Vector3D getRawPosition(final AbsoluteDate date) {
+            return getRawPV(date).getPosition();
+        }
+
         /** Get the position-velocity at date.
          * @param date date at which the position-velocity is desired
          * @param <T> type of the field elements
          * @return position-velocity at the specified date
          */
         <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getRawPV(FieldAbsoluteDate<T> date);
+
+        /** Get the position at date.
+         * @param date date at which the position is desired
+         * @param <T> type of the field elements
+         * @return position at the specified date
+         */
+        default <T extends CalculusFieldElement<T>> FieldVector3D<T> getRawPosition(final FieldAbsoluteDate<T> date) {
+            return getRawPV(date).getPosition();
+        }
 
     }
 
@@ -1046,10 +1065,12 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
     /** Raw position-velocity provider using ephemeris. */
     private class EphemerisRawPVProvider implements RawPVProvider {
 
-        /** {@inheritDoc} */
-        public PVCoordinates getRawPV(final AbsoluteDate date) {
 
-            // get raw PV from Chebyshev polynomials
+        /** Retrieve correct Chebyshev polynomial for given date.
+         * @param date date
+         * @return PosVelChebyshev Chebyshev polynomial class for position-velocity-acceleration
+         */
+        private PosVelChebyshev getChebyshev(final AbsoluteDate date) {
             PosVelChebyshev chebyshev;
             try {
                 chebyshev = ephemerides.getNeighbors(date).findFirst().get();
@@ -1061,6 +1082,14 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
                     throw tce;
                 }
             }
+            return chebyshev;
+        }
+
+        /** {@inheritDoc} */
+        public PVCoordinates getRawPV(final AbsoluteDate date) {
+
+            // get raw PV from Chebyshev polynomials
+            final PosVelChebyshev chebyshev = getChebyshev(date);
 
             // evaluate the Chebyshev polynomials
             return chebyshev.getPositionVelocityAcceleration(date);
@@ -1071,21 +1100,31 @@ public class JPLEphemeridesLoader extends AbstractSelfFeedingLoader
         public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
 
             // get raw PV from Chebyshev polynomials
-            PosVelChebyshev chebyshev;
-            try {
-                chebyshev = ephemerides.getNeighbors(date.toAbsoluteDate()).findFirst().get();
-            } catch (TimeStampedCacheException tce) {
-                // we cannot bracket the date, check if the last available chunk covers the specified date
-                chebyshev = ephemerides.getLatest();
-                if (!chebyshev.inRange(date.toAbsoluteDate())) {
-                    // we were not able to recover from the error, the date is too far
-                    throw tce;
-                }
-            }
+            final PosVelChebyshev chebyshev = getChebyshev(date.toAbsoluteDate());
 
             // evaluate the Chebyshev polynomials
             return chebyshev.getPositionVelocityAcceleration(date);
 
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Vector3D getRawPosition(final AbsoluteDate date) {
+            // get raw PV from Chebyshev polynomials
+            final PosVelChebyshev chebyshev = getChebyshev(date);
+
+            // evaluate the Chebyshev polynomials
+            return chebyshev.getPosition(date);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getRawPosition(final FieldAbsoluteDate<T> date) {
+            // get raw PV from Chebyshev polynomials
+            final PosVelChebyshev chebyshev = getChebyshev(date.toAbsoluteDate());
+
+            // evaluate the Chebyshev polynomials
+            return chebyshev.getPosition(date);
         }
 
     }

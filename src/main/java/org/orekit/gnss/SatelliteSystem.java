@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,6 @@ import java.util.Map;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScales;
 
 /**
  * Enumerate for satellite system.
@@ -32,29 +30,119 @@ import org.orekit.time.TimeScales;
  */
 public enum SatelliteSystem {
 
-    /** GPS system. */
-    GPS('G'),
+    /** User-defined system A.
+     * @since 12.0
+     */
+    USER_DEFINED_A('A', null),
 
-    /** GLONASS system. */
-    GLONASS('R'),
-
-    /** Galileo system. */
-    GALILEO('E'),
+    /** User-defined system B.
+     * @since 12.0
+     */
+    USER_DEFINED_B('B', null),
 
     /** Beidou system. */
-    BEIDOU('C'),
+    BEIDOU('C', ObservationTimeScale.BDT),
+
+    /** User-defined system D.
+     * @since 12.0
+     */
+    USER_DEFINED_D('D', null),
+
+    /** Galileo system. */
+    GALILEO('E', ObservationTimeScale.GAL),
+
+    /** User-defined system F.
+     * @since 12.0
+     */
+    USER_DEFINED_F('F', null),
+
+    /** GPS system. */
+    GPS('G', ObservationTimeScale.GPS),
+
+    /** User-defined system H.
+     * @since 12.0
+     */
+    USER_DEFINED_H('H', null),
+
+    /** Indian Regional Navigation Satellite System system (NavIC). */
+    IRNSS('I', ObservationTimeScale.IRN),
 
     /** Quasi-Zenith Satellite System system. */
-    QZSS('J'),
+    QZSS('J', ObservationTimeScale.QZS),
 
-    /** Indian Regional Navigation Satellite System system. */
-    IRNSS('I'),
+    /** User-defined system K.
+     * @since 12.0
+     */
+    USER_DEFINED_K('K', null),
 
-    /** SBAS system. */
-    SBAS('S'),
+    /** User-defined system L.
+     * @since 12.0
+     */
+    USER_DEFINED_L('L', null),
 
     /** Mixed system. */
-    MIXED('M');
+    MIXED('M', null),
+
+    /** User-defined system N.
+     * @since 12.0
+     */
+    USER_DEFINED_N('N', null),
+
+    /** User-defined system O.
+     * @since 12.0
+     */
+    USER_DEFINED_O('O', null),
+
+    /** User-defined system P.
+     * @since 12.0
+     */
+    USER_DEFINED_P('P', null),
+
+    /** User-defined system Q.
+     * @since 12.0
+     */
+    USER_DEFINED_Q('Q', null),
+
+    /** GLONASS system. */
+    GLONASS('R', ObservationTimeScale.GLO),
+
+    /** SBAS system. */
+    SBAS('S', null),
+
+    /** User-defined system T.
+     * @since 12.0
+     */
+    USER_DEFINED_T('T', null),
+
+    /** User-defined system U.
+     * @since 12.0
+     */
+    USER_DEFINED_U('U', null),
+
+    /** User-defined system V.
+     * @since 12.0
+     */
+    USER_DEFINED_V('V', null),
+
+    /** User-defined system W.
+     * @since 12.0
+     */
+    USER_DEFINED_W('W', null),
+
+    /** User-defined system X.
+     * @since 12.0
+     */
+    USER_DEFINED_X('X', null),
+
+    /** User-defined system Y.
+     * @since 12.0
+     */
+    USER_DEFINED_Y('Y', null),
+
+    /** User-defined system Z.
+     * @since 12.0
+     */
+    USER_DEFINED_Z('Z', null);
 
     /** Parsing map. */
     private static final Map<Character, SatelliteSystem> KEYS_MAP = new HashMap<>();
@@ -67,11 +155,18 @@ public enum SatelliteSystem {
     /** Key for the system. */
     private final char key;
 
+    /** Observation time scale.
+     * @since 12.0
+     */
+    private final ObservationTimeScale observationTimeScale;
+
     /** Simple constructor.
      * @param key key letter
+     * @param observationTimeScale observation time scale (may be null)
      */
-    SatelliteSystem(final char key) {
-        this.key = key;
+    SatelliteSystem(final char key, final ObservationTimeScale observationTimeScale) {
+        this.key                  = key;
+        this.observationTimeScale = observationTimeScale;
     }
 
     /** Get the key for the system.
@@ -98,46 +193,24 @@ public enum SatelliteSystem {
         return satelliteSystem;
     }
 
-    /** Get default time scale for satellite system.
-     * @param timeScales the set of timeScales to use
-     * @return the default time scale among the given set matching to satellite system,
-     *         null if there are not
+    /** Parse a string to get the satellite system.
+     * <p>
+     * The string first character must be the satellite system, or empty to get GPS as default
+     * </p>
+     * @param s string to parse
+     * @return the satellite system
+     * @since 12.0
      */
-    public TimeScale getDefaultTimeSystem(final TimeScales timeScales) {
+    public static SatelliteSystem parseSatelliteSystemWithGPSDefault(final String s) {
+        return s.isEmpty() ? SatelliteSystem.GPS : parseSatelliteSystem(s);
+    }
 
-        TimeScale timeScale = null;
-        switch (this) {
-            case GPS:
-                timeScale = timeScales.getGPS();
-                break;
-
-            case GALILEO:
-                timeScale = timeScales.getGST();
-                break;
-
-            case GLONASS:
-                timeScale = timeScales.getGLONASS();
-                break;
-
-            case QZSS:
-                timeScale = timeScales.getQZSS();
-                break;
-
-            case BEIDOU:
-                timeScale = timeScales.getBDT();
-                break;
-
-            case IRNSS:
-                timeScale = timeScales.getIRNSS();
-                break;
-
-            // Default value is null
-            default:
-                timeScale = null;
-                break;
-        }
-
-        return timeScale;
+    /** Get observation time scale for satellite system.
+     * @return observation time scale, null if there are not
+     * @since 12.0
+     */
+    public ObservationTimeScale getObservationTimeScale() {
+        return observationTimeScale;
     }
 
 }

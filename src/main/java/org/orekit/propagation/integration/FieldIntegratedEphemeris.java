@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,13 +19,11 @@ package org.orekit.propagation.integration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.ode.FieldDenseOutputModel;
 import org.hipparchus.ode.FieldODEStateAndDerivative;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
@@ -68,6 +66,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Mathieu Rom&eacute;ro
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
+ * @param <T> type of the field elements
  */
 public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
     extends FieldAbstractAnalyticalPropagator<T> implements FieldBoundedPropagator<T> {
@@ -119,61 +118,6 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
      * @param type type of orbit to output (mean or osculating)
      * @param model underlying raw mathematical model
      * @param unmanaged unmanaged additional states that must be simply copied
-     * @param providers providers for pre-integrated states
-     * @param equations names of additional equations
-     * @deprecated as of 11.2, replaced by {@link #FieldIntegratedEphemeris(FieldAbsoluteDate,
-     * FieldAbsoluteDate, FieldAbsoluteDate, FieldStateMapper, PropagationType,
-     * FieldDenseOutputModel, FieldArrayDictionary, List, String[], int[])}
-     */
-    @Deprecated
-    public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,
-                               final FieldAbsoluteDate<T> minDate, final FieldAbsoluteDate<T> maxDate,
-                               final FieldStateMapper<T> mapper, final PropagationType type,
-                               final FieldDenseOutputModel<T> model,
-                               final Map<String, T[]> unmanaged,
-                               final List<org.orekit.propagation.FieldAdditionalStateProvider<T>> providers,
-                               final String[] equations) {
-        this(startDate, minDate, maxDate, mapper, type, model,
-             new FieldArrayDictionary<>(startDate.getField(), unmanaged),
-             providers, equations);
-    }
-
-    /** Creates a new instance of IntegratedEphemeris.
-     * @param startDate Start date of the integration (can be minDate or maxDate)
-     * @param minDate first date of the range
-     * @param maxDate last date of the range
-     * @param mapper mapper between raw double components and spacecraft state
-     * @param type type of orbit to output (mean or osculating)
-     * @param model underlying raw mathematical model
-     * @param unmanaged unmanaged additional states that must be simply copied
-     * @param providers generators for pre-integrated states
-     * @param equations names of additional equations
-     * @since 11.1
-     * @deprecated as of 11.2, replaced by {@link #FieldIntegratedEphemeris(FieldAbsoluteDate,
-     * FieldAbsoluteDate, FieldAbsoluteDate, FieldStateMapper, PropagationType,
-     * FieldDenseOutputModel, FieldArrayDictionary, List, String[], int[])}
-     */
-    @Deprecated
-    public FieldIntegratedEphemeris(final FieldAbsoluteDate<T> startDate,
-                                    final FieldAbsoluteDate<T> minDate, final FieldAbsoluteDate<T> maxDate,
-                                    final FieldStateMapper<T> mapper, final PropagationType type,
-                                    final FieldDenseOutputModel<T> model,
-                                    final FieldArrayDictionary<T> unmanaged,
-                                    final List<FieldAdditionalStateProvider<T>> providers,
-                                    final String[] equations) {
-        this(startDate, minDate, maxDate, mapper, type, model,
-             unmanaged, providers, equations,
-             remainingDimensions(model, unmanaged, providers, equations));
-    }
-
-    /** Creates a new instance of IntegratedEphemeris.
-     * @param startDate Start date of the integration (can be minDate or maxDate)
-     * @param minDate first date of the range
-     * @param maxDate last date of the range
-     * @param mapper mapper between raw double components and spacecraft state
-     * @param type type of orbit to output (mean or osculating)
-     * @param model underlying raw mathematical model
-     * @param unmanaged unmanaged additional states that must be simply copied
      * @param providers generators for pre-integrated states
      * @param equations names of additional equations
      * @param dimensions dimensions of additional equations
@@ -205,33 +149,9 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
         this.equations  = equations.clone();
         this.dimensions = dimensions.clone();
 
-    }
+        // set up initial state
+        super.resetInitialState(getInitialState());
 
-    /** Compute remaining dimensions for additional equations.
-     * @param <T> tupe of the field elements
-     * @param model underlying raw mathematical model
-     * @param unmanaged unmanaged additional states that must be simply copied
-     * @param providers providers for pre-integrated states
-     * @param equations names of additional equations
-     * @return dimensions of additional equations
-     * @deprecated as of 11.2 this method is temporary and should be removed
-     * when the calling constructors are removed
-     * @since 11.2
-     */
-    @Deprecated
-    private static <T extends CalculusFieldElement<T>> int[] remainingDimensions(final FieldDenseOutputModel<T> model,
-                                                                                 final FieldArrayDictionary<T> unmanaged,
-                                                                                 final List<FieldAdditionalStateProvider<T>> providers,
-                                                                                 final String[] equations) {
-        final FieldODEStateAndDerivative<T> osd = model.getInterpolatedState(model.getInitialTime());
-        if (equations.length != osd.getNumberOfSecondaryStates()) {
-            throw new OrekitInternalError(null);
-        }
-        final int[] dimensions = new int[equations.length];
-        for (int i = 0; i < dimensions.length; ++i) {
-            dimensions[i] = osd.getSecondaryStateDimension(i + 1);
-        }
-        return dimensions;
     }
 
     /** Interpolate the model at some date.
@@ -355,7 +275,7 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    protected List<ParameterDriver> getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
         // Integrated Ephemeris propagation model does not have parameter drivers.
         return Collections.emptyList();
     }

@@ -32,20 +32,17 @@ import java.util.List;
  * of memory depending on the duration of propagation and the frequency of
  * events.
  *
- * @param <T> the type of {@link EventDetector} that this event handler will
- *            handle events for.
  * @author Evan Ward
  */
-public class RecordAndContinue<T extends EventDetector>
-        implements EventHandler<T> {
+public class RecordAndContinue implements EventHandler {
 
     /** A single event detected during propagation. */
-    public static class Event<T> {
+    public static class Event {
 
         /** The observed state. */
         private final SpacecraftState state;
         /** The detector. */
-        private final T detector;
+        private final EventDetector detector;
         /** The sign of the derivative of the g function. */
         private final boolean increasing;
 
@@ -56,7 +53,7 @@ public class RecordAndContinue<T extends EventDetector>
          * @param state      of the event.
          * @param increasing if the g function is increasing.
          */
-        private Event(final T detector,
+        private Event(final EventDetector detector,
                       final SpacecraftState state,
                       final boolean increasing) {
             this.detector = detector;
@@ -71,7 +68,7 @@ public class RecordAndContinue<T extends EventDetector>
          * @see EventHandler#eventOccurred(SpacecraftState, EventDetector,
          * boolean)
          */
-        public T getDetector() {
+        public EventDetector getDetector() {
             return detector;
         }
 
@@ -109,7 +106,7 @@ public class RecordAndContinue<T extends EventDetector>
     }
 
     /** Observed events. */
-    private final List<Event<T>> events;
+    private final List<Event> events;
 
     /** Create a new handler using an {@link ArrayList} to store events. */
     public RecordAndContinue() {
@@ -121,7 +118,7 @@ public class RecordAndContinue<T extends EventDetector>
      *
      * @param events collection.
      */
-    public RecordAndContinue(final List<Event<T>> events) {
+    public RecordAndContinue(final List<Event> events) {
         this.events = events;
     }
 
@@ -141,7 +138,7 @@ public class RecordAndContinue<T extends EventDetector>
      * @return the events observed by the handler in the order they were
      * observed.
      */
-    public List<Event<T>> getEvents() {
+    public List<Event> getEvents() {
         return Collections.unmodifiableList(this.events);
     }
 
@@ -152,9 +149,9 @@ public class RecordAndContinue<T extends EventDetector>
 
     @Override
     public Action eventOccurred(final SpacecraftState s,
-                                final T detector,
+                                final EventDetector detector,
                                 final boolean increasing) {
-        events.add(new Event<T>(detector, s, increasing));
+        events.add(new Event(detector, s, increasing));
         return Action.CONTINUE;
     }
 

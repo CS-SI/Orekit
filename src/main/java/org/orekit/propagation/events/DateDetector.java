@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,10 +33,10 @@ import org.orekit.time.TimeStamped;
  * <p>This class finds date events (i.e. occurrence of some predefined dates).</p>
  * <p>As of version 5.1, it is an enhanced date detector:</p>
  * <ul>
- *   <li>it can be defined without prior date ({@link #DateDetector(double, double, TimeStamped...)})</li>
+ *   <li>it can be defined without prior date ({@link #DateDetector(TimeStamped...)})</li>
  *   <li>several dates can be added ({@link #addEventDate(AbsoluteDate)})</li>
  * </ul>
- * <p>The gap between the added dates must be more than the maxCheck.</p>
+ * <p>The gap between the added dates must be more than the minGap.</p>
  * <p>The default implementation behavior is to {@link Action#STOP stop}
  * propagation at the first event date occurrence. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
@@ -45,6 +45,26 @@ import org.orekit.time.TimeStamped;
  * @author Pascal Parraud
  */
 public class DateDetector extends AbstractDetector<DateDetector> implements TimeStamped {
+
+    /** Default value for max check.
+     * @since 12.0
+     */
+    public static final double DEFAULT_MAX_CHECK = 1.0e10;
+
+    /** Default value for minimum gap between added dates.
+     * @since 12.0
+     */
+    public static final double DEFAULT_MIN_GAP = 1.0;
+
+    /** Default value for convergence threshold.
+     * @since 12.0
+     */
+    public static final double DEFAULT_THRESHOLD = 1.0e-13;
+
+    /** Minimum gap between added dates.
+     * @since 12.0
+     */
+    private final double minGap;
 
     /** Last date for g computation. */
     private AbsoluteDate gDate;
@@ -58,42 +78,30 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
     /** Build a new instance.
      * <p>First event dates are set here, but others can be
      * added later with {@link #addEventDate(AbsoluteDate)}.</p>
-     * @param maxCheck maximum checking interval (s)
-     * @param threshold convergence threshold (s)
      * @param dates list of event dates
      * @see #addEventDate(AbsoluteDate)
+     * @since 12.0
      */
-    public DateDetector(final double maxCheck, final double threshold, final TimeStamped... dates) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent<DateDetector>(), dates);
+    public DateDetector(final TimeStamped... dates) {
+        this(s-> DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnEvent(), DEFAULT_MIN_GAP, dates);
     }
 
-    /** Build a new instance.
-     * <p>This constructor is dedicated to single date detection.
-     * {@link #getMaxCheckInterval() max check interval} is set to 1.0e10, so almost
-     * no other date can be added. Tolerance is set to 1.0e-9.</p>
-     * @param target target date
-     * @see #addEventDate(AbsoluteDate)
-     */
-    public DateDetector(final AbsoluteDate target) {
-        this(1.0e10, 1.e-9, target);
-    }
-
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
+     * @param minGap minimum gap between added dates (s)
      * @param dates list of event dates
-     * @since 6.1
+     * @since 12.0
      */
-    private DateDetector(final double maxCheck, final double threshold,
-                         final int maxIter, final EventHandler<? super DateDetector> handler,
-                         final TimeStamped... dates) {
+    protected DateDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
+                           final EventHandler handler, final double minGap, final TimeStamped... dates) {
         super(maxCheck, threshold, maxIter, handler);
         this.currentIndex  = -1;
         this.gDate         = null;
@@ -101,13 +109,26 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
         for (final TimeStamped ts : dates) {
             addEventDate(ts.getDate());
         }
+        this.minGap        = minGap;
+    }
+
+    /**
+     * Setup minimum gap between added dates.
+     * @param newMinGap new minimum gap between added dates
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 12.0
+     */
+    public DateDetector withMinGap(final double newMinGap) {
+        return new DateDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(),
+                                getHandler(), newMinGap,
+                                eventDateList.toArray(new EventDate[eventDateList.size()]));
     }
 
     /** {@inheritDoc} */
     @Override
-    protected DateDetector create(final double newMaxCheck, final double newThreshold,
-                                  final int newMaxIter, final EventHandler<? super DateDetector> newHandler) {
-        return new DateDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
+    protected DateDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                  final int newMaxIter, final EventHandler newHandler) {
+        return new DateDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, minGap,
                                 eventDateList.toArray(new EventDate[eventDateList.size()]));
     }
 
@@ -149,7 +170,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      * </ul>
      * @param target target date
      * @throws IllegalArgumentException if the date is too close from already defined interval
-     * @see #DateDetector(double, double, TimeStamped...)
+     * @see #DateDetector(TimeStamped...)
      */
     public void addEventDate(final AbsoluteDate target) throws IllegalArgumentException {
         final boolean increasing;
@@ -158,14 +179,14 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
             currentIndex = 0;
             eventDateList.add(new EventDate(target, increasing));
         } else {
-            final int lastIndex = eventDateList.size() - 1;
+            final int          lastIndex = eventDateList.size() - 1;
             final AbsoluteDate firstDate = eventDateList.get(0).getDate();
-            final AbsoluteDate lastDate = eventDateList.get(lastIndex).getDate();
-            if (firstDate.durationFrom(target) > getMaxCheckInterval()) {
+            final AbsoluteDate lastDate  = eventDateList.get(lastIndex).getDate();
+            if (firstDate.durationFrom(target) > minGap) {
                 increasing = !eventDateList.get(0).isgIncrease();
                 eventDateList.add(0, new EventDate(target, increasing));
                 currentIndex++;
-            } else if (target.durationFrom(lastDate) > getMaxCheckInterval()) {
+            } else if (target.durationFrom(lastDate) > minGap) {
                 increasing = !eventDateList.get(lastIndex).isgIncrease();
                 eventDateList.add(new EventDate(target, increasing));
             } else {
@@ -173,7 +194,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
                                                          target,
                                                          firstDate,
                                                          lastDate,
-                                                         getMaxCheckInterval(),
+                                                         minGap,
                                                          firstDate.durationFrom(target),
                                                          target.durationFrom(lastDate));
             }

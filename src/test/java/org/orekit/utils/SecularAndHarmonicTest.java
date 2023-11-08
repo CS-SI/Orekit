@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,7 +55,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -101,7 +101,7 @@ public class SecularAndHarmonicTest {
                                   0.0, 0.0010289683741791197,
                                   FastMath.toRadians(98.5680307986701),
                                   FastMath.toRadians(-189.6132856166402),
-                                  FastMath.PI, PositionAngle.TRUE,
+                                  FastMath.PI, PositionAngleType.TRUE,
                                   FramesFactory.getEME2000(),
                                   new AbsoluteDate(2003, 4, 5, utc),
                                   gravityField.getMu());
@@ -116,7 +116,7 @@ public class SecularAndHarmonicTest {
                                   -3.908629707615073E-4, 0.0013502004064500472,
                                   FastMath.toRadians(98.56430772945006),
                                   FastMath.toRadians(-189.61151932993425),
-                                  FastMath.PI, PositionAngle.TRUE,
+                                  FastMath.PI, PositionAngleType.TRUE,
                                   FramesFactory.getEME2000(),
                                   new AbsoluteDate(2003, 4, 5, utc),
                                   gravityField.getMu());
@@ -164,6 +164,10 @@ public class SecularAndHarmonicTest {
                                      resettingModel.getFittedParameters(),
                                      1e-14);
         }
+
+        Assertions.assertEquals(1,             resettingModel.getSecularDegree());
+        Assertions.assertEquals(1,             resettingModel.getPulsations().length);
+        Assertions.assertEquals(SUN_PULSATION, resettingModel.getPulsations()[0], 1.0e-10);
 
     }
 
@@ -344,8 +348,8 @@ public class SecularAndHarmonicTest {
 
         double previousLatitude = Double.NaN;
         for (AbsoluteDate date = searchStart; date.compareTo(end) < 0; date = date.shiftedBy(stepSize)) {
-            final PVCoordinates pv       = propagator.propagate(date).getPVCoordinates(earth.getBodyFrame());
-            final double currentLatitude = earth.transform(pv.getPosition(), earth.getBodyFrame(), date).getLatitude();
+            final Vector3D pos = propagator.propagate(date).getPosition(earth.getBodyFrame());
+            final double currentLatitude = earth.transform(pos, earth.getBodyFrame(), date).getLatitude();
             if (((previousLatitude <= latitude) && (currentLatitude >= latitude) &&  ascending) ||
                 ((previousLatitude >= latitude) && (currentLatitude <= latitude) && !ascending)) {
                 return findLatitudeCrossing(latitude, date.shiftedBy(-0.5 * stepSize), end,
@@ -371,7 +375,7 @@ public class SecularAndHarmonicTest {
             public double value(double x) {
                 try {
                     final SpacecraftState state = propagator.propagate(guessDate.shiftedBy(x));
-                    final Vector3D position = state.getPVCoordinates(earth.getBodyFrame()).getPosition();
+                    final Vector3D position = state.getPosition(earth.getBodyFrame());
                     final GeodeticPoint point = earth.transform(position, earth.getBodyFrame(), state.getDate());
                     return point.getLatitude() - latitude;
                 } catch (OrekitException oe) {
@@ -415,7 +419,7 @@ public class SecularAndHarmonicTest {
     private double meanSolarTime(final Orbit orbit) {
 
         // compute angle between Sun and spacecraft in the equatorial plane
-        final Vector3D position = orbit.getPVCoordinates().getPosition();
+        final Vector3D position = orbit.getPosition();
         final double time       = orbit.getDate().getComponents(TimeScalesFactory.getUTC()).getTime().getSecondsInUTCDay();
         final double theta      = gmst.value(orbit.getDate());
         final double sunAlpha   = theta + FastMath.PI * (1 - time / (Constants.JULIAN_DAY * 0.5));

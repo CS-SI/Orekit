@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,10 +39,10 @@ import org.orekit.utils.IERSConventions;
 public abstract class NdmConstituent<H extends Header, S extends Segment<?, ?>> {
 
     /** Header. */
-    private final H header;
+    private H header;
 
     /** segments list. */
-    private final List<S> segments;
+    private List<S> segments;
 
     /** IERS conventions used. */
     private final IERSConventions conventions;
@@ -75,12 +75,28 @@ public abstract class NdmConstituent<H extends Header, S extends Segment<?, ?>> 
     }
 
     /**
+     * Set the header.
+     * @param header the header
+     */
+    public void setHeader(final H header) {
+        this.header = header;
+    }
+
+    /**
      * Get the segments.
      * @return segments
      * @since 11.0
      */
     public List<S> getSegments() {
         return Collections.unmodifiableList(segments);
+    }
+
+    /**
+     * Set the segments.
+     * @param segments the segments
+     */
+    public void setSegments(final List<S> segments) {
+        this.segments = segments;
     }
 
     /**

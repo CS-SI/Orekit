@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,7 +38,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -193,7 +193,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
         double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
@@ -255,7 +255,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
         double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
@@ -330,7 +330,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
 
         // Create initial field Keplerian orbit
         FieldKeplerianOrbit<Gradient> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                      PositionAngle.MEAN,
+                                                                      PositionAngleType.MEAN,
                                                                       EME,
                                                                       J2000,
                                                                       zero.add(Constants.EIGEN5C_EARTH_MU));
@@ -376,21 +376,21 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         // -----------
 
         // Propagate inside 1st AccelerationModel
-        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 0.9 * dt, NP, FNP,
+        checkRealFieldPropagationGradient(FKO, PositionAngleType.MEAN, 0.9 * dt, NP, FNP,
                                   1.0e-9, 2.4e-02, 7.8e-5, 1.5e-3,
                                   1, false);
 
         // Propagate to 2nd AccelerationModel (reset propagator first)
         FNP.resetInitialState(initialState);
         NP.resetInitialState(iSR);
-        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1.1 * dt, NP, FNP,
+        checkRealFieldPropagationGradient(FKO, PositionAngleType.MEAN, 1.1 * dt, NP, FNP,
                                   1.0e-9, 4.3e-02, 8.2e-5, 3.1e-4,
                                   1, false);
 
         // Propagate to 3rd AccelerationModel (reset propagator first)
         FNP.resetInitialState(initialState);
         NP.resetInitialState(iSR);
-        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, -1.1 * dt, NP, FNP,
+        checkRealFieldPropagationGradient(FKO, PositionAngleType.MEAN, -1.1 * dt, NP, FNP,
                                   1.0e-9, 2.0e-02, 3.9e-04, 4.5e-04,
                                   1, false);
     }

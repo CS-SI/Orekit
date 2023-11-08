@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,25 +16,21 @@
  */
 package org.orekit.propagation.conversion;
 
-
+import java.util.Collections;
 import java.util.List;
-
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.AbstractKalmanModel;
-import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.utils.ParameterDriver;
@@ -69,7 +65,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Parameters scaling factor.
      * <p>
@@ -88,28 +84,30 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
      * #createInitialOrbit() create initial orbit}. It defines the
      * inertial frame, the central attraction coefficient, the orbit type, and is also
      * used together with the {@code positionScale} to convert from the {@link
-     * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
-     * callers of this builder to the real orbital parameters.
+     * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters
+     * used by the callers of this builder to the real orbital parameters.
+     * The default attitude provider is aligned with the orbit's inertial frame.
      * </p>
      *
      * @param templateOrbit reference orbit from which real orbits will be built
      * (note that the mu from this orbit will be overridden with the mu from the
      * {@code provider})
      * @param provider for un-normalized zonal coefficients
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #BrouwerLyddanePropagatorBuilder(Orbit,
-     * UnnormalizedSphericalHarmonicsProvider, PositionAngle, double, AttitudeProvider, double)
+     * UnnormalizedSphericalHarmonicsProvider, PositionAngleType, double, AttitudeProvider, double)
      */
     public BrouwerLyddanePropagatorBuilder(final Orbit templateOrbit,
                                            final UnnormalizedSphericalHarmonicsProvider provider,
-                                           final PositionAngle positionAngle,
+                                           final PositionAngleType positionAngleType,
                                            final double positionScale,
                                            final double M2) {
-        this(templateOrbit, provider, positionAngle, positionScale, InertialProvider.of(templateOrbit.getFrame()), M2);
+        this(templateOrbit, provider, positionAngleType, positionScale,
+             FrameAlignedProvider.of(templateOrbit.getFrame()), M2);
     }
 
     /** Build a new instance.
@@ -133,13 +131,13 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
      * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
      * @param orbitType orbit type to use
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
      * @see #BrouwerLyddanePropagatorBuilder(Orbit,
-     * UnnormalizedSphericalHarmonicsProvider, PositionAngle, double, AttitudeProvider, double)
+     * UnnormalizedSphericalHarmonicsProvider, PositionAngleType, double, AttitudeProvider, double)
      */
     public BrouwerLyddanePropagatorBuilder(final Orbit templateOrbit,
                                            final double referenceRadius,
@@ -150,7 +148,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
                                            final double c40,
                                            final double c50,
                                            final OrbitType orbitType,
-                                           final PositionAngle positionAngle,
+                                           final PositionAngleType positionAngleType,
                                            final double positionScale,
                                            final double M2) {
         this(templateOrbit,
@@ -184,7 +182,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
                                                                  0
                                                              }
                                                          }),
-             positionAngle, positionScale, M2);
+                positionAngleType, positionScale, M2);
     }
 
     /** Build a new instance.
@@ -200,44 +198,62 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
      * (note that the mu from this orbit will be overridden with the mu from the
      * {@code provider})
      * @param provider for un-normalized zonal coefficients
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
+     * @param attitudeProvider attitude law to use
      * @param M2 value of empirical drag coefficient in rad/s².
      *        If equal to {@link BrouwerLyddanePropagator#M2} drag is not computed
-     * @param attitudeProvider attitude law to use
      */
     public BrouwerLyddanePropagatorBuilder(final Orbit templateOrbit,
                                            final UnnormalizedSphericalHarmonicsProvider provider,
-                                           final PositionAngle positionAngle,
+                                           final PositionAngleType positionAngleType,
                                            final double positionScale,
                                            final AttitudeProvider attitudeProvider,
                                            final double M2) {
-        super(overrideMu(templateOrbit, provider, positionAngle), positionAngle, positionScale, true, attitudeProvider);
+        super(overrideMu(templateOrbit, provider, positionAngleType), positionAngleType, positionScale, true, attitudeProvider);
         this.provider = provider;
         // initialize M2 driver
         final ParameterDriver M2Driver = new ParameterDriver(BrouwerLyddanePropagator.M2_NAME, M2, SCALE,
                                                              Double.NEGATIVE_INFINITY,
                                                              Double.POSITIVE_INFINITY);
-        addSupportedParameter(M2Driver);
+        addSupportedParameters(Collections.singletonList(M2Driver));
     }
 
     /** Override central attraction coefficient.
      * @param templateOrbit template orbit
      * @param provider gravity field provider
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @return orbit with overridden central attraction coefficient
      */
     private static Orbit overrideMu(final Orbit templateOrbit,
                                     final UnnormalizedSphericalHarmonicsProvider provider,
-                                    final PositionAngle positionAngle) {
+                                    final PositionAngleType positionAngleType) {
         final double[] parameters    = new double[6];
         final double[] parametersDot = templateOrbit.hasDerivatives() ? new double[6] : null;
-        templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngle, parameters, parametersDot);
-        return templateOrbit.getType().mapArrayToOrbit(parameters, parametersDot, positionAngle,
+        templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngleType, parameters, parametersDot);
+        return templateOrbit.getType().mapArrayToOrbit(parameters, parametersDot, positionAngleType,
                                                        templateOrbit.getDate(),
                                                        provider.getMu(),
                                                        templateOrbit.getFrame());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public BrouwerLyddanePropagatorBuilder copy() {
+
+        // Find M2 value
+        double m2 = 0.0;
+        for (final ParameterDriver driver : getPropagationParametersDrivers().getDrivers()) {
+            if (BrouwerLyddanePropagator.M2_NAME.equals(driver.getName())) {
+                // it is OK as BL m2 parameterDriver has 1 value estimated from -INF to +INF, and
+                // setPeriod method should not be called on this driver (to have several values estimated)
+                m2 = driver.getValue();
+            }
+        }
+
+        return new BrouwerLyddanePropagatorBuilder(createInitialOrbit(), provider, getPositionAngleType(),
+                                                   getPositionScale(), getAttitudeProvider(), m2);
     }
 
     /** {@inheritDoc} */
@@ -249,6 +265,8 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
         boolean isSelected = false;
         for (final ParameterDriver driver : getPropagationParametersDrivers().getDrivers()) {
             if (BrouwerLyddanePropagator.M2_NAME.equals(driver.getName())) {
+                // it is OK as BL m2 parameterDriver has 1 value estimated from -INF to +INF, and
+                // setPeriod method should not be called on this driver (to have several values estimated)
                 newM2      = driver.getValue();
                 isSelected = driver.isSelected();
             }
@@ -265,20 +283,11 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder i
 
     /** {@inheritDoc} */
     @Override
-    public AbstractBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                                             final List<ObservedMeasurement<?>> measurements,
-                                             final ParameterDriversList estimatedMeasurementsParameters,
-                                             final ModelObserver observer) {
+    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                       final List<ObservedMeasurement<?>> measurements,
+                                                       final ParameterDriversList estimatedMeasurementsParameters,
+                                                       final ModelObserver observer) {
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public AbstractKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                                                final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                                final ParameterDriversList estimatedMeasurementsParameters,
-                                                final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
 }

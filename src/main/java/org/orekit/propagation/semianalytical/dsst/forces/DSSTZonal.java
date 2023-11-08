@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,8 +44,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CjSjCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
@@ -185,7 +183,7 @@ public class DSSTZonal implements DSSTForceModel {
                                                 0.0, Double.POSITIVE_INFINITY);
 
         // Vns coefficients
-        this.Vns = CoefficientsFactory.computeVnsCoefficients(provider.getMaxDegree() + 1);
+        this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
 
         this.provider  = provider;
         this.maxDegree = provider.getMaxDegree();
@@ -284,7 +282,6 @@ public class DSSTZonal implements DSSTForceModel {
 
         // Field used by default
         final Field<T> field = auxiliaryElements.getDate().getField();
-
         computeMeanElementsTruncations(auxiliaryElements, parameters, field);
 
         switch (type) {
@@ -313,7 +310,7 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** Compute indices truncations for mean elements computations.
      * @param auxiliaryElements auxiliary elements
-     * @param parameters values of the force model parameters
+     * @param parameters values of the force model parameters for state date (only 1 value for each parameter)
      */
     private void computeMeanElementsTruncations(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
@@ -550,6 +547,7 @@ public class DSSTZonal implements DSSTForceModel {
                                        final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
         // Container of attributes
+
         final DSSTZonalContext context = initializeStep(auxiliaryElements, parameters);
         // Access to potential U derivatives
         final UAnddU udu = new UAnddU(spacecraftState.getDate(), context, auxiliaryElements, hansen);
@@ -577,18 +575,6 @@ public class DSSTZonal implements DSSTForceModel {
 
         return computeMeanElementRates(spacecraftState.getDate(), context, udu);
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public EventDetector[] getEventsDetectors() {
-        return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors(final Field<T> field) {
-        return null;
     }
 
     /** Compute the mean element rates.
@@ -695,7 +681,9 @@ public class DSSTZonal implements DSSTForceModel {
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
             // Container of attributes
-            final DSSTZonalContext context = initializeStep(auxiliaryElements, parameters);
+            // Extract the proper parameters valid for the corresponding meanState date from the input array
+            final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
+            final DSSTZonalContext context = initializeStep(auxiliaryElements, extractedParameters);
 
             // Access to potential U derivatives
             final UAnddU udu = new UAnddU(meanState.getDate(), context, auxiliaryElements, hansen);
@@ -736,7 +724,9 @@ public class DSSTZonal implements DSSTForceModel {
             final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
 
             // Container of attributes
-            final FieldDSSTZonalContext<T> context = initializeStep(auxiliaryElements, parameters);
+            // Extract the proper parameters valid for the corresponding meanState date from the input array
+            final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
+            final FieldDSSTZonalContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
 
             final FieldHansenObjects<T> fho = (FieldHansenObjects<T>) fieldHansen.get(field);
 

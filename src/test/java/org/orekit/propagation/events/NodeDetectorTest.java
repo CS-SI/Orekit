@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@ import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.SpacecraftState;
@@ -49,7 +49,7 @@ public class NodeDetectorTest {
         Frame inertialFrame = FramesFactory.getEME2000();
         AbsoluteDate initialDate = new AbsoluteDate(2014, 01, 01, 0, 0, 0, TimeScalesFactory.getUTC());
         AbsoluteDate finalDate = initialDate.shiftedBy(5000);
-        KeplerianOrbit initialOrbit = new KeplerianOrbit(a, e, i, w, raan, v, PositionAngle.TRUE, inertialFrame, initialDate, Constants.WGS84_EARTH_MU);
+        KeplerianOrbit initialOrbit = new KeplerianOrbit(a, e, i, w, raan, v, PositionAngleType.TRUE, inertialFrame, initialDate, Constants.WGS84_EARTH_MU);
         SpacecraftState initialState = new SpacecraftState(initialOrbit, 1000);
 
         double[][] tol = NumericalPropagator.tolerances(10, initialOrbit, initialOrbit.getType());
@@ -60,7 +60,7 @@ public class NodeDetectorTest {
         // Define 2 instances of NodeDetector:
         EventDetector rawDetector =
                 new NodeDetector(1e-6, initialState.getOrbit(), initialState.getFrame()).
-                withHandler(new ContinueOnEvent<NodeDetector>());
+                withHandler(new ContinueOnEvent());
 
         EventsLogger logger1 = new EventsLogger();
         EventDetector node1 = logger1.monitorDetector(rawDetector);
@@ -105,18 +105,18 @@ public class NodeDetectorTest {
 
         // highly eccentric, inclined orbit
         final KeplerianOrbit orbit1 =
-                new KeplerianOrbit(a, e1, i, pa, raan, m, PositionAngle.MEAN, frame, date, mu);
+                new KeplerianOrbit(a, e1, i, pa, raan, m, PositionAngleType.MEAN, frame, date, mu);
         EventDetector detector1 = new NodeDetector(orbit1, orbit1.getFrame());
         double t1 = orbit1.getKeplerianPeriod();
-        Assertions.assertEquals(t1 / 28.82, detector1.getMaxCheckInterval(), t1 / 10000);
+        Assertions.assertEquals(t1 / 28.82, detector1.getMaxCheckInterval().currentInterval(null), t1 / 10000);
 
         // nearly circular, inclined orbit
         final KeplerianOrbit orbit2 =
-                new KeplerianOrbit(a, e2, i, pa, raan, m, PositionAngle.MEAN, frame, date, mu);
+                new KeplerianOrbit(a, e2, i, pa, raan, m, PositionAngleType.MEAN, frame, date, mu);
         EventDetector detector2 = new NodeDetector(orbit2, orbit2.getFrame());
         double t2 = orbit2.getKeplerianPeriod();
         Assertions.assertEquals(t1, t2, t1 / 10000);
-        Assertions.assertEquals(t2 / 3, detector2.getMaxCheckInterval(), t2 / 10000);
+        Assertions.assertEquals(t2 / 3, detector2.getMaxCheckInterval().currentInterval(null), t2 / 10000);
 
     }
 
@@ -124,11 +124,11 @@ public class NodeDetectorTest {
     public void testIssue728() {
 
         NodeDetector detector1 = new NodeDetector(FramesFactory.getEME2000());
-        Assertions.assertEquals(1800.0, detector1.getMaxCheckInterval(), 1.0e-3);
+        Assertions.assertEquals(1800.0, detector1.getMaxCheckInterval().currentInterval(null), 1.0e-3);
         Assertions.assertEquals(1.0e-3, detector1.getThreshold(), 1.0e-12);
 
         NodeDetector detector2 = detector1.withMaxCheck(3000.0).withThreshold(1.0e-6);
-        Assertions.assertEquals(3000.0, detector2.getMaxCheckInterval(), 1.0e-3);
+        Assertions.assertEquals(3000.0, detector2.getMaxCheckInterval().currentInterval(null), 1.0e-3);
         Assertions.assertEquals(1.0e-6, detector2.getThreshold(), 1.0e-12);
 
     }

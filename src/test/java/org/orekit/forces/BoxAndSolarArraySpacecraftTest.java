@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,20 @@
  */
 package org.orekit.forces;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
@@ -33,6 +38,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -42,257 +48,164 @@ import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.util.List;
-
 public class BoxAndSolarArraySpacecraftTest {
+
+    @Test
+    public void testCoefficients() {
+        final double drag = 1.1;
+        final double lift = 2.2;
+        final double abso = 3.3;
+        final double refl = 4.4;
+
+        final double tol = 1.0e-15;
+
+        // build box
+        List<Panel> box = BoxAndSolarArraySpacecraft.buildBox(1.5, 3.5, 2.5,
+            drag, lift, abso, refl);
+
+        // check
+        for (Panel panel : box) {
+            Assertions.assertEquals(drag, panel.getDrag(), tol);
+            Assertions.assertEquals(lift, panel.getLiftRatio(), tol);
+            Assertions.assertEquals(refl, panel.getReflection(), tol);
+            Assertions.assertEquals(abso, panel.getAbsorption(), tol);
+        }
+
+        // build panels
+        List<Panel> panels = BoxAndSolarArraySpacecraft.buildPanels(1.5, 3.5, 2.5,
+            CelestialBodyFactory.getSun(), 0.4, Vector3D.PLUS_J,
+            drag, lift, abso, refl);
+
+        // check
+        for (Panel panel : panels) {
+            Assertions.assertEquals(drag, panel.getDrag(), tol);
+            Assertions.assertEquals(lift, panel.getLiftRatio(), tol);
+            Assertions.assertEquals(refl, panel.getReflection(), tol);
+            Assertions.assertEquals(abso, panel.getAbsorption(), tol);
+        }
+
+    }
 
     @Test
     public void testParametersDrivers() {
 
         CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft.Facet[] facets = new BoxAndSolarArraySpacecraft.Facet[] {
-            new BoxAndSolarArraySpacecraft.Facet(Vector3D.MINUS_I, 3.0),
-            new BoxAndSolarArraySpacecraft.Facet(Vector3D.PLUS_I,  3.0),
-            new BoxAndSolarArraySpacecraft.Facet(Vector3D.MINUS_J, 3.0),
-            new BoxAndSolarArraySpacecraft.Facet(Vector3D.PLUS_J,  3.0),
-            new BoxAndSolarArraySpacecraft.Facet(Vector3D.MINUS_K, 3.0),
-            new BoxAndSolarArraySpacecraft.Facet(Vector3D.PLUS_K,  3.0)
-        };
+        List<Panel> cube = new ArrayList<>();
+        cube.add(new FixedPanel(Vector3D.MINUS_I, 3.0, false, 2.0, 0.0, 0.8, 0.1));
+        cube.add(new FixedPanel(Vector3D.PLUS_I,  3.0, false, 2.0, 0.0, 0.8, 0.1));
+        cube.add(new FixedPanel(Vector3D.MINUS_J, 3.0, false, 2.0, 0.0, 0.8, 0.1));
+        cube.add(new FixedPanel(Vector3D.PLUS_J,  3.0, false, 2.0, 0.0, 0.8, 0.1));
+        cube.add(new FixedPanel(Vector3D.MINUS_K, 3.0, false, 2.0, 0.0, 0.8, 0.1));
+        cube.add(new FixedPanel(Vector3D.PLUS_K,  3.0, false, 2.0, 0.0, 0.8, 0.1));
+        List<Panel> boxNoLift = BoxAndSolarArraySpacecraft.buildBox(1.5, 3.5, 2.5, 2.0, 0.0, 0.8, 0.1);
+        List<Panel> boxLift   = BoxAndSolarArraySpacecraft.buildBox(1.5, 3.5, 2.5, 2.0, 0.4, 0.8, 0.1);
 
         BoxAndSolarArraySpacecraft s1 =
-                        new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J, 2.0, 0.8, 0.1);
+                        new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J, 2.0, 0.0, 0.8, 0.1);
         Assertions.assertEquals(1, s1.getDragParametersDrivers().size());
-        Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT, s1.getDragParametersDrivers().get(0).getName());
-        Assertions.assertEquals(2.0, s1.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(2, s1.getRadiationParametersDrivers().size());
-        Assertions.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT,
-                s1.getRadiationParametersDrivers().get(0).getName());
-        Assertions.assertEquals(0.8, s1.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT,
-                s1.getRadiationParametersDrivers().get(1).getName());
-        Assertions.assertEquals(0.1, s1.getRadiationParametersDrivers().get(1).getValue(), 1.0e-15);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s1.getDragParametersDrivers().get(0).getName());
+        Assertions.assertEquals(1.0, s1.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(1, s1.getRadiationParametersDrivers().size());
+        Assertions.assertEquals(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
+                                s1.getRadiationParametersDrivers().get(0).getName());
+        Assertions.assertEquals(1, s1.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
 
         BoxAndSolarArraySpacecraft s2 =
                         new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J, 2.0, 0.4, 0.8, 0.1);
-        Assertions.assertEquals(2, s2.getDragParametersDrivers().size());
-        Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT, s2.getDragParametersDrivers().get(0).getName());
-        Assertions.assertEquals(2.0, s2.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(DragSensitive.LIFT_RATIO, s2.getDragParametersDrivers().get(1).getName());
-        Assertions.assertEquals(0.4, s2.getDragParametersDrivers().get(1).getValue(), 1.0e-15);
-        Assertions.assertEquals(2, s2.getRadiationParametersDrivers().size());
-        Assertions.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT,
-                s2.getRadiationParametersDrivers().get(0).getName());
-        Assertions.assertEquals(0.8, s2.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT,
-                s2.getRadiationParametersDrivers().get(1).getName());
-        Assertions.assertEquals(0.1, s2.getRadiationParametersDrivers().get(1).getValue(), 1.0e-15);
+        Assertions.assertEquals(1, s2.getDragParametersDrivers().size());
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s2.getDragParametersDrivers().get(0).getName());
+        Assertions.assertEquals(1.0, s2.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(1, s2.getRadiationParametersDrivers().size());
+        Assertions.assertEquals(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
+                                s2.getRadiationParametersDrivers().get(0).getName());
+        Assertions.assertEquals(1.0, s2.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
 
+        PointingPanel pointingNoLift = new PointingPanel(Vector3D.PLUS_J, sun, 20.0, 2.0, 0.0, 0.8, 0.1);
         BoxAndSolarArraySpacecraft s3 =
-                        new BoxAndSolarArraySpacecraft(facets, sun, 20.0, Vector3D.PLUS_J, 2.0, 0.8, 0.1);
+                        new BoxAndSolarArraySpacecraft(Stream.concat(cube.stream(), Stream.of(pointingNoLift)).
+                                                       collect(Collectors.toList()));
         Assertions.assertEquals(1, s3.getDragParametersDrivers().size());
-        Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT, s3.getDragParametersDrivers().get(0).getName());
-        Assertions.assertEquals(2.0, s3.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(2, s3.getRadiationParametersDrivers().size());
-        Assertions.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT,
-                s3.getRadiationParametersDrivers().get(0).getName());
-        Assertions.assertEquals(0.8, s3.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT,
-                s3.getRadiationParametersDrivers().get(1).getName());
-        Assertions.assertEquals(0.1, s3.getRadiationParametersDrivers().get(1).getValue(), 1.0e-15);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s3.getDragParametersDrivers().get(0).getName());
+        Assertions.assertEquals(1.0, s3.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(1, s3.getRadiationParametersDrivers().size());
+        Assertions.assertEquals(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
+                                s3.getRadiationParametersDrivers().get(0).getName());
+        Assertions.assertEquals(1.0, s3.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
 
+        PointingPanel pointingLift = new PointingPanel(Vector3D.PLUS_J, sun, 20.0, 2.0, 0.4, 0.8, 0.1);
         BoxAndSolarArraySpacecraft s4 =
-                        new BoxAndSolarArraySpacecraft(facets, sun, 20.0, Vector3D.PLUS_J, 2.0, 0.4, 0.8, 0.1);
-        Assertions.assertEquals(2, s4.getDragParametersDrivers().size());
-        Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT, s4.getDragParametersDrivers().get(0).getName());
-        Assertions.assertEquals(2.0, s4.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(DragSensitive.LIFT_RATIO, s4.getDragParametersDrivers().get(1).getName());
-        Assertions.assertEquals(0.4, s4.getDragParametersDrivers().get(1).getValue(), 1.0e-15);
-        Assertions.assertEquals(2, s4.getRadiationParametersDrivers().size());
-        Assertions.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT,
-                s4.getRadiationParametersDrivers().get(0).getName());
-        Assertions.assertEquals(0.8, s4.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT,
-                s4.getRadiationParametersDrivers().get(1).getName());
-        Assertions.assertEquals(0.1, s4.getRadiationParametersDrivers().get(1).getValue(), 1.0e-15);
+                        new BoxAndSolarArraySpacecraft(Stream.concat(cube.stream(), Stream.of(pointingLift)).
+                                                       collect(Collectors.toList()));
+        Assertions.assertEquals(1, s4.getDragParametersDrivers().size());
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s4.getDragParametersDrivers().get(0).getName());
+        Assertions.assertEquals(1.0, s4.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(1, s4.getRadiationParametersDrivers().size());
+        Assertions.assertEquals(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
+                                s4.getRadiationParametersDrivers().get(0).getName());
+        Assertions.assertEquals(1.0, s4.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
 
-        BoxAndSolarArraySpacecraft s5 =
-                        new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J,
-                                                       AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, 7.292e-5,
-                                                       2.0, 0.8, 0.1);
+        SlewingPanel slewingNoLift = new SlewingPanel(Vector3D.PLUS_J, 7.292e-5, AbsoluteDate.J2000_EPOCH,
+                                                      Vector3D.PLUS_I, 20.0, 2.0, 0.0, 0.8, 0.1);
+        BoxAndSolarArraySpacecraft s5 = new BoxAndSolarArraySpacecraft(Stream.concat(boxNoLift.stream(), Stream.of(slewingNoLift)).
+                                                                       collect(Collectors.toList()));
         Assertions.assertEquals(1, s5.getDragParametersDrivers().size());
-        Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT, s5.getDragParametersDrivers().get(0).getName());
-        Assertions.assertEquals(2.0, s5.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(2, s5.getRadiationParametersDrivers().size());
-        Assertions.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT,
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s5.getDragParametersDrivers().get(0).getName());
+        Assertions.assertEquals(1.0, s5.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(1, s5.getRadiationParametersDrivers().size());
+        Assertions.assertEquals(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
                 s5.getRadiationParametersDrivers().get(0).getName());
-        Assertions.assertEquals(0.8, s5.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT,
-                s5.getRadiationParametersDrivers().get(1).getName());
-        Assertions.assertEquals(0.1, s5.getRadiationParametersDrivers().get(1).getValue(), 1.0e-15);
+        Assertions.assertEquals(1.0, s5.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
 
-        BoxAndSolarArraySpacecraft s6 =
-                        new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J,
-                                                       AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, 7.292e-5,
-                                                       2.0, 0.4, 0.8, 0.1);
-        Assertions.assertEquals(2, s6.getDragParametersDrivers().size());
-        Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT, s6.getDragParametersDrivers().get(0).getName());
-        Assertions.assertEquals(2.0, s6.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(DragSensitive.LIFT_RATIO, s6.getDragParametersDrivers().get(1).getName());
-        Assertions.assertEquals(0.4, s6.getDragParametersDrivers().get(1).getValue(), 1.0e-15);
-        Assertions.assertEquals(2, s6.getRadiationParametersDrivers().size());
-        Assertions.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT,
+        SlewingPanel slewingLift = new SlewingPanel(Vector3D.PLUS_J, 7.292e-5, AbsoluteDate.J2000_EPOCH,
+                                                    Vector3D.PLUS_I, 20.0, 2.0, 0.4, 0.8, 0.1);
+        BoxAndSolarArraySpacecraft s6 = new BoxAndSolarArraySpacecraft(Stream.concat(boxLift.stream(), Stream.of(slewingLift)).
+                                                                       collect(Collectors.toList()));
+        Assertions.assertEquals(1, s6.getDragParametersDrivers().size());
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s6.getDragParametersDrivers().get(0).getName());
+        Assertions.assertEquals(1.0, s6.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(1, s6.getRadiationParametersDrivers().size());
+        Assertions.assertEquals(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
                 s6.getRadiationParametersDrivers().get(0).getName());
-        Assertions.assertEquals(0.8, s6.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT,
-                s6.getRadiationParametersDrivers().get(1).getName());
-        Assertions.assertEquals(0.1, s6.getRadiationParametersDrivers().get(1).getValue(), 1.0e-15);
+        Assertions.assertEquals(1.0, s6.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
 
         BoxAndSolarArraySpacecraft s7 =
-                        new BoxAndSolarArraySpacecraft(facets, sun, 20.0, Vector3D.PLUS_J,
-                                                       AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, 7.292e-5,
-                                                       2.0, 0.8, 0.1);
+                        new BoxAndSolarArraySpacecraft(Stream.concat(cube.stream(), Stream.of(slewingNoLift)).
+                                                       collect(Collectors.toList()));
         Assertions.assertEquals(1, s7.getDragParametersDrivers().size());
-        Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT, s7.getDragParametersDrivers().get(0).getName());
-        Assertions.assertEquals(2.0, s7.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(2, s7.getRadiationParametersDrivers().size());
-        Assertions.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT,
-                s7.getRadiationParametersDrivers().get(0).getName());
-        Assertions.assertEquals(0.8, s7.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT,
-                s7.getRadiationParametersDrivers().get(1).getName());
-        Assertions.assertEquals(0.1, s7.getRadiationParametersDrivers().get(1).getValue(), 1.0e-15);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s7.getDragParametersDrivers().get(0).getName());
+        Assertions.assertEquals(1.0, s7.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(1, s7.getRadiationParametersDrivers().size());
+        Assertions.assertEquals(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
+                                s7.getRadiationParametersDrivers().get(0).getName());
+        Assertions.assertEquals(1.0, s7.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
 
         BoxAndSolarArraySpacecraft s8 =
-                        new BoxAndSolarArraySpacecraft(facets, sun, 20.0, Vector3D.PLUS_J,
-                                                       AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, 7.292e-5,
-                                                       2.0, 0.4, 0.8, 0.1);
-        Assertions.assertEquals(2, s8.getDragParametersDrivers().size());
-        Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT, s8.getDragParametersDrivers().get(0).getName());
-        Assertions.assertEquals(2.0, s8.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(DragSensitive.LIFT_RATIO, s8.getDragParametersDrivers().get(1).getName());
-        Assertions.assertEquals(0.4, s8.getDragParametersDrivers().get(1).getValue(), 1.0e-15);
-        Assertions.assertEquals(2, s8.getRadiationParametersDrivers().size());
-        Assertions.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT,
+                        new BoxAndSolarArraySpacecraft(Stream.concat(cube.stream(), Stream.of(slewingLift)).
+                                                       collect(Collectors.toList()));
+        Assertions.assertEquals(1, s8.getDragParametersDrivers().size());
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR, s8.getDragParametersDrivers().get(0).getName());
+        Assertions.assertEquals(1.0, s8.getDragParametersDrivers().get(0).getValue(), 1.0e-15);
+        Assertions.assertEquals(1, s8.getRadiationParametersDrivers().size());
+        Assertions.assertEquals(RadiationSensitive.GLOBAL_RADIATION_FACTOR,
                 s8.getRadiationParametersDrivers().get(0).getName());
-        Assertions.assertEquals(0.8, s8.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT,
-                s8.getRadiationParametersDrivers().get(1).getName());
-        Assertions.assertEquals(0.1, s8.getRadiationParametersDrivers().get(1).getValue(), 1.0e-15);
-
-    }
-
-    @Test
-    public void testBestPointing() {
-
-        AbsoluteDate initialDate = propagator.getInitialState().getDate();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J, 0.0, 0.0, 0.0);
-        for (double dt = 0; dt < 4000; dt += 60) {
-
-            SpacecraftState state = propagator.propagate(initialDate.shiftedBy(dt));
-
-            Vector3D sunInert = sun.getPVCoordinates(initialDate, state.getFrame()).getPosition();
-            Vector3D momentum = state.getPVCoordinates().getMomentum();
-            double sunElevation = FastMath.PI / 2 - Vector3D.angle(sunInert, momentum);
-            Assertions.assertEquals(15.1, FastMath.toDegrees(sunElevation), 0.1);
-
-            Vector3D n = s.getNormal(state.getDate(), state.getFrame(),
-                                     state.getPVCoordinates().getPosition(),
-                                     state.getAttitude().getRotation());
-            Assertions.assertEquals(0.0, n.getY(), 1.0e-10);
-
-            // normal misalignment should be entirely due to sun being out of orbital plane
-            Vector3D sunSat = state.getAttitude().getRotation().applyTo(sunInert);
-            double misAlignment = Vector3D.angle(sunSat, n);
-            Assertions.assertEquals(sunElevation, misAlignment, 1.0e-3);
-
-        }
-    }
-
-    @Test
-    public void testCorrectFixedRate() {
-
-        AbsoluteDate initialDate = propagator.getInitialState().getDate();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J,
-                                           initialDate,
-                                           new Vector3D(0.46565509814462996, 0.0,  0.884966287251619),
-                                           propagator.getInitialState().getKeplerianMeanMotion(),
-                                           0.0, 0.0, 0.0);
-
-        for (double dt = 0; dt < 4000; dt += 60) {
-
-            SpacecraftState state = propagator.propagate(initialDate.shiftedBy(dt));
-
-            Vector3D sunInert = sun.getPVCoordinates(initialDate, state.getFrame()).getPosition();
-            Vector3D momentum = state.getPVCoordinates().getMomentum();
-            double sunElevation = FastMath.PI / 2 - Vector3D.angle(sunInert, momentum);
-            Assertions.assertEquals(15.1, FastMath.toDegrees(sunElevation), 0.1);
-
-            Vector3D n = s.getNormal(state.getDate(), state.getFrame(),
-                                     state.getPVCoordinates().getPosition(),
-                                     state.getAttitude().getRotation());
-            Assertions.assertEquals(0.0, n.getY(), 1.0e-10);
-
-            // normal misalignment should be entirely due to sun being out of orbital plane
-            Vector3D sunSat = state.getAttitude().getRotation().applyTo(sunInert);
-            double misAlignment = Vector3D.angle(sunSat, n);
-            Assertions.assertEquals(sunElevation, misAlignment, 1.0e-3);
-
-        }
-    }
-
-    @Test
-    public void testTooSlowFixedRate() {
-
-            AbsoluteDate initialDate = propagator.getInitialState().getDate();
-            CelestialBody sun = CelestialBodyFactory.getSun();
-            BoxAndSolarArraySpacecraft s =
-                new BoxAndSolarArraySpacecraft(1.5, 3.5, 2.5, sun, 20.0, Vector3D.PLUS_J,
-                                               initialDate,
-                                               new Vector3D(0.46565509814462996, 0.0,  0.884966287251619),
-                                               0.1 * propagator.getInitialState().getKeplerianMeanMotion(),
-                                               0.0, 0.0, 0.0);
-
-            double maxDelta = 0;
-            for (double dt = 0; dt < 4000; dt += 60) {
-
-                SpacecraftState state = propagator.propagate(initialDate.shiftedBy(dt));
-
-                Vector3D sunInert = sun.getPVCoordinates(initialDate, state.getFrame()).getPosition();
-                Vector3D momentum = state.getPVCoordinates().getMomentum();
-                double sunElevation = FastMath.PI / 2 - Vector3D.angle(sunInert, momentum);
-                Assertions.assertEquals(15.1, FastMath.toDegrees(sunElevation), 0.1);
-
-                Vector3D n = s.getNormal(state.getDate(), state.getFrame(),
-                                         state.getPVCoordinates().getPosition(),
-                                         state.getAttitude().getRotation());
-                Assertions.assertEquals(0.0, n.getY(), 1.0e-10);
-
-                // normal misalignment should become very large as solar array rotation is plain wrong
-                Vector3D sunSat = state.getAttitude().getRotation().applyTo(sunInert);
-                double misAlignment = Vector3D.angle(sunSat, n);
-                maxDelta = FastMath.max(maxDelta, FastMath.abs(sunElevation - misAlignment));
-
-            }
-            Assertions.assertTrue(FastMath.toDegrees(maxDelta) > 120.0);
+        Assertions.assertEquals(1.0, s8.getRadiationParametersDrivers().get(0).getValue(), 1.0e-15);
 
     }
 
@@ -311,25 +224,17 @@ public class BoxAndSolarArraySpacecraftTest {
             SpacecraftState state = propagator.propagate(date);
 
             // simple Earth fixed atmosphere
-            Vector3D p = state.getPVCoordinates().getPosition();
+            Vector3D p = state.getPosition();
             Vector3D v = state.getPVCoordinates().getVelocity();
             Vector3D vAtm = Vector3D.crossProduct(earthRot, p);
             Vector3D relativeVelocity = vAtm.subtract(v);
 
-            Vector3D drag = s.dragAcceleration(state.getDate(), state.getFrame(),
-                                               state.getPVCoordinates().getPosition(),
-                                               state.getAttitude().getRotation(),
-                                               state.getMass(), 0.001, relativeVelocity,
-                                               getDragParameters(s));
+            Vector3D drag = s.dragAcceleration(state, 0.001, relativeVelocity, getDragParameters(s));
             Assertions.assertEquals(0.0, Vector3D.angle(relativeVelocity, drag), 1.0e-15);
 
-            Vector3D sunDirection = sun.getPVCoordinates(date, state.getFrame()).getPosition().normalize();
+            Vector3D sunDirection = sun.getPosition(date, state.getFrame()).normalize();
             Vector3D flux = new Vector3D(-4.56e-6, sunDirection);
-            Vector3D radiation = s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                                                 state.getPVCoordinates().getPosition(),
-                                                                 state.getAttitude().getRotation(),
-                                                                 state.getMass(), flux,
-                                                                 getRadiationParameters(s));
+            Vector3D radiation = s.radiationPressureAcceleration(state, flux, getRadiationParameters(s));
             Assertions.assertEquals(0.0, Vector3D.angle(flux, radiation), 1.0e-9);
 
         }
@@ -351,26 +256,18 @@ public class BoxAndSolarArraySpacecraftTest {
             SpacecraftState state = propagator.propagate(date);
 
             // simple Earth fixed atmosphere
-            Vector3D p = state.getPVCoordinates().getPosition();
+            Vector3D p = state.getPosition();
             Vector3D v = state.getPVCoordinates().getVelocity();
             Vector3D vAtm = Vector3D.crossProduct(earthRot, p);
             Vector3D relativeVelocity = vAtm.subtract(v);
 
-            Vector3D drag = s.dragAcceleration(state.getDate(), state.getFrame(),
-                                               state.getPVCoordinates().getPosition(),
-                                               state.getAttitude().getRotation(),
-                                               state.getMass(), 0.001, relativeVelocity,
-                                               getDragParameters(s));
+            Vector3D drag = s.dragAcceleration(state, 0.001, relativeVelocity, getDragParameters(s));
             Assertions.assertTrue(Vector3D.angle(relativeVelocity, drag) > 0.167);
             Assertions.assertTrue(Vector3D.angle(relativeVelocity, drag) < 0.736);
 
-            Vector3D sunDirection = sun.getPVCoordinates(date, state.getFrame()).getPosition().normalize();
+            Vector3D sunDirection = sun.getPosition(date, state.getFrame()).normalize();
             Vector3D flux = new Vector3D(-4.56e-6, sunDirection);
-            Vector3D radiation = s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                                                 state.getPVCoordinates().getPosition(),
-                                                                 state.getAttitude().getRotation(),
-                                                                 state.getMass(), flux,
-                                                                 getRadiationParameters(s));
+            Vector3D radiation = s.radiationPressureAcceleration(state, flux, getRadiationParameters(s));
             Assertions.assertEquals(0.0, Vector3D.angle(flux, radiation), 1.0e-9);
 
         }
@@ -382,35 +279,36 @@ public class BoxAndSolarArraySpacecraftTest {
         throws NoSuchFieldException, SecurityException,
                IllegalArgumentException, IllegalAccessException {
 
-        CelestialBody sun = CelestialBodyFactory.getSun();
-
         // older implementation did not consider lift, so it really worked
         // only for symmetrical shapes. For testing purposes, we will use a
         // basic cubic shape without solar arrays and a relative atmosphere
         // velocity either *exactly* facing a side or *exactly* along a main diagonal
-        BoxAndSolarArraySpacecraft.Facet[] facets = new BoxAndSolarArraySpacecraft.Facet[] {
-            new BoxAndSolarArraySpacecraft.Facet(Vector3D.MINUS_I, 3.0),
-            new BoxAndSolarArraySpacecraft.Facet(Vector3D.PLUS_I,  3.0),
-            new BoxAndSolarArraySpacecraft.Facet(Vector3D.MINUS_J, 3.0),
-            new BoxAndSolarArraySpacecraft.Facet(Vector3D.PLUS_J,  3.0),
-            new BoxAndSolarArraySpacecraft.Facet(Vector3D.MINUS_K, 3.0),
-            new BoxAndSolarArraySpacecraft.Facet(Vector3D.PLUS_K,  3.0)
-        };
-        BoxAndSolarArraySpacecraft cube =
-                        new BoxAndSolarArraySpacecraft(facets, sun, 0.0, Vector3D.PLUS_J, 1.0, 1.0, 1.0, 0.0);
+        List<Panel> facets = new ArrayList<>(7);
+        facets.add(new FixedPanel(Vector3D.MINUS_I, 3.0, false, 1.0, 1.0, 1.0, 0.0));
+        facets.add(new FixedPanel(Vector3D.PLUS_I,  3.0, false, 1.0, 1.0, 1.0, 0.0));
+        facets.add(new FixedPanel(Vector3D.MINUS_J, 3.0, false, 1.0, 1.0, 1.0, 0.0));
+        facets.add(new FixedPanel(Vector3D.PLUS_J,  3.0, false, 1.0, 1.0, 1.0, 0.0));
+        facets.add(new FixedPanel(Vector3D.MINUS_K, 3.0, false, 1.0, 1.0, 1.0, 0.0));
+        facets.add(new FixedPanel(Vector3D.PLUS_K,  3.0, false, 1.0, 1.0, 1.0, 0.0));
+        BoxAndSolarArraySpacecraft cube = new BoxAndSolarArraySpacecraft(facets);
 
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getEME2000();
         Vector3D position = new Vector3D(1234567.8, 9876543.21, 121212.3434);
-        double mass = 1000.0;
         double density = 0.001;
-        Rotation rotation = Rotation.IDENTITY;
+        SpacecraftState state = new SpacecraftState(new CartesianOrbit(new TimeStampedPVCoordinates(date, position, Vector3D.ZERO),
+                                                                       frame, Constants.EIGEN5C_EARTH_MU),
+                                                    new Attitude(frame,
+                                                                new TimeStampedAngularCoordinates(date,
+                                                                                                  Rotation.IDENTITY,
+                                                                                                  Vector3D.ZERO,
+                                                                                                  Vector3D.ZERO)),
+                                                    1000.0);
 
         // head-on, there acceleration with lift should be twice acceleration without lift
         Vector3D headOnVelocity = new Vector3D(2000, 0.0, 0.0);
-        Vector3D newHeadOnDrag  = cube.dragAcceleration(date, frame, position, rotation, mass, density, headOnVelocity,
-                                                        getDragParameters(cube));
-        Vector3D oldHeadOnDrag  = oldDragAcceleration(cube, date, frame, position, rotation, mass, density, headOnVelocity);
+        Vector3D newHeadOnDrag  = cube.dragAcceleration(state, density, headOnVelocity, getDragParameters(cube));
+        Vector3D oldHeadOnDrag  = oldDragAcceleration(cube, state, density, headOnVelocity);
         MatcherAssert.assertThat(newHeadOnDrag, OrekitMatchers.vectorCloseTo(oldHeadOnDrag.scalarMultiply(2), 1));
 
         // on an angle, the no lift implementation applies drag to the velocity direction
@@ -420,9 +318,8 @@ public class BoxAndSolarArraySpacecraftTest {
         // and since molecule is reflected backward with the same velocity, this implies a
         // factor 2 in linear momentum differences
         Vector3D diagonalVelocity = new Vector3D(2000, 2000, 2000);
-        Vector3D newDiagDrag= cube.dragAcceleration(date, frame, position, rotation, mass, density, diagonalVelocity,
-                                                    getDragParameters(cube));
-        Vector3D oldDiagDrag = oldDragAcceleration(cube, date, frame, position, rotation, mass, density, diagonalVelocity);
+        Vector3D newDiagDrag= cube.dragAcceleration(state, density, diagonalVelocity, getDragParameters(cube));
+        Vector3D oldDiagDrag = oldDragAcceleration(cube, state, density, diagonalVelocity);
         double oldMissingCoeff = 2.0 / FastMath.sqrt(3.0);
         Vector3D fixedOldDrag = new Vector3D(oldMissingCoeff, oldDiagDrag);
         MatcherAssert.assertThat(newDiagDrag, OrekitMatchers.vectorCloseTo(fixedOldDrag, 1));
@@ -430,43 +327,29 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     // this is a slightly adapted version of the pre-9.0 implementation
-    // (changes are only related to retrieve the fields using reflection)
     // Beware that this implementation is WRONG
-    private Vector3D oldDragAcceleration(final BoxAndSolarArraySpacecraft bsa,
-                                         final AbsoluteDate date, final Frame frame, final Vector3D position,
-                                         final Rotation rotation, final double mass,
+    private Vector3D oldDragAcceleration(final BoxAndSolarArraySpacecraft boxWithoutSolarArray,
+                                         final SpacecraftState state,
                                          final double density, final Vector3D relativeVelocity)
          throws IllegalArgumentException, IllegalAccessException,
                 NoSuchFieldException, SecurityException {
 
-        java.lang.reflect.Field facetsField = BoxAndSolarArraySpacecraft.class.getDeclaredField("facets");
-        facetsField.setAccessible(true);
-        @SuppressWarnings("unchecked")
-        final List<BoxAndSolarArraySpacecraft.Facet> facets = (List<BoxAndSolarArraySpacecraft.Facet>) facetsField.get(bsa);
-
-        java.lang.reflect.Field saAreaField = BoxAndSolarArraySpacecraft.class.getDeclaredField("solarArrayArea");
-        saAreaField.setAccessible(true);
-        final double solarArrayArea = (Double) saAreaField.get(bsa);
-
-        final double dragCoeff = bsa.getDragParametersDrivers().get(0).getValue();
+        final double dragCoeff = boxWithoutSolarArray.getDragParametersDrivers().get(0).getValue();
 
         // relative velocity in spacecraft frame
-        final Vector3D v = rotation.applyTo(relativeVelocity);
-
-        // solar array contribution
-        final Vector3D solarArrayFacet = new Vector3D(solarArrayArea, bsa.getNormal(date, frame, position, rotation));
-        double sv = FastMath.abs(Vector3D.dotProduct(solarArrayFacet, v));
+        final Vector3D v = state.getAttitude().getRotation().applyTo(relativeVelocity);
 
         // body facets contribution
-        for (final BoxAndSolarArraySpacecraft.Facet facet : facets) {
-            final double dot = Vector3D.dotProduct(facet.getNormal(), v);
+        double sv = 0;
+        for (final Panel panel : boxWithoutSolarArray.getPanels()) {
+            final double dot = Vector3D.dotProduct(panel.getNormal(state), v);
             if (dot < 0) {
                 // the facet intercepts the incoming flux
-                sv -= facet.getArea() * dot;
+                sv -= panel.getArea() * dot;
             }
         }
 
-        return new Vector3D(sv * density * dragCoeff / (2.0 * mass), relativeVelocity);
+        return new Vector3D(sv * density * dragCoeff / (2.0 * state.getMass()), relativeVelocity);
 
     }
 
@@ -475,24 +358,18 @@ public class BoxAndSolarArraySpacecraftTest {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 0.0, 1.0);
+        final Panel reflectingSolarArray = new PointingPanel(Vector3D.PLUS_J, sun, 20.0, 0.0, 0.0, 0.0, 1.0);
+        BoxAndSolarArraySpacecraft s = new BoxAndSolarArraySpacecraft(Collections.singletonList(reflectingSolarArray));
 
         for (double dt = 0; dt < 4000; dt += 60) {
 
             AbsoluteDate date = initialDate.shiftedBy(dt);
             SpacecraftState state = propagator.propagate(date);
 
-            Vector3D sunDirection = sun.getPVCoordinates(date, state.getFrame()).getPosition().normalize();
-            Vector3D flux = new Vector3D(-4.56e-6, sunDirection);
-            Vector3D acceleration = s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                                                    state.getPVCoordinates().getPosition(),
-                                                                    state.getAttitude().getRotation(),
-                                                                    state.getMass(), flux,
-                                                                    getRadiationParameters(s));
-            Vector3D normal = state.getAttitude().getRotation().applyInverseTo(s.getNormal(state.getDate(), state.getFrame(),
-                                                                                           state.getPVCoordinates().getPosition(),
-                                                                                           state.getAttitude().getRotation()));
+            Vector3D sunDirection = sun.getPosition(date, state.getFrame()).normalize();
+            Vector3D flux         = new Vector3D(-4.56e-6, sunDirection);
+            Vector3D acceleration = s.radiationPressureAcceleration(state, flux, getRadiationParameters(s));
+            Vector3D normal       = state.getAttitude().getRotation().applyInverseTo(reflectingSolarArray.getNormal(state));
 
             // solar array normal is slightly misaligned with Sun direction due to Sun being out of orbital plane
             Assertions.assertEquals(15.1, FastMath.toDegrees(Vector3D.angle(sunDirection, normal)), 0.11);
@@ -509,25 +386,18 @@ public class BoxAndSolarArraySpacecraftTest {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
+        final Panel absorbingSolarArray = new PointingPanel(Vector3D.PLUS_J, sun, 20.0, 0.0, 0.0, 1.0, 0.0);
+        BoxAndSolarArraySpacecraft s = new BoxAndSolarArraySpacecraft(Collections.singletonList(absorbingSolarArray));
 
         for (double dt = 0; dt < 4000; dt += 60) {
 
             AbsoluteDate date = initialDate.shiftedBy(dt);
             SpacecraftState state = propagator.propagate(date);
 
-            Vector3D sunDirection = sun.getPVCoordinates(date, state.getFrame()).getPosition().normalize();
-            Vector3D flux = new Vector3D(-4.56e-6, sunDirection);
-            Vector3D acceleration =
-                    s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
-                                                    state.getPVCoordinates().getPosition(),
-                                                    state.getAttitude().getRotation(),
-                                                    state.getMass(), flux,
-                                                    getRadiationParameters(s));
-            Vector3D normal = state.getAttitude().getRotation().applyInverseTo(s.getNormal(state.getDate(), state.getFrame(),
-                                                                                           state.getPVCoordinates().getPosition(),
-                                                                                           state.getAttitude().getRotation()));
+            Vector3D sunDirection = sun.getPosition(date, state.getFrame()).normalize();
+            Vector3D flux         = new Vector3D(-4.56e-6, sunDirection);
+            Vector3D acceleration = s.radiationPressureAcceleration(state, flux, getRadiationParameters(s));
+            Vector3D normal       = state.getAttitude().getRotation().applyInverseTo(absorbingSolarArray.getNormal(state));
 
             // solar array normal is slightly misaligned with Sun direction due to Sun being out of orbital plane
             Assertions.assertEquals(15.1, FastMath.toDegrees(Vector3D.angle(sunDirection, normal)), 0.11);
@@ -544,24 +414,19 @@ public class BoxAndSolarArraySpacecraftTest {
     public void testNullIllumination() {
         SpacecraftState state = propagator.getInitialState();
         CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
+        final Panel absorbingSolarArray = new PointingPanel(Vector3D.PLUS_J, sun, 20.0, 0.0, 0.0, 1.0, 0.0);
+        BoxAndSolarArraySpacecraft s = new BoxAndSolarArraySpacecraft(Collections.singletonList(absorbingSolarArray));
 
-        // "Field" the inputs using Decimal64
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        Decimal64[] srpParam = getRadiationParameters(s, field);
+        // "Field" the inputs using Binary64
+        Field<Binary64> field = Binary64Field.getInstance();
+        Binary64[] srpParam = getRadiationParameters(s, field);
 
-        FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(field, state.getDate());
-        FieldVector3D<Decimal64> position = new FieldVector3D<Decimal64>(field.getOne(), state.getPVCoordinates().getPosition());
-        FieldRotation<Decimal64> rotation = new FieldRotation<>(field, state.getAttitude().getRotation());
-        Decimal64 mass = new Decimal64(state.getMass());
-        FieldVector3D<Decimal64> flux = new FieldVector3D<Decimal64>(field.getOne(),
+        FieldSpacecraftState<Binary64> fState = new FieldSpacecraftState<>(field, state);
+        FieldVector3D<Binary64> flux = new FieldVector3D<Binary64>(field.getOne(),
                         new Vector3D(Precision.SAFE_MIN / 2, Vector3D.PLUS_I));
 
 
-        FieldVector3D<Decimal64> a = s.radiationPressureAcceleration(date, state.getFrame(),
-                                                                     position, rotation, mass,
-                                                                     flux, srpParam);
+        FieldVector3D<Binary64> a = s.radiationPressureAcceleration(fState, flux, srpParam);
         Assertions.assertEquals(0.0, a.getNorm().getReal(), Double.MIN_VALUE);
     }
 
@@ -570,132 +435,28 @@ public class BoxAndSolarArraySpacecraftTest {
     public void testBackwardIllumination() {
         SpacecraftState state = propagator.getInitialState();
         CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
+        final Panel absorbingSolarArray = new PointingPanel(Vector3D.PLUS_J, sun, 20.0, 0.0, 0.0, 1.0, 0.0);
+        BoxAndSolarArraySpacecraft s = new BoxAndSolarArraySpacecraft(Collections.singletonList(absorbingSolarArray));
 
-        // "Field" the inputs using Decimal64
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        Decimal64[] srpParam = getRadiationParameters(s, field);
+        // "Field" the inputs using Binary64
+        Field<Binary64> field = Binary64Field.getInstance();
+        Binary64[] srpParam = getRadiationParameters(s, field);
 
-        FieldAbsoluteDate<Decimal64> date = new FieldAbsoluteDate<>(field, state.getDate());
-        FieldVector3D<Decimal64> position = new FieldVector3D<Decimal64>(field.getOne(), state.getPVCoordinates().getPosition());
-        FieldRotation<Decimal64> rotation = new FieldRotation<>(field, state.getAttitude().getRotation());
-        Decimal64 mass = new Decimal64(state.getMass());
+        FieldSpacecraftState<Binary64> fState = new FieldSpacecraftState<>(field, state);
 
         // Flux equal to SA normal
-        FieldVector3D<Decimal64> flux = s.getNormal(date, state.getFrame(), position, rotation);
+        FieldVector3D<Binary64> flux = absorbingSolarArray.getNormal(fState);
 
         // Forward flux
-        FieldVector3D<Decimal64> aPlus = s.radiationPressureAcceleration(date, state.getFrame(),
-                                                                         position, rotation, mass,
-                                                                         flux, srpParam);
+        FieldVector3D<Binary64> aPlus = s.radiationPressureAcceleration(fState, flux, srpParam);
         // Backward flux
-        FieldVector3D<Decimal64> aMinus = s.radiationPressureAcceleration(date, state.getFrame(),
-                                                                          position, rotation, mass,
-                                                                          flux.negate(), srpParam);
+        FieldVector3D<Binary64> aMinus = s.radiationPressureAcceleration(fState, flux.negate(), srpParam);
 
         Assertions.assertEquals(0.0, aPlus.add(aMinus).getNorm().getReal(), Double.MIN_VALUE);
     }
 
-    @Test
-    public void testNormalOptimalRotationDouble() {
-        AbsoluteDate initialDate = propagator.getInitialState().getDate();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
-        for (double dt = 0; dt < 4000; dt += 60) {
-            AbsoluteDate date = initialDate.shiftedBy(dt);
-            SpacecraftState state = propagator.propagate(date);
-            Vector3D normal = s.getNormal(state.getDate(), state.getFrame(),
-                                            state.getPVCoordinates().getPosition(),
-                                            state.getAttitude().getRotation());
-            Assertions.assertEquals(0, Vector3D.dotProduct(normal, Vector3D.PLUS_J), 1.0e-16);
-        }
-    }
-
-    @Test
-    public void testNormalOptimalRotationField() {
-        AbsoluteDate initialDate = propagator.getInitialState().getDate();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        for (double dt = 0; dt < 4000; dt += 60) {
-            AbsoluteDate date = initialDate.shiftedBy(dt);
-            SpacecraftState state = propagator.propagate(date);
-            FieldVector3D<Decimal64> normal = s.getNormal(new FieldAbsoluteDate<>(field, state.getDate()),
-                                                          state.getFrame(),
-                                                          new FieldVector3D<>(field, state.getPVCoordinates().getPosition()),
-                                                          new FieldRotation<>(field, state.getAttitude().getRotation()));
-            Assertions.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
-        }
-    }
-
-    @Test
-    public void testNormalFixedRateDouble() {
-        AbsoluteDate initialDate = propagator.getInitialState().getDate();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J,
-                                           initialDate, Vector3D.PLUS_K, 1.0e-3,
-                                           0.0, 1.0, 0.0);
-        for (double dt = 0; dt < 4000; dt += 60) {
-            AbsoluteDate date = initialDate.shiftedBy(dt);
-            SpacecraftState state = propagator.propagate(date);
-            Vector3D normal = s.getNormal(state.getDate(), state.getFrame(),
-                                            state.getPVCoordinates().getPosition(),
-                                            state.getAttitude().getRotation());
-            Assertions.assertEquals(0, Vector3D.dotProduct(normal, Vector3D.PLUS_J), 1.0e-16);
-        }
-    }
-
-    @Test
-    public void testNormalFixedRateField() {
-        AbsoluteDate initialDate = propagator.getInitialState().getDate();
-        CelestialBody sun = CelestialBodyFactory.getSun();
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J,
-                                           initialDate, Vector3D.PLUS_K, 1.0e-3,
-                                           0.0, 1.0, 0.0);
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        for (double dt = 0; dt < 4000; dt += 60) {
-            AbsoluteDate date = initialDate.shiftedBy(dt);
-            SpacecraftState state = propagator.propagate(date);
-            FieldVector3D<Decimal64> normal = s.getNormal(new FieldAbsoluteDate<>(field, state.getDate()),
-                                                          state.getFrame(),
-                                                          new FieldVector3D<>(field, state.getPVCoordinates().getPosition()),
-                                                          new FieldRotation<>(field, state.getAttitude().getRotation()));
-            Assertions.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
-        }
-    }
-
-    @Test
-    public void testNormalSunAlignedDouble() {
-        BoxAndSolarArraySpacecraft s =
-            new BoxAndSolarArraySpacecraft(0, 0, 0,
-                                           (date, frame) -> new TimeStampedPVCoordinates(date, new Vector3D(0, 1e6, 0), Vector3D.ZERO),
-                                           20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
-        Vector3D normal = s.getNormal(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
-                                      Vector3D.ZERO, Rotation.IDENTITY);
-        Assertions.assertEquals(0, Vector3D.dotProduct(normal, Vector3D.PLUS_J), 1.0e-16);
-    }
-
-    @Test
-    public void testNormalSunAlignedField() {
-        BoxAndSolarArraySpacecraft s =
-                        new BoxAndSolarArraySpacecraft(0, 0, 0,
-                                                       (date, frame) -> new TimeStampedPVCoordinates(date, new Vector3D(0, 1e6, 0), Vector3D.ZERO),
-                                                       20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        FieldVector3D<Decimal64> normal = s.getNormal(FieldAbsoluteDate.getJ2000Epoch(field),
-                                                      FramesFactory.getEME2000(),
-                                                      FieldVector3D.getZero(field),
-                                                      FieldRotation.getIdentity(field));
-        Assertions.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
-    }
-
     /** Test the functions computing drag and SRP acceleration and giving FieldVector3D outputs.
-     *  By comparing the "double" value with a "Decimal64" implementation.
+     *  By comparing the "double" value with a "Binary64" implementation.
      */
     @Test
     public void testFieldAcceleration() {
@@ -719,44 +480,32 @@ public class BoxAndSolarArraySpacecraftTest {
             SpacecraftState state = propagator.propagate(date);
 
             // Data used in acceleration computation
-            Vector3D position = state.getPVCoordinates().getPosition();
+            Vector3D position = state.getPosition();
             Vector3D velocity = state.getPVCoordinates().getVelocity();
             Vector3D vAtm = Vector3D.crossProduct(earthRot, position);
             Vector3D relativeVelocity = vAtm.subtract(velocity);
 
             Frame frame = state.getFrame();
-            Rotation rotation = state.getAttitude().getRotation();
-            double mass = state.getMass();
-            Vector3D flux = position.subtract(sun.getPVCoordinates(date, frame).getPosition()).normalize().scalarMultiply(refFlux);
+            Vector3D flux = position.subtract(sun.getPosition(date, frame)).normalize().scalarMultiply(refFlux);
 
             // Acceleration in double
-            Vector3D aDrag = s.dragAcceleration(date, frame, position, rotation, mass,
-                                                density, relativeVelocity,
-                                                getDragParameters(s));
-            Vector3D aSrp = s.radiationPressureAcceleration(date, frame, position, rotation, mass,
-                                                            flux, getRadiationParameters(s));
+            Vector3D aDrag = s.dragAcceleration(state, density, relativeVelocity, getDragParameters(s));
+            Vector3D aSrp = s.radiationPressureAcceleration(state, flux, getRadiationParameters(s));
 
-            // "Field" the inputs using Decimal64
-            Field<Decimal64> field = Decimal64Field.getInstance();
+            // "Field" the inputs using Binary64
+            Field<Binary64> field = Binary64Field.getInstance();
+            FieldSpacecraftState<Binary64> fState = new FieldSpacecraftState<>(field, state);
 
-            FieldAbsoluteDate<Decimal64> dateF = new FieldAbsoluteDate<>(field, date);
-            FieldVector3D<Decimal64> positionF = new FieldVector3D<Decimal64>(field.getOne(), position);
-            FieldRotation<Decimal64> rotationF = new FieldRotation<>(field, rotation);
-            Decimal64 massF = new Decimal64(mass);
-            FieldVector3D<Decimal64> fluxF = new FieldVector3D<Decimal64>(field.getOne(), flux);
-            Decimal64 densityF = new Decimal64(density);
-            FieldVector3D<Decimal64> relativeVelocityF = new FieldVector3D<Decimal64>(field.getOne(), relativeVelocity);
+            FieldVector3D<Binary64> fluxF = new FieldVector3D<Binary64>(field.getOne(), flux);
+            Binary64 densityF = new Binary64(density);
+            FieldVector3D<Binary64> relativeVelocityF = new FieldVector3D<Binary64>(field.getOne(), relativeVelocity);
 
 
-            // Acceleration in Decimal64
-            FieldVector3D<Decimal64> aDragF = s.dragAcceleration(dateF, frame,
-                                                                 positionF, rotationF, massF, densityF,
-                                                                 relativeVelocityF, getDragParameters(s, field));
-            FieldVector3D<Decimal64> aSrpF = s.radiationPressureAcceleration(dateF, frame,
-                                                                         positionF, rotationF, massF,
-                                                                         fluxF, getRadiationParameters(s, field));
-            // Compare double and Decimal64 accelerations
-            Assertions.assertEquals(0.0, Vector3D.distance(aDrag,  aDragF.toVector3D()), Precision.EPSILON);
+            // Acceleration in Binary64
+            FieldVector3D<Binary64> aDragF = s.dragAcceleration(fState, densityF, relativeVelocityF, getDragParameters(s, field));
+            FieldVector3D<Binary64> aSrpF  = s.radiationPressureAcceleration(fState, fluxF, getRadiationParameters(s, field));
+            // Compare double and Binary64 accelerations
+            Assertions.assertEquals(0.0, Vector3D.distance(aDrag, aDragF.toVector3D()), Precision.EPSILON);
             Assertions.assertEquals(0.0, Vector3D.distance(aSrp,  aSrpF.toVector3D()), Precision.EPSILON);
         }
     }
@@ -823,7 +572,7 @@ public class BoxAndSolarArraySpacecraftTest {
         // respect to orbit plane roughly evolving roughly from 15 to 15.2 degrees in the test range
         Orbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(280),
-                                   FastMath.toRadians(10.0), PositionAngle.MEAN,
+                                   FastMath.toRadians(10.0), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
         propagator =
             new EcksteinHechlerPropagator(circ,

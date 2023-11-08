@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,14 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.orekit.files.ccsds.ndm.AbstractWriterTest;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
-import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 
-public class AemWriterTest extends AbstractWriterTest<Header, AemSegment, Aem> {
+public class AemWriterTest extends AbstractWriterTest<AdmHeader, AemSegment, Aem> {
 
     protected AemParser getParser() {
         return new ParserBuilder().
@@ -66,11 +65,14 @@ public class AemWriterTest extends AbstractWriterTest<Header, AemSegment, Aem> {
         doTest("/ccsds/adm/aem/AEMExample05.txt");
     }
 
-    // temporarily ignored as Orekit does not yet support SPIN_NUTATION attitude type
-    @Disabled
     @Test
-    public void testWriteExample06() {
-        doTest("/ccsds/adm/aem/AEMExample06.txt");
+    public void testWriteExample06a() {
+        doTest("/ccsds/adm/aem/AEMExample06a.txt");
+    }
+
+    @Test
+    public void testWriteExample06b() {
+        doTest("/ccsds/adm/aem/AEMExample06b.txt");
     }
 
     @Test
@@ -106,6 +108,26 @@ public class AemWriterTest extends AbstractWriterTest<Header, AemSegment, Aem> {
     @Test
     public void testWriteExample13() {
         doTest("/ccsds/adm/aem/AEMExample13.xml");
+    }
+
+    @Test
+    public void testWriteExample14() {
+        doTest("/ccsds/adm/aem/AEMExample14.txt");
+    }
+
+    @Test
+    public void testWriteExample15() {
+        doTest("/ccsds/adm/aem/AEMExample15.txt");
+    }
+
+    @Test
+    public void testWriteExample16() {
+        doTest("/ccsds/adm/aem/AEMExample16.txt");
+    }
+
+    @Test
+    public void testWriteExample17() {
+        doTest("/ccsds/adm/aem/AEMExample17.txt");
     }
 
 }

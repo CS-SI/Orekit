@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -72,7 +72,7 @@ public class DSSTZonalTest {
                                                  -0.3412974060023717,
                                                  0.3960084733107685,
                                                  8.566537840341699,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  earthFrame,
                                                  initDate,
                                                  3.986004415E14);
@@ -82,7 +82,7 @@ public class DSSTZonalTest {
         final DSSTForceModel zonal = new DSSTZonal(provider, 4, 3, 9);
 
         // Force model parameters
-        final double[] parameters = zonal.getParameters();
+        final double[] parameters = zonal.getParameters(orbit.getDate());
 
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
@@ -120,8 +120,8 @@ public class DSSTZonalTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         zonal.registerAttitudeProvider(null);
-        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, zonal.getParameters()));
-        zonal.updateShortPeriodTerms(zonal.getParameters(), meanState);
+        shortPeriodTerms.addAll(zonal.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, zonal.getParameters(meanState.getDate())));
+        zonal.updateShortPeriodTerms(zonal.getParametersAllValues(), meanState);
 
         double[] y = new double[6];
         for (final ShortPeriodTerms spt : shortPeriodTerms) {
@@ -160,7 +160,7 @@ public class DSSTZonalTest {
                                                  -0.3412974060023717,
                                                  0.3960084733107685,
                                                  8.566537840341699,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  earthFrame,
                                                  initDate,
                                                  3.986004415E14);
@@ -175,17 +175,17 @@ public class DSSTZonalTest {
 
         // Zonal force model
         final DSSTZonal zonal = new DSSTZonal(provider, 32, 4, 65);
-        zonal.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonal.getParameters());
+        zonal.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonal.getParameters(orbit.getDate()));
 
         // Zonal force model with default constructor
         final DSSTZonal zonalDefault = new DSSTZonal(provider);
-        zonalDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters());
+        zonalDefault.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, zonalDefault.getParameters(orbit.getDate()));
 
         // Compute mean element rate for the zonal force model
-        final double[] elements = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters());
+        final double[] elements = zonal.getMeanElementRate(state, auxiliaryElements, zonal.getParameters(orbit.getDate()));
 
         // Compute mean element rate for the "default" zonal force model
-        final double[] elementsDefault = zonalDefault.getMeanElementRate(state, auxiliaryElements, zonalDefault.getParameters());
+        final double[] elementsDefault = zonalDefault.getMeanElementRate(state, auxiliaryElements, zonalDefault.getParameters(orbit.getDate()));
 
         // Verify
         for (int i = 0; i < 6; i++) {
@@ -214,7 +214,7 @@ public class DSSTZonalTest {
                                                  10e-3,
                                                  FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
                                                  FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3), 0.1,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  FramesFactory.getEME2000(),
                                                  initDate,
                                                  3.986004415E14);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,14 +30,14 @@ public class OrekitMessagesTest {
 
     @Test
     public void testMessageNumber() {
-        Assertions.assertEquals(258, OrekitMessages.values().length);
+        Assertions.assertEquals(289, OrekitMessages.values().length);
     }
 
     @Test
     public void testAllKeysPresentInPropertiesFiles() {
         for (final String language : LANGUAGES_LIST) {
             ResourceBundle bundle = ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages",
-                    new Locale(language), new OrekitMessages.UTF8Control());
+                    Locale.forLanguageTag(language), new OrekitMessages.UTF8Control());
             for (OrekitMessages message : OrekitMessages.values()) {
                 final String messageKey = message.toString();
                 boolean keyPresent = false;
@@ -55,7 +55,7 @@ public class OrekitMessagesTest {
     public void testAllPropertiesCorrespondToKeys() {
         for (final String language : LANGUAGES_LIST) {
             ResourceBundle bundle = ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages",
-                    new Locale(language), new OrekitMessages.UTF8Control());
+                    Locale.forLanguageTag(language), new OrekitMessages.UTF8Control());
             for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
                 final String propertyKey = keys.nextElement();
                 try {
@@ -96,7 +96,7 @@ public class OrekitMessagesTest {
     @Test
     public void testVariablePartsConsistency() {
         for (final String language : LANGUAGES_LIST) {
-            Locale locale = new Locale(language);
+            Locale locale = Locale.forLanguageTag(language);
             for (OrekitMessages message : OrekitMessages.values()) {
                 MessageFormat source = new MessageFormat(message.getSourceString());
                 MessageFormat translated = new MessageFormat(message.getLocalizedString(locale));

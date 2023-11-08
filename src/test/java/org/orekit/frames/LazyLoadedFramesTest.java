@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,16 @@
  */
 package org.orekit.frames;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.ClasspathCrawler;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.LazyLoadedTimeScales;
 import org.orekit.time.TimeScales;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -47,11 +52,43 @@ public class LazyLoadedFramesTest {
         LazyLoadedFrames frames = new LazyLoadedFrames(eop, timeScales, null);
 
         // actions
-        frames.addDefaultEOP1980HistoryLoaders(null, null, null, null, null);
-        frames.addDefaultEOP2000HistoryLoaders(null, null, null, null, null);
+        frames.addDefaultEOP1980HistoryLoaders(null, null, null, null, null, null);
+        frames.addDefaultEOP2000HistoryLoaders(null, null, null, null, null, null);
         frames.addEOPHistoryLoader(IERSConventions.IERS_2010, null);
 
         // verify: no exceptions thrown
+    }
+
+    @Test
+    public void testInterpolationDegreeEffect() {
+        DataProvidersManager manager = new DataProvidersManager();
+        manager.addProvider(new ClasspathCrawler("regular-data/UTC-TAI.history"));
+        manager.addProvider(new ClasspathCrawler("regular-data/Earth-orientation-parameters/yearly/eopc04_08_IAU2000.03"));
+        LazyLoadedEop eop03 = new LazyLoadedEop(manager);
+        eop03.setInterpolationDegree(3);
+        EOPHistory history03 = eop03.getEOPHistory(IERSConventions.IERS_2010, false, new LazyLoadedTimeScales(eop03));
+        LazyLoadedEop eop07 = new LazyLoadedEop(manager);
+        eop07.setInterpolationDegree(7);
+        EOPHistory history07 = eop07.getEOPHistory(IERSConventions.IERS_2010, false, new LazyLoadedTimeScales(eop07));
+        final AbsoluteDate date = history03.getStartDate().shiftedBy(3.125 * Constants.JULIAN_DAY);
+        Assertions.assertEquals(-0.290422121, history03.getUT1MinusUTC(date), 1.0e-9);
+        Assertions.assertEquals(-0.290421707, history07.getUT1MinusUTC(date), 1.0e-9);
+    }
+
+    @Test
+    public void testWrongInterpolationDegree() {
+        DataProvidersManager manager = new DataProvidersManager();
+        manager.addProvider(new ClasspathCrawler("regular-data/UTC-TAI.history"));
+        LazyLoadedEop eop = new LazyLoadedEop(manager);
+        eop.setInterpolationDegree(4);
+        LazyLoadedTimeScales ts = new LazyLoadedTimeScales(eop);
+        try {
+            eop.getEOPHistory(IERSConventions.IERS_2010, false, ts);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.WRONG_EOP_INTERPOLATION_DEGREE, oe.getSpecifier());
+            Assertions.assertEquals(4, ((Integer) oe.getParts()[0]).intValue());
+        }
     }
 
 }

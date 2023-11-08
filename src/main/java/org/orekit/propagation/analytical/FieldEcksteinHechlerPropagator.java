@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,8 @@ package org.orekit.propagation.analytical;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
@@ -28,7 +28,7 @@ import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -37,7 +37,7 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.time.FieldAbsoluteDate;
@@ -53,6 +53,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * retrograde).</p>
  * @see FieldOrbit
  * @author Guylaine Prat
+ * @param <T> type of the field elements
  */
 public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
@@ -91,7 +92,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              initialOrbit.getMu().newInstance(DEFAULT_MASS), provider,
              provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
@@ -150,7 +151,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
                                           final double referenceRadius, final T mu,
                                           final double c20, final double c30, final double c40,
                                           final double c50, final double c60) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              initialOrbit.getMu().newInstance(DEFAULT_MASS),
              referenceRadius, mu, c20, c30, c40, c50, c60);
     }
@@ -168,8 +169,8 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
      */
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit, final T mass,
                                           final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-                mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             mass, provider, provider.onDate(initialOrbit.getDate().toAbsoluteDate()));
     }
 
     /** Build a propagator from FieldOrbit, mass and potential.
@@ -202,8 +203,8 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
                                           final double referenceRadius, final T mu,
                                           final double c20, final double c30, final double c40,
                                           final double c50, final double c60) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-                mass, referenceRadius, mu, c20, c30, c40, c50, c60);
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             mass, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from FieldOrbit, attitude provider and potential provider.
@@ -317,7 +318,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
     public FieldEcksteinHechlerPropagator(final FieldOrbit<T> initialOrbit,
                                           final UnnormalizedSphericalHarmonicsProvider provider,
                                           final PropagationType initialType) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              initialOrbit.getMu().newInstance(DEFAULT_MASS), provider,
              provider.onDate(initialOrbit.getDate().toAbsoluteDate()), initialType);
     }
@@ -562,11 +563,11 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
                                                                                              final double epsilon, final int maxIterations) {
         final FieldEcksteinHechlerPropagator<T> propagator =
                         new FieldEcksteinHechlerPropagator<>(osculating,
-                                                            InertialProvider.of(osculating.getFrame()),
-                                                            osculating.getMu().newInstance(DEFAULT_MASS),
-                                                            referenceRadius, osculating.getMu().newInstance(mu),
-                                                            c20, c30, c40, c50, c60,
-                                                            PropagationType.OSCULATING, epsilon, maxIterations);
+                                                             FrameAlignedProvider.of(osculating.getFrame()),
+                                                             osculating.getMu().newInstance(DEFAULT_MASS),
+                                                             referenceRadius, osculating.getMu().newInstance(mu),
+                                                             c20, c30, c40, c50, c60,
+                                                             PropagationType.OSCULATING, epsilon, maxIterations);
         return propagator.initialModel.mean;
     }
 
@@ -679,7 +680,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
                                                                   current.mean.getI()         .add( deltaI ),
                                                                   current.mean.getRightAscensionOfAscendingNode().add(deltaRAAN),
                                                                   current.mean.getAlphaM().add(deltaAlphaM),
-                                                                  PositionAngle.MEAN,
+                                                                  PositionAngleType.MEAN,
                                                                   current.mean.getFrame(),
                                                                   current.mean.getDate(), mu),
                                   mass, referenceRadius, mu, ck0);
@@ -1135,7 +1136,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
 
     /** {@inheritDoc} */
     @Override
-    protected List<ParameterDriver> getParametersDrivers() {
+    public List<ParameterDriver> getParametersDrivers() {
         // Eckstein Hechler propagation model does not have parameter drivers.
         return Collections.emptyList();
     }

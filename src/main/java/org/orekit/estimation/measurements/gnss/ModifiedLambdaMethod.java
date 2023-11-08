@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,17 @@ import org.hipparchus.util.FastMath;
  * @since 10.2
  */
 public class ModifiedLambdaMethod extends AbstractLambdaMethod {
+
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public ModifiedLambdaMethod() {
+        // nothing to do
+    }
 
     /** Compute the LᵀDL factorization with symmetric pivoting decomposition of Q
      * (symmetric definite positive matrix) with a minimum symmetric pivoting: Q = ZᵀLᵀDLZ.

@@ -1,4 +1,4 @@
-' Copyright 2002-2022 CS GROUP
+' Copyright 2002-2023 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -46,7 +46,7 @@
          DataSource filter(DataSource original)
       }
 
-      interface DataSource.Opener {
+      interface "DataSource.Opener" as Opener {
         +boolean rawDataIsBinary()
         +InputStream openStreamOnce()
         +Reader      openReaderOnce()
@@ -59,19 +59,19 @@
 
       FiltersManager "1" o--> "*" DataFilter: applies
       DataSource <-down- DataFilter : filters
-      DataSource --> DataSource.Opener
+      DataSource --> Opener
       DataFilter <|-- GzipFilter
       DataFilter <|-- UnixFilter
 
-      UnixFilter --> DataSource.Opener : creates
-      GzipFilter --> DataSource.Opener : creates
+      UnixFilter --> Opener : creates
+      GzipFilter --> Opener : creates
  
     }
 
-    package gnss #DDEBD8 {
+    package files.rinex #DDEBD8 {
       class HatanakaCompressFilter
       DataFilter <|-- HatanakaCompressFilter
-      DataSource.Opener <-left- HatanakaCompressFilter : creates
+      Opener <-left- HatanakaCompressFilter : creates
    }
 
   }

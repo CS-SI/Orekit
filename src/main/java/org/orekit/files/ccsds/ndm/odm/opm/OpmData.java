@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -88,7 +88,7 @@ public class OpmData implements Data {
             keplerianElementsBlock.validate(version);
             // in OPM, only semi-major axis is allowed, not mean motion
             keplerianElementsBlock.checkNotNaN(keplerianElementsBlock.getA(),
-                                               KeplerianElementsKey.SEMI_MAJOR_AXIS);
+                                               KeplerianElementsKey.SEMI_MAJOR_AXIS.name());
         }
         if (spacecraftParametersBlock != null) {
             spacecraftParametersBlock.validate(version);

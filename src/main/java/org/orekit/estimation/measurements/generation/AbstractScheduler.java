@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,14 @@
  */
 package org.orekit.estimation.measurements.generation;
 
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DatesSelector;
 
@@ -54,9 +61,8 @@ public abstract class AbstractScheduler<T extends ObservedMeasurement<T>> implem
         builder.init(start, end);
     }
 
-    /** Get the measurements builder.
-     * @return measurements builder
-     */
+    /** {@inheritDoc} */
+    @Override
     public MeasurementBuilder<T> getBuilder() {
         return builder;
     }
@@ -67,5 +73,35 @@ public abstract class AbstractScheduler<T extends ObservedMeasurement<T>> implem
     public DatesSelector getSelector() {
         return selector;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public SortedSet<T> generate(final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+
+        // select dates in the current step, using arbitrarily first interpolator
+        // as all interpolators cover the same range
+        final Map.Entry<ObservableSatellite, OrekitStepInterpolator> first = interpolators.entrySet().iterator().next();
+        final List<AbsoluteDate> dates = getSelector().selectDates(first.getValue().getPreviousState().getDate(),
+                                                                   first.getValue().getCurrentState().getDate());
+
+        // generate measurements when feasible
+        final SortedSet<T> measurements = new TreeSet<>();
+        for (final AbsoluteDate date : dates) {
+            if (measurementIsFeasible(date)) {
+                // a measurement is feasible at this date
+                measurements.add(getBuilder().build(date, interpolators));
+            }
+        }
+
+        return measurements;
+
+    }
+
+    /** Check if a measurement is feasible at some date.
+     * @param date date to check
+     * @return true if measurement if feasible
+     * @since 12.0
+     */
+    protected abstract boolean measurementIsFeasible(AbsoluteDate date);
 
 }

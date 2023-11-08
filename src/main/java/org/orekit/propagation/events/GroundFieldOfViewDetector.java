@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,31 +64,31 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
      */
     public GroundFieldOfViewDetector(final Frame frame,
                                      final FieldOfView fov) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                new StopOnIncreasing<GroundFieldOfViewDetector>(),
-                frame, fov);
+        this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+             new StopOnIncreasing(),
+             frame, fov);
     }
 
     /**
-     * Private constructor with full parameters.
-     *
-     * <p> This constructor is private as users are expected to use the builder
+     * Protected constructor with full parameters.
+     * <p>
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance in
      * a readable manner without using a huge amount of parameters. </p>
      *
-     * @param maxCheck  maximum checking interval (s)
+     * @param maxCheck  maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter   maximum number of iterations in the event time search
      * @param handler   event handler to call at event occurrences
      * @param frame     the reference frame attached to the sensor.
      * @param fov       Field Of View of the sensor.
      */
-    private GroundFieldOfViewDetector(final double maxCheck,
-                                      final double threshold,
-                                      final int maxIter,
-                                      final EventHandler<? super GroundFieldOfViewDetector> handler,
-                                      final Frame frame,
-                                      final FieldOfView fov) {
+    protected GroundFieldOfViewDetector(final AdaptableInterval maxCheck,
+                                        final double threshold,
+                                        final int maxIter,
+                                        final EventHandler handler,
+                                        final Frame frame,
+                                        final FieldOfView fov) {
         super(maxCheck, threshold, maxIter, handler);
         this.frame = frame;
         this.fov = fov;
@@ -96,10 +96,10 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
 
     /** {@inheritDoc} */
     @Override
-    protected GroundFieldOfViewDetector create(final double newMaxCheck,
+    protected GroundFieldOfViewDetector create(final AdaptableInterval newMaxCheck,
                                                final double newThreshold,
                                                final int newMaxIter,
-                                               final EventHandler<? super GroundFieldOfViewDetector> newHandler) {
+                                               final EventHandler newHandler) {
         return new GroundFieldOfViewDetector(newMaxCheck, newThreshold,
                 newMaxIter, newHandler, this.frame, this.fov);
     }
@@ -137,7 +137,7 @@ public class GroundFieldOfViewDetector extends AbstractDetector<GroundFieldOfVie
     public double g(final SpacecraftState s) {
 
         // get line of sight in sensor frame
-        final Vector3D los = s.getPVCoordinates(this.frame).getPosition();
+        final Vector3D los = s.getPosition(this.frame);
         return this.fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
 
     }

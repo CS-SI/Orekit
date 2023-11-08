@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,33 +32,33 @@ public class HaloXZPlaneCrossingDetector extends AbstractDetector<HaloXZPlaneCro
      * @param threshold convergence threshold (s)
      */
     public HaloXZPlaneCrossingDetector(final double maxCheck, final double threshold) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER,
-             new StopOnIncreasing<HaloXZPlaneCrossingDetector>());
+        this(s -> maxCheck, threshold, DEFAULT_MAX_ITER,
+             new StopOnIncreasing());
     }
 
     /**
-     * Private constructor with full parameters.
+     * Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder API
+     * This constructor is not public as users are expected to use the builder API
      * with the various {@code withXxx()} methods to set up the instance in a
      * readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
+     * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      */
-    private HaloXZPlaneCrossingDetector(final double maxCheck, final double threshold,
-                             final int maxIter,
-                             final EventHandler<? super HaloXZPlaneCrossingDetector> handler) {
+    protected HaloXZPlaneCrossingDetector(final AdaptableInterval maxCheck, final double threshold,
+                                          final int maxIter,
+                                          final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected HaloXZPlaneCrossingDetector create(final double newMaxCheck, final double newThreshold,
+    protected HaloXZPlaneCrossingDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                                  final int newMaxIter,
-                                                 final EventHandler<? super HaloXZPlaneCrossingDetector> newHandler) {
+                                                 final EventHandler newHandler) {
         return new HaloXZPlaneCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 
@@ -67,7 +67,7 @@ public class HaloXZPlaneCrossingDetector extends AbstractDetector<HaloXZPlaneCro
      * @return Position on Y axis
      */
     public double g(final SpacecraftState s) {
-        return s.getPVCoordinates().getPosition().getY();
+        return s.getPosition().getY();
     }
 
 }

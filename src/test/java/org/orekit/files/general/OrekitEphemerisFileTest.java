@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -33,7 +34,7 @@ import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
-import org.orekit.files.ccsds.ndm.odm.oem.EphemerisWriter;
+import org.orekit.files.ccsds.ndm.odm.oem.EphemerisOemWriter;
 import org.orekit.files.ccsds.ndm.odm.oem.OemMetadata;
 import org.orekit.files.ccsds.ndm.odm.oem.OemParser;
 import org.orekit.files.ccsds.ndm.odm.oem.OemSegment;
@@ -45,15 +46,17 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.SpacecraftStateInterpolator;
 import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventsLogger;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -115,7 +118,7 @@ public class OrekitEphemerisFileTest {
         final Frame frame = FramesFactory.getGCRF();
         final CelestialBody body = CelestialBodyFactory.getEarth();
         final double mu = body.getGM();
-        KeplerianOrbit initialOrbit = new KeplerianOrbit(sma, ecc, inc, pa, raan, ta, PositionAngle.TRUE, frame, date,
+        KeplerianOrbit initialOrbit = new KeplerianOrbit(sma, ecc, inc, pa, raan, ta, PositionAngleType.TRUE, frame, date,
                 mu);
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
 
@@ -148,8 +151,9 @@ public class OrekitEphemerisFileTest {
         template.setObjectName(satId);
         template.setCenter(new BodyFacade("EARTH", CelestialBodyFactory.getCelestialBodies().getEarth()));
         template.setReferenceFrame(FrameFacade.map(FramesFactory.getEME2000()));
-        EphemerisWriter writer = new EphemerisWriter(new WriterBuilder().buildOemWriter(),
-                                                     null, template, fileFormat, "dummy", 60);
+        EphemerisOemWriter writer = new EphemerisOemWriter(new WriterBuilder().buildOemWriter(),
+                                                           null, template, fileFormat, "dummy",
+                                                           Constants.JULIAN_DAY, 60);
         writer.write(tempOem, ephemerisFile);
 
         OemParser parser = new ParserBuilder().withMu(body.getGM()).withDefaultInterpolationDegree(2).buildOemParser();
@@ -182,7 +186,7 @@ public class OrekitEphemerisFileTest {
         final TopocentricFrame topo = new TopocentricFrame(parentShape, point, "testPoint1");
         final ElevationDetector elevationDetector = new ElevationDetector(topo);
         final EphemerisSegmentPropagator<TimeStampedPVCoordinates> ephemerisSegmentPropagator =
-                        new EphemerisSegmentPropagator<>(segment);
+                        new EphemerisSegmentPropagator<>(segment, new FrameAlignedProvider(segment.getInertialFrame()));
         final EventsLogger lookupLogger = new EventsLogger();
         ephemerisSegmentPropagator.addEventDetector(lookupLogger.monitorDetector(elevationDetector));
 
@@ -204,7 +208,7 @@ public class OrekitEphemerisFileTest {
                          dateEpsilon);
         }
 
-        final Propagator embeddedPropagator = segment.getPropagator();
+        final Propagator embeddedPropagator = segment.getPropagator(new FrameAlignedProvider(segment.getInertialFrame()));
         final EventsLogger embeddedPropLogger = new EventsLogger();
         embeddedPropagator.addEventDetector(embeddedPropLogger.monitorDetector(elevationDetector));
         embeddedPropagator.propagate(segment.getStart(), segment.getStop());
@@ -227,8 +231,12 @@ public class OrekitEphemerisFileTest {
             }
         });
 
+        // Create interpolator
         final int interpolationPoints = 5;
-        Ephemeris directEphemProp = new Ephemeris(readInStates, interpolationPoints);
+        final TimeInterpolator<SpacecraftState> interpolator =
+                new SpacecraftStateInterpolator(interpolationPoints, frame, frame);
+
+        Ephemeris directEphemProp = new Ephemeris(readInStates, interpolator);
         final EventsLogger directEphemPropLogger = new EventsLogger();
         directEphemProp.addEventDetector(directEphemPropLogger.monitorDetector(elevationDetector));
         directEphemProp.propagate(segment.getStart(), segment.getStop());

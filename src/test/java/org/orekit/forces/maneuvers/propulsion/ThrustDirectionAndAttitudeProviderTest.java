@@ -19,7 +19,7 @@ package org.orekit.forces.maneuvers.propulsion;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +33,7 @@ import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -66,7 +66,7 @@ public class ThrustDirectionAndAttitudeProviderTest {
         final double raan = 0.;
         final double anomaly = FastMath.toRadians(0);
 
-        final KeplerianOrbit initialOrbit = new KeplerianOrbit(sma, ecc, inc, pa, raan, anomaly, PositionAngle.TRUE,
+        final KeplerianOrbit initialOrbit = new KeplerianOrbit(sma, ecc, inc, pa, raan, anomaly, PositionAngleType.TRUE,
                 FramesFactory.getCIRF(IERSConventions.IERS_2010, true), date, Constants.EGM96_EARTH_MU);
         pvProv = new KeplerianPropagator(initialOrbit);
     }
@@ -154,7 +154,7 @@ public class ThrustDirectionAndAttitudeProviderTest {
             final ThrustDirectionAndAttitudeProvider provider = ThrustDirectionAndAttitudeProvider
                     .buildFromCustomAttitude(buildVelocityAttitudeProvider(), Vector3D.PLUS_I);
             Assertions.assertNotNull(provider.getManeuverAttitudeProvider());
-            provider.getAttitude(null, new FieldAbsoluteDate<>(date, new Decimal64(0)), frame); // raise an error
+            provider.getAttitude(null, new FieldAbsoluteDate<>(date, new Binary64(0)), frame); // raise an error
 
         });
  }

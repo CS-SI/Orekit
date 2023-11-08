@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.orekit.estimation.measurements.filtering;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 
@@ -50,13 +50,13 @@ public class ResidualFilter<T extends ObservedMeasurement<T>> implements Measure
     public void filter(final ObservedMeasurement<T> measurement, final SpacecraftState state) {
 
         // Computation of the estimated value of the measurement
-        final SpacecraftState[] sc              = new SpacecraftState[] {state};
-        final EstimatedMeasurement<T> estimated = measurement.estimate(0, 0, sc);
-        final double[] estimatedValue           = estimated.getEstimatedValue();
+        final SpacecraftState[]           sc             = new SpacecraftState[] {state};
+        final EstimatedMeasurementBase<T> estimated      = measurement.estimateWithoutDerivatives(0, 0, sc);
+        final double[]                    estimatedValue = estimated.getEstimatedValue();
 
         // Observed parameters (i.e. value and standard deviation)
-        final double[] observedValue            = measurement.getObservedValue();
-        final double[] sigma                    = measurement.getTheoreticalStandardDeviation();
+        final double[] observedValue = measurement.getObservedValue();
+        final double[] sigma         = measurement.getTheoreticalStandardDeviation();
 
         // Check if observed value is not too far from estimation
         for (int i = 0; i < observedValue.length; i++) {

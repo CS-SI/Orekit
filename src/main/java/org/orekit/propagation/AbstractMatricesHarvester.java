@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.utils.DoubleArrayDictionary;
 
 /** Base harvester between two-dimensional Jacobian matrices and one-dimensional {@link
@@ -54,7 +55,7 @@ public abstract class AbstractMatricesHarvester implements MatricesHarvester {
     /** Simple constructor.
      * <p>
      * The arguments for initial matrices <em>must</em> be compatible with the {@link org.orekit.orbits.OrbitType orbit type}
-     * and {@link org.orekit.orbits.PositionAngle position angle} that will be used by propagator
+     * and {@link PositionAngleType position angle} that will be used by propagator
      * </p>
      * @param stmName State Transition Matrix state name
      * @param initialStm initial State Transition Matrix ∂Y/∂Y₀,

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import org.orekit.files.ccsds.definitions.OdMethodFacade;
+import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 import org.orekit.files.ccsds.utils.lexical.TokenType;
@@ -34,15 +35,15 @@ public enum OrbitDeterminationKey {
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Identification number. */
-    OD_ID((token, context, container) -> token.processAsNormalizedString(container::setId)),
+    OD_ID((token, context, container) -> token.processAsFreeTextString(container::setId)),
 
     /** Identification of previous orbit determination. */
-    OD_PREV_ID((token, context, container) -> token.processAsNormalizedString(container::setPrevId)),
+    OD_PREV_ID((token, context, container) -> token.processAsFreeTextString(container::setPrevId)),
 
     /** Orbit determination method. */
     OD_METHOD((token, context, container) -> {
         if (token.getType() == TokenType.ENTRY) {
-            container.setMethod(OdMethodFacade.parse(token.getContentAsNormalizedString()));
+            container.setMethod(OdMethodFacade.parse(token.getRawContent()));
         }
         return true;
     }),
@@ -58,7 +59,7 @@ public enum OrbitDeterminationKey {
     DAYS_SINCE_LAST_OBS((token, context, container) -> token.processAsDouble(Unit.DAY, context.getParsedUnitsBehavior(),
                                                                              container::setTimeSinceLastObservation)),
 
-    /** Sime span of observation recommended for the OD of the object. */
+    /** Time span of observation recommended for the OD of the object. */
     RECOMMENDED_OD_SPAN((token, context, container) -> token.processAsDouble(Unit.DAY, context.getParsedUnitsBehavior(),
                                                                              container::setRecommendedOdSpan)),
 
@@ -113,26 +114,32 @@ public enum OrbitDeterminationKey {
     SOLVE_N((token, context, container) -> token.processAsInteger(container::setSolveN)),
 
     /** Description of state elements solved-for. */
-    SOLVE_STATES((token, context, container) -> token.processAsNormalizedList(container::setSolveStates)),
+    SOLVE_STATES((token, context, container) -> token.processAsFreeTextList(container::setSolveStates)),
 
     /** Number of consider parameters. */
     CONSIDER_N((token, context, container) -> token.processAsInteger(container::setConsiderN)),
 
     /** Description of consider parameters. */
-    CONSIDER_PARAMS((token, context, container) -> token.processAsNormalizedList(container::setConsiderParameters)),
+    CONSIDER_PARAMS((token, context, container) -> token.processAsFreeTextList(container::setConsiderParameters)),
+
+    /** Specific Energy Dissipation Rate.
+     * @since 12.0
+     */
+    SEDR((token, context, container) -> token.processAsDouble(Units.W_PER_KG, context.getParsedUnitsBehavior(),
+                                                              container::setSedr)),
 
     /** Number of sensors used. */
     SENSORS_N((token, context, container) -> token.processAsInteger(container::setSensorsN)),
 
     /** Description of sensors used. */
-    SENSORS((token, context, container) -> token.processAsNormalizedList(container::setSensors)),
+    SENSORS((token, context, container) -> token.processAsFreeTextList(container::setSensors)),
 
     /** Weighted RMS residual ratio. */
     WEIGHTED_RMS((token, context, container) -> token.processAsDouble(Unit.ONE, context.getParsedUnitsBehavior(),
                                                                       container::setWeightedRms)),
 
     /** Observation data types used. */
-    DATA_TYPES((token, context, container) -> token.processAsNormalizedList(container::setDataTypes));
+    DATA_TYPES((token, context, container) -> token.processAsFreeTextList(container::setDataTypes));
 
     /** Processing method. */
     private final TokenProcessor processor;

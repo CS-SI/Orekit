@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,13 +19,14 @@ package org.orekit.propagation.events;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -59,7 +60,7 @@ public class ExtremumApproachDetectorTest {
         final double raan = 0; //rad
         final double anomaly = FastMath.toRadians(0); //rad
         final Orbit orbit =
-                new KeplerianOrbit(a, e, i, pa, raan, anomaly, PositionAngle.TRUE, frame, initialDate, mu);
+                new KeplerianOrbit(a, e, i, pa, raan, anomaly, PositionAngleType.TRUE, frame, initialDate, mu);
 
         // Will detect extremum approaches with Earth
         final PVCoordinatesProvider earthPVProvider = CelestialBodyFactory.getEarth();
@@ -105,14 +106,14 @@ public class ExtremumApproachDetectorTest {
         final double raan = 0; //rad
         final double anomaly = FastMath.toRadians(0); //rad
         final Orbit orbit =
-                new KeplerianOrbit(a, e, i, pa, raan, anomaly, PositionAngle.TRUE, frame, initialDate, mu);
+                new KeplerianOrbit(a, e, i, pa, raan, anomaly, PositionAngleType.TRUE, frame, initialDate, mu);
 
         // Will detect extremum approaches with Earth
         final PVCoordinatesProvider earthPVProvider = CelestialBodyFactory.getEarth();
 
         // Initializing detector with custom handler
         final ExtremumApproachDetector detector =
-                new ExtremumApproachDetector(earthPVProvider).withHandler(new StopOnEvent<>());
+                new ExtremumApproachDetector(earthPVProvider).withHandler(new StopOnEvent());
 
         // Initializing propagator
         final Propagator propagator = new KeplerianPropagator(orbit);
@@ -125,5 +126,18 @@ public class ExtremumApproachDetectorTest {
         // Then
         Assertions.assertEquals(stateAtEvent.getDate().durationFrom(initialDate),orbit.getKeplerianPeriod() / 2,1e-7);
 
+    }
+
+    @Test
+    void testSecondaryPVCoordinatesProviderGetter() {
+        // Given
+        final PVCoordinatesProvider    secondaryPVProvider      = Mockito.mock(PVCoordinatesProvider.class);
+        final ExtremumApproachDetector extremumApproachDetector = new ExtremumApproachDetector(secondaryPVProvider);
+
+        // When
+        final PVCoordinatesProvider returnedSecondaryPVProvider = extremumApproachDetector.getSecondaryPVProvider();
+
+        // Then
+        Assertions.assertEquals(secondaryPVProvider, returnedSecondaryPVProvider);
     }
 }

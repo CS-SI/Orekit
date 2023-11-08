@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,13 @@
  * limitations under the License.
  */
 package org.orekit.propagation;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.text.ParseException;
 
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -39,13 +46,15 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -57,17 +66,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 public class SpacecraftStateTest {
@@ -134,56 +132,6 @@ public class SpacecraftStateTest {
     }
 
     @Test
-    public void testInterpolation()
-        throws ParseException, OrekitException {
-        checkInterpolationError( 2,  106.46533, 0.40709287, 169847806.33e-9, 0.0, 450 * 450, 450 * 450);
-        checkInterpolationError( 3,    0.00353, 0.00003250,    189886.01e-9, 0.0, 0.0, 0.0);
-        checkInterpolationError( 4,    0.00002, 0.00000023,       232.25e-9, 0.0, 0.0, 0.0);
-    }
-
-    private void checkInterpolationError(int n, double expectedErrorP, double expectedErrorV,
-                                         double expectedErrorA, double expectedErrorM,
-                                         double expectedErrorQ, double expectedErrorD) {
-        AbsoluteDate centerDate = orbit.getDate().shiftedBy(100.0);
-        SpacecraftState centerState = propagator.propagate(centerDate).
-                                      addAdditionalState("quadratic", 0).
-                                      addAdditionalStateDerivative("quadratic-dot", 0);
-        List<SpacecraftState> sample = new ArrayList<SpacecraftState>();
-        for (int i = 0; i < n; ++i) {
-            double dt = i * 900.0 / (n - 1);
-            SpacecraftState state = propagator.propagate(centerDate.shiftedBy(dt));
-            state = state.
-                    addAdditionalState("quadratic", dt * dt).
-                    addAdditionalStateDerivative("quadratic-dot", dt * dt);
-            sample.add(state);
-        }
-        double maxErrorP = 0;
-        double maxErrorV = 0;
-        double maxErrorA = 0;
-        double maxErrorM = 0;
-        double maxErrorQ = 0;
-        double maxErrorD = 0;
-        for (double dt = 0; dt < 900.0; dt += 5) {
-            SpacecraftState interpolated = centerState.interpolate(centerDate.shiftedBy(dt), sample);
-            SpacecraftState propagated = propagator.propagate(centerDate.shiftedBy(dt));
-            PVCoordinates dpv = new PVCoordinates(propagated.getPVCoordinates(), interpolated.getPVCoordinates());
-            maxErrorP = FastMath.max(maxErrorP, dpv.getPosition().getNorm());
-            maxErrorV = FastMath.max(maxErrorV, dpv.getVelocity().getNorm());
-            maxErrorA = FastMath.max(maxErrorA, FastMath.toDegrees(Rotation.distance(interpolated.getAttitude().getRotation(),
-                                                                                                  propagated.getAttitude().getRotation())));
-            maxErrorM = FastMath.max(maxErrorM, FastMath.abs(interpolated.getMass() - propagated.getMass()));
-            maxErrorQ = FastMath.max(maxErrorQ, FastMath.abs(interpolated.getAdditionalState("quadratic")[0] - dt * dt));
-            maxErrorD = FastMath.max(maxErrorD, FastMath.abs(interpolated.getAdditionalStateDerivative("quadratic-dot")[0] - dt * dt));
-        }
-        Assertions.assertEquals(expectedErrorP, maxErrorP, 1.0e-3);
-        Assertions.assertEquals(expectedErrorV, maxErrorV, 1.0e-6);
-        Assertions.assertEquals(expectedErrorA, maxErrorA, 4.0e-10);
-        Assertions.assertEquals(expectedErrorM, maxErrorM, 1.0e-15);
-        Assertions.assertEquals(expectedErrorQ, maxErrorQ, 2.0e-10);
-        Assertions.assertEquals(expectedErrorD, maxErrorD, 2.0e-10);
-    }
-
-    @Test
     public void testDatesConsistency() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             new SpacecraftState(orbit, attitudeLaw.getAttitude(orbit.shiftedBy(10.0),
@@ -239,7 +187,7 @@ public class SpacecraftStateTest {
             PVCoordinates pv = transform.transformPVCoordinates(PVCoordinates.ZERO);
             PVCoordinates dPV = new PVCoordinates(pv, state.getPVCoordinates());
             Vector3D mZDirection = transform.transformVector(Vector3D.MINUS_K);
-            double alpha = Vector3D.angle(mZDirection, state.getPVCoordinates().getPosition());
+            double alpha = Vector3D.angle(mZDirection, state.getPosition());
             maxDP = FastMath.max(maxDP, dPV.getPosition().getNorm());
             maxDV = FastMath.max(maxDV, dPV.getVelocity().getNorm());
             maxDA = FastMath.max(maxDA, FastMath.toDegrees(alpha));
@@ -308,24 +256,6 @@ public class SpacecraftStateTest {
 
     }
 
-    @Deprecated
-    @Test
-    public void testDeprecatedOrbit() {
-        final SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(60));
-        // test various deprecated constructors
-        Map<String, double[]> map = new HashMap<String, double[]>();
-        map.put("test-3", new double[] { -6.0 });
-        SpacecraftState sO = new SpacecraftState(state.getOrbit(), map);
-        Assertions.assertEquals(1, sO.getAdditionalStates().size());
-        Assertions.assertEquals(-6.0, sO.getAdditionalState("test-3")[0], 1.0e-15);
-        SpacecraftState sOA = new SpacecraftState(state.getOrbit(), state.getAttitude(), map);
-        Assertions.assertEquals(-6.0, sOA.getAdditionalState("test-3")[0], 1.0e-15);
-        SpacecraftState sOM = new SpacecraftState(state.getOrbit(), state.getMass(), map);
-        Assertions.assertEquals(-6.0, sOM.getAdditionalState("test-3")[0], 1.0e-15);
-        SpacecraftState sOAM = new SpacecraftState(state.getOrbit(), state.getAttitude(), state.getMass(), map);
-        Assertions.assertEquals(-6.0, sOAM.getAdditionalState("test-3")[0], 1.0e-15);
-    }
-
     @Test
     public void testAdditionalStatesDerivatives() {
         final SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(60));
@@ -385,7 +315,7 @@ public class SpacecraftStateTest {
         // Build orbit
         AbsoluteDate date0 = new AbsoluteDate(2000, 1, 1, TimeScalesFactory.getUTC());
         Orbit orbit = new KeplerianOrbit(7.1E6, 0, 0, 0, 0, 0,
-                                         PositionAngle.TRUE, FramesFactory.getGCRF(), date0,
+                                         PositionAngleType.TRUE, FramesFactory.getGCRF(), date0,
                                          Constants.WGS84_EARTH_MU);
 
         // Build propagator
@@ -401,15 +331,15 @@ public class SpacecraftStateTest {
         // Create date detector and handler
         AbsoluteDate changeDate = date0.shiftedBy(3);
         DateDetector dateDetector = new DateDetector(changeDate).
-                                    withHandler(new EventHandler<DateDetector>() {
+                                    withHandler(new EventHandler() {
 
             @Override
-            public Action eventOccurred(SpacecraftState s, DateDetector detector, boolean increasing) {
+            public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
               return Action.RESET_STATE;
             }
 
             @Override
-            public SpacecraftState resetState(DateDetector detector, SpacecraftState oldState) {
+            public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
                 return oldState.addAdditionalState(name, new double[] { +1 });
             }
 
@@ -434,7 +364,7 @@ public class SpacecraftStateTest {
         // Build orbit
         AbsoluteDate date0 = new AbsoluteDate(2000, 1, 1, TimeScalesFactory.getUTC());
         Orbit orbit = new KeplerianOrbit(7.1E6, 0, 0, 0, 0, 0,
-                                         PositionAngle.TRUE, FramesFactory.getGCRF(), date0,
+                                         PositionAngleType.TRUE, FramesFactory.getGCRF(), date0,
                                          Constants.WGS84_EARTH_MU);
 
         // Build propagator
@@ -451,15 +381,15 @@ public class SpacecraftStateTest {
         // Create date detector and handler
         AbsoluteDate changeDate = date0.shiftedBy(3);
         DateDetector dateDetector = new DateDetector(changeDate).
-                                    withHandler(new EventHandler<DateDetector>() {
+                                    withHandler(new EventHandler() {
 
             @Override
-            public Action eventOccurred(SpacecraftState s, DateDetector detector, boolean increasing) {
+            public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
                 return Action.RESET_STATE;
             }
 
             @Override
-            public SpacecraftState resetState(DateDetector detector, SpacecraftState oldState) {
+            public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
                 return oldState.addAdditionalState(name, new double[] { +1 });
             }
 
@@ -506,8 +436,8 @@ public class SpacecraftStateTest {
         ObjectInputStream     ois = new ObjectInputStream(bis);
         SpacecraftState deserialized  = (SpacecraftState) ois.readObject();
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(state.getPVCoordinates().getPosition(),
-                                              deserialized.getPVCoordinates().getPosition()),
+                            Vector3D.distance(state.getPosition(),
+                                              deserialized.getPosition()),
                             1.0e-10);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(state.getPVCoordinates().getVelocity(),
@@ -540,7 +470,7 @@ public class SpacecraftStateTest {
 
         final NumericalPropagator numPropagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.0));
         final AbsolutePVCoordinates pva = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getDate(),
-                                                                    orbit.getPVCoordinates().getPosition(),
+                                                                    orbit.getPosition(),
                                                                     orbit.getPVCoordinates().getVelocity());
         numPropagator.setOrbitType(null);
         numPropagator.setIgnoreCentralAttraction(true);
@@ -568,8 +498,8 @@ public class SpacecraftStateTest {
         ObjectInputStream     ois = new ObjectInputStream(bis);
         SpacecraftState deserialized  = (SpacecraftState) ois.readObject();
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(state.getPVCoordinates().getPosition(),
-                                              deserialized.getPVCoordinates().getPosition()),
+                            Vector3D.distance(state.getPosition(),
+                                              deserialized.getPosition()),
                             1.0e-10);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(state.getPVCoordinates().getVelocity(),
@@ -670,57 +600,15 @@ public class SpacecraftStateTest {
         // test various constructors
         double[] dd = new double[1];
         dd[0] = -6.0;
-        DoubleArrayDictionary deprecated = new DoubleArrayDictionary();
-        deprecated.put("test-3", dd);
-        SpacecraftState sO = new SpacecraftState(state.getAbsPVA(), deprecated);
+        DoubleArrayDictionary additional = new DoubleArrayDictionary();
+        additional.put("test-3", dd);
+        SpacecraftState sO = new SpacecraftState(state.getAbsPVA(), additional);
         Assertions.assertEquals(-6.0, sO.getAdditionalState("test-3")[0], 1.0e-15);
-        SpacecraftState sOA = new SpacecraftState(state.getAbsPVA(), state.getAttitude(), deprecated);
+        SpacecraftState sOA = new SpacecraftState(state.getAbsPVA(), state.getAttitude(), additional);
         Assertions.assertEquals(-6.0, sOA.getAdditionalState("test-3")[0], 1.0e-15);
-        SpacecraftState sOM = new SpacecraftState(state.getAbsPVA(), state.getMass(), deprecated);
+        SpacecraftState sOM = new SpacecraftState(state.getAbsPVA(), state.getMass(), additional);
         Assertions.assertEquals(-6.0, sOM.getAdditionalState("test-3")[0], 1.0e-15);
-        SpacecraftState sOAM = new SpacecraftState(state.getAbsPVA(), state.getAttitude(), state.getMass(), deprecated);
-        Assertions.assertEquals(-6.0, sOAM.getAdditionalState("test-3")[0], 1.0e-15);
-
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecatedPVA() {
-        double x_f     = 0.8;
-        double y_f     = 0.2;
-        double z_f     = 0;
-        double vx_f    = 0;
-        double vy_f    = 0;
-        double vz_f    = 0.1;
-
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
-                                                            TimeComponents.H00,
-                                                            TimeScalesFactory.getUTC());
-
-        PVCoordinates pva_f = new PVCoordinates(new Vector3D(x_f,y_f,z_f), new Vector3D(vx_f,vy_f,vz_f));
-
-        AbsolutePVCoordinates absPV_f = new AbsolutePVCoordinates(FramesFactory.getEME2000(), date, pva_f);
-
-        NumericalPropagator prop = new NumericalPropagator(new DormandPrince853Integrator(0.1, 500, 0.001, 0.001));
-        prop.setOrbitType(null);
-
-        final SpacecraftState initialState = new SpacecraftState(absPV_f);
-
-        prop.resetInitialState(initialState);
-
-        final SpacecraftState state = prop.propagate(absPV_f.getDate().shiftedBy(60));
-        // test various constructors
-        double[] dd = new double[1];
-        dd[0] = -6.0;
-        Map<String, double[]> map = new HashMap<String, double[]>();
-        map.put("test-3", dd);
-        SpacecraftState sO = new SpacecraftState(state.getAbsPVA(), map);
-        Assertions.assertEquals(-6.0, sO.getAdditionalState("test-3")[0], 1.0e-15);
-        SpacecraftState sOA = new SpacecraftState(state.getAbsPVA(), state.getAttitude(), map);
-        Assertions.assertEquals(-6.0, sOA.getAdditionalState("test-3")[0], 1.0e-15);
-        SpacecraftState sOM = new SpacecraftState(state.getAbsPVA(), state.getMass(), map);
-        Assertions.assertEquals(-6.0, sOM.getAdditionalState("test-3")[0], 1.0e-15);
-        SpacecraftState sOAM = new SpacecraftState(state.getAbsPVA(), state.getAttitude(), state.getMass(), map);
+        SpacecraftState sOAM = new SpacecraftState(state.getAbsPVA(), state.getAttitude(), state.getMass(), additional);
         Assertions.assertEquals(-6.0, sOAM.getAdditionalState("test-3")[0], 1.0e-15);
 
     }
@@ -837,6 +725,21 @@ public class SpacecraftStateTest {
 
     }
 
+    @Test
+    void testToStaticTransform() {
+        // GIVEN
+        final SpacecraftState state = new SpacecraftState(orbit,
+                attitudeLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        // WHEN
+        final StaticTransform actualStaticTransform = state.toStaticTransform();
+        // THEN
+        final StaticTransform expectedStaticTransform = state.toTransform().toStaticTransform();
+        Assertions.assertEquals(expectedStaticTransform.getDate(), actualStaticTransform.getDate());
+        Assertions.assertEquals(expectedStaticTransform.getTranslation(), actualStaticTransform.getTranslation());
+        Assertions.assertEquals(0., Rotation.distance(expectedStaticTransform.getRotation(),
+                actualStaticTransform.getRotation()));
+    }
+
     @BeforeEach
     public void setUp() {
         try {
@@ -860,7 +763,7 @@ public class SpacecraftStateTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                  TimeComponents.H00,
                                                  TimeScalesFactory.getUTC());
-        orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+        orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,

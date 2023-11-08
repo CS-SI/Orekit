@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,20 +16,23 @@
  */
 package org.orekit.attitudes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
+import org.hipparchus.geometry.euclidean.threed.*;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -39,6 +42,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.TopocentricFrame;
@@ -65,15 +69,7 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.AngularDerivativesFilter;
-import org.orekit.utils.Constants;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.PVCoordinatesProvider;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.orekit.utils.*;
 
 public class AttitudesSequenceTest {
 
@@ -98,14 +94,14 @@ public class AttitudesSequenceTest {
         final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS,
                                                                  RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
         final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS);
-        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final EclipseDetector ed =
                         new EclipseDetector(sun, 696000000.,
                                             new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                  0.0,
                                                                  FramesFactory.getGTOD(IERSConventions.IERS_2010, true))).
-                withHandler(new ContinueOnEvent<EclipseDetector>() {
-                    public Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
+                withHandler(new ContinueOnEvent() {
+                    public Action eventOccurred(final SpacecraftState s, final EventDetector d, final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
                         return Action.RESET_STATE;
                     }
@@ -184,7 +180,7 @@ public class AttitudesSequenceTest {
 
     @Test
     public void testDayNightSwitchField() {
-        doTestDayNightSwitchField(Decimal64Field.getInstance());
+        doTestDayNightSwitchField(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestDayNightSwitchField(final Field<T> field)
@@ -206,16 +202,16 @@ public class AttitudesSequenceTest {
         final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS,
                                                                  RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
         final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS);
-        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final EclipseDetector ed =
                 new EclipseDetector(sun, 696000000.,
                                     new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                          0.0,
                                                          FramesFactory.getGTOD(IERSConventions.IERS_2010, true))).
-                withHandler(new ContinueOnEvent<EclipseDetector>() {
+                withHandler(new ContinueOnEvent() {
                     int count = 0;
                     public Action eventOccurred(final SpacecraftState s,
-                                                             final EclipseDetector d,
+                                                             final EventDetector d,
                                                              final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
                         if (count++ == 7) {
@@ -317,9 +313,9 @@ public class AttitudesSequenceTest {
                                                       Constants.EIGEN5C_EARTH_MU);
 
         final AttitudesSequence attitudesSequence = new AttitudesSequence();
-        final AttitudeProvider past    = new InertialProvider(Rotation.IDENTITY);
-        final AttitudeProvider current = new InertialProvider(Rotation.IDENTITY);
-        final AttitudeProvider future  = new InertialProvider(Rotation.IDENTITY);
+        final AttitudeProvider past    = new FrameAlignedProvider(Rotation.IDENTITY);
+        final AttitudeProvider current = new FrameAlignedProvider(Rotation.IDENTITY);
+        final AttitudeProvider future  = new FrameAlignedProvider(Rotation.IDENTITY);
         final Handler handler = new Handler(current, past);
         attitudesSequence.addSwitchingCondition(past, current,
                                                 new DateDetector(initialDate.shiftedBy(-500.0)),
@@ -355,10 +351,11 @@ public class AttitudesSequenceTest {
         double threshold      = 1.5;
         double transitionTime = 0.5;
         try {
-            new AttitudesSequence().addSwitchingCondition(new InertialProvider(Rotation.IDENTITY),
-                                                          new InertialProvider(Rotation.IDENTITY),
-                                                          new DateDetector(1000.0, threshold,
-                                                                           AbsoluteDate.J2000_EPOCH),
+            new AttitudesSequence().addSwitchingCondition(new FrameAlignedProvider(Rotation.IDENTITY),
+                                                          new FrameAlignedProvider(Rotation.IDENTITY),
+                                                          new DateDetector(AbsoluteDate.J2000_EPOCH).
+                                                          withMaxCheck(1000.0).
+                                                          withThreshold(threshold),
                                                           true, false, transitionTime,
                                                           AngularDerivativesFilter.USE_R, null);
             Assertions.fail("an exception should have been thrown");
@@ -393,7 +390,7 @@ public class AttitudesSequenceTest {
         final AttitudeProvider  targetPointing    = new TargetPointing(initialOrbit.getFrame(), volgograd.getPoint(), earth);
         final ElevationDetector eventDetector     = new ElevationDetector(volgograd).
                                                     withConstantElevation(FastMath.toRadians(5.0)).
-                                                    withHandler(new ContinueOnEvent<>());
+                                                    withHandler(new ContinueOnEvent());
         final Handler nadirToTarget =  new Handler(nadirPointing, targetPointing);
         attitudesSequence.addSwitchingCondition(nadirPointing, targetPointing, eventDetector,
                                                 true, false, transitionTime, AngularDerivativesFilter.USE_RR,
@@ -469,7 +466,7 @@ public class AttitudesSequenceTest {
         final AttitudeProvider  targetPointing    = new TargetPointing(initialOrbit.getFrame(), volgograd.getPoint(), earth);
         final ElevationDetector eventDetector     = new ElevationDetector(volgograd).
                                                     withConstantElevation(FastMath.toRadians(5.0)).
-                                                    withHandler(new ContinueOnEvent<>());
+                                                    withHandler(new ContinueOnEvent());
         final List<AbsoluteDate> nadirToTarget = new ArrayList<>();
         attitudesSequence.addSwitchingCondition(nadirPointing, targetPointing, eventDetector,
                                                 true, false, transitionTime, AngularDerivativesFilter.USE_RR,
@@ -537,7 +534,7 @@ public class AttitudesSequenceTest {
         final AttitudeProvider  targetPointing    = new TargetPointing(initialOrbit.getFrame(), volgograd.getPoint(), earth);
         final ElevationDetector eventDetector     = new ElevationDetector(volgograd).
                                                     withConstantElevation(FastMath.toRadians(5.0)).
-                                                    withHandler(new ContinueOnEvent<>());
+                                                    withHandler(new ContinueOnEvent());
         final List<AbsoluteDate> nadirToTarget = new ArrayList<>();
         attitudesSequence.addSwitchingCondition(nadirPointing, targetPointing, eventDetector,
                                                 true, false, transitionTime, AngularDerivativesFilter.USE_RR,
@@ -583,15 +580,15 @@ public class AttitudesSequenceTest {
                                                       Constants.WGS84_EARTH_MU);
 
         // Define attitude laws
-        final AttitudeProvider before = new InertialProvider(new Rotation(0, 0, 0, 1, false));
-        final AttitudeProvider current = new InertialProvider(Rotation.IDENTITY);
-        final AttitudeProvider after = new InertialProvider(new Rotation(0, 0, 0, -1, false));
+        final AttitudeProvider before  = new FrameAlignedProvider(new Rotation(0, 0, 0, 1, false));
+        final AttitudeProvider current = new FrameAlignedProvider(Rotation.IDENTITY);
+        final AttitudeProvider after   = new FrameAlignedProvider(new Rotation(0, 0, 0, -1, false));
 
         // Define attitude sequence
         final AbsoluteDate forwardSwitchDate = initialDate.shiftedBy(600);
         final AbsoluteDate backwardSwitchDate = initialDate.shiftedBy(-600);
-        final DateDetector forwardSwitchDetector = new DateDetector(forwardSwitchDate).withHandler(new ContinueOnEvent<DateDetector>());
-        final DateDetector backwardSwitchDetector = new DateDetector(backwardSwitchDate).withHandler(new ContinueOnEvent<DateDetector>());
+        final DateDetector forwardSwitchDetector = new DateDetector(forwardSwitchDate).withHandler(new ContinueOnEvent());
+        final DateDetector backwardSwitchDetector = new DateDetector(backwardSwitchDate).withHandler(new ContinueOnEvent());
 
         // Initialize the attitude sequence
         final AttitudesSequence attitudeSequence = new AttitudesSequence();
@@ -637,6 +634,63 @@ public class AttitudesSequenceTest {
         Assertions.assertEquals(
                 after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ3(),
                 stateAfter.getAttitude().getRotation().getQ3(), 1.0E-16);
+    }
+
+    @Test
+    void testGetAttitudeRotation() {
+        // GIVEN
+        final AttitudeProvider attitudeProvider = new TestAttitudeProvider();
+        final AttitudesSequence attitudesSequence = new AttitudesSequence();
+        attitudesSequence.resetActiveProvider(attitudeProvider);
+        final Frame frame = FramesFactory.getGCRF();
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final PVCoordinatesProvider mockPvCoordinatesProvider = Mockito.mock(PVCoordinatesProvider.class);
+        // WHEN
+        final Rotation actualRotation = attitudesSequence.getAttitudeRotation(mockPvCoordinatesProvider, date, frame);
+        // THEN
+        final Attitude attitude = attitudesSequence.getAttitude(mockPvCoordinatesProvider, date, frame);
+        final Rotation expectedRotation = attitude.getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testGetAttitudeRotationFieldTest() {
+        // GIVEN
+        final GradientField field = GradientField.getField(1);
+        final AttitudeProvider attitudeProvider = new TestAttitudeProvider();
+        final AttitudesSequence attitudesSequence = new AttitudesSequence();
+        attitudesSequence.resetActiveProvider(attitudeProvider);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, date);
+        final FieldPVCoordinatesProvider<Gradient> pvCoordinatesProvider = Mockito.mock(FieldPVCoordinatesProvider.class);
+        final Frame mockFrame = Mockito.mock(Frame.class);
+        // WHEN
+        final FieldRotation<Gradient> actualRotation = attitudesSequence.getAttitudeRotation(pvCoordinatesProvider, fieldDate, mockFrame);
+        // THEN
+        final FieldAttitude<Gradient> attitude = attitudesSequence.getAttitude(pvCoordinatesProvider, fieldDate, mockFrame);
+        final FieldRotation<Gradient> expectedRotation = attitude.getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
+    }
+
+    private static class TestAttitudeProvider implements AttitudeProvider {
+
+        TestAttitudeProvider() {
+            // nothing to do
+        }
+
+        @Override
+        public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
+            return new Attitude(date, frame, new AngularCoordinates());
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
+                                                                                FieldAbsoluteDate<T> date, Frame frame) {
+            return new FieldAttitude<>(date.getField(), new Attitude(date.toAbsoluteDate(), frame,
+                    new AngularCoordinates()));
+        }
+
     }
 
     private static class Handler implements AttitudesSequence.SwitchHandler {

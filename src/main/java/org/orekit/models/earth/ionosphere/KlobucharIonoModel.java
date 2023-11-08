@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,9 +66,6 @@ import org.orekit.utils.ParameterDriver;
  *
  */
 public class KlobucharIonoModel implements IonosphericModel {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 7277525837842061107L;
 
     /** The 4 coefficients of a cubic equation representing the amplitude of the vertical delay. Units are sec/semi-circle^(i-1) for the i-th coefficient, i=1, 2, 3, 4. */
     private final double[] alpha;
@@ -194,7 +191,7 @@ public class KlobucharIonoModel implements IonosphericModel {
                             final double frequency, final double[] parameters) {
 
         // Elevation in radians
-        final Vector3D position  = state.getPVCoordinates(baseFrame).getPosition();
+        final Vector3D position  = state.getPosition(baseFrame);
         final double   elevation = position.getDelta();
 
         // Only consider measures above the horizon
@@ -302,7 +299,7 @@ public class KlobucharIonoModel implements IonosphericModel {
                                                        final double frequency, final T[] parameters) {
 
         // Elevation and azimuth in radians
-        final FieldVector3D<T> position = state.getPVCoordinates(baseFrame).getPosition();
+        final FieldVector3D<T> position = state.getPosition(baseFrame);
         final T elevation = position.getDelta();
 
         if (elevation.getReal() > 0.0) {

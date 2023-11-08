@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,8 +24,9 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.TimeScale;
 import org.orekit.time.UT1Scale;
@@ -53,7 +54,8 @@ public class TLEContext implements StationDataProvider {
     public TLEPropagatorBuilder createBuilder(final double minStep, final double maxStep, final double dP) {
 
         final TLEPropagatorBuilder propagatorBuilder =
-                        new TLEPropagatorBuilder(initialTLE, PositionAngle.MEAN, dP);
+                        new TLEPropagatorBuilder(initialTLE, PositionAngleType.MEAN, dP,
+                                                 new FixedPointTleGenerationAlgorithm());
 
         return propagatorBuilder;
 

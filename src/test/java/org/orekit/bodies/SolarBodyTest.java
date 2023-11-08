@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,30 @@
  */
 package org.orekit.bodies;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -42,22 +54,13 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
 
 public class SolarBodyTest {
 
@@ -416,16 +419,15 @@ public class SolarBodyTest {
         // checks are done within the step handler
         propag.setStepHandler(1000.0, currentState -> {
                 // propagated position should remain within 1400m of ephemeris for one month
-                Vector3D propagatedP = currentState.getPVCoordinates(icrf).getPosition();
-                Vector3D ephemerisP  = venus.getPVCoordinates(currentState.getDate(), icrf).getPosition();
+                Vector3D propagatedP = currentState.getPosition(icrf);
+                Vector3D ephemerisP  = venus.getPosition(currentState.getDate(), icrf);
                 Assertions.assertEquals(0, Vector3D.distance(propagatedP, ephemerisP), 1400.0);
             });
 
         propag.propagate(startingDate, endDate);
-
     }
 
-    private static class BodyAttraction extends AbstractForceModel {
+    private static class BodyAttraction implements ForceModel {
 
         /** Suffix for parameter name for attraction coefficient enabling Jacobian processing. */
         public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";
@@ -462,8 +464,8 @@ public class SolarBodyTest {
             final double gm = parameters[0];
 
             // compute bodies separation vectors and squared norm
-            final Vector3D centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-            final Vector3D satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
+            final Vector3D centralToBody = body.getPosition(s.getDate(), s.getFrame());
+            final Vector3D satToBody     = centralToBody.subtract(s.getPosition());
             final double   r2Sat         = satToBody.getNormSq();
 
             // compute relative acceleration
@@ -480,8 +482,8 @@ public class SolarBodyTest {
             final T gm = parameters[0];
 
             // compute bodies separation vectors and squared norm
-            final FieldVector3D<T> centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-            final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
+            final FieldVector3D<T> centralToBody = body.getPosition(s.getDate(), s.getFrame());
+            final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPosition());
             final T                r2Sat         = satToBody.getNormSq();
 
             // compute absolute acceleration
@@ -491,13 +493,13 @@ public class SolarBodyTest {
 
         /** {@inheritDoc} */
         @Override
-        public Stream<EventDetector> getEventsDetectors() {
+        public Stream<EventDetector> getEventDetectors() {
             return Stream.empty();
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
             return Stream.empty();
         }
 
@@ -545,6 +547,48 @@ public class SolarBodyTest {
             max = FastMath.max(max, error.getNorm());
         }
         Assertions.assertTrue(max < epsilon * a);
+    }
+    
+    /** Test added for issue  <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1151">1151</a>.
+     * 
+     *  Test implementation of {@link JPLCelestialBody#getPosition(AbsoluteDate, Frame)} method.
+     */
+    @Test
+    public void testGetPosition() {
+        Utils.setDataRoot("regular-data");
+     
+        // double test: Given
+        // -----------
+        
+        // J2000 date and frame
+        final Frame j2000 = FramesFactory.getEME2000();
+        final AbsoluteDate date = new AbsoluteDate();
+        
+        // Loop on bodies
+        for (int iBody = 1; iBody <= 13; iBody++) {
+            // When
+            final CelestialBody body = getBody(iBody);
+            final double dP = Vector3D.distance(body.getPosition(date, j2000),
+                                                body.getPosition(date, j2000));
+            // Then
+            Assertions.assertEquals(0., dP, 0.);
+        }
+        
+        // Field test: given
+        // -----------
+        
+        // Fielded date
+        final FieldAbsoluteDate<Binary64> fDate = new FieldAbsoluteDate<>(Binary64Field.getInstance());
+        
+        // Loop on bodies
+        for (int iBody = 1; iBody <= 13; iBody++) {
+            // When
+            final CelestialBody body = getBody(iBody);
+            final Binary64 dP = FieldVector3D.distance(body.getPVCoordinates(fDate, j2000).getPosition(),
+                                                body.getPosition(fDate, j2000));
+            // Then
+            Assertions.assertEquals(0., dP.getReal(), 0.);
+        }
     }
 
 }

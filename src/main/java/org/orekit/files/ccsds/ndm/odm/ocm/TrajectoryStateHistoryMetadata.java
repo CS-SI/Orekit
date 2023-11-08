@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.definitions.BodyFacade;
 import org.orekit.files.ccsds.definitions.CelestialBodyFrame;
-import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.section.CommentsContainer;
@@ -36,6 +35,16 @@ import org.orekit.utils.units.Unit;
  * @since 11.0
  */
 public class TrajectoryStateHistoryMetadata extends CommentsContainer {
+
+    /** Default interpolation method.
+     * @since 12.0
+     */
+    public static final InterpolationMethod DEFAULT_INTERPOLATION_METHOD = InterpolationMethod.HERMITE;
+
+    /** Default interpolation degree.
+     * @since 12.0
+     */
+    public static final int DEFAULT_INTERPOLATION_DEGREE = 3;
 
     /** Trajectory identification number. */
     private String trajID;
@@ -87,7 +96,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     private int orbRevNumBasis;
 
     /** Trajectory element set type. */
-    private ElementsType trajType;
+    private OrbitElementsType trajType;
 
     /** Type of averaging (Osculating, mean Brouwer, other...). */
     private String orbAveraging;
@@ -95,16 +104,21 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     /** Units of trajectory element set. */
     private List<Unit> trajUnits;
 
+    /** Data context.
+     * @since 12.0
+     */
+    private final DataContext dataContext;
+
     /** Simple constructor.
      * @param epochT0 T0 epoch from file metadata
      * @param dataContext data context
      */
-    TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0, final DataContext dataContext) {
+    public TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0, final DataContext dataContext) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
         trajBasis           = "PREDICTED";
-        interpolationMethod = InterpolationMethod.HERMITE;
-        interpolationDegree = 3;
+        interpolationMethod = DEFAULT_INTERPOLATION_METHOD;
+        interpolationDegree = DEFAULT_INTERPOLATION_DEGREE;
         orbAveraging        = "OSCULATING";
         center              = new BodyFacade("EARTH",
                                              dataContext.getCelestialBodies().getEarth());
@@ -112,27 +126,84 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
                                               CelestialBodyFrame.ICRF, null, null,
                                               CelestialBodyFrame.ICRF.name());
         trajFrameEpoch      = epochT0;
-        trajType            = ElementsType.CARTPV;
+        trajType            = OrbitElementsType.CARTPV;
         orbRevNum           = -1;
         orbRevNumBasis      = -1;
+
+        this.dataContext    = dataContext;
+
     }
 
     /** {@inheritDoc} */
     @Override
     public void validate(final double version) {
-        super.validate(version);
-        if (trajType != ElementsType.CARTP   &&
-            trajType != ElementsType.CARTPV  &&
-            trajType != ElementsType.CARTPVA) {
-            checkNotNull(orbAveraging, TrajectoryStateHistoryMetadataKey.ORB_AVERAGING);
-        }
-        if (trajUnits != null) {
-            trajType.checkUnits(trajUnits);
-        }
+        checkMandatoryEntriesExceptOrbitsCounter(version);
         if (orbRevNum >= 0 && orbRevNumBasis < 0) {
             throw new OrekitException(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY,
                                       TrajectoryStateHistoryMetadataKey.ORB_REVNUM_BASIS.name());
         }
+    }
+
+    /** Check is mandatory entries EXCEPT orbits counters have been initialized.
+     * <p>
+     * This method should throw an exception if some mandatory entry is missing
+     * </p>
+     * @param version format version
+     */
+    private void checkMandatoryEntriesExceptOrbitsCounter(final double version) {
+        super.validate(version);
+        if (trajType != OrbitElementsType.CARTP   &&
+            trajType != OrbitElementsType.CARTPV  &&
+            trajType != OrbitElementsType.CARTPVA) {
+            checkNotNull(orbAveraging, TrajectoryStateHistoryMetadataKey.ORB_AVERAGING.name());
+        }
+        if (trajUnits != null) {
+            Unit.ensureCompatible(trajType.toString(), trajType.getUnits(), false, trajUnits);
+        }
+    }
+
+    /** Increments a trajectory ID.
+     * <p>
+     * The trajectory blocks metadata contains three identifiers ({@code TRAJ_ID},
+     * {@code TRAJ_PREV_ID}, {@code TRAJ_NEXT_ID}) that link the various blocks together.
+     * This helper method allows to update one identifier based on the value of another
+     * identifier. The update is performed by looking for an integer suffix at the end
+     * of the {@code original} identifier and incrementing it by one, taking care to use
+     * at least the same number of digits. If for example the original identifier is set
+     * to {@code trajectory 037}, then the updated identifier will be {@code trajectory 038}.
+     * </p>
+     * <p>
+     * This helper function is intended to be used by ephemeris generators like {@link EphemerisOcmWriter}
+     * and {@link StreamingOcmWriter}, allowing users to call only {@link #setTrajBasisID(String)}
+     * in the trajectory metadata template. The ephemeris generators call {@code
+     * template.setTrajNextID(TrajectoryStateHistoryMetadata.incrementTrajID(template.getTrajID()))}
+     * before generating each trajectory block and call both {@code template.setTrajPrevID(template.getTrajID()))}
+     * and {@code template.setTrajID(template.getTrajNextID()))} after having generated each block.
+     * </p>
+     * @param original original ID (may be null)
+     * @return incremented ID, or null if original was null
+     */
+    public static String incrementTrajID(final String original) {
+
+        if (original == null) {
+            // no trajectory ID at all
+            return null;
+        }
+
+        // split the ID into prefix and numerical index
+        int end = original.length();
+        while (end > 0 && Character.isDigit(original.charAt(end - 1))) {
+            --end;
+        }
+        final String prefix   = original.substring(0, end);
+        final int    index    = end < original.length() ? Integer.parseInt(original.substring(end)) : 0;
+
+        // build offset index, taking care to use at least the same number of digits
+        final String newIndex = String.format(String.format("%%0%dd", original.length() - end),
+                                              index + 1);
+
+        return prefix + newIndex;
+
     }
 
     /** Get trajectory identification number.
@@ -370,34 +441,34 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
         this.orbRevNumBasis = orbRevNumBasis;
     }
 
+    /** Get type of averaging (Osculating, mean Brouwer, other.
+     * @return type of averaging (Osculating, mean Brouwer, other)
+     */
+    public String getOrbAveraging() {
+        return orbAveraging;
+    }
+
+    /** Set type of averaging (Osculating, mean Brouwer, other.
+     * @param orbAveraging type of averaging (Osculating, mean Brouwer, other).
+     */
+    public void setOrbAveraging(final String orbAveraging) {
+        refuseFurtherComments();
+        this.orbAveraging = orbAveraging;
+    }
+
     /** Get trajectory element set type.
      * @return trajectory element set type
      */
-    public ElementsType getTrajType() {
+    public OrbitElementsType getTrajType() {
         return trajType;
     }
 
     /** Set trajectory element set type.
      * @param trajType trajectory element set type
      */
-    public void setTrajType(final ElementsType trajType) {
+    public void setTrajType(final OrbitElementsType trajType) {
         refuseFurtherComments();
         this.trajType = trajType;
-    }
-
-    /** Get type of averaging (Osculating, mean Brouwer, other.
-     * @return type of averaging (Osculating, mean Brouwer, other
-     .). */
-    public String getOrbAveraging() {
-        return orbAveraging;
-    }
-
-    /** Set type of averaging (Osculating, mean Brouwer, other.
-     * @param orbAveraging type of averaging (Osculating, mean Brouwer, other
-     .). */
-    public void setOrbAveraging(final String orbAveraging) {
-        refuseFurtherComments();
-        this.orbAveraging = orbAveraging;
     }
 
     /** Get trajectory element set units.
@@ -413,6 +484,47 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     public void setTrajUnits(final List<Unit> trajUnits) {
         refuseFurtherComments();
         this.trajUnits = trajUnits;
+    }
+
+    /** Copy the instance, making sure mandatory fields have been initialized.
+     * <p>
+     * Dates and orbit counter are not copied.
+     * </p>
+     * @param version format version
+     * @return a new copy
+     * @since 12.0
+     */
+    public TrajectoryStateHistoryMetadata copy(final double version) {
+
+        checkMandatoryEntriesExceptOrbitsCounter(version);
+
+        // allocate new instance
+        final TrajectoryStateHistoryMetadata copy = new TrajectoryStateHistoryMetadata(trajFrameEpoch, dataContext);
+
+        // copy comments
+        for (String comment : getComments()) {
+            copy.addComment(comment);
+        }
+
+        // copy metadata
+        copy.setTrajPrevID(getTrajPrevID());
+        copy.setTrajID(getTrajID());
+        copy.setTrajNextID(getTrajNextID());
+        copy.setTrajBasis(getTrajBasis());
+        copy.setTrajBasisID(getTrajBasisID());
+        copy.setInterpolationMethod(getInterpolationMethod());
+        copy.setInterpolationDegree(getInterpolationDegree());
+        copy.setPropagator(getPropagator());
+        copy.setCenter(getCenter());
+        copy.setTrajReferenceFrame(getTrajReferenceFrame());
+        copy.setTrajFrameEpoch(getTrajFrameEpoch());
+        copy.setOrbRevNumBasis(getOrbRevNumBasis());
+        copy.setOrbAveraging(getOrbAveraging());
+        copy.setTrajType(getTrajType());
+        copy.setTrajUnits(getTrajUnits());
+
+        return copy;
+
     }
 
 }

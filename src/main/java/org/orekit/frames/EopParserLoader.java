@@ -26,7 +26,7 @@ import java.util.List;
 import org.orekit.data.DataLoader;
 
 /**
- * Implementation of {@link DataLoader} based on {@link EOPHistoryLoader.Parser} that
+ * Implementation of {@link DataLoader} based on {@link EopHistoryLoader.Parser} that
  * loads all files and compiles the results into one data structure.
  *
  * @author Evan Ward
@@ -35,18 +35,18 @@ import org.orekit.data.DataLoader;
 class EopParserLoader implements DataLoader {
 
     /** Parser for EOP data files. */
-    private final EOPHistoryLoader.Parser parser;
+    private final EopHistoryLoader.Parser parser;
 
     /** History entries. */
     private final List<EOPEntry> history;
 
     /**
-     * Create a {@link DataLoader} based on a {@link EOPHistoryLoader.Parser}. Loads
+     * Create a {@link DataLoader} based on a {@link EopHistoryLoader.Parser}. Loads
      * all EOP data into a single collection.
      *
      * @param parser for the EOP data files.
      */
-    EopParserLoader(final EOPHistoryLoader.Parser parser) {
+    EopParserLoader(final EopHistoryLoader.Parser parser) {
         this.parser = parser;
         this.history = new ArrayList<>();
     }

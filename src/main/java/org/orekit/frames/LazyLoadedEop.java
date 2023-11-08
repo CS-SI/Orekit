@@ -34,7 +34,7 @@ import org.orekit.utils.IERSConventions;
 
 /**
  * Loads Earth Orientation Parameters (EOP) from a configured set of {@link
- * EOPHistoryLoader}s on demand. Methods are synchronized so it is safe for access from
+ * EopHistoryLoader}s on demand. Methods are synchronized so it is safe for access from
  * multiple threads.
  *
  * @author Guylaine Prat
@@ -50,20 +50,25 @@ public class LazyLoadedEop {
     /** Provides access to the EOP data files. */
     private final DataProvidersManager dataProvidersManager;
     /** Loaders for Earth Orientation parameters. */
-    private final Map<IERSConventions, List<EOPHistoryLoader>> eopHistoryLoaders;
+    private final Map<IERSConventions, List<EopHistoryLoader>> eopHistoryLoaders;
     /** Threshold for EOP continuity. */
     private double eopContinuityThreshold;
+    /** Degree for EOP interpolation.
+     * @since 12.0
+     */
+    private int interpolationDegree;
 
     /**
      * Create a new instance for loading EOP data from multiple {@link
-     * EOPHistoryLoader}s.
+     * EopHistoryLoader}s.
      *
      * @param dataProvidersManager provides access to the needed EOP data files.
      */
     public LazyLoadedEop(final DataProvidersManager dataProvidersManager) {
-        this.dataProvidersManager = dataProvidersManager;
-        this.eopHistoryLoaders = new HashMap<>();
+        this.dataProvidersManager   = dataProvidersManager;
+        this.eopHistoryLoaders      = new HashMap<>();
         this.eopContinuityThreshold = 5 * Constants.JULIAN_DAY;
+        this.interpolationDegree    = EOPHistory.DEFAULT_INTERPOLATION_DEGREE;
     }
 
     /**
@@ -85,8 +90,8 @@ public class LazyLoadedEop {
      * @param rapidDataColumnsSupportedNames regular expression for supported rapid data
      *                                       columns EOP files names (may be null if the
      *                                       default IERS file names are used)
-     * @param rapidDataXMLSupportedNames     regular expression for supported rapid data
-     *                                       XML EOP files names (may be null if the
+     * @param xmlSupportedNames              regular expression for supported XML EOP
+     *                                       files names (may be null if the
      *                                       default IERS file names are used)
      * @param eopC04SupportedNames           regular expression for supported EOP C04
      *                                       files names (may be null if the default IERS
@@ -97,18 +102,22 @@ public class LazyLoadedEop {
      * @param bulletinASupportedNames        regular expression for supported bulletin A
      *                                       files names (may be null if the default IERS
      *                                       file names are used)
+     * @param csvSupportedNames              regular expression for supported csv files names
+     *                                       (may be null if the default IERS file names are used)
      * @param utcSupplier                    UTC time scale supplier. Value is not
      *                                       accessed until attempting to load EOP.
-     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see <a href="https://datacenter.iers.org/products/eop/">IERS https data download</a>
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
      * @see #clearEOPHistoryLoaders()
-     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String, Supplier)
+     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String, String, Supplier)
+     * @since 12.0
      */
     public void addDefaultEOP1980HistoryLoaders(final String rapidDataColumnsSupportedNames,
-                                                final String rapidDataXMLSupportedNames,
+                                                final String xmlSupportedNames,
                                                 final String eopC04SupportedNames,
                                                 final String bulletinBSupportedNames,
                                                 final String bulletinASupportedNames,
+                                                final String csvSupportedNames,
                                                 final Supplier<TimeScale> utcSupplier) {
         final String rapidColNames =
                 (rapidDataColumnsSupportedNames == null) ?
@@ -117,18 +126,16 @@ public class LazyLoadedEop {
         addEOPHistoryLoader(IERSConventions.IERS_1996,
                 new RapidDataAndPredictionColumnsLoader(false, rapidColNames,
                         dataProvidersManager, utcSupplier));
-        final String rapidXmlNames =
-                (rapidDataXMLSupportedNames == null) ?
-                        FramesFactory.RAPID_DATA_PREDICTION_XML_1980_FILENAME :
-                        rapidDataXMLSupportedNames;
+        final String xmlNames = (xmlSupportedNames == null) ?
+                                FramesFactory.XML_1980_FILENAME :
+                                xmlSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new RapidDataAndPredictionXMLLoader(rapidXmlNames, dataProvidersManager,
-                        utcSupplier));
+                            new EopXmlLoader(xmlNames, dataProvidersManager, utcSupplier));
         final String eopcNames =
                 (eopC04SupportedNames == null) ?
                         FramesFactory.EOPC04_1980_FILENAME : eopC04SupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
-                new EOPC04FilesLoader(eopcNames, dataProvidersManager, utcSupplier));
+                new EopC04FilesLoader(eopcNames, dataProvidersManager, utcSupplier));
         final String bulBNames =
                 (bulletinBSupportedNames == null) ?
                         FramesFactory.BULLETINB_1980_FILENAME : bulletinBSupportedNames;
@@ -139,6 +146,10 @@ public class LazyLoadedEop {
                         FramesFactory.BULLETINA_FILENAME : bulletinASupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
                 new BulletinAFilesLoader(bulANames, dataProvidersManager, utcSupplier));
+        final String csvNames = (csvSupportedNames == null) ?
+                                FramesFactory.CSV_FILENAME : csvSupportedNames;
+        addEOPHistoryLoader(IERSConventions.IERS_1996,
+                            new EopCsvFilesLoader(csvNames, dataProvidersManager, utcSupplier));
     }
 
     /**
@@ -152,8 +163,8 @@ public class LazyLoadedEop {
      * @param rapidDataColumnsSupportedNames regular expression for supported rapid data
      *                                       columns EOP files names (may be null if the
      *                                       default IERS file names are used)
-     * @param rapidDataXMLSupportedNames     regular expression for supported rapid data
-     *                                       XML EOP files names (may be null if the
+     * @param xmlSupportedNames              regular expression for supported XML EOP
+     *                                       files names (may be null if the
      *                                       default IERS file names are used)
      * @param eopC04SupportedNames           regular expression for supported EOP C04
      *                                       files names (may be null if the default IERS
@@ -164,60 +175,62 @@ public class LazyLoadedEop {
      * @param bulletinASupportedNames        regular expression for supported bulletin A
      *                                       files names (may be null if the default IERS
      *                                       file names are used)
+     * @param csvSupportedNames              regular expression for supported csv files names
+     *                                       (may be null if the default IERS file names are used)
      * @param utcSupplier                    UTC time scale supplier. Value is not
      *                                       accessed until attempting to load EOP.
-     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP C04 files</a>
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see <a href="https://datacenter.iers.org/products/eop/">IERS https data download</a>
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
      * @see #clearEOPHistoryLoaders()
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, Supplier)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String, Supplier)
+     * @since 12.0
      */
     public void addDefaultEOP2000HistoryLoaders(final String rapidDataColumnsSupportedNames,
-                                                final String rapidDataXMLSupportedNames,
+                                                final String xmlSupportedNames,
                                                 final String eopC04SupportedNames,
                                                 final String bulletinBSupportedNames,
                                                 final String bulletinASupportedNames,
+                                                final String csvSupportedNames,
                                                 final Supplier<TimeScale> utcSupplier) {
         final String rapidColNames =
                 (rapidDataColumnsSupportedNames == null) ?
-                        FramesFactory.RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME :
+                        FramesFactory.RAPID_DATA_PREDICTION_COLUMNS_2000_FILENAME :
                         rapidDataColumnsSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new RapidDataAndPredictionColumnsLoader(
-                        true, rapidColNames, dataProvidersManager, utcSupplier));
+                            new RapidDataAndPredictionColumnsLoader(true, rapidColNames, dataProvidersManager, utcSupplier));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new RapidDataAndPredictionColumnsLoader(
-                        true, rapidColNames, dataProvidersManager, utcSupplier));
-        final String rapidXmlNames =
-                (rapidDataXMLSupportedNames == null) ?
-                        FramesFactory.RAPID_DATA_PREDICITON_XML_2000_FILENAME :
-                        rapidDataXMLSupportedNames;
+                            new RapidDataAndPredictionColumnsLoader(true, rapidColNames, dataProvidersManager, utcSupplier));
+        final String xmlNames = (xmlSupportedNames == null) ?
+                                FramesFactory.XML_2000_FILENAME :
+                                xmlSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new RapidDataAndPredictionXMLLoader(
-                        rapidXmlNames, dataProvidersManager, utcSupplier));
+                            new EopXmlLoader(xmlNames, dataProvidersManager, utcSupplier));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new RapidDataAndPredictionXMLLoader(
-                        rapidXmlNames, dataProvidersManager, utcSupplier));
-        final String eopcNames =
-                (eopC04SupportedNames == null) ?
-                        FramesFactory.EOPC04_2000_FILENAME : eopC04SupportedNames;
+                            new EopXmlLoader(xmlNames, dataProvidersManager, utcSupplier));
+        final String eopcNames = (eopC04SupportedNames == null) ?
+                                 FramesFactory.EOPC04_2000_FILENAME : eopC04SupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new EOPC04FilesLoader(eopcNames, dataProvidersManager, utcSupplier));
+                new EopC04FilesLoader(eopcNames, dataProvidersManager, utcSupplier));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new EOPC04FilesLoader(eopcNames, dataProvidersManager, utcSupplier));
-        final String bulBNames =
-                (bulletinBSupportedNames == null) ?
-                        FramesFactory.BULLETINB_2000_FILENAME : bulletinBSupportedNames;
+                new EopC04FilesLoader(eopcNames, dataProvidersManager, utcSupplier));
+        final String bulBNames = (bulletinBSupportedNames == null) ?
+                                 FramesFactory.BULLETINB_2000_FILENAME : bulletinBSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
                 new BulletinBFilesLoader(bulBNames, dataProvidersManager, utcSupplier));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
                 new BulletinBFilesLoader(bulBNames, dataProvidersManager, utcSupplier));
-        final String bulANames =
-                (bulletinASupportedNames == null) ?
-                        FramesFactory.BULLETINA_FILENAME : bulletinASupportedNames;
+        final String bulANames = (bulletinASupportedNames == null) ?
+                                 FramesFactory.BULLETINA_FILENAME : bulletinASupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_2003,
-                new BulletinAFilesLoader(bulANames, dataProvidersManager, utcSupplier));
+                            new BulletinAFilesLoader(bulANames, dataProvidersManager, utcSupplier));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
-                new BulletinAFilesLoader(bulANames, dataProvidersManager, utcSupplier));
+                            new BulletinAFilesLoader(bulANames, dataProvidersManager, utcSupplier));
+        final String csvNames = (csvSupportedNames == null) ?
+                                FramesFactory.CSV_FILENAME : csvSupportedNames;
+        addEOPHistoryLoader(IERSConventions.IERS_2003,
+                            new EopCsvFilesLoader(csvNames, dataProvidersManager, utcSupplier));
+        addEOPHistoryLoader(IERSConventions.IERS_2010,
+                            new EopCsvFilesLoader(csvNames, dataProvidersManager, utcSupplier));
     }
 
     /**
@@ -225,10 +238,10 @@ public class LazyLoadedEop {
      *
      * @param conventions IERS conventions to which EOP history applies
      * @param loader      custom loader to add for the EOP history
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, Supplier)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String, Supplier)
      * @see #clearEOPHistoryLoaders()
      */
-    public void addEOPHistoryLoader(final IERSConventions conventions, final EOPHistoryLoader loader) {
+    public void addEOPHistoryLoader(final IERSConventions conventions, final EopHistoryLoader loader) {
         synchronized (eopHistoryLoaders) {
             if (!eopHistoryLoaders.containsKey(conventions)) {
                 eopHistoryLoaders.put(conventions, new ArrayList<>());
@@ -240,8 +253,8 @@ public class LazyLoadedEop {
     /**
      * Clear loaders for Earth Orientation Parameters history.
      *
-     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, Supplier)
+     * @see #addEOPHistoryLoader(IERSConventions, EopHistoryLoader)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String, String, Supplier)
      */
     public void clearEOPHistoryLoaders() {
         synchronized (eopHistoryLoaders) {
@@ -270,14 +283,27 @@ public class LazyLoadedEop {
     }
 
     /**
+     * Set the degree for interpolation degree.
+     * <p>
+     * The default threshold (used if this method is never called) is {@link EOPHistory#DEFAULT_INTERPOLATION_DEGREE}.
+     * </p>
+     *
+     * @param interpolationDegree interpolation degree, must be of the form 4k-1
+     * @since 12.0
+     */
+    public void setInterpolationDegree(final int interpolationDegree) {
+        this.interpolationDegree = interpolationDegree;
+    }
+
+    /**
      * Get Earth Orientation Parameters history.
      * <p>
-     * If no {@link EOPHistoryLoader} has been added by calling {@link
-     * #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader) addEOPHistoryLoader} or if
+     * If no {@link EopHistoryLoader} has been added by calling {@link
+     * #addEOPHistoryLoader(IERSConventions, EopHistoryLoader) addEOPHistoryLoader} or if
      * {@link #clearEOPHistoryLoaders() clearEOPHistoryLoaders} has been called
      * afterwards, the {@link #addDefaultEOP1980HistoryLoaders(String, String, String,
-     * String, String, Supplier)} and {@link #addDefaultEOP2000HistoryLoaders(String,
-     * String, String, String, String, Supplier)} methods will be called automatically
+     * String, String, String, Supplier)} and {@link #addDefaultEOP2000HistoryLoaders(String,
+     * String, String, String, String, String, Supplier)} methods will be called automatically
      * with supported file names parameters all set to null, in order to get the default
      * loaders configuration.
      * </p>
@@ -296,8 +322,8 @@ public class LazyLoadedEop {
             if (eopHistoryLoaders.isEmpty()) {
                 // set up using default loaders
                 final Supplier<TimeScale> utcSupplier = timeScales::getUTC;
-                addDefaultEOP2000HistoryLoaders(null, null, null, null, null, utcSupplier);
-                addDefaultEOP1980HistoryLoaders(null, null, null, null, null, utcSupplier);
+                addDefaultEOP2000HistoryLoaders(null, null, null, null, null, null, utcSupplier);
+                addDefaultEOP1980HistoryLoaders(null, null, null, null, null, null, utcSupplier);
             }
 
             // TimeStamped based set needed to remove duplicates
@@ -306,11 +332,10 @@ public class LazyLoadedEop {
 
             // try to load canonical data if available
             if (eopHistoryLoaders.containsKey(conventions)) {
-                for (final EOPHistoryLoader loader : eopHistoryLoaders.get(conventions)) {
+                for (final EopHistoryLoader loader : eopHistoryLoaders.get(conventions)) {
                     try {
-                        loader.fillHistory(
-                                conventions.getNutationCorrectionConverter(timeScales),
-                                data);
+                        loader.fillHistory(conventions.getNutationCorrectionConverter(timeScales),
+                                           data);
                     } catch (OrekitException oe) {
                         pendingException = oe;
                     }
@@ -321,8 +346,7 @@ public class LazyLoadedEop {
                 throw pendingException;
             }
 
-            final EOPHistory history =
-                    new EOPHistory(conventions, data, simpleEOP, timeScales);
+            final EOPHistory history = new EOPHistory(conventions, interpolationDegree, data, simpleEOP, timeScales);
             history.checkEOPContinuity(eopContinuityThreshold);
             return history;
 

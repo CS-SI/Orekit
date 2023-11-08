@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,6 +47,10 @@ public class UnitsConverter {
     /** Milli seconds to seconds converter. */
     public static final UnitsConverter MILLI_SECONDS_TO_SECONDS =
                     new UnitsConverter(Unit.parse("ms"), Unit.SECOND);
+
+    /** Nano Teslas to Tesla converter. */
+    public static final UnitsConverter NANO_TESLAS_TO_TESLAS =
+                    new UnitsConverter(Unit.parse("nT"), Unit.TESLA);
 
     /** Days to seconds converter. */
     public static final UnitsConverter DAYS_TO_SECONDS =

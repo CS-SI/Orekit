@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 Mark Rutten
+/* Copyright 2002-2023 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,36 +73,36 @@ public class BistaticRangeMeasurementCreator extends MeasurementCreator {
     public void handleStep(final SpacecraftState currentState) {
         final AbsoluteDate  date     = currentState.getDate();
         final Frame         inertial = currentState.getFrame();
-        final Vector3D      position = currentState.getPVCoordinates().getPosition();
+        final Vector3D      position = currentState.getPosition();
 
         // Create a BRR measurement only if elevation for both stations is higher than 30°
-        if ((emitter.getBaseFrame().getElevation(position, inertial, date)  > FastMath.toRadians(30.0)) &&
-                (receiver.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0))) {
+        if ((emitter.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation()  > FastMath.toRadians(30.0)) &&
+            (receiver.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0))) {
             final double clockOffset = receiver.getClockOffsetDriver().getValue();
             final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
             final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
                 public double value(final double x) {
-                    final Transform t = receiver.getOffsetToInertial(inertial, date.shiftedBy(clockOffset + x));
+                    final Transform t = receiver.getOffsetToInertial(inertial, date.shiftedBy(clockOffset + x), false);
                     final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                     return d - x * Constants.SPEED_OF_LIGHT;
                 }
             }, -1.0, 1.0);
             final AbsoluteDate receptionDate  = currentState.getDate().shiftedBy(downLinkDelay);
             final Vector3D stationAtReception =
-                    receiver.getOffsetToInertial(inertial, receptionDate.shiftedBy(clockOffset)).transformPosition(Vector3D.ZERO);
+                    receiver.getOffsetToInertial(inertial, receptionDate.shiftedBy(clockOffset), false).transformPosition(Vector3D.ZERO);
             final double downLinkDistance = Vector3D.distance(position, stationAtReception);
 
             final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
                 public double value(final double x) {
-                    final Transform t = emitter.getOffsetToInertial(inertial, date.shiftedBy(clockOffset - x));
+                    final Transform t = emitter.getOffsetToInertial(inertial, date.shiftedBy(clockOffset - x), false);
                     final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                     return d - x * Constants.SPEED_OF_LIGHT;
                 }
             }, -1.0, 1.0);
             final AbsoluteDate emissionDate   = currentState.getDate().shiftedBy(-upLinkDelay);
             final Vector3D stationAtEmission  =
-                   emitter.getOffsetToInertial(inertial, emissionDate.shiftedBy(clockOffset)).transformPosition(Vector3D.ZERO);
+                   emitter.getOffsetToInertial(inertial, emissionDate.shiftedBy(clockOffset), false).transformPosition(Vector3D.ZERO);
             final double upLinkDistance = Vector3D.distance(position, stationAtEmission);
             addMeasurement(new BistaticRange(emitter, receiver, receptionDate.shiftedBy(clockOffset),
                     downLinkDistance + upLinkDistance, 1.0, 10, satellite));

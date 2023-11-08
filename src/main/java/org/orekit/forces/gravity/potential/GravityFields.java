@@ -18,6 +18,8 @@ package org.orekit.forces.gravity.potential;
 
 import java.util.List;
 
+import org.orekit.time.AbsoluteDate;
+
 /**
  * Defines methods for obtaining gravity fields.
  *
@@ -30,16 +32,18 @@ import java.util.List;
  */
 public interface GravityFields {
 
-    /** Get a constant gravity field normalized coefficients provider.
+    /** Get a constant gravity field normalized coefficients provider
+     * frozen at a given epoch.
      *
      * @param degree maximal degree
      * @param order maximal order
+     * @param freezingDate freezing epoch
      * @return a gravity field coefficients provider containing already loaded data
-     * @since 6.0
+     * @since 12.0
      * @see #getNormalizedProvider(int, int)
      */
-    NormalizedSphericalHarmonicsProvider getConstantNormalizedProvider(int degree,
-                                                                       int order);
+    NormalizedSphericalHarmonicsProvider getConstantNormalizedProvider(int degree, int order,
+                                                                       AbsoluteDate freezingDate);
 
     /** Get a gravity field normalized coefficients provider.
      *
@@ -47,21 +51,23 @@ public interface GravityFields {
      * @param order maximal order
      * @return a gravity field coefficients provider containing already loaded data
      * @since 6.0
-     * @see #getConstantNormalizedProvider(int, int)
+     * @see #getConstantNormalizedProvider(int, int, AbsoluteDate)
      */
     NormalizedSphericalHarmonicsProvider getNormalizedProvider(int degree,
                                                                int order);
 
-    /** Get a constant gravity field unnormalized coefficients provider.
+    /** Get a constant gravity field unnormalized coefficients provider
+     * frozen at a given epoch.
      *
      * @param degree maximal degree
      * @param order maximal order
+     * @param freezingDate freezing epoch
      * @return a gravity field coefficients provider containing already loaded data
-     * @since 6.0
+     * @since 12.0
      * @see #getUnnormalizedProvider(int, int)
      */
-    UnnormalizedSphericalHarmonicsProvider getConstantUnnormalizedProvider(int degree,
-                                                                           int order);
+    UnnormalizedSphericalHarmonicsProvider getConstantUnnormalizedProvider(int degree, int order,
+                                                                           AbsoluteDate freezingDate);
 
     /** Get a gravity field unnormalized coefficients provider.
      *
@@ -69,7 +75,7 @@ public interface GravityFields {
      * @param order maximal order
      * @return a gravity field coefficients provider containing already loaded data
      * @since 6.0
-     * @see #getConstantUnnormalizedProvider(int, int)
+     * @see #getConstantUnnormalizedProvider(int, int, AbsoluteDate)
      */
     UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(int degree,
                                                                    int order);

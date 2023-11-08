@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -108,20 +108,20 @@ public class EventEnablingPredicateFilterTest {
 
         final ElevationExtremumDetector raw =
                 new ElevationExtremumDetector(0.001, 1.e-6, new TopocentricFrame(earth, gp, "test")).
-                withHandler(new ContinueOnEvent<ElevationExtremumDetector>());
-        final EventEnablingPredicateFilter<ElevationExtremumDetector> aboveGroundElevationDetector =
-                new EventEnablingPredicateFilter<ElevationExtremumDetector>(raw,
-                                new EnablingPredicate<ElevationExtremumDetector>() {
+                withHandler(new ContinueOnEvent());
+        final EventEnablingPredicateFilter aboveGroundElevationDetector =
+                new EventEnablingPredicateFilter(raw,
+                                new EnablingPredicate() {
                                     public boolean eventIsEnabled(final SpacecraftState state,
-                                                                  final ElevationExtremumDetector eventDetector,
+                                                                  final EventDetector eventDetector,
                                                                   final double g) {
-                                        return eventDetector.getElevation(state) > minElevation;
+                                        return ((ElevationExtremumDetector) eventDetector).getElevation(state) > minElevation;
                                     }
                 }).withMaxCheck(60.0);
 
         Assertions.assertSame(raw, aboveGroundElevationDetector.getDetector());
-        Assertions.assertEquals(0.001, raw.getMaxCheckInterval(), 1.0e-15);
-        Assertions.assertEquals(60.0, aboveGroundElevationDetector.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(0.001, raw.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(60.0, aboveGroundElevationDetector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-6, aboveGroundElevationDetector.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, aboveGroundElevationDetector.getMaxIterationCount());
 
@@ -172,25 +172,22 @@ public class EventEnablingPredicateFilterTest {
         final List<AbsoluteDate> reset = new ArrayList<AbsoluteDate>();
         DateDetector raw = new DateDetector(orbit.getDate().shiftedBy(3600.0)).
                         withMaxCheck(1000.0).
-                        withHandler(new EventHandler<DateDetector>() {
-                            public SpacecraftState resetState(DateDetector detector,
-                                                              SpacecraftState oldState) {
+                        withHandler(new EventHandler() {
+                            public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
                                 reset.add(oldState.getDate());
                                 return oldState;
                             }
-                            public Action eventOccurred(SpacecraftState s,
-                                                        DateDetector detector,
-                                                        boolean increasing) {
+                            public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
                                 return Action.RESET_STATE;
                             }
                         });
         for (int i = 2; i < 10; ++i) {
             raw.addEventDate(orbit.getDate().shiftedBy(i * 3600.0));
         }
-        EventEnablingPredicateFilter<DateDetector> filtered =
-                        new EventEnablingPredicateFilter<DateDetector>(raw, new EnablingPredicate<DateDetector>() {
+        EventEnablingPredicateFilter filtered =
+                        new EventEnablingPredicateFilter(raw, new EnablingPredicate() {
                             public boolean eventIsEnabled(SpacecraftState state,
-                                                          DateDetector eventDetector,
+                                                          EventDetector eventDetector,
                                                           double g) {
                                 return state.getDate().durationFrom(orbit.getDate()) > 20000.0;
                             }
@@ -220,16 +217,16 @@ public class EventEnablingPredicateFilterTest {
         // the raw detector should trigger one event at each 900s period
         final DateDetector raw = new DateDetector(orbit.getDate().shiftedBy(-0.5 * period)).
                                  withMaxCheck(period / 3).
-                                 withHandler(new ContinueOnEvent<DateDetector>());
+                                 withHandler(new ContinueOnEvent());
         for (int i = 0; i < 300; ++i) {
             raw.addEventDate(orbit.getDate().shiftedBy((i + 0.5) * period));
         }
 
         // in fact, we will filter out half of these events, so we get only one event every 2 periods
-        final EventEnablingPredicateFilter<DateDetector> filtered =
-                        new EventEnablingPredicateFilter<DateDetector>(raw, new EnablingPredicate<DateDetector>() {
+        final EventEnablingPredicateFilter filtered =
+                        new EventEnablingPredicateFilter(raw, new EnablingPredicate() {
                             public boolean eventIsEnabled(SpacecraftState state,
-                                                          DateDetector eventDetector,
+                                                          EventDetector eventDetector,
                                                           double g) {
                                 double nbPeriod = state.getDate().durationFrom(orbit.getDate()) / period;
                                 return ((int) FastMath.floor(nbPeriod)) % 2 == 1;
@@ -273,16 +270,16 @@ public class EventEnablingPredicateFilterTest {
         // the raw detector should trigger one event at each 900s period
         final DateDetector raw = new DateDetector(orbit.getDate().shiftedBy(+0.5 * period)).
                                  withMaxCheck(period / 3).
-                                 withHandler(new ContinueOnEvent<DateDetector>());
+                                 withHandler(new ContinueOnEvent());
         for (int i = 0; i < 300; ++i) {
             raw.addEventDate(orbit.getDate().shiftedBy(-(i + 0.5) * period));
         }
 
         // in fact, we will filter out half of these events, so we get only one event every 2 periods
-        final EventEnablingPredicateFilter<DateDetector> filtered =
-                        new EventEnablingPredicateFilter<DateDetector>(raw, new EnablingPredicate<DateDetector>() {
+        final EventEnablingPredicateFilter filtered =
+                        new EventEnablingPredicateFilter(raw, new EnablingPredicate() {
                             public boolean eventIsEnabled(SpacecraftState state,
-                                                          DateDetector eventDetector,
+                                                          EventDetector eventDetector,
                                                           double g) {
                                 double nbPeriod = orbit.getDate().durationFrom(state.getDate()) / period;
                                 return ((int) FastMath.floor(nbPeriod)) % 2 == 1;
@@ -323,10 +320,10 @@ public class EventEnablingPredicateFilterTest {
     public void testGenerics() {
         // setup
         DateDetector detector = new DateDetector(orbit.getDate());
-        EnablingPredicate<EventDetector> predicate = (state, eventDetector, g) -> true;
+        EnablingPredicate predicate = (state, eventDetector, g) -> true;
 
         // action + verify. Just make sure it compiles with generics
-        new EventEnablingPredicateFilter<>(detector, predicate);
+        new EventEnablingPredicateFilter(detector, predicate);
     }
 
     @BeforeEach

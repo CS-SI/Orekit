@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -55,11 +56,18 @@ import org.orekit.utils.TimeStampedGenerator;
  */
 public class EOPHistory implements Serializable {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20191119L;
+    /** Default interpolation degree.
+     * @since 12.0
+     */
+    public static final int DEFAULT_INTERPOLATION_DEGREE = 3;
 
-    /** Number of points to use in interpolation. */
-    private static final int INTERPOLATION_POINTS = 4;
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20231022L;
+
+    /** Interpolation degree.
+     * @since 12.0
+     */
+    private final int interpolationDegree;
 
     /**
      * If this history has any EOP data.
@@ -85,55 +93,79 @@ public class EOPHistory implements Serializable {
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
      *
      * @param conventions IERS conventions to which EOP refers
+     * @param interpolationDegree interpolation degree (must be of the form 4k-1)
      * @param data the EOP data to use
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @see #EOPHistory(IERSConventions, Collection, boolean, TimeScales)
+     * @see #EOPHistory(IERSConventions, int, Collection, boolean, TimeScales)
      */
     @DefaultDataContext
     protected EOPHistory(final IERSConventions conventions,
+                         final int interpolationDegree,
                          final Collection<? extends EOPEntry> data,
                          final boolean simpleEOP) {
-        this(conventions, data, simpleEOP, DataContext.getDefault().getTimeScales());
+        this(conventions, interpolationDegree, data, simpleEOP, DataContext.getDefault().getTimeScales());
     }
 
     /** Simple constructor.
      * @param conventions IERS conventions to which EOP refers
+     * @param interpolationDegree interpolation degree (must be of the form 4k-1)
      * @param data the EOP data to use
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param timeScales to use when computing EOP corrections.
      * @since 10.1
      */
     public EOPHistory(final IERSConventions conventions,
+                      final int interpolationDegree,
                       final Collection<? extends EOPEntry> data,
                       final boolean simpleEOP,
                       final TimeScales timeScales) {
-        this(conventions,
-                data,
-                simpleEOP ? null : new CachedCorrection(conventions.getEOPTidalCorrection(timeScales)),
-                timeScales);
+        this(conventions, interpolationDegree, data,
+             simpleEOP ? null : new CachedCorrection(conventions.getEOPTidalCorrection(timeScales)),
+             timeScales);
     }
 
     /** Simple constructor.
      * @param conventions IERS conventions to which EOP refers
+     * @param interpolationDegree interpolation degree (must be of the form 4k-1)
      * @param data the EOP data to use
      * @param tidalCorrection correction to apply to EOP
-     * @param timeScales to use when computing EOP corrections.
-     * @since 10.1
+     * @param timeScales to use when computing EOP corrections
+     * @since 12
      */
     private EOPHistory(final IERSConventions conventions,
+                       final int interpolationDegree,
                        final Collection<? extends EOPEntry> data,
                        final TimeVectorFunction tidalCorrection,
                        final TimeScales timeScales) {
-        this.conventions      = conventions;
-        this.tidalCorrection  = tidalCorrection;
-        this.timeScales = timeScales;
+
+        // check interpolation degree is 4k-1
+        final int k = (interpolationDegree + 1) / 4;
+        if (interpolationDegree != 4 * k - 1) {
+            throw new OrekitException(OrekitMessages.WRONG_EOP_INTERPOLATION_DEGREE, interpolationDegree);
+        }
+
+        this.conventions         = conventions;
+        this.interpolationDegree = interpolationDegree;
+        this.tidalCorrection     = tidalCorrection;
+        this.timeScales          = timeScales;
         if (data.size() >= 1) {
             // enough data to interpolate
-            cache = new ImmutableTimeStampedCache<EOPEntry>(FastMath.min(INTERPOLATION_POINTS, data.size()), data);
+            if (missSomeDerivatives(data)) {
+                // we need to estimate the missing derivatives
+                final ImmutableTimeStampedCache<EOPEntry> rawCache =
+                                new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1, data.size()), data);
+                final List<EOPEntry>fixedData = new ArrayList<>();
+                for (final EOPEntry entry : rawCache.getAll()) {
+                    fixedData.add(fixDerivatives(entry, rawCache));
+                }
+                cache = new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1, fixedData.size()), fixedData);
+            } else {
+                cache = new ImmutableTimeStampedCache<>(FastMath.min(interpolationDegree + 1, data.size()), data);
+            }
             hasData = true;
         } else {
             // not enough data to interpolate -> always use null correction
-            cache = ImmutableTimeStampedCache.emptyCache();
+            cache   = ImmutableTimeStampedCache.emptyCache();
             hasData = false;
         }
     }
@@ -147,6 +179,14 @@ public class EOPHistory implements Serializable {
         return tidalCorrection == null;
     }
 
+    /** Get interpolation degree.
+     * @return interpolation degree
+     * @since 12.0
+     */
+    public int getInterpolationDegree() {
+        return interpolationDegree;
+    }
+
     /**
      * Get the time scales used in computing EOP corrections.
      *
@@ -157,18 +197,21 @@ public class EOPHistory implements Serializable {
         return timeScales;
     }
 
-    /** Get non-interpolating version of the instance.
-     * @return non-interpolatig version of the instance
+    /** Get version of the instance that does not cache tidal correction.
+     * @return version of the instance that does not cache tidal correction
+     * @since 12.0
      */
-    public EOPHistory getNonInterpolatingEOPHistory() {
-        return new EOPHistory(conventions, getEntries(),
-                conventions.getEOPTidalCorrection(timeScales), timeScales);
+    public EOPHistory getEOPHistoryWithoutCachedTidalCorrection() {
+        return new EOPHistory(conventions, interpolationDegree, getEntries(),
+                              conventions.getEOPTidalCorrection(timeScales),
+                              timeScales);
     }
 
-    /** Check if the instance uses interpolation on tidal corrections.
-     * @return true if the instance uses interpolation on tidal corrections
+    /** Check if the instance caches tidal corrections.
+     * @return true if the instance caches tidal corrections
+     * @since 12.0
      */
-    public boolean usesInterpolation() {
+    public boolean cachesTidalCorrection() {
         return tidalCorrection instanceof CachedCorrection;
     }
 
@@ -209,7 +252,7 @@ public class EOPHistory implements Serializable {
         // we have EOP data -> interpolate offset
         try {
             final DUT1Interpolator interpolator = new DUT1Interpolator(date);
-            getNeighbors(date).forEach(interpolator);
+            getNeighbors(date, interpolationDegree + 1).forEach(interpolator);
             double interpolated = interpolator.getInterpolated();
             if (tidalCorrection != null) {
                 interpolated += tidalCorrection.value(date)[2];
@@ -241,7 +284,7 @@ public class EOPHistory implements Serializable {
         // we have EOP data -> interpolate offset
         try {
             final FieldDUT1Interpolator<T> interpolator = new FieldDUT1Interpolator<>(date, absDate);
-            getNeighbors(absDate).forEach(interpolator);
+            getNeighbors(absDate, interpolationDegree + 1).forEach(interpolator);
             T interpolated = interpolator.getInterpolated();
             if (tidalCorrection != null) {
                 interpolated = interpolated.add(tidalCorrection.value(date)[2]);
@@ -384,10 +427,12 @@ public class EOPHistory implements Serializable {
      * for {@code central} without throwing an exception.
      *
      * @param central central date
+     * @param n number of neighbors
      * @return array of cached entries surrounding specified date
+     * @since 12.0
      */
-    protected Stream<EOPEntry> getNeighbors(final AbsoluteDate central) {
-        return cache.getNeighbors(central);
+    protected Stream<EOPEntry> getNeighbors(final AbsoluteDate central, final int n) {
+        return cache.getNeighbors(central, n);
     }
 
     /** Get the LoD (Length of Day) value.
@@ -459,7 +504,9 @@ public class EOPHistory implements Serializable {
         }
 
         // we have EOP data for date -> interpolate correction
-        final double[] interpolated = interpolate(date, entry -> entry.getX(), entry -> entry.getY());
+        final double[] interpolated = interpolate(date,
+                                                  entry -> entry.getX(),     entry -> entry.getY(),
+                                                  entry -> entry.getXRate(), entry -> entry.getYRate());
         if (tidalCorrection != null) {
             final double[] correction = tidalCorrection.value(date);
             interpolated[0] += correction[0];
@@ -546,7 +593,7 @@ public class EOPHistory implements Serializable {
     /** Get the correction to the nutation parameters for Non-Rotating Origin paradigm.
      * <p>The data provided comes from the IERS files. It is smoothed data.</p>
      * @param date date at which the correction is desired
-     * @return nutation correction in Celestial Intermediat Pole coordinates
+     * @return nutation correction in Celestial Intermediate Pole coordinates
      * δX and δY (zero if date is outside covered range)
      */
     public double[] getNonRotatinOriginNutationCorrection(final AbsoluteDate date) {
@@ -566,7 +613,7 @@ public class EOPHistory implements Serializable {
      * <p>The data provided comes from the IERS files. It is smoothed data.</p>
      * @param date date at which the correction is desired
      * @param <T> type of the filed elements
-     * @return nutation correction in Celestial Intermediat Pole coordinates
+     * @return nutation correction in Celestial Intermediate Pole coordinates
      * δX and δY (zero if date is outside covered range)
      */
     public <T extends CalculusFieldElement<T>> T[] getNonRotatinOriginNutationCorrection(final FieldAbsoluteDate<T> date) {
@@ -599,7 +646,7 @@ public class EOPHistory implements Serializable {
 
         try {
             // we have EOP data for date
-            final Optional<EOPEntry> first = getNeighbors(date).findFirst();
+            final Optional<EOPEntry> first = getNeighbors(date, 1).findFirst();
             return first.isPresent() ? first.get().getITRFType() : ITRFVersion.ITRF_2014;
 
         } catch (TimeStampedCacheException tce) {
@@ -664,11 +711,11 @@ public class EOPHistory implements Serializable {
     private double interpolate(final AbsoluteDate date, final Function<EOPEntry, Double> selector) {
         try {
             final HermiteInterpolator interpolator = new HermiteInterpolator();
-            getNeighbors(date).forEach(entry ->
-                                       interpolator.addSamplePoint(entry.getDate().durationFrom(date),
-                                                                   new double[] {
-                                                                       selector.apply(entry)
-                                                                   }));
+            getNeighbors(date, interpolationDegree + 1).
+                forEach(entry -> interpolator.addSamplePoint(entry.getDate().durationFrom(date),
+                                                             new double[] {
+                                                                 selector.apply(entry)
+                                                             }));
             return interpolator.value(0)[0];
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check performed by caller
@@ -687,8 +734,8 @@ public class EOPHistory implements Serializable {
      * @return interpolated value
      */
     private <T extends CalculusFieldElement<T>> T interpolate(final FieldAbsoluteDate<T> date,
-                                                          final AbsoluteDate aDate,
-                                                          final Function<EOPEntry, Double> selector) {
+                                                              final AbsoluteDate aDate,
+                                                              final Function<EOPEntry, Double> selector) {
         try {
             final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
             final T[] y = MathArrays.buildArray(date.getField(), 1);
@@ -696,10 +743,11 @@ public class EOPHistory implements Serializable {
             final FieldAbsoluteDate<T> central = new FieldAbsoluteDate<>(aDate, zero); // here, we attempt to get a constant date,
                                                                                        // for example removing derivatives
                                                                                        // if T was DerivativeStructure
-            getNeighbors(aDate).forEach(entry -> {
-                y[0] = zero.add(selector.apply(entry));
-                interpolator.addSamplePoint(central.durationFrom(entry.getDate()).negate(), y);
-            });
+            getNeighbors(aDate, interpolationDegree + 1).
+                forEach(entry -> {
+                    y[0] = zero.add(selector.apply(entry));
+                    interpolator.addSamplePoint(central.durationFrom(entry.getDate()).negate(), y);
+                });
             return interpolator.value(date.durationFrom(central))[0]; // here, we introduce derivatives again (in DerivativeStructure case)
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check performed by caller
@@ -721,12 +769,48 @@ public class EOPHistory implements Serializable {
                                  final Function<EOPEntry, Double> selector2) {
         try {
             final HermiteInterpolator interpolator = new HermiteInterpolator();
-            getNeighbors(date).forEach(entry ->
-                                       interpolator.addSamplePoint(entry.getDate().durationFrom(date),
-                                                                   new double[] {
-                                                                       selector1.apply(entry),
-                                                                       selector2.apply(entry)
-                                                                   }));
+            getNeighbors(date, interpolationDegree + 1).
+                forEach(entry -> interpolator.addSamplePoint(entry.getDate().durationFrom(date),
+                                                             new double[] {
+                                                                 selector1.apply(entry),
+                                                                 selector2.apply(entry)
+                                                             }));
+            return interpolator.value(0);
+        } catch (TimeStampedCacheException tce) {
+            // this should not happen because of date check performed by caller
+            throw new OrekitInternalError(tce);
+        }
+    }
+
+    /** Interpolate two EOP components.
+     * <p>
+     * This method should be called <em>only</em> when {@link #hasDataFor(AbsoluteDate)} returns true.
+     * </p>
+     * @param date interpolation date
+     * @param selector1 selector for first EOP entry component
+     * @param selector2 selector for second EOP entry component
+     * @param selector1Rate selector for first EOP entry component rate
+     * @param selector2Rate selector for second EOP entry component rate
+     * @return interpolated value
+     * @since 12.0
+     */
+    private double[] interpolate(final AbsoluteDate date,
+                                 final Function<EOPEntry, Double> selector1,
+                                 final Function<EOPEntry, Double> selector2,
+                                 final Function<EOPEntry, Double> selector1Rate,
+                                 final Function<EOPEntry, Double> selector2Rate) {
+        try {
+            final HermiteInterpolator interpolator = new HermiteInterpolator();
+            getNeighbors(date, (interpolationDegree + 1) / 2).
+                forEach(entry -> interpolator.addSamplePoint(entry.getDate().durationFrom(date),
+                                                             new double[] {
+                                                                 selector1.apply(entry),
+                                                                 selector2.apply(entry)
+                                                             },
+                                                             new double[] {
+                                                                 selector1Rate.apply(entry),
+                                                                 selector2Rate.apply(entry)
+                                                             }));
             return interpolator.value(0);
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check performed by caller
@@ -746,9 +830,9 @@ public class EOPHistory implements Serializable {
      * @return interpolated value
      */
     private <T extends CalculusFieldElement<T>> T[] interpolate(final FieldAbsoluteDate<T> date,
-                                                            final AbsoluteDate aDate,
-                                                            final Function<EOPEntry, Double> selector1,
-                                                            final Function<EOPEntry, Double> selector2) {
+                                                                final AbsoluteDate aDate,
+                                                                final Function<EOPEntry, Double> selector1,
+                                                                final Function<EOPEntry, Double> selector2) {
         try {
             final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
             final T[] y = MathArrays.buildArray(date.getField(), 2);
@@ -756,11 +840,12 @@ public class EOPHistory implements Serializable {
             final FieldAbsoluteDate<T> central = new FieldAbsoluteDate<>(aDate, zero); // here, we attempt to get a constant date,
                                                                                        // for example removing derivatives
                                                                                        // if T was DerivativeStructure
-            getNeighbors(aDate).forEach(entry -> {
-                y[0] = zero.add(selector1.apply(entry));
-                y[1] = zero.add(selector2.apply(entry));
-                interpolator.addSamplePoint(central.durationFrom(entry.getDate()).negate(), y);
-            });
+            getNeighbors(aDate, interpolationDegree + 1).
+                forEach(entry -> {
+                    y[0] = zero.add(selector1.apply(entry));
+                    y[1] = zero.add(selector2.apply(entry));
+                    interpolator.addSamplePoint(central.durationFrom(entry.getDate()).negate(), y);
+                });
             return interpolator.value(date.durationFrom(central)); // here, we introduce derivatives again (in DerivativeStructure case)
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check performed by caller
@@ -768,15 +853,68 @@ public class EOPHistory implements Serializable {
         }
     }
 
+    /** Check if some derivatives are missing.
+     * @param raw raw EOP history
+     * @return true if some derivatives are missing
+     * @since 12.0
+     */
+    private boolean missSomeDerivatives(final Collection<? extends EOPEntry> raw) {
+        for (final EOPEntry entry : raw) {
+            if (Double.isNaN(entry.getLOD() + entry.getXRate() + entry.getYRate())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Fix missing derivatives.
+     * @param entry EOP entry to fix
+     * @param rawCache raw EOP history cache
+     * @return fixed entry
+     * @since 12.0
+     */
+    private EOPEntry fixDerivatives(final EOPEntry entry, final ImmutableTimeStampedCache<EOPEntry> rawCache) {
+
+        // helper function to differentiate some EOP parameters
+        final BiFunction<EOPEntry, Function<EOPEntry, Double>, Double> differentiator =
+                        (e, selector) -> {
+                            final HermiteInterpolator interpolator = new HermiteInterpolator();
+                            rawCache.getNeighbors(e.getDate()).
+                                forEach(f -> interpolator.addSamplePoint(f.getDate().durationFrom(e.getDate()),
+                                                                         new double[] {
+                                                                             selector.apply(f)
+                                                                         }));
+                            return interpolator.derivatives(0.0, 1)[1][0];
+                        };
+
+        if (Double.isNaN(entry.getLOD() + entry.getXRate() + entry.getYRate())) {
+            final double lod   = Double.isNaN(entry.getLOD()) ?
+                                 -differentiator.apply(entry, e -> e.getUT1MinusUTC()) :
+                                 entry.getLOD();
+            final double xRate = Double.isNaN(entry.getXRate()) ?
+                                 differentiator.apply(entry, e -> e.getX()) :
+                                 entry.getXRate();
+            final double yRate = Double.isNaN(entry.getYRate()) ?
+                                 differentiator.apply(entry, e -> e.getY()) :
+                                 entry.getYRate();
+            return new EOPEntry(entry.getMjd(),
+                                entry.getUT1MinusUTC(), lod,
+                                entry.getX(), entry.getY(), xRate, yRate,
+                                entry.getDdPsi(), entry.getDdEps(),
+                                entry.getDx(), entry.getDy(),
+                                entry.getITRFType(), entry.getDate());
+        } else {
+            // the entry already has all derivatives
+            return entry;
+        }
+    }
+
     /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes only the frame key.
-     * </p>
      * @return data transfer object that will be serialized
      */
     @DefaultDataContext
     private Object writeReplace() {
-        return new DataTransferObject(conventions, getEntries(), tidalCorrection == null);
+        return new DataTransferObject(conventions, interpolationDegree, getEntries(), tidalCorrection == null);
     }
 
     /** Internal class used only for serialization. */
@@ -784,10 +922,15 @@ public class EOPHistory implements Serializable {
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20131010L;
+        private static final long serialVersionUID = 20231122L;
 
         /** IERS conventions. */
         private final IERSConventions conventions;
+
+        /** Interpolation degree.
+         * @since 12.0
+         */
+        private final int interpolationDegree;
 
         /** EOP entries. */
         private final List<EOPEntry> entries;
@@ -797,15 +940,19 @@ public class EOPHistory implements Serializable {
 
         /** Simple constructor.
          * @param conventions IERS conventions to which EOP refers
+         * @param interpolationDegree interpolation degree (must be of the form 4k-1)
          * @param entries the EOP data to use
          * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+         * @since 12.0
          */
         DataTransferObject(final IERSConventions conventions,
-                                  final List<EOPEntry> entries,
-                                  final boolean simpleEOP) {
-            this.conventions = conventions;
-            this.entries     = entries;
-            this.simpleEOP   = simpleEOP;
+                           final int interpolationDegree,
+                           final List<EOPEntry> entries,
+                           final boolean simpleEOP) {
+            this.conventions         = conventions;
+            this.interpolationDegree = interpolationDegree;
+            this.entries             = entries;
+            this.simpleEOP           = simpleEOP;
         }
 
         /** Replace the deserialized data transfer object with a {@link EOPHistory}.
@@ -813,8 +960,7 @@ public class EOPHistory implements Serializable {
          */
         private Object readResolve() {
             try {
-                // retrieve a managed frame
-                return new EOPHistory(conventions, entries, simpleEOP);
+                return new EOPHistory(conventions, interpolationDegree, entries, simpleEOP);
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }
@@ -929,7 +1075,7 @@ public class EOPHistory implements Serializable {
             if (existingDate == null) {
 
                 // no prior existing entries, just generate a first set
-                for (int i = -cache.getNeighborsSize() / 2; generated.size() < cache.getNeighborsSize(); ++i) {
+                for (int i = -cache.getMaxNeighborsSize() / 2; generated.size() < cache.getMaxNeighborsSize(); ++i) {
                     final AbsoluteDate t = date.shiftedBy(i * step);
                     generated.add(new TidalCorrectionEntry(t, tidalCorrection.value(t)));
                 }

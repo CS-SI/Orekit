@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,14 +21,11 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
 
 /** This class represents the features of a simplified spacecraft.
@@ -70,7 +67,8 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
      * @param cs specular reflection coefficient Cs between 0.0 an 1.0
      */
     public IsotropicRadiationClassicalConvention(final double crossSection, final double ca, final double cs) {
-        this.parameterDrivers = new ArrayList<>(2);
+        this.parameterDrivers = new ArrayList<>(3);
+        parameterDrivers.add(new ParameterDriver(RadiationSensitive.GLOBAL_RADIATION_FACTOR, 1.0, SCALE, 0.0, Double.POSITIVE_INFINITY));
         parameterDrivers.add(new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT, ca, SCALE, 0.0, 1.0));
         parameterDrivers.add(new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT, cs, SCALE, 0.0, 1.0));
         this.crossSection = crossSection;
@@ -84,26 +82,24 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
-                                                  final Rotation rotation, final double mass, final Vector3D flux,
+    public Vector3D radiationPressureAcceleration(final SpacecraftState state, final Vector3D flux,
                                                   final double[] parameters) {
-        final double ca = parameters[0];
-        final double cs = parameters[1];
-        final double kP = crossSection * (1 + 4 * (1.0 - ca - cs) / 9.0);
-        return new Vector3D(kP / mass, flux);
+        final double ca = parameters[1];
+        final double cs = parameters[2];
+        final double kP = parameters[0] * crossSection * (1 + 4 * (1.0 - ca - cs) / 9.0);
+        return new Vector3D(kP / state.getMass(), flux);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T>
-        radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
-                                      final FieldVector3D<T> position,
-                                      final FieldRotation<T> rotation, final T mass,
+        radiationPressureAcceleration(final FieldSpacecraftState<T> state,
                                       final FieldVector3D<T> flux,
                                       final T[] parameters) {
-        final T ca = parameters[0];
-        final T cs = parameters[1];
-        final T kP = ca.add(cs).negate().add(1).multiply(4.0 / 9.0).add(1).multiply(crossSection);
-        return new FieldVector3D<>(mass.reciprocal().multiply(kP), flux);
+        final T ca = parameters[1];
+        final T cs = parameters[2];
+        final T kP = ca.add(cs).negate().add(1).multiply(4.0 / 9.0).add(1).
+                     multiply(parameters[0]).multiply(crossSection);
+        return new FieldVector3D<>(state.getMass().reciprocal().multiply(kP), flux);
     }
 }

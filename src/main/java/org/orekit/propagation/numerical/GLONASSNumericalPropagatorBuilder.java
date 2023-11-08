@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.propagation.numerical;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
@@ -127,7 +127,7 @@ public class GLONASSNumericalPropagatorBuilder {
         this.mass             = Propagator.DEFAULT_MASS;
         this.dataContext      = context;
         this.eci              = dataContext.getFrames().getEME2000();
-        this.attitudeProvider = InertialProvider.of(this.eci);
+        this.attitudeProvider = FrameAlignedProvider.of(this.eci);
     }
 
     /**

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,16 +46,16 @@ public class LocalOrbitalFrame extends Frame {
      * propagations.
      *
      * @param parent parent frame (must be non-null)
-     * @param type frame type
+     * @param lof local orbital frame
      * @param provider provider used to compute frame motion.
      * @param name name of the frame
      * @exception IllegalArgumentException if the parent frame is null
      */
-    public LocalOrbitalFrame(final Frame parent, final LOFType type,
+    public LocalOrbitalFrame(final Frame parent, final LOF lof,
                              final PVCoordinatesProvider provider,
                              final String name)
         throws IllegalArgumentException {
-        super(parent, new LocalProvider(type, provider, parent), name, false);
+        super(parent, new LocalProvider(lof, provider, parent), name, false);
     }
 
     /** Local provider for transforms. */
@@ -64,8 +64,8 @@ public class LocalOrbitalFrame extends Frame {
         /** Serializable UID. */
         private static final long serialVersionUID = 20170421L;
 
-        /** Frame type. */
-        private final LOFType type;
+        /** Local orbital frame. */
+        private final LOF lof;
 
         /** Provider used to compute frame motion. */
         private final PVCoordinatesProvider provider;
@@ -74,20 +74,20 @@ public class LocalOrbitalFrame extends Frame {
         private final Frame reference;
 
         /** Simple constructor.
-         * @param type frame type
+         * @param lof local orbital frame
          * @param provider provider used to compute frame motion
          * @param reference reference frame
          */
-        LocalProvider(final LOFType type, final PVCoordinatesProvider provider,
+        LocalProvider(final LOF lof, final PVCoordinatesProvider provider,
                       final Frame reference) {
-            this.type           = type;
-            this.provider       = provider;
-            this.reference      = reference;
+            this.lof       = lof;
+            this.provider  = provider;
+            this.reference = reference;
         }
 
         /** {@inheritDoc} */
         public Transform getTransform(final AbsoluteDate date) {
-            return type.transformFromInertial(date, provider.getPVCoordinates(date, reference));
+            return lof.transformFromInertial(date, provider.getPVCoordinates(date, reference));
         }
 
         /**

@@ -23,7 +23,7 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
@@ -47,7 +47,7 @@ public class FieldFunctionalDetectorTest {
      */
     @Test
     public void testFunctionalDetector() {
-        doTestFunctionalDetector(Decimal64Field.getInstance());
+        doTestFunctionalDetector(Binary64Field.getInstance());
     }
 
     public <T extends CalculusFieldElement<T>> void doTestFunctionalDetector(Field<T> field) {
@@ -55,21 +55,20 @@ public class FieldFunctionalDetectorTest {
         T zero = field.getZero();
         T one = field.getOne();
         Function<FieldSpacecraftState<T>, T> g = FieldSpacecraftState::getMass;
-        FieldEventHandler<FieldEventDetector<T>, T> handler =
-                (s, detector, increasing) -> Action.STOP;
+        FieldEventHandler<T> handler = (s, detector, increasing) -> Action.STOP;
 
         // action
         FieldFunctionalDetector<T> detector = new FieldFunctionalDetector<>(field)
                 .withMaxIter(1)
                 .withThreshold(zero.add(2))
-                .withMaxCheck(zero.add(3))
+                .withMaxCheck(3)
                 .withHandler(handler)
                 .withFunction(g);
 
         // verify
         MatcherAssert.assertThat(detector.getMaxIterationCount(), CoreMatchers.is(1));
         MatcherAssert.assertThat(detector.getThreshold().getReal(), CoreMatchers.is(2.0));
-        MatcherAssert.assertThat(detector.getMaxCheckInterval().getReal(), CoreMatchers.is(3.0));
+        MatcherAssert.assertThat(detector.getMaxCheckInterval().currentInterval(null), CoreMatchers.is(3.0));
         MatcherAssert.assertThat(detector.getHandler(), CoreMatchers.is(handler));
         FieldSpacecraftState<T> state = new FieldSpacecraftState<>(
                 new FieldCartesianOrbit<>(
@@ -81,7 +80,7 @@ public class FieldFunctionalDetectorTest {
                         zero.add(4)),
                 zero.add(5));
         MatcherAssert.assertThat(detector.g(state).getReal(), CoreMatchers.is(5.0));
-        MatcherAssert.assertThat(detector.eventOccurred(null, false),
+        MatcherAssert.assertThat(detector.getHandler().eventOccurred(null, detector, false),
                 CoreMatchers.is(Action.STOP));
         MatcherAssert.assertThat(detector.getFunction(), CoreMatchers.is(g));
     }

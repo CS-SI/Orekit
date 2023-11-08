@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,18 +19,17 @@ package org.orekit.forces.empirical;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.NavigableSet;
 import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
-import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.FieldAttitude;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -40,7 +39,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
-import org.orekit.utils.TimeSpanMap.Transition;
 
 /** Time span parametric acceleration model.
  *  <p>
@@ -76,7 +74,7 @@ import org.orekit.utils.TimeSpanMap.Transition;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class TimeSpanParametricAcceleration extends AbstractForceModel {
+public class TimeSpanParametricAcceleration implements ForceModel {
 
     /** Prefix for dates before in the parameter drivers' name. */
     public static final String DATE_BEFORE = " - Before ";
@@ -219,15 +217,6 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
         return accelerationModelTimeSpanMap.extractRange(start, end);
     }
 
-    /** Get the {@link Transition}s of the acceleration model time span map.
-     * @return the {@link Transition}s for the acceleration model time span map
-     * @deprecated as of 11.1, replace by {@link #getFirstSpan()}
-     */
-    @Deprecated
-    public NavigableSet<Transition<AccelerationModel>> getTransitions() {
-        return accelerationModelTimeSpanMap.getTransitions();
-    }
-
     /** Get the first {@link Span time span} of the acceleration model time span map.
      * @return the first {@link Span time span} of the acceleration model time span map
      * @since 11.1
@@ -256,15 +245,15 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
             // the acceleration direction is already defined in the inertial frame
             inertialDirection = direction;
         } else {
-            final Attitude attitude;
+            final Rotation rotation;
             if (attitudeOverride == null) {
                 // the acceleration direction is defined in spacecraft frame as set by the propagator
-                attitude = state.getAttitude();
+                rotation = state.getAttitude().getRotation();
             } else {
                 // the acceleration direction is defined in a dedicated frame
-                attitude = attitudeOverride.getAttitude(state.getOrbit(), date, state.getFrame());
+                rotation = attitudeOverride.getAttitudeRotation(state.getOrbit(), date, state.getFrame());
             }
-            inertialDirection = attitude.getRotation().applyInverseTo(direction);
+            inertialDirection = rotation.applyInverseTo(direction);
         }
 
         // Extract the proper parameters valid at date from the input array
@@ -289,15 +278,15 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
             // the acceleration direction is already defined in the inertial frame
             inertialDirection = new FieldVector3D<>(state.getDate().getField(), direction);
         } else {
-            final FieldAttitude<T> attitude;
+            final FieldRotation<T> rotation;
             if (attitudeOverride == null) {
                 // the acceleration direction is defined in spacecraft frame as set by the propagator
-                attitude = state.getAttitude();
+                rotation = state.getAttitude().getRotation();
             } else {
                 // the acceleration direction is defined in a dedicated frame
-                attitude = attitudeOverride.getAttitude(state.getOrbit(), date, state.getFrame());
+                rotation = attitudeOverride.getAttitudeRotation(state.getOrbit(), date, state.getFrame());
             }
-            inertialDirection = attitude.getRotation().applyInverseTo(direction);
+            inertialDirection = rotation.applyInverseTo(direction);
         }
 
         // Extract the proper parameters valid at date from the input array
@@ -310,13 +299,13 @@ public class TimeSpanParametricAcceleration extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
+    public Stream<EventDetector> getEventDetectors() {
         return Stream.empty();
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
         return Stream.empty();
     }
 

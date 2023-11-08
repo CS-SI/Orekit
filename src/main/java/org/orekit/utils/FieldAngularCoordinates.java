@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,6 +38,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.FieldTimeShiftable;
 
 /** Simple container for rotation / rotation rate pairs, using {@link
  * CalculusFieldElement}.
@@ -56,8 +57,8 @@ import org.orekit.errors.OrekitMessages;
  * @since 6.0
  * @see AngularCoordinates
  */
-public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
-
+public class FieldAngularCoordinates<T extends CalculusFieldElement<T>>
+        implements FieldTimeShiftable<FieldAngularCoordinates<T>, T> {
 
     /** rotation. */
     private final FieldRotation<T> rotation;
@@ -82,7 +83,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
 
     /** Builds a rotation / rotation rate / rotation acceleration triplet.
      * @param rotation i.e. the orientation of the vehicle
-     * @param rotationRate rotation rate rate Ω, i.e. the spin vector (rad/s)
+     * @param rotationRate rotation rate Ω, i.e. the spin vector (rad/s)
      * @param rotationAcceleration angular acceleration vector dΩ/dt (rad/s²)
      */
     public FieldAngularCoordinates(final FieldRotation<T> rotation,
@@ -557,6 +558,68 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
                                              rotation.applyInverseTo(rotationAcceleration.negate()));
     }
 
+    /** Get a time-shifted rotation. Same as {@link #shiftedBy(double)} except
+     * only the shifted rotation is computed.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * an approximate solution of the fixed acceleration motion. It is <em>not</em>
+     * intended as a replacement for proper attitude propagation but should be
+     * sufficient for either small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     * @see  #shiftedBy(CalculusFieldElement)
+     * @since 11.2
+     */
+    public FieldRotation<T> rotationShiftedBy(final T dt) {
+
+        // the shiftedBy method is based on a local approximation.
+        // It considers separately the contribution of the constant
+        // rotation, the linear contribution or the rate and the
+        // quadratic contribution of the acceleration. The rate
+        // and acceleration contributions are small rotations as long
+        // as the time shift is small, which is the crux of the algorithm.
+        // Small rotations are almost commutative, so we append these small
+        // contributions one after the other, as if they really occurred
+        // successively, despite this is not what really happens.
+
+        // compute the linear contribution first, ignoring acceleration
+        // BEWARE: there is really a minus sign here, because if
+        // the target frame rotates in one direction, the vectors in the origin
+        // frame seem to rotate in the opposite direction
+        final T rate = rotationRate.getNorm();
+        final FieldRotation<T> rateContribution = (rate.getReal() == 0.0) ?
+                FieldRotation.getIdentity(dt.getField()) :
+                new FieldRotation<>(rotationRate, rate.multiply(dt), RotationConvention.FRAME_TRANSFORM);
+
+        // append rotation and rate contribution
+        final FieldRotation<T> linearPart =
+                rateContribution.compose(rotation, RotationConvention.VECTOR_OPERATOR);
+
+        final T acc  = rotationAcceleration.getNorm();
+        if (acc.getReal() == 0.0) {
+            // no acceleration, the linear part is sufficient
+            return linearPart;
+        }
+
+        // compute the quadratic contribution, ignoring initial rotation and rotation rate
+        // BEWARE: there is really a minus sign here, because if
+        // the target frame rotates in one direction, the vectors in the origin
+        // frame seem to rotate in the opposite direction
+        final FieldRotation<T> quadraticContribution =
+                new FieldRotation<>(rotationAcceleration,
+                        acc.multiply(dt).multiply(dt).multiply(0.5),
+                        RotationConvention.FRAME_TRANSFORM);
+
+        // the quadratic contribution is a small rotation:
+        // its initial angle and angular rate are both zero.
+        // small rotations are almost commutative, so we append the small
+        // quadratic part after the linear part as a simple offset
+        return quadraticContribution
+                .compose(linearPart, RotationConvention.VECTOR_OPERATOR);
+
+    }
+
     /** Get a time-shifted state.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
@@ -567,6 +630,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
+    @Override
     public FieldAngularCoordinates<T> shiftedBy(final double dt) {
         return shiftedBy(rotation.getQ0().getField().getZero().add(dt));
     }
@@ -581,6 +645,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
+    @Override
     public FieldAngularCoordinates<T> shiftedBy(final T dt) {
 
         // the shiftedBy method is based on a local approximation.
@@ -717,7 +782,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
 
     /** Apply the rotation to a pv coordinates.
      * @param pv vector to apply the rotation to
-     * @return a new pv coordinates which is the image of u by the rotation
+     * @return a new pv coordinates which is the image of pv by the rotation
      */
     public FieldPVCoordinates<T> applyTo(final PVCoordinates pv) {
 
@@ -738,7 +803,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
 
     /** Apply the rotation to a pv coordinates.
      * @param pv vector to apply the rotation to
-     * @return a new pv coordinates which is the image of u by the rotation
+     * @return a new pv coordinates which is the image of pv by the rotation
      */
     public TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedPVCoordinates pv) {
 
@@ -759,7 +824,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
 
     /** Apply the rotation to a pv coordinates.
      * @param pv vector to apply the rotation to
-     * @return a new pv coordinates which is the image of u by the rotation
+     * @return a new pv coordinates which is the image of pv by the rotation
      * @since 9.0
      */
     public FieldPVCoordinates<T> applyTo(final FieldPVCoordinates<T> pv) {
@@ -781,7 +846,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>> {
 
     /** Apply the rotation to a pv coordinates.
      * @param pv vector to apply the rotation to
-     * @return a new pv coordinates which is the image of u by the rotation
+     * @return a new pv coordinates which is the image of pv by the rotation
      * @since 9.0
      */
     public TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedFieldPVCoordinates<T> pv) {

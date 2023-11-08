@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,17 +16,12 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.hipparchus.ode.events.Action;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AdapterDetector;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DatesSelector;
 import org.orekit.utils.TimeSpanMap;
@@ -101,33 +96,8 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
 
     /** {@inheritDoc} */
     @Override
-    public SortedSet<T> generate(final List<OrekitStepInterpolator> interpolators) {
-
-        // select dates in the current step, using arbitrarily interpolator 0
-        // as all interpolators cover the same range
-        final List<AbsoluteDate> dates = getSelector().selectDates(interpolators.get(0).getPreviousState().getDate(),
-                                                                   interpolators.get(0).getCurrentState().getDate());
-
-        // generate measurements when feasible
-        final SortedSet<T> measurements = new TreeSet<>();
-        for (final AbsoluteDate date : dates) {
-            if (feasibility.get(date)) {
-                // a measurement is feasible at this date
-
-                // interpolate states at measurement date
-                final SpacecraftState[] states = new SpacecraftState[interpolators.size()];
-                for (int i = 0; i < states.length; ++i) {
-                    states[i] = interpolators.get(i).getInterpolatedState(date);
-                }
-
-                // generate measurement
-                measurements.add(getBuilder().build(states));
-
-            }
-        }
-
-        return measurements;
-
+    public boolean measurementIsFeasible(final AbsoluteDate date) {
+        return feasibility.get(date);
     }
 
     /** Adapter for managing feasibility status changes. */
@@ -150,22 +120,29 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
 
         /** {@inheritDoc} */
         @Override
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+        public EventHandler getHandler() {
 
-            // find the feasibility status AFTER the current date
-            final boolean statusAfter = signSemantic.measurementIsFeasible(increasing ? +1 : -1);
+            final EventDetector rawDetector = getDetector();
+            final EventHandler  rawHandler  = rawDetector.getHandler();
 
-            // store either status or its opposite according to propagation direction
-            if (forward) {
-                // forward propagation
-                feasibility.addValidAfter(statusAfter, s.getDate(), false);
-            } else {
-                // backward propagation
-                feasibility.addValidBefore(!statusAfter, s.getDate(), false);
-            }
+            return (state, detector, increasing) -> {
 
-            // delegate to wrapped detector
-            return super.eventOccurred(s, increasing);
+                // find the feasibility status AFTER the current date
+                final boolean statusAfter = signSemantic.measurementIsFeasible(increasing ? +1 : -1);
+
+                // store either status or its opposite according to propagation direction
+                if (forward) {
+                    // forward propagation
+                    feasibility.addValidAfter(statusAfter, state.getDate(), false);
+                } else {
+                    // backward propagation
+                    feasibility.addValidBefore(!statusAfter, state.getDate(), false);
+                }
+
+                // delegate to wrapped detector
+                return rawHandler.eventOccurred(state, rawDetector, increasing);
+
+            };
 
         }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,11 +46,11 @@ public class SpacecraftBodyFrame {
         /** Earth Sensor Assembly. */
         ESA,
 
-        /** Gyro reference frame (this name was used in ADM V1.0 (CCSDS 504.0-B-1). */
-        GYRO,
-
         /** Gyro reference frame (this name is used in SANA registry https://sanaregistry.org/r/spacecraft_body_reference_frames/). */
         GYRO_FRAME,
+
+        /** Gyro reference frame (this name was used in ADM V1.0 (CCSDS 504.0-B-1). */
+        GYRO,
 
         /** Inertial Measurement Unit. */
         IMU_FRAME,
@@ -119,7 +119,13 @@ public class SpacecraftBodyFrame {
      */
     @Override
     public String toString() {
-        return getBaseEquipment().name() + "_" + getLabel();
+        // the names should normally have a form similar to SC_BODY_i
+        // however sometimes is is only SC_BODYi or even SC_BODY when parsed
+        // in the first case, we put the missing '_' back
+        // in the second case, we just keep the base equipment name
+        return getLabel().length() > 0 ?
+               getBaseEquipment().name() + "_" + getLabel() :
+               getBaseEquipment().name();
     }
 
     /** Build an instance from a normalized descriptor.
@@ -131,14 +137,16 @@ public class SpacecraftBodyFrame {
      * @return parsed body frame
      */
     public static SpacecraftBodyFrame parse(final String descriptor) {
-        final int separatorIndex = descriptor.lastIndexOf('_');
-        if (separatorIndex >= 0) {
-            try {
-                final String equipmentName = descriptor.substring(0, separatorIndex);
-                return new SpacecraftBodyFrame(BaseEquipment.valueOf(equipmentName),
-                                          descriptor.substring(separatorIndex + 1));
-            } catch (IllegalArgumentException iae) {
-                // ignored, errors are handled below
+        for (final BaseEquipment equipment : BaseEquipment.values()) {
+            if (descriptor.startsWith(equipment.name())) {
+                // the names should normally have a form similar to SC_BODY_i
+                // however sometimes is is only SC_BODYi or even SC_BODY
+                // so we try to parse these common cases
+                int index = equipment.name().length();
+                if (index < descriptor.length() && descriptor.charAt(index) == '_') {
+                    ++index;
+                }
+                return new SpacecraftBodyFrame(equipment, descriptor.substring(index));
             }
         }
         throw new OrekitException(OrekitMessages.CCSDS_INVALID_FRAME, descriptor);

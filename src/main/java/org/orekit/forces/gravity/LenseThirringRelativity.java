@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,21 +18,17 @@ package org.orekit.forces.gravity;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.forces.AbstractForceModel;
-import org.orekit.frames.FieldTransform;
+import org.orekit.forces.ForceModel;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
@@ -50,7 +46,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class LenseThirringRelativity extends AbstractForceModel {
+public class LenseThirringRelativity implements ForceModel {
 
     /** Intensity of the Earth's angular momentum per unit mass [m²/s]. */
     private static final double J = 9.8e8;
@@ -140,26 +136,14 @@ public class LenseThirringRelativity extends AbstractForceModel {
         final T r2 = r.multiply(r);
 
         // Earth’s angular momentum per unit mass
-        final FieldTransform<T> t = bodyFrame.getTransformTo(s.getFrame(), s.getDate());
-        final FieldVector3D<T>  j = t.transformVector(Vector3D.PLUS_K).scalarMultiply(J);
+        final FieldStaticTransform<T> t = bodyFrame.getStaticTransformTo(s.getFrame(), s.getDate());
+        final FieldVector3D<T>        j = t.transformVector(Vector3D.PLUS_K).scalarMultiply(J);
 
         return new FieldVector3D<>(p.dotProduct(j).multiply(3.0).divide(r2),
                                    p.crossProduct(v),
                                    r.getField().getOne(),
                                    v.crossProduct(j))
                                    .scalarMultiply(gm.multiply(2.0).divide(r2.multiply(r).multiply(c2)));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Stream<EventDetector> getEventsDetectors() {
-        return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
     /** {@inheritDoc} */

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,23 @@
  * limitations under the License.
  */
 package org.orekit.estimation.common;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.regex.Pattern;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -35,9 +52,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataFilter;
-import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DataSource;
 import org.orekit.data.GzipFilter;
 import org.orekit.data.UnixCompressFilter;
@@ -58,7 +73,7 @@ import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
-import org.orekit.estimation.measurements.modifiers.OnBoardAntennaRangeModifier;
+import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
 import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
@@ -82,6 +97,11 @@ import org.orekit.files.ilrs.CRD.MeteorologicalMeasurement;
 import org.orekit.files.ilrs.CRD.RangeMeasurement;
 import org.orekit.files.ilrs.CRDHeader;
 import org.orekit.files.ilrs.CRDHeader.RangeType;
+import org.orekit.files.rinex.HatanakaCompressFilter;
+import org.orekit.files.rinex.observation.ObservationData;
+import org.orekit.files.rinex.observation.ObservationDataSet;
+import org.orekit.files.rinex.observation.RinexObservation;
+import org.orekit.files.rinex.observation.RinexObservationParser;
 import org.orekit.files.ilrs.CRDParser;
 import org.orekit.files.sinex.SinexLoader;
 import org.orekit.files.sinex.Station;
@@ -93,12 +113,9 @@ import org.orekit.frames.EOPHistory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.gnss.HatanakaCompressFilter;
 import org.orekit.gnss.MeasurementType;
-import org.orekit.gnss.ObservationData;
-import org.orekit.gnss.ObservationDataSet;
-import org.orekit.gnss.RinexObservationLoader;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.models.earth.atmosphere.Atmosphere;
@@ -129,7 +146,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -137,7 +154,7 @@ import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScale;
@@ -148,23 +165,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.regex.Pattern;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Base class for Orekit orbit determination tutorials.
  * @param <T> type of the propagator builder
@@ -172,7 +173,7 @@ import java.util.regex.Pattern;
  * @author Bryan Cazabonne
  * @author Julie Bayard
  */
-public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPropagatorBuilder> {
+public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
     /** Suffix for range bias. */
     private final String RANGE_BIAS_SUFFIX = "/range bias";
@@ -275,12 +276,12 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
     /** Set solar radiation pressure force model.
      * @param propagatorBuilder propagator builder
      * @param sun Sun model
-     * @param equatorialRadius central body equatorial radius (for shadow computation)
+     * @param body central body (for shadow computation)
      * @param spacecraft spacecraft model
      * @return drivers for the force model
      */
     protected abstract List<ParameterDriver> setSolarRadiationPressure(T propagatorBuilder, CelestialBody sun,
-                                                                       double equatorialRadius, RadiationSensitive spacecraft);
+                                                                       OneAxisEllipsoid body, RadiationSensitive spacecraft);
 
     /** Set Earth's albedo and infrared force model.
      * @param propagatorBuilder propagator builder
@@ -370,11 +371,12 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
         useRangeRateMeasurements                                   = parser.getBoolean(ParameterKey.USE_RANGE_RATE_MEASUREMENTS);
 
-        final Map<String, StationData>    stations                 = createStationsData(parser, stationPositionData, stationEccData, conventions, body);
+        final Map<String, StationData>    stations                 = createStationsData(parser, initialGuess.getDate(),
+                                                                                        stationPositionData, stationEccData, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
         final ObservableSatellite         satellite                = createObservableSatellite(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
-        final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
+        final PhaseCentersRangeModifier   satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
         final ShapiroRangeModifier        shapiroRangeModifier     = createShapiroRangeModifier(parser);
         final Weights                     weights                  = createWeights(parser);
         final OutlierFilter<Range>        rangeOutliersManager     = createRangeOutliersManager(parser, false);
@@ -394,8 +396,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                 nd = filter.filter(nd);
             }
 
-            if (Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, nd.getName()) ||
-                Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, nd.getName())) {
+            if (Pattern.matches(RinexObservationParser.DEFAULT_RINEX_2_NAMES, nd.getName()) ||
+                Pattern.matches(RinexObservationParser.DEFAULT_RINEX_3_NAMES, nd.getName())) {
                 // the measurements come from a Rinex file
                 independentMeasurements.addAll(readRinex(nd,
                                                          parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
@@ -653,11 +655,12 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
         useRangeRateMeasurements                                   = parser.getBoolean(ParameterKey.USE_RANGE_RATE_MEASUREMENTS);
 
-        final Map<String, StationData>    stations                 = createStationsData(parser, stationPositionData, stationEccData, conventions, body);
+        final Map<String, StationData>    stations                 = createStationsData(parser, initialGuess.getDate(),
+                                                                                        stationPositionData, stationEccData, conventions, body);
         final PVData                      pvData                   = createPVData(parser);
         final ObservableSatellite         satellite                = createObservableSatellite(parser);
         final Bias<Range>                 satRangeBias             = createSatRangeBias(parser);
-        final OnBoardAntennaRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
+        final PhaseCentersRangeModifier satAntennaRangeModifier  = createSatAntennaRangeModifier(parser);
         final ShapiroRangeModifier        shapiroRangeModifier     = createShapiroRangeModifier(parser);
         final Weights                     weights                  = createWeights(parser);
         final OutlierFilter<Range>        rangeOutliersManager     = createRangeOutliersManager(parser, true);
@@ -678,8 +681,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                 nd = filter.filter(nd);
             }
 
-            if (Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_2_SUPPORTED_NAMES, nd.getName()) ||
-                Pattern.matches(RinexObservationLoader.DEFAULT_RINEX_3_SUPPORTED_NAMES, nd.getName())) {
+            if (Pattern.matches(RinexObservationParser.DEFAULT_RINEX_2_NAMES, nd.getName()) ||
+                Pattern.matches(RinexObservationParser.DEFAULT_RINEX_3_NAMES, nd.getName())) {
                 // the measurements come from a Rinex file
                 independentMeasurements.addAll(readRinex(nd,
                                                          parser.getString(ParameterKey.SATELLITE_ID_IN_RINEX_FILES),
@@ -727,7 +730,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         // Orbital covariance matrix initialization
         // Jacobian of the orbital parameters w/r to Cartesian
         final double[][] dYdC = new double[6][6];
-        initialGuess.getJacobianWrtCartesian(propagatorBuilder.getPositionAngle(), dYdC);
+        initialGuess.getJacobianWrtCartesian(propagatorBuilder.getPositionAngleType(), dYdC);
         final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
         RealMatrix orbitalP = Jac.multiply(cartesianOrbitalP.multiply(Jac.transpose()));
 
@@ -947,7 +950,10 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
              for (DelegatingDriver refDriver : refPropagationParameters.getDrivers()) {
                  for (DelegatingDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
                      if (driver.getName().equals(refDriver.getName())) {
-                         driver.setValue(refDriver.getValue());
+                         for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                             driver.setValue(refDriver.getValue(initialRefOrbit.getDate()), span.getStart());
+                         }
                      }
                  }
              }
@@ -1069,8 +1075,6 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             final MarshallSolarActivityFutureEstimation msafe =
                             new MarshallSolarActivityFutureEstimation(MarshallSolarActivityFutureEstimation.DEFAULT_SUPPORTED_NAMES,
                                                                       MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-            final DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
-            manager.feed(msafe.getSupportedNames(), msafe);
             final Atmosphere atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), body);
             final List<ParameterDriver> drivers = setDrag(propagatorBuilder, atmosphere, new IsotropicDrag(area, cd));
             if (cdEstimated) {
@@ -1088,7 +1092,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             final double  area        = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_AREA);
             final boolean cREstimated = parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE_CR_ESTIMATED);
             final List<ParameterDriver> drivers = setSolarRadiationPressure(propagatorBuilder, CelestialBodyFactory.getSun(),
-                                                                            body.getEquatorialRadius(),
+                                                                            body,
                                                                             new IsotropicRadiationSingleCoefficient(area, cr));
             if (cREstimated) {
                 for (final ParameterDriver driver : drivers) {
@@ -1207,9 +1211,9 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         }
 
         // Orbit definition
-        PositionAngle angleType = PositionAngle.MEAN;
+        PositionAngleType angleType = PositionAngleType.MEAN;
         if (parser.containsKey(ParameterKey.ORBIT_ANGLE_TYPE)) {
-            angleType = PositionAngle.valueOf(parser.getString(ParameterKey.ORBIT_ANGLE_TYPE).toUpperCase());
+            angleType = PositionAngleType.valueOf(parser.getString(ParameterKey.ORBIT_ANGLE_TYPE).toUpperCase());
         }
         if (parser.containsKey(ParameterKey.ORBIT_KEPLERIAN_A)) {
             return new KeplerianOrbit(parser.getDouble(ParameterKey.ORBIT_KEPLERIAN_A),
@@ -1337,7 +1341,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @param parser input file parser
      * @return range modifier (may be null if antenna offset is zero or undefined)
      */
-    private OnBoardAntennaRangeModifier createSatAntennaRangeModifier(final KeyValueFileParser<ParameterKey> parser) {
+    private PhaseCentersRangeModifier createSatAntennaRangeModifier(final KeyValueFileParser<ParameterKey> parser) {
         final Vector3D offset;
         if (!parser.containsKey(ParameterKey.ON_BOARD_ANTENNA_PHASE_CENTER_X)) {
             offset = Vector3D.ZERO;
@@ -1346,7 +1350,10 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                                       ParameterKey.ON_BOARD_ANTENNA_PHASE_CENTER_Y,
                                       ParameterKey.ON_BOARD_ANTENNA_PHASE_CENTER_Z);
         }
-        return offset.getNorm() > 0 ? new OnBoardAntennaRangeModifier(offset) : null;
+        return offset.getNorm() > 0 ?
+               new PhaseCentersRangeModifier(FrequencyPattern.ZERO_CORRECTION,
+                                             new FrequencyPattern(offset, null)) :
+               null;
     }
 
     /** Set up range modifier taking shapiro effect.
@@ -1365,6 +1372,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
     /** Set up stations.
      * @param parser input file parser
+     * @param refDate reference date (from orbit initial guess)
      * @param sinexPosition sinex file containing station position (can be null)
      * @param sinexEcc sinex file containing station eccentricities (can be null)
      * @param conventions IERS conventions to use
@@ -1373,6 +1381,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @throws NoSuchElementException if input parameters are missing
      */
     private Map<String, StationData> createStationsData(final KeyValueFileParser<ParameterKey> parser,
+                                                        final AbsoluteDate refDate,
                                                         final SinexLoader sinexPosition,
                                                         final SinexLoader sinexEcc,
                                                         final IERSConventions conventions,
@@ -1502,12 +1511,13 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             // Take into consideration station eccentricities if not null
             if (sinexEcc != null) {
                 final Station stationEcc = sinexEcc.getStation(stationNames[i]);
-                station.getZenithOffsetDriver().setValue(stationEcc.getEccentricities().getX());
-                station.getZenithOffsetDriver().setReferenceValue(stationEcc.getEccentricities().getX());
-                station.getNorthOffsetDriver().setValue(stationEcc.getEccentricities().getY());
-                station.getNorthOffsetDriver().setReferenceValue(stationEcc.getEccentricities().getY());
-                station.getEastOffsetDriver().setValue(stationEcc.getEccentricities().getZ());
-                station.getEastOffsetDriver().setReferenceValue(stationEcc.getEccentricities().getZ());
+                final Vector3D eccentricities = stationEcc.getEccentricities(refDate);
+                station.getZenithOffsetDriver().setValue(eccentricities.getX());
+                station.getZenithOffsetDriver().setReferenceValue(eccentricities.getX());
+                station.getNorthOffsetDriver().setValue(eccentricities.getY());
+                station.getNorthOffsetDriver().setReferenceValue(eccentricities.getY());
+                station.getEastOffsetDriver().setValue(eccentricities.getZ());
+                station.getEastOffsetDriver().setReferenceValue(eccentricities.getZ());
             }
 
             // range
@@ -1810,6 +1820,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
         final ObservableSatellite obsSat = new ObservableSatellite(0);
         final ParameterDriver clockOffsetDriver = obsSat.getClockOffsetDriver();
         if (parser.containsKey(ParameterKey.ON_BOARD_CLOCK_OFFSET)) {
+        	// date = null okay if validity period is infinite = only 1 estimation over the all period
             clockOffsetDriver.setReferenceValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
             clockOffsetDriver.setValue(parser.getDouble(ParameterKey.ON_BOARD_CLOCK_OFFSET));
         }
@@ -1832,7 +1843,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @throws NoSuchElementException if input parameters are missing
      */
     private BatchLSEstimator createEstimator(final KeyValueFileParser<ParameterKey> parser,
-                                             final OrbitDeterminationPropagatorBuilder propagatorBuilder)
+                                             final PropagatorBuilder propagatorBuilder)
         throws NoSuchElementException {
 
         final boolean optimizerIsLevenbergMarquardt;
@@ -1894,7 +1905,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
      * @throws NoSuchElementException if input parameters are missing
      */
     private BatchLSEstimator createSequentialEstimator(final Optimum optimum, final KeyValueFileParser<ParameterKey> parser,
-                                                       final OrbitDeterminationPropagatorBuilder propagatorBuilder)
+                                                       final PropagatorBuilder propagatorBuilder)
         throws NoSuchElementException {
 
 
@@ -1985,7 +1996,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                                                           final PVData pvData,
                                                           final ObservableSatellite satellite,
                                                           final Bias<Range> satRangeBias,
-                                                          final OnBoardAntennaRangeModifier satAntennaRangeModifier,
+                                                          final PhaseCentersRangeModifier satAntennaRangeModifier,
                                                           final Weights weights,
                                                           final OutlierFilter<Range> rangeOutliersManager,
                                                           final OutlierFilter<RangeRate> rangeRateOutliersManager,
@@ -2088,7 +2099,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                                                    final Map<String, StationData> stations,
                                                    final ObservableSatellite satellite,
                                                    final Bias<Range> satRangeBias,
-                                                   final OnBoardAntennaRangeModifier satAntennaRangeModifier,
+                                                   final PhaseCentersRangeModifier satAntennaRangeModifier,
                                                    final Weights weights,
                                                    final OutlierFilter<Range> rangeOutliersManager,
                                                    final OutlierFilter<RangeRate> rangeRateOutliersManager,
@@ -2110,16 +2121,16 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
             default:
                 prnNumber = -1;
         }
-        final RinexObservationLoader loader = new RinexObservationLoader(source);
-        for (final ObservationDataSet observationDataSet : loader.getObservationDataSets()) {
-            if (observationDataSet.getSatelliteSystem() == system    &&
-                observationDataSet.getPrnNumber()       == prnNumber) {
+        final RinexObservation rinexObs = new RinexObservationParser().parse(source);
+        for (final ObservationDataSet observationDataSet : rinexObs.getObservationDataSets()) {
+            if (observationDataSet.getSatellite().getSystem() == system    &&
+                observationDataSet.getSatellite().getPRN()    == prnNumber) {
                 for (final ObservationData od : observationDataSet.getObservationData()) {
                     final double snr = od.getSignalStrength();
                     if (!Double.isNaN(od.getValue()) && (snr == 0 || snr >= 4)) {
                         if (od.getObservationType().getMeasurementType() == MeasurementType.PSEUDO_RANGE && useRangeMeasurements) {
                             // this is a measurement we want
-                            final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();
+                            final String stationName = rinexObs.getHeader().getMarkerName() + "/" + od.getObservationType();
                             final StationData stationData = stations.get(stationName);
                             if (stationData == null) {
                                 throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -2152,7 +2163,7 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
 
                         } else if (od.getObservationType().getMeasurementType() == MeasurementType.DOPPLER && useRangeRateMeasurements) {
                             // this is a measurement we want
-                            final String stationName = observationDataSet.getHeader().getMarkerName() + "/" + od.getObservationType();
+                            final String stationName = rinexObs.getHeader().getMarkerName() + "/" + od.getObservationType();
                             final StationData stationData = stations.get(stationName);
                             if (stationData == null) {
                                 throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
@@ -2205,8 +2216,8 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
          final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
          for (final CPFCoordinate coordinates : ephemeris.getCoordinates()) {
              AbsoluteDate date = coordinates.getDate();
-             final PVCoordinates pvInertial = ephFrame.getTransformTo(initialGuess.getFrame(), date).transformPVCoordinates(coordinates);
-             measurements.add(new Position(date, pvInertial.getPosition(), 1, 1, satellite));
+             final Vector3D posInertial = ephFrame.getStaticTransformTo(initialGuess.getFrame(), date).transformPosition(coordinates.getPosition());
+             measurements.add(new Position(date, posInertial, 1, 1, satellite));
          }
 
          // Return
@@ -2840,9 +2851,9 @@ public abstract class AbstractOrbitDetermination<T extends OrbitDeterminationPro
                 final String lineFormat = "%4d\t%-25s\t%15.3f\t%-10s\t%-10s\t%-20s\t%20.9e\t%20.9e";
 
                 // Orbital correction = DP & DV between predicted orbit and estimated orbit
-                final Vector3D predictedP = estimation.getPredictedSpacecraftStates()[0].getPVCoordinates().getPosition();
+                final Vector3D predictedP = estimation.getPredictedSpacecraftStates()[0].getPosition();
                 final Vector3D predictedV = estimation.getPredictedSpacecraftStates()[0].getPVCoordinates().getVelocity();
-                final Vector3D estimatedP = estimation.getCorrectedSpacecraftStates()[0].getPVCoordinates().getPosition();
+                final Vector3D estimatedP = estimation.getCorrectedSpacecraftStates()[0].getPosition();
                 final Vector3D estimatedV = estimation.getCorrectedSpacecraftStates()[0].getPVCoordinates().getVelocity();
                 final double DPcorr       = Vector3D.distance(predictedP, estimatedP);
                 final double DVcorr       = Vector3D.distance(predictedV, estimatedV);

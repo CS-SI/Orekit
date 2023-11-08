@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,11 +23,9 @@ import java.util.Map;
 import org.hipparchus.fitting.PolynomialCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoint;
 import org.hipparchus.util.FastMath;
-import org.orekit.gnss.CombinedObservationData;
-import org.orekit.gnss.CombinedObservationDataSet;
+import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.MeasurementType;
-import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 
@@ -46,7 +44,6 @@ import org.orekit.time.AbsoluteDate;
  * one has access to the begin and end of availability, and a sorted set which contains all the date at which
  * cycle-slip have been detected
  * </p>
- * <p>
  * @author David Soulard
  * @author Bryan Cazabonne
  * @since 10.2
@@ -73,9 +70,9 @@ public class GeometryFreeCycleSlipDetector extends AbstractCycleSlipDetector {
     protected void manageData(final ObservationDataSet observation) {
 
         // Extract observation data
-        final int             prn    = observation.getPrnNumber();
+        final int             prn    = observation.getSatellite().getPRN();
         final AbsoluteDate    date   = observation.getDate();
-        final SatelliteSystem system = observation.getSatelliteSystem();
+        final SatelliteSystem system = observation.getSatellite().getSystem();
 
         // Geometry-free combination of measurements
         final GeometryFreeCombination geometryFree = MeasurementCombinationFactory.getGeometryFreeCombination(system);
@@ -93,7 +90,7 @@ public class GeometryFreeCycleSlipDetector extends AbstractCycleSlipDetector {
 
         // Loop on Geometry-free phase measurements
         for (CombinedObservationData cod : phasesGF) {
-            final String nameSat = setName(prn, observation.getSatelliteSystem());
+            final String nameSat = setName(prn, observation.getSatellite().getSystem());
             // Check for cycle-slip detection
             final Frequency frequency = cod.getUsedObservationData().get(0).getObservationType().getFrequency(system);
             final boolean slip = cycleSlipDetection(nameSat, date, cod.getValue(), frequency);

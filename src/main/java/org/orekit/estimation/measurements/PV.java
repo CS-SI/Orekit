@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -221,6 +221,30 @@ public class PV extends AbstractMeasurement<PV> {
             }
         }
         return corrCoefMatrix;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EstimatedMeasurementBase<PV> theoreticalEvaluationWithoutDerivatives(final int iteration, final int evaluation,
+                                                                                   final SpacecraftState[] states) {
+
+        // PV value
+        final TimeStampedPVCoordinates pv = states[0].getPVCoordinates();
+
+        // prepare the evaluation
+        final EstimatedMeasurementBase<PV> estimated =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation, states,
+                                                       new TimeStampedPVCoordinates[] {
+                                                           pv
+                                                       });
+
+        estimated.setEstimatedValue(new double[] {
+            pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ(),
+            pv.getVelocity().getX(), pv.getVelocity().getY(), pv.getVelocity().getZ()
+        });
+
+        return estimated;
+
     }
 
     /** {@inheritDoc} */

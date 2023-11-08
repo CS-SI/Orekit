@@ -1,4 +1,4 @@
-' Copyright 2002-2022 CS GROUP
+' Copyright 2002-2023 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -73,7 +73,7 @@
           +getSatellites()
         }
 
-        interface EphemerisFile.SatelliteEphemeris {
+        interface "EphemerisFile.SatelliteEphemeris" as SatelliteEphemeris {
           +getId()
           +getMu()
           +getStart()
@@ -82,7 +82,7 @@
           +getPropagator()
         }
 
-        interface EphemerisFile.EphemerisSegment {
+        interface "EphemerisFile.EphemerisSegment" as EphemerisSegment {
           +getMu()
           +getFrame()
           +getInertialFrame()
@@ -98,8 +98,8 @@
         CPF ..|> EphemerisFile
         CPFWriter <--o StreamingCpfWriter
         EphemerisFileWriter <|.. CPFWriter
-        EphemerisFile.SatelliteEphemeris <--* EphemerisFile
-        EphemerisFile.SatelliteEphemeris o--> EphemerisFile.EphemerisSegment
+        SatelliteEphemeris <--* EphemerisFile
+        SatelliteEphemeris o--> EphemerisSegment
 
         DataSource     <--  EphemerisFileParser
         EphemerisFile <|.. OrekitEphemerisFile
@@ -132,8 +132,8 @@
       interface Propagator
       interface BoundedPropagator
       Propagator <|.. BoundedPropagator
-      BoundedPropagator <-left- EphemerisFile.SatelliteEphemeris
-      BoundedPropagator <-left- EphemerisFile.EphemerisSegment
+      BoundedPropagator <-left- SatelliteEphemeris
+      BoundedPropagator <-left- EphemerisSegment
 
       package sampling #CBDBC8 {
         interface OrekitFixedStepHandler

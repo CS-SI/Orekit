@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,11 +23,10 @@ import java.util.Map;
 import org.hipparchus.fitting.PolynomialCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoint;
 import org.hipparchus.util.FastMath;
-import org.orekit.gnss.CombinedObservationData;
+import org.orekit.files.rinex.observation.ObservationData;
+import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.gnss.Frequency;
 import org.orekit.gnss.MeasurementType;
-import org.orekit.gnss.ObservationData;
-import org.orekit.gnss.ObservationDataSet;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -46,7 +45,6 @@ import org.orekit.utils.Constants;
  * one has access to the begin and end of availability, and a sorted set which contains all the date at which
  * cycle-slip have been detected
  * </p>
- * <p>
  * @author David Soulard
  * @since 10.2
  */
@@ -79,8 +77,8 @@ public class PhaseMinusCodeCycleSlipDetector extends AbstractCycleSlipDetector {
     protected void manageData(final ObservationDataSet observation) {
 
         // Extract observation data
-        final SatelliteSystem system = observation.getSatelliteSystem();
-        final int             prn    = observation.getPrnNumber();
+        final SatelliteSystem system = observation.getSatellite().getSystem();
+        final int             prn    = observation.getSatellite().getPRN();
         final AbsoluteDate    date   = observation.getDate();
 
         // Initialize list of measurements
@@ -115,7 +113,7 @@ public class PhaseMinusCodeCycleSlipDetector extends AbstractCycleSlipDetector {
                     // Phase minus Code combination
                     final PhaseMinusCodeCombination phaseMinusCode = MeasurementCombinationFactory.getPhaseMinusCodeCombination(system);
                     final CombinedObservationData cod = phaseMinusCode.combine(phaseInMeters, pseudoRange);
-                    final String nameSat = setName(prn, observation.getSatelliteSystem());
+                    final String nameSat = setName(prn, observation.getSatellite().getSystem());
 
                     // Check for cycle-slip detection
                     final boolean slip = cycleSlipDetection(nameSat, date, cod.getValue(), phase.getObservationType().getFrequency(system));

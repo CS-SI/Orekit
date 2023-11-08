@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import java.util.Map;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.SpacecraftState;
@@ -32,6 +33,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -90,6 +92,49 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
 
     /** {@inheritDoc} */
     @Override
+    protected EstimatedMeasurementBase<OneWayGNSSRange> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                                final int evaluation,
+                                                                                                final SpacecraftState[] states) {
+
+        // Coordinates of both satellites in local satellite frame
+        final SpacecraftState          localState = states[0];
+        final TimeStampedPVCoordinates pvaLocal   = localState.getPVCoordinates();
+        final TimeStampedPVCoordinates pvaRemote  = remote.getPVCoordinates(getDate(), localState.getFrame());
+
+        // Downlink delay
+        final double dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(localState.getDate());
+        final AbsoluteDate arrivalDate = getDate().shiftedBy(-dtLocal);
+
+        final TimeStampedPVCoordinates s1Downlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
+        final double tauD = signalTimeOfFlight(pvaRemote, s1Downlink.getPosition(), arrivalDate);
+
+        // Transit state
+        final double delta      = getDate().durationFrom(pvaRemote.getDate());
+        final double deltaMTauD = delta - tauD;
+
+        // Estimated measurement
+        final EstimatedMeasurementBase<OneWayGNSSRange> estimatedRange =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       new SpacecraftState[] {
+                                                           localState.shiftedBy(deltaMTauD)
+                                                       }, new TimeStampedPVCoordinates[] {
+                                                           pvaRemote.shiftedBy(delta - tauD),
+                                                           localState.shiftedBy(delta).getPVCoordinates()
+                                                       });
+
+        // Range value
+        final double range = (tauD + dtLocal - dtRemote) * Constants.SPEED_OF_LIGHT;
+
+        // Set value of the estimated measurement
+        estimatedRange.setEstimatedValue(range);
+
+        // Return the estimated measurement
+        return estimatedRange;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected EstimatedMeasurement<OneWayGNSSRange> theoreticalEvaluation(final int iteration,
                                                                           final int evaluation,
                                                                           final SpacecraftState[] states) {
@@ -103,7 +148,9 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
         final Map<String, Integer> parameterIndices = new HashMap<>();
         for (ParameterDriver measurementDriver : getParametersDrivers()) {
             if (measurementDriver.isSelected()) {
-                parameterIndices.put(measurementDriver.getName(), nbEstimatedParams++);
+                for (Span<String> span = measurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    parameterIndices.put(span.getData(), nbEstimatedParams++);
+                }
             }
         }
 
@@ -113,7 +160,7 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
         final TimeStampedPVCoordinates                pvaRemote = remote.getPVCoordinates(getDate(), localState.getFrame());
 
         // Downlink delay
-        final Gradient dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(nbEstimatedParams, parameterIndices);
+        final Gradient dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(nbEstimatedParams, parameterIndices, localState.getDate());
         final FieldAbsoluteDate<Gradient> arrivalDate = new FieldAbsoluteDate<>(getDate(), dtLocal.negate());
 
         final TimeStampedFieldPVCoordinates<Gradient> s1Downlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
@@ -144,9 +191,12 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
 
         // Set partial derivatives with respect to parameters
         for (final ParameterDriver measurementDriver : getParametersDrivers()) {
-            final Integer index = parameterIndices.get(measurementDriver.getName());
-            if (index != null) {
-                estimatedRange.setParameterDerivatives(measurementDriver, rangeDerivatives[index]);
+            for (Span<String> span = measurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                final Integer index = parameterIndices.get(span.getData());
+                if (index != null) {
+                    estimatedRange.setParameterDerivatives(measurementDriver, span.getStart(), rangeDerivatives[index]);
+                }
             }
         }
 

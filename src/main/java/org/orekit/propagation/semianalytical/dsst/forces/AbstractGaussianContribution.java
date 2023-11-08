@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,7 +43,7 @@ import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
@@ -263,6 +263,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * </p>
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param parameters        parameters values of the force model parameters
+     *                          only 1 value for each parameterDriver
      * @return new force model context
      */
     private AbstractGaussianContributionContext initializeStep(final AuxiliaryElements auxiliaryElements,
@@ -278,6 +279,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * @param <T>               type of the elements
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param parameters        parameters values of the force model parameters
+     *                          (only 1 values for each parameters corresponding
+     *                          to state date) by getting the parameters for a specific date.
      * @return new force model context
      */
     private <T extends CalculusFieldElement<T>> FieldAbstractGaussianContributionContext<T> initializeStep(
@@ -291,6 +294,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final double[] parameters) {
 
         // Container for attributes
+
         final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements, parameters);
         double[] meanElementRate = new double[6];
         // Computes the limits for the integral
@@ -377,6 +381,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * @param high       upper bound of the integral interval
      * @param context    container for attributes
      * @param parameters values of the force model parameters
+     * at state date (1 values for each parameters)
      * @return the mean element rates
      */
     protected double[] getMeanElementRate(final SpacecraftState state, final GaussQuadrature gauss, final double low,
@@ -405,7 +410,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * @param low        lower bound of the integral interval
      * @param high       upper bound of the integral interval
      * @param context    container for attributes
-     * @param parameters values of the force model parameters
+     * @param parameters values of the force model parameters(1 values for each parameters)
      * @return the mean element rates
      */
     protected <T extends CalculusFieldElement<T>> T[] getMeanElementRate(final FieldSpacecraftState<T> state,
@@ -494,14 +499,16 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(meanState.getOrbit(), I);
 
             // Container of attributes
-            final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements, parameters);
+            // Extract the proper parameters valid for the corresponding meanState date from the input array
+            final double[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
+            final AbstractGaussianContributionContext context = initializeStep(auxiliaryElements, extractedParameters);
 
             // Compute rhoj and sigmaj
             final double[][] currentRhoSigmaj = computeRhoSigmaCoefficients(meanState.getDate(), auxiliaryElements);
 
             // Generate the Cij and Sij coefficients
             final FourierCjSjCoefficients fourierCjSj = new FourierCjSjCoefficients(meanState, JMAX, auxiliaryElements,
-                    parameters);
+                                                                                    extractedParameters);
 
             // Generate the Uij and Vij coefficients
             final UijVijCoefficients uijvij = new UijVijCoefficients(currentRhoSigmaj, fourierCjSj, JMAX);
@@ -531,14 +538,16 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final FieldAuxiliaryElements<T> auxiliaryElements = new FieldAuxiliaryElements<>(meanState.getOrbit(), I);
 
             // Container of attributes
-            final FieldAbstractGaussianContributionContext<T> context = initializeStep(auxiliaryElements, parameters);
+            // Extract the proper parameters valid for the corresponding meanState date from the input array
+            final T[] extractedParameters = this.extractParameters(parameters, auxiliaryElements.getDate());
+            final FieldAbstractGaussianContributionContext<T> context = initializeStep(auxiliaryElements, extractedParameters);
 
             // Compute rhoj and sigmaj
             final T[][] currentRhoSigmaj = computeRhoSigmaCoefficients(meanState.getDate(), context, field);
 
             // Generate the Cij and Sij coefficients
             final FieldFourierCjSjCoefficients<T> fourierCjSj = new FieldFourierCjSjCoefficients<>(meanState, JMAX,
-                    auxiliaryElements, parameters, field);
+                    auxiliaryElements, extractedParameters, field);
 
             // Generate the Uij and Vij coefficients
             final FieldUijVijCoefficients<T> uijvij = new FieldUijVijCoefficients<>(currentRhoSigmaj, fourierCjSj, JMAX,
@@ -624,6 +633,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * <p>
      * This class is a rewrite of {@link IntegrableFunction} for field elements
      * </p>
+     * @param <T> type of the field elements
      */
     protected class FieldIntegrableFunction<T extends CalculusFieldElement<T>>
             implements CalculusFieldUnivariateVectorFunction<T> {
@@ -662,7 +672,10 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          *                   short periodic elements variation
          * @param j          the j index. used only for short periodic variation.
          *                   Ignored for mean elements variation.
-         * @param parameters values of the force model parameters
+         * @param parameters values of the force model parameters (only 1 values
+         *                   for each parameters corresponding to state date) obtained by
+         *                   calling the extract parameter method {@link #extractParameters(double[], AbsoluteDate)}
+         *                   to selected the right value for state date or by getting the parameters for a specific date
          * @param field      field utilized by default
          */
         public FieldIntegrableFunction(final FieldSpacecraftState<T> state, final boolean meanMode, final int j,
@@ -675,9 +688,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             this.context = new FieldAbstractGaussianContributionContext<>(auxiliaryElements, this.parameters);
             // remove derivatives from state
             final T[] stateVector = MathArrays.buildArray(field, 6);
-            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateVector, null);
+            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngleType.TRUE, stateVector, null);
             final FieldOrbit<T> fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null,
-                    PositionAngle.TRUE, state.getDate(), context.getMu(), state.getFrame());
+                    PositionAngleType.TRUE, state.getDate(), context.getMu(), state.getFrame());
             this.state = new FieldSpacecraftState<>(fixedOrbit, state.getAttitude(), state.getMass());
         }
 
@@ -718,7 +731,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // Recompose an orbit with time held fixed to be compliant with DSST theory
             final FieldOrbit<T> recomposedOrbit = new FieldEquinoctialOrbit<>(shiftedOrbit.getA(),
                     shiftedOrbit.getEquinoctialEx(), shiftedOrbit.getEquinoctialEy(), shiftedOrbit.getHx(),
-                    shiftedOrbit.getHy(), shiftedOrbit.getLv(), PositionAngle.TRUE, shiftedOrbit.getFrame(),
+                    shiftedOrbit.getHy(), shiftedOrbit.getLv(), PositionAngleType.TRUE, shiftedOrbit.getFrame(),
                     state.getDate(), context.getMu());
 
             // Get the corresponding attitude
@@ -940,7 +953,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          *                   short periodic elements variation
          * @param j          the j index. used only for short periodic variation.
          *                   Ignored for mean elements variation.
-         * @param parameters values of the force model parameters
+         * @param parameters list of the estimated values for each driver at state date of the force model parameters
+         *                   only 1 value for each parameter
          */
         IntegrableFunction(final SpacecraftState state, final boolean meanMode, final int j,
                 final double[] parameters) {
@@ -952,8 +966,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             this.context = new AbstractGaussianContributionContext(auxiliaryElements, this.parameters);
             // remove derivatives from state
             final double[] stateVector = new double[6];
-            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.TRUE, stateVector, null);
-            final Orbit fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngleType.TRUE, stateVector, null);
+            final Orbit fixedOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(stateVector, null, PositionAngleType.TRUE,
                     state.getDate(), context.getMu(), state.getFrame());
             this.state = new SpacecraftState(fixedOrbit, state.getAttitude(), state.getMass());
         }
@@ -990,7 +1004,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // Recompose an orbit with time held fixed to be compliant with DSST theory
             final Orbit recomposedOrbit = new EquinoctialOrbit(shiftedOrbit.getA(), shiftedOrbit.getEquinoctialEx(),
                     shiftedOrbit.getEquinoctialEy(), shiftedOrbit.getHx(), shiftedOrbit.getHy(), shiftedOrbit.getLv(),
-                    PositionAngle.TRUE, shiftedOrbit.getFrame(), state.getDate(), context.getMu());
+                    PositionAngleType.TRUE, shiftedOrbit.getFrame(), state.getDate(), context.getMu());
 
             // Get the corresponding attitude
             final Attitude recomposedAttitude = attitudeProvider.getAttitude(recomposedOrbit, recomposedOrbit.getDate(),
@@ -1000,6 +1014,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final SpacecraftState shiftedState = new SpacecraftState(recomposedOrbit, recomposedAttitude,
                     state.getMass());
 
+            // here parameters is a list of all span values of each parameter driver
             acc = contribution.acceleration(shiftedState, parameters);
 
             // Compute the derivatives of the elements by the speed
@@ -1581,7 +1596,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param state             the current state
          * @param jMax              maximum value for j
          * @param auxiliaryElements auxiliary elements related to the current orbit
-         * @param parameters        values of the force model parameters
+         * @param parameters        list of parameter values at state date for each driver
+         * of the force model parameters (1 value per parameter)
          */
         FourierCjSjCoefficients(final SpacecraftState state, final int jMax, final AuxiliaryElements auxiliaryElements,
                 final double[] parameters) {
@@ -1606,7 +1622,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * </p>
          * @param state             the current state
          * @param auxiliaryElements auxiliary elements related to the current orbit
-         * @param parameters        values of the force model parameters
+         * @param parameters        list of parameter values at state date for each driver
+         * of the force model parameters (1 value per parameter)
          */
         private void computeCoefficients(final SpacecraftState state, final AuxiliaryElements auxiliaryElements,
                 final double[] parameters) {
@@ -1661,6 +1678,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * </p>
      * @author Petre Bazavan
      * @author Lucian Barbulescu
+     * @param <T> type of the field elements
      */
     protected class FieldFourierCjSjCoefficients<T extends CalculusFieldElement<T>> {
 
@@ -2056,7 +2074,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * </p>
      * @author Petre Bazavan
      * @author Lucian Barbulescu
-     *
+     * @param <T> type of the field elements
      */
     protected static class FieldGaussianShortPeriodicCoefficients<T extends CalculusFieldElement<T>>
             implements FieldShortPeriodTerms<T> {
@@ -2632,6 +2650,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *
      * @author Petre Bazavan
      * @author Lucian Barbulescu
+     * @param <T> type of the field elements
      */
     protected static class FieldUijVijCoefficients<T extends CalculusFieldElement<T>> {
 
@@ -3020,7 +3039,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     }
 
-    /** Coefficients valid for one time slot. */
+    /** Coefficients valid for one time slot.
+     * @param <T> type of the field elements
+     */
     protected static class FieldSlot<T extends CalculusFieldElement<T>> {
 
         /**

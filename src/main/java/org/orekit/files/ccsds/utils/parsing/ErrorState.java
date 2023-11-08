@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,17 @@ import org.orekit.files.ccsds.utils.lexical.TokenType;
  * @since 11.0
  */
 public class ErrorState implements ProcessingState {
+
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public ErrorState() {
+        // nothing to do
+    }
 
     /** {@inheritDoc}
      * <p>

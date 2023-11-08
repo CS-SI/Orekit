@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,11 +18,8 @@ package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
-import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.geometry.euclidean.threed.*;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -39,7 +36,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -77,7 +74,7 @@ public class LofOffsetPointingTest {
         //  Satellite position
         final CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Create lof aligned law
@@ -106,7 +103,7 @@ public class LofOffsetPointingTest {
     public void testMiss() {
         final CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
         final LofOffset upsideDown = new LofOffset(circ.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYX, FastMath.PI, 0, 0);
         final LofOffsetPointing pointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, upsideDown, Vector3D.PLUS_K);
@@ -127,7 +124,7 @@ public class LofOffsetPointingTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngle.MEAN,
+                              FastMath.toRadians(30.), PositionAngleType.MEAN,
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         final AttitudeProvider law =
@@ -171,7 +168,7 @@ public class LofOffsetPointingTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngle.MEAN,
+                              FastMath.toRadians(30.), PositionAngleType.MEAN,
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         for (final LOFType type : LOFType.values()) {
@@ -205,7 +202,7 @@ public class LofOffsetPointingTest {
                     continue;
             }
             LofOffsetPointing lop = new LofOffsetPointing(orbit.getFrame(), earthSpheric, law, dir);
-            checkField(Decimal64Field.getInstance(), lop, orbit, date, orbit.getFrame());
+            checkField(Binary64Field.getInstance(), lop, orbit, date, orbit.getFrame());
         }
     }
 
@@ -218,9 +215,14 @@ public class LofOffsetPointingTest {
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
         final FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
-        Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
+        final double tolerance = 1e-15;
+        Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), tolerance);
+        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), tolerance);
+        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), tolerance);
+
+        final Rotation rotationD = provider.getAttitudeRotation(orbit, date, frame);
+        final FieldRotation<T> rotationF = provider.getAttitudeRotation(orbitF, dateF, frame);
+        Assertions.assertEquals(0.0, Rotation.distance(rotationD, rotationF.toRotation()), tolerance);
 
         final TimeStampedPVCoordinates         pvD = provider.getTargetPV(orbit, date, frame);
         final TimeStampedFieldPVCoordinates<T> pvF = provider.getTargetPV(orbitF, dateF, frame);
@@ -228,6 +230,22 @@ public class LofOffsetPointingTest {
         Assertions.assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     6.0e-9);
         Assertions.assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     5.0e-13);
         Assertions.assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 2.0e-6);
+    }
+
+    @Test
+    public void testGetAttitudeRotation() {
+        // GIVEN
+        final CircularOrbit circ =
+                new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
+                        FastMath.toRadians(5.300), PositionAngleType.MEAN,
+                        FramesFactory.getEME2000(), date, mu);
+        final LofOffset upsideDown = new LofOffset(circ.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYX, FastMath.PI, 0, 0);
+        final LofOffsetPointing pointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, upsideDown, Vector3D.PLUS_K);
+        // WHEN
+        final Rotation actualRotation = pointing.getAttitudeRotation(circ, circ.getDate(), circ.getFrame());
+        // THEN
+        final Rotation expectedRotation = pointing.getAttitude(circ, circ.getDate(), circ.getFrame()).getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
     }
 
     @BeforeEach

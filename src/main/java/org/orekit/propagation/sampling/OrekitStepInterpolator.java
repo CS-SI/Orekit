@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,11 @@
  */
 package org.orekit.propagation.sampling;
 
+import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This interface is a space-dynamics aware step interpolator.
  *
@@ -26,7 +29,7 @@ import org.orekit.time.AbsoluteDate;
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  */
-public interface OrekitStepInterpolator {
+public interface OrekitStepInterpolator extends PVCoordinatesProvider {
 
     /**
      * Get the state at previous grid point date.
@@ -91,5 +94,13 @@ public interface OrekitStepInterpolator {
      * @since 9.0
      */
     OrekitStepInterpolator restrictStep(SpacecraftState newPreviousState, SpacecraftState newCurrentState);
+
+    /** {@inheritDoc}
+     * @since 12.0
+     */
+    @Override
+    default TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
+        return getInterpolatedState(date).getPVCoordinates(frame);
+    }
 
 }

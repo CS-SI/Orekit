@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,18 +39,20 @@ import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This class propagates {@link org.orekit.orbits.FieldOrbit orbits} using
@@ -71,12 +73,12 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   {@link #removeForceModels()})</li>
  *   <li>the {@link OrbitType type} of orbital parameters to be used for propagation
  *   ({@link #setOrbitType(OrbitType)}),
- *   <li>the {@link PositionAngle type} of position angle to be used in orbital parameters
+ *   <li>the {@link PositionAngleType type} of position angle to be used in orbital parameters
  *   to be used for propagation where it is relevant ({@link
- *   #setPositionAngleType(PositionAngle)}),
- *   <li>whether {@link org.orekit.propagation.integration.FieldAdditionalEquations additional equations}
+ *   #setPositionAngleType(PositionAngleType)}),
+ *   <li>whether {@link org.orekit.propagation.integration.FieldAdditionalDerivativesProvider additional derivatives providers}
  *   should be propagated along with orbital state
- *   ({@link #addAdditionalEquations(org.orekit.propagation.integration.FieldAdditionalEquations)}),
+ *   ({@link #addAdditionalDerivativesProvider(org.orekit.propagation.integration.FieldAdditionalDerivativesProvider)}),
  *   <li>the discrete events that should be triggered during propagation
  *   ({@link #addEventDetector(FieldEventDetector)},
  *   {@link #clearEventsDetectors()})</li>
@@ -84,7 +86,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * </ul>
  * <p>From these configuration parameters, only the initial state is mandatory. The default
  * propagation settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
- * {@link PositionAngle#TRUE true} longitude argument. If the central attraction coefficient
+ * {@link PositionAngleType#TRUE true} longitude argument. If the central attraction coefficient
  * is not explicitly specified, the one used to define the initial orbit will be used.
  * However, specifying only the initial state and perhaps the central attraction coefficient
  * would mean the propagator would use only Keplerian forces. In this case, the simpler {@link
@@ -141,6 +143,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Guylaine Prat
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
+ * @param <T> type of the field elements
  */
 public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractIntegratedPropagator<T> {
 
@@ -160,8 +163,8 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * called after creation, the integrated orbit will follow a Keplerian
      * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
      * for {@link #setOrbitType(OrbitType) propagation
-     * orbit type} and {@link PositionAngle#TRUE} for {@link
-     * #setPositionAngleType(PositionAngle) position angle type}.
+     * orbit type} and {@link PositionAngleType#TRUE} for {@link
+     * #setPositionAngleType(PositionAngleType) position angle type}.
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
@@ -181,8 +184,8 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * called after creation, the integrated orbit will follow a Keplerian
      * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
      * for {@link #setOrbitType(OrbitType) propagation
-     * orbit type} and {@link PositionAngle#TRUE} for {@link
-     * #setPositionAngleType(PositionAngle) position angle type}.
+     * orbit type} and {@link PositionAngleType#TRUE} for {@link
+     * #setPositionAngleType(PositionAngleType) position angle type}.
      * @param field Field used by default
      * @param integrator numerical integrator to use for propagation.
      * @param attitudeProvider attitude law to use.
@@ -199,7 +202,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         setMu(field.getZero().add(Double.NaN));
         clearStepHandlers();
         setOrbitType(OrbitType.EQUINOCTIAL);
-        setPositionAngleType(PositionAngle.TRUE);
+        setPositionAngleType(PositionAngleType.TRUE);
     }
 
     /** Set the flag to ignore or not the creation of a {@link NewtonianAttraction}.
@@ -263,7 +266,14 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                 model.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
-                    public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
+                        // mu PDriver should have only 1 span
+                        superSetMu(field.getZero().add(driver.getValue(date)));
+                    }
+                    /** {@inheritDoc} */
+                    @Override
+                    public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
+                        // mu PDriver should have only 1 span
                         superSetMu(field.getZero().add(driver.getValue()));
                     }
                 });
@@ -344,14 +354,14 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
-    public void setPositionAngleType(final PositionAngle positionAngleType) {
+    public void setPositionAngleType(final PositionAngleType positionAngleType) {
         super.setPositionAngleType(positionAngleType);
     }
 
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
-    public PositionAngle getPositionAngleType() {
+    public PositionAngleType getPositionAngleType() {
         return super.getPositionAngleType();
     }
 
@@ -378,7 +388,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
     /** {@inheritDoc} */
     protected FieldStateMapper<T> createMapper(final FieldAbsoluteDate<T> referenceDate, final T mu,
-                                       final OrbitType orbitType, final PositionAngle positionAngleType,
+                                       final OrbitType orbitType, final PositionAngleType positionAngleType,
                                        final AttitudeProvider attitudeProvider, final Frame frame) {
         return new FieldOsculatingMapper(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
     }
@@ -401,7 +411,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
          * @param frame inertial frame
          */
         FieldOsculatingMapper(final FieldAbsoluteDate<T> referenceDate, final T mu,
-                              final OrbitType orbitType, final PositionAngle positionAngleType,
+                              final OrbitType orbitType, final PositionAngleType positionAngleType,
                               final AttitudeProvider attitudeProvider, final Frame frame) {
             super(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
         }
@@ -413,7 +423,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
             final T mass = y[6];
             if (mass.getReal() <= 0.0) {
-                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
+                throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS, mass);
             }
 
             if (superGetOrbitType() == null) {
@@ -486,7 +496,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
             this.yDot     = MathArrays.buildArray(getField(),  7);
             this.jacobian = MathArrays.buildArray(getField(),  6, 6);
             for (final ForceModel forceModel : forceModels) {
-                forceModel.getFieldEventsDetectors(getField()).forEach(detector -> setUpEventDetector(integrator, detector));
+                forceModel.getFieldEventDetectors(getField()).forEach(detector -> setUpEventDetector(integrator, detector));
             }
 
             if (superGetOrbitType() == null) {
@@ -545,7 +555,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                 // if mu is neither 0 nor NaN, we want to include Newtonian acceleration
                 if (mu.getReal() > 0) {
                     // velocity derivative is Newtonian acceleration
-                    final FieldVector3D<T> position = currentState.getPVCoordinates().getPosition();
+                    final FieldVector3D<T> position = currentState.getPosition();
                     final T r2         = position.getNormSq();
                     final T coeff      = r2.multiply(r2.sqrt()).reciprocal().negate().multiply(mu);
                     yDot[3] = yDot[3].add(coeff.multiply(position.getX()));
@@ -661,7 +671,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
             // convert the orbit to the desired type
             final T[][] jacobian = MathArrays.buildArray(dP.getField(), 6, 6);
             final FieldOrbit<T> converted = type.convertType(orbit);
-            converted.getJacobianWrtCartesian(PositionAngle.TRUE, jacobian);
+            converted.getJacobianWrtCartesian(PositionAngleType.TRUE, jacobian);
 
             for (int i = 0; i < 6; ++i) {
                 final  T[] row = jacobian[i];
@@ -679,7 +689,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
         }
 
-        Arrays.fill(relTol, dP.divide(orbit.getPVCoordinates().getPosition().getNormSq().sqrt()).getReal());
+        Arrays.fill(relTol, dP.divide(orbit.getPosition().getNormSq().sqrt()).getReal());
 
         return new double[][] { absTol, relTol };
 

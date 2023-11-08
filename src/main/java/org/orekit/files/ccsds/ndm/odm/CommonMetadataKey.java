@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
 
 
-/** Keys for {@link CommonMetadata common ODM container} entries.
+/** Keys for {@link OdmCommonMetadata common ODM container} entries.
  * @author Luc Maisonobe
  * @since 11.0
  */
@@ -40,7 +40,7 @@ public enum CommonMetadataKey {
     REF_FRAME_EPOCH((token, context, container) -> token.processAsUppercaseString(container::setFrameEpochString));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method
@@ -55,7 +55,7 @@ public enum CommonMetadataKey {
      * @param container container to fill
      * @return true of token was accepted
      */
-    public boolean process(final ParseToken token, final ContextBinding context, final CommonMetadata container) {
+    public boolean process(final ParseToken token, final ContextBinding context, final OdmCommonMetadata container) {
         return processor.process(token, context, container);
     }
 
@@ -67,7 +67,7 @@ public enum CommonMetadataKey {
          * @param container container to fill
          * @return true of token was accepted
          */
-        boolean process(ParseToken token, ContextBinding context, CommonMetadata container);
+        boolean process(ParseToken token, ContextBinding context, OdmCommonMetadata container);
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.orekit.orbits;
 
 
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -33,7 +32,6 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -73,6 +71,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Andrew Goetz
  * @since 9.0
+ * @param <T> type of the field elements
  */
 public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> {
 
@@ -81,15 +80,6 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** Underlying equinoctial orbit to which high-level methods are delegated. */
     private transient FieldEquinoctialOrbit<T> equinoctial;
-
-    /** Field used by this class.*/
-    private final Field<T> field;
-
-    /** Zero. (could be usefull)*/
-    private final T zero;
-
-    /** One. (could be useful)*/
-    private final T one;
 
     /** Constructor from Cartesian parameters.
      *
@@ -111,9 +101,6 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         super(pvaCoordinates, frame, mu);
         hasNonKeplerianAcceleration = hasNonKeplerianAcceleration(pvaCoordinates, mu);
         equinoctial = null;
-        field = pvaCoordinates.getPosition().getX().getField();
-        zero = field.getZero();
-        one = field.getOne();
     }
 
     /** Constructor from Cartesian parameters.
@@ -150,9 +137,33 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         } else {
             equinoctial = null;
         }
-        field = op.getA().getField();
-        zero = field.getZero();
-        one = field.getOne();
+    }
+
+    /** Constructor from Field and CartesianOrbit.
+     * <p>Build a FieldCartesianOrbit from non-Field CartesianOrbit.</p>
+     * @param field CalculusField to base object on
+     * @param op non-field orbit with only "constant" terms
+     * @since 12.0
+     */
+    public FieldCartesianOrbit(final Field<T> field, final CartesianOrbit op) {
+        super(new TimeStampedFieldPVCoordinates<>(field, op.getPVCoordinates()), op.getFrame(),
+                field.getZero().add(op.getMu()));
+        hasNonKeplerianAcceleration = op.hasDerivatives();
+        if (op.isElliptical()) {
+            equinoctial = new FieldEquinoctialOrbit<>(field, new EquinoctialOrbit(op));
+        } else {
+            equinoctial = null;
+        }
+    }
+
+    /** Constructor from Field and Orbit.
+     * <p>Build a FieldCartesianOrbit from any non-Field Orbit.</p>
+     * @param field CalculusField to base object on
+     * @param op non-field orbit with only "constant" terms
+     * @since 12.0
+     */
+    public FieldCartesianOrbit(final Field<T> field, final Orbit op) {
+        this(field, new CartesianOrbit(op));
     }
 
     /** {@inheritDoc} */
@@ -169,8 +180,8 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             } else {
                 // get rid of Keplerian acceleration so we don't assume
                 // we have derivatives when in fact we don't have them
-                equinoctial = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(getPVCoordinates().getPosition(),
-                                                                                   getPVCoordinates().getVelocity()),
+                final FieldPVCoordinates<T> pva = getPVCoordinates();
+                equinoctial = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(pva.getPosition(), pva.getVelocity()),
                                                           getFrame(), getDate(), getMu());
             }
         }
@@ -190,17 +201,18 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final FieldVector3D<FieldUnivariateDerivative2<T>> pG = new FieldVector3D<>(new FieldUnivariateDerivative2<>(p.getX(), v.getX(), a.getX()),
                                                              new FieldUnivariateDerivative2<>(p.getY(), v.getY(), a.getY()),
                                                              new FieldUnivariateDerivative2<>(p.getZ(), v.getZ(), a.getZ()));
-        final FieldVector3D<FieldUnivariateDerivative2<T>> vG = new FieldVector3D<>(new FieldUnivariateDerivative2<>(v.getX(), a.getX(), zero),
-                                                             new FieldUnivariateDerivative2<>(v.getY(), a.getY(), zero),
-                                                             new FieldUnivariateDerivative2<>(v.getZ(), a.getZ(), zero));
+        final FieldVector3D<FieldUnivariateDerivative2<T>> vG = new FieldVector3D<>(new FieldUnivariateDerivative2<>(v.getX(), a.getX(), getZero()),
+                                                             new FieldUnivariateDerivative2<>(v.getY(), a.getY(), getZero()),
+                                                             new FieldUnivariateDerivative2<>(v.getZ(), a.getZ(), getZero()));
         return new FieldPVCoordinates<>(pG, vG);
     }
 
     /** {@inheritDoc} */
     public T getA() {
         // lazy evaluation of semi-major axis
-        final T r  = getPVCoordinates().getPosition().getNorm();
-        final T V2 = getPVCoordinates().getVelocity().getNormSq();
+        final FieldPVCoordinates<T> pva = getPVCoordinates();
+        final T r  = pva.getPosition().getNorm();
+        final T V2 = pva.getVelocity().getNormSq();
         return r.divide(r.negate().multiply(V2).divide(getMu()).add(2));
     }
 
@@ -220,10 +232,11 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     public T getE() {
         final T muA = getA().multiply(getMu());
-        if (muA.getReal() > 0) {
+        if (isElliptical()) {
             // elliptic or circular orbit
-            final FieldVector3D<T> pvP   = getPVCoordinates().getPosition();
-            final FieldVector3D<T> pvV   = getPVCoordinates().getVelocity();
+            final FieldPVCoordinates<T> pva = getPVCoordinates();
+            final FieldVector3D<T> pvP      = pva.getPosition();
+            final FieldVector3D<T> pvV      = pva.getVelocity();
             final T rV2OnMu = pvP.getNorm().multiply(pvV.getNormSq()).divide(getMu());
             final T eSE     = FieldVector3D.dotProduct(pvP, pvV).divide(muA.sqrt());
             final T eCE     = rV2OnMu.subtract(1);
@@ -254,7 +267,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     public T getI() {
-        return FieldVector3D.angle(new FieldVector3D<>(zero, zero, one), getPVCoordinates().getMomentum());
+        return FieldVector3D.angle(new FieldVector3D<>(getZero(), getZero(), getOne()), getPVCoordinates().getMomentum());
     }
 
     /** {@inheritDoc} */
@@ -302,7 +315,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final double y = w.getY().getReal();
         final double z = w.getZ().getReal();
         if ((x * x + y * y) == 0 && z < 0) {
-            return zero.add(Double.NaN);
+            return getZero().add(Double.NaN);
         }
         return w.getY().negate().divide(w.getZ().add(1));
     }
@@ -318,7 +331,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             final double y = w.getY().getValue().getReal();
             final double z = w.getZ().getValue().getReal();
             if ((x * x + y * y) == 0 && z < 0) {
-                return zero.add(Double.NaN);
+                return getZero().add(Double.NaN);
             }
             final FieldUnivariateDerivative2<T> hx = w.getY().negate().divide(w.getZ().add(1));
             return hx.getDerivative(1);
@@ -335,7 +348,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final double y = w.getY().getReal();
         final double z = w.getZ().getReal();
         if ((x * x + y * y) == 0 && z < 0) {
-            return zero.add(Double.NaN);
+            return getZero().add(Double.NaN);
         }
         return  w.getX().divide(w.getZ().add(1));
     }
@@ -351,7 +364,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             final double y = w.getY().getValue().getReal();
             final double z = w.getZ().getValue().getReal();
             if ((x * x + y * y) == 0 && z < 0) {
-                return zero.add(Double.NaN);
+                return getZero().add(Double.NaN);
             }
             final FieldUnivariateDerivative2<T> hy = w.getX().divide(w.getZ().add(1));
             return hy.getDerivative(1);
@@ -402,6 +415,12 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     }
 
     /** {@inheritDoc} */
+    protected FieldVector3D<T> initPosition() {
+        // nothing to do here, as the canonical elements are already the Cartesian ones
+        return getPVCoordinates().getPosition();
+    }
+
+    /** {@inheritDoc} */
     protected TimeStampedFieldPVCoordinates<T> initPVCoordinates() {
         // nothing to do here, as the canonical elements are already the Cartesian ones
         return getPVCoordinates();
@@ -409,39 +428,13 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     public FieldCartesianOrbit<T> shiftedBy(final double dt) {
-        return shiftedBy(getDate().getField().getZero().add(dt));
+        return shiftedBy(getZero().add(dt));
     }
 
     /** {@inheritDoc} */
     public FieldCartesianOrbit<T> shiftedBy(final T dt) {
-        final FieldPVCoordinates<T> shiftedPV = (getA().getReal() < 0) ? shiftPVHyperbolic(dt) : shiftPVElliptic(dt);
+        final FieldPVCoordinates<T> shiftedPV = isElliptical() ? shiftPVElliptic(dt) : shiftPVHyperbolic(dt);
         return new FieldCartesianOrbit<>(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * ensuring velocity remains the exact derivative of position.
-     * </p>
-     * <p>
-     * As this implementation of interpolation is polynomial, it should be used only
-     * with small samples (about 10-20 points) in order to avoid <a
-     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
-     * and numerical problems (including NaN appearing).
-     * </p>
-     * <p>
-     * If orbit interpolation on large samples is needed, using the {@link
-     * org.orekit.propagation.analytical.Ephemeris} class is a better way than using this
-     * low-level interpolation. The Ephemeris class automatically handles selection of
-     * a neighboring sub-sample with a predefined number of point from a large global sample
-     * in a thread-safe way.
-     * </p>
-     */
-    public FieldCartesianOrbit<T> interpolate(final FieldAbsoluteDate<T> date, final Stream<FieldOrbit<T>> sample) {
-        final TimeStampedFieldPVCoordinates<T> interpolated =
-                TimeStampedFieldPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_PVA,
-                                                          sample.map(orbit -> orbit.getPVCoordinates()));
-        return new FieldCartesianOrbit<>(interpolated, getFrame(), date, getMu());
     }
 
     /** Compute shifted position and velocity in elliptic case.
@@ -450,6 +443,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      */
     private FieldPVCoordinates<T> shiftPVElliptic(final T dt) {
 
+        // preliminary computation0
         final FieldPVCoordinates<T> pva = getPVCoordinates();
         final FieldVector3D<T>      pvP = pva.getPosition();
         final FieldVector3D<T>      pvV = pva.getVelocity();
@@ -496,18 +490,18 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         if (hasNonKeplerianAcceleration) {
 
             // extract non-Keplerian part of the initial acceleration
-            final FieldVector3D<T> nonKeplerianAcceleration = new FieldVector3D<>(one, getPVCoordinates().getAcceleration(),
+            final FieldVector3D<T> nonKeplerianAcceleration = new FieldVector3D<>(getOne(), getPVCoordinates().getAcceleration(),
                                                                                   r.multiply(r2).reciprocal().multiply(getMu()), pvP);
 
             // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
-            final FieldVector3D<T> fixedP   = new FieldVector3D<>(one, shiftedP,
+            final FieldVector3D<T> fixedP   = new FieldVector3D<>(getOne(), shiftedP,
                                                                   dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
             final T                fixedR2 = fixedP.getNormSq();
             final T                fixedR  = fixedR2.sqrt();
-            final FieldVector3D<T> fixedV  = new FieldVector3D<>(one, shiftedV,
+            final FieldVector3D<T> fixedV  = new FieldVector3D<>(getOne(), shiftedV,
                                                                  dt, nonKeplerianAcceleration);
             final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR.multiply(fixedR2).reciprocal().multiply(getMu().negate()), shiftedP,
-                                                                 one, nonKeplerianAcceleration);
+                                                                 getOne(), nonKeplerianAcceleration);
 
             return new FieldPVCoordinates<>(fixedP, fixedV, fixedA);
 
@@ -534,7 +528,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final T rV2OnMu = r.multiply(pvV.getNormSq()).divide(getMu());
         final T a       = getA();
         final T muA     = a.multiply(getMu());
-        final T e       = one.subtract(FieldVector3D.dotProduct(pvM, pvM).divide(muA)).sqrt();
+        final T e       = getOne().subtract(FieldVector3D.dotProduct(pvM, pvM).divide(muA)).sqrt();
         final T sqrt    = e.add(1).divide(e.subtract(1)).sqrt();
 
         // compute mean anomaly
@@ -569,18 +563,18 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         if (hasNonKeplerianAcceleration) {
 
             // extract non-Keplerian part of the initial acceleration
-            final FieldVector3D<T> nonKeplerianAcceleration = new FieldVector3D<>(one, getPVCoordinates().getAcceleration(),
+            final FieldVector3D<T> nonKeplerianAcceleration = new FieldVector3D<>(getOne(), getPVCoordinates().getAcceleration(),
                                                                                   r.multiply(r2).reciprocal().multiply(getMu()), pvP);
 
             // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
-            final FieldVector3D<T> fixedP   = new FieldVector3D<>(one, shiftedP,
+            final FieldVector3D<T> fixedP   = new FieldVector3D<>(getOne(), shiftedP,
                                                                   dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
             final T                fixedR2 = fixedP.getNormSq();
             final T                fixedR  = fixedR2.sqrt();
-            final FieldVector3D<T> fixedV  = new FieldVector3D<>(one, shiftedV,
+            final FieldVector3D<T> fixedV  = new FieldVector3D<>(getOne(), shiftedV,
                                                                  dt, nonKeplerianAcceleration);
             final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR.multiply(fixedR2).reciprocal().multiply(getMu().negate()), shiftedP,
-                                                                 one, nonKeplerianAcceleration);
+                                                                 getOne(), nonKeplerianAcceleration);
 
             return new FieldPVCoordinates<>(fixedP, fixedV, fixedA);
 
@@ -597,10 +591,10 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      */
     private T[][] create6x6Identity() {
         // this is the fastest way to set the 6x6 identity matrix
-        final T[][] identity = MathArrays.buildArray(field, 6, 6);
+        final T[][] identity = MathArrays.buildArray(getField(), 6, 6);
         for (int i = 0; i < 6; i++) {
-            Arrays.fill(identity[i], zero);
-            identity[i][i] = one;
+            Arrays.fill(identity[i], getZero());
+            identity[i][i] = getOne();
         }
         return identity;
     }
@@ -621,7 +615,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final T gm,
+    public void addKeplerContribution(final PositionAngleType type, final T gm,
                                       final T[] pDot) {
 
         final FieldPVCoordinates<T> pv = getPVCoordinates();

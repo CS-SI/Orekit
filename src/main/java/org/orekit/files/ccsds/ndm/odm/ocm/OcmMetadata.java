@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,11 +30,15 @@ import org.orekit.time.AbsoluteDate;
  */
 public class OcmMetadata extends OdmMetadata {
 
-    /** Default interpolation method for EOP and Space Weather data. */
-    private static final String DEFAULT_INTERPOLATION_METHOD = "LINEAR";
+    /** Default value for SCLK_OFFSET_AT_EPOCH.
+     * @since 12.0
+     */
+    public static final double DEFAULT_SCLK_OFFSET_AT_EPOCH = 0.0;
 
-    /** Classification for this message. */
-    private String classification;
+    /** Default value for SCLK_SEC_PER_SI_SEC.
+     * @since 12.0
+     */
+    public static final double DEFAULT_SCLK_SEC_PER_SI_SEC = 1.0;
 
     /** International designator for the object as assigned by the UN Committee
      * on Space Research (COSPAR) and the US National Space Science Data Center (NSSDC). */
@@ -92,13 +96,13 @@ public class OcmMetadata extends OdmMetadata {
     /** Unique ID identifying next message from a given originator. */
     private String nextMessageID;
 
-    /** Unique identifier of Attitude Data Message linkrd to this Orbit Data Message. */
+    /** Unique identifier of Attitude Data Message linked to this Orbit Data Message. */
     private String admMessageLink;
 
-    /** Unique identifier of Conjunction Data Message linkrd to this Orbit Data Message. */
+    /** Unique identifier of Conjunction Data Message linked to this Orbit Data Message. */
     private String cdmMessageLink;
 
-    /** Unique identifier of Pointing Request Message linkrd to this Orbit Data Message. */
+    /** Unique identifier of Pointing Request Message linked to this Orbit Data Message. */
     private String prmMessageLink;
 
     /** Unique identifier of Reentry Data Messages linked to this Orbit Data Message. */
@@ -129,11 +133,11 @@ public class OcmMetadata extends OdmMetadata {
     /** Operational status. */
     private OpsStatus opsStatus;
 
-    /** Orbit catgory. */
+    /** Orbit category. */
     private OrbitCategory orbitCategory;
 
     /** List of elements of information data blocks included in this message. */
-    private List<String> ocmDataElements;
+    private List<OcmElements> ocmDataElements;
 
     /** Spacecraft clock count at {@link #getEpochT0()}. */
     private double sclkOffsetAtEpoch;
@@ -181,18 +185,25 @@ public class OcmMetadata extends OdmMetadata {
     /** Source and version of celestial body (e.g. Sun/Earth/Planetary). */
     private String celestialSource;
 
+    /** Data context.
+     * @since 12.0
+     */
+    private final DataContext dataContext;
+
     /** Create a new meta-data.
      * @param dataContext data context
      */
-    OcmMetadata(final DataContext dataContext) {
+    public OcmMetadata(final DataContext dataContext) {
 
         // set up the few fields that have default values as per CCSDS standard
         super(TimeSystem.UTC);
-        catalogName       = "CSPOC";
-        sclkOffsetAtEpoch = 0.0;
-        sclkSecPerSISec   = 1.0;
+        sclkOffsetAtEpoch = DEFAULT_SCLK_OFFSET_AT_EPOCH;
+        sclkSecPerSISec   = DEFAULT_SCLK_SEC_PER_SI_SEC;
+        timeSpan          = Double.NaN;
+        taimutcT0         = Double.NaN;
+        ut1mutcT0         = Double.NaN;
         nextLeapTaimutc   = Double.NaN;
-        interpMethodEOP   = DEFAULT_INTERPOLATION_METHOD;
+        this.dataContext  = dataContext;
 
     }
 
@@ -203,26 +214,11 @@ public class OcmMetadata extends OdmMetadata {
         // all of the parameters considered mandatory at ODM level
         // for OPM, OMM and OEM are in fact optional in OCM
         // only TIME_SYSTEM and EPOCH_TZERO are mandatory
-        checkNotNull(getTimeSystem(), MetadataKey.TIME_SYSTEM);
-        checkNotNull(epochT0,         OcmMetadataKey.EPOCH_TZERO);
+        checkNotNull(getTimeSystem(), MetadataKey.TIME_SYSTEM.name());
+        checkNotNull(epochT0,         OcmMetadataKey.EPOCH_TZERO.name());
         if (nextLeapEpoch != null) {
-            checkNotNaN(nextLeapTaimutc, OcmMetadataKey.NEXT_LEAP_TAIMUTC);
+            checkNotNaN(nextLeapTaimutc, OcmMetadataKey.NEXT_LEAP_TAIMUTC.name());
         }
-    }
-
-    /** Get the message classification.
-     * @return message classification.
-     */
-    public String getClassification() {
-        return classification;
-    }
-
-    /** Set the message classification.
-     * @param classification message classification
-     */
-    public void setClassification(final String classification) {
-        refuseFurtherComments();
-        this.classification = classification;
     }
 
     /** Get the international designator for the object.
@@ -682,14 +678,14 @@ public class OcmMetadata extends OdmMetadata {
     /** Get the list of elements of information data blocks included in this message.
      * @return list of elements of information data blocks included in this message
      */
-    public List<String> getOcmDataElements() {
+    public List<OcmElements> getOcmDataElements() {
         return ocmDataElements;
     }
 
     /** Set the list of elements of information data blocks included in this message.
      * @param ocmDataElements list of elements of information data blocks included in this message
      */
-    public void setOcmDataElements(final List<String> ocmDataElements) {
+    public void setOcmDataElements(final List<OcmElements> ocmDataElements) {
         refuseFurtherComments();
         this.ocmDataElements = ocmDataElements;
     }
@@ -906,6 +902,70 @@ public class OcmMetadata extends OdmMetadata {
     public void setCelestialSource(final String celestialSource) {
         refuseFurtherComments();
         this.celestialSource = celestialSource;
+    }
+
+    /** Copy the instance, making sure mandatory fields have been initialized.
+     * <p>
+     * Message ID, previous/next references, start and stop times are not copied.
+     * </p>
+     * @param version format version
+     * @return a new copy
+     * @since 12.0
+     */
+    public OcmMetadata copy(final double version) {
+
+        validate(version);
+
+        // allocate new instance
+        final OcmMetadata copy = new OcmMetadata(dataContext);
+
+        // copy comments
+        for (String comment : getComments()) {
+            copy.addComment(comment);
+        }
+
+        // copy metadata
+        copy.setInternationalDesignator(getInternationalDesignator());
+        copy.setCatalogName(getCatalogName());
+        copy.setObjectDesignator(getObjectDesignator());
+        copy.setAlternateNames(getAlternateNames());
+        copy.setOriginatorPOC(getOriginatorPOC());
+        copy.setOriginatorPosition(getOriginatorPosition());
+        copy.setOriginatorPhone(getOriginatorPhone());
+        copy.setOriginatorEmail(getOriginatorEmail());
+        copy.setOriginatorAddress(getOriginatorAddress());
+        copy.setTechOrg(getTechOrg());
+        copy.setTechPOC(getTechPOC());
+        copy.setTechPosition(getTechPosition());
+        copy.setTechPhone(getTechPhone());
+        copy.setTechEmail(getTechEmail());
+        copy.setTechAddress(getTechAddress());
+        copy.setAdmMessageLink(getAdmMessageLink());
+        copy.setCdmMessageLink(getCdmMessageLink());
+        copy.setPrmMessageLink(getPrmMessageLink());
+        copy.setRdmMessageLink(getRdmMessageLink());
+        copy.setTdmMessageLink(getTdmMessageLink());
+        copy.setOperator(getOperator());
+        copy.setOwner(getOwner());
+        copy.setCountry(getCountry());
+        copy.setConstellation(getConstellation());
+        copy.setObjectType(getObjectType());
+        copy.setEpochT0(getEpochT0());
+        copy.setOpsStatus(getOpsStatus());
+        copy.setOrbitCategory(getOrbitCategory());
+        copy.setOcmDataElements(getOcmDataElements());
+        copy.setSclkOffsetAtEpoch(getSclkOffsetAtEpoch());
+        copy.setSclkSecPerSISec(getSclkSecPerSISec());
+        copy.setTaimutcT0(getTaimutcT0());
+        copy.setNextLeapEpoch(getNextLeapEpoch());
+        copy.setNextLeapTaimutc(getNextLeapTaimutc());
+        copy.setUt1mutcT0(getUt1mutcT0());
+        copy.setEopSource(getEopSource());
+        copy.setInterpMethodEOP(getInterpMethodEOP());
+        copy.setCelestialSource(getCelestialSource());
+
+        return copy;
+
     }
 
 }

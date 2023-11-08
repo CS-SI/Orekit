@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.models.earth.troposphere.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -209,7 +209,7 @@ public class RangeAnalyticTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -217,7 +217,7 @@ public class RangeAnalyticTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
@@ -312,7 +312,7 @@ public class RangeAnalyticTest {
         Assertions.assertEquals(0.0, absErrorsMin,    2.0e-07);
         Assertions.assertEquals(0.0, absErrorsMax,    2.3e-07);
         Assertions.assertEquals(0.0, relErrorsMedian, 6.5e-15);
-        Assertions.assertEquals(0.0, relErrorsMax,    2.4e-14);
+        Assertions.assertEquals(0.0, relErrorsMax,    2.5e-14);
 
         // Test measurement type
         final RangeAnalytic rangeAnalytic = new RangeAnalytic((Range) measurements.get(0));
@@ -333,7 +333,7 @@ public class RangeAnalyticTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -341,7 +341,7 @@ public class RangeAnalyticTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // Lists for results' storage - Used only for derivatives with respect to state
@@ -391,10 +391,12 @@ public class RangeAnalyticTest {
                         // Compute a reference value using finite differences
                         jacobianRef = Differentiation.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) {
-                                return measurement.estimate(0, 0, new SpacecraftState[] { state }).getEstimatedValue();
+                                return measurement.
+                                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
+                                       getEstimatedValue();
                             }
                         }, measurement.getDimension(), propagator.getAttitudeProvider(),
-                           OrbitType.CARTESIAN, PositionAngle.TRUE, 2.0, 3).value(state);
+                           OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
                     } else {
                         // Compute a reference value using Range class function
                         jacobianRef = ((Range) measurement).theoreticalEvaluation(0, 0, new SpacecraftState[] { state }).getStateDerivatives(0);
@@ -502,7 +504,7 @@ public class RangeAnalyticTest {
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // Create perfect range measurements
@@ -516,7 +518,7 @@ public class RangeAnalyticTest {
                                                                            propagatorBuilder);
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
+                                                               new TwoWayRangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // List to store the results

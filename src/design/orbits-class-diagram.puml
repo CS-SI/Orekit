@@ -1,4 +1,4 @@
-' Copyright 2002-2022 CS GROUP
+' Copyright 2002-2023 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -51,7 +51,7 @@
         +Orbit mapArrayToOrbit(...)
       }
 
-      enum PositionAngle {
+      enum PositionAngleType {
         +MEAN
         +ECCENTRIC
         +TRUE
@@ -64,14 +64,14 @@
         +double getKeplerianPeriod()
         +double getKeplerianMeanMotion()
         +double get...()
-        +void getJacobianWrtCartesian(PositionAngle type, double[][] jacobian)
-        +void getJacobianWrtParameters(PositionAngle type, double[][] jacobian)
+        +void getJacobianWrtCartesian(PositionAngleType type, double[][] jacobian)
+        +void getJacobianWrtParameters(PositionAngleType type, double[][] jacobian)
       }
 
       OrbitType     -->   Orbit : convert
       OrbitType     <--*  Orbit
-      PositionAngle <--   Orbit
-      OrbitType     -->   PositionAngle
+      PositionAngleType <--   Orbit
+      OrbitType     -->   PositionAngleType
       Orbit         <|--  KeplerianOrbit
       Orbit         <|--  CircularOrbit
       Orbit         <|--  CartesianOrbit

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,24 +21,15 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.orekit.Utils;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.CircularOrbit;
-import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
-import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class AttitudeTest {
 
     @Test
     public void testZeroRate() {
+        //        Utils.setDataRoot("regular-data");
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          new Rotation(0.48, 0.64, 0.36, 0.48, false),
                                          Vector3D.ZERO, Vector3D.ZERO);
@@ -52,6 +43,7 @@ public class AttitudeTest {
 
     @Test
     public void testShift() {
+        //Utils.setDataRoot("regular-data");
         double rate = 2 * FastMath.PI / (12 * 60);
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          Rotation.IDENTITY,
@@ -74,6 +66,7 @@ public class AttitudeTest {
 
     @Test
     public void testSpin() {
+        //Utils.setDataRoot("regular-data");
         double rate = 2 * FastMath.PI / (12 * 60);
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          new Rotation(0.48, 0.64, 0.36, 0.48, false),
@@ -105,92 +98,6 @@ public class AttitudeTest {
 
         Vector3D reversed = AngularCoordinates.estimateRate(shifted.getRotation(), attitude.getRotation(), dt);
         Assertions.assertEquals(0.0, reversed.add(attitude.getSpin()).getNorm(), 1.0e-10);
-
-    }
-
-    @Test
-    public void testInterpolation() {
-
-        Utils.setDataRoot("regular-data");
-        final double ehMu  = 3.9860047e14;
-        final double ae  = 6.378137e6;
-        final double c20 = -1.08263e-3;
-        final double c30 = 2.54e-6;
-        final double c40 = 1.62e-6;
-        final double c50 = 2.3e-7;
-        final double c60 = -5.5e-7;
-
-        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
-        final Vector3D position = new Vector3D(3220103., 69623., 6449822.);
-        final Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
-        final CircularOrbit initialOrbit = new CircularOrbit(new PVCoordinates(position, velocity),
-                                                             FramesFactory.getEME2000(), date, ehMu);
-
-        EcksteinHechlerPropagator propagator =
-                new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
-        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                      Constants.WGS84_EARTH_FLATTENING,
-                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        propagator.setAttitudeProvider(new BodyCenterPointing(initialOrbit.getFrame(), earth));
-        final Attitude initialAttitude = propagator.propagate(initialOrbit.getDate()).getAttitude();
-
-        // set up a 5 points sample
-        List<Attitude> sample = new ArrayList<Attitude>();
-        for (double dt = 0; dt < 251.0; dt += 60.0) {
-            sample.add(propagator.propagate(date.shiftedBy(dt)).getAttitude());
-        }
-
-        // well inside the sample, interpolation should be better than quadratic shift
-        double maxShiftAngleError = 0;
-        double maxInterpolationAngleError = 0;
-        double maxShiftRateError = 0;
-        double maxInterpolationRateError = 0;
-        for (double dt = 0; dt < 240.0; dt += 1.0) {
-            AbsoluteDate t                 = initialOrbit.getDate().shiftedBy(dt);
-            Attitude propagated            = propagator.propagate(t).getAttitude();
-            double shiftAngleError         = Rotation.distance(propagated.getRotation(),
-                                                               initialAttitude.shiftedBy(dt).getRotation());
-            double interpolationAngleError = Rotation.distance(propagated.getRotation(),
-                                                               initialAttitude.interpolate(t, sample).getRotation());
-            double shiftRateError          = Vector3D.distance(propagated.getSpin(),
-                                                               initialAttitude.shiftedBy(dt).getSpin());
-            double interpolationRateError  = Vector3D.distance(propagated.getSpin(),
-                                                               initialAttitude.interpolate(t, sample).getSpin());
-            maxShiftAngleError             = FastMath.max(maxShiftAngleError, shiftAngleError);
-            maxInterpolationAngleError     = FastMath.max(maxInterpolationAngleError, interpolationAngleError);
-            maxShiftRateError              = FastMath.max(maxShiftRateError, shiftRateError);
-            maxInterpolationRateError      = FastMath.max(maxInterpolationRateError, interpolationRateError);
-        }
-        Assertions.assertTrue(maxShiftAngleError         > 4.0e-6);
-        Assertions.assertTrue(maxInterpolationAngleError < 1.5e-13);
-        Assertions.assertTrue(maxShiftRateError          > 6.0e-8);
-        Assertions.assertTrue(maxInterpolationRateError  < 2.5e-14);
-
-        // past sample end, interpolation error should increase, but still be far better than quadratic shift
-        maxShiftAngleError = 0;
-        maxInterpolationAngleError = 0;
-        maxShiftRateError = 0;
-        maxInterpolationRateError = 0;
-        for (double dt = 250.0; dt < 300.0; dt += 1.0) {
-            AbsoluteDate t                 = initialOrbit.getDate().shiftedBy(dt);
-            Attitude propagated            = propagator.propagate(t).getAttitude();
-            double shiftAngleError         = Rotation.distance(propagated.getRotation(),
-                                                               initialAttitude.shiftedBy(dt).getRotation());
-            double interpolationAngleError = Rotation.distance(propagated.getRotation(),
-                                                               initialAttitude.interpolate(t, sample).getRotation());
-            double shiftRateError          = Vector3D.distance(propagated.getSpin(),
-                                                               initialAttitude.shiftedBy(dt).getSpin());
-            double interpolationRateError  = Vector3D.distance(propagated.getSpin(),
-                                                               initialAttitude.interpolate(t, sample).getSpin());
-            maxShiftAngleError             = FastMath.max(maxShiftAngleError, shiftAngleError);
-            maxInterpolationAngleError     = FastMath.max(maxInterpolationAngleError, interpolationAngleError);
-            maxShiftRateError              = FastMath.max(maxShiftRateError, shiftRateError);
-            maxInterpolationRateError      = FastMath.max(maxInterpolationRateError, interpolationRateError);
-        }
-        Assertions.assertTrue(maxShiftAngleError         > 9.0e-6);
-        Assertions.assertTrue(maxInterpolationAngleError < 6.0e-11);
-        Assertions.assertTrue(maxShiftRateError          > 9.0e-8);
-        Assertions.assertTrue(maxInterpolationRateError  < 4.0e-12);
 
     }
 

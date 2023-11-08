@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,8 @@ import java.io.IOException;
 import org.orekit.data.DataContext;
 import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.UserDefinedWriter;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.section.XmlStructureKey;
 import org.orekit.files.ccsds.utils.ContextBinding;
@@ -35,16 +35,28 @@ import org.orekit.utils.IERSConventions;
 /**
  * Writer for CCSDS Orbit Comprehensive Message.
  *
+ * @see EphemerisOcmWriter
+ * @see StreamingOcmWriter
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata, OcmData>, Ocm> {
+public class OcmWriter extends AbstractMessageWriter<OdmHeader, Segment<OcmMetadata, OcmData>, Ocm> {
 
     /** Version number implemented. **/
     public static final double CCSDS_OCM_VERS = 3.0;
 
     /** Padding width for aligning the '=' sign. */
     public static final int KVN_PADDING_WIDTH = 24;
+
+    /** Central body equatorial radius.
+     * @since 12.0
+     */
+    private final double equatorialRadius;
+
+    /** Central body flattening.
+     * @since 12.0
+     */
+    private final double flattening;
 
     /** Complete constructor.
      * <p>
@@ -53,21 +65,43 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
      * writerBuilder.buildOcmWriter()}.
      * </p>
      * @param conventions IERS Conventions
+     * @param equatorialRadius central body equatorial radius
+     * @param flattening central body flattening
      * @param dataContext used to retrieve frames, time scales, etc.
      */
-    public OcmWriter(final IERSConventions conventions, final DataContext dataContext) {
+    public OcmWriter(final IERSConventions conventions,
+                     final double equatorialRadius, final double flattening,
+                     final DataContext dataContext) {
         super(Ocm.ROOT, Ocm.FORMAT_VERSION_KEY, CCSDS_OCM_VERS,
               new ContextBinding(
                   () -> conventions, () -> false, () -> dataContext,
                   () -> ParsedUnitsBehavior.STRICT_COMPLIANCE,
                   () -> null, () -> TimeSystem.UTC,
                   () -> 0.0, () -> 1.0));
+        this.equatorialRadius = equatorialRadius;
+        this.flattening       = flattening;
+    }
+
+    /** Get the central body equatorial radius.
+     * @return central body equatorial radius
+     * @since 12.0
+     */
+    public double getEquatorialRadius() {
+        return equatorialRadius;
+    }
+
+    /** Get the central body flattening.
+     * @return central body flattening
+     * @since 12.0
+     */
+    public double getFlattening() {
+        return flattening;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegmentContent(final Generator generator, final double formatVersion,
-                                    final Segment<OcmMetadata, OcmData> segment)
+    protected void writeSegmentContent(final Generator generator, final double formatVersion,
+                                       final Segment<OcmMetadata, OcmData> segment)
         throws IOException {
 
         // write the metadata
@@ -89,8 +123,8 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
         }
 
         // trajectory history
-        if (segment.getData().getOTrajectoryBlocks() != null && !segment.getData().getOTrajectoryBlocks().isEmpty()) {
-            for (final TrajectoryStateHistory history : segment.getData().getOTrajectoryBlocks()) {
+        if (segment.getData().getTrajectoryBlocks() != null && !segment.getData().getTrajectoryBlocks().isEmpty()) {
+            for (final TrajectoryStateHistory history : segment.getData().getTrajectoryBlocks()) {
                 // write optional trajectory history block
                 new TrajectoryStateHistoryWriter(history, getTimeConverter()).write(generator);
             }
@@ -98,23 +132,23 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
 
         if (segment.getData().getPhysicBlock() != null) {
             // write optional physical properties block
-            new PhysicalPropertiesWriter(segment.getData().getPhysicBlock(),
+            new OrbitPhysicalPropertiesWriter(segment.getData().getPhysicBlock(),
                                          getTimeConverter()).
             write(generator);
         }
 
         // covariance history
         if (segment.getData().getCovarianceBlocks() != null && !segment.getData().getCovarianceBlocks().isEmpty()) {
-            for (final CovarianceHistory history : segment.getData().getCovarianceBlocks()) {
+            for (final OrbitCovarianceHistory history : segment.getData().getCovarianceBlocks()) {
                 // write optional covariance history block
-                new CovarianceHistoryWriter(history, getTimeConverter()).write(generator);
+                new OrbitCovarianceHistoryWriter(history, getTimeConverter()).write(generator);
             }
         }
 
         if (segment.getData().getManeuverBlocks() != null && !segment.getData().getManeuverBlocks().isEmpty()) {
-            for (final ManeuverHistory maneuver : segment.getData().getManeuverBlocks()) {
+            for (final OrbitManeuverHistory maneuver : segment.getData().getManeuverBlocks()) {
                 // write optional maneuver block
-                new ManeuverHistoryWriter(maneuver, getTimeConverter()).write(generator);
+                new OrbitManeuverHistoryWriter(maneuver, getTimeConverter()).write(generator);
             }
         }
 
@@ -134,7 +168,7 @@ public class OcmWriter extends AbstractMessageWriter<Header, Segment<OcmMetadata
 
         if (segment.getData().getUserDefinedBlock() != null) {
             // write optional user defined parameters block
-            new UserDefinedWriter(OcmDataSubStructureKey.userDef.name(),
+            new UserDefinedWriter(OcmDataSubStructureKey.user.name(),
                                   OcmDataSubStructureKey.USER.name(),
                                   segment.getData().getUserDefinedBlock()).
             write(generator);

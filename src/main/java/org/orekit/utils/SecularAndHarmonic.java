@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -109,11 +109,25 @@ public class SecularAndHarmonic {
     }
 
     /** Add a fitting point.
+     * <p>
+     * The point weight is set to 1.0
+     * </p>
      * @param date date of the point
      * @param osculatingValue osculating value
+     * @see #addWeightedPoint(AbsoluteDate, double, double)
      */
     public void addPoint(final AbsoluteDate date, final double osculatingValue) {
-        observedPoints.add(new WeightedObservedPoint(1.0, date.durationFrom(reference), osculatingValue));
+        addWeightedPoint(date, osculatingValue, 1.0);
+    }
+
+    /** Add a weighted fitting point.
+     * @param date date of the point
+     * @param osculatingValue osculating value
+     * @param weight weight of the points
+     * @since 12.0
+     */
+    public void addWeightedPoint(final AbsoluteDate date, final double osculatingValue, final double weight) {
+        observedPoints.add(new WeightedObservedPoint(weight, date.durationFrom(reference), osculatingValue));
     }
 
     /** Get the reference date.
@@ -122,6 +136,22 @@ public class SecularAndHarmonic {
      */
     public AbsoluteDate getReferenceDate() {
         return reference;
+    }
+
+    /** Get degree of polynomial secular part.
+     * @return degree of polynomial secular part
+     * @since 12.0
+     */
+    public int getSecularDegree() {
+        return secularDegree;
+    }
+
+    /** Get the pulsations of harmonic part.
+     * @return pulsations of harmonic part
+     * @since 12.0
+     */
+    public double[] getPulsations() {
+        return pulsations.clone();
     }
 
     /** Get an upper bound of the fitted harmonic amplitude.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,10 @@ package org.orekit.forces.maneuvers.propulsion;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
 /** This abstract class simply serve as a container for a constant thrust maneuver.
@@ -34,11 +36,17 @@ import org.orekit.utils.Constants;
  */
 public abstract class AbstractConstantThrustPropulsionModel implements ThrustPropulsionModel {
 
+    /** Default control vector cost type. */
+    static final Control3DVectorCostType DEFAULT_CONTROL_3D_VECTOR_COST_TYPE = Control3DVectorCostType.TWO_NORM;
+
     /** Initial thrust vector (N) in S/C frame, when building the object. */
     private final Vector3D initialThrustVector;
 
     /** Initial flow rate (kg/s), when building the object. */
     private final double initialFlowRate;
+
+    /** Type of norm linking thrust vector to mass flow rate. */
+    private final Control3DVectorCostType control3DVectorCostType;
 
     /** User-defined name of the maneuver.
      * This String attribute is empty by default.
@@ -55,22 +63,45 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
      * @param thrust initial thrust value (N)
      * @param isp initial isp value (s)
      * @param direction initial thrust direction in S/C frame
+     * @param control3DVectorCostType control cost type
+     * @param name name of the maneuver
+     * @since 12.0
+     */
+    public AbstractConstantThrustPropulsionModel(final double thrust,
+                                                 final double isp,
+                                                 final Vector3D direction,
+                                                 final Control3DVectorCostType control3DVectorCostType,
+                                                 final String name) {
+        this.name = name;
+        this.initialThrustVector = direction.normalize().scalarMultiply(thrust);
+        this.control3DVectorCostType = control3DVectorCostType;
+        this.initialFlowRate = -control3DVectorCostType.evaluate(initialThrustVector) / (Constants.G0_STANDARD_GRAVITY * isp);
+    }
+
+    /** Constructor with default control cost type.
+     * @param thrust initial thrust value (N)
+     * @param isp initial isp value (s)
+     * @param direction initial thrust direction in S/C frame
      * @param name name of the maneuver
      */
     public AbstractConstantThrustPropulsionModel(final double thrust,
                                                  final double isp,
                                                  final Vector3D direction,
                                                  final String name) {
-        this.name = name;
-        this.initialThrustVector = direction.normalize().scalarMultiply(thrust);
-        this.initialFlowRate = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
+        this(thrust, isp, direction, DEFAULT_CONTROL_3D_VECTOR_COST_TYPE, name);
     }
 
+    /** Get the initial thrust vector.
+     * @return the initial thrust vector
+     */
     protected Vector3D getInitialThrustVector() {
         return initialThrustVector;
     }
 
-    protected double getInitialFlowrate() {
+    /** Get the initial flow rate.
+     * @return the initial flow rate
+     */
+    protected double getInitialFlowRate() {
         return initialFlowRate;
     }
 
@@ -80,27 +111,66 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
         return name;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public Control3DVectorCostType getControl3DVectorCostType() {
+        return control3DVectorCostType;
+    }
+
     /** Get the specific impulse.
-     * @return specific impulse (s).
+     * @return specific impulse (s), will throw exception if
+     * used on PDriver having several driven values, because
+     * in this case a date is needed.
      */
     public double getIsp() {
-        final double thrust   = getThrust();
         final double flowRate = getFlowRate();
-        return -thrust / (Constants.G0_STANDARD_GRAVITY * flowRate);
+        return -control3DVectorCostType.evaluate(getThrustVector()) / (Constants.G0_STANDARD_GRAVITY * flowRate);
+    }
+
+    /** Get the specific impulse at given date.
+     * @param date date at which the Isp wants to be known
+     * @return specific impulse (s).
+     */
+    public double getIsp(final AbsoluteDate date) {
+        final double flowRate = getFlowRate(date);
+        return -control3DVectorCostType.evaluate(getThrustVector(date)) / (Constants.G0_STANDARD_GRAVITY * flowRate);
     }
 
     /** Get the thrust direction in S/C frame.
+     * @param date date at which the direction wants to be known
      * @return the thrust direction in S/C frame
+     */
+    public Vector3D getDirection(final AbsoluteDate date) {
+        return getThrustVector(date).normalize();
+    }
+
+    /** Get the thrust direction in S/C frame.
+     * @return the thrust direction in S/C frame,  will throw exception if
+     * used on PDriver having several driven values, because
+     * in this case a date is needed.
      */
     public Vector3D getDirection() {
         return getThrustVector().normalize();
     }
 
-    /** Get the thrust value (N).
+    /** Get the thrust magnitude (N).
+     * @return the thrust value (N), will throw
+     * an exception if called of a driver having several
+     * values driven
+     */
+    public double getThrustMagnitude() {
+        return getThrustVector().getNorm();
+    }
+
+    /** Get the thrust magnitude (N) at given date.
+     * @param date date at which the thrust vector wants to be known,
+     * often the date parameter will not be important and can be whatever
+     * if the thrust parameter driver as only value estimated over the all
+     * orbit determination interval
      * @return the thrust value (N)
      */
-    public double getThrust() {
-        return getThrustVector().getNorm();
+    public double getThrustMagnitude(final AbsoluteDate date) {
+        return getThrustVector(date).getNorm();
     }
 
     /** {@inheritDoc}
@@ -109,7 +179,7 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
     @Override
     public Vector3D getThrustVector(final SpacecraftState s) {
         // Call the abstract function that do not depend on current S/C state
-        return getThrustVector();
+        return getThrustVector(s.getDate());
     }
 
     /** {@inheritDoc}
@@ -118,7 +188,7 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
     @Override
     public double getFlowRate(final SpacecraftState s) {
         // Call the abstract function that do not depend on current S/C state
-        return getFlowRate();
+        return getFlowRate(s.getDate());
     }
 
     /** {@inheritDoc}
@@ -157,15 +227,39 @@ public abstract class AbstractConstantThrustPropulsionModel implements ThrustPro
 
     /** Get the thrust vector in spacecraft frame (N).
      * Here it does not depend on current S/C state.
-     * @return thrust vector in spacecraft frame (N)
+     * @return thrust vector in spacecraft frame (N),
+     * will throw an exception if used on driver
+     * containing several value spans
      */
     public abstract Vector3D getThrustVector();
+
+    /** Get the thrust vector in spacecraft frame (N).
+     * Here it does not depend on current S/C state.
+     * @param date date at which the thrust vector wants to be known,
+     * often the date parameter will not be important and can be whatever
+     * if the thrust parameter driver as only value estimated over the all
+     * orbit determination interval
+     * @return thrust vector in spacecraft frame (N)
+     */
+    public abstract Vector3D getThrustVector(AbsoluteDate date);
 
     /** Get the flow rate (kg/s).
      * Here it does not depend on current S/C.
      * @return flow rate (kg/s)
+     * will throw an exception if used on driver
+     * containing several value spans
      */
     public abstract double getFlowRate();
+
+    /** Get the flow rate (kg/s).
+     * Here it does not depend on current S/C.
+     * @param date date at which the thrust vector wants to be known,
+     * often the date parameter will not be important and can be whatever
+     * if the thrust parameter driver as only value estimated over the all
+     * orbit determination interval
+     * @return flow rate (kg/s)
+     */
+    public abstract double getFlowRate(AbsoluteDate date);
 
     /** Get the thrust vector in spacecraft frame (N).
      * Here it does not depend on current S/C state.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,19 +25,23 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.SpacecraftStateInterpolator;
 import org.orekit.propagation.events.EclipseDetector;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 
@@ -86,8 +90,9 @@ public class EphemerisEventsTest {
 
         double deltaT = finalDate.durationFrom(initDate);
 
-        Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
-                                            FramesFactory.getEME2000(), initDate, mu);
+        final Frame frame = FramesFactory.getEME2000();
+
+        Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE, frame, initDate, mu);
 
         int nbIntervals = 720;
         Propagator propagator =
@@ -100,10 +105,12 @@ public class EphemerisEventsTest {
                                         state.getAttitude(), state.getMass()));
         }
 
-        return new Ephemeris(tab, 2);
+        final TimeInterpolator<SpacecraftState> interpolator = new SpacecraftStateInterpolator(2, frame, frame);
+
+        return new Ephemeris(tab, interpolator);
     }
 
-    private EclipseDetector buildEclipsDetector(final OrbitType type) {
+    private EclipseDetector buildEclipseDetector(final OrbitType type) {
 
         double sunRadius = 696000000.;
         double earthRadius = 6400000.;
@@ -114,10 +121,9 @@ public class EphemerisEventsTest {
                                                                        FramesFactory.getITRF(IERSConventions.IERS_2010, true))).
                               withMaxCheck(60.0).
                               withThreshold(1.0e-3).
-                              withHandler(new EventHandler<EclipseDetector>() {
-                                public Action eventOccurred(SpacecraftState s, EclipseDetector detector,
-                                                            boolean increasing)
-                                    {
+                              withHandler(new EventHandler() {
+                                public Action eventOccurred(SpacecraftState s, EventDetector detector,
+                                                            boolean increasing) {
                                     Assertions.assertEquals(type, s.getOrbit().getType());
                                     if (increasing) {
                                         ++inEclipsecounter;
@@ -146,7 +152,7 @@ public class EphemerisEventsTest {
 
         BoundedPropagator ephem = buildEphem(type);
 
-        ephem.addEventDetector(buildEclipsDetector(type));
+        ephem.addEventDetector(buildEclipseDetector(type));
 
         AbsoluteDate computeEnd = new AbsoluteDate(finalDate, -1000.0);
 

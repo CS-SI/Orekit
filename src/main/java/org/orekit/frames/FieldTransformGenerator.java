@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,7 @@ import org.orekit.utils.TimeStampedGenerator;
  * @see GenericTimeStampedCache
  * @since 9.0
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
 public class FieldTransformGenerator<T extends CalculusFieldElement<T>> implements TimeStampedGenerator<FieldTransform<T>> {
 

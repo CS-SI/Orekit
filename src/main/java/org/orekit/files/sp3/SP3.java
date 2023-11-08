@@ -17,153 +17,44 @@
 package org.orekit.files.sp3;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
-import org.orekit.gnss.TimeSystem;
-import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.CartesianDerivativesFilter;
-import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.time.ChronologicalComparator;
 
 /**
  * Represents a parsed SP3 orbit file.
  * @author Thomas Neidhart
  * @author Evan Ward
  */
-public class SP3
-    implements EphemerisFile<SP3.SP3Coordinate, SP3.SP3Ephemeris> {
-    /** String representation of the center of ephemeris coordinate system. **/
-    public static final String SP3_FRAME_CENTER_STRING = "EARTH";
+public class SP3 implements EphemerisFile<SP3Coordinate, SP3Segment> {
 
-    /** File type indicator. */
-    public enum SP3FileType {
-        /** GPS only file. */
-        GPS,
-        /** Mixed file. */
-        MIXED,
-        /** GLONASS only file. */
-        GLONASS,
-        /** LEO only file. */
-        LEO,
-        /** Galileo only file. */
-        GALILEO,
-        /** SBAS only file. */
-        SBAS,
-        /** IRNSS only file. */
-        IRNSS,
-        /** COMPASS only file. */
-        COMPASS,
-        /** QZSS only file. */
-        QZSS,
-        /** undefined file format. */
-        UNDEFINED
-    }
-
-    /** Orbit type indicator. */
-    public enum SP3OrbitType {
-        /** fitted. */
-        FIT,
-        /** extrapolated or predicted. */
-        EXT,
-        /** broadcast. */
-        BCT,
-        /** fitted after applying a Helmert transformation. */
-        HLM,
-        /** other type, defined by SP3 file producing agency.
-         * @since 9.3
-         */
-        OTHER;
-
-        /** Parse a string to get the type.
-         * @param s string to parse
-         * @return the type corresponding to the string
-         */
-        public static SP3OrbitType parseType(final String s) {
-            final String normalizedString = s.trim().toUpperCase(Locale.US);
-            if ("EST".equals(normalizedString)) {
-                return FIT;
-            } else if ("BHN".equals(normalizedString)) {
-                // ESOC navigation team uses BHN for files produced
-                // by their main parameter estimation program Bahn
-                return FIT;
-            } else if ("PRO".equals(normalizedString)) {
-                // ESOC navigation team uses PRO for files produced
-                // by their orbit propagation program Propag
-                return EXT;
-            } else {
-                try {
-                    return valueOf(normalizedString);
-                } catch (IllegalArgumentException iae) {
-                    return OTHER;
-                }
-            }
-        }
-
-    }
-
-    /** File type. */
-    private SP3FileType type;
-
-    /** Time system. */
-    private TimeSystem timeSystem;
-
-    /** Epoch of the file. */
-    private AbsoluteDate epoch;
-
-    /** GPS week. */
-    private int gpsWeek;
-
-    /** Seconds of the current GPS week. */
-    private double secondsOfWeek;
-
-    /** Julian day. */
-    private int julianDay;
-
-    /** Day fraction. */
-    private double dayFraction;
-
-    /** Time-interval between epochs. */
-    private double epochInterval;
-
-    /** Number of epochs. */
-    private int numberOfEpochs;
-
-    /** Coordinate system. */
-    private String coordinateSystem;
-
-    /** Data used indicator. */
-    private String dataUsed;
-
-    /** Orbit type. */
-    private SP3OrbitType orbitType;
-
-    /** Key for orbit type.
-     * @since 9.3
+    /** Header.
+     * @since 12.0
      */
-    private String orbitTypeKey;
+    private final SP3Header header;
 
-    /** Agency providing the file. */
-    private String agency;
-
-    /** Indicates if data contains velocity or not. */
-    private CartesianDerivativesFilter filter;
-
-    /** Standard gravitational parameter in m^3 / s^2. */
+    /** Standard gravitational parameter in m³ / s². */
     private final double mu;
 
     /** Number of samples to use when interpolating. */
     private final int interpolationSamples;
 
-    /** Maps {@link #coordinateSystem} to a {@link Frame}. */
-    private final Function<? super String, ? extends Frame> frameBuilder;
+    /** Reference frame. */
+    private final Frame frame;
 
     /** A map containing satellite information. */
     private Map<String, SP3Ephemeris> satellites;
@@ -171,219 +62,259 @@ public class SP3
     /**
      * Create a new SP3 file object.
      *
-     * @param mu                   is the standard gravitational parameter in m^3 / s^2.
+     * @param mu                   is the standard gravitational parameter in m³ / s².
      * @param interpolationSamples number of samples to use in interpolation.
-     * @param frameBuilder         for constructing a reference frame from the identifier
+     * @param frame                reference frame
      */
-    public SP3(final double mu,
-                   final int interpolationSamples,
-                   final Function<? super String, ? extends Frame> frameBuilder) {
-        this.mu = mu;
+    public SP3(final double mu, final int interpolationSamples, final Frame frame) {
+        this.header               = new SP3Header();
+        this.mu                   = mu;
         this.interpolationSamples = interpolationSamples;
-        this.frameBuilder = frameBuilder;
-        // must be linked has map to preserve order of satellites in the file.
-        satellites = new LinkedHashMap<>();
+        this.frame                = frame;
+        this.satellites           = new LinkedHashMap<>(); // must be linked hash map to preserve order of satellites in the file
     }
 
-    /**
-     * Set the derivatives filter.
-     *
-     * @param filter that indicates which derivatives of position are available.
+    /** Check file is valid.
+     * @param parsing if true, we are parsing an existing file, and are more lenient
+     * in order to accept some common errors (like between 86 and 99 satellites
+     * in SP3a, SP3b or SP3c files)
+     * @param fileName file name to generate the error message
+     * @exception OrekitException if file is not valid
      */
-    public void setFilter(final CartesianDerivativesFilter filter) {
-        this.filter = filter;
+    public void validate(final boolean parsing, final String fileName) throws OrekitException {
+
+        // check available data
+        final SortedSet<AbsoluteDate> epochs = new TreeSet<>(new ChronologicalComparator());
+        boolean hasAccuracy = false;
+        for (final Map.Entry<String, SP3Ephemeris> entry : satellites.entrySet()) {
+            SP3Coordinate previous = null;
+            for (final SP3Segment segment : entry.getValue().getSegments()) {
+                for (final SP3Coordinate coordinate : segment.getCoordinates()) {
+                    final AbsoluteDate previousDate = previous == null ? header.getEpoch() : previous.getDate();
+                    final double       nbSteps      = coordinate.getDate().durationFrom(previousDate) / header.getEpochInterval();
+                    if (FastMath.abs(nbSteps - FastMath.rint(nbSteps)) > 0.001) {
+                        // not an integral number of steps
+                        throw new OrekitException(OrekitMessages.INCONSISTENT_SAMPLING_DATE,
+                                                  previousDate.shiftedBy(FastMath.rint(nbSteps) * header.getEpochInterval()),
+                                                  coordinate.getDate());
+                    }
+                    epochs.add(coordinate.getDate());
+                    previous = coordinate;
+                    hasAccuracy |= !(coordinate.getPositionAccuracy() == null &&
+                                    coordinate.getVelocityAccuracy() == null &&
+                                    Double.isNaN(coordinate.getClockAccuracy()) &&
+                                    Double.isNaN(coordinate.getClockRateAccuracy()));
+                }
+            }
+        }
+
+        // check versions limitations
+        if (getSatelliteCount() > getMaxAllowedSatCount(parsing)) {
+            throw new OrekitException(OrekitMessages.SP3_TOO_MANY_SATELLITES_FOR_VERSION,
+                                      header.getVersion(), getMaxAllowedSatCount(parsing), getSatelliteCount(),
+                                      fileName);
+        }
+
+        header.validate(parsing, hasAccuracy, fileName);
+
+        // check epochs
+        if (epochs.size() != header.getNumberOfEpochs()) {
+            throw new OrekitException(OrekitMessages.SP3_NUMBER_OF_EPOCH_MISMATCH,
+                                      epochs.size(), fileName, header.getNumberOfEpochs());
+        }
+
     }
 
-    /** Returns the {@link SP3FileType} associated with this SP3 file.
-     * @return the file type for this SP3 file
+    /** Get the header.
+     * @return header
+     * @since 12.0
      */
-    public SP3FileType getType() {
-        return type;
+    public SP3Header getHeader() {
+        return header;
     }
 
-    /** Set the file type for this SP3 file.
-     * @param fileType the file type to be set
+    /** Get maximum number of satellites allowed for format version.
+     * @param parsing if true, we are parsing an existing file, and are more lenient
+     * in order to accept some common errors (like between 86 and 99 satellites
+     * in SP3a, SP3b or SP3c files)
+     * @return maximum number of satellites allowed for format version
+     * @since 12.0
      */
-    public void setType(final SP3FileType fileType) {
-        this.type = fileType;
+    private int getMaxAllowedSatCount(final boolean parsing) {
+        return header.getVersion() < 'd' ? (parsing ? 99 : 85) : 999;
     }
 
-    /** Returns the {@link TimeSystem} used to time-stamp position entries.
-     * @return the {@link TimeSystem} of the orbit file
+    /** Splice several SP3 files together.
+     * <p>
+     * Splicing SP3 files is intended to be used when continuous computation
+     * covering more than one file is needed. The files should all have the exact same
+     * metadata: {@link SP3Header#getType() type}, {@link SP3Header#getTimeSystem() time system},
+     * {@link SP3Header#getCoordinateSystem() coordinate system}, except for satellite accuracy
+     * which can be different from one file to the next one, and some satellites may
+     * be missing in some files… Once sorted (which is done internally), if the gap between
+     * segments from two file is at most {@link SP3Header#getEpochInterval() epoch interval},
+     * then the segments are merged as one segment, otherwise the segments are kept separated.
+     * </p>
+     * <p>
+     * The spliced file only contains the satellites that were present in all files.
+     * Satellites present in some files and absent from other files are silently
+     * dropped.
+     * </p>
+     * <p>
+     * Depending on producer, successive SP3 files either have a gap between the last
+     * entry of one file and the first entry of the next file (for example files with
+     * a 5 minutes epoch interval may end at 23:55 and the next file start at 00:00),
+     * or both files have one point exactly at the splicing date (i.e. 24:00 one day
+     * and 00:00 next day). In the later case, the last point of the early file is dropped
+     * and the first point of the late file takes precedence, hence only one point remains
+     * in the spliced file ; this design choice is made to enforce continuity and
+     * regular interpolation.
+     * </p>
+     * @param sp3 SP3 files to merge
+     * @return merged SP3
+     * @since 12.0
      */
-    public TimeSystem getTimeSystem() {
-        return timeSystem;
+    public static SP3 splice(final Collection<SP3> sp3) {
+
+        // sort the files
+        final ChronologicalComparator comparator = new ChronologicalComparator();
+        final SortedSet<SP3> sorted = new TreeSet<>((s1, s2) -> comparator.compare(s1.header.getEpoch(), s2.header.getEpoch()));
+        sorted.addAll(sp3);
+
+        // prepare spliced file
+        final SP3 first   = sorted.first();
+        final SP3 spliced = new SP3(first.mu, first.interpolationSamples, first.frame);
+        spliced.header.setFilter(first.header.getFilter());
+        spliced.header.setType(first.header.getType());
+        spliced.header.setTimeSystem(first.header.getTimeSystem());
+        spliced.header.setDataUsed(first.header.getDataUsed());
+        spliced.header.setEpoch(first.header.getEpoch());
+        spliced.header.setGpsWeek(first.header.getGpsWeek());
+        spliced.header.setSecondsOfWeek(first.header.getSecondsOfWeek());
+        spliced.header.setModifiedJulianDay(first.header.getModifiedJulianDay());
+        spliced.header.setDayFraction(first.header.getDayFraction());
+        spliced.header.setEpochInterval(first.header.getEpochInterval());
+        spliced.header.setCoordinateSystem(first.header.getCoordinateSystem());
+        spliced.header.setOrbitTypeKey(first.header.getOrbitTypeKey());
+        spliced.header.setAgency(first.header.getAgency());
+        spliced.header.setPosVelBase(first.header.getPosVelBase());
+        spliced.header.setClockBase(first.header.getClockBase());
+
+        // identify the satellites that are present in all files
+        final List<String> commonSats = new ArrayList<>(first.header.getSatIds());
+        for (final SP3 current : sorted) {
+            for (final Iterator<String> iter = commonSats.iterator(); iter.hasNext();) {
+                final String sat = iter.next();
+                if (!current.containsSatellite(sat)) {
+                    iter.remove();
+                    break;
+                }
+            }
+        }
+
+        // create the spliced list
+        for (final String sat : commonSats) {
+            spliced.addSatellite(sat);
+        }
+
+        // in order to be conservative, we keep the worst accuracy from all SP3 files for this satellite
+        for (int i = 0; i < commonSats.size(); ++i) {
+            final String sat = commonSats.get(i);
+            double accuracy = Double.POSITIVE_INFINITY;
+            for (final SP3 current : sorted) {
+                accuracy = FastMath.max(accuracy, current.header.getAccuracy(sat));
+            }
+            spliced.header.setAccuracy(i, accuracy);
+        }
+
+        // splice files
+        SP3 previous = null;
+        int epochCount = 0;
+        for (final SP3 current : sorted) {
+
+            epochCount += current.header.getNumberOfEpochs();
+            if (previous != null) {
+
+                // check metadata and check if we should drop the last entry of previous file
+                final boolean dropLast = current.checkSplice(previous);
+                if (dropLast) {
+                    --epochCount;
+                }
+
+                // append the pending data from previous file
+                for (final Map.Entry<String, SP3Ephemeris> entry : previous.satellites.entrySet()) {
+                    if (commonSats.contains(entry.getKey())) {
+                        final SP3Ephemeris splicedEphemeris = spliced.getEphemeris(entry.getKey());
+                        for (final SP3Segment segment : entry.getValue().getSegments()) {
+                            final List<SP3Coordinate> coordinates = segment.getCoordinates();
+                            for (int i = 0; i < coordinates.size() - (dropLast ? 1 : 0); ++i) {
+                                splicedEphemeris.addCoordinate(coordinates.get(i), spliced.header.getEpochInterval());
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            previous = current;
+
+        }
+        spliced.header.setNumberOfEpochs(epochCount);
+
+        // append the pending data from last file
+        for (final Map.Entry<String, SP3Ephemeris> entry : previous.satellites.entrySet()) {
+            if (commonSats.contains(entry.getKey())) {
+                final SP3Ephemeris splicedEphemeris = spliced.getEphemeris(entry.getKey());
+                for (final SP3Segment segment : entry.getValue().getSegments()) {
+                    for (final SP3Coordinate coordinate : segment.getCoordinates()) {
+                        splicedEphemeris.addCoordinate(coordinate, spliced.header.getEpochInterval());
+                    }
+                }
+            }
+        }
+
+        return spliced;
+
     }
 
-    /** Set the time system used in this SP3 file.
-     * @param system the time system to be set
+    /** Check if instance can be spliced after previous one.
+     * @param previous SP3 file (should already be sorted to be before current instance), can be null
+     * @return true if last entry of previous file should be dropped as first entry of current file
+     * is at very close date and will take precedence
+     * @exception OrekitException if metadata are incompatible
+     * @since 12.0
      */
-    public void setTimeSystem(final TimeSystem system) {
-        this.timeSystem = system;
-    }
+    private boolean checkSplice(final SP3 previous) throws OrekitException {
 
-    /** Returns the data used indicator from the SP3 file.
-     * @return the data used indicator (unparsed)
-     */
-    public String getDataUsed() {
-        return dataUsed;
-    }
+        if (!(previous.header.getType()             == header.getType()                  &&
+              previous.header.getTimeSystem()       == header.getTimeSystem()            &&
+              previous.header.getOrbitType()        == header.getOrbitType()             &&
+              previous.header.getCoordinateSystem().equals(header.getCoordinateSystem()) &&
+              previous.header.getDataUsed().equals(header.getDataUsed())                 &&
+              previous.header.getAgency().equals(header.getAgency()))) {
+            throw new OrekitException(OrekitMessages.SP3_INCOMPATIBLE_FILE_METADATA);
+        }
 
-    /** Set the data used indicator for this SP3 file.
-     * @param data the data used indicator to be set
-     */
-    public void setDataUsed(final String data) {
-        this.dataUsed = data;
-    }
+        boolean dropLast = false;
+        for (final Map.Entry<String, SP3Ephemeris> entry : previous.satellites.entrySet()) {
+            final SP3Ephemeris previousEphem = entry.getValue();
+            final SP3Ephemeris currentEphem  = satellites.get(entry.getKey());
+            if (currentEphem != null) {
+                if (!(previousEphem.getAvailableDerivatives()    == currentEphem.getAvailableDerivatives() &&
+                      previousEphem.getFrame()                   == currentEphem.getFrame()                &&
+                      previousEphem.getInterpolationSamples()    == currentEphem.getInterpolationSamples() &&
+                      Precision.equals(previousEphem.getMu(),       currentEphem.getMu(), 2))) {
+                    throw new OrekitException(OrekitMessages.SP3_INCOMPATIBLE_SATELLITE_MEDATADA,
+                                              entry.getKey());
+                } else {
+                    final double dt = currentEphem.getStart().durationFrom(previousEphem.getStop());
+                    dropLast = dt < 0.001 * header.getEpochInterval();
+                }
+            }
+        }
 
-    /** Returns the start epoch of the orbit file.
-     * @return the start epoch
-     */
-    public AbsoluteDate getEpoch() {
-        return epoch;
-    }
+        return dropLast;
 
-    /** Set the epoch of the SP3 file.
-     * @param time the epoch to be set
-     */
-    public void setEpoch(final AbsoluteDate time) {
-        this.epoch = time;
-    }
-
-    /** Returns the GPS week as contained in the SP3 file.
-     * @return the GPS week of the SP3 file
-     */
-    public int getGpsWeek() {
-        return gpsWeek;
-    }
-
-    /** Set the GPS week of the SP3 file.
-     * @param week the GPS week to be set
-     */
-    public void setGpsWeek(final int week) {
-        this.gpsWeek = week;
-    }
-
-    /** Returns the seconds of the GPS week as contained in the SP3 file.
-     * @return the seconds of the GPS week
-     */
-    public double getSecondsOfWeek() {
-        return secondsOfWeek;
-    }
-
-    /** Set the seconds of the GPS week for this SP3 file.
-     * @param seconds the seconds to be set
-     */
-    public void setSecondsOfWeek(final double seconds) {
-        this.secondsOfWeek = seconds;
-    }
-
-    /** Returns the julian day for this SP3 file.
-     * @return the julian day
-     */
-    public int getJulianDay() {
-        return julianDay;
-    }
-
-    /** Set the julian day for this SP3 file.
-     * @param day the julian day to be set
-     */
-    public void setJulianDay(final int day) {
-        this.julianDay = day;
-    }
-
-    /** Returns the day fraction for this SP3 file.
-     * @return the day fraction
-     */
-    public double getDayFraction() {
-        return dayFraction;
-    }
-
-    /** Set the day fraction for this SP3 file.
-     * @param fraction the day fraction to be set
-     */
-    public void setDayFraction(final double fraction) {
-        this.dayFraction = fraction;
-    }
-
-    /** Returns the time interval between epochs (in seconds).
-     * @return the time interval between epochs
-     */
-    public double getEpochInterval() {
-        return epochInterval;
-    }
-
-    /** Set the epoch interval for this SP3 file.
-     * @param interval the interval between orbit entries
-     */
-    public void setEpochInterval(final double interval) {
-        this.epochInterval = interval;
-    }
-
-    /** Returns the number of epochs contained in this orbit file.
-     * @return the number of epochs
-     */
-    public int getNumberOfEpochs() {
-        return numberOfEpochs;
-    }
-
-    /** Set the number of epochs as contained in the SP3 file.
-     * @param epochCount the number of epochs to be set
-     */
-    public void setNumberOfEpochs(final int epochCount) {
-        this.numberOfEpochs = epochCount;
-    }
-
-    /** Returns the coordinate system of the entries in this orbit file.
-     * @return the coordinate system
-     */
-    public String getCoordinateSystem() {
-        return coordinateSystem;
-    }
-
-    /** Set the coordinate system used for the orbit entries.
-     * @param system the coordinate system to be set
-     */
-    public void setCoordinateSystem(final String system) {
-        this.coordinateSystem = system;
-    }
-
-    /** Returns the {@link SP3OrbitType} for this SP3 file.
-     * @return the orbit type
-     */
-    public SP3OrbitType getOrbitType() {
-        return orbitType;
-    }
-
-    /** Returns the orbit type key for this SP3 file.
-     * @return the orbit type key
-     * @since 9.3
-     */
-    public String getOrbitTypeKey() {
-        return orbitTypeKey;
-    }
-
-    /** Set the orbit type key for this SP3 file.
-     * @param oTypeKey the orbit type key to be set
-     * @since 9.3
-     */
-    public void setOrbitTypeKey(final String oTypeKey) {
-        this.orbitTypeKey = oTypeKey;
-        this.orbitType    = SP3OrbitType.parseType(oTypeKey);
-    }
-
-    /** Returns the agency that prepared this SP3 file.
-     * @return the agency
-     */
-    public String getAgency() {
-        return agency;
-    }
-
-    /** Set the agency string for this SP3 file.
-     * @param agencyStr the agency string to be set
-     */
-    public void setAgency(final String agencyStr) {
-        this.agency = agencyStr;
     }
 
     /** Add a new satellite with a given identifier to the list of
@@ -391,13 +322,46 @@ public class SP3
      * @param satId the satellite identifier
      */
     public void addSatellite(final String satId) {
-        // only add satellites which have not been added before
-        satellites.putIfAbsent(satId, new SP3Ephemeris(satId));
+        header.addSatId(satId);
+        satellites.putIfAbsent(satId, new SP3Ephemeris(satId, mu, frame, interpolationSamples, header.getFilter()));
     }
 
     @Override
     public Map<String, SP3Ephemeris> getSatellites() {
         return Collections.unmodifiableMap(satellites);
+    }
+
+    /** Get an ephemeris.
+     * @param index index of the satellite
+     * @return satellite ephemeris
+     * @since 12.0
+     */
+    public SP3Ephemeris getEphemeris(final int index) {
+        int n = index;
+        for (final Map.Entry<String, SP3Ephemeris> entry : satellites.entrySet()) {
+            if (n == 0) {
+                return entry.getValue();
+            }
+            n--;
+        }
+
+        // satellite not found
+        throw new OrekitException(OrekitMessages.INVALID_SATELLITE_ID, index);
+
+    }
+
+    /** Get an ephemeris.
+     * @param satId satellite identifier
+     * @return satellite ephemeris, or null if not found
+     * @since 12.0
+     */
+    public SP3Ephemeris getEphemeris(final String satId) {
+        final SP3Ephemeris ephemeris = satellites.get(satId);
+        if (ephemeris == null) {
+            throw new OrekitException(OrekitMessages.INVALID_SATELLITE_ID, satId);
+        } else {
+            return ephemeris;
+        }
     }
 
     /** Get the number of satellites contained in this orbit file.
@@ -407,40 +371,6 @@ public class SP3
         return satellites.size();
     }
 
-    /**
-     * Set the formal accuracy for a satellite.
-     *
-     * @param index    is the index of the satellite.
-     * @param accuracy of the satellite, in m.
-     */
-    public void setAccuracy(final int index, final double accuracy) {
-        int n = index;
-        for (final SP3Ephemeris ephemeris : satellites.values()) {
-            if (n == 0) {
-                ephemeris.setAccuracy(accuracy);
-                return;
-            }
-            n--;
-        }
-    }
-
-    /**
-     * Get the formal accuracy for a satellite.
-     *
-     * @param index    is the index of the satellite.
-     * @return accuracy of the satellite, in m.
-     */
-    public double getAccuracy(final int index) {
-        int n = index;
-        for (final SP3Ephemeris ephemeris : satellites.values()) {
-            if (n == 0) {
-                return ephemeris.getAccuracy();
-            }
-            n--;
-        }
-        return Double.NaN;
-    }
-
     /** Tests whether a satellite with the given id is contained in this orbit
      * file.
      * @param satId the satellite id
@@ -448,175 +378,7 @@ public class SP3
      *         {@code false} otherwise
      */
     public boolean containsSatellite(final String satId) {
-        return satellites.containsKey(satId);
-    }
-
-    /**
-     * Adds a new P/V coordinate for a given satellite.
-     *
-     * @param satId the satellite identifier
-     * @param coord the P/V coordinate of the satellite
-     */
-    public void addSatelliteCoordinate(final String satId, final SP3Coordinate coord) {
-        satellites.get(satId).coordinates.add(coord);
-    }
-
-    /** An ephemeris for a single satellite in a SP3 file. */
-    public class SP3Ephemeris
-        implements  EphemerisFile.SatelliteEphemeris<SP3Coordinate, SP3Ephemeris>,
-                    EphemerisFile.EphemerisSegment<SP3Coordinate> {
-
-        /** Satellite ID. */
-        private final String id;
-        /** Ephemeris Data. */
-        private final List<SP3Coordinate> coordinates;
-        /** Accuracy in m. */
-        private double accuracy;
-
-        /**
-         * Create an ephemeris for a single satellite.
-         *
-         * @param id of the satellite.
-         */
-        public SP3Ephemeris(final String id) {
-            this.id = id;
-            this.coordinates = new ArrayList<>();
-        }
-
-        @Override
-        public String getId() {
-            return this.id;
-        }
-
-        @Override
-        public double getMu() {
-            return mu;
-        }
-
-        @Override
-        public Frame getFrame() {
-            return frameBuilder.apply(SP3_FRAME_CENTER_STRING);
-        }
-
-        @Override
-        public int getInterpolationSamples() {
-            return interpolationSamples;
-        }
-
-        @Override
-        public CartesianDerivativesFilter getAvailableDerivatives() {
-            return filter;
-        }
-
-        @Override
-        public List<SP3Coordinate> getCoordinates() {
-            return Collections.unmodifiableList(this.coordinates);
-        }
-
-        /** Returns a list containing only {@code this}. */
-        @Override
-        public List<SP3Ephemeris> getSegments() {
-            return Collections.singletonList(this);
-        }
-
-        @Override
-        public AbsoluteDate getStart() {
-            return coordinates.get(0).getDate();
-        }
-
-        @Override
-        public AbsoluteDate getStop() {
-            return coordinates.get(coordinates.size() - 1).getDate();
-        }
-
-        @Override
-        public BoundedPropagator getPropagator() {
-            return EphemerisSegment.super.getPropagator();
-        }
-
-        /**
-         * Set the accuracy for this satellite.
-         *
-         * @param accuracy in m.
-         */
-        public void setAccuracy(final double accuracy) {
-            this.accuracy = accuracy;
-        }
-
-        /**
-         * Get the formal accuracy for this satellite.
-         *
-         * <p>The accuracy is limited by the SP3 standard to be a power of 2 in mm.
-         * The value returned here is in meters.</p>
-         *
-         * @return magnitude of one standard deviation, in m.
-         */
-        public double getAccuracy() {
-            return accuracy;
-        }
-
-    }
-
-    /** A single record of position clock and possibly derivatives in an SP3 file. */
-    public static class SP3Coordinate extends TimeStampedPVCoordinates {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20161116L;
-        /** Clock correction in s. */
-        private final double clock;
-        /** Clock rate in s / s. */
-        private final double clockRate;
-
-        /**
-         * Create a coordinate with only position.
-         *
-         * @param date     of validity.
-         * @param position of the satellite.
-         * @param clock    correction in s.
-         */
-        public SP3Coordinate(final AbsoluteDate date,
-                             final Vector3D position,
-                             final double clock) {
-            this(date, position, Vector3D.ZERO, clock, 0);
-        }
-
-        /**
-         * Create a coordinate with position and velocity.
-         *
-         * @param date      of validity.
-         * @param position  of the satellite.
-         * @param velocity  of the satellite.
-         * @param clock     correction in s.
-         * @param clockRate in s / s.
-         */
-        public SP3Coordinate(final AbsoluteDate date,
-                             final Vector3D position,
-                             final Vector3D velocity,
-                             final double clock,
-                             final double clockRate) {
-            super(date, position, velocity, Vector3D.ZERO);
-            this.clock = clock;
-            this.clockRate = clockRate;
-        }
-
-        /**
-         * Returns the clock correction value.
-         *
-         * @return the clock correction in s.
-         */
-        public double getClockCorrection() {
-            return clock;
-        }
-
-        /**
-         * Returns the clock rate.
-         *
-         * @return the clock rate of change in s/s.
-         */
-        public double getClockRateChange() {
-            return clockRate;
-        }
-
+        return header.getSatIds().contains(satId);
     }
 
 }

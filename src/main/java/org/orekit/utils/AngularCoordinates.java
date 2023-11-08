@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -729,7 +729,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
 
     /** Apply the rotation to a pv coordinates.
      * @param pv vector to apply the rotation to
-     * @return a new pv coordinates which is the image of u by the rotation
+     * @return a new pv coordinates which is the image of pv by the rotation
      */
     public PVCoordinates applyTo(final PVCoordinates pv) {
 
@@ -750,7 +750,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
 
     /** Apply the rotation to a pv coordinates.
      * @param pv vector to apply the rotation to
-     * @return a new pv coordinates which is the image of u by the rotation
+     * @return a new pv coordinates which is the image of pv by the rotation
      */
     public TimeStampedPVCoordinates applyTo(final TimeStampedPVCoordinates pv) {
 
@@ -772,7 +772,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
     /** Apply the rotation to a pv coordinates.
      * @param pv vector to apply the rotation to
      * @param <T> type of the field elements
-     * @return a new pv coordinates which is the image of u by the rotation
+     * @return a new pv coordinates which is the image of pv by the rotation
      * @since 9.0
      */
     public <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> applyTo(final FieldPVCoordinates<T> pv) {
@@ -795,7 +795,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
     /** Apply the rotation to a pv coordinates.
      * @param pv vector to apply the rotation to
      * @param <T> type of the field elements
-     * @return a new pv coordinates which is the image of u by the rotation
+     * @return a new pv coordinates which is the image of pv by the rotation
      * @since 9.0
      */
     public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedFieldPVCoordinates<T> pv) {

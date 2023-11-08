@@ -26,7 +26,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
@@ -55,7 +55,7 @@ public abstract class CloseEventsAbstractTest {
     public static final Frame eci = FramesFactory.getGCRF();
     public static final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, eci);
     public static final KeplerianOrbit initialOrbit = new KeplerianOrbit(
-            6378137 + 500e3, 0, 0, 0, 0, 0, PositionAngle.TRUE,
+            6378137 + 500e3, 0, 0, 0, 0, 0, PositionAngleType.TRUE,
             eci, epoch, mu);
 
     @BeforeAll
@@ -86,14 +86,14 @@ public abstract class CloseEventsAbstractTest {
         Propagator propagator = getPropagator(10.0);
 
         double t1 = 49, t2 = FastMath.nextUp(t1), t3 = t1 + 4.9;
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detector1 = new TimeDetector(t1)
-                .withHandler(new Handler<>(events, Action.RESET_DERIVATIVES))
+                .withHandler(new Handler(events, Action.RESET_DERIVATIVES))
                 .withMaxCheck(10)
                 .withThreshold(1e-9);
         propagator.addEventDetector(detector1);
         TimeDetector detector2 = new TimeDetector(t2, t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(11)
                 .withThreshold(1e-9);
         propagator.addEventDetector(detector2);
@@ -113,7 +113,7 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1;
         Propagator propagator = getPropagator(10);
 
-        RecordAndContinue<EventDetector> handler = new RecordAndContinue<>();
+        RecordAndContinue handler = new RecordAndContinue();
         TimeDetector detector1 = new TimeDetector(5)
                 .withHandler(handler)
                 .withMaxCheck(10)
@@ -129,7 +129,7 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(20));
 
         // verify
-        List<Event<EventDetector>> events = handler.getEvents();
+        List<Event> events = handler.getEvents();
         Assertions.assertEquals(2, events.size());
         Assertions.assertEquals(5, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
         Assertions.assertEquals(detector1, events.get(0).getDetector());
@@ -142,13 +142,13 @@ public abstract class CloseEventsAbstractTest {
         // setup
         Propagator propagator = getPropagator(10);
 
-        RecordAndContinue<EventDetector> handler1 = new RecordAndContinue<>();
+        RecordAndContinue handler1 = new RecordAndContinue();
         TimeDetector detector1 = new TimeDetector(5)
                 .withHandler(handler1)
                 .withMaxCheck(10)
                 .withThreshold(1);
         propagator.addEventDetector(detector1);
-        RecordAndContinue<EventDetector> handler2 = new RecordAndContinue<>();
+        RecordAndContinue handler2 = new RecordAndContinue();
         TimeDetector detector2 = new TimeDetector(5)
                 .withHandler(handler2)
                 .withMaxCheck(10)
@@ -159,10 +159,10 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(20));
 
         // verify
-        List<Event<EventDetector>> events1 = handler1.getEvents();
+        List<Event> events1 = handler1.getEvents();
         Assertions.assertEquals(1, events1.size());
         Assertions.assertEquals(5, events1.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        List<Event<EventDetector>> events2 = handler2.getEvents();
+        List<Event> events2 = handler2.getEvents();
         Assertions.assertEquals(1, events2.size());
         Assertions.assertEquals(5, events2.get(0).getState().getDate().durationFrom(epoch), 0.0);
     }
@@ -178,12 +178,12 @@ public abstract class CloseEventsAbstractTest {
         double tol = 1e-10;
         Propagator propagator = getPropagator(10);
         boolean[] firstEventOccurred = {false};
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
 
         TimeDetector detector1 = new TimeDetector(5)
                 .withMaxCheck(10)
                 .withThreshold(tol)
-                .withHandler(new Handler<EventDetector>(events, Action.RESET_STATE) {
+                .withHandler(new Handler(events, Action.RESET_STATE) {
                     @Override
                     public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
                         firstEventOccurred[0] = true;
@@ -200,7 +200,7 @@ public abstract class CloseEventsAbstractTest {
         FunctionalDetector detector2 = new FunctionalDetector()
                 .withMaxCheck(1)
                 .withThreshold(tol)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> {
                             if (firstEventOccurred[0]) {
                                 return new TimeDetector(1, 3, 5).g(state);
@@ -236,12 +236,12 @@ public abstract class CloseEventsAbstractTest {
         double t = FastMath.PI;
         double tol = 1e-10;
         Propagator propagator = getPropagator(10);
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         SpacecraftState newState = new SpacecraftState(new KeplerianOrbit(
-                42e6, 0, 0, 0, 0, 0, PositionAngle.TRUE, eci, epoch.shiftedBy(t), mu));
+                42e6, 0, 0, 0, 0, 0, PositionAngleType.TRUE, eci, epoch.shiftedBy(t), mu));
 
         TimeDetector resetDetector = new TimeDetector(t)
-                .withHandler(new ResetHandler<>(events, newState))
+                .withHandler(new ResetHandler(events, newState))
                 .withMaxCheck(10)
                 .withThreshold(tol);
         propagator.addEventDetector(resetDetector);
@@ -251,7 +251,7 @@ public abstract class CloseEventsAbstractTest {
                     .withFunction(s -> s.getA() - 10e6)
                     .withThreshold(tol)
                     .withMaxCheck(10)
-                    .withHandler(new RecordAndContinue<>(events));
+                    .withHandler(new RecordAndContinue(events));
             propagator.addEventDetector(detector1);
             detectors.add(detector1);
         }
@@ -284,7 +284,7 @@ public abstract class CloseEventsAbstractTest {
         // step size of 10 to land in between two events we would otherwise miss
         Propagator propagator = getPropagator(10);
 
-        RecordAndContinue<EventDetector> handler = new RecordAndContinue<>();
+        RecordAndContinue handler = new RecordAndContinue();
         TimeDetector detector1 = new TimeDetector(9.9, 10.1, 12)
                 .withHandler(handler)
                 .withMaxCheck(10)
@@ -296,7 +296,7 @@ public abstract class CloseEventsAbstractTest {
 
         //verify
         // finds one or three events. Not 2.
-        List<Event<EventDetector>> events1 = handler.getEvents();
+        List<Event> events1 = handler.getEvents();
         Assertions.assertEquals(1, events1.size());
         Assertions.assertEquals(9.9, events1.get(0).getState().getDate().durationFrom(epoch), 0.1);
         Assertions.assertEquals(true, events1.get(0).isIncreasing());
@@ -310,17 +310,17 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 1.0, t2 = 15, t3 = 16, t4 = 17, t5 = 18;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         TimeDetector detectorB = new TimeDetector(-10, t1, t2, t5)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         TimeDetector detectorC = new TimeDetector(t4)
-                .withHandler(new Handler<>(events, Action.RESET_DERIVATIVES))
+                .withHandler(new Handler(events, Action.RESET_DERIVATIVES))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
 
@@ -358,13 +358,13 @@ public abstract class CloseEventsAbstractTest {
         //setup
         double maxCheck = 10;
         double t2 = 11, t3 = t2 + 1e-5;
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t2)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(1e-6);
         FlatDetector detectorB = new FlatDetector(t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(0.5);
         Propagator propagator = getPropagator(10);
@@ -399,13 +399,13 @@ public abstract class CloseEventsAbstractTest {
         final double toleranceB = 0.3;
         double t1 = 11, t2 = 11.1, t3 = 11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t2)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(1e-6);
         TimeDetector detectorB = new TimeDetector(t1, t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(toleranceB);
         Propagator propagator = getPropagator(10);
@@ -443,9 +443,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 0.5;
         double t1 = 11, t2 = 11.4, t3 = 12.0;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         FlatDetector detectorB = new FlatDetector(t1, t2, t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -473,13 +473,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 11;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         TimeDetector detectorB = new TimeDetector(t1, t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -511,13 +511,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 11;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         ContinuousDetector detectorB = new ContinuousDetector(-20, t1, t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -546,9 +546,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 10, t2 = 20;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t1, t2)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -574,9 +574,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 10, t2 = 20;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(-10, t1, t2)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -603,17 +603,17 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 1.0, t2 = 2, t3 = 3, t4 = 4, t5 = 5, t6 = 6.5, t7 = 7;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t6)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         FlatDetector detectorB = new FlatDetector(t1, t3, t4, t7)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         ContinuousDetector detectorC = new ContinuousDetector(t2, t5)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
 
@@ -664,11 +664,11 @@ public abstract class CloseEventsAbstractTest {
         double t1 = 15.0;
         SpacecraftState newState = new SpacecraftState(new KeplerianOrbit(
                 6378137 + 500e3, 0, FastMath.PI / 2, 0, 0,
-                FastMath.PI / 2, PositionAngle.TRUE, eci, epoch.shiftedBy(t1), mu));
+                FastMath.PI / 2, PositionAngleType.TRUE, eci, epoch.shiftedBy(t1), mu));
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
-                .withHandler(new Handler<EventDetector>(events, Action.RESET_STATE) {
+                .withHandler(new Handler(events, Action.RESET_STATE) {
                     @Override
                     public SpacecraftState resetState(EventDetector detector,
                                                       SpacecraftState oldState) {
@@ -679,7 +679,7 @@ public abstract class CloseEventsAbstractTest {
                 .withThreshold(tolerance);
         LatitudeCrossingDetector detectorB =
                 new LatitudeCrossingDetector(earth, FastMath.toRadians(80))
-                        .withHandler(new RecordAndContinue<>(events))
+                        .withHandler(new RecordAndContinue(events))
                         .withMaxCheck(maxCheck)
                         .withThreshold(tolerance);
 
@@ -709,9 +709,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-18;
         double t1 = 15;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -740,13 +740,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 11, t2 = 19;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withThreshold(maxCheck)
                 .withThreshold(tolerance)
-                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                .withHandler(new RecordAndContinue(events) {
                     @Override
                     public Action eventOccurred(SpacecraftState s,
                                                 EventDetector detector,
@@ -760,7 +760,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(s -> swap[0] ? detectorB.g(s) : -1);
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -791,13 +791,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 11, t2 = 11.1;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
-                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                .withHandler(new RecordAndContinue(events) {
                     @Override
                     public Action eventOccurred(SpacecraftState state,
                                                 EventDetector detector,
@@ -812,7 +812,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> swap[0] ? -1 : detectorB.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -840,13 +840,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 11, t2 = 11.1, t3 = 11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
-                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                .withHandler(new RecordAndContinue(events) {
                     @Override
                     public Action eventOccurred(SpacecraftState state,
                                                 EventDetector detector,
@@ -862,7 +862,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> swap[0] ? detectorD.g(state) : detectorB.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -893,13 +893,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = 11, t2 = 11.1, t3 = 11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
-                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                .withHandler(new RecordAndContinue(events) {
                     @Override
                     public Action eventOccurred(SpacecraftState state,
                                                 EventDetector detector,
@@ -915,7 +915,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> swap[0] ? detectorB.g(state) : detectorD.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -942,9 +942,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-18; // less than 1 ulp
         double t1 = 15.1;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         FlatDetector detectorA = new FlatDetector(t1)
-                .withHandler(new Handler<>(events, Action.STOP))
+                .withHandler(new Handler(events, Action.STOP))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -980,13 +980,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         final double t1 = FastMath.nextUp(10.0), t2 = 10.5;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // never zero so there is no easy way out
         EventDetector detectorA = new FunctionalDetector()
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> {
                     final AbsoluteDate t = state.getDate();
                     if (t.compareTo(epoch.shiftedBy(t1)) < 0) {
@@ -998,7 +998,7 @@ public abstract class CloseEventsAbstractTest {
                     }
                 });
         TimeDetector detectorB = new TimeDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -1029,9 +1029,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-18; // less than 1 ulp
         AbsoluteDate t1 = epoch.shiftedBy(15).shiftedBy(FastMath.ulp(15.0) / 8);
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         FlatDetector detectorA = new FlatDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -1056,7 +1056,7 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-18;
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(new TimeDetector(5)
-                .withHandler(new Handler<>(Action.CONTINUE))
+                .withHandler(new Handler(Action.CONTINUE))
                 .withThreshold(tolerance));
         StepHandler stepHandler = new StepHandler();
         propagator.setStepHandler(stepHandler);
@@ -1093,9 +1093,9 @@ public abstract class CloseEventsAbstractTest {
     public void testEventCausedByDerivativesReset() {
         // setup
         TimeDetector detectorA = new TimeDetector(15.0)
-                .withHandler(new Handler<TimeDetector>(Action.RESET_STATE){
+                .withHandler(new Handler(Action.RESET_STATE){
                     @Override
-                    public SpacecraftState resetState(TimeDetector d, SpacecraftState s) {
+                    public SpacecraftState resetState(EventDetector d, SpacecraftState s) {
                         return null;
                     }
                 })
@@ -1135,13 +1135,13 @@ public abstract class CloseEventsAbstractTest {
 
         // switched for 9 to 1 to be close to the start of the step
         double t1 = -1;
-        Handler<EventDetector> handler1 = new Handler<>(Action.RESET_DERIVATIVES);
+        Handler handler1 = new Handler(Action.RESET_DERIVATIVES);
         TimeDetector detector1 = new TimeDetector(t1)
                 .withHandler(handler1)
                 .withMaxCheck(10)
                 .withThreshold(1e-9);
         propagator.addEventDetector(detector1);
-        RecordAndContinue<EventDetector> handler2 = new RecordAndContinue<>();
+        RecordAndContinue handler2 = new RecordAndContinue();
         TimeDetector detector2 = new TimeDetector(t1 - 1e-15, t1 - 4.9)
                 .withHandler(handler2)
                 .withMaxCheck(11)
@@ -1152,10 +1152,10 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-20));
 
         // verify
-        List<Event<EventDetector>> events1 = handler1.getEvents();
+        List<Event> events1 = handler1.getEvents();
         Assertions.assertEquals(1, events1.size());
         Assertions.assertEquals(t1, events1.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        List<Event<EventDetector>> events2 = handler2.getEvents();
+        List<Event> events2 = handler2.getEvents();
         Assertions.assertEquals(0, events2.size());
     }
 
@@ -1165,13 +1165,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1;
         Propagator propagator = getPropagator(10);
 
-        RecordAndContinue<EventDetector> handler1 = new RecordAndContinue<>();
+        RecordAndContinue handler1 = new RecordAndContinue();
         TimeDetector detector1 = new TimeDetector(-5)
                 .withHandler(handler1)
                 .withMaxCheck(10)
                 .withThreshold(tolerance);
         propagator.addEventDetector(detector1);
-        RecordAndContinue<EventDetector> handler2 = new RecordAndContinue<>();
+        RecordAndContinue handler2 = new RecordAndContinue();
         TimeDetector detector2 = new TimeDetector(-5.5)
                 .withHandler(handler2)
                 .withMaxCheck(10)
@@ -1182,10 +1182,10 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-20));
 
         // verify
-        List<Event<EventDetector>> events1 = handler1.getEvents();
+        List<Event> events1 = handler1.getEvents();
         Assertions.assertEquals(1, events1.size());
         Assertions.assertEquals(-5, events1.get(0).getState().getDate().durationFrom(epoch), tolerance);
-        List<Event<EventDetector>> events2 = handler2.getEvents();
+        List<Event> events2 = handler2.getEvents();
         Assertions.assertEquals(1, events2.size());
         Assertions.assertEquals(-5.5, events2.get(0).getState().getDate().durationFrom(epoch), tolerance);
     }
@@ -1195,13 +1195,13 @@ public abstract class CloseEventsAbstractTest {
         // setup
         Propagator propagator = getPropagator(10);
 
-        RecordAndContinue<EventDetector> handler1 = new RecordAndContinue<>();
+        RecordAndContinue handler1 = new RecordAndContinue();
         TimeDetector detector1 = new TimeDetector(-5)
                 .withHandler(handler1)
                 .withMaxCheck(10)
                 .withThreshold(1);
         propagator.addEventDetector(detector1);
-        RecordAndContinue<EventDetector> handler2 = new RecordAndContinue<>();
+        RecordAndContinue handler2 = new RecordAndContinue();
         TimeDetector detector2 = new TimeDetector(-5)
                 .withHandler(handler2)
                 .withMaxCheck(10)
@@ -1212,10 +1212,10 @@ public abstract class CloseEventsAbstractTest {
         propagator.propagate(epoch.shiftedBy(-20));
 
         // verify
-        List<Event<EventDetector>> events1 = handler1.getEvents();
+        List<Event> events1 = handler1.getEvents();
         Assertions.assertEquals(1, events1.size());
         Assertions.assertEquals(-5, events1.get(0).getState().getDate().durationFrom(epoch), 0.0);
-        List<Event<EventDetector>> events2 = handler2.getEvents();
+        List<Event> events2 = handler2.getEvents();
         Assertions.assertEquals(1, events2.size());
         Assertions.assertEquals(-5, events2.get(0).getState().getDate().durationFrom(epoch), 0.0);
     }
@@ -1231,12 +1231,12 @@ public abstract class CloseEventsAbstractTest {
         double tol = 1e-10;
         Propagator propagator = getPropagator(10);
         boolean[] firstEventOccurred = {false};
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
 
         TimeDetector detector1 = new TimeDetector(-5)
                 .withMaxCheck(10)
                 .withThreshold(tol)
-                .withHandler(new Handler<EventDetector>(events, Action.RESET_STATE) {
+                .withHandler(new Handler(events, Action.RESET_STATE) {
                     @Override
                     public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
                         firstEventOccurred[0] = true;
@@ -1253,7 +1253,7 @@ public abstract class CloseEventsAbstractTest {
         FunctionalDetector detector2 = new FunctionalDetector()
                 .withMaxCheck(1)
                 .withThreshold(tol)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> {
                             if (firstEventOccurred[0]) {
                                 return new TimeDetector(-1, -3, -5).g(state);
@@ -1288,9 +1288,9 @@ public abstract class CloseEventsAbstractTest {
         // step size of 10 to land in between two events we would otherwise miss
         Propagator propagator = getPropagator(10);
 
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detector1 = new TimeDetector(-9.9, -10.1, -12)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(10)
                 .withThreshold(0.2);
         propagator.addEventDetector(detector1);
@@ -1313,17 +1313,17 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -1.0, t2 = -15, t3 = -16, t4 = -17, t5 = -18;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         TimeDetector detectorB = new TimeDetector(-50, t1, t2, t5)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         TimeDetector detectorC = new TimeDetector(t4)
-                .withHandler(new Handler<>(events, Action.RESET_DERIVATIVES))
+                .withHandler(new Handler(events, Action.RESET_DERIVATIVES))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
 
@@ -1361,13 +1361,13 @@ public abstract class CloseEventsAbstractTest {
         //setup
         double maxCheck = 10;
         double t2 = -11, t3 = t2 - 1e-5;
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t2)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(1e-6);
         FlatDetector detectorB = new FlatDetector(t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(0.5);
         Propagator propagator = getPropagator(10);
@@ -1402,13 +1402,13 @@ public abstract class CloseEventsAbstractTest {
         final double toleranceB = 0.3;
         double t1 = -11, t2 = -11.1, t3 = -11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t2)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         TimeDetector detectorB = new TimeDetector(-50, t1, t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(toleranceB);
         Propagator propagator = getPropagator(10);
@@ -1446,9 +1446,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 0.5;
         double t1 = -11, t2 = -11.4, t3 = -12.0;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         FlatDetector detectorB = new FlatDetector(t1, t2, t3)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -1476,13 +1476,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -11;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         TimeDetector detectorB = new TimeDetector(t1, t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -1514,13 +1514,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -11;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         ContinuousDetector detectorB = new ContinuousDetector(-50, t1, t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         detectorB.g(state(t1));
@@ -1550,9 +1550,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -10, t2 = -20;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(-50, t1, t2)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -1579,9 +1579,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -10, t2 = -20;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t1, t2)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -1608,17 +1608,17 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -1.0, t2 = -2, t3 = -3, t4 = -4, t5 = -5, t6 = -6.5, t7 = -7;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t6)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         ContinuousDetector detectorB = new ContinuousDetector(-50, t1, t3, t4, t7)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         ContinuousDetector detectorC = new ContinuousDetector(-50, t2, t5)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
 
@@ -1669,11 +1669,11 @@ public abstract class CloseEventsAbstractTest {
         double t1 = -15.0;
         SpacecraftState newState = new SpacecraftState(new KeplerianOrbit(
                 6378137 + 500e3, 0, FastMath.PI / 2, 0, 0,
-                FastMath.PI / 2, PositionAngle.TRUE, eci, epoch.shiftedBy(t1), mu));
+                FastMath.PI / 2, PositionAngleType.TRUE, eci, epoch.shiftedBy(t1), mu));
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         TimeDetector detectorA = new TimeDetector(t1)
-                .withHandler(new Handler<EventDetector>(events, Action.RESET_STATE) {
+                .withHandler(new Handler(events, Action.RESET_STATE) {
                     @Override
                     public SpacecraftState resetState(EventDetector detector,
                                                       SpacecraftState oldState) {
@@ -1684,7 +1684,7 @@ public abstract class CloseEventsAbstractTest {
                 .withThreshold(tolerance);
         LatitudeCrossingDetector detectorB =
                 new LatitudeCrossingDetector(earth, FastMath.toRadians(80))
-                        .withHandler(new RecordAndContinue<>(events))
+                        .withHandler(new RecordAndContinue(events))
                         .withMaxCheck(maxCheck)
                         .withThreshold(tolerance);
 
@@ -1714,9 +1714,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-18;
         double t1 = -15;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         ContinuousDetector detectorA = new ContinuousDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -1745,13 +1745,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -11, t2 = -19;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
-                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                .withHandler(new RecordAndContinue(events) {
                     @Override
                     public Action eventOccurred(SpacecraftState s,
                                                 EventDetector detector,
@@ -1765,7 +1765,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> swap[0] ? detectorB.g(state) : 1);
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1796,13 +1796,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -11, t2 = -11.1;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
-                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                .withHandler(new RecordAndContinue(events) {
                     @Override
                     public Action eventOccurred(SpacecraftState state,
                                                 EventDetector detector,
@@ -1817,7 +1817,7 @@ public abstract class CloseEventsAbstractTest {
         .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> swap[0] ? 1 : detectorB.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1845,13 +1845,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -11, t2 = -11.1, t3 = -11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
-                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                .withHandler(new RecordAndContinue(events) {
                     @Override
                     public Action eventOccurred(SpacecraftState state,
                                                 EventDetector detector,
@@ -1867,7 +1867,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> swap[0] ? detectorD.g(state) : detectorB.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1898,13 +1898,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         double t1 = -11, t2 = -11.1, t3 = -11.2;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // mutable boolean
         boolean[] swap = new boolean[1];
         final ContinuousDetector detectorA = new ContinuousDetector(t1)
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
-                .withHandler(new RecordAndContinue<EventDetector>(events) {
+                .withHandler(new RecordAndContinue(events) {
                     @Override
                     public Action eventOccurred(SpacecraftState state,
                                                 EventDetector detector,
@@ -1920,7 +1920,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> swap[0] ? detectorB.g(state) : detectorD.g(state));
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
@@ -1947,9 +1947,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-18; // less than 1 ulp
         double t1 = -15.1;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         FlatDetector detectorA = new FlatDetector(t1)
-                .withHandler(new Handler<>(events, Action.STOP))
+                .withHandler(new Handler(events, Action.STOP))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -1985,13 +1985,13 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-6;
         final double t1 = FastMath.nextDown(-10.0), t2 = -10.5;
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         // never zero so there is no easy way out
         EventDetector detectorA = new FunctionalDetector()
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance)
                 .withMaxIter(100)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withFunction(state -> {
                     final AbsoluteDate t = state.getDate();
                     if (t.compareTo(epoch.shiftedBy(t1)) > 0) {
@@ -2003,7 +2003,7 @@ public abstract class CloseEventsAbstractTest {
                     }
                 });
         TimeDetector detectorB = new TimeDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -2034,9 +2034,9 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-18; // less than 1 ulp
         AbsoluteDate t1 = epoch.shiftedBy(-15).shiftedBy(FastMath.ulp(-15.0) / 8);
         // shared event list so we know the order in which they occurred
-        List<Event<EventDetector>> events = new ArrayList<>();
+        List<Event> events = new ArrayList<>();
         FlatDetector detectorA = new FlatDetector(t1)
-                .withHandler(new RecordAndContinue<>(events))
+                .withHandler(new RecordAndContinue(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         Propagator propagator = getPropagator(10);
@@ -2062,7 +2062,7 @@ public abstract class CloseEventsAbstractTest {
         double tolerance = 1e-18;
         Propagator propagator = getPropagator(10);
         propagator.addEventDetector(new TimeDetector(-5)
-                .withHandler(new Handler<>(Action.CONTINUE))
+                .withHandler(new Handler(Action.CONTINUE))
                 .withThreshold(tolerance));
         StepHandler stepHandler = new StepHandler();
         propagator.setStepHandler(stepHandler);
@@ -2098,9 +2098,9 @@ public abstract class CloseEventsAbstractTest {
     public void testEventCausedByDerivativesResetReverse() {
         // setup
         TimeDetector detectorA = new TimeDetector(-15.0)
-                .withHandler(new Handler<TimeDetector>(Action.RESET_STATE){
+                .withHandler(new Handler(Action.RESET_STATE){
                     @Override
-                    public SpacecraftState resetState(TimeDetector d, SpacecraftState s) {
+                    public SpacecraftState resetState(EventDetector d, SpacecraftState s) {
                         return null;
                     }
                 })
@@ -2144,7 +2144,7 @@ public abstract class CloseEventsAbstractTest {
     private SpacecraftState state(double t) {
         return new SpacecraftState(
                 new KeplerianOrbit(6378137 + 500e3, 0, 0, 0, 0, 0,
-                        PositionAngle.TRUE, eci, epoch.shiftedBy(t),
+                        PositionAngleType.TRUE, eci, epoch.shiftedBy(t),
                         mu));
     }
 
@@ -2169,8 +2169,8 @@ public abstract class CloseEventsAbstractTest {
          * @param eventTs event times past epoch.
          */
         public TimeDetector(double... eventTs) {
-            this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                    new StopOnEvent<>(), toDates(eventTs));
+            this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+                 new StopOnEvent(), toDates(eventTs));
         }
 
         /**
@@ -2179,14 +2179,14 @@ public abstract class CloseEventsAbstractTest {
          * @param eventTs event times past epoch.
          */
         public TimeDetector(AbsoluteDate... eventTs) {
-            this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                    new StopOnEvent<>(), Arrays.asList(eventTs));
+            this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+                 new StopOnEvent(), Arrays.asList(eventTs));
         }
 
-        private TimeDetector(double newMaxCheck,
+        private TimeDetector(AdaptableInterval newMaxCheck,
                              double newThreshold,
                              int newMaxIter,
-                             EventHandler<? super TimeDetector> newHandler,
+                             EventHandler newHandler,
                              List<AbsoluteDate> dates) {
             super(newMaxCheck, newThreshold, newMaxIter, newHandler);
             this.eventTs = dates;
@@ -2209,10 +2209,10 @@ public abstract class CloseEventsAbstractTest {
         }
 
         @Override
-        protected TimeDetector create(double newMaxCheck,
+        protected TimeDetector create(AdaptableInterval newMaxCheck,
                                       double newThreshold,
                                       int newMaxIter,
-                                      EventHandler<? super TimeDetector> newHandler) {
+                                      EventHandler newHandler) {
             return new TimeDetector(
                     newMaxCheck, newThreshold, newMaxIter, newHandler, eventTs);
         }
@@ -2228,19 +2228,19 @@ public abstract class CloseEventsAbstractTest {
         private final EventDetector g;
 
         public FlatDetector(double... eventTs) {
-            this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                    new StopOnEvent<>(), new TimeDetector(eventTs));
+            this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+                 new StopOnEvent(), new TimeDetector(eventTs));
         }
 
         public FlatDetector(AbsoluteDate... eventTs) {
-            this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                    new StopOnEvent<>(), new TimeDetector(eventTs));
+            this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+                 new StopOnEvent(), new TimeDetector(eventTs));
         }
 
-        private FlatDetector(double newMaxCheck,
+        private FlatDetector(AdaptableInterval newMaxCheck,
                              double newThreshold,
                              int newMaxIter,
-                             EventHandler<? super FlatDetector> newHandler,
+                             EventHandler newHandler,
                              EventDetector g) {
             super(newMaxCheck, newThreshold, newMaxIter, newHandler);
             this.g = g;
@@ -2252,10 +2252,10 @@ public abstract class CloseEventsAbstractTest {
         }
 
         @Override
-        protected FlatDetector create(double newMaxCheck,
+        protected FlatDetector create(AdaptableInterval newMaxCheck,
                                       double newThreshold,
                                       int newMaxIter,
-                                      EventHandler<? super FlatDetector> newHandler) {
+                                      EventHandler newHandler) {
             return new FlatDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, g);
         }
 
@@ -2268,14 +2268,14 @@ public abstract class CloseEventsAbstractTest {
         private final List<AbsoluteDate> eventTs;
 
         public ContinuousDetector(double... eventTs) {
-            this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                    new StopOnEvent<>(), toDates(eventTs));
+            this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+                 new StopOnEvent(), toDates(eventTs));
         }
 
-        private ContinuousDetector(double newMaxCheck,
+        private ContinuousDetector(AdaptableInterval newMaxCheck,
                                    double newThreshold,
                                    int newMaxIter,
-                                   EventHandler<? super ContinuousDetector> newHandler,
+                                   EventHandler newHandler,
                                    List<AbsoluteDate> eventDates) {
             super(newMaxCheck, newThreshold, newMaxIter, newHandler);
             this.eventTs = eventDates;
@@ -2303,17 +2303,17 @@ public abstract class CloseEventsAbstractTest {
 
         @Override
         protected ContinuousDetector create(
-                double newMaxCheck,
+                AdaptableInterval newMaxCheck,
                 double newThreshold,
                 int newMaxIter,
-                EventHandler<? super ContinuousDetector> newHandler) {
+                EventHandler newHandler) {
             return new ContinuousDetector(
                     newMaxCheck, newThreshold, newMaxIter, newHandler, eventTs);
         }
 
     }
 
-    private static class Handler<T extends EventDetector> extends RecordAndContinue<T> {
+    private static class Handler extends RecordAndContinue {
 
         private final Action action;
 
@@ -2321,37 +2321,37 @@ public abstract class CloseEventsAbstractTest {
             this.action = action;
         }
 
-        public Handler(List<Event<T>> events, Action action) {
+        public Handler(List<Event> events, Action action) {
             super(events);
             this.action = action;
         }
 
         @Override
-        public Action eventOccurred(SpacecraftState s, T detector, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
             super.eventOccurred(s, detector, increasing);
             return this.action;
         }
 
     }
 
-    private static class ResetHandler<T extends EventDetector> extends Handler<T> {
+    private static class ResetHandler extends Handler {
 
         private final SpacecraftState newState;
         private final int times;
         private long i = 0;
 
-        public ResetHandler(List<Event<T>> events, SpacecraftState newState) {
+        public ResetHandler(List<Event> events, SpacecraftState newState) {
             this(events, newState, Integer.MAX_VALUE);
         }
 
-        public ResetHandler(List<Event<T>> events, SpacecraftState newState, int times) {
+        public ResetHandler(List<Event> events, SpacecraftState newState, int times) {
             super(events, Action.RESET_STATE);
             this.newState = newState;
             this.times = times;
         }
 
         @Override
-        public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing) {
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
             super.eventOccurred(s, detector, increasing);
             if (i++ < times) {
                 return Action.RESET_STATE;
@@ -2360,7 +2360,7 @@ public abstract class CloseEventsAbstractTest {
         }
 
         @Override
-        public SpacecraftState resetState(T detector, SpacecraftState oldState) {
+        public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
             Assertions.assertEquals(0, newState.getDate().durationFrom(oldState.getDate()), 0);
             return newState;
         }
@@ -2400,12 +2400,12 @@ public abstract class CloseEventsAbstractTest {
         int count;
 
         public ResetChangesSignGenerator(final AbsoluteDate t0, final double y1, final double y2, final double change) {
-            this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-                 new ContinueOnEvent<>(), t0, y1, y2, change);
+            this(s -> DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+                 new ContinueOnEvent(), t0, y1, y2, change);
         }
 
-        private ResetChangesSignGenerator(final double newMaxCheck, final double newThreshold, final int newMaxIter,
-                                          final EventHandler<? super ResetChangesSignGenerator> newHandler,
+        private ResetChangesSignGenerator(final AdaptableInterval newMaxCheck, final double newThreshold, final int newMaxIter,
+                                          final EventHandler newHandler,
                                           final AbsoluteDate t0, final double y1, final double y2, final double change ) {
             super(newMaxCheck, newThreshold, newMaxIter, newHandler);
             this.t0     = t0;
@@ -2416,9 +2416,9 @@ public abstract class CloseEventsAbstractTest {
             this.count  = 0;
         }
 
-        protected ResetChangesSignGenerator create(final double newMaxCheck, final double newThreshold,
+        protected ResetChangesSignGenerator create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                                    final int newMaxIter,
-                                                   final EventHandler<? super ResetChangesSignGenerator> newHandler) {
+                                                   final EventHandler newHandler) {
             return new ResetChangesSignGenerator(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                                  t0, y1, y2, change);
         }
@@ -2428,13 +2428,17 @@ public abstract class CloseEventsAbstractTest {
             return (dt - y1) * (dt - y2);
         }
 
-        public Action eventOccurred(SpacecraftState s, boolean increasing) {
-            return ++count < 2 ? Action.RESET_STATE : Action.STOP;
-        }
+        public EventHandler getHandler() {
+            return new EventHandler() {
+                public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+                    return ++count < 2 ? Action.RESET_STATE : Action.STOP;
+                }
 
-        public SpacecraftState resetState(SpacecraftState s) {
-            delta = change;
-            return s;
+                public SpacecraftState resetState(EventDetector detector, SpacecraftState s) {
+                    delta = change;
+                    return s;
+                }
+            };
         }
 
         public int getCount() {

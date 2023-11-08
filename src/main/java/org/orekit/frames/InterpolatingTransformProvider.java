@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -111,7 +111,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
      * @return number of interpolation grid points
      */
     public int getGridPoints() {
-        return cache.getNeighborsSize();
+        return cache.getMaxNeighborsSize();
     }
 
     /** Get the grid points time step.
@@ -139,12 +139,12 @@ public class InterpolatingTransformProvider implements TransformProvider {
             (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
         if (fieldCache == null) {
             fieldCache =
-                new GenericTimeStampedCache<FieldTransform<T>>(cache.getNeighborsSize(),
+                new GenericTimeStampedCache<FieldTransform<T>>(cache.getMaxNeighborsSize(),
                                                                cache.getMaxSlots(),
                                                                cache.getMaxSpan(),
                                                                cache.getNewSlotQuantumGap(),
                                                                new FieldTransformGenerator<>(date.getField(),
-                                                                                             cache.getNeighborsSize(),
+                                                                                             cache.getMaxNeighborsSize(),
                                                                                              rawProvider,
                                                                                              step));
             fieldCaches.put(date.getField(), fieldCache);
@@ -167,7 +167,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
      */
     private Object writeReplace() {
         return new DTO(rawProvider, cFilter.getMaxOrder(), aFilter.getMaxOrder(),
-                       cache.getNeighborsSize(), step,
+                       cache.getMaxNeighborsSize(), step,
                        cache.getMaxSlots(), cache.getMaxSpan(), cache.getNewSlotQuantumGap());
     }
 

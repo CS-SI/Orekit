@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.gnss;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -34,52 +35,102 @@ import org.orekit.time.TimeScales;
 public enum TimeSystem {
 
     /** Global Positioning System. */
-    GPS("GPS"),
+    GPS("GPS", "GP", "G", ts -> ts.getGPS()),
 
     /** GLONASS. */
-    GLONASS("GLO"),
+    GLONASS("GLO", "GL", "R", ts -> ts.getGLONASS()),
 
     /** GALILEO. */
-    GALILEO("GAL"),
+    GALILEO("GAL", "GA", "E", ts -> ts.getGST()),
 
     /** International Atomic Time. */
-    TAI("TAI"),
+    TAI("TAI", null, null, ts -> ts.getTAI()),
 
     /** Coordinated Universal Time. */
-    UTC("UTC"),
+    UTC("UTC", "UT", null, ts -> ts.getUTC()),
 
     /** Quasi-Zenith System. */
-    QZSS("QZS"),
+    QZSS("QZS", "QZ", "J", ts -> ts.getQZSS()),
 
     /** Beidou. */
-    BEIDOU("BDS"),
+    BEIDOU("BDS", "BD", "C", ts -> ts.getBDT()),
 
     /** IRNSS. */
-    IRNSS("IRN"),
+    IRNSS("IRN", "IR", "I", ts -> ts.getIRNSS()),
 
-    /** Unknown. */
-    UNKNOWN("LCL");
+    /** SBAS.
+     * @since 12.0
+     */
+    SBAS("SBAS", "SB", "S", ts -> ts.getUTC()),
 
-    /** Parsing map. */
+    /** GMT (should only by used in RUN BY / DATE entries).
+     * @since 12.0
+     */
+    GMT("GMT", null, null, ts -> ts.getUTC()),
+
+    /** Unknown (should only by used in RUN BY / DATE entries). */
+    UNKNOWN("LCL", null, null, ts -> ts.getGPS());
+
+    /** Parsing key map. */
     private static final Map<String, TimeSystem> KEYS_MAP = new HashMap<>();
+
+    /** Parsing two letters code map.
+     * @since 12.0
+     */
+    private static final Map<String, TimeSystem> TLC_MAP = new HashMap<>();
+
+    /** Parsing one letters code map.
+     * @since 12.0
+     */
+    private static final Map<String, TimeSystem> OLC_MAP = new HashMap<>();
+
     static {
         for (final TimeSystem timeSystem : values()) {
-            KEYS_MAP.put(timeSystem.getKey(), timeSystem);
+            KEYS_MAP.put(timeSystem.key, timeSystem);
+            if (timeSystem.twoLettersCode != null) {
+                TLC_MAP.put(timeSystem.twoLettersCode, timeSystem);
+            }
+            if (timeSystem.oneLetterCode != null) {
+                OLC_MAP.put(timeSystem.oneLetterCode, timeSystem);
+            }
         }
     }
 
     /** Key for the system. */
     private final String key;
 
+    /** Two-letters code.
+     * @since 12.0
+     */
+    private final String twoLettersCode;
+
+    /** One-letter code.
+     * @since 12.0
+     */
+    private final String oneLetterCode;
+
+    /** Time scale provider.
+     * @since 12.0
+     */
+    private final Function<TimeScales, TimeScale> timeScaleProvider;
+
     /** Simple constructor.
      * @param key key letter
+     * @param twoLettersCode two letters code (may be null)
+     * @param oneLetterCode one letter code (may be null)
+     * @param timeScaleProvider time scale provider
      */
-    TimeSystem(final String key) {
-        this.key = key;
+    TimeSystem(final String key, final String twoLettersCode, final String oneLetterCode,
+               final Function<TimeScales, TimeScale> timeScaleProvider) {
+        this.key               = key;
+        this.twoLettersCode    = twoLettersCode;
+        this.oneLetterCode     = oneLetterCode;
+        this.timeScaleProvider = timeScaleProvider;
     }
 
-    /** Get the key for the system.
-     * @return key for the system
+    /** Get the 3 letters key of the time system.
+     * @return 3 letters key
+     * @since 12.0
      */
     public String getKey() {
         return key;
@@ -102,52 +153,47 @@ public enum TimeSystem {
         return timeSystem;
     }
 
+    /** Parse a string to get the time system.
+     * <p>
+     * The string must be the two letters code of the time system.
+     * </p>
+     * @param code string to parse
+     * @return the time system
+     * @exception OrekitIllegalArgumentException if the string does not correspond to a time system key
+     */
+    public static TimeSystem parseTwoLettersCode(final String code)
+        throws OrekitIllegalArgumentException {
+        final TimeSystem timeSystem = TLC_MAP.get(code);
+        if (timeSystem == null) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.UNKNOWN_TIME_SYSTEM, code);
+        }
+        return timeSystem;
+    }
+
+    /** Parse a string to get the time system.
+     * <p>
+     * The string must be the one letters code of the time system.
+     * The one letter code is the RINEX GNSS system flag.
+     * </p>
+     * @param code string to parse
+     * @return the time system
+     * @exception OrekitIllegalArgumentException if the string does not correspond to a time system key
+     */
+    public static TimeSystem parseOneLetterCode(final String code)
+        throws OrekitIllegalArgumentException {
+        final TimeSystem timeSystem = OLC_MAP.get(code);
+        if (timeSystem == null) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.UNKNOWN_TIME_SYSTEM, code);
+        }
+        return timeSystem;
+    }
+
     /** Get the time scale corresponding to time system.
      * @param timeScales the set of time scales to use
      * @return the time scale corresponding to time system in the set of time scales
      */
     public TimeScale getTimeScale(final TimeScales timeScales) {
-
-        TimeScale timeScale = null;
-        switch (this) {
-            case GPS:
-                timeScale = timeScales.getGPS();
-                break;
-
-            case GALILEO:
-                timeScale = timeScales.getGST();
-                break;
-
-            case GLONASS:
-                timeScale = timeScales.getGLONASS();
-                break;
-
-            case QZSS:
-                timeScale = timeScales.getQZSS();
-                break;
-
-            case TAI:
-                timeScale = timeScales.getTAI();
-                break;
-
-            case UTC:
-                timeScale = timeScales.getUTC();
-                break;
-
-            case BEIDOU:
-                timeScale = timeScales.getBDT();
-                break;
-
-            case IRNSS:
-                timeScale = timeScales.getIRNSS();
-                break;
-
-            // Default value is GPS time scale, even in unknown case.
-            default:
-                timeScale = timeScales.getGPS();
-                break;
-        }
-
-        return timeScale;
+        return timeScaleProvider.apply(timeScales);
     }
+
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,7 +64,7 @@ import org.orekit.utils.units.UnitsConverter;
  * @see <a href="http://maia.usno.navy.mil/ser7/readme.finals">finals file format description at USNO</a>
  */
 class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
-        implements EOPHistoryLoader {
+        implements EopHistoryLoader {
 
     /** Field for year, month and day parsing. */
     private static final String  INTEGER2_FIELD               = "((?:\\p{Blank}|\\p{Digit})\\p{Digit})";
@@ -313,7 +313,7 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                     final double lod;
                     if (lodPartA.trim().length() == 0) {
                         // lod part from bulletin A is blank
-                        lod = 0;
+                        lod = Double.NaN;
                     } else {
                         final Matcher lodAMatcher = LOD_PATTERN_A.matcher(lodPartA);
                         if (lodAMatcher.matches()) {
@@ -383,7 +383,8 @@ class RapidDataAndPredictionColumnsLoader extends AbstractEopLoader
                         // get a configuration for current name and date range
                         configuration = getItrfVersionProvider().getConfiguration(name, mjd);
                     }
-                    history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                    history.add(new EOPEntry(mjd, dtu1, lod, x, y, Double.NaN, Double.NaN,
+                                             equinox[0], equinox[1], nro[0], nro[1],
                                              configuration.getVersion(), mjdDate));
 
                 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,11 +44,12 @@ public class WindUpFactory {
     /** Get a modifier for a satellite/receiver pair.
      * @param system system the satellite belongs to
      * @param prnNumber PRN number
+     * @param emitterDipole emitter dipole
      * @param receiverName name of the receiver
      * @return modifier for the satellite/receiver pair
      */
-    public WindUp getWindUp(final SatelliteSystem system, final int prnNumber, final String receiverName) {
-
+    public WindUp getWindUp(final SatelliteSystem system, final int prnNumber,
+                            final Dipole emitterDipole, final String receiverName) {
         // select satellite system
         Map<Integer, Map<String, WindUp>> systemModifiers = modifiers.get(system);
         if (systemModifiers == null) {
@@ -69,7 +70,7 @@ public class WindUpFactory {
         WindUp receiverModifier = satelliteModifiers.get(receiverName);
         if (receiverModifier == null) {
             // build a new wind-up modifier
-            receiverModifier = new WindUp();
+            receiverModifier = new WindUp(emitterDipole);
             satelliteModifiers.put(receiverName, receiverModifier);
         }
 

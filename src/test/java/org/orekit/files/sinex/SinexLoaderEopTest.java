@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -81,7 +81,8 @@ public class SinexLoaderEopTest {
         Assertions.assertEquals(-0.172036907064256E+03, firstEntry.getUT1MinusUTC() * 1000, 1e-15);
 
         // Test if a valid EOPHistory object can be built
-        EOPHistory eopHistory = new EOPHistory(IERSConventions.IERS_2010, history, true, DataContext.getDefault().getTimeScales());
+        EOPHistory eopHistory = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                               history, true, DataContext.getDefault().getTimeScales());
         Assertions.assertEquals(-0.172046001405041, eopHistory.getUT1MinusUTC(date1), 1e-15);
         Assertions.assertEquals(unitConvRad.convert(0.994323310003336E+02), eopHistory.getPoleCorrection(date1).getXp(), 1e-15);
         Assertions.assertEquals(unitConvRad.convert(0.275001985187467E+03), eopHistory.getPoleCorrection(date1).getYp(), 1e-15);
@@ -147,7 +148,8 @@ public class SinexLoaderEopTest {
         Assertions.assertEquals(equinox[1], firstEntry.getDdEps(), 4.8e-12);
 
         // Test if a valid EOPHistory object can be built
-        EOPHistory eopHistory = new EOPHistory(IERSConventions.IERS_2010, history, true, DataContext.getDefault().getTimeScales());
+        EOPHistory eopHistory = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                               history, true, DataContext.getDefault().getTimeScales());
 
         Assertions.assertEquals(unitConvRad.convert(7.68783442726072E+01), eopHistory.getPoleCorrection(date.shiftedBy(0)).getXp(), 1e-15);
         Assertions.assertEquals(unitConvRad.convert(3.47286203337827E+02), eopHistory.getPoleCorrection(date.shiftedBy(-1)).getYp(), 1e-15);
@@ -244,10 +246,12 @@ public class SinexLoaderEopTest {
         loader.fillHistory(converter, history);
 
         AbsoluteDate dateStart = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 350);
+        AbsoluteDate dateStartPlusOne = dateStart.shiftedBy(+1.0);
         AbsoluteDate dateInFile = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 350 + 45000.0);
         AbsoluteDate dateEnd = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 351);
+        AbsoluteDate dateEndMinusOne = dateEnd.shiftedBy(-1.0);
 
-        List<AbsoluteDate> listDates = Arrays.asList(dateStart, dateInFile, dateEnd);
+        List<AbsoluteDate> listDates = Arrays.asList(dateStart, dateStartPlusOne, dateInFile, dateEndMinusOne, dateEnd);
 
         int cpt = 0;
         for (EOPEntry entry : history) {
@@ -287,7 +291,7 @@ public class SinexLoaderEopTest {
 
 
     @Test
-    // Check the behaviour of the LazyLoadedEop class used in the Default DataContext case, with multiple Sine files.
+    // Check the behaviour of the LazyLoadedEop class used in the Default DataContext case, with multiple Sinex files.
     // We suppose the dates are not overlapping, and are consistent with the header of each file.
     public void testSmallSinexEopSynthMultiLoader() {
 
@@ -314,7 +318,9 @@ public class SinexLoaderEopTest {
 
         // Setting up dates for further checks
         AbsoluteDate startDate = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (350));
+        AbsoluteDate startDatePlusOne = startDate.shiftedBy(+1.0);
         AbsoluteDate endDate = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (353));
+        AbsoluteDate endDateMinusOne = endDate.shiftedBy(-1.0);
 
         AbsoluteDate date  = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 350 + 43185.0);
         AbsoluteDate date2 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 351 + 43185.0);
@@ -322,10 +328,17 @@ public class SinexLoaderEopTest {
 
         // Intermediate shared date between two files
         AbsoluteDate dateI12 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (352 - 1)).shiftedBy(0);
+        AbsoluteDate dateI12MinusOne = dateI12.shiftedBy(-1.0);
+        AbsoluteDate dateI12PlusOne = dateI12.shiftedBy(+1.0);
         AbsoluteDate dateI23 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (353 - 1)).shiftedBy(0);
+        AbsoluteDate dateI23MinusOne = dateI23.shiftedBy(-1.0);
+        AbsoluteDate dateI23PlusOne = dateI23.shiftedBy(+1.0);
 
-        List<AbsoluteDate> listDates = Arrays.asList(startDate, date, dateI12, date2, dateI23, date3, endDate);
-        // Simplify checks to stay in the units of Orekit.
+        List<AbsoluteDate> listDates = Arrays.asList(startDate, startDatePlusOne, date,
+                                                     dateI12MinusOne, dateI12, dateI12PlusOne, date2,
+                                                     dateI23MinusOne, dateI23, dateI23PlusOne, date3,
+                                                     endDateMinusOne, endDate);
+        // Simplify checks to stay in the units of Orekit
         final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
 
         // Check dates

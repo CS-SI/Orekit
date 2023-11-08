@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
 /** Base class for dsst force models parameter containers.
  * @author Bryan Cazabonne
  * @since 10.0
+ * @param <T> type of the field elements
  */
 public abstract class FieldForceModelContext<T extends CalculusFieldElement<T>> {
 

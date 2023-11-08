@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,12 +43,13 @@ import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
@@ -186,7 +187,7 @@ public class OpmParserTest {
         Assertions.assertEquals(FastMath.toRadians(0.117746), keplerianElements.getI(), 1e-10);
         Assertions.assertEquals(FastMath.toRadians(17.604721), keplerianElements.getRaan(), 1e-10);
         Assertions.assertEquals(FastMath.toRadians(218.242943), keplerianElements.getPa(), 1e-10);
-        Assertions.assertEquals(PositionAngle.TRUE, keplerianElements.getAnomalyType());
+        Assertions.assertEquals(PositionAngleType.TRUE, keplerianElements.getAnomalyType());
         Assertions.assertEquals(FastMath.toRadians(41.922339), keplerianElements.getAnomaly(), 1e-10);
         Assertions.assertEquals(398600.4415 * 1e9, keplerianElements.getMu(), 1e-10);
 
@@ -300,7 +301,7 @@ public class OpmParserTest {
         Assertions.assertEquals(FastMath.toRadians(0.117746), keplerianElements.getI(), 1e-10);
         Assertions.assertEquals(FastMath.toRadians(17.604721), keplerianElements.getRaan(), 1e-10);
         Assertions.assertEquals(FastMath.toRadians(218.242943), keplerianElements.getPa(), 1e-10);
-        Assertions.assertEquals(PositionAngle.TRUE, keplerianElements.getAnomalyType());
+        Assertions.assertEquals(PositionAngleType.TRUE, keplerianElements.getAnomalyType());
         Assertions.assertEquals(FastMath.toRadians(41.922339), keplerianElements.getAnomaly(), 1e-10);
         Assertions.assertEquals(398600.4415 * 1e9, keplerianElements.getMu(), 1e-10);
 
@@ -464,7 +465,8 @@ public class OpmParserTest {
 
         // write the parsed file back to a characters array
         final CharArrayWriter caw = new CharArrayWriter();
-        final Generator generator = new KvnGenerator(caw, OpmWriter.KVN_PADDING_WIDTH, "dummy", 60);
+        final Generator generator = new KvnGenerator(caw, OpmWriter.KVN_PADDING_WIDTH, "dummy",
+                                                     Constants.JULIAN_DAY, 60);
         new WriterBuilder().buildOpmWriter().writeMessage(generator, original);
 
         // reparse the written file
@@ -571,12 +573,13 @@ public class OpmParserTest {
         Assertions.assertEquals("TOD/2010 accurate EOP", file.getMetadata().getFrame().toString());
         Assertions.assertEquals("2000-028A", file.getMetadata().getObjectID());
         Assertions.assertEquals(new AbsoluteDate(2006, 6, 3, TimeScalesFactory.getUTC()), file.getDate());
-        Assertions.assertEquals(  6655994.2, file.getPVCoordinates().getPosition().getX(), 1.0e-10);
-        Assertions.assertEquals(-40218575.1, file.getPVCoordinates().getPosition().getY(), 1.0e-10);
-        Assertions.assertEquals(   -82917.7, file.getPVCoordinates().getPosition().getZ(), 1.0e-10);
-        Assertions.assertEquals( 3115.48208, file.getPVCoordinates().getVelocity().getX(), 1.0e-10);
-        Assertions.assertEquals( 0470.42605, file.getPVCoordinates().getVelocity().getY(), 1.0e-10);
-        Assertions.assertEquals(-0001.01495, file.getPVCoordinates().getVelocity().getZ(), 1.0e-10);
+        final TimeStampedPVCoordinates pva = file.getPVCoordinates();
+        Assertions.assertEquals(  6655994.2, pva.getPosition().getX(), 1.0e-10);
+        Assertions.assertEquals(-40218575.1, pva.getPosition().getY(), 1.0e-10);
+        Assertions.assertEquals(   -82917.7, pva.getPosition().getZ(), 1.0e-10);
+        Assertions.assertEquals( 3115.48208, pva.getVelocity().getX(), 1.0e-10);
+        Assertions.assertEquals( 0470.42605, pva.getVelocity().getY(), 1.0e-10);
+        Assertions.assertEquals(-0001.01495, pva.getVelocity().getZ(), 1.0e-10);
     }
 
     @Test
@@ -893,6 +896,23 @@ public class OpmParserTest {
             Assertions.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
             Assertions.assertEquals(11, ((Integer) oe.getParts()[0]).intValue());
             Assertions.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
+        }
+    }
+
+    @Test
+    public void testSpuriousMetaDataSection() throws URISyntaxException {
+        final String name = "/ccsds/odm/opm/spurious-metadata.xml";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().
+            withMu(CelestialBodyFactory.getMars().getGM()).
+            buildOpmParser().
+            parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assertions.assertEquals(23, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals("metadata", oe.getParts()[2]);
         }
     }
 

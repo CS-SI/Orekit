@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,27 +56,27 @@ public class RTNCovariance extends CommentsContainer {
     public void validate(final double version) {
         super.validate(version);
         // We only check values that are mandatory in a cdm file
-        checkNotNaN(getCrr(),              RTNCovarianceKey.CR_R);
-        checkNotNaN(getCtr(),              RTNCovarianceKey.CT_R);
-        checkNotNaN(getCtt(),              RTNCovarianceKey.CT_T);
-        checkNotNaN(getCnr(),              RTNCovarianceKey.CN_R);
-        checkNotNaN(getCnt(),              RTNCovarianceKey.CN_T);
-        checkNotNaN(getCnn(),              RTNCovarianceKey.CN_N);
-        checkNotNaN(getCrdotr(),           RTNCovarianceKey.CRDOT_R);
-        checkNotNaN(getCrdott(),           RTNCovarianceKey.CRDOT_T);
-        checkNotNaN(getCrdotn(),           RTNCovarianceKey.CRDOT_N);
-        checkNotNaN(getCrdotrdot(),        RTNCovarianceKey.CRDOT_RDOT);
-        checkNotNaN(getCtdotr(),           RTNCovarianceKey.CTDOT_R);
-        checkNotNaN(getCtdott(),           RTNCovarianceKey.CTDOT_T);
-        checkNotNaN(getCtdotn(),           RTNCovarianceKey.CTDOT_N);
-        checkNotNaN(getCtdotrdot(),        RTNCovarianceKey.CTDOT_RDOT);
-        checkNotNaN(getCtdottdot(),        RTNCovarianceKey.CTDOT_TDOT);
-        checkNotNaN(getCndotr(),           RTNCovarianceKey.CNDOT_R);
-        checkNotNaN(getCndott(),           RTNCovarianceKey.CNDOT_T);
-        checkNotNaN(getCndotn(),           RTNCovarianceKey.CNDOT_N);
-        checkNotNaN(getCndotrdot(),        RTNCovarianceKey.CNDOT_RDOT);
-        checkNotNaN(getCndottdot(),        RTNCovarianceKey.CNDOT_TDOT);
-        checkNotNaN(getCndotndot(),        RTNCovarianceKey.CNDOT_NDOT);
+        checkNotNaN(getCrr(),              RTNCovarianceKey.CR_R.name());
+        checkNotNaN(getCtr(),              RTNCovarianceKey.CT_R.name());
+        checkNotNaN(getCtt(),              RTNCovarianceKey.CT_T.name());
+        checkNotNaN(getCnr(),              RTNCovarianceKey.CN_R.name());
+        checkNotNaN(getCnt(),              RTNCovarianceKey.CN_T.name());
+        checkNotNaN(getCnn(),              RTNCovarianceKey.CN_N.name());
+        checkNotNaN(getCrdotr(),           RTNCovarianceKey.CRDOT_R.name());
+        checkNotNaN(getCrdott(),           RTNCovarianceKey.CRDOT_T.name());
+        checkNotNaN(getCrdotn(),           RTNCovarianceKey.CRDOT_N.name());
+        checkNotNaN(getCrdotrdot(),        RTNCovarianceKey.CRDOT_RDOT.name());
+        checkNotNaN(getCtdotr(),           RTNCovarianceKey.CTDOT_R.name());
+        checkNotNaN(getCtdott(),           RTNCovarianceKey.CTDOT_T.name());
+        checkNotNaN(getCtdotn(),           RTNCovarianceKey.CTDOT_N.name());
+        checkNotNaN(getCtdotrdot(),        RTNCovarianceKey.CTDOT_RDOT.name());
+        checkNotNaN(getCtdottdot(),        RTNCovarianceKey.CTDOT_TDOT.name());
+        checkNotNaN(getCndotr(),           RTNCovarianceKey.CNDOT_R.name());
+        checkNotNaN(getCndott(),           RTNCovarianceKey.CNDOT_T.name());
+        checkNotNaN(getCndotn(),           RTNCovarianceKey.CNDOT_N.name());
+        checkNotNaN(getCndotrdot(),        RTNCovarianceKey.CNDOT_RDOT.name());
+        checkNotNaN(getCndottdot(),        RTNCovarianceKey.CNDOT_TDOT.name());
+        checkNotNaN(getCndotndot(),        RTNCovarianceKey.CNDOT_NDOT.name());
     }
 
     /** Set an entry in the RTN covariance matrix.

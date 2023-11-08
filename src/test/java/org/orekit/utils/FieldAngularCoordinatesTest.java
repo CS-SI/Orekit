@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,9 @@
  */
 package org.orekit.utils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -29,10 +32,18 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.FieldExpandableODE;
+import org.hipparchus.ode.FieldODEIntegrator;
+import org.hipparchus.ode.FieldODEState;
+import org.hipparchus.ode.FieldODEStateAndDerivative;
+import org.hipparchus.ode.FieldOrdinaryDifferentialEquation;
+import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.ode.sampling.FieldODEFixedStepHandler;
+import org.hipparchus.ode.sampling.FieldStepNormalizer;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
@@ -41,10 +52,87 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 public class FieldAngularCoordinatesTest {
+
+    @Test
+    public void testAccelerationModeling() {
+        Binary64 rate = new Binary64(2 * FastMath.PI / (12 * 60));
+        Binary64 acc  = new Binary64(0.01);
+        Binary64 dt   = new Binary64(1.0);
+        int      n    = 2000;
+        final FieldAngularCoordinates<Binary64> quadratic =
+                new FieldAngularCoordinates<>(FieldRotation.getIdentity(Binary64Field.getInstance()),
+                                              new FieldVector3D<>(rate, Vector3D.PLUS_K),
+                                              new FieldVector3D<>(acc,  Vector3D.PLUS_J));
+
+        final FieldOrdinaryDifferentialEquation<Binary64> ode = new FieldOrdinaryDifferentialEquation<Binary64>() {
+            public int getDimension() {
+                return 4;
+            }
+            public Binary64[] computeDerivatives(final Binary64 t, final Binary64[] q) {
+                final Binary64 omegaX = quadratic.getRotationRate().getX().add(t.multiply(quadratic.getRotationAcceleration().getX()));
+                final Binary64 omegaY = quadratic.getRotationRate().getY().add(t.multiply(quadratic.getRotationAcceleration().getY()));
+                final Binary64 omegaZ = quadratic.getRotationRate().getZ().add(t.multiply(quadratic.getRotationAcceleration().getZ()));
+                return new Binary64[] {
+                    t.linearCombination(q[1].negate(), omegaX, q[2].negate(), omegaY, q[3].negate(),  omegaZ).multiply(0.5),
+                    t.linearCombination(q[0],          omegaX, q[3].negate(), omegaY,  q[2],          omegaZ).multiply(0.5),
+                    t.linearCombination(q[3],          omegaX, q[0],          omegaY,  q[1].negate(), omegaZ).multiply(0.5),
+                    t.linearCombination(q[2].negate(), omegaX, q[1],          omegaY,  q[0],          omegaZ).multiply(0.5)
+                };
+            }
+        };
+        FieldODEIntegrator<Binary64> integrator =
+                        new DormandPrince853FieldIntegrator<>(Binary64Field.getInstance(), 1.0e-6, 1.0, 1.0e-12, 1.0e-12);
+        integrator.addStepHandler(new FieldStepNormalizer<>(dt.getReal() / n, new FieldODEFixedStepHandler<Binary64>() {
+            private Binary64   tM4, tM3, tM2, tM1, t0, tP1, tP2, tP3, tP4;
+            private Binary64[] yM4, yM3, yM2, yM1, y0, yP1, yP2, yP3, yP4;
+            private Binary64[] ydM4, ydM3, ydM2, ydM1, yd0, ydP1, ydP2, ydP3, ydP4;
+            public void handleStep(FieldODEStateAndDerivative<Binary64> s, boolean isLast) {
+                tM4 = tM3; yM4 = yM3; ydM4 = ydM3;
+                tM3 = tM2; yM3 = yM2; ydM3 = ydM2;
+                tM2 = tM1; yM2 = yM1; ydM2 = ydM1;
+                tM1 = t0 ; yM1 = y0 ; ydM1 = yd0 ;
+                t0  = tP1; y0  = yP1; yd0  = ydP1;
+                tP1 = tP2; yP1 = yP2; ydP1 = ydP2;
+                tP2 = tP3; yP2 = yP3; ydP2 = ydP3;
+                tP3 = tP4; yP3 = yP4; ydP3 = ydP4;
+                tP4  = s.getTime();
+                yP4  = s.getPrimaryState();
+                ydP4 = s.getPrimaryDerivative();
+
+                if (yM4 != null) {
+                    Binary64 dt = tP4.subtract(tM4).divide(8);
+                    final Binary64 c = dt.multiply(840).reciprocal();
+                    final Binary64[] ydd0 = {
+                        c.multiply(-3).multiply(ydP4[0].subtract(ydM4[0])).add(c.multiply(32).multiply(ydP3[0].subtract(ydM3[0]))).add(c.multiply(-168).multiply(ydP2[0].subtract(ydM2[0]))).add(c.multiply(672).multiply(ydP1[0].subtract(ydM1[0]))),
+                        c.multiply(-3).multiply(ydP4[1].subtract(ydM4[1])).add(c.multiply(32).multiply(ydP3[1].subtract(ydM3[1]))).add(c.multiply(-168).multiply(ydP2[1].subtract(ydM2[1]))).add(c.multiply(672).multiply(ydP1[1].subtract(ydM1[1]))),
+                        c.multiply(-3).multiply(ydP4[2].subtract(ydM4[2])).add(c.multiply(32).multiply(ydP3[2].subtract(ydM3[2]))).add(c.multiply(-168).multiply(ydP2[2].subtract(ydM2[2]))).add(c.multiply(672).multiply(ydP1[2].subtract(ydM1[2]))),
+                        c.multiply(-3).multiply(ydP4[3].subtract(ydM4[3])).add(c.multiply(32).multiply(ydP3[3].subtract(ydM3[3]))).add(c.multiply(-168).multiply(ydP2[3].subtract(ydM2[3]))).add(c.multiply(672).multiply(ydP1[3].subtract(ydM1[3]))),
+                    };
+                    FieldAngularCoordinates<Binary64> ac =
+                                    new FieldAngularCoordinates<>(new FieldRotation<>(new FieldUnivariateDerivative2<>(y0[0], yd0[0], ydd0[0]),
+                                                                                      new FieldUnivariateDerivative2<>(y0[1], yd0[1], ydd0[1]),
+                                                                                      new FieldUnivariateDerivative2<>(y0[2], yd0[2], ydd0[2]),
+                                                                                      new FieldUnivariateDerivative2<>(y0[3], yd0[3], ydd0[3]),
+                                                                                      false));
+                    Assertions.assertEquals(0.0,
+                                            FieldVector3D.distance(quadratic.getRotationAcceleration(),
+                                                                   ac.getRotationAcceleration()).getReal(),
+                                            4.0e-13);
+                }
+
+           }
+        }));
+
+        Binary64[] y ={
+            quadratic.getRotation().getQ0(),
+            quadratic.getRotation().getQ1(),
+            quadratic.getRotation().getQ2(),
+            quadratic.getRotation().getQ3()
+        };
+        integrator.integrate(new FieldExpandableODE<>(ode), new FieldODEState<>(new Binary64(0), y), dt);
+
+    }
 
     @Test
     public void testDerivativesStructuresNeg() {
@@ -74,11 +162,11 @@ public class FieldAngularCoordinatesTest {
     public void testDerivativesStructures0() {
         RandomGenerator random = new Well1024a(0x18a0a08fd63f047al);
 
-        FieldRotation<Decimal64> r    = randomRotation64(random);
-        FieldVector3D<Decimal64> o    = randomVector64(random, 1.0e-2);
-        FieldVector3D<Decimal64> oDot = randomVector64(random, 1.0e-2);
-        FieldAngularCoordinates<Decimal64> ac = new FieldAngularCoordinates<>(r, o, oDot);
-        FieldAngularCoordinates<Decimal64> rebuilt = new FieldAngularCoordinates<>(ac.toDerivativeStructureRotation(0));
+        FieldRotation<Binary64> r    = randomRotation64(random);
+        FieldVector3D<Binary64> o    = randomVector64(random, 1.0e-2);
+        FieldVector3D<Binary64> oDot = randomVector64(random, 1.0e-2);
+        FieldAngularCoordinates<Binary64> ac = new FieldAngularCoordinates<>(r, o, oDot);
+        FieldAngularCoordinates<Binary64> rebuilt = new FieldAngularCoordinates<>(ac.toDerivativeStructureRotation(0));
         Assertions.assertEquals(0.0, FieldRotation.distance(ac.getRotation(), rebuilt.getRotation()).getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, rebuilt.getRotationRate().getNorm().getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, rebuilt.getRotationAcceleration().getNorm().getReal(), 1.0e-15);
@@ -88,11 +176,11 @@ public class FieldAngularCoordinatesTest {
     public void testDerivativesStructures1() {
         RandomGenerator random = new Well1024a(0x8f8fc6d27bbdc46dl);
 
-        FieldRotation<Decimal64> r    = randomRotation64(random);
-        FieldVector3D<Decimal64> o    = randomVector64(random, 1.0e-2);
-        FieldVector3D<Decimal64> oDot = randomVector64(random, 1.0e-2);
-        FieldAngularCoordinates<Decimal64> ac = new FieldAngularCoordinates<>(r, o, oDot);
-        FieldAngularCoordinates<Decimal64> rebuilt = new FieldAngularCoordinates<>(ac.toDerivativeStructureRotation(1));
+        FieldRotation<Binary64> r    = randomRotation64(random);
+        FieldVector3D<Binary64> o    = randomVector64(random, 1.0e-2);
+        FieldVector3D<Binary64> oDot = randomVector64(random, 1.0e-2);
+        FieldAngularCoordinates<Binary64> ac = new FieldAngularCoordinates<>(r, o, oDot);
+        FieldAngularCoordinates<Binary64> rebuilt = new FieldAngularCoordinates<>(ac.toDerivativeStructureRotation(1));
         Assertions.assertEquals(0.0, FieldRotation.distance(ac.getRotation(), rebuilt.getRotation()).getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, FieldVector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()).getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, rebuilt.getRotationAcceleration().getNorm().getReal(), 1.0e-15);
@@ -102,11 +190,11 @@ public class FieldAngularCoordinatesTest {
     public void testDerivativesStructures2() {
         RandomGenerator random = new Well1024a(0x1633878dddac047dl);
 
-        FieldRotation<Decimal64> r    = randomRotation64(random);
-        FieldVector3D<Decimal64> o    = randomVector64(random, 1.0e-2);
-        FieldVector3D<Decimal64> oDot = randomVector64(random, 1.0e-2);
-        FieldAngularCoordinates<Decimal64> ac = new FieldAngularCoordinates<>(r, o, oDot);
-        FieldAngularCoordinates<Decimal64> rebuilt = new FieldAngularCoordinates<>(ac.toDerivativeStructureRotation(2));
+        FieldRotation<Binary64> r    = randomRotation64(random);
+        FieldVector3D<Binary64> o    = randomVector64(random, 1.0e-2);
+        FieldVector3D<Binary64> oDot = randomVector64(random, 1.0e-2);
+        FieldAngularCoordinates<Binary64> ac = new FieldAngularCoordinates<>(r, o, oDot);
+        FieldAngularCoordinates<Binary64> rebuilt = new FieldAngularCoordinates<>(ac.toDerivativeStructureRotation(2));
         Assertions.assertEquals(0.0, FieldRotation.distance(ac.getRotation(), rebuilt.getRotation()).getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, FieldVector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()).getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, FieldVector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()).getReal(), 1.0e-15);
@@ -117,12 +205,12 @@ public class FieldAngularCoordinatesTest {
     public void testUnivariateDerivative1() {
         RandomGenerator random = new Well1024a(0x6de8cce747539904l);
 
-        FieldRotation<Decimal64> r    = randomRotation64(random);
-        FieldVector3D<Decimal64> o    = randomVector64(random, 1.0e-2);
-        FieldVector3D<Decimal64> oDot = randomVector64(random, 1.0e-2);
-        FieldAngularCoordinates<Decimal64> ac = new FieldAngularCoordinates<>(r, o, oDot);
-        FieldRotation<FieldUnivariateDerivative1<Decimal64>> rotationUD = ac.toUnivariateDerivative1Rotation();
-        FieldRotation<FieldDerivativeStructure<Decimal64>>   rotationDS = ac.toDerivativeStructureRotation(1);
+        FieldRotation<Binary64> r    = randomRotation64(random);
+        FieldVector3D<Binary64> o    = randomVector64(random, 1.0e-2);
+        FieldVector3D<Binary64> oDot = randomVector64(random, 1.0e-2);
+        FieldAngularCoordinates<Binary64> ac = new FieldAngularCoordinates<>(r, o, oDot);
+        FieldRotation<FieldUnivariateDerivative1<Binary64>> rotationUD = ac.toUnivariateDerivative1Rotation();
+        FieldRotation<FieldDerivativeStructure<Binary64>>   rotationDS = ac.toDerivativeStructureRotation(1);
         Assertions.assertEquals(rotationDS.getQ0().getReal(), rotationUD.getQ0().getReal(), 1.0e-15);
         Assertions.assertEquals(rotationDS.getQ1().getReal(), rotationUD.getQ1().getReal(), 1.0e-15);
         Assertions.assertEquals(rotationDS.getQ2().getReal(), rotationUD.getQ2().getReal(), 1.0e-15);
@@ -132,7 +220,7 @@ public class FieldAngularCoordinatesTest {
         Assertions.assertEquals(rotationDS.getQ2().getPartialDerivative(1).getReal(), rotationUD.getQ2().getFirstDerivative().getReal(), 1.0e-15);
         Assertions.assertEquals(rotationDS.getQ3().getPartialDerivative(1).getReal(), rotationUD.getQ3().getFirstDerivative().getReal(), 1.0e-15);
 
-        FieldAngularCoordinates<Decimal64> rebuilt = new FieldAngularCoordinates<>(rotationUD);
+        FieldAngularCoordinates<Binary64> rebuilt = new FieldAngularCoordinates<>(rotationUD);
         Assertions.assertEquals(0.0, FieldRotation.distance(ac.getRotation(), rebuilt.getRotation()).getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, FieldVector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()).getReal(), 1.0e-15);
 
@@ -142,12 +230,12 @@ public class FieldAngularCoordinatesTest {
     public void testUnivariateDerivative2() {
         RandomGenerator random = new Well1024a(0x255710c8fa2247ecl);
 
-        FieldRotation<Decimal64> r    = randomRotation64(random);
-        FieldVector3D<Decimal64> o    = randomVector64(random, 1.0e-2);
-        FieldVector3D<Decimal64> oDot = randomVector64(random, 1.0e-2);
-        FieldAngularCoordinates<Decimal64> ac = new FieldAngularCoordinates<>(r, o, oDot);
-        FieldRotation<FieldUnivariateDerivative2<Decimal64>> rotationUD = ac.toUnivariateDerivative2Rotation();
-        FieldRotation<FieldDerivativeStructure<Decimal64>>   rotationDS = ac.toDerivativeStructureRotation(2);
+        FieldRotation<Binary64> r    = randomRotation64(random);
+        FieldVector3D<Binary64> o    = randomVector64(random, 1.0e-2);
+        FieldVector3D<Binary64> oDot = randomVector64(random, 1.0e-2);
+        FieldAngularCoordinates<Binary64> ac = new FieldAngularCoordinates<>(r, o, oDot);
+        FieldRotation<FieldUnivariateDerivative2<Binary64>> rotationUD = ac.toUnivariateDerivative2Rotation();
+        FieldRotation<FieldDerivativeStructure<Binary64>>   rotationDS = ac.toDerivativeStructureRotation(2);
         Assertions.assertEquals(rotationDS.getQ0().getReal(), rotationUD.getQ0().getReal(), 1.0e-15);
         Assertions.assertEquals(rotationDS.getQ1().getReal(), rotationUD.getQ1().getReal(), 1.0e-15);
         Assertions.assertEquals(rotationDS.getQ2().getReal(), rotationUD.getQ2().getReal(), 1.0e-15);
@@ -161,7 +249,7 @@ public class FieldAngularCoordinatesTest {
         Assertions.assertEquals(rotationDS.getQ2().getPartialDerivative(2).getReal(), rotationUD.getQ2().getSecondDerivative().getReal(), 1.0e-15);
         Assertions.assertEquals(rotationDS.getQ3().getPartialDerivative(2).getReal(), rotationUD.getQ3().getSecondDerivative().getReal(), 1.0e-15);
 
-        FieldAngularCoordinates<Decimal64> rebuilt = new FieldAngularCoordinates<>(rotationUD);
+        FieldAngularCoordinates<Binary64> rebuilt = new FieldAngularCoordinates<>(rotationUD);
         Assertions.assertEquals(0.0, FieldRotation.distance(ac.getRotation(), rebuilt.getRotation()).getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, FieldVector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()).getReal(), 1.0e-15);
         Assertions.assertEquals(0.0, FieldVector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()).getReal(), 1.0e-15);
@@ -318,43 +406,43 @@ public class FieldAngularCoordinatesTest {
 
     @Test
     public void testResultAngularCoordinates() {
-        Field<Decimal64> field = Decimal64Field.getInstance();
-        Decimal64 zero = field.getZero();
-        FieldVector3D<Decimal64> pos_B = new FieldVector3D<>(zero.add(-0.23723922134606962    ),
+        Field<Binary64> field = Binary64Field.getInstance();
+        Binary64 zero = field.getZero();
+        FieldVector3D<Binary64> pos_B = new FieldVector3D<>(zero.add(-0.23723922134606962    ),
                                                              zero.add(-0.9628700341496187     ),
                                                              zero.add(0.1288365211879871      ));
-        FieldVector3D<Decimal64> vel_B = new FieldVector3D<>(zero.add(2.6031808214929053E-7   ),
+        FieldVector3D<Binary64> vel_B = new FieldVector3D<>(zero.add(2.6031808214929053E-7   ),
                                                              zero.add(-8.141147978260352E-8   ),
                                                              zero.add(-1.2908618653852553E-7  ));
-        FieldVector3D<Decimal64> acc_B = new FieldVector3D<>(zero.add( -1.395403347295246E-10 ),
+        FieldVector3D<Binary64> acc_B = new FieldVector3D<>(zero.add( -1.395403347295246E-10 ),
                                                              zero.add( -2.7451871050415643E-12),
                                                              zero.add( -2.781723303703499E-10 ));
 
-        FieldPVCoordinates<Decimal64> B = new FieldPVCoordinates<Decimal64>(pos_B, vel_B, acc_B);
+        FieldPVCoordinates<Binary64> B = new FieldPVCoordinates<Binary64>(pos_B, vel_B, acc_B);
 
 
-        FieldVector3D<Decimal64> pos_A = new FieldVector3D<>(zero.add(-0.44665912825286425 ),
+        FieldVector3D<Binary64> pos_A = new FieldVector3D<>(zero.add(-0.44665912825286425 ),
                                                              zero.add(-0.00965737694923173 ),
                                                              zero.add(-0.894652087807798   ));
-        FieldVector3D<Decimal64> vel_A = new FieldVector3D<>(zero.add(-8.897373390367405E-4),
+        FieldVector3D<Binary64> vel_A = new FieldVector3D<>(zero.add(-8.897373390367405E-4),
                                                              zero.add(2.7825509772757976E-4),
                                                              zero.add(4.412017757970883E-4 ));
-        FieldVector3D<Decimal64> acc_A = new FieldVector3D<>(zero.add( 4.743595125825107E-7),
+        FieldVector3D<Binary64> acc_A = new FieldVector3D<>(zero.add( 4.743595125825107E-7),
                                                              zero.add( 1.01875177357042E-8 ),
                                                              zero.add( 9.520371766790574E-7));
 
-        FieldPVCoordinates<Decimal64> A = new FieldPVCoordinates<>(pos_A, vel_A, acc_A);
+        FieldPVCoordinates<Binary64> A = new FieldPVCoordinates<>(pos_A, vel_A, acc_A);
 
-        FieldPVCoordinates<Decimal64> PLUS_K = new FieldPVCoordinates<>(new FieldVector3D<>(field.getZero(), field.getZero(), field.getOne()),
+        FieldPVCoordinates<Binary64> PLUS_K = new FieldPVCoordinates<>(new FieldVector3D<>(field.getZero(), field.getZero(), field.getOne()),
                                                                         new FieldVector3D<>(field.getZero(), field.getZero(), field.getZero()),
                                                                         new FieldVector3D<>(field.getZero(), field.getZero(), field.getZero()));
 
-        FieldPVCoordinates<Decimal64> PLUS_J = new FieldPVCoordinates<>(new FieldVector3D<>(field.getZero(), field.getOne(), field.getZero()),
+        FieldPVCoordinates<Binary64> PLUS_J = new FieldPVCoordinates<>(new FieldVector3D<>(field.getZero(), field.getOne(), field.getZero()),
                                                                         new FieldVector3D<>(field.getZero(), field.getZero(), field.getZero()),
                                                                         new FieldVector3D<>(field.getZero(), field.getZero(), field.getZero()));
 
 
-        FieldAngularCoordinates<Decimal64> fac = new FieldAngularCoordinates<>(A, B, PLUS_K, PLUS_J, 1.0e-6);
+        FieldAngularCoordinates<Binary64> fac = new FieldAngularCoordinates<>(A, B, PLUS_K, PLUS_J, 1.0e-6);
 
         AngularCoordinates ac = new AngularCoordinates(A.toPVCoordinates(), B.toPVCoordinates(), PLUS_K.toPVCoordinates(), PLUS_J.toPVCoordinates(), 1.0e-6);
 
@@ -364,7 +452,7 @@ public class FieldAngularCoordinatesTest {
 
     @Test
     public void testIdentity() {
-        FieldAngularCoordinates<Decimal64> identity = FieldAngularCoordinates.getIdentity(Decimal64Field.getInstance());
+        FieldAngularCoordinates<Binary64> identity = FieldAngularCoordinates.getIdentity(Binary64Field.getInstance());
         Assertions.assertEquals(0.0,
                             identity.getRotation().getAngle().getReal(),
                             1.0e-15);
@@ -381,7 +469,7 @@ public class FieldAngularCoordinatesTest {
         AngularCoordinates ac = new AngularCoordinates(new Rotation(Vector3D.MINUS_J, 0.15, RotationConvention.VECTOR_OPERATOR),
                                                        new Vector3D(0.001, 0.002, 0.003),
                                                        new Vector3D(-1.0e-6, -3.0e-6, 7.0e-6));
-        FieldAngularCoordinates<Decimal64> ac64 = new FieldAngularCoordinates<>(Decimal64Field.getInstance(), ac);
+        FieldAngularCoordinates<Binary64> ac64 = new FieldAngularCoordinates<>(Binary64Field.getInstance(), ac);
         Assertions.assertEquals(0.0,
                             Rotation.distance(ac.getRotation(), ac64.getRotation().toRotation()),
                             1.0e-15);
@@ -523,7 +611,7 @@ public class FieldAngularCoordinatesTest {
     @Test
     public void testInverseCrossProducts()
         {
-        Decimal64Field field = Decimal64Field.getInstance();
+        Binary64Field field = Binary64Field.getInstance();
         checkInverse(FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field), FieldVector3D.getPlusJ(field));
         checkInverse(FieldVector3D.getZero(field),  FieldVector3D.getZero(field),  FieldVector3D.getZero(field));
         checkInverse(FieldVector3D.getZero(field),  FieldVector3D.getZero(field),  FieldVector3D.getPlusJ(field));
@@ -531,13 +619,13 @@ public class FieldAngularCoordinatesTest {
         checkInverse(FieldVector3D.getZero(field),  FieldVector3D.getPlusK(field), FieldVector3D.getZero(field));
         checkInverse(FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field), FieldVector3D.getPlusK(field));
         checkInverse(FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field), FieldVector3D.getPlusI(field));
-        checkInverse(FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field), new FieldVector3D<Decimal64>(field, new Vector3D(1, 0, -1)).normalize());
+        checkInverse(FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field), new FieldVector3D<Binary64>(field, new Vector3D(1, 0, -1)).normalize());
         checkInverse(FieldVector3D.getZero(field),  FieldVector3D.getPlusI(field), FieldVector3D.getZero(field), FieldVector3D.getPlusJ(field),  FieldVector3D.getZero(field));
     }
 
     @Test
     public void testInverseCrossProductsFailures() {
-        Decimal64Field field = Decimal64Field.getInstance();
+        Binary64Field field = Binary64Field.getInstance();
         checkInverseFailure(FieldVector3D.getPlusK(field), FieldVector3D.getZero(field),  FieldVector3D.getPlusJ(field), FieldVector3D.getPlusI(field),  FieldVector3D.getPlusK(field));
         checkInverseFailure(FieldVector3D.getPlusK(field), FieldVector3D.getZero(field),  FieldVector3D.getZero(field),  FieldVector3D.getZero(field),    FieldVector3D.getPlusK(field));
         checkInverseFailure(FieldVector3D.getPlusI(field), FieldVector3D.getPlusI(field), FieldVector3D.getZero(field),  FieldVector3D.getMinusI(field), FieldVector3D.getPlusK(field));
@@ -693,25 +781,25 @@ public class FieldAngularCoordinatesTest {
                                    factory.variable(2, z));
     }
 
-    private FieldRotation<Decimal64> randomRotation64(RandomGenerator random) {
+    private FieldRotation<Binary64> randomRotation64(RandomGenerator random) {
         double q0 = random.nextDouble() * 2 - 1;
         double q1 = random.nextDouble() * 2 - 1;
         double q2 = random.nextDouble() * 2 - 1;
         double q3 = random.nextDouble() * 2 - 1;
         double q  = FastMath.sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
-        return new FieldRotation<>(new Decimal64(q0 / q),
-                                   new Decimal64(q1 / q),
-                                   new Decimal64(q2 / q),
-                                   new Decimal64(q3 / q),
+        return new FieldRotation<>(new Binary64(q0 / q),
+                                   new Binary64(q1 / q),
+                                   new Binary64(q2 / q),
+                                   new Binary64(q3 / q),
                                    false);
     }
 
-    private FieldVector3D<Decimal64> randomVector64(RandomGenerator random, double norm) {
+    private FieldVector3D<Binary64> randomVector64(RandomGenerator random, double norm) {
         double n = random.nextDouble() * norm;
         double x = random.nextDouble();
         double y = random.nextDouble();
         double z = random.nextDouble();
-        return new FieldVector3D<>(n, new FieldVector3D<>(new Decimal64(x), new Decimal64(y), new Decimal64(z)).normalize());
+        return new FieldVector3D<>(n, new FieldVector3D<>(new Binary64(x), new Binary64(y), new Binary64(z)).normalize());
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,28 +23,31 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 /**
- * Gibbs initial orbit determination.
- * An orbit is determined from three position vectors.
+ * Gibbs position-based Initial Orbit Determination (IOD) algorithm.
+ * <p>
+ * An orbit is determined from three position vectors. This method requires
+ * the vectors to be coplanar. Orekit uses a {@link IodGibbs#COPLANAR_THRESHOLD
+ * default coplanar threshold of 5°}.
  *
  * Reference:
  *  Vallado, D., Fundamentals of Astrodynamics and Applications
- *
+ * </p>
  * @author Joris Olympio
  * @since 8.0
- *
  */
 public class IodGibbs {
 
-    /** Threshold for checking coplanr vectors. */
-    private static final double COPLANAR_THRESHOLD = FastMath.toRadians(5.);
-
-    /** gravitationnal constant. */
+    /** Gravitational constant. **/
     private final double mu;
+
+    /** Threshold for checking coplanar vectors. */
+    private final double COPLANAR_THRESHOLD = FastMath.toRadians(5.);
 
     /** Creator.
      *
@@ -65,7 +68,7 @@ public class IodGibbs {
      *         (i.e., date of the second position measurement)
      * @since 11.0
      */
-    public KeplerianOrbit estimate(final Frame frame, final Position p1, final Position p2, final Position p3) {
+    public Orbit estimate(final Frame frame, final Position p1, final Position p2, final Position p3) {
         return estimate(frame,
                         p1.getPosition(), p1.getDate(),
                         p2.getPosition(), p2.getDate(),
@@ -82,7 +85,7 @@ public class IodGibbs {
      * @return an initial orbit estimation at the central date
      *         (i.e., date of the second PV measurement)
      */
-    public KeplerianOrbit estimate(final Frame frame, final PV pv1, final PV pv2, final PV pv3) {
+    public Orbit estimate(final Frame frame, final PV pv1, final PV pv2, final PV pv3) {
         return estimate(frame,
                         pv1.getPosition(), pv1.getDate(),
                         pv2.getPosition(), pv2.getDate(),
@@ -102,10 +105,10 @@ public class IodGibbs {
      * @return an initial orbit estimation at the central date
      *         (i.e., date of the second position measurement)
      */
-    public KeplerianOrbit estimate(final Frame frame,
-                                   final Vector3D r1, final AbsoluteDate date1,
-                                   final Vector3D r2, final AbsoluteDate date2,
-                                   final Vector3D r3, final AbsoluteDate date3) {
+    public Orbit estimate(final Frame frame,
+                          final Vector3D r1, final AbsoluteDate date1,
+                          final Vector3D r2, final AbsoluteDate date2,
+                          final Vector3D r3, final AbsoluteDate date3) {
         // Checks measures are not at the same date
         if (date1.equals(date2) || date1.equals(date3) || date2.equals(date3)) {
             throw new OrekitException(OrekitMessages.NON_DIFFERENT_DATES_FOR_OBSERVATIONS, date1, date2, date3,
@@ -132,26 +135,25 @@ public class IodGibbs {
                      .add(r3.scalarMultiply(r1.getNorm() - r2.getNorm())));
 
         // middle velocity
-        final double vm = FastMath.sqrt(mu / (N.getNorm() * D.getNorm()));
+        final double   vm    = FastMath.sqrt(mu / (N.getNorm() * D.getNorm()));
         final Vector3D vlEci = B.scalarMultiply(vm / r2.getNorm()).add(S.scalarMultiply(vm));
 
         // compile a new middle point with position, velocity
-        final PVCoordinates pv = new PVCoordinates(r2, vlEci);
-        final AbsoluteDate date = date2;
+        final PVCoordinates pv   = new PVCoordinates(r2, vlEci);
 
-        // compute the equivalent Keplerian orbit
-        final KeplerianOrbit orbit = new KeplerianOrbit(pv, frame, date, mu);
+        // compute the equivalent Cartesian orbit
+        final CartesianOrbit orbit = new CartesianOrbit(pv, frame, date2, mu);
 
         //define the reverse orbit
         final PVCoordinates pv2 = new PVCoordinates(r2, vlEci.scalarMultiply(-1));
-        final KeplerianOrbit orbit2 = new KeplerianOrbit(pv2, frame, date, mu);
+        final CartesianOrbit orbit2 = new CartesianOrbit(pv2, frame, date2, mu);
 
         //check which orbit is correct
         final Vector3D estP3 = orbit.shiftedBy(date3.durationFrom(date2)).
-                getPVCoordinates().getPosition();
+                                    getPosition();
         final double dist = estP3.subtract(r3).getNorm();
         final Vector3D estP3_2 = orbit2.shiftedBy(date3.durationFrom(date2)).
-                getPVCoordinates().getPosition();
+                                       getPosition();
         final double dist2 = estP3_2.subtract(r3).getNorm();
 
         if (dist <= dist2) {

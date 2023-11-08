@@ -2,69 +2,69 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-    <property name="project.version"            value="11.3.3" />
-    <property name="src.dir"                    location="src"                    />
-    <property name="main.src.dir"               value="${src.dir}/main/java"      />
-    <property name="main.resources.dir"         value="${src.dir}/main/resources" />
-    <property name="test.src.dir"               value="${src.dir}/test/java"      />
-    <property name="test.resources.dir"         value="${src.dir}/test/resources" />
+    <property name="project.version"                    value="12.0"                                                 />
+    <property name="src.dir"                            location="src"                                               />
+    <property name="main.src.dir"                       value="${src.dir}/main/java"                                 />
+    <property name="main.resources.dir"                 value="${src.dir}/main/resources"                            />
+    <property name="test.src.dir"                       value="${src.dir}/test/java"                                 />
+    <property name="test.resources.dir"                 value="${src.dir}/test/resources"                            />
 
-    <property name="build.dir"                  location="build"                  />
-    <property name="main.classes.dir"           value="${build.dir}/classes"      />
-    <property name="test.classes.dir"           value="${build.dir}/test-classes" />
-    <property name="javadoc.dir"                value="${build.dir}/javadoc"      />
-    <property name="tests.reports"              value="${build.dir}/test-reports" />
+    <property name="build.dir"                          location="build"                                             />
+    <property name="main.classes.dir"                   value="${build.dir}/classes"                                 />
+    <property name="test.classes.dir"                   value="${build.dir}/test-classes"                            />
+    <property name="javadoc.dir"                        value="${build.dir}/javadoc"                                 />
+    <property name="tests.reports"                      value="${build.dir}/test-reports"                            />
 
-    <property name="lib.dir"                    location="lib"                    />
+    <property name="lib.dir"                            location="lib"                                               />
 
-    <property name="hipparchus.version"                 value="2.3"                                               />
-    <property name="hipparchus.core.jar"                value="hipparchus-core-${hipparchus.version}.jar"         />
-    <property name="hipparchus.geometry.jar"            value="hipparchus-geometry-${hipparchus.version}.jar"     />
-    <property name="hipparchus.ode.jar"                 value="hipparchus-ode-${hipparchus.version}.jar"          />
-    <property name="hipparchus.fitting.jar"             value="hipparchus-fitting-${hipparchus.version}.jar"      />
-    <property name="hipparchus.optim.jar"               value="hipparchus-optim-${hipparchus.version}.jar"        />
-    <property name="hipparchus.filtering.jar"           value="hipparchus-filtering-${hipparchus.version}.jar"    />
-    <property name="hipparchus.stat.jar"                value="hipparchus-stat-${hipparchus.version}.jar"         />
-    <property name="hipparchus.maven.path"              value="org/hipparchus"                                    />
-    <property name="junit-jupiter.version"              value="5.9.1"                                             />
-    <property name="junit-jupiter-api.jar"              value="junit-jupiter-api-${junit-jupiter.version}.jar"    />
-    <property name="junit-jupiter-api.maven.path"       value="org/junit/jupiter/junit-jupiter-api"               />
-    <property name="junit-jupiter-engine.jar"           value="junit-jupiter-engine-${junit-jupiter.version}.jar" />
-    <property name="junit-jupiter-engine.maven.path"    value="org/junit/jupiter/junit-jupiter-engine"            />
-    <property name="junit-platform.version"             value="1.9.0"                                             />
-    <property name="junit-platform-engine.jar"          value="junit-platform-engine-${junit-platform.version}.jar"/>
-    <property name="junit-platform-engine.maven.path"   value="org/junit/platform/junit-platform-engine"          />
+    <property name="hipparchus.version"                 value="3.0"                                                  />
+    <property name="hipparchus.core.jar"                value="hipparchus-core-${hipparchus.version}.jar"            />
+    <property name="hipparchus.geometry.jar"            value="hipparchus-geometry-${hipparchus.version}.jar"        />
+    <property name="hipparchus.ode.jar"                 value="hipparchus-ode-${hipparchus.version}.jar"             />
+    <property name="hipparchus.fitting.jar"             value="hipparchus-fitting-${hipparchus.version}.jar"         />
+    <property name="hipparchus.optim.jar"               value="hipparchus-optim-${hipparchus.version}.jar"           />
+    <property name="hipparchus.filtering.jar"           value="hipparchus-filtering-${hipparchus.version}.jar"       />
+    <property name="hipparchus.stat.jar"                value="hipparchus-stat-${hipparchus.version}.jar"            />
+    <property name="hipparchus.maven.path"              value="org/hipparchus"                                       />
+    <property name="junit-jupiter.version"              value="5.10.0"                                               />
+    <property name="junit-jupiter-api.jar"              value="junit-jupiter-api-${junit-jupiter.version}.jar"       />
+    <property name="junit-jupiter-api.maven.path"       value="org/junit/jupiter/junit-jupiter-api"                  />
+    <property name="junit-jupiter-engine.jar"           value="junit-jupiter-engine-${junit-jupiter.version}.jar"    />
+    <property name="junit-jupiter-engine.maven.path"    value="org/junit/jupiter/junit-jupiter-engine"               />
+    <property name="junit-platform.version"             value="1.9.0"                                                />
+    <property name="junit-platform-engine.jar"          value="junit-platform-engine-${junit-platform.version}.jar"  />
+    <property name="junit-platform-engine.maven.path"   value="org/junit/platform/junit-platform-engine"             />
     <property name="junit-platform-commons.jar"         value="junit-platform-commons-${junit-platform.version}.jar" />
-    <property name="junit-platform-commons.maven.path"  value="org/junit/platform/junit-platform-commons"         />
+    <property name="junit-platform-commons.maven.path"  value="org/junit/platform/junit-platform-commons"            />
     <property name="junit-platform-launcher.jar"        value="junit-platform-launcher-${junit-platform.version}.jar"/>
-    <property name="junit-platform-launcher.maven.path" value="org/junit/platform/junit-platform-launcher"        />
-    <property name="opentest4j.version"                 value="1.2.0"                                             />
-    <property name="opentest4j.jar"                     value="opentest4j-${opentest4j.version}.jar"              />
-    <property name="opentest4j.maven.path"              value="org/opentest4j/opentest4j"                         />
-    <property name="apiguardian-api.version"            value="1.1.2"                                             />
-    <property name="apiguardian-api.jar"                value="apiguardian-api-${apiguardian-api.version}.jar"    />
-    <property name="apiguardian-api.maven.path"         value="org/apiguardian/apiguardian-api"                   />
-    <property name="mockito.version"                    value="4.8.1"                                             />
-    <property name="mockito.jar"                        value="mockito-core-${mockito.version}.jar"               />
-    <property name="mockito.maven.path"                 value="org/mockito/mockito-core"                          />
-    <property name="bytebuddy.version"                  value="1.12.16"                                           />
-    <property name="bytebuddy.jar"                      value="byte-buddy-${bytebuddy.version}.jar"               />
-    <property name="bytebuddy.maven.path"               value="net/bytebuddy/byte-buddy"                          />
-    <property name="bytebuddy.agent.jar"                value="byte-buddy-agent-${bytebuddy.version}.jar"         />
-    <property name="bytebuddy.agent.maven.path"         value="net/bytebuddy/byte-buddy-agent"                    />
-    <property name="objenesis.version"                  value="3.2"                                               />
-    <property name="objenesis.jar"                      value="objenesis-${objenesis.version}.jar"                />
-    <property name="objenesis.maven.path"               value="org/objenesis/objenesis"                           />
-    <property name="hamcrest.version"                   value="2.2"                                               />
-    <property name="hamcrest.jar"                       value="hamcrest-${hamcrest.version}.jar"                  />
-    <property name="hamcrest.maven.path"                value="org/hamcrest/hamcrest"                             />
-    <property name="maven.repository"                   value="https://repo1.maven.org/maven2"                    />
+    <property name="junit-platform-launcher.maven.path" value="org/junit/platform/junit-platform-launcher"           />
+    <property name="opentest4j.version"                 value="1.2.0"                                                />
+    <property name="opentest4j.jar"                     value="opentest4j-${opentest4j.version}.jar"                 />
+    <property name="opentest4j.maven.path"              value="org/opentest4j/opentest4j"                            />
+    <property name="apiguardian-api.version"            value="1.1.2"                                                />
+    <property name="apiguardian-api.jar"                value="apiguardian-api-${apiguardian-api.version}.jar"       />
+    <property name="apiguardian-api.maven.path"         value="org/apiguardian/apiguardian-api"                      />
+    <property name="mockito.version"                    value="4.11.0"                                               />
+    <property name="mockito.jar"                        value="mockito-core-${mockito.version}.jar"                  />
+    <property name="mockito.maven.path"                 value="org/mockito/mockito-core"                             />
+    <property name="bytebuddy.version"                  value="1.12.16"                                              />
+    <property name="bytebuddy.jar"                      value="byte-buddy-${bytebuddy.version}.jar"                  />
+    <property name="bytebuddy.maven.path"               value="net/bytebuddy/byte-buddy"                             />
+    <property name="bytebuddy.agent.jar"                value="byte-buddy-agent-${bytebuddy.version}.jar"            />
+    <property name="bytebuddy.agent.maven.path"         value="net/bytebuddy/byte-buddy-agent"                       />
+    <property name="objenesis.version"                  value="3.2"                                                  />
+    <property name="objenesis.jar"                      value="objenesis-${objenesis.version}.jar"                   />
+    <property name="objenesis.maven.path"               value="org/objenesis/objenesis"                              />
+    <property name="hamcrest.version"                   value="2.2"                                                  />
+    <property name="hamcrest.jar"                       value="hamcrest-${hamcrest.version}.jar"                     />
+    <property name="hamcrest.maven.path"                value="org/hamcrest/hamcrest"                                />
+    <property name="maven.repository"                   value="https://repo1.maven.org/maven2"                       />
     <!-- Path to $JAVA_HOME/lib/tools.jar for compiler plugin -->
-    <property name="tools.jar"                          value="tools.jar"                                         />
-    <property name="tools.path"                         value="lib"                                               />
+    <property name="tools.jar"                          value="tools.jar"                                            />
+    <property name="tools.path"                         value="lib"                                                  />
 
 
-    <property name="copyright"                  value="2002-2022 CS GROUP" />
+    <property name="copyright"                  value="2002-2023 CS GROUP" />
 
     <property environment="env"/>
 

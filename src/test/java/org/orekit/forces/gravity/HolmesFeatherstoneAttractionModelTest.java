@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,13 +23,14 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.dfp.Dfp;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.SphericalCoordinates;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -37,11 +38,10 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.mockito.Mockito;
 import org.orekit.Utils;
+import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
@@ -56,6 +56,7 @@ import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -63,7 +64,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -90,21 +91,18 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     @Override
     protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
-                                                                         final AbsoluteDate date, final  Frame frame,
-                                                                         final FieldVector3D<DerivativeStructure> position,
-                                                                         final FieldVector3D<DerivativeStructure> velocity,
-                                                                         final FieldRotation<DerivativeStructure> rotation,
-                                                                         final DerivativeStructure mass)
-        {
+                                                                         final FieldSpacecraftState<DerivativeStructure> state) {
         try {
+            final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
+            final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
             java.lang.reflect.Field bodyFrameField = HolmesFeatherstoneAttractionModel.class.getDeclaredField("bodyFrame");
             bodyFrameField.setAccessible(true);
             Frame bodyFrame = (Frame) bodyFrameField.get(forceModel);
 
             // get the position in body frame
-            final Transform fromBodyFrame = bodyFrame.getTransformTo(frame, date);
-            final Transform toBodyFrame   = fromBodyFrame.getInverse();
-            final Vector3D positionBody   = toBodyFrame.transformPosition(position.toVector3D());
+            final StaticTransform fromBodyFrame = bodyFrame.getStaticTransformTo(state.getFrame(), date);
+            final StaticTransform toBodyFrame   = fromBodyFrame.getInverse();
+            final Vector3D positionBody         = toBodyFrame.transformPosition(position.toVector3D());
 
             // compute gradient and Hessian
             final GradientHessian gh   = gradientHessian((HolmesFeatherstoneAttractionModel) forceModel,
@@ -119,7 +117,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
             final RealMatrix hInertial = rot.transpose().multiply(hBody).multiply(rot);
 
             // distribute all partial derivatives in a compact acceleration vector
-            final double[] derivatives = new double[1 + mass.getFreeParameters()];
+            final double[] derivatives = new double[1 + state.getMass().getFreeParameters()];
             final DerivativeStructure[] accDer = new DerivativeStructure[3];
             for (int i = 0; i < 3; ++i) {
 
@@ -133,7 +131,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
                 // next elements (three or four depending on mass being used or not) are left as 0
 
-                accDer[i] = mass.getFactory().build(derivatives);
+                accDer[i] = state.getMass().getFactory().build(derivatives);
 
             }
 
@@ -146,19 +144,16 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     @Override
     protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel,
-                                                                      final AbsoluteDate date, final  Frame frame,
-                                                                      final FieldVector3D<Gradient> position,
-                                                                      final FieldVector3D<Gradient> velocity,
-                                                                      final FieldRotation<Gradient> rotation,
-                                                                      final Gradient mass)
-        {
+                                                                      final FieldSpacecraftState<Gradient> state) {
         try {
+            final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
+            final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
             java.lang.reflect.Field bodyFrameField = HolmesFeatherstoneAttractionModel.class.getDeclaredField("bodyFrame");
             bodyFrameField.setAccessible(true);
             Frame bodyFrame = (Frame) bodyFrameField.get(forceModel);
 
             // get the position in body frame
-            final Transform fromBodyFrame = bodyFrame.getTransformTo(frame, date);
+            final Transform fromBodyFrame = bodyFrame.getTransformTo(state.getFrame(), date);
             final Transform toBodyFrame   = fromBodyFrame.getInverse();
             final Vector3D positionBody   = toBodyFrame.transformPosition(position.toVector3D());
 
@@ -175,7 +170,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
             final RealMatrix hInertial = rot.transpose().multiply(hBody).multiply(rot);
 
             // distribute all partial derivatives in a compact acceleration vector
-            final double[] derivatives = new double[mass.getFreeParameters()];
+            final double[] derivatives = new double[state.getMass().getFreeParameters()];
             final Gradient[] accDer = new Gradient[3];
             for (int i = 0; i < 3; ++i) {
 
@@ -487,7 +482,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         Frame EME = FramesFactory.getEME2000();
 
         FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
+                                                                                 PositionAngleType.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
@@ -528,8 +523,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         NP.addForceModel(forceModel);
 
         // Do the test
-        checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1005., NP, FNP,
-                                  1.0e-14, 5.9e-8, 1.8e-11, 1.8e-10,
+        checkRealFieldPropagation(FKO, PositionAngleType.MEAN, 1005., NP, FNP,
+                                  1.0e-14, 6.0e-8, 1.8e-11, 1.8e-10,
                                   1, false);
     }
 
@@ -554,7 +549,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         Frame EME = FramesFactory.getEME2000();
         FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
+                                                                                 PositionAngleType.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
@@ -772,10 +767,6 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
             return null;
         }
 
-        public double getOffset(AbsoluteDate date) {
-            return 0;
-        }
-
         public TideSystem getTideSystem() {
             return TideSystem.UNKNOWN;
         }
@@ -821,7 +812,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, poleAligned, date, mu);
+                                         0, PositionAngleType.MEAN, poleAligned, date, mu);
         double[][] c = new double[3][1];
         c[0][0] = 0.0;
         c[2][0] = normalizedC20;
@@ -852,7 +843,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
 
             AbsoluteDate current = currentState.getDate();
-            Vector3D sunPos = sun.getPVCoordinates(current , FramesFactory.getEME2000()).getPosition();
+            Vector3D sunPos = sun.getPosition(current , FramesFactory.getEME2000());
             Vector3D normal = currentState.getPVCoordinates().getMomentum();
             double angle = Vector3D.angle(sunPos , normal);
             if (! Double.isNaN(previous)) {
@@ -920,8 +911,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         public void handleStep(SpacecraftState currentState) {
 
             SpacecraftState EHPOrbit   = referencePropagator.propagate(currentState.getDate());
-            Vector3D posEHP  = EHPOrbit.getPVCoordinates().getPosition();
-            Vector3D posDROZ = currentState.getPVCoordinates().getPosition();
+            Vector3D posEHP  = EHPOrbit.getPosition();
+            Vector3D posDROZ = currentState.getPosition();
             Vector3D velEHP  = EHPOrbit.getPVCoordinates().getVelocity();
             Vector3D dif     = posEHP.subtract(posDROZ);
 
@@ -947,11 +938,13 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         // pos-vel (from a ZOOM ephemeris reference)
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
-        final SpacecraftState state =
-                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
-                                                       FramesFactory.getGCRF(),
-                                                       new AbsoluteDate(2005, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
-                                                       GravityFieldFactory.getUnnormalizedProvider(1, 1).getMu()));
+        final Frame frame = FramesFactory.getGCRF();
+        final AbsoluteDate date = new AbsoluteDate(2005, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI());
+        final CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(pos, vel), frame,
+                date, Constants.EIGEN5C_EARTH_MU);
+        final LofOffset lofOffset = new LofOffset(frame, LOFType.LVLH_CCSDS);
+        final Attitude attitude = lofOffset.getAttitude(orbit, date, frame);  // necessary for non-regression
+        final SpacecraftState state = new SpacecraftState(orbit, attitude);
 
         final HolmesFeatherstoneAttractionModel holmesFeatherstoneModel =
                 new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
@@ -1003,7 +996,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         double dP = 0.1;
         double duration = 3 * Constants.JULIAN_DAY;
         BoundedPropagator fixedFieldEphemeris   = createEphemeris(dP, spacecraftState, duration,
-                                                                  GravityFieldFactory.getConstantNormalizedProvider(8, 8));
+                                                                  GravityFieldFactory.getConstantNormalizedProvider(8, 8, new AbsoluteDate("2005-01-01T00:00:00.000", TimeScalesFactory.getTAI())));
         BoundedPropagator varyingFieldEphemeris = createEphemeris(dP, spacecraftState, duration,
                                                                   GravityFieldFactory.getNormalizedProvider(8, 8));
 
@@ -1063,7 +1056,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date, mu);
         OrbitType integrationType = OrbitType.CARTESIAN;
         double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
 
@@ -1096,7 +1089,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date, mu);
 
         HolmesFeatherstoneAttractionModel hfModel =
                 new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
@@ -1124,7 +1117,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date, mu);
 
         HolmesFeatherstoneAttractionModel hfModel =
                 new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
@@ -1152,7 +1145,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date, mu);
 
         HolmesFeatherstoneAttractionModel hfModel =
                 new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
@@ -1179,7 +1172,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date, mu);
 
         HolmesFeatherstoneAttractionModel hfModel =
                 new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
@@ -1205,8 +1198,9 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit  = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
-        Vector3D pos = orbit.getPVCoordinates(itrf).getPosition();
+                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date, mu);
+
+        Vector3D pos = orbit.getPosition(itrf);
 
         double[] zeroGradient = new double[] {-0., 0., 0.};
 
@@ -1231,6 +1225,41 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         Assertions.assertEquals(mu / pos.getNorm(), hfModel11.value(date, pos, mu));
         Assertions.assertArrayEquals(zeroGradient, hfModel11.gradient(date, pos, mu));
 
+    }
+
+
+    @Test
+    @DisplayName("Test that acceleration derivatives with respect to absolute date are not equal to zero.")
+    public void testIssue1070() {
+        // GIVEN
+        // Define possibly shifted absolute date
+        final int freeParameters = 1;
+        final GradientField field = GradientField.getField(freeParameters);
+        final Gradient zero = field.getZero();
+        final Gradient variable = Gradient.variable(freeParameters, 0, 0.);
+        final FieldAbsoluteDate<Gradient> fieldAbsoluteDate = new FieldAbsoluteDate<>(field, AbsoluteDate.ARBITRARY_EPOCH).
+                shiftedBy(variable);
+
+        // Define mock state
+        @SuppressWarnings("unchecked")
+        final FieldSpacecraftState<Gradient> stateMock = Mockito.mock(FieldSpacecraftState.class);
+        Mockito.when(stateMock.getDate()).thenReturn(fieldAbsoluteDate);
+        Mockito.when(stateMock.getPosition()).thenReturn(new FieldVector3D<>(zero, zero));
+        Mockito.when(stateMock.getFrame()).thenReturn(FramesFactory.getGCRF());
+        Mockito.when(stateMock.getMass()).thenReturn(zero);
+
+        // Create potential
+        final int max = 2;
+        final NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
+        final HolmesFeatherstoneAttractionModel model = new HolmesFeatherstoneAttractionModel(itrf, provider);
+
+        // WHEN
+        final Gradient dummyGm = zero.add(1.);
+        final FieldVector3D<Gradient> accelerationVector = model.acceleration(stateMock, new Gradient[] { dummyGm });
+
+        // THEN
+        final double[] derivatives = accelerationVector.getNormSq().getGradient();
+        Assertions.assertNotEquals(0., MatrixUtils.createRealVector(derivatives).getNorm());
     }
 
     @BeforeEach

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@
  *
  * This package provides the top level {@link org.orekit.gnss.metric.parser.MessagesParser
  * MessagesParser} class that can extract {@link org.orekit.gnss.metric.messages.ParsedMessage
- * messages} from binary containers like {@link  org.orekit.gnss.metric.parser.ByteArrayEncodedMessages
+ * messages} from binary containers like {@link  org.orekit.gnss.metric.parser.ByteArrayEncodedMessage
  * ByteArrayEncodedMessages} or {link org.orekit.metric.gnss.ssr.parser.InputStreamEncodedMessages
  * InputStreamEncodedMessages}.
  *

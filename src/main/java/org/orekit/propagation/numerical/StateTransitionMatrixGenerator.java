@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,16 +31,18 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 
 /** Generator for State Transition Matrix.
  * @author Luc Maisonobe
+ * @author Melina Vanel
  * @since 11.1
  */
 class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
@@ -106,7 +108,7 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
 
     /** {@inheritDoc} */
     @Override
-    public boolean yield(final SpacecraftState state) {
+    public boolean yields(final SpacecraftState state) {
         return !state.hasAdditionalState(getName());
     }
 
@@ -118,13 +120,13 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
      * @param dYdY0 initial State Transition Matrix ∂Y/∂Y₀,
      * if null (which is the most frequent case), assumed to be 6x6 identity
      * @param orbitType orbit type used for states Y and Y₀ in {@code dYdY0}
-     * @param positionAngle position angle used states Y and Y₀ in {@code dYdY0}
+     * @param positionAngleType position angle used states Y and Y₀ in {@code dYdY0}
      * @return state with initial STM (converted to Cartesian ∂C/∂Y₀) added
      */
     SpacecraftState setInitialStateTransitionMatrix(final SpacecraftState state,
                                                     final RealMatrix dYdY0,
                                                     final OrbitType orbitType,
-                                                    final PositionAngle positionAngle) {
+                                                    final PositionAngleType positionAngleType) {
 
         final RealMatrix nonNullDYdY0;
         if (dYdY0 == null) {
@@ -143,7 +145,7 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
         final RealMatrix dCdY0;
         if (state.isOrbitDefined()) {
             final double[][] dYdC = new double[STATE_DIMENSION][STATE_DIMENSION];
-            orbitType.convertType(state.getOrbit()).getJacobianWrtCartesian(positionAngle, dYdC);
+            orbitType.convertType(state.getOrbit()).getJacobianWrtCartesian(positionAngleType, dYdC);
             dCdY0 = new QRDecomposition(MatrixUtils.createRealMatrix(dYdC), THRESHOLD).getSolver().solve(nonNullDYdY0);
         } else {
             dCdY0 = nonNullDYdY0;
@@ -161,13 +163,6 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
         // set additional state
         return state.addAdditionalState(stmName, flat);
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public double[] derivatives(final SpacecraftState state) {
-        return combinedDerivatives(state).getAdditionalDerivatives();
     }
 
     /** {@inheritDoc} */
@@ -247,11 +242,12 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
         // evaluate contribution of all force models
         final NumericalGradientConverter fullConverter    = new NumericalGradientConverter(state, STATE_DIMENSION, attitudeProvider);
         final NumericalGradientConverter posOnlyConverter = new NumericalGradientConverter(state, SPACE_DIMENSION, attitudeProvider);
+
         for (final ForceModel forceModel : forceModels) {
 
             final NumericalGradientConverter     converter    = forceModel.dependsOnPositionOnly() ? posOnlyConverter : fullConverter;
             final FieldSpacecraftState<Gradient> dsState      = converter.getState(forceModel);
-            final Gradient[]                     parameters   = converter.getParameters(dsState, forceModel);
+            final Gradient[]                     parameters   = converter.getParametersAtStateDate(dsState, forceModel);
             final FieldVector3D<Gradient>        acceleration = forceModel.acceleration(dsState, parameters);
             final double[]                       gradX        = acceleration.getX().getGradient();
             final double[]                       gradY        = acceleration.getY().getGradient();
@@ -286,20 +282,23 @@ class StateTransitionMatrixGenerator implements AdditionalDerivativesProvider {
             for (ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (driver.isSelected()) {
 
-                    // get the partials derivatives for this driver
-                    DoubleArrayDictionary.Entry entry = accelerationPartials.getEntry(driver.getName());
-                    if (entry == null) {
-                        // create an entry filled with zeroes
-                        accelerationPartials.put(driver.getName(), new double[SPACE_DIMENSION]);
-                        entry = accelerationPartials.getEntry(driver.getName());
+                    // for each span (for each estimated value) corresponding name is added
+                    for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                        // get the partials derivatives for this driver
+                        DoubleArrayDictionary.Entry entry = accelerationPartials.getEntry(span.getData());
+                        if (entry == null) {
+                            // create an entry filled with zeroes
+                            accelerationPartials.put(span.getData(), new double[SPACE_DIMENSION]);
+                            entry = accelerationPartials.getEntry(span.getData());
+                        }
+
+                        // add the contribution of the current force model
+                        entry.increment(new double[] {
+                            gradX[paramsIndex], gradY[paramsIndex], gradZ[paramsIndex]
+                        });
+                        ++paramsIndex;
                     }
-
-                    // add the contribution of the current force model
-                    entry.increment(new double[] {
-                        gradX[paramsIndex], gradY[paramsIndex], gradZ[paramsIndex]
-                    });
-                    ++paramsIndex;
-
                 }
             }
 

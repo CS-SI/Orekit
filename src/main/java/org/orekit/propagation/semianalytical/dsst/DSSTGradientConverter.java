@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractGradientConverter;
@@ -65,7 +65,7 @@ class DSSTGradientConverter extends AbstractGradientConverter {
 
         final FieldOrbit<Gradient> gOrbit =
                         new FieldEquinoctialOrbit<>(sma, ex, ey, hx, hy, l,
-                                                    PositionAngle.MEAN,
+                                                    PositionAngleType.MEAN,
                                                     state.getFrame(),
                                                     dateField,
                                                     gMu);

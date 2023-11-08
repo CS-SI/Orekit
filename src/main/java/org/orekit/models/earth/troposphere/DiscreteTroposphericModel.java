@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,17 +16,12 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParametersDriversProvider;
+import org.orekit.utils.ParameterDriversProvider;
 
 /** Defines a tropospheric model, used to calculate the path delay imposed to
  * electro-magnetic signals between an orbital satellite and a ground station.
@@ -43,7 +38,7 @@ import org.orekit.utils.ParametersDriversProvider;
  * </ul>
  * @author Bryan Cazabonne
  */
-public interface DiscreteTroposphericModel extends ParametersDriversProvider {
+public interface DiscreteTroposphericModel extends ParameterDriversProvider {
 
     /** Calculates the tropospheric path delay for the signal path from a ground
      * station to a satellite.
@@ -62,36 +57,10 @@ public interface DiscreteTroposphericModel extends ParametersDriversProvider {
      * @param <T> type of the elements
      * @param elevation the elevation of the satellite, in radians
      * @param point station location
-     * @param parameters tropospheric model parameters
+     * @param parameters tropospheric model parameters at current date
      * @param date current date
      * @return the path delay due to the troposphere in m
      */
-    <T extends CalculusFieldElement<T>> T pathDelay(T elevation, FieldGeodeticPoint<T> point, T[] parameters, FieldAbsoluteDate<T> date);
-
-    /** Get tropospheric model parameters.
-     * @return tropospheric model parameters
-     */
-    default double[] getParameters() {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final double[] parameters = new double[drivers.size()];
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = drivers.get(i).getValue();
-        }
-        return parameters;
-    }
-
-    /** Get tropospheric model parameters.
-     * @param field field to which the elements belong
-     * @param <T> type of the elements
-     * @return tropospheric model parameters
-     */
-    default <T extends CalculusFieldElement<T>> T[] getParameters(final Field<T> field) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.size());
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = field.getZero().add(drivers.get(i).getValue());
-        }
-        return parameters;
-    }
-
+    <T extends CalculusFieldElement<T>> T pathDelay(T elevation, FieldGeodeticPoint<T> point, T[] parameters,
+                                                    FieldAbsoluteDate<T> date);
 }

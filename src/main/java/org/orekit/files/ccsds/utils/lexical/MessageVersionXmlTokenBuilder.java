@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,9 +19,9 @@ package org.orekit.files.ccsds.utils.lexical;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.orekit.utils.units.Unit;
-import org.xml.sax.Attributes;
 
 /** Builder for the root element with CCSDS message version.
  * <p>
@@ -51,15 +51,26 @@ public class MessageVersionXmlTokenBuilder implements XmlTokenBuilder {
     /** Attribute name for version. */
     private static final String VERSION = "version";
 
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public MessageVersionXmlTokenBuilder() {
+        // nothing to do
+    }
+
     /** {@inheritDoc} */
     @Override
-    public List<ParseToken> buildTokens(final boolean startTag, final String qName,
-                                        final String content, final Attributes attributes,
+    public List<ParseToken> buildTokens(final boolean startTag, final boolean isLeaf, final String qName,
+                                        final String content, final Map<String, String> attributes,
                                         final int lineNumber, final String fileName) {
         if (startTag) {
             // we replace the start tag with the message version specification
-            final String     id      = attributes.getValue(ID);
-            final String     version = attributes.getValue(VERSION);
+            final String     id      = attributes.get(ID);
+            final String     version = attributes.get(VERSION);
             final ParseToken start   = new ParseToken(TokenType.START, qName, null, Unit.NONE, lineNumber, fileName);
             final ParseToken entry   = new ParseToken(TokenType.ENTRY, id, version, Unit.NONE, lineNumber, fileName);
             return Arrays.asList(start, entry);

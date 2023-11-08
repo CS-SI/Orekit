@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -67,21 +67,21 @@ public class AngularRaDecMeasurementCreator extends MeasurementCreator {
 
             final AbsoluteDate     date      = currentState.getDate();
             final Frame            inertial  = currentState.getFrame();
-            final Vector3D         position  = currentState.getPVCoordinates().getPosition();
+            final Vector3D         position  = currentState.getPosition();
 
-            if (station.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
+            if (station.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0)) {
                 final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
                 final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
                     public double value(final double x) {
-                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
+                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x), false);
                         final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                         return d - x * Constants.SPEED_OF_LIGHT;
                     }
                 }, -1.0, 1.0);
 
                 // Satellite position at signal departure
-                final Vector3D satelliteAtDeparture = currentState.shiftedBy(-downLinkDelay).getPVCoordinates().getPosition();
+                final Vector3D satelliteAtDeparture = currentState.shiftedBy(-downLinkDelay).getPosition();
 
                 // Initialize measurement
                 final double[] angular = new double[2];
@@ -96,7 +96,7 @@ public class AngularRaDecMeasurementCreator extends MeasurementCreator {
                 station.getPrimeMeridianOffsetDriver().setReferenceDate(date);
                 station.getPolarOffsetXDriver().setReferenceDate(date);
                 station.getPolarOffsetYDriver().setReferenceDate(date);
-                final Transform offsetToInertialArrival = station.getOffsetToInertial(inertialFrame, date);
+                final Transform offsetToInertialArrival = station.getOffsetToInertial(inertialFrame, date, false);
                 final Vector3D  stationPArrival = offsetToInertialArrival.transformPosition(Vector3D.ZERO);
 
                 // Vector station position at signal arrival - satellite at signal departure

@@ -17,15 +17,15 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.handlers.FieldRecordAndContinue.Event;
@@ -43,26 +43,26 @@ import java.util.List;
 public class FieldRecordAndContinueTest {
 
     /** Field. */
-    private static final Decimal64Field field = Decimal64Field.getInstance();
+    private static final Binary64Field field = Binary64Field.getInstance();
 
     /** check add and clear behavior. */
     @Test
     public void testGetEvents() {
         // setup
-        FieldRecordAndContinue<FieldDateDetector<Decimal64>, Decimal64> handler =
-                new FieldRecordAndContinue<>();
-        FieldAbsoluteDate<Decimal64> date =
+        FieldRecordAndContinue<Binary64> handler = new FieldRecordAndContinue<>();
+        FieldAbsoluteDate<Binary64> date =
                 new FieldAbsoluteDate<>(field, AbsoluteDate.J2000_EPOCH);
-        Decimal64 zero = date.getField().getZero();
-        FieldDateDetector<Decimal64> detector = new FieldDateDetector<>(date);
+        Binary64 zero = date.getField().getZero();
+        @SuppressWarnings("unchecked")
+        FieldDateDetector<Binary64> detector = new FieldDateDetector<>(field, date);
         Frame eci = FramesFactory.getGCRF();
-        FieldOrbit<Decimal64> orbit = new FieldKeplerianOrbit<>(
+        FieldOrbit<Binary64> orbit = new FieldKeplerianOrbit<>(
                 v(6378137 + 500e3), v(0), v(0), v(0), v(0), v(0),
-                PositionAngle.TRUE, eci, date, zero.add(Constants.EIGEN5C_EARTH_MU));
-        FieldSpacecraftState<Decimal64> s1 = new FieldSpacecraftState<>(orbit);
-        FieldSpacecraftState<Decimal64> s2 = s1.shiftedBy(-10);
-        FieldSpacecraftState<Decimal64> s3 = s2.shiftedBy(1);
-        FieldSpacecraftState<Decimal64> s4 = s3.shiftedBy(1);
+                PositionAngleType.TRUE, eci, date, zero.add(Constants.EIGEN5C_EARTH_MU));
+        FieldSpacecraftState<Binary64> s1 = new FieldSpacecraftState<>(orbit);
+        FieldSpacecraftState<Binary64> s2 = s1.shiftedBy(-10);
+        FieldSpacecraftState<Binary64> s3 = s2.shiftedBy(1);
+        FieldSpacecraftState<Binary64> s4 = s3.shiftedBy(1);
 
         // actions
         Assertions.assertEquals(Action.CONTINUE, handler.eventOccurred(s1, detector, true));
@@ -70,7 +70,7 @@ public class FieldRecordAndContinueTest {
         Assertions.assertEquals(Action.CONTINUE, handler.eventOccurred(s3, detector, false));
 
         // verify
-        List<Event<FieldDateDetector<Decimal64>, Decimal64>> events = handler.getEvents();
+        List<Event<Binary64>> events = handler.getEvents();
         Assertions.assertEquals(3, events.size());
         Assertions.assertEquals(s1, events.get(0).getState());
         Assertions.assertEquals(s2, events.get(1).getState());
@@ -78,7 +78,7 @@ public class FieldRecordAndContinueTest {
         Assertions.assertEquals(true, events.get(0).isIncreasing());
         Assertions.assertEquals(true, events.get(1).isIncreasing());
         Assertions.assertEquals(false, events.get(2).isIncreasing());
-        for (Event<FieldDateDetector<Decimal64>, Decimal64> event : events) {
+        for (Event<Binary64> event : events) {
             Assertions.assertEquals(detector, event.getDetector());
         }
 
@@ -105,8 +105,8 @@ public class FieldRecordAndContinueTest {
      * @param value to copy.
      * @return boxed {@code value}.
      */
-    private Decimal64 v(double value) {
-        return new Decimal64(value);
+    private Binary64 v(double value) {
+        return new Binary64(value);
     }
 
 }

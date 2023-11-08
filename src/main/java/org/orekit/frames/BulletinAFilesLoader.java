@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -114,12 +114,19 @@ import org.orekit.utils.units.UnitsConverter;
  * where x stands for a roman numeral character and # stands for a digit
  * character.</p>
  * <p>
+ * Bulletin A in csv format must be read using {@link EopCsvFilesLoader} rather
+ * than using this loader. Bulletin A in xml format must be read using {@link EopXmlLoader}
+ * rather than using this loader.
+ * </p>
+ * <p>
  * This class is immutable and hence thread-safe
  * </p>
  * @author Luc Maisonobe
  * @since 7.0
+ * @see EopCsvFilesLoader
+ * @see EopXmlLoader
  */
-class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
+class BulletinAFilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
     /** Regular expression matching blanks at start of line. */
     private static final String LINE_START_REGEXP     = "^\\p{Blank}+";
@@ -485,7 +492,6 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                 final AbsoluteDate mjdDate = AbsoluteDate.createMJDDate(mjd, 0, getUtc());
                 final double[] currentPole = poleOffsetsFieldsMap.get(mjd);
 
-                final double[] previousEOP = currentEOP;
                 currentEOP = nextEOP;
                 nextEOP    = eopFieldsMap.get(mjd + 1);
 
@@ -497,7 +503,7 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                             configuration = itrfVersionProvider.getConfiguration(fileName, mjd);
                         }
                         history.add(new EOPEntry(mjd,
-                                                 0.0, 0.0, 0.0, 0.0,
+                                                 0.0, Double.NaN, 0.0, 0.0, Double.NaN, Double.NaN,
                                                  UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[1]),
                                                  UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[2]),
                                                  UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[3]),
@@ -507,26 +513,6 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                     }
                 } else {
 
-                    // compute LOD as the opposite of the time derivative of UT1-UTC
-                    final double lod;
-                    if (previousEOP == null) {
-                        if (nextEOP == null) {
-                            // isolated point
-                            lod = 0;
-                        } else {
-                            // first entry, we use a forward difference
-                            lod = currentEOP[3] - nextEOP[3];
-                        }
-                    } else {
-                        if (nextEOP == null) {
-                            // last entry, we use a backward difference
-                            lod = previousEOP[3] - currentEOP[3];
-                        } else {
-                            // regular entry, we use a centered difference
-                            lod = 0.5 * (previousEOP[3] - nextEOP[3]);
-                        }
-                    }
-
                     if (configuration == null || !configuration.isValid(mjd)) {
                         // get a configuration for current name and date range
                         configuration = itrfVersionProvider.getConfiguration(fileName, mjd);
@@ -534,18 +520,20 @@ class BulletinAFilesLoader extends AbstractEopLoader implements EOPHistoryLoader
                     if (currentPole == null) {
                         // we have only EOP for this date
                         history.add(new EOPEntry(mjd,
-                                                 currentEOP[3], lod,
+                                                 currentEOP[3], Double.NaN,
                                                  UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[1]),
                                                  UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[2]),
+                                                 Double.NaN, Double.NaN,
                                                  0.0, 0.0, 0.0, 0.0,
                                                  configuration.getVersion(),
                                                  mjdDate));
                     } else {
                         // we have complete data
                         history.add(new EOPEntry(mjd,
-                                                 currentEOP[3], lod,
+                                                 currentEOP[3], Double.NaN,
                                                  UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[1] ),
                                                  UnitsConverter.ARC_SECONDS_TO_RADIANS.convert(currentEOP[2] ),
+                                                 Double.NaN, Double.NaN,
                                                  UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[1]),
                                                  UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[2]),
                                                  UnitsConverter.MILLI_ARC_SECONDS_TO_RADIANS.convert(currentPole[3]),

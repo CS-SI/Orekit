@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.estimation.measurements.gnss;
 
 import java.util.List;
 
-import org.orekit.gnss.ObservationDataSet;
+import org.orekit.files.rinex.observation.ObservationDataSet;
 
 /**
  * Interface for phase measurement cycle-slip detection.

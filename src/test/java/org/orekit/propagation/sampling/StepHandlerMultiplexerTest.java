@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,7 @@ import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -44,7 +44,7 @@ public class StepHandlerMultiplexerTest {
         Utils.setDataRoot("regular-data");
         initDate = new AbsoluteDate(2020, 2, 28, 16, 15, 0.0, TimeScalesFactory.getUTC());
         Orbit ic = new KeplerianOrbit(6378137 + 500e3, 1e-3, 0, 0, 0, 0,
-                                      PositionAngle.TRUE, FramesFactory.getGCRF(), initDate, Constants.WGS84_EARTH_MU);
+                                      PositionAngleType.TRUE, FramesFactory.getGCRF(), initDate, Constants.WGS84_EARTH_MU);
         propagator = new KeplerianPropagator(ic);
     }
 

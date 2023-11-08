@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 
 import java.util.Arrays;
 
@@ -74,21 +75,21 @@ public class AngularAzElMeasurementCreator extends MeasurementCreator {
 
             final AbsoluteDate     date      = currentState.getDate();
             final Frame            inertial  = currentState.getFrame();
-            final Vector3D         position  = currentState.getPVCoordinates().getPosition();
+            final Vector3D         position  = currentState.getPosition();
 
-            if (station.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
+            if (station.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0)) {
                 final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
                 final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
                     public double value(final double x) {
-                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x));
+                        final Transform t = station.getOffsetToInertial(inertial, date.shiftedBy(x), false);
                         final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
                         return d - x * Constants.SPEED_OF_LIGHT;
                     }
                 }, -1.0, 1.0);
 
                 // Satellite position at signal departure
-                final Vector3D satelliteAtDeparture = currentState.shiftedBy(-downLinkDelay).getPVCoordinates().getPosition();
+                final Vector3D satelliteAtDeparture = currentState.shiftedBy(-downLinkDelay).getPosition();
 
                 // Initialize measurement
                 final double[] angular = new double[2];
@@ -96,14 +97,12 @@ public class AngularAzElMeasurementCreator extends MeasurementCreator {
                 final double[] baseweight = {10.0, 10.0};
 
                 // Compute measurement
-                // Elevation
-                angular[1] = station.getBaseFrame().getElevation(satelliteAtDeparture,
-                                                                 currentState.getFrame(),
-                                                                 currentState.getDate()) + elBias;
-                // Azimuth
-                angular[0] = station.getBaseFrame().getAzimuth(satelliteAtDeparture,
-                                                               currentState.getFrame(),
-                                                               currentState.getDate()) + azBias;
+                final TrackingCoordinates tc =
+                                station.getBaseFrame().getTrackingCoordinates(satelliteAtDeparture,
+                                                                              currentState.getFrame(),
+                                                                              currentState.getDate());
+                angular[0] = tc.getAzimuth()   + azBias;
+                angular[1] = tc.getElevation() + elBias;
 
                 addMeasurement(new AngularAzEl(station, date, angular, sigma, baseweight, satellite));
             }

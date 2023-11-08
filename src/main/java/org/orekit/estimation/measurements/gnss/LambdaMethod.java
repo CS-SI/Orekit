@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,6 +49,17 @@ public class LambdaMethod extends AbstractLambdaMethod {
 
     /** Margin factor to apply to estimated search limit parameter. */
     private static final double CHI2_MARGIN_FACTOR = 1.1;
+
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public LambdaMethod() {
+        // nothing to do
+    }
 
     /** {@inheritDoc} */
     @Override

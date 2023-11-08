@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.LagrangianPoints;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * Class creating, from two different celestial bodies, the corresponding system
@@ -371,10 +370,10 @@ public class CR3BPSystem {
         // 3.   Apply the transformation to output frame
 
         final Frame primaryInertialFrame = primaryBody.getInertiallyOrientedFrame();
-        final TimeStampedPVCoordinates pv21 = secondaryBody.getPVCoordinates(date, primaryInertialFrame);
+        final Vector3D pv21 = secondaryBody.getPosition(date, primaryInertialFrame);
 
         // Distance and Velocity to dimensionalize the state vector
-        final double dist12 = pv21.getPosition().getNorm();
+        final double dist12 = pv21.getNorm();
         final double vCircular  = FastMath.sqrt(primaryBody.getGM() / dist12);
 
         // Dimensionalized state vector centered on primary body

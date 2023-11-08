@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.files.ccsds.section.Data;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 
 /** Container for Keplerian elements.
@@ -59,7 +59,7 @@ public class KeplerianElements extends CommentsContainer implements Data {
     private double anomaly;
 
     /** Orbit anomaly type (mean or true). */
-    private PositionAngle anomalyType;
+    private PositionAngleType anomalyType;
 
     /** Gravitational coefficient. */
     private double mu;
@@ -86,12 +86,12 @@ public class KeplerianElements extends CommentsContainer implements Data {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(epoch,  StateVectorKey.EPOCH);
-        checkNotNaN(e,       KeplerianElementsKey.ECCENTRICITY);
-        checkNotNaN(i,       KeplerianElementsKey.INCLINATION);
-        checkNotNaN(raan,    KeplerianElementsKey.RA_OF_ASC_NODE);
-        checkNotNaN(pa,      KeplerianElementsKey.ARG_OF_PERICENTER);
-        checkNotNaN(anomaly, KeplerianElementsKey.MEAN_ANOMALY);
+        checkNotNull(epoch,  StateVectorKey.EPOCH.name());
+        checkNotNaN(e,       KeplerianElementsKey.ECCENTRICITY.name());
+        checkNotNaN(i,       KeplerianElementsKey.INCLINATION.name());
+        checkNotNaN(raan,    KeplerianElementsKey.RA_OF_ASC_NODE.name());
+        checkNotNaN(pa,      KeplerianElementsKey.ARG_OF_PERICENTER.name());
+        checkNotNaN(anomaly, KeplerianElementsKey.MEAN_ANOMALY.name());
     }
 
     /** Get epoch of state vector, Keplerian elements and covariance matrix data.
@@ -216,14 +216,14 @@ public class KeplerianElements extends CommentsContainer implements Data {
     /** Get the type of anomaly (true or mean).
      * @return the type of anomaly
      */
-    public PositionAngle getAnomalyType() {
+    public PositionAngleType getAnomalyType() {
         return anomalyType;
     }
 
     /** Set the type of anomaly.
      * @param anomalyType the type of anomaly to be set
      */
-    public void setAnomalyType(final PositionAngle anomalyType) {
+    public void setAnomalyType(final PositionAngleType anomalyType) {
         refuseFurtherComments();
         this.anomalyType = anomalyType;
     }

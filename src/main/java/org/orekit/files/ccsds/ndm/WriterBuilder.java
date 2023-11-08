@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.files.ccsds.ndm;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
+import org.orekit.files.ccsds.ndm.adm.acm.AcmWriter;
 import org.orekit.files.ccsds.ndm.adm.aem.AemWriter;
 import org.orekit.files.ccsds.ndm.adm.apm.ApmWriter;
 import org.orekit.files.ccsds.ndm.cdm.CdmWriter;
@@ -50,6 +51,8 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
      * This constructor creates a builder with
      * <ul>
      *   <li>{@link #getConventions() IERS conventions} set to {@link IERSConventions#IERS_2010}</li>
+     *   <li>{@link #getEquatorialRadius() central body equatorial radius} set to {@code Double.NaN}</li>
+     *   <li>{@link #getFlattening() central body flattening} set to {@code Double.NaN}</li>
      *   <li>{@link #getDataContext() data context} set to {@link DataContext#getDefault() default context}</li>
      *   <li>{@link #getMissionReferenceDate() mission reference date} set to {@code null}</li>
      *   <li>{@link #getRangeUnitsConverter() converter for range units} set to {@link IdentityConverter}</li>
@@ -66,31 +69,40 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
      * This constructor creates a builder with
      * <ul>
      *   <li>{@link #getConventions() IERS conventions} set to {@link IERSConventions#IERS_2010}</li>
+     *   <li>{@link #getEquatorialRadius() central body equatorial radius} set to {@code Double.NaN}</li>
+     *   <li>{@link #getFlattening() central body flattening} set to {@code Double.NaN}</li>
      *   <li>{@link #getMissionReferenceDate() mission reference date} set to {@code null}</li>
      *   <li>{@link #getRangeUnitsConverter() converter for range units} set to {@link IdentityConverter}</li>
      * </ul>
      * @param dataContext data context used to retrieve frames, time scales, etc.
      */
     public WriterBuilder(final DataContext dataContext) {
-        this(IERSConventions.IERS_2010, dataContext, null, new IdentityConverter());
+        this(IERSConventions.IERS_2010, Double.NaN, Double.NaN, dataContext, null, new IdentityConverter());
     }
 
     /** Complete constructor.
      * @param conventions IERS Conventions
+     * @param equatorialRadius central body equatorial radius
+     * @param flattening central body flattening
      * @param dataContext used to retrieve frames, time scales, etc.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param rangeUnitsConverter converter for {@link RangeUnits#RU Range Units}
      */
-    private WriterBuilder(final IERSConventions conventions, final DataContext dataContext,
+    private WriterBuilder(final IERSConventions conventions,
+                          final double equatorialRadius, final double flattening,
+                          final DataContext dataContext,
                           final AbsoluteDate missionReferenceDate, final RangeUnitsConverter rangeUnitsConverter) {
-        super(conventions, dataContext, missionReferenceDate, rangeUnitsConverter);
+        super(conventions, equatorialRadius, flattening, dataContext, missionReferenceDate, rangeUnitsConverter);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected WriterBuilder create(final IERSConventions newConventions, final DataContext newDataContext,
+    protected WriterBuilder create(final IERSConventions newConventions,
+                                   final double newEquatorialRadius, final double newFlattening,
+                                   final DataContext newDataContext,
                                    final AbsoluteDate newMissionReferenceDate, final RangeUnitsConverter newRangeUnitsConverter) {
-        return new WriterBuilder(newConventions, newDataContext, newMissionReferenceDate, newRangeUnitsConverter);
+        return new WriterBuilder(newConventions, newEquatorialRadius, newFlattening, newDataContext,
+                                 newMissionReferenceDate, newRangeUnitsConverter);
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.Ndm Navigation Data Messages}.
@@ -125,7 +137,7 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
      * @return a new writer
      */
     public OcmWriter buildOcmWriter() {
-        return new OcmWriter(getConventions(), getDataContext());
+        return new OcmWriter(getConventions(), getEquatorialRadius(), getFlattening(), getDataContext());
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.apm.Apm Attitude Parameters Messages}.
@@ -140,6 +152,14 @@ public class WriterBuilder extends AbstractBuilder<WriterBuilder> {
      */
     public AemWriter buildAemWriter() {
         return new AemWriter(getConventions(), getDataContext(), getMissionReferenceDate());
+    }
+
+    /** Build a writer for {@link org.orekit.files.ccsds.ndm.adm.acm.Acm Attitude Comprehensive Messages}.
+     * @return a new writer
+     * @since 12.0
+     */
+    public AcmWriter buildAcmWriter() {
+        return new AcmWriter(getConventions(), getDataContext());
     }
 
     /** Build a writer for {@link org.orekit.files.ccsds.ndm.tdm.Tdm Tracking Data Messages}.

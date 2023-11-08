@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,12 +23,14 @@ import java.util.Map;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -60,7 +62,7 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
 
     /** Constructor.
      * @param local satellite which receives the signal and performs the measurement
-     * @param remote emote satellite which simply emits the signal
+     * @param remote remote satellite which simply emits the signal
      * @param date date of the measurement
      * @param phase observed value (cycles)
      * @param wavelength phase observed value wavelength (m)
@@ -104,6 +106,56 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
 
     /** {@inheritDoc} */
     @Override
+    protected EstimatedMeasurementBase<InterSatellitesPhase> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                                     final int evaluation,
+                                                                                                     final SpacecraftState[] states) {
+
+        // Coordinates of both satellites
+        final SpacecraftState local = states[0];
+        final TimeStampedPVCoordinates pvaL = local.getPVCoordinates();
+        final SpacecraftState remote = states[1];
+        final TimeStampedPVCoordinates pvaR = remote.getPVCoordinates();
+
+        // Compute propagation times
+        // Downlink delay
+        final double dtl = getSatellites().get(0).getClockOffsetDriver().getValue(AbsoluteDate.ARBITRARY_EPOCH);
+        final AbsoluteDate arrivalDate = getDate().shiftedBy(-dtl);
+
+        final TimeStampedPVCoordinates s1Downlink = pvaL.shiftedBy(arrivalDate.durationFrom(pvaL.getDate()));
+        final double tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate);
+
+        // Transit state
+        final double delta      = getDate().durationFrom(remote.getDate());
+        final double deltaMTauD = delta - tauD;
+
+        // prepare the evaluation
+        final EstimatedMeasurementBase<InterSatellitesPhase> estimatedPhase =
+                        new EstimatedMeasurementBase<>(this, iteration, evaluation,
+                                                       new SpacecraftState[] {
+                                                           local.shiftedBy(deltaMTauD),
+                                                           remote.shiftedBy(deltaMTauD)
+                                                       }, new TimeStampedPVCoordinates[] {
+                                                           remote.shiftedBy(delta - tauD).getPVCoordinates(),
+                                                           local.shiftedBy(delta).getPVCoordinates()
+                                                       });
+
+        // Clock offsets
+        final double dtr = getSatellites().get(1).getClockOffsetDriver().getValue(AbsoluteDate.ARBITRARY_EPOCH);
+
+        // Phase value
+        final double cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
+        final double ambiguity   = ambiguityDriver.getValue(AbsoluteDate.ARBITRARY_EPOCH);
+        final double phase       = (tauD + dtl - dtr) * cOverLambda + ambiguity;
+
+        estimatedPhase.setEstimatedValue(phase);
+
+        // Return the estimated measurement
+        return estimatedPhase;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected EstimatedMeasurement<InterSatellitesPhase> theoreticalEvaluation(final int iteration,
                                                                                final int evaluation,
                                                                                final SpacecraftState[] states) {
@@ -121,7 +173,10 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
         final Map<String, Integer> indices = new HashMap<>();
         for (ParameterDriver phaseMeasurementDriver : getParametersDrivers()) {
             if (phaseMeasurementDriver.isSelected()) {
-                indices.put(phaseMeasurementDriver.getName(), nbParams++);
+                for (Span<String> span = phaseMeasurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                    indices.put(span.getData(), nbParams++);
+                }
             }
         }
 
@@ -133,7 +188,7 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
 
         // Compute propagation times
         // Downlink delay
-        final Gradient dtl = getSatellites().get(0).getClockOffsetDriver().getValue(nbParams, indices);
+        final Gradient dtl = getSatellites().get(0).getClockOffsetDriver().getValue(nbParams, indices, AbsoluteDate.ARBITRARY_EPOCH);
         final FieldAbsoluteDate<Gradient> arrivalDate = new FieldAbsoluteDate<>(getDate(), dtl.negate());
 
         final TimeStampedFieldPVCoordinates<Gradient> s1Downlink =
@@ -156,11 +211,11 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
                                                    });
 
         // Clock offsets
-        final Gradient dtr = getSatellites().get(1).getClockOffsetDriver().getValue(nbParams, indices);
+        final Gradient dtr = getSatellites().get(1).getClockOffsetDriver().getValue(nbParams, indices, AbsoluteDate.ARBITRARY_EPOCH);
 
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
-        final Gradient ambiguity   = ambiguityDriver.getValue(nbParams, indices);
+        final Gradient ambiguity   = ambiguityDriver.getValue(nbParams, indices, AbsoluteDate.ARBITRARY_EPOCH);
         final Gradient phase       = tauD.add(dtl).subtract(dtr).multiply(cOverLambda).add(ambiguity);
 
         estimatedPhase.setEstimatedValue(phase.getValue());
@@ -172,9 +227,12 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
 
         // Set partial derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
-            final Integer index = indices.get(driver.getName());
-            if (index != null) {
-                estimatedPhase.setParameterDerivatives(driver, derivatives[index]);
+            for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+
+                final Integer index = indices.get(span.getData());
+                if (index != null) {
+                    estimatedPhase.setParameterDerivatives(driver, span.getStart(), derivatives[index]);
+                }
             }
         }
 

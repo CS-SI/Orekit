@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,21 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +54,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -55,11 +63,6 @@ import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class AEMParserTest {
 
@@ -355,36 +358,46 @@ public class AEMParserTest {
 
         // Reference values
         final AbsoluteDate refDate = new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC());
-        final Vector3D refRate     = new Vector3D(FastMath.toRadians(0.03214),
-                                                  FastMath.toRadians(0.02156),
-                                                  FastMath.toRadians(0.1045));
-        final Vector3D refAcc      = Vector3D.ZERO;
 
         // Computed angular coordinates
         final TimeStampedAngularCoordinates ac = segment0.getData().getAngularCoordinates().get(0);
-        final double[] angles = ac.getRotation().getAngles(segment0.getMetadata().getEulerRotSeq(),
+        final FieldRotation<UnivariateDerivative1> r = ac.toUnivariateDerivative1Rotation();
+        final UnivariateDerivative1[] angles = r.getAngles(segment0.getMetadata().getEulerRotSeq(),
                                                            RotationConvention.FRAME_TRANSFORM);
-        Assertions.assertEquals(0.0, refDate.durationFrom(ac.getDate()),                                      1.0e-5);
-        Assertions.assertEquals(0.0, refRate.distance(ac.getRotation().applyInverseTo(ac.getRotationRate())), 1.0e-5);
-        Assertions.assertEquals(0.0, refAcc.distance(ac.getRotationAcceleration()),                           1.0e-5);
-        Assertions.assertEquals(-26.78, FastMath.toDegrees(angles[0]), 1.0e-2);
-        Assertions.assertEquals(46.26,  FastMath.toDegrees(angles[1]), 1.0e-2);
-        Assertions.assertEquals(144.10, FastMath.toDegrees(angles[2]), 1.0e-2);
+        Assertions.assertEquals(0.0,     refDate.durationFrom(ac.getDate()),                 1.0e-5);
+        Assertions.assertEquals(0.0,     ac.getRotationAcceleration().getNorm(),             1.0e-5);
+        Assertions.assertEquals(-26.78,  FastMath.toDegrees(angles[0].getValue()),           1.0e-2);
+        Assertions.assertEquals(46.26,   FastMath.toDegrees(angles[1].getValue()),           1.0e-2);
+        Assertions.assertEquals(144.10,  FastMath.toDegrees(angles[2].getValue()),           1.0e-2);
+        Assertions.assertEquals(0.10450, FastMath.toDegrees(angles[0].getFirstDerivative()), 1.0e-5);
+        Assertions.assertEquals(0.03214, FastMath.toDegrees(angles[1].getFirstDerivative()), 1.0e-5);
+        Assertions.assertEquals(0.02156, FastMath.toDegrees(angles[2].getFirstDerivative()), 1.0e-5);
     }
 
     @Test
-    public void testParseAEM06() throws URISyntaxException {
-        final String ex = "/ccsds/adm/aem/AEMExample06.txt";
+    public void testParseAEM06a() throws URISyntaxException {
+        final String ex = "/ccsds/adm/aem/AEMExample06a.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
 
-        try {
-            parser.parseMessage(source);
-            Assertions.fail("an exception should have been thrown");
-        }  catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_AEM_ATTITUDE_TYPE_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assertions.assertEquals(AttitudeType.SPIN_NUTATION.name(), oe.getParts()[0]);
-        }
+        final Aem file = parser.parseMessage(source);
+        final TimeStampedAngularCoordinates ac = file.getSegments().get(0).getAngularCoordinates().get(7);
+        final Vector3D lastSpin = ac.getRotation().applyInverseTo(Vector3D.PLUS_K);
+        Assertions.assertEquals(268.45119, FastMath.toDegrees(MathUtils.normalizeAngle(lastSpin.getAlpha(), FastMath.PI)), 1.0e-5);
+        Assertions.assertEquals(68.317275, FastMath.toDegrees(lastSpin.getDelta()), 1.0e-5);
+    }
+
+    @Test
+    public void testParseAEM06b() throws URISyntaxException {
+        final String ex = "/ccsds/adm/aem/AEMExample06b.txt";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final AemParser parser  = new ParserBuilder().buildAemParser();
+
+        final Aem file = parser.parseMessage(source);
+        final TimeStampedAngularCoordinates ac = file.getSegments().get(0).getAngularCoordinates().get(7);
+        final Vector3D lastSpin = ac.getRotation().applyInverseTo(Vector3D.PLUS_K);
+        Assertions.assertEquals(268.45119, FastMath.toDegrees(MathUtils.normalizeAngle(lastSpin.getAlpha(), FastMath.PI)), 1.0e-5);
+        Assertions.assertEquals(68.317275, FastMath.toDegrees(lastSpin.getDelta()), 1.0e-5);
     }
 
     @Test
@@ -478,7 +491,7 @@ public class AEMParserTest {
                             segment0.getMetadata().getStartTime());
         Assertions.assertEquals(new AbsoluteDate("2020-090T05:00:00.946", TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getStopTime());
-        Assertions.assertEquals(AttitudeType.EULER_ANGLE_RATE, segment0.getMetadata().getAttitudeType());
+        Assertions.assertEquals(AttitudeType.EULER_ANGLE_DERIVATIVE, segment0.getMetadata().getAttitudeType());
 
         final AbsoluteDate refDate = new AbsoluteDate("2020-090T05:00:00.071", TimeScalesFactory.getUTC());
 
@@ -548,25 +561,57 @@ public class AEMParserTest {
 
         final CircularOrbit o = new CircularOrbit(6992992, -5e-04, 1.2e-03,
                                                   FastMath.toRadians(97.83), FastMath.toRadians(80.95),
-                                                  FastMath.toRadians(179.86), PositionAngle.MEAN,
+                                                  FastMath.toRadians(179.86), PositionAngleType.MEAN,
                                                   FramesFactory.getEME2000(),
                                                   new AbsoluteDate("2021-04-15T13:31:22.000", tai),
                                                   Constants.EIGEN5C_EARTH_MU);
-        final FieldCircularOrbit<Decimal64> fo =
-                        new FieldCircularOrbit<>(new Decimal64(o.getA()),
-                                                 new Decimal64(o.getCircularEx()), new Decimal64(o.getCircularEy()),
-                                                 new Decimal64(o.getI()), new Decimal64(o.getRightAscensionOfAscendingNode()),
-                                                 new Decimal64(o.getAlphaM()), PositionAngle.MEAN,
-                                                 o.getFrame(), new FieldAbsoluteDate<>(Decimal64Field.getInstance(), o.getDate()),
-                                                 new Decimal64(o.getMu()));
+        final FieldCircularOrbit<Binary64> fo =
+                        new FieldCircularOrbit<>(new Binary64(o.getA()),
+                                                 new Binary64(o.getCircularEx()), new Binary64(o.getCircularEy()),
+                                                 new Binary64(o.getI()), new Binary64(o.getRightAscensionOfAscendingNode()),
+                                                 new Binary64(o.getAlphaM()), PositionAngleType.MEAN,
+                                                 o.getFrame(), new FieldAbsoluteDate<>(Binary64Field.getInstance(), o.getDate()),
+                                                 new Binary64(o.getMu()));
         final AemSatelliteEphemeris ephemeris = file.getSatellites().get("2020-012A");
         final BoundedAttitudeProvider provider = ephemeris.getAttitudeProvider();
         Attitude                  a = provider.getAttitude(o, o.getDate(), o.getFrame());
-        FieldAttitude<Decimal64> fa = provider.getAttitude(fo, fo.getDate(), fo.getFrame());
+        FieldAttitude<Binary64> fa = provider.getAttitude(fo, fo.getDate(), fo.getFrame());
         Assertions.assertEquals(a.getRotation().getQ0(), fa.getRotation().getQ0().getReal(), 0.00001);
         Assertions.assertEquals(a.getRotation().getQ1(), fa.getRotation().getQ1().getReal(), 0.00001);
         Assertions.assertEquals(a.getRotation().getQ2(), fa.getRotation().getQ2().getReal(), 0.00001);
         Assertions.assertEquals(a.getRotation().getQ3(), fa.getRotation().getQ3().getReal(), 0.00001);
+
+    }
+
+    @Test
+    public void testParseAEM14() throws URISyntaxException {
+        final TimeScale tai = TimeScalesFactory.getTAI();
+        final String ex = "/ccsds/adm/aem/AEMExample14.txt";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final AemParser parser  = new ParserBuilder().buildAemParser();
+        final Aem file = parser.parseMessage(source);
+
+        final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
+        Assertions.assertEquals(TimeSystem.TAI,          segment0.getMetadata().getTimeSystem());
+        Assertions.assertEquals("MMS",                   segment0.getMetadata().getObjectName());
+        Assertions.assertEquals("2015-011A",             segment0.getMetadata().getObjectID());
+        Assertions.assertEquals("EME2000",               segment0.getMetadata().getEndpoints().getFrameA().getName());
+        Assertions.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY, segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getBaseEquipment());
+        Assertions.assertEquals("1", segment0.getMetadata().getEndpoints().getFrameB().asSpacecraftBodyFrame().getLabel());
+        Assertions.assertEquals(new AbsoluteDate("2023-01-01T00:00:00.000", tai), segment0.getMetadata().getStartTime());
+        Assertions.assertEquals(new AbsoluteDate("2023-01-01T00:04:30.000", tai), segment0.getMetadata().getStopTime());
+        Assertions.assertEquals(AttitudeType.EULER_ANGLE_DERIVATIVE, segment0.getMetadata().getAttitudeType());
+        Assertions.assertEquals(RotationOrder.ZXZ, segment0.getMetadata().getEulerRotSeq());
+        Assertions.assertEquals(10, segment0.getData().getAngularCoordinates().size());
+
+        Assertions.assertEquals(AttitudeType.SPIN_NUTATION_MOMENTUM,
+                                file.getSegments().get(1).getMetadata().getAttitudeType());
+        Assertions.assertEquals(AttitudeType.QUATERNION,
+                                file.getSegments().get(2).getMetadata().getAttitudeType());
+        Assertions.assertEquals(AttitudeType.QUATERNION_ANGVEL,
+                                file.getSegments().get(3).getMetadata().getAttitudeType());
+        Assertions.assertEquals(AttitudeType.EULER_ANGLE_ANGVEL,
+                                file.getSegments().get(4).getMetadata().getAttitudeType());
 
     }
 
@@ -611,16 +656,30 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testInconsistentTimeSystems() {
+    public void testInconsistentDirection() {
         try {
-            final String name = "/ccsds/adm/aem/AEM-inconsistent-time-systems.txt";
+            final String name = "/ccsds/adm/aem/AEM-inconsistent-direction.txt";
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
             new ParserBuilder().buildAemParser().parseMessage(source);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_AEM_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
-            Assertions.assertEquals("UTC", oe.getParts()[0]);
-            Assertions.assertEquals("TCG", oe.getParts()[1]);
+            Assertions.assertEquals(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION, oe.getSpecifier());
+            Assertions.assertEquals(AemMetadataKey.ATTITUDE_DIR, oe.getParts()[0]);
+            Assertions.assertEquals(2.0, ((Double) oe.getParts()[1]).doubleValue(), 1.0e-15);
+        }
+    }
+
+    @Test
+    public void testInconsistentQuaternionType() {
+        try {
+            final String name = "/ccsds/adm/aem/AEM-inconsistent-quaternion-type.txt";
+            final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+            new ParserBuilder().buildAemParser().parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION, oe.getSpecifier());
+            Assertions.assertEquals(AemMetadataKey.QUATERNION_TYPE, oe.getParts()[0]);
+            Assertions.assertEquals(2.0, ((Double) oe.getParts()[1]).doubleValue(), 1.0e-15);
         }
     }
 
@@ -712,6 +771,20 @@ public class AEMParserTest {
             Assertions.assertEquals("7051995", oe.getParts()[0]);
             Assertions.assertEquals(22, ((Integer) oe.getParts()[1]).intValue());
             Assertions.assertEquals(name, oe.getParts()[2]);
+        }
+    }
+
+    @Test
+    public void testSpuriousMetaDataSection() throws URISyntaxException {
+        final String name = "/ccsds/adm/aem/spurious-metadata.txt";
+        final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
+        try {
+            new ParserBuilder().buildAemParser().parseMessage(source);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assertions.assertEquals(26, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals("META", oe.getParts()[2]);
         }
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,9 +32,9 @@ import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Position;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
@@ -60,7 +60,7 @@ public class IodGibbsTest {
         final Frame frame = context.initialOrbit.getFrame();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -90,7 +90,7 @@ public class IodGibbsTest {
 
         // instantiate the IOD method
         final IodGibbs gibbs = new IodGibbs(mu);
-        final KeplerianOrbit orbit = gibbs.estimate(frame, pv1, pv2, pv3);
+        final Orbit    orbit = gibbs.estimate(frame, pv1, pv2, pv3);
 
         Assertions.assertEquals(context.initialOrbit.getA(), orbit.getA(), 1.0e-9 * context.initialOrbit.getA());
         Assertions.assertEquals(context.initialOrbit.getE(), orbit.getE(),  1.0e-9 * context.initialOrbit.getE());
@@ -123,8 +123,8 @@ public class IodGibbsTest {
         final Vector3D velR2 = new Vector3D(0.0, 5531.148, -5191.806);
 
         //Gibbs IOD
-        final KeplerianOrbit orbit = gibbs.estimate(FramesFactory.getEME2000(),
-                                                    posR1, dateRef, posR2, date2, posR3, date3);
+        final Orbit orbit = gibbs.estimate(FramesFactory.getEME2000(),
+                                           posR1, dateRef, posR2, date2, posR3, date3);
 
         //test
         Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(), 1e-3);
@@ -157,8 +157,8 @@ public class IodGibbsTest {
         final Vector3D velR2 = new Vector3D(-6441.632, 3777.625, -1720.582);
 
         //Gibbs IOD
-        final KeplerianOrbit orbit = gibbs.estimate(FramesFactory.getEME2000(),
-                                                    posR1, dateRef, posR2, date2, posR3, date3);
+        final Orbit orbit = gibbs.estimate(FramesFactory.getEME2000(),
+                                           posR1, dateRef, posR2, date2, posR3, date3);
 
         //test for the norm of the velocity
         Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
@@ -193,10 +193,10 @@ public class IodGibbsTest {
         final Vector3D velR2 = new Vector3D(-6441.632, 3777.625, -1720.582);
 
         // Gibbs IOD
-        final KeplerianOrbit orbit = gibbs.estimate(FramesFactory.getEME2000(),
-                                                    new Position(dateRef, posR1, 1.0, 1.0, satellite),
-                                                    new Position(date2,   posR2, 1.0, 1.0, satellite),
-                                                    new Position(date3,   posR3, 1.0, 1.0, satellite));
+        final Orbit orbit = gibbs.estimate(FramesFactory.getEME2000(),
+                                           new Position(dateRef, posR1, 1.0, 1.0, satellite),
+                                           new Position(date2, posR2, 1.0, 1.0, satellite),
+                                           new Position(date3, posR3, 1.0, 1.0, satellite));
 
         // Test for the norm of the velocity
         Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);

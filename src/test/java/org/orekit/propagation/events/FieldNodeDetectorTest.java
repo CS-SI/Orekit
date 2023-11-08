@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +27,7 @@ import org.orekit.Utils;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -41,12 +41,12 @@ public class FieldNodeDetectorTest {
 
     @Test
     public void testIssue138() {
-        doTestIssue138(Decimal64Field.getInstance());
+        doTestIssue138(Binary64Field.getInstance());
     }
 
     @Test
     public void testIssue158() {
-        doTestIssue158(Decimal64Field.getInstance());
+        doTestIssue158(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>>void doTestIssue138(Field<T> field) {
@@ -60,14 +60,14 @@ public class FieldNodeDetectorTest {
         Frame inertialFrame = FramesFactory.getEME2000();
         FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field, 2014, 01, 01, 0, 0, 0, TimeScalesFactory.getUTC());
         FieldAbsoluteDate<T> finalDate = initialDate.shiftedBy(5000);
-        FieldKeplerianOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(a, e, i, w, raan, v, PositionAngle.TRUE, inertialFrame, initialDate, zero.add(Constants.WGS84_EARTH_MU));
+        FieldKeplerianOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(a, e, i, w, raan, v, PositionAngleType.TRUE, inertialFrame, initialDate, zero.add(Constants.WGS84_EARTH_MU));
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(initialOrbit, zero.add(1000));
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(initialOrbit);
 
         // Define 2 instances of NodeDetector:
         FieldEventDetector<T> rawDetector =
                 new FieldNodeDetector<>(zero.add(1e-6), initialState.getOrbit(), initialState.getFrame()).
-                withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>());
+                withHandler(new FieldContinueOnEvent<>());
 
         FieldEventsLogger<T> logger1 = new FieldEventsLogger<>();
         FieldEventDetector<T> node1 = logger1.monitorDetector(rawDetector);
@@ -111,18 +111,18 @@ public class FieldNodeDetectorTest {
 
         // highly eccentric, inclined orbit
         final FieldKeplerianOrbit<T> orbit1 =
-                new FieldKeplerianOrbit<>(a, e1, i, pa, raan, m, PositionAngle.MEAN, frame, date, zero.add(mu));
+                new FieldKeplerianOrbit<>(a, e1, i, pa, raan, m, PositionAngleType.MEAN, frame, date, zero.add(mu));
         FieldEventDetector<T> detector1 = new FieldNodeDetector<>(orbit1, orbit1.getFrame());
         T t1 = orbit1.getKeplerianPeriod();
-        Assertions.assertEquals(t1.getReal() / 28.82, detector1.getMaxCheckInterval().getReal(), t1.getReal() / 10000);
+        Assertions.assertEquals(t1.getReal() / 28.82, detector1.getMaxCheckInterval().currentInterval(null), t1.getReal() / 10000);
 
         // nearly circular, inclined orbit
         final FieldKeplerianOrbit<T> orbit2 =
-                new FieldKeplerianOrbit<>(a, e2, i, pa, raan, m, PositionAngle.MEAN, frame, date, zero.add(mu));
+                new FieldKeplerianOrbit<>(a, e2, i, pa, raan, m, PositionAngleType.MEAN, frame, date, zero.add(mu));
         FieldEventDetector<T> detector2 = new FieldNodeDetector<>(orbit2, orbit2.getFrame());
         T t2 = orbit2.getKeplerianPeriod();
         Assertions.assertEquals(t1.getReal(), t2.getReal(), t1.getReal() / 10000);
-        Assertions.assertEquals(t2.getReal() / 3, detector2.getMaxCheckInterval().getReal(), t2.getReal() / 10000);
+        Assertions.assertEquals(t2.getReal() / 3, detector2.getMaxCheckInterval().currentInterval(null), t2.getReal() / 10000);
 
     }
 

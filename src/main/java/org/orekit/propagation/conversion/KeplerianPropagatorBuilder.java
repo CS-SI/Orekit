@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,16 +19,13 @@ package org.orekit.propagation.conversion;
 import java.util.List;
 
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.AbstractKalmanModel;
-import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.utils.ParameterDriversList;
@@ -37,7 +34,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Build a new instance.
      * <p>
@@ -47,19 +44,20 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder implem
      * used together with the {@code positionScale} to convert from the {@link
      * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
      * callers of this builder to the real orbital parameters.
+     * The default attitude provider is aligned with the orbit's inertial frame.
      * </p>
      *
      * @param templateOrbit reference orbit from which real orbits will be built
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @since 8.0
-     * @see #KeplerianPropagatorBuilder(Orbit, PositionAngle, double, AttitudeProvider)
+     * @see #KeplerianPropagatorBuilder(Orbit, PositionAngleType, double, AttitudeProvider)
      */
-    public KeplerianPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
+    public KeplerianPropagatorBuilder(final Orbit templateOrbit, final PositionAngleType positionAngleType,
                                       final double positionScale) {
-        this(templateOrbit, positionAngle, positionScale,
-                InertialProvider.of(templateOrbit.getFrame()));
+        this(templateOrbit, positionAngleType, positionScale,
+             FrameAlignedProvider.of(templateOrbit.getFrame()));
     }
 
     /** Build a new instance.
@@ -72,17 +70,24 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder implem
      * callers of this builder to the real orbital parameters.
      * </p>
      * @param templateOrbit reference orbit from which real orbits will be built
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @param attitudeProvider attitude law to use.
      * @since 10.1
      */
     public KeplerianPropagatorBuilder(final Orbit templateOrbit,
-                                      final PositionAngle positionAngle,
+                                      final PositionAngleType positionAngleType,
                                       final double positionScale,
                                       final AttitudeProvider attitudeProvider) {
-        super(templateOrbit, positionAngle, positionScale, true, attitudeProvider);
+        super(templateOrbit, positionAngleType, positionScale, true, attitudeProvider);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public KeplerianPropagatorBuilder copy() {
+        return new KeplerianPropagatorBuilder(createInitialOrbit(), getPositionAngleType(),
+                                              getPositionScale(), getAttitudeProvider());
     }
 
     /** {@inheritDoc} */
@@ -93,20 +98,11 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder implem
 
     /** {@inheritDoc} */
     @Override
-    public AbstractBatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                                             final List<ObservedMeasurement<?>> measurements,
-                                             final ParameterDriversList estimatedMeasurementsParameters,
-                                             final ModelObserver observer) {
+    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                                       final List<ObservedMeasurement<?>> measurements,
+                                                       final ParameterDriversList estimatedMeasurementsParameters,
+                                                       final ModelObserver observer) {
         return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public AbstractKalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                                                final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                                final ParameterDriversList estimatedMeasurementsParameters,
-                                                final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
     }
 
 }

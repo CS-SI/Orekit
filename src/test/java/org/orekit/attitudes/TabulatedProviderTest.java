@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,8 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -35,7 +35,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -95,10 +95,10 @@ public class TabulatedProviderTest {
                             Rotation.distance(attE.getRotation(), attG.getRotation()),
                             1.0e-14);
 
-        FieldAttitude<Decimal64> attG64 =
+        FieldAttitude<Binary64> attG64 =
                         provider.getAttitude((date, frame) -> new TimeStampedFieldPVCoordinates<>(date,
-                                                                        FieldPVCoordinates.getZero(Decimal64Field.getInstance())),
-                                             new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date),
+                                                                        FieldPVCoordinates.getZero(Binary64Field.getInstance())),
+                                             new FieldAbsoluteDate<>(Binary64Field.getInstance(), date),
                                              gcrf);
         Assertions.assertEquals(gcrf.getName(), attG64.getReferenceFrame().getName());
 
@@ -147,7 +147,7 @@ public class TabulatedProviderTest {
         TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
                                                                      AngularDerivativesFilter.USE_RRA);
         Assertions.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 4.3e-9);
-        checkField(Decimal64Field.getInstance(), provider, circOrbit, circOrbit.getDate(), circOrbit.getFrame());
+        checkField(Binary64Field.getInstance(), provider, circOrbit, circOrbit.getDate(), circOrbit.getFrame());
     }
 
     private List<TimeStampedAngularCoordinates> createSample(double samplingRate, AttitudeProvider referenceProvider) {
@@ -229,7 +229,7 @@ public class TabulatedProviderTest {
             //  Satellite position
             circOrbit =
                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
-                                       FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                       FastMath.toRadians(5.300), PositionAngleType.MEAN,
                                        FramesFactory.getEME2000(), date, mu);
 
             // Elliptic earth shape

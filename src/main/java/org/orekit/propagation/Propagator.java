@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,9 +22,10 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
@@ -70,7 +71,7 @@ public interface Propagator extends PVCoordinatesProvider {
      * @return attitude law.
      */
     static AttitudeProvider getDefaultLaw(final Frames frames) {
-        return new InertialProvider(Rotation.IDENTITY, frames.getEME2000());
+        return new FrameAlignedProvider(Rotation.IDENTITY, frames.getEME2000());
     }
 
     /** Get the multiplexer holding all step handlers.
@@ -249,7 +250,7 @@ public interface Propagator extends PVCoordinatesProvider {
      * </p>
      * <p>
      * The arguments for initial matrices <em>must</em> be compatible with the {@link org.orekit.orbits.OrbitType
-     * orbit type} and {@link org.orekit.orbits.PositionAngle position angle} that will be used by the propagator.
+     * orbit type} and {@link PositionAngleType position angle} that will be used by the propagator.
      * </p>
      * <p>
      * The default implementation throws an exception as the method is not supported by all propagators.

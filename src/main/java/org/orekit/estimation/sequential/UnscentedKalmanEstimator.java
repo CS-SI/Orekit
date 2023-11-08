@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,8 @@ import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.util.UnscentedTransformProvider;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -32,7 +33,7 @@ import org.orekit.utils.ParameterDriversList;
 /**
  * Implementation of an Unscented Kalman filter to perform orbit determination.
  * <p>
- * The filter uses a {@link NumericalPropagatorBuilder} to initialize its reference trajectory.
+ * The filter uses a {@link PropagatorBuilder} to initialize its reference trajectory.
  * </p>
  * <p>
  * The estimated parameters are driven by {@link ParameterDriver} objects. They are of 3 different types:<ol>
@@ -51,7 +52,11 @@ import org.orekit.utils.ParameterDriversList;
  * </p>
  *
  * <p>An {@link UnscentedKalmanEstimator} object is built using the {@link UnscentedKalmanEstimatorBuilder#build() build}
- * method of a {@link UnscentedKalmanEstimatorBuilder}.</p>
+ * method of a {@link UnscentedKalmanEstimatorBuilder}. The builder is generalized to accept any {@link PropagatorBuilder}.
+ * Howerver, it is absolutely not recommended to use a {@link DSSTPropagatorBuilder}.
+ * A specific {@link SemiAnalyticalUnscentedKalmanEstimatorBuilder semi-analytical unscented Kalman Filter} is implemented
+ * and shall be used.
+ * </p>
  *
  * @author Gaëtan Pierre
  * @author Bryan Cazabonne
@@ -80,7 +85,7 @@ public class UnscentedKalmanEstimator extends AbstractKalmanEstimator {
      * @param utProvider provider for the unscented transform.
      */
     UnscentedKalmanEstimator(final MatrixDecomposer decomposer,
-                             final List<NumericalPropagatorBuilder> propagatorBuilders,
+                             final List<PropagatorBuilder> propagatorBuilders,
                              final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
                              final ParameterDriversList estimatedMeasurementParameters,
                              final CovarianceMatrixProvider measurementProcessNoiseMatrix,

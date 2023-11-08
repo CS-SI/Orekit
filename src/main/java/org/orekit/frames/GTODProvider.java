@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -102,7 +102,7 @@ public class GTODProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public GTODProvider getNonInterpolatingProvider() {
-        return new GTODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory(),
+        return new GTODProvider(conventions, eopHistory.getEOPHistoryWithoutCachedTidalCorrection(),
                 gastFunction);
     }
 
@@ -156,6 +156,20 @@ public class GTODProvider implements EOPBasedTransformProvider {
                                     new FieldRotation<>(FieldVector3D.getPlusK(date.getField()),
                                                         gast, RotationConvention.FRAME_TRANSFORM),
                                     rotationRate);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+
+        // compute Greenwich apparent sidereal time, in radians
+        final T gast = gastFunction.value(date);
+
+        // set up the transform from parent TOD
+        return FieldStaticTransform.of(
+                date,
+                new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), gast, RotationConvention.FRAME_TRANSFORM));
 
     }
 

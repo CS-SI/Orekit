@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.SpacecraftState;
@@ -53,7 +53,7 @@ public class SmallManeuverAnalyticalModelTest {
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
                                       FastMath.toRadians(98.0),
                                       FastMath.toRadians(123.456),
-                                      0.0, PositionAngle.MEAN,
+                                      0.0, PositionAngleType.MEAN,
                                       FramesFactory.getEME2000(),
                                       new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
@@ -100,7 +100,7 @@ public class SmallManeuverAnalyticalModelTest {
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
                                       FastMath.toRadians(98.0),
                                       FastMath.toRadians(123.456),
-                                      0.0, PositionAngle.MEAN,
+                                      0.0, PositionAngleType.MEAN,
                                       FramesFactory.getEME2000(),
                                       new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
@@ -147,7 +147,7 @@ public class SmallManeuverAnalyticalModelTest {
         Orbit heo = new KeplerianOrbit(90000000.0, 0.92, FastMath.toRadians(98.0),
                                        FastMath.toRadians(12.3456),
                                        FastMath.toRadians(123.456),
-                                       FastMath.toRadians(1.23456), PositionAngle.MEAN,
+                                       FastMath.toRadians(1.23456), PositionAngleType.MEAN,
                                        FramesFactory.getEME2000(),
                                        new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                         new TimeComponents(23, 30, 00.000),
@@ -199,7 +199,7 @@ public class SmallManeuverAnalyticalModelTest {
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-2, 2.0e-3,
                                       FastMath.toRadians(98.0),
                                       FastMath.toRadians(123.456),
-                                      0.3, PositionAngle.MEAN,
+                                      0.3, PositionAngleType.MEAN,
                                       eme2000,
                                       new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
@@ -212,7 +212,7 @@ public class SmallManeuverAnalyticalModelTest {
         double isp      = 315.0;
 
         for (OrbitType orbitType : OrbitType.values()) {
-            for (PositionAngle positionAngle : PositionAngle.values()) {
+            for (PositionAngleType positionAngleType : PositionAngleType.values()) {
                 BoundedPropagator withoutManeuver = getEphemeris(orbitType.convertType(leo), mass, t0, Vector3D.ZERO, f, isp);
 
                 SpacecraftState state0 = withoutManeuver.propagate(t0);
@@ -250,7 +250,7 @@ public class SmallManeuverAnalyticalModelTest {
                     // compute reference orbit gradient by finite differences
                     double c = 1.0 / (840 * h);
                     for (int j = 0; j < models.length; ++j) {
-                        orbitType.mapOrbitToArray(models[j].apply(orbitWithout), positionAngle, array[j], null);
+                        orbitType.mapOrbitToArray(models[j].apply(orbitWithout), positionAngleType, array[j], null);
                     }
                     double[] orbitGradient = new double[6];
                     for (int k = 0; k < orbitGradient.length; ++k) {
@@ -263,7 +263,7 @@ public class SmallManeuverAnalyticalModelTest {
 
                     // analytical Jacobian to check
                     double[][] jacobian = new double[6][4];
-                    model.getJacobian(orbitWithout, positionAngle, jacobian);
+                    model.getJacobian(orbitWithout, positionAngleType, jacobian);
 
                     for (int j = 0; j < orbitGradient.length; ++j) {
                         Assertions.assertEquals(orbitGradient[j], jacobian[j][i], 1.6e-4 * FastMath.abs(orbitGradient[j]));

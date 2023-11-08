@@ -10,7 +10,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.conversion.KeplerianPropagatorBuilder;
 import org.orekit.time.TimeScale;
 import org.orekit.time.UT1Scale;
@@ -31,7 +31,7 @@ public class KeplerianContext implements StationDataProvider {
     public StationDisplacement[]                  displacements;
     public List<GroundStation>                    stations;
 
-    public KeplerianPropagatorBuilder createBuilder(final PositionAngle angleType, final boolean perfectStart, final double dP) {
+    public KeplerianPropagatorBuilder createBuilder(final PositionAngleType angleType, final boolean perfectStart, final double dP) {
 
         final Orbit startOrbit;
         if (perfectStart) {
@@ -39,7 +39,7 @@ public class KeplerianContext implements StationDataProvider {
             startOrbit = initialOrbit;
         } else {
             // orbit estimation will start from a wrong point
-            final Vector3D initialPosition = initialOrbit.getPVCoordinates().getPosition();
+            final Vector3D initialPosition = initialOrbit.getPosition();
             final Vector3D initialVelocity = initialOrbit.getPVCoordinates().getVelocity();
             final Vector3D wrongPosition   = initialPosition.add(new Vector3D(1000.0, 0, 0));
             final Vector3D wrongVelocity   = initialVelocity.add(new Vector3D(0, 0, 0.01));

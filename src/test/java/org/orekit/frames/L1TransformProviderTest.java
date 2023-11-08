@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +33,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.PVCoordinates;
 
 /**Unit tests for {@link L1TransformProvider}.
  *
@@ -58,14 +57,13 @@ public class L1TransformProviderTest {
                                                    TimeScalesFactory.getUTC());
 
         // Compute Moon position in EME2000
-        PVCoordinates pvMoon = moon.getPVCoordinates(date, eme2000);
-        Vector3D posMoon = pvMoon.getPosition();
+        Vector3D posMoon = moon.getPosition(date, eme2000);
 
         // Compute L1 position in EME2000
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
         // because the test should avoid doing wrong interpretation of the meaning and
         // particularly on the sign of the translation)
-        Vector3D posL1   = l1Frame.getTransformTo(eme2000,date).transformPosition(Vector3D.ZERO);
+        Vector3D posL1   = l1Frame.getStaticTransformTo(eme2000,date).transformPosition(Vector3D.ZERO);
 
         // check L1 and Moon are aligned as seen from Earth
         Assertions.assertEquals(0.0, Vector3D.angle(posMoon, posL1), 1.0e-10);
@@ -77,7 +75,7 @@ public class L1TransformProviderTest {
 
     @Test
     public void testFieldTransformationOrientationForEarthMoon() {
-        doTestFieldTransformationOrientationForEarthMoon(Decimal64Field.getInstance());
+        doTestFieldTransformationOrientationForEarthMoon(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldTransformationOrientationForEarthMoon(final Field<T> field) {
@@ -129,14 +127,13 @@ public class L1TransformProviderTest {
                                                    TimeScalesFactory.getUTC());
 
         // Compute Earth position in Sun centered frame
-        PVCoordinates pvEarth = earth.getPVCoordinates(date, sunFrame);
-        Vector3D posEarth = pvEarth.getPosition();
+        Vector3D posEarth = earth.getPosition(date, sunFrame);
 
         // Compute L1 position in Sun centered frame
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
         // because the test should avoid doing wrong interpretation of the meaning and
         // particularly on the sign of the translation)
-        Vector3D posL1   = l1Frame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
+        Vector3D posL1   = l1Frame.getStaticTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L1 and Earth are aligned as seen from Sun
         Assertions.assertEquals(0.0, Vector3D.angle(posEarth, posL1), 1.0e-10);
@@ -147,7 +144,7 @@ public class L1TransformProviderTest {
 
     @Test
     public void testFieldSunEarth() {
-        doTestFieldSunEarth(Decimal64Field.getInstance());
+        doTestFieldSunEarth(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldSunEarth(final Field<T> field) {
@@ -172,7 +169,7 @@ public class L1TransformProviderTest {
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
         // because the test should avoid doing wrong interpretation of the meaning and
         // particularly on the sign of the translation)
-        FieldVector3D<T> posL1   = l1Frame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
+        FieldVector3D<T> posL1   = l1Frame.getStaticTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L2 and Earth are aligned as seen from Sun
         Assertions.assertEquals(0.0, FieldVector3D.angle(posEarth, posL1).getReal(), 1.0e-10);
@@ -197,14 +194,13 @@ public class L1TransformProviderTest {
                                                    TimeScalesFactory.getUTC());
 
         // Compute Jupiter position in Sun centered frame
-        PVCoordinates pvJupiter = jupiter.getPVCoordinates(date, sunFrame);
-        Vector3D posJupiter = pvJupiter.getPosition();
+        Vector3D posJupiter = jupiter.getPosition(date, sunFrame);
 
         // Compute L1 position in Sun centered frame
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
         // because the test should avoid doing wrong interpretation of the meaning and
         // particularly on the sign of the translation)
-        Vector3D posL1   = l1Frame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
+        Vector3D posL1   = l1Frame.getStaticTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L1 and Jupiter are aligned as seen from Sun
         Assertions.assertEquals(0.0, Vector3D.angle(posJupiter, posL1), 1.0e-10);
@@ -215,7 +211,7 @@ public class L1TransformProviderTest {
 
     @Test
     public void testFieldSunJupiter() {
-        doTestFieldSunJupiter(Decimal64Field.getInstance());
+        doTestFieldSunJupiter(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldSunJupiter(final Field<T> field) {
@@ -240,7 +236,7 @@ public class L1TransformProviderTest {
         // (it is important to use transformPosition(Vector3D.ZERO) and *not* getTranslation()
         // because the test should avoid doing wrong interpretation of the meaning and
         // particularly on the sign of the translation)
-        FieldVector3D<T> posL1   = l1Frame.getTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
+        FieldVector3D<T> posL1   = l1Frame.getStaticTransformTo(sunFrame,date).transformPosition(Vector3D.ZERO);
 
         // check L2 and Jupiter are aligned as seen from Sun
         Assertions.assertEquals(0.0, FieldVector3D.angle(posJupiter, posL1).getReal(), 1.0e-10);
@@ -259,8 +255,8 @@ public class L1TransformProviderTest {
         final Frame         l1Frame = new L1Frame(sun, earth);
         for (double dt = -Constants.JULIAN_DAY; dt <= Constants.JULIAN_DAY; dt += 3600.0) {
             final AbsoluteDate date              = date0.shiftedBy(dt);
-            final Vector3D     sunPositionInL1   = sun.getPVCoordinates(date, l1Frame).getPosition();
-            final Vector3D     earthPositionInL1 = earth.getPVCoordinates(date, l1Frame).getPosition();
+            final Vector3D     sunPositionInL1   = sun.getPosition(date, l1Frame);
+            final Vector3D     earthPositionInL1 = earth.getPosition(date, l1Frame);
             Assertions.assertEquals(0.0, Vector3D.angle(sunPositionInL1,   Vector3D.MINUS_I), 3.0e-14);
             Assertions.assertEquals(FastMath.PI, Vector3D.angle(earthPositionInL1, Vector3D.MINUS_I), 3.0e-14);
         }
@@ -268,7 +264,7 @@ public class L1TransformProviderTest {
 
     @Test
     public void testFieldL1Orientation() {
-        doTestFieldL1Orientation(Decimal64Field.getInstance());
+        doTestFieldL1Orientation(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldL1Orientation(final Field<T> field) {
@@ -280,8 +276,8 @@ public class L1TransformProviderTest {
         final Frame         l1Frame = new L1Frame(sun, earth);
         for (double dt = -Constants.JULIAN_DAY; dt <= Constants.JULIAN_DAY; dt += 3600.0) {
             final FieldAbsoluteDate<T> date              = date0.shiftedBy(dt);
-            final FieldVector3D<T>     sunPositionInL1   = sun.getPVCoordinates(date, l1Frame).getPosition();
-            final FieldVector3D<T>     earthPositionInL1 = earth.getPVCoordinates(date, l1Frame).getPosition();
+            final FieldVector3D<T>     sunPositionInL1   = sun.getPosition(date, l1Frame);
+            final FieldVector3D<T>     earthPositionInL1 = earth.getPosition(date, l1Frame);
             Assertions.assertEquals(0.0, FieldVector3D.angle(sunPositionInL1,   Vector3D.MINUS_I).getReal(), 3.0e-14);
             Assertions.assertEquals(FastMath.PI, FieldVector3D.angle(earthPositionInL1, Vector3D.MINUS_I).getReal(), 3.0e-14);
         }

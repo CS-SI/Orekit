@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,25 +17,21 @@
 
 package org.orekit.forces.maneuvers.trigger;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.EventDetectorsProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
-/** Generic interface for the maneuver triggers used in a {@link org.orekit.forces.maneuvers.Maneuver}.
+/** Generic interface for the maneuver triggers used in a {@link Maneuver}.
  * @author Maxime Journot
  * @since 10.2
  */
-public interface ManeuverTriggers {
+public interface ManeuverTriggers extends ParameterDriversProvider, EventDetectorsProvider {
 
     /** Initialization method called at propagation start.
      * <p>
@@ -61,18 +57,6 @@ public interface ManeuverTriggers {
         init(initialState.toSpacecraftState(), target.toAbsoluteDate());
     }
 
-    /** Get the event detectors associated with the triggers.
-     * @return the event detectors
-     */
-    Stream<EventDetector> getEventsDetectors();
-
-    /** Get the event detectors associated with the triggers.
-     * @param field field to which the state belongs
-     * @param <T> type of the field elements
-     * @return the event detectors
-     */
-    <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(Field<T> field);
-
     /** Find out if the maneuver is firing or not.
      * @param date current date
      * @param parameters maneuver triggers parameters
@@ -88,17 +72,22 @@ public interface ManeuverTriggers {
      */
     <T extends CalculusFieldElement<T>> boolean isFiring(FieldAbsoluteDate<T> date, T[] parameters);
 
-    /** Get the maneuver triggers parameter drivers.
-     * @return maneuver triggers parameter drivers
-     */
-    default List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
-    }
-
     /** Get the maneuver name.
      * @return the maneuver name
      */
     default String getName() {
         return "";
     }
+
+    /** Add a resetter.
+     * @param resetter resetter to add
+     */
+    void addResetter(ManeuverTriggersResetter resetter);
+
+    /** Add a resetter.
+     * @param field field to which the state belongs
+     * @param resetter resetter to add
+     * @param <T> type of the field elements
+     */
+    <T extends CalculusFieldElement<T>> void addResetter(Field<T> field, FieldManeuverTriggersResetter<T> resetter);
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,11 @@ import org.orekit.utils.units.Unit;
  */
 class ManeuverWriter extends AbstractWriter {
 
+    /** Format version.
+     * @since 12.0
+     */
+    private final double formatVersion;
+
     /** Maneuver block. */
     private final Maneuver maneuver;
 
@@ -39,14 +44,16 @@ class ManeuverWriter extends AbstractWriter {
     private final TimeConverter timeConverter;
 
     /** Create a writer.
+     * @param formatVersion format version
      * @param xmlTag name of the XML tag surrounding the section
      * @param kvnTag name of the KVN tag surrounding the section (may be null)
      * @param maneuver maneuver data to write
      * @param timeConverter converter for dates
      */
-    ManeuverWriter(final String xmlTag, final String kvnTag,
+    ManeuverWriter(final double formatVersion, final String xmlTag, final String kvnTag,
                    final Maneuver maneuver, final TimeConverter timeConverter) {
         super(xmlTag, kvnTag);
+        this.formatVersion = formatVersion;
         this.maneuver      = maneuver;
         this.timeConverter = timeConverter;
     }
@@ -58,17 +65,24 @@ class ManeuverWriter extends AbstractWriter {
         generator.writeComments(maneuver.getComments());
 
         // time
-        generator.writeEntry(ManeuverKey.MAN_EPOCH_START.name(), timeConverter, maneuver.getEpochStart(), true);
+        generator.writeEntry(ManeuverKey.MAN_EPOCH_START.name(), timeConverter, maneuver.getEpochStart(), true, true);
         generator.writeEntry(ManeuverKey.MAN_DURATION.name(),    maneuver.getDuration(), Unit.SECOND,     true);
 
         // frame
-        generator.writeEntry(ManeuverKey.MAN_REF_FRAME.name(), maneuver.getRefFrameString(), null, false);
+        generator.writeEntry(ManeuverKey.MAN_REF_FRAME.name(), maneuver.getFrame().getName(), null, false);
 
         // torque
         final Vector3D torque = maneuver.getTorque();
-        generator.writeEntry(ManeuverKey.MAN_TOR_1.name(), torque.getX(), Units.N_M, true);
-        generator.writeEntry(ManeuverKey.MAN_TOR_2.name(), torque.getY(), Units.N_M, true);
-        generator.writeEntry(ManeuverKey.MAN_TOR_3.name(), torque.getZ(), Units.N_M, true);
+        if (formatVersion < 2.0) {
+            generator.writeEntry(ManeuverKey.MAN_TOR_1.name(), torque.getX(), Units.N_M, true);
+            generator.writeEntry(ManeuverKey.MAN_TOR_2.name(), torque.getY(), Units.N_M, true);
+            generator.writeEntry(ManeuverKey.MAN_TOR_3.name(), torque.getZ(), Units.N_M, true);
+        } else {
+            generator.writeEntry(ManeuverKey.MAN_TOR_X.name(),      torque.getX(),           Units.N_M,     true);
+            generator.writeEntry(ManeuverKey.MAN_TOR_Y.name(),      torque.getY(),           Units.N_M,     true);
+            generator.writeEntry(ManeuverKey.MAN_TOR_Z.name(),      torque.getZ(),           Units.N_M,     true);
+            generator.writeEntry(ManeuverKey.MAN_DELTA_MASS.name(), maneuver.getDeltaMass(), Unit.KILOGRAM, true);
+        }
 
     }
 

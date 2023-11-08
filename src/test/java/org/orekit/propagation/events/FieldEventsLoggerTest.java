@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,13 +22,14 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
@@ -58,26 +59,25 @@ public class FieldEventsLoggerTest {
             mu  = 3.9860047e14;
     }
 
-
     @Test
     public void testLogUmbra() {
-        doTestLogUmbra(Decimal64Field.getInstance());
+        doTestLogUmbra(Binary64Field.getInstance());
     }
     @Test
     public void testLogPenumbra() {
-        doTestLogPenumbra(Decimal64Field.getInstance());
+        doTestLogPenumbra(Binary64Field.getInstance());
     }
     @Test
     public void testLogAll() {
-        doTestLogAll(Decimal64Field.getInstance());
+        doTestLogAll(Binary64Field.getInstance());
     }
     @Test
     public void testImmutableList() {
-        doTestImmutableList(Decimal64Field.getInstance());
+        doTestImmutableList(Binary64Field.getInstance());
     }
     @Test
     public void testClearLog() {
-        doTestClearLog(Decimal64Field.getInstance());
+        doTestClearLog(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestLogUmbra(Field<T> field) {
@@ -104,15 +104,13 @@ public class FieldEventsLoggerTest {
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
-        FieldEventDetector<T> umbraDetector = buildDetector(field, true);
-        FieldEventDetector<T> penumbraDetector = buildDetector(field, false);
+        FieldEclipseDetector<T> umbraDetector = buildDetector(field, true);
+        FieldEclipseDetector<T> penumbraDetector = buildDetector(field, false);
 
 
 
         FieldEventsLogger<T> logger = new FieldEventsLogger<>();
-        @SuppressWarnings("unchecked")
-        FieldEventDetector<T> monitored = ((FieldAbstractDetector<FieldEventDetector<T>, T>) logger.monitorDetector(umbraDetector)).
-                withMaxIter(200);
+        FieldEventDetector<T> monitored = logger.monitorDetector(umbraDetector).withMaxIter(200);
         Assertions.assertEquals(100, umbraDetector.getMaxIterationCount());
         Assertions.assertEquals(200, monitored.getMaxIterationCount());
 
@@ -334,11 +332,13 @@ public class FieldEventsLoggerTest {
         Assertions.assertEquals(expectedPenumbraDecreasingCount, penumbraDecreasingCount);
     }
 
-    private <T extends CalculusFieldElement<T>> FieldEventDetector<T> buildDetector(Field<T> field, final boolean totalEclipse) {
+    private <T extends CalculusFieldElement<T>> FieldEclipseDetector<T> buildDetector(Field<T> field, final boolean totalEclipse) {
 
         FieldEclipseDetector<T> detector =
-                new FieldEclipseDetector<>(field.getZero().add(60.), field.getZero().add(1.e-3), CelestialBodyFactory.getSun(), 696000000,
-                                           CelestialBodyFactory.getEarth(), 6400000);
+                new FieldEclipseDetector<>(field, CelestialBodyFactory.getSun(), 696000000,
+                                           new OneAxisEllipsoid(6400000, 0.0, FramesFactory.getGCRF())).
+                withMaxCheck(60.0).
+                withThreshold(field.getZero().newInstance(1.0e-3));
 
         if (totalEclipse) {
             detector = detector.withUmbra();
@@ -346,13 +346,11 @@ public class FieldEventsLoggerTest {
             detector = detector.withPenumbra();
         }
 
-        detector = detector.withHandler(new FieldEventHandler<FieldEclipseDetector<T>, T>() {
-
-            public Action eventOccurred(FieldSpacecraftState<T> s, FieldEclipseDetector<T> detector, boolean increasing) {
+        detector = detector.withHandler(new FieldEventHandler<T>() {
+            public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> detector, boolean increasing) {
                 ++count;
                 return Action.CONTINUE;
             }
-
         } );
 
         return detector;

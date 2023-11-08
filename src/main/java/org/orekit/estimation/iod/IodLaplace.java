@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,21 +22,26 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.util.FastMath;
+import org.orekit.estimation.measurements.AngularAzEl;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 /**
- * Laplace angles-only initial orbit determination, assuming Keplerian motion.
- * An orbit is determined from three angular observations from the same site.
- *
+ * Laplace angles-only Initial Orbit Determination (IOD) algorithm, assuming Keplerian motion.
+ * <p>
+ * Laplace algorithm is one of the first method to determine orbits.
+ * An orbit is determined from three lines of sight w.r.t. their respective observers
+ * inertial positions vectors. For Laplace method, the observer is identical for all
+ * observations.
  *
  * Reference:
  *    Bate, R., Mueller, D. D., &amp; White, J. E. (1971). Fundamentals of astrodynamics.
  *    New York: Dover Publications.
- *
+ * </p>
  * @author Shiva Iyer
  * @since 10.1
  */
@@ -55,27 +60,45 @@ public class IodLaplace {
 
     /** Estimate the orbit from three angular observations at the same location.
      *
-     * @param frame inertial frame for observer coordinates and orbit estimate
-     * @param obsPva Observer coordinates at time of raDec2
+     * @param outputFrame Observer coordinates at time of raDec2
+     * @param azEl1 first angular observation
+     * @param azEl2 second angular observation
+     * @param azEl3 third angular observation
+     * @return estimate of the orbit at the central date or null if
+     *         no estimate is possible with the given data
+     * @since 12.0
+     */
+    public Orbit estimate(final Frame outputFrame,
+                          final AngularAzEl azEl1, final AngularAzEl azEl2,
+                          final AngularAzEl azEl3) {
+        return estimate(outputFrame, azEl2.getGroundStationCoordinates(outputFrame),
+                        azEl1.getDate(), azEl1.getObservedLineOfSight(outputFrame),
+                        azEl2.getDate(), azEl2.getObservedLineOfSight(outputFrame),
+                        azEl3.getDate(), azEl3.getObservedLineOfSight(outputFrame));
+    }
+
+    /** Estimate the orbit from three angular observations at the same location.
+     *
+     * @param outputFrame Observer coordinates at time of raDec2
      * @param raDec1 first angular observation
      * @param raDec2 second angular observation
      * @param raDec3 third angular observation
-     * @return estimate of the orbit at the central date obsDate2 or null if
+     * @return estimate of the orbit at the central date or null if
      *         no estimate is possible with the given data
      * @since 11.0
      */
-    public CartesianOrbit estimate(final Frame frame, final PVCoordinates obsPva,
-                                   final AngularRaDec raDec1, final AngularRaDec raDec2,
-                                   final AngularRaDec raDec3) {
-        return estimate(frame, obsPva,
-                        raDec1.getDate(), lineOfSight(raDec1),
-                        raDec2.getDate(), lineOfSight(raDec2),
-                        raDec3.getDate(), lineOfSight(raDec3));
+    public Orbit estimate(final Frame outputFrame,
+                          final AngularRaDec raDec1, final AngularRaDec raDec2,
+                          final AngularRaDec raDec3) {
+        return estimate(outputFrame, raDec2.getGroundStationCoordinates(outputFrame),
+                        raDec1.getDate(), raDec1.getObservedLineOfSight(outputFrame),
+                        raDec2.getDate(), raDec2.getObservedLineOfSight(outputFrame),
+                        raDec3.getDate(), raDec3.getObservedLineOfSight(outputFrame));
     }
 
-    /** Estimate orbit from three line of sight angles from the same location.
+    /** Estimate orbit from three line of sight angles at the same location.
      *
-     * @param frame inertial frame for observer coordinates and orbit estimate
+     * @param outputFrame inertial frame for observer coordinates and orbit estimate
      * @param obsPva Observer coordinates at time obsDate2
      * @param obsDate1 date of observation 1
      * @param los1 line of sight unit vector 1
@@ -86,21 +109,22 @@ public class IodLaplace {
      * @return estimate of the orbit at the central date obsDate2 or null if
      *         no estimate is possible with the given data
      */
-    public CartesianOrbit estimate(final Frame frame, final PVCoordinates obsPva,
-                                   final AbsoluteDate obsDate1, final Vector3D los1,
-                                   final AbsoluteDate obsDate2, final Vector3D los2,
-                                   final AbsoluteDate obsDate3, final Vector3D los3) {
+    public Orbit estimate(final Frame outputFrame, final PVCoordinates obsPva,
+                          final AbsoluteDate obsDate1, final Vector3D los1,
+                          final AbsoluteDate obsDate2, final Vector3D los2,
+                          final AbsoluteDate obsDate3, final Vector3D los3) {
+
         // The first observation is taken as t1 = 0
         final double t2 = obsDate2.durationFrom(obsDate1);
         final double t3 = obsDate3.durationFrom(obsDate1);
 
         // Calculate the first and second derivatives of the Line Of Sight vector at t2
         final Vector3D Ldot = los1.scalarMultiply((t2 - t3) / (t2 * t3)).
-                        add(los2.scalarMultiply((2.0 * t2 - t3) / (t2 * (t2 - t3)))).
-                        add(los3.scalarMultiply(t2 / (t3 * (t3 - t2))));
+                                  add(los2.scalarMultiply((2.0 * t2 - t3) / (t2 * (t2 - t3)))).
+                                  add(los3.scalarMultiply(t2 / (t3 * (t3 - t2))));
         final Vector3D Ldotdot = los1.scalarMultiply(2.0 / (t2 * t3)).
-                        add(los2.scalarMultiply(2.0 / (t2 * (t2 - t3)))).
-                        add(los3.scalarMultiply(2.0 / (t3 * (t3 - t2))));
+                                     add(los2.scalarMultiply(2.0 / (t2 * (t2 - t3)))).
+                                     add(los3.scalarMultiply(2.0 / (t3 * (t3 - t2))));
 
         // The determinant will vanish if the observer lies in the plane of the orbit at t2
         final double D = 2.0 * getDeterminant(los2, Ldot, Ldotdot);
@@ -108,8 +132,8 @@ public class IodLaplace {
             return null;
         }
 
-        final double Dsq = D * D;
-        final double R = obsPva.getPosition().getNorm();
+        final double Dsq   = D * D;
+        final double R     = obsPva.getPosition().getNorm();
         final double RdotL = obsPva.getPosition().dotProduct(los2);
 
         final double D1 = getDeterminant(los2, Ldot, obsPva.getAcceleration());
@@ -128,14 +152,14 @@ public class IodLaplace {
         // Use the Laguerre polynomial solver and take the initial guess to be
         // 5 times the observer's position magnitude
         final LaguerreSolver solver = new LaguerreSolver(1E-10, 1E-10, 1E-10);
-        final Complex[] roots = solver.solveAllComplex(coeff, 5.0 * R);
+        final Complex[]      roots  = solver.solveAllComplex(coeff, 5.0 * R);
 
         // We consider "r" to be the positive real root with the largest magnitude
         double rMag = 0.0;
-        for (int i = 0; i < roots.length; i++) {
-            if (roots[i].getReal() > rMag &&
-                            FastMath.abs(roots[i].getImaginary()) < solver.getAbsoluteAccuracy()) {
-                rMag = roots[i].getReal();
+        for (Complex root : roots) {
+            if (root.getReal() > rMag &&
+                FastMath.abs(root.getImaginary()) < solver.getAbsoluteAccuracy()) {
+                rMag = root.getReal();
             }
         }
         if (rMag == 0.0) {
@@ -144,49 +168,20 @@ public class IodLaplace {
 
         // Calculate rho, the slant range from the observer to the satellite at t2.
         // This yields the "r" vector, which is the satellite's position vector at t2.
-        final double rCubed = rMag * rMag * rMag;
-        final double rho = -2.0 * D1 / D - 2.0 * mu * D2 / (D * rCubed);
+        final double   rCubed = rMag * rMag * rMag;
+        final double   rho    = -2.0 * D1 / D - 2.0 * mu * D2 / (D * rCubed);
         final Vector3D posVec = los2.scalarMultiply(rho).add(obsPva.getPosition());
 
         // Calculate rho_dot at t2, which will yield the satellite's velocity vector at t2
-        final double D3 = getDeterminant(los2, obsPva.getAcceleration(), Ldotdot);
-        final double D4 = getDeterminant(los2, obsPva.getPosition(), Ldotdot);
+        final double D3     = getDeterminant(los2, obsPva.getAcceleration(), Ldotdot);
+        final double D4     = getDeterminant(los2, obsPva.getPosition(), Ldotdot);
         final double rhoDot = -D3 / D - mu * D4 / (D * rCubed);
         final Vector3D velVec = los2.scalarMultiply(rhoDot).
-                        add(Ldot.scalarMultiply(rho)).
-                        add(obsPva.getVelocity());
+                                    add(Ldot.scalarMultiply(rho)).
+                                    add(obsPva.getVelocity());
 
         // Return the estimated orbit
-        return new CartesianOrbit(new PVCoordinates(posVec, velVec), frame, obsDate2, mu);
-    }
-
-    /**
-     * Calculates the line of sight vector.
-     * @param alpha right ascension angle, in radians
-     * @param delta declination angle, in radians
-     * @return the line of sight vector
-     * @since 11.0
-     */
-    public static Vector3D lineOfSight(final double alpha, final double delta) {
-        return new Vector3D(FastMath.cos(delta) * FastMath.cos(alpha),
-                            FastMath.cos(delta) * FastMath.sin(alpha),
-                            FastMath.sin(delta));
-    }
-
-    /**
-     * Calculate the line of sight vector from an AngularRaDec measurement.
-     * @param raDec measurement
-     * @return the line of sight vector
-     * @since 11.0
-     */
-    public static Vector3D lineOfSight(final AngularRaDec raDec) {
-
-        // Observed values
-        final double[] observed = raDec.getObservedValue();
-
-        // Return
-        return lineOfSight(observed[0], observed[1]);
-
+        return new CartesianOrbit(new PVCoordinates(posVec, velVec), outputFrame, obsDate2, mu);
     }
 
     /** Calculate the determinant of the matrix with given column vectors.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,12 +24,14 @@ import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
-import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.ForceModel;
 import org.orekit.forces.maneuvers.propulsion.PropulsionModel;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -43,9 +45,11 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 
-/** A generic model for maneuvers.
+/** A generic model for maneuvers with finite-valued acceleration magnitude, as opposed to instantaneous changes
+ * in the velocity vector which are defined via detectors (in {@link org.orekit.forces.maneuvers.ImpulseManeuver} and
+ * {@link org.orekit.forces.maneuvers.FieldImpulseManeuver}).
  * It contains:
- *  - An attitude override, this is the attitude used during the maneuver, it can be different than the one
+ *  - An attitude override, this is the attitude used during the maneuver, it can be different from the one
  *    used for propagation;
  *  - A maneuver triggers object from the trigger sub-package. It defines the triggers used to start and stop the maneuvers (dates or events for example).
  *  - A propulsion model from sub-package propulsion. It defines the thrust or ΔV, isp, flow rate etc..
@@ -55,7 +59,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Maxime Journot
  * @since 10.2
  */
-public class Maneuver extends AbstractForceModel {
+public class Maneuver implements ForceModel {
 
     /** The attitude to override during the maneuver, if set. */
     private final AttitudeProvider attitudeOverride;
@@ -105,6 +109,14 @@ public class Maneuver extends AbstractForceModel {
         return attitudeOverride;
     }
 
+    /** Get the control vector's cost type.
+     * @return control cost type
+     * @since 12.0
+     */
+    public Control3DVectorCostType getControl3DVectorCostType() {
+        return propulsionModel.getControl3DVectorCostType();
+    }
+
     /** Get the propulsion model.
      * @return the propulsion model
      */
@@ -144,7 +156,7 @@ public class Maneuver extends AbstractForceModel {
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder) {
 
         // Get the parameters associated to the maneuver (from ForceModel)
-        final double[] parameters = getParameters();
+        final double[] parameters = getParameters(s.getDate());
 
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not
@@ -166,7 +178,7 @@ public class Maneuver extends AbstractForceModel {
                         final FieldTimeDerivativesEquations<T> adder) {
 
         // Get the parameters associated to the maneuver (from ForceModel)
-        final T[] parameters = getParameters(s.getDate().getField());
+        final T[] parameters = getParameters(s.getDate().getField(), s.getDate());
 
         // If the maneuver is active, compute and add its contribution
         // Maneuver triggers are used to check if the maneuver is currently firing or not
@@ -174,6 +186,8 @@ public class Maneuver extends AbstractForceModel {
         if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(parameters))) {
 
             // Compute thrust acceleration in inertial frame
+            // the acceleration method extracts the parameter in its core, that is why we call it with
+            // parameters and not extracted parameters
             adder.addNonKeplerianAcceleration(acceleration(s, parameters));
 
             // Compute flow rate using the propulsion model
@@ -191,12 +205,14 @@ public class Maneuver extends AbstractForceModel {
         if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(parameters))) {
 
             // Attitude during maneuver
-            final Attitude maneuverAttitude =
-                            attitudeOverride == null ?
-                            s.getAttitude() :
-                            attitudeOverride.getAttitude(s.getOrbit(),
-                                                         s.getDate(),
-                                                         s.getFrame());
+            final Attitude maneuverAttitude;
+            if (attitudeOverride == null) {
+                maneuverAttitude = s.getAttitude();
+            } else {
+                final Rotation rotation = attitudeOverride.getAttitudeRotation(s.getOrbit(), s.getDate(), s.getFrame());
+                // use dummy rates to build full attitude as they should not be used
+                maneuverAttitude = new Attitude(s.getDate(), s.getFrame(), rotation, Vector3D.ZERO, Vector3D.ZERO);
+            }
 
             // Compute acceleration from propulsion model
             // Specific drivers for the propulsion model are extracted from the array given by the ForceModel interface
@@ -216,12 +232,15 @@ public class Maneuver extends AbstractForceModel {
         if (maneuverTriggers.isFiring(s.getDate(), getManeuverTriggersParameters(parameters))) {
 
             // Attitude during maneuver
-            final FieldAttitude<T> maneuverAttitude =
-                            attitudeOverride == null ?
-                            s.getAttitude() :
-                            attitudeOverride.getAttitude(s.getOrbit(),
-                                                         s.getDate(),
-                                                         s.getFrame());
+            final FieldAttitude<T> maneuverAttitude;
+            if (attitudeOverride == null) {
+                maneuverAttitude = s.getAttitude();
+            } else {
+                final FieldRotation<T> rotation = attitudeOverride.getAttitudeRotation(s.getOrbit(), s.getDate(), s.getFrame());
+                // use dummy rates to build full attitude as they should not be used
+                final FieldVector3D<T> zeroVector3D = FieldVector3D.getZero(s.getDate().getField());
+                maneuverAttitude = new FieldAttitude<>(s.getDate(), s.getFrame(), rotation, zeroVector3D, zeroVector3D);
+            }
 
             // Compute acceleration from propulsion model
             // Specific drivers for the propulsion model are extracted from the array given by the ForceModel interface
@@ -234,16 +253,18 @@ public class Maneuver extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventsDetectors() {
-        // Event detectors are extracted from the maneuver triggers
-        return maneuverTriggers.getEventsDetectors();
+    public Stream<EventDetector> getEventDetectors() {
+        // Event detectors are extracted from both the maneuver triggers and the propulsion model
+        return Stream.concat(maneuverTriggers.getEventDetectors(),
+                             propulsionModel.getEventDetectors());
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
-        // Event detectors are extracted from the maneuver triggers
-        return maneuverTriggers.getFieldEventsDetectors(field);
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
+        // Event detectors are extracted from both the maneuver triggers and the propulsion model
+        return Stream.concat(maneuverTriggers.getFieldEventDetectors(field),
+                             propulsionModel.getFieldEventDetectors(field));
     }
 
     @Override

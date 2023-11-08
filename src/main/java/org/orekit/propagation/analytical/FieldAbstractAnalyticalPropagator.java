@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
@@ -48,6 +47,7 @@ import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Common handling of {@link org.orekit.propagation.FieldPropagator} methods for analytical propagators.
@@ -60,9 +60,11 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * propagation starting from some internally stored initial state up to the specified target date.
  * </p>
  * @author Luc Maisonobe
+ * @param <T> type of the field elements
  */
 
-public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractPropagator<T> {
+public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractPropagator<T>
+                                                                                           implements ParameterDriversProvider {
 
     /** Provider for attitude computation. */
     private FieldPVCoordinatesProvider<T> pvProvider;
@@ -365,24 +367,6 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
      */
     protected abstract FieldOrbit<T> propagateOrbit(FieldAbsoluteDate<T> date, T[] parameters);
 
-    /** Get the parameters driver for propagation model.
-     * @return drivers for propagation model
-     */
-    protected abstract List<ParameterDriver> getParametersDrivers();
-
-    /** Get model parameters.
-     * @param field field to which the elements belong
-     * @return model parameters
-     */
-    public T[] getParameters(final Field<T> field) {
-        final List<ParameterDriver> drivers = getParametersDrivers();
-        final T[] parameters = MathArrays.buildArray(field, drivers.size());
-        for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = field.getZero().add(drivers.get(i).getValue());
-        }
-        return parameters;
-    }
-
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,
      * except that it does <strong>not</strong> call any handler during
@@ -395,7 +379,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         try {
 
             // evaluate orbit
-            final FieldOrbit<T> orbit = propagateOrbit(date, getParameters(date.getField()));
+            final FieldOrbit<T> orbit = propagateOrbit(date, getParameters(date.getField(), date.getDate()));
 
             // evaluate attitude
             final FieldAttitude<T> attitude =
@@ -415,7 +399,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         /** {@inheritDoc} */
         @Override
         public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-            return propagateOrbit(date, getParameters(date.getField())).getPVCoordinates(frame);
+            return propagateOrbit(date, getParameters(date.getField(), date)).getPVCoordinates(frame);
         }
 
     }
@@ -513,12 +497,12 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
             return FieldAbstractAnalyticalPropagator.this.getFrame();
         }
 
+        /** {@inheritDoc} */
         @Override
-        protected List<ParameterDriver> getParametersDrivers() {
+        public List<ParameterDriver> getParametersDrivers() {
             return FieldAbstractAnalyticalPropagator.this.getParametersDrivers();
         }
     }
-
 
     /** Internal class for local propagation. */
     private class FieldBasicStepInterpolator implements FieldOrekitStepInterpolator<T> {

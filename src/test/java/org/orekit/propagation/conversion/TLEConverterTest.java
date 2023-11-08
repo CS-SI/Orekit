@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,9 +22,10 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.utils.ParameterDriver;
 
 public class TLEConverterTest {
@@ -35,7 +36,8 @@ public class TLEConverterTest {
         final TLE tle = new TLE("1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
                                 "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
 
-        TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngle.MEAN, 1.0);
+        TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngleType.MEAN, 1.0,
+                                                                new FixedPointTleGenerationAlgorithm());
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
             Assertions.assertTrue(driver.isSelected());
         }
@@ -55,7 +57,8 @@ public class TLEConverterTest {
                                 "2 33153   0.0042  20.7353 0003042 213.9370 323.2156  1.00270917 48929");
 
         // Verify convergence issue
-        final TLEPropagatorBuilder propagatorBuilderError = new TLEPropagatorBuilder(tle, PositionAngle.MEAN, 1.);
+        final TLEPropagatorBuilder propagatorBuilderError = new TLEPropagatorBuilder(tle, PositionAngleType.MEAN, 1.,
+                                                                                     new FixedPointTleGenerationAlgorithm());
         try {
             propagatorBuilderError.buildPropagator(propagatorBuilderError.getSelectedNormalizedParameters());
         } catch (OrekitException oe) {
@@ -63,7 +66,10 @@ public class TLEConverterTest {
         }
 
         // Now try using different convergence threshold
-        final TLEPropagatorBuilder propagatorBuilder = new TLEPropagatorBuilder(tle, PositionAngle.MEAN, 1., 2.0e-4, 10000);
+        FixedPointTleGenerationAlgorithm algorithm =
+                        new FixedPointTleGenerationAlgorithm(FixedPointTleGenerationAlgorithm.EPSILON_DEFAULT,
+                                                             1000, 0.5);
+        final TLEPropagatorBuilder propagatorBuilder = new TLEPropagatorBuilder(tle, PositionAngleType.MEAN, 1., algorithm);
         final TLEPropagator propagator = propagatorBuilder.buildPropagator(propagatorBuilderError.getSelectedNormalizedParameters());
         final TLE newTLE = propagator.getTLE();
 

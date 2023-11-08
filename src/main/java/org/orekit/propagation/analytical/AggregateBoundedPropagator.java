@@ -17,13 +17,14 @@
 package org.orekit.propagation.analytical;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -46,7 +47,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
         implements BoundedPropagator {
 
     /** Constituent propagators. */
-    private final NavigableMap<AbsoluteDate, ? extends Propagator> propagators;
+    private final NavigableMap<AbsoluteDate, ? extends BoundedPropagator> propagators;
     /** Minimum date for {@link #getMinDate()}. */
     private final AbsoluteDate min;
     /** Maximum date for {@link #getMaxDate()}. */
@@ -93,7 +94,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
      * @param max         the value for {@link #getMaxDate()}.
      */
     public AggregateBoundedPropagator(
-            final NavigableMap<AbsoluteDate, ? extends Propagator> propagators,
+            final NavigableMap<AbsoluteDate, ? extends BoundedPropagator> propagators,
             final AbsoluteDate min,
             final AbsoluteDate max) {
         super(defaultAttitude(propagators.values()));
@@ -116,7 +117,19 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
         if (propagators.isEmpty()) {
             throw new OrekitException(OrekitMessages.NOT_ENOUGH_PROPAGATORS);
         }
-        return new InertialProvider(propagators.iterator().next().getFrame());
+        return new FrameAlignedProvider(propagators.iterator().next().getFrame());
+    }
+
+    /** Get an unmodifiable view of the propagators map.
+     * <p>
+     * The key of the map entries are the {@link BoundedPropagator#getMinDate() min dates}
+     * of each propagator.
+     * </p>
+     * @return unmodifiable view of the propagators map
+     * @since 12.0
+     */
+    public NavigableMap<AbsoluteDate, ? extends BoundedPropagator> getPropagators() {
+        return Collections.unmodifiableNavigableMap(propagators);
     }
 
     @Override
@@ -191,8 +204,8 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
      * @param date of query
      * @return propagator to use on date.
      */
-    private Propagator getPropagator(final AbsoluteDate date) {
-        final Entry<AbsoluteDate, ? extends Propagator> entry =
+    private BoundedPropagator getPropagator(final AbsoluteDate date) {
+        final Entry<AbsoluteDate, ? extends BoundedPropagator> entry =
                 propagators.floorEntry(date);
         if (entry != null) {
             return entry.getValue();

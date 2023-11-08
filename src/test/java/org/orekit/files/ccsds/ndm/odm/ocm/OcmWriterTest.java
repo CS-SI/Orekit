@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,21 +21,26 @@ import org.orekit.files.ccsds.ndm.AbstractWriterTest;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
-import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.utils.Constants;
 
-public class OcmWriterTest extends AbstractWriterTest<Header, Segment<OcmMetadata, OcmData>, Ocm> {
+public class OcmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OcmMetadata, OcmData>, Ocm> {
 
     protected OcmParser getParser() {
         return new ParserBuilder().
                withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).
+               withEquatorialRadius(Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+               withFlattening(Constants.WGS84_EARTH_FLATTENING).
                withMu(Constants.EIGEN5C_EARTH_MU).
                buildOcmParser();
     }
 
     protected OcmWriter getWriter() {
-        return new WriterBuilder().buildOcmWriter();
+        return new WriterBuilder().
+               withEquatorialRadius(Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+               withFlattening(Constants.WGS84_EARTH_FLATTENING).
+               buildOcmWriter();
     }
 
     @Test
@@ -61,6 +66,16 @@ public class OcmWriterTest extends AbstractWriterTest<Header, Segment<OcmMetadat
     @Test
     public void testWriteExample4() {
         doTest("/ccsds/odm/ocm/OCMExample4.txt");
+    }
+
+    @Test
+    public void testWriteExample5ITRF() {
+        doTest("/ccsds/odm/ocm/OCMExample5ITRF.txt");
+    }
+
+    @Test
+    public void testWriteExample5Geodetic() {
+        doTest("/ccsds/odm/ocm/OCMExample5Geodetic.txt");
     }
 
 }

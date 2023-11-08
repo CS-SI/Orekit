@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,12 +44,11 @@ import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.jacobians.Duration;
 import org.orekit.forces.maneuvers.jacobians.MedianDate;
 import org.orekit.forces.maneuvers.jacobians.TriggerDate;
-import org.orekit.forces.maneuvers.trigger.AbstractManeuverTriggers;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.MatricesHarvester;
@@ -68,7 +67,9 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using
@@ -89,9 +90,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   {@link #removeForceModels()})</li>
  *   <li>the {@link OrbitType type} of orbital parameters to be used for propagation
  *   ({@link #setOrbitType(OrbitType)}),</li>
- *   <li>the {@link PositionAngle type} of position angle to be used in orbital parameters
+ *   <li>the {@link PositionAngleType type} of position angle to be used in orbital parameters
  *   to be used for propagation where it is relevant ({@link
- *   #setPositionAngleType(PositionAngle)}),</li>
+ *   #setPositionAngleType(PositionAngleType)}),</li>
  *   <li>whether {@link MatricesHarvester state transition matrices and Jacobians matrices}
  *   should be propagated along with orbital state ({@link
  *   #setupMatricesComputation(String, RealMatrix, DoubleArrayDictionary)}),</li>
@@ -105,7 +106,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * </ul>
  * <p>From these configuration parameters, only the initial state is mandatory. The default
  * propagation settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
- * {@link PositionAngle#TRUE true} longitude argument. If the central attraction coefficient
+ * {@link PositionAngleType#TRUE true} longitude argument. If the central attraction coefficient
  * is not explicitly specified, the one used to define the initial orbit will be used.
  * However, specifying only the initial state and perhaps the central attraction coefficient
  * would mean the propagator would use only Keplerian forces. In this case, the simpler {@link
@@ -187,8 +188,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * called after creation, the integrated orbit will follow a Keplerian
      * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
      * for {@link #setOrbitType(OrbitType) propagation
-     * orbit type} and {@link PositionAngle#TRUE} for {@link
-     * #setPositionAngleType(PositionAngle) position angle type}.
+     * orbit type} and {@link PositionAngleType#TRUE} for {@link
+     * #setPositionAngleType(PositionAngleType) position angle type}.
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
      *
@@ -208,8 +209,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * called after creation, the integrated orbit will follow a Keplerian
      * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
      * for {@link #setOrbitType(OrbitType) propagation
-     * orbit type} and {@link PositionAngle#TRUE} for {@link
-     * #setPositionAngleType(PositionAngle) position angle type}.
+     * orbit type} and {@link PositionAngleType#TRUE} for {@link
+     * #setPositionAngleType(PositionAngleType) position angle type}.
      * @param integrator numerical integrator to use for propagation.
      * @param attitudeProvider the attitude law.
      * @since 10.1
@@ -223,7 +224,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         setAttitudeProvider(attitudeProvider);
         clearStepHandlers();
         setOrbitType(OrbitType.EQUINOCTIAL);
-        setPositionAngleType(PositionAngle.TRUE);
+        setPositionAngleType(PositionAngleType.TRUE);
     }
 
     /** Set the flag to ignore or not the creation of a {@link NewtonianAttraction}.
@@ -249,6 +250,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             superSetMu(mu);
         } else {
             addForceModel(new NewtonianAttraction(mu));
+            superSetMu(mu);
         }
     }
 
@@ -288,7 +290,12 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 model.getParametersDrivers().get(0).addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
-                    public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
+                        superSetMu(driver.getValue());
+                    }
+                    /** {@inheritDoc} */
+                    @Override
+                    public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
                         superSetMu(driver.getValue());
                     }
                 });
@@ -371,14 +378,14 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
-    public void setPositionAngleType(final PositionAngle positionAngleType) {
+    public void setPositionAngleType(final PositionAngleType positionAngleType) {
         super.setPositionAngleType(positionAngleType);
     }
 
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
-    public PositionAngle getPositionAngleType() {
+    public PositionAngleType getPositionAngleType() {
         return super.getPositionAngleType();
     }
 
@@ -406,8 +413,12 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         final List<String> columnsNames = new ArrayList<>();
         for (final ForceModel forceModel : getAllForceModels()) {
             for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-                if (driver.isSelected() && !columnsNames.contains(driver.getName())) {
-                    columnsNames.add(driver.getName());
+                if (driver.isSelected() && !columnsNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
+                    // As driver with same name should have same NamesSpanMap we only check if the first span is present,
+                    // if not we add all span names to columnsNames
+                    for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                        columnsNames.add(span.getData());
+                    }
                 }
             }
         }
@@ -489,42 +500,74 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         final List<String> names = new ArrayList<>();
         for (final ForceModel forceModel : getAllForceModels()) {
             if (forceModel instanceof Maneuver) {
-                final Maneuver         maneuver         = (Maneuver) forceModel;
+                final Maneuver maneuver = (Maneuver) forceModel;
                 final ManeuverTriggers maneuverTriggers = maneuver.getManeuverTriggers();
-                if (maneuverTriggers instanceof AbstractManeuverTriggers) {
 
-                    // FIXME: when issue https://gitlab.orekit.org/orekit/orekit/-/issues/854 is solved
-                    // the previous if statement and the following cast should be removed as the following
-                    // code should really be done for all ManeuverTriggers and not only AbstractManeuverTriggers
-                    final AbstractManeuverTriggers amt = (AbstractManeuverTriggers) maneuverTriggers;
-
-                    amt.getEventsDetectors().
+                maneuverTriggers.getEventDetectors().
                         filter(d -> d instanceof ParameterDrivenDateIntervalDetector).
-                        map (d -> (ParameterDrivenDateIntervalDetector) d).
+                        map(d -> (ParameterDrivenDateIntervalDetector) d).
                         forEach(d -> {
+                            TriggerDate start;
+                            TriggerDate stop;
+
                             if (d.getStartDriver().isSelected() || d.getMedianDriver().isSelected() || d.getDurationDriver().isSelected()) {
-                                final TriggerDate start =
-                                                manageTriggerDate(stmName, maneuver, amt, d.getStartDriver().getName(), true,  d.getThreshold());
-                                names.add(start.getName());
+                                // normally datedriver should have only 1 span but just in case the user defines several span, there will
+                                // be no problem here
+                                for (Span<String> span = d.getStartDriver().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                                    start = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), true, d.getThreshold());
+                                    names.add(start.getName());
+                                    start = null;
+                                }
                             }
                             if (d.getStopDriver().isSelected() || d.getMedianDriver().isSelected() || d.getDurationDriver().isSelected()) {
-                                final TriggerDate stop =
-                                                manageTriggerDate(stmName, maneuver, amt, d.getStopDriver().getName(),  false, d.getThreshold());
-                                names.add(stop.getName());
+                                // normally datedriver should have only 1 span but just in case the user defines several span, there will
+                                // be no problem here
+                                for (Span<String> span = d.getStopDriver().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                                    stop = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), false, d.getThreshold());
+                                    names.add(stop.getName());
+                                    stop = null;
+                                }
                             }
                             if (d.getMedianDriver().isSelected()) {
-                                final MedianDate median =
-                                                manageMedianDate(d.getStartDriver().getName(), d.getStopDriver().getName(), d.getMedianDriver().getName());
+                                // for first span
+                                Span<String> currentMedianNameSpan = d.getMedianDriver().getNamesSpanMap().getFirstSpan();
+                                MedianDate median =
+                                        manageMedianDate(d.getStartDriver().getNamesSpanMap().getFirstSpan().getData(),
+                                                d.getStopDriver().getNamesSpanMap().getFirstSpan().getData(), currentMedianNameSpan.getData());
                                 names.add(median.getName());
+                                // for all span
+                                // normally datedriver should have only 1 span but just in case the user defines several span, there will
+                                // be no problem here. /!\ medianDate driver, startDate driver and stopDate driver must have same span number
+                                for (int spanNumber = 1; spanNumber < d.getMedianDriver().getNamesSpanMap().getSpansNumber(); ++spanNumber) {
+                                    currentMedianNameSpan = d.getMedianDriver().getNamesSpanMap().getSpan(currentMedianNameSpan.getEnd());
+                                    median =
+                                            manageMedianDate(d.getStartDriver().getNamesSpanMap().getSpan(currentMedianNameSpan.getStart()).getData(),
+                                                    d.getStopDriver().getNamesSpanMap().getSpan(currentMedianNameSpan.getStart()).getData(),
+                                                    currentMedianNameSpan.getData());
+                                    names.add(median.getName());
+
+                                }
+
                             }
                             if (d.getDurationDriver().isSelected()) {
-                                final Duration duration =
-                                                manageManeuverDuration(d.getStartDriver().getName(), d.getStopDriver().getName(), d.getDurationDriver().getName());
+                                // for first span
+                                Span<String> currentDurationNameSpan = d.getDurationDriver().getNamesSpanMap().getFirstSpan();
+                                Duration duration =
+                                        manageManeuverDuration(d.getStartDriver().getNamesSpanMap().getFirstSpan().getData(),
+                                                d.getStopDriver().getNamesSpanMap().getFirstSpan().getData(), currentDurationNameSpan.getData());
                                 names.add(duration.getName());
+                                // for all span
+                                for (int spanNumber = 1; spanNumber < d.getDurationDriver().getNamesSpanMap().getSpansNumber(); ++spanNumber) {
+                                    currentDurationNameSpan = d.getDurationDriver().getNamesSpanMap().getSpan(currentDurationNameSpan.getEnd());
+                                    duration =
+                                            manageManeuverDuration(d.getStartDriver().getNamesSpanMap().getSpan(currentDurationNameSpan.getStart()).getData(),
+                                                    d.getStopDriver().getNamesSpanMap().getSpan(currentDurationNameSpan.getStart()).getData(),
+                                                    currentDurationNameSpan.getData());
+                                    names.add(duration.getName());
+
+                                }
                             }
                         });
-
-                }
             }
         }
 
@@ -535,7 +578,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     /** Manage a maneuver trigger date.
      * @param stmName name of the State Transition Matrix state
      * @param maneuver maneuver force model
-     * @param amt trigger to which the driver is bound
+     * @param mt trigger to which the driver is bound
      * @param driverName name of the date driver
      * @param start if true, the driver is a maneuver start
      * @param threshold event detector threshold
@@ -544,7 +587,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      */
     private TriggerDate manageTriggerDate(final String stmName,
                                           final Maneuver maneuver,
-                                          final AbstractManeuverTriggers amt,
+                                          final ManeuverTriggers mt,
                                           final String driverName,
                                           final boolean start,
                                           final double threshold) {
@@ -564,7 +607,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         if (triggerGenerator == null) {
             // this is the first time we need the Jacobian column generator, create it
             triggerGenerator = new TriggerDate(stmName, driverName, start, maneuver, threshold);
-            amt.addResetter(triggerGenerator);
+            mt.addResetter(triggerGenerator);
             addAdditionalDerivativesProvider(triggerGenerator.getMassDepletionDelay());
             addAdditionalStateProvider(triggerGenerator);
         }
@@ -666,7 +709,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         final ParameterDriversList selected = new ParameterDriversList();
         for (final ForceModel forceModel : getAllForceModels()) {
             for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-                if (!triggerDates.contains(driver.getName())) {
+                if (!triggerDates.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
+                    // if the first span is not in triggerdate means that the driver is not a trigger
+                    // date and can be selected here
                     selected.add(driver);
                 }
             }
@@ -680,30 +725,35 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         selected.sort();
 
         // add the Jacobians column generators corresponding to parameters, and setup state accordingly
+        // a new column is needed for each value estimated so for each span of the parameterDriver
         for (final DelegatingDriver driver : selected.getDrivers()) {
 
-            IntegrableJacobianColumnGenerator generator = null;
+            for (Span<String> currentNameSpan = driver.getNamesSpanMap().getFirstSpan(); currentNameSpan != null; currentNameSpan = currentNameSpan.next()) {
 
-            // check if we already have set up the providers
-            for (final AdditionalDerivativesProvider provider : getAdditionalDerivativesProviders()) {
-                if (provider instanceof IntegrableJacobianColumnGenerator &&
-                    provider.getName().equals(driver.getName())) {
-                    // the Jacobian column generator has already been set up in a previous propagation
-                    generator = (IntegrableJacobianColumnGenerator) provider;
-                    break;
+                IntegrableJacobianColumnGenerator generator = null;
+                // check if we already have set up the providers
+                for (final AdditionalDerivativesProvider provider : getAdditionalDerivativesProviders()) {
+                    if (provider instanceof IntegrableJacobianColumnGenerator &&
+                        provider.getName().equals(currentNameSpan.getData())) {
+                        // the Jacobian column generator has already been set up in a previous propagation
+                        generator = (IntegrableJacobianColumnGenerator) provider;
+                        break;
+                    }
+
                 }
-            }
 
-            if (generator == null) {
-                // this is the first time we need the Jacobian column generator, create it
-                generator = new IntegrableJacobianColumnGenerator(stmGenerator, driver.getName());
-                addAdditionalDerivativesProvider(generator);
-            }
+                if (generator == null) {
+                    // this is the first time we need the Jacobian column generator, create it
+                    generator = new IntegrableJacobianColumnGenerator(stmGenerator, currentNameSpan.getData());
+                    addAdditionalDerivativesProvider(generator);
+                }
 
-            if (!getInitialIntegrationState().hasAdditionalState(driver.getName())) {
-                // add the initial Jacobian column if it is not already there
-                // (perhaps due to a previous propagation)
-                setInitialColumn(driver.getName(), getHarvester().getInitialJacobianColumn(driver.getName()));
+                if (!getInitialIntegrationState().hasAdditionalState(currentNameSpan.getData())) {
+                    // add the initial Jacobian column if it is not already there
+                    // (perhaps due to a previous propagation)
+                    setInitialColumn(currentNameSpan.getData(), getHarvester().getInitialJacobianColumn(currentNameSpan.getData()));
+                }
+
             }
 
         }
@@ -750,7 +800,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     /** {@inheritDoc} */
     @Override
     protected StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,
-                                       final OrbitType orbitType, final PositionAngle positionAngleType,
+                                       final OrbitType orbitType, final PositionAngleType positionAngleType,
                                        final AttitudeProvider attitudeProvider, final Frame frame) {
         return new OsculatingMapper(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
     }
@@ -773,7 +823,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
          * @param frame inertial frame
          */
         OsculatingMapper(final AbsoluteDate referenceDate, final double mu,
-                         final OrbitType orbitType, final PositionAngle positionAngleType,
+                         final OrbitType orbitType, final PositionAngleType positionAngleType,
                          final AttitudeProvider attitudeProvider, final Frame frame) {
             super(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
         }
@@ -785,7 +835,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
             final double mass = y[6];
             if (mass <= 0.0) {
-                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
+                throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS, mass);
             }
 
             if (getOrbitType() == null) {
@@ -861,7 +911,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             this.jacobian = new double[6][6];
 
             for (final ForceModel forceModel : forceModels) {
-                forceModel.getEventsDetectors().forEach(detector -> setUpEventDetector(integrator, detector));
+                forceModel.getEventDetectors().forEach(detector -> setUpEventDetector(integrator, detector));
             }
 
             if (getOrbitType() == null) {
@@ -917,11 +967,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         @Override
         public void addKeplerContribution(final double mu) {
             if (getOrbitType() == null) {
-
                 // if mu is neither 0 nor NaN, we want to include Newtonian acceleration
                 if (mu > 0) {
                     // velocity derivative is Newtonian acceleration
-                    final Vector3D position = currentState.getPVCoordinates().getPosition();
+                    final Vector3D position = currentState.getPosition();
                     final double r2         = position.getNormSq();
                     final double coeff      = -mu / (r2 * FastMath.sqrt(r2));
                     yDot[3] += coeff * position.getX();
@@ -1067,7 +1116,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             // convert the orbit to the desired type
             final double[][] jacobian = new double[6][6];
             final Orbit converted = type.convertType(orbit);
-            converted.getJacobianWrtCartesian(PositionAngle.TRUE, jacobian);
+            converted.getJacobianWrtCartesian(PositionAngleType.TRUE, jacobian);
 
             for (int i = 0; i < 6; ++i) {
                 final double[] row = jacobian[i];
@@ -1084,7 +1133,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         }
 
-        Arrays.fill(relTol, dP / FastMath.sqrt(orbit.getPVCoordinates().getPosition().getNormSq()));
+        Arrays.fill(relTol, dP / FastMath.sqrt(orbit.getPosition().getNormSq()));
 
         return new double[][] {
             absTol, relTol

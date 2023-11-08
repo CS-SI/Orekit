@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,14 +34,14 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.metric.messages.ParsedMessage;
-import org.orekit.gnss.metric.parser.AbstractEncodedMessages;
+import org.orekit.gnss.metric.parser.AbstractEncodedMessage;
 import org.orekit.gnss.metric.parser.MessagesParser;
 
 /** Monitor for retrieving streamed data from one mount point.
  * @author Luc Maisonobe
  * @since 11.0
  */
-public class StreamMonitor extends AbstractEncodedMessages implements Runnable {
+public class StreamMonitor extends AbstractEncodedMessage implements Runnable {
 
     /** GGA header key. */
     private static final String GGA_HEADER_KEY = "Ntrip-GGA";
@@ -306,8 +307,8 @@ public class StreamMonitor extends AbstractEncodedMessages implements Runnable {
                     }
                 } catch (SocketTimeoutException ste) {
                     // ignore exception, it will be handled by reconnection attempt below
-                } catch (IOException ioe) {
-                    throw new OrekitException(ioe, OrekitMessages.CANNOT_PARSE_GNSS_DATA, client.getHost());
+                } catch (IOException | URISyntaxException e) {
+                    throw new OrekitException(e, OrekitMessages.CANNOT_PARSE_GNSS_DATA, client.getHost());
                 }
 
                 // manage reconnection
@@ -439,6 +440,9 @@ public class StreamMonitor extends AbstractEncodedMessages implements Runnable {
         return crc;
     }
 
+    /** Extract the used messages.
+     * @return the extracted messages
+     */
     private List<Integer> extractUsedMessages() {
         synchronized (observers) {
 

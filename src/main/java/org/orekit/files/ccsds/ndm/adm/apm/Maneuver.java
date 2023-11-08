@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.files.ccsds.ndm.adm.apm;
 import java.util.Arrays;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.files.ccsds.definitions.FrameFacade;
 import org.orekit.files.ccsds.section.CommentsContainer;
 import org.orekit.time.AbsoluteDate;
 
@@ -32,8 +33,8 @@ public class Maneuver extends CommentsContainer {
     /** Epoch of start of maneuver . */
     private AbsoluteDate epochStart;
 
-    /** Coordinate system for the torque vector, for absolute frames. */
-    private String refFrameString;
+    /** Coordinate system for the torque vector. */
+    private FrameFacade frame;
 
     /** Duration (value is 0 for impulsive maneuver). */
     private double duration;
@@ -41,12 +42,18 @@ public class Maneuver extends CommentsContainer {
     /** Torque vector (N.m). */
     private double[] torque;
 
+    /** Mass change during maneuver (kg).
+     * @since 12.0
+     */
+    private double deltaMass;
+
     /**
      * Simple constructor.
      */
     public Maneuver() {
-        duration = Double.NaN;
-        torque   = new double[3];
+        duration  = Double.NaN;
+        torque    = new double[3];
+        deltaMass = Double.NaN;
         Arrays.fill(torque, Double.NaN);
     }
 
@@ -54,12 +61,12 @@ public class Maneuver extends CommentsContainer {
     @Override
     public void validate(final double version) {
         super.validate(version);
-        checkNotNull(epochStart,     ManeuverKey.MAN_EPOCH_START);
-        checkNotNaN(duration,        ManeuverKey.MAN_DURATION);
-        checkNotNull(refFrameString, ManeuverKey.MAN_REF_FRAME);
-        checkNotNaN(torque[0],       ManeuverKey.MAN_TOR_1);
-        checkNotNaN(torque[1],       ManeuverKey.MAN_TOR_2);
-        checkNotNaN(torque[2],       ManeuverKey.MAN_TOR_3);
+        checkNotNull(epochStart, ManeuverKey.MAN_EPOCH_START.name());
+        checkNotNaN(duration,    ManeuverKey.MAN_DURATION.name());
+        checkNotNull(frame,      ManeuverKey.MAN_REF_FRAME.name());
+        checkNotNaN(torque[0],   ManeuverKey.MAN_TOR_1.name());
+        checkNotNaN(torque[1],   ManeuverKey.MAN_TOR_2.name());
+        checkNotNaN(torque[2],   ManeuverKey.MAN_TOR_3.name());
     }
 
     /**
@@ -80,20 +87,20 @@ public class Maneuver extends CommentsContainer {
     }
 
     /**
-     * Get Coordinate system for the torque vector, for absolute frames.
-     * @return coordinate system for the torque vector, for absolute frames
+     * Get Coordinate system for the torque vector.
+     * @return coordinate system for the torque vector
      */
-    public String getRefFrameString() {
-        return refFrameString;
+    public FrameFacade getFrame() {
+        return frame;
     }
 
     /**
-     * Set Coordinate system for the torque vector, for absolute frames.
-     * @param refFrameString coordinate system for the torque vector, for absolute frames
+     * Set Coordinate system for the torque vector.
+     * @param frame coordinate system for the torque vector
      */
-    public void setRefFrameString(final String refFrameString) {
+    public void setFrame(final FrameFacade frame) {
         refuseFurtherComments();
-        this.refFrameString = refFrameString;
+        this.frame = frame;
     }
 
     /**
@@ -113,15 +120,6 @@ public class Maneuver extends CommentsContainer {
         this.duration = duration;
     }
 
-    /** Check if maneuver has been completed.
-     * @return true if maneuver has been completed
-     */
-    public boolean completed() {
-        return !(epochStart     == null ||
-                 refFrameString == null ||
-                 Double.isNaN(duration + torque[0] + torque[1] + torque[2]));
-    }
-
     /**
      * Get the torque vector (N.m).
      * @return torque vector
@@ -138,6 +136,25 @@ public class Maneuver extends CommentsContainer {
     public void setTorque(final int index, final double value) {
         refuseFurtherComments();
         this.torque[index] = value;
+    }
+
+    /**
+     * Get mass change during maneuver.
+     * @return mass change during maneuver (kg, negative)
+     * @since 12.0
+     */
+    public double getDeltaMass() {
+        return deltaMass;
+    }
+
+    /**
+     * Set mass change during maneuver.
+     * @param deltaMass mass change during maneuver (kg)
+     * @since 12.0
+     */
+    public void setDeltaMass(final double deltaMass) {
+        refuseFurtherComments();
+        this.deltaMass = deltaMass;
     }
 
 }

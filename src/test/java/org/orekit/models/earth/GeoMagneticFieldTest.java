@@ -40,6 +40,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.GeoMagneticFieldFactory.FieldModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.units.UnitsConverter;
 
 public class GeoMagneticFieldTest {
 
@@ -105,7 +106,7 @@ public class GeoMagneticFieldTest {
         Utils.setDataRoot("earth:geoid:regular-data");
         GravityFieldFactory.clearPotentialCoefficientsReaders();
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96", false));
-        potential = GravityFieldFactory.getConstantNormalizedProvider(maxDegree, maxOrder);
+        potential = GravityFieldFactory.getNormalizedProvider(maxDegree, maxOrder);
     }
 
     @Test
@@ -154,8 +155,8 @@ public class GeoMagneticFieldTest {
         GeoMagneticElements ePole  = field.calculateField(FastMath.toRadians(90.0),      0, 0);
         Assertions.assertEquals(eClose.getDeclination(),         ePole.getDeclination(),         7.0e-7, "" + (eClose.getDeclination()-         ePole.getDeclination()));
         Assertions.assertEquals(eClose.getInclination(),         ePole.getInclination(),         3.0e-7, "" + (eClose.getInclination()-         ePole.getInclination()));
-        Assertions.assertEquals(eClose.getTotalIntensity(),      ePole.getTotalIntensity(),      2.0e-4, "" + (eClose.getTotalIntensity()-      ePole.getTotalIntensity()));
-        Assertions.assertEquals(eClose.getHorizontalIntensity(), ePole.getHorizontalIntensity(), 3.0e-4, "" + (eClose.getHorizontalIntensity()- ePole.getHorizontalIntensity()));
+        Assertions.assertEquals(eClose.getTotalIntensity(),      ePole.getTotalIntensity(),      2.0e-13, "" + (eClose.getTotalIntensity()-      ePole.getTotalIntensity()));
+        Assertions.assertEquals(eClose.getHorizontalIntensity(), ePole.getHorizontalIntensity(), 3.0e-13, "" + (eClose.getHorizontalIntensity()- ePole.getHorizontalIntensity()));
     }
 
     @Test
@@ -177,7 +178,7 @@ public class GeoMagneticFieldTest {
         // have been adapted.
         runSampleFile(FieldModel.WMM, "sample_coords.txt", "sample_out_WMM2015.txt");
 
-        final double eps = 1e-1;
+        final double eps = 1e-10;
         final double degreeEps = 1e-2;
         for (int i = 0; i < wmmTestValues.length; i++) {
             final GeoMagneticField model = GeoMagneticFieldFactory.getWMM(wmmTestValues[i][0]);
@@ -186,15 +187,15 @@ public class GeoMagneticFieldTest {
                                                                     wmmTestValues[i][1]);
 
             // X
-            Assertions.assertEquals(wmmTestValues[i][4], result.getFieldVector().getX(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(wmmTestValues[i][4]), result.getFieldVector().getX(), eps);
             // Y
-            Assertions.assertEquals(wmmTestValues[i][5], result.getFieldVector().getY(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(wmmTestValues[i][5]), result.getFieldVector().getY(), eps);
             // Z
-            Assertions.assertEquals(wmmTestValues[i][6], result.getFieldVector().getZ(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(wmmTestValues[i][6]), result.getFieldVector().getZ(), eps);
             // H
-            Assertions.assertEquals(wmmTestValues[i][7], result.getHorizontalIntensity(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(wmmTestValues[i][7]), result.getHorizontalIntensity(), eps);
             // F
-            Assertions.assertEquals(wmmTestValues[i][8], result.getTotalIntensity(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(wmmTestValues[i][8]), result.getTotalIntensity(), eps);
             // inclination
             Assertions.assertEquals(wmmTestValues[i][9], result.getInclination(), degreeEps);
             // declination
@@ -218,7 +219,7 @@ public class GeoMagneticFieldTest {
 
         final Geoid geoid = new Geoid(potential, WGS84);
 
-        final double eps = 1e-1;
+        final double eps = 1e-10;
         final double degreeEps = 1e-2;
         for (int i = 0; i < testValues.length; i++) {
             final AbsoluteDate date = new AbsoluteDate(2015, 1, 1, TimeScalesFactory.getUTC());
@@ -231,15 +232,15 @@ public class GeoMagneticFieldTest {
                                                                     testValues[i][1] + undulation);
 
             // X
-            Assertions.assertEquals(testValues[i][4], result.getFieldVector().getX(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(testValues[i][4]), result.getFieldVector().getX(), eps);
             // Y
-            Assertions.assertEquals(testValues[i][5], result.getFieldVector().getY(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(testValues[i][5]), result.getFieldVector().getY(), eps);
             // Z
-            Assertions.assertEquals(testValues[i][6], result.getFieldVector().getZ(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(testValues[i][6]), result.getFieldVector().getZ(), eps);
             // H
-            Assertions.assertEquals(testValues[i][7], result.getHorizontalIntensity(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(testValues[i][7]), result.getHorizontalIntensity(), eps);
             // F
-            Assertions.assertEquals(testValues[i][8], result.getTotalIntensity(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(testValues[i][8]), result.getTotalIntensity(), eps);
             // inclination
             Assertions.assertEquals(testValues[i][9], result.getInclination(), degreeEps);
             // declination
@@ -257,7 +258,7 @@ public class GeoMagneticFieldTest {
         // have been adapted.
         runSampleFile(FieldModel.IGRF, "sample_coords.txt", "sample_out_IGRF12.txt");
 
-        final double eps = 1e-1;
+        final double eps = 1e-10;
         final double degreeEps = 1e-2;
         for (int i = 0; i < igrfTestValues.length; i++) {
             final GeoMagneticField model = GeoMagneticFieldFactory.getIGRF(igrfTestValues[i][0]);
@@ -268,15 +269,15 @@ public class GeoMagneticFieldTest {
             final Vector3D b = result.getFieldVector();
 
             // X
-            Assertions.assertEquals(igrfTestValues[i][4], b.getX(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(igrfTestValues[i][4]), b.getX(), eps);
             // Y
-            Assertions.assertEquals(igrfTestValues[i][5], b.getY(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(igrfTestValues[i][5]), b.getY(), eps);
             // Z
-            Assertions.assertEquals(igrfTestValues[i][6], b.getZ(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(igrfTestValues[i][6]), b.getZ(), eps);
             // H
-            Assertions.assertEquals(igrfTestValues[i][7], result.getHorizontalIntensity(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(igrfTestValues[i][7]), result.getHorizontalIntensity(), eps);
             // F
-            Assertions.assertEquals(igrfTestValues[i][8], result.getTotalIntensity(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(igrfTestValues[i][8]), result.getTotalIntensity(), eps);
             // inclination
             Assertions.assertEquals(igrfTestValues[i][9], result.getInclination(), degreeEps);
             // declination
@@ -333,7 +334,7 @@ public class GeoMagneticFieldTest {
         Assertions.assertEquals("WMM-2015", wmmModel.getModelName());
         Assertions.assertEquals(2015, wmmModel.getEpoch(), 1e-9);
 
-        final double eps = 1e-1;
+        final double eps = 1e-10;
         final double degreeEps = 1e-2;
         for (int i = 0; i < wmmTestValues.length; i++) {
             if (wmmTestValues[i][0] != wmmModel.getEpoch()) {
@@ -344,15 +345,15 @@ public class GeoMagneticFieldTest {
                                                                        wmmTestValues[i][1]);
 
             // X
-            Assertions.assertEquals(wmmTestValues[i][4], result.getFieldVector().getX(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(wmmTestValues[i][4]), result.getFieldVector().getX(), eps);
             // Y
-            Assertions.assertEquals(wmmTestValues[i][5], result.getFieldVector().getY(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(wmmTestValues[i][5]), result.getFieldVector().getY(), eps);
             // Z
-            Assertions.assertEquals(wmmTestValues[i][6], result.getFieldVector().getZ(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(wmmTestValues[i][6]), result.getFieldVector().getZ(), eps);
             // H
-            Assertions.assertEquals(wmmTestValues[i][7], result.getHorizontalIntensity(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(wmmTestValues[i][7]), result.getHorizontalIntensity(), eps);
             // F
-            Assertions.assertEquals(wmmTestValues[i][8], result.getTotalIntensity(), eps);
+            Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(wmmTestValues[i][8]), result.getTotalIntensity(), eps);
             // inclination
             Assertions.assertEquals(wmmTestValues[i][9], result.getInclination(), degreeEps);
             // declination
@@ -471,11 +472,11 @@ public class GeoMagneticFieldTest {
         final double f = Double.parseDouble(st.nextToken());
 
         final double eps = 1e-1;
-        Assertions.assertEquals(h, ge.getHorizontalIntensity(), eps);
-        Assertions.assertEquals(f, ge.getTotalIntensity(), eps);
-        Assertions.assertEquals(x, ge.getFieldVector().getX(), eps);
-        Assertions.assertEquals(y, ge.getFieldVector().getY(), eps);
-        Assertions.assertEquals(z, ge.getFieldVector().getZ(), eps);
+        Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(h), ge.getHorizontalIntensity(), eps);
+        Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(f), ge.getTotalIntensity(), eps);
+        Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(x), ge.getFieldVector().getX(), eps);
+        Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(y), ge.getFieldVector().getY(), eps);
+        Assertions.assertEquals(UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(z), ge.getFieldVector().getZ(), eps);
         Assertions.assertEquals(dec, ge.getDeclination(), eps);
         Assertions.assertEquals(inc, ge.getInclination(), eps);
     }

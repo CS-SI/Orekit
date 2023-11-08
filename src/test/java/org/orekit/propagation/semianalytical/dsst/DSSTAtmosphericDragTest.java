@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,12 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -25,7 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -41,7 +47,7 @@ import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.HarrisPriester;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
@@ -55,12 +61,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
-
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class DSSTAtmosphericDragTest {
 
@@ -86,7 +86,7 @@ public class DSSTAtmosphericDragTest {
                                                  0.847841707880348,
                                                  0.7998014061193262,
                                                  3.897842092486239,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  earthFrame,
                                                  initDate,
                                                  mu);
@@ -111,12 +111,12 @@ public class DSSTAtmosphericDragTest {
         final AuxiliaryElements auxiliaryElements = new AuxiliaryElements(state.getOrbit(), 1);
 
         // Force model parameters
-        final double[] parameters = drag.getParameters();
+        final double[] parameters = drag.getParameters(orbit.getDate());
         // Initialize force model
         drag.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, parameters);
 
         // Register the attitude provider to the force model
-        AttitudeProvider attitudeProvider = new InertialProvider(rotation);
+        AttitudeProvider attitudeProvider = new FrameAlignedProvider(rotation);
         drag.registerAttitudeProvider(attitudeProvider );
 
         // Compute the mean element rate
@@ -147,7 +147,7 @@ public class DSSTAtmosphericDragTest {
                                                  -1.002996107003202,
                                                  0.570979900577994,
                                                  2.62038786211518,
-                                                 PositionAngle.TRUE,
+                                                 PositionAngleType.TRUE,
                                                  FramesFactory.getEME2000(),
                                                  initDate,
                                                  3.986004415E14);
@@ -180,8 +180,8 @@ public class DSSTAtmosphericDragTest {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
 
         drag.registerAttitudeProvider(attitudeProvider);
-        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, drag.getParameters()));
-        drag.updateShortPeriodTerms(drag.getParameters(), meanState);
+        shortPeriodTerms.addAll(drag.initializeShortPeriodTerms(aux, PropagationType.OSCULATING, drag.getParameters(meanState.getDate())));
+        drag.updateShortPeriodTerms(drag.getParametersAllValues(), meanState);
 
         double[] y = new double[6];
         for (final ShortPeriodTerms spt : shortPeriodTerms) {
@@ -191,12 +191,12 @@ public class DSSTAtmosphericDragTest {
             }
         }
 
-        Assertions.assertEquals(0.03966657233280967,    y[0], 1.e-15);
-        Assertions.assertEquals(-1.5294381443173415E-8, y[1], 1.e-23);
-        Assertions.assertEquals(-2.3614929828516364E-8, y[2], 1.e-23);
-        Assertions.assertEquals(-5.901580336558653E-11, y[3], 1.e-26);
-        Assertions.assertEquals(1.0287639743124977E-11, y[4], 1.e-26);
-        Assertions.assertEquals(2.538427523777691E-8,   y[5], 1.e-23);
+        Assertions.assertEquals( 0.0396665723326745000,   y[0], 1.e-15);
+        Assertions.assertEquals(-1.52943814431706260e-8,  y[1], 1.e-23);
+        Assertions.assertEquals(-2.36149298285121920e-8,  y[2], 1.e-23);
+        Assertions.assertEquals(-5.90158033654418600e-11, y[3], 1.e-25);
+        Assertions.assertEquals( 1.02876397430632310e-11, y[4], 1.e-24);
+        Assertions.assertEquals( 2.53842752377756570e-8,  y[5], 1.e-23);
     }
 
     @BeforeEach

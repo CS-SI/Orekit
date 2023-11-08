@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,17 +40,17 @@ public class FieldParameterDrivenDateIntervalDetectorTest {
 
     @Test
     public void testNoShift() {
-        doTestNoShift(Decimal64Field.getInstance());
+        doTestNoShift(Binary64Field.getInstance());
     }
 
     @Test
     public void testSmallShift() {
-        doTestSmallShift(Decimal64Field.getInstance());
+        doTestSmallShift(Binary64Field.getInstance());
     }
 
     @Test
     public void testLargeShift() {
-        doTestLargeShift(Decimal64Field.getInstance());
+        doTestLargeShift(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestNoShift(Field<T> field) {
@@ -78,11 +78,11 @@ public class FieldParameterDrivenDateIntervalDetectorTest {
         final AbsoluteDate stop  = t0.shiftedBy(1120);
         FieldParameterDrivenDateIntervalDetector<T> detector =
                         new FieldParameterDrivenDateIntervalDetector<>(field, "no-shift", start, stop).
-                        withMaxCheck(zero.newInstance(10.0)).
+                        withMaxCheck(10.0).
                         withThreshold(zero.newInstance(1.0e-12)).
                         withHandler(new FieldContinueOnEvent<>());
 
-        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().getReal(), 1.0e-15);
+        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
         Assertions.assertEquals("no-shift_START", detector.getStartDriver().getName());
@@ -124,11 +124,11 @@ public class FieldParameterDrivenDateIntervalDetectorTest {
         final AbsoluteDate stop  = t0.shiftedBy(1120);
         FieldParameterDrivenDateIntervalDetector<T> detector =
                         new FieldParameterDrivenDateIntervalDetector<>(field, "no-shift", start, stop).
-                        withMaxCheck(zero.newInstance(10.0)).
+                        withMaxCheck(10.0).
                         withThreshold(zero.newInstance(1.0e-12)).
                         withHandler(new FieldContinueOnEvent<>());
 
-        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().getReal(), 1.0e-15);
+        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
         Assertions.assertEquals("no-shift_START", detector.getStartDriver().getName());
@@ -140,7 +140,7 @@ public class FieldParameterDrivenDateIntervalDetectorTest {
         final double startShift = 5.5;
         detector.getStartDriver().setValue(startShift);
         final double stopShift  = -0.5;
-        detector.getStopDriver().setValue(stopShift);
+        detector.getStopDriver().setValue(stopShift, null);
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(Constants.JULIAN_DAY));
 
         Assertions.assertEquals(2, logger.getLoggedEvents().size());
@@ -174,11 +174,11 @@ public class FieldParameterDrivenDateIntervalDetectorTest {
         final AbsoluteDate stop  = t0.shiftedBy(1120);
         FieldParameterDrivenDateIntervalDetector<T> detector =
                         new FieldParameterDrivenDateIntervalDetector<>(field, "no-shift", start, stop).
-                        withMaxCheck(zero.newInstance(10.0)).
+                        withMaxCheck(10.0).
                         withThreshold(zero.newInstance(1.0e-12)).
                         withHandler(new FieldContinueOnEvent<>());
 
-        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().getReal(), 1.0e-15);
+        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
         Assertions.assertEquals("no-shift_START", detector.getStartDriver().getName());

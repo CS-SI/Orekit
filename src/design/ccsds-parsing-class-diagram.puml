@@ -1,4 +1,4 @@
-' Copyright 2002-2022 CS GROUP
+' Copyright 2002-2023 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -41,68 +41,10 @@
         class XmlStructureProcessingState
       }
 
-      package utils #CBDBC8 {
-      package lexical #CCCCC7 {
-        interface LexicalAnalyzer
-        enum TokenType {
-          +START
-          +ENTRY
-          +STOP
-          +RAW_LINE
-        }
-        class ParseToken {
-          +getName()
-          +getType()
-          +getContent()
-          +processAsDouble(scaling, doubleConsumer)
-          +processAsDate(dateConsumer, contextBinding)
-          +processAsTimeSystem(timeSystemConsumer)
-          +processAs...(...Consumer, extraParams)
-        }
-        interface "MessageParser<T>" as MessageParser {
-          +parseMessage(Datasource)
-          +reset(FileFormat)
-          +process(ParseToken)
-          +T build()
-        }
-      }
-
-      package parsing #CCCCC7 {
-        abstract class "AbstractMessageParser<T>" as AbstractMessageParser {
-          #reset(fileFormat, initialState)
-          +prepareHeader()
-          +inHeader()
-          +finalizeHeader()
-          +prepareMetadata()
-          +inMetadata()
-          +finalizeMetadata()
-          +prepareData()
-          +inData()
-          +finalizeData()
-          +setFallback(ProcessingState)
-        }
-        interface ProcessingState {
-          +boolean processToken(ParseToken)
-        }
-      }
-
-      enum FileFormat {
-        +KVN
-        +XML
-      }
-      }
-
       package ndm #CBDBC8 {
 
          package odm.opm #CCCCC7 {
           class OpmParser
-          note right
-            uses method references
-            to provide multiple
-            implementations
-            of ProcessingState for
-            different logical blocks
-          end note
           class Opm
         }
 
@@ -126,6 +68,61 @@
           +STRICT_COMPLIANCE
         }
 
+        ParserBuilder -right-> OpmParser : build
+        ParserBuilder o--> ParsedUnitsBehavior
+        OpmParser --> Opm: "build"
+
+      }
+
+      package utils #CBDBC8 {
+        package lexical #CCCCC7 {
+          interface LexicalAnalyzer
+          enum TokenType {
+            +START
+            +ENTRY
+            +STOP
+            +RAW_LINE
+          }
+          class ParseToken {
+            +getName()
+            +getType()
+            +getContent()
+            +processAsDouble(scaling, doubleConsumer)
+            +processAsDate(dateConsumer, contextBinding)
+            +processAsTimeSystem(timeSystemConsumer)
+            +processAs...(...Consumer, extraParams)
+          }
+          interface "MessageParser<T>" as MessageParser {
+            +parseMessage(Datasource)
+            +reset(FileFormat)
+            +process(ParseToken)
+            +T build()
+          }
+        }
+
+        package parsing #CCCCC7 {
+          abstract class "AbstractMessageParser<T>" as AbstractMessageParser {
+            #reset(fileFormat, initialState)
+            +prepareHeader()
+            +inHeader()
+            +finalizeHeader()
+            +prepareMetadata()
+            +inMetadata()
+            +finalizeMetadata()
+            +prepareData()
+            +inData()
+            +finalizeData()
+            +setFallback(ProcessingState)
+          }
+          interface ProcessingState {
+            +boolean processToken(ParseToken)
+          }
+        }
+
+        enum FileFormat {
+          +KVN
+          +XML
+        }
       }
 
     }
@@ -141,12 +138,9 @@
   AbstractMessageParser ..|> MessageParser
   ProcessingState <--o AbstractMessageParser : "current"
   ProcessingState <--o AbstractMessageParser : "fallback"
-  OpmParser --> Opm : "build"
   HeaderProcessingState       ..|> ProcessingState
   KvnStructureProcessingState ..|> ProcessingState
   XmlStructureProcessingState ..|> ProcessingState
-  ProcessingState <|.. OpmParser
-  ParserBuilder -right-> OpmParser : build
-  ParserBuilder o--> ParsedUnitsBehavior
+  OpmParser .right.|> ProcessingState
 
 @enduml

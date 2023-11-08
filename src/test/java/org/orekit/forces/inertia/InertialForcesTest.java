@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,7 +46,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -67,20 +67,16 @@ import org.orekit.utils.PVCoordinates;
 public class InertialForcesTest extends AbstractLegacyForceModelTest {
 
     @Override
-    protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel, final AbsoluteDate date,
-                                                                         final Frame frame,
-                                                                         final FieldVector3D<DerivativeStructure> position,
-                                                                         final FieldVector3D<DerivativeStructure> velocity,
-                                                                         final FieldRotation<DerivativeStructure> rotation,
-                                                                         final DerivativeStructure mass) {
+    protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel, final FieldSpacecraftState<DerivativeStructure> state) {
         try {
+            final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
+            final FieldVector3D<DerivativeStructure> velocity = state.getPVCoordinates().getVelocity();
             java.lang.reflect.Field refInertialFrameField = InertialForces.class.getDeclaredField("referenceInertialFrame");
             refInertialFrameField.setAccessible(true);
             Frame refInertialFrame = (Frame) refInertialFrameField.get(forceModel);
 
-            final Field<DerivativeStructure> field = position.getX().getField();
-            final FieldTransform<DerivativeStructure> inertToStateFrame = refInertialFrame.getTransformTo(frame,
-                                                                                                          new FieldAbsoluteDate<>(field, date));
+            final FieldTransform<DerivativeStructure> inertToStateFrame = refInertialFrame.getTransformTo(state.getFrame(),
+                                                                                                          state.getDate());
             final FieldVector3D<DerivativeStructure>  a1                = inertToStateFrame.getCartesian().getAcceleration();
             final FieldRotation<DerivativeStructure>  r1                = inertToStateFrame.getAngular().getRotation();
             final FieldVector3D<DerivativeStructure>  o1                = inertToStateFrame.getAngular().getRotationRate();
@@ -103,20 +99,16 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
     }
 
     @Override
-    protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel, final AbsoluteDate date,
-                                                                      final Frame frame,
-                                                                      final FieldVector3D<Gradient> position,
-                                                                      final FieldVector3D<Gradient> velocity,
-                                                                      final FieldRotation<Gradient> rotation,
-                                                                      final Gradient mass) {
+    protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel, final FieldSpacecraftState<Gradient> state) {
         try {
+            final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
+            final FieldVector3D<Gradient> velocity = state.getPVCoordinates().getVelocity();
             java.lang.reflect.Field refInertialFrameField = InertialForces.class.getDeclaredField("referenceInertialFrame");
             refInertialFrameField.setAccessible(true);
             Frame refInertialFrame = (Frame) refInertialFrameField.get(forceModel);
 
-            final Field<Gradient> field = position.getX().getField();
-            final FieldTransform<Gradient> inertToStateFrame = refInertialFrame.getTransformTo(frame,
-                                                                                               new FieldAbsoluteDate<>(field, date));
+            final FieldTransform<Gradient> inertToStateFrame = refInertialFrame.getTransformTo(state.getFrame(),
+                                                                                               state.getDate());
             final FieldVector3D<Gradient>  a1                = inertToStateFrame.getCartesian().getAcceleration();
             final FieldRotation<Gradient>  r1                = inertToStateFrame.getAngular().getRotation();
             final FieldVector3D<Gradient>  o1                = inertToStateFrame.getAngular().getRotationRate();
@@ -148,7 +140,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final AbsolutePVCoordinates pva = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getPVCoordinates());
         final InertialForces forceModel = new InertialForces(pva.getFrame());
@@ -168,7 +160,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final AbsolutePVCoordinates pva = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getPVCoordinates());
         final InertialForces forceModel = new InertialForces(pva.getFrame());
@@ -364,7 +356,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
             double omega = FastMath.toRadians(93.0);
             double OMEGA = FastMath.toRadians(15.0 * 22.5);
             Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                             0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                             0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                              Constants.EIGEN5C_EARTH_MU);
             final AbsolutePVCoordinates pva = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getPVCoordinates());
             final InertialForces forceModel = new InertialForces(pva.getFrame());

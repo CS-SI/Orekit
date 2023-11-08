@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,10 +20,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.InterSatellitesRange;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -62,7 +62,7 @@ public class OnBoardAntennaInterSatellitesRangeModifier implements EstimationMod
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final EstimatedMeasurement<InterSatellitesRange> estimated) {
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<InterSatellitesRange> estimated) {
         if (estimated.getParticipants().length < 3) {
             modifyOneWay(estimated);
         } else {
@@ -73,7 +73,7 @@ public class OnBoardAntennaInterSatellitesRangeModifier implements EstimationMod
     /** Apply a modifier to an estimated measurement in the one-way case.
      * @param estimated estimated measurement to modify
      */
-    private void modifyOneWay(final EstimatedMeasurement<InterSatellitesRange> estimated) {
+    private void modifyOneWay(final EstimatedMeasurementBase<InterSatellitesRange> estimated) {
 
         // the participants are satellite 2 at emission, satellite 1 at reception
         final TimeStampedPVCoordinates[] participants  = estimated.getParticipants();
@@ -83,10 +83,10 @@ public class OnBoardAntennaInterSatellitesRangeModifier implements EstimationMod
         // transforms from spacecraft to inertial frame at emission/reception dates
         final SpacecraftState refState1                  = estimated.getStates()[0];
         final SpacecraftState receptionState             = refState1.shiftedBy(receptionDate.durationFrom(refState1.getDate()));
-        final Transform       receptionSpacecraftToInert = receptionState.toTransform().getInverse();
+        final StaticTransform receptionSpacecraftToInert = receptionState.toStaticTransform().getInverse();
         final SpacecraftState refState2                  = estimated.getStates()[1];
         final SpacecraftState emissionState              = refState2.shiftedBy(emissionDate.durationFrom(refState2.getDate()));
-        final Transform       emissionSpacecraftToInert  = emissionState.toTransform().getInverse();
+        final StaticTransform emissionSpacecraftToInert  = emissionState.toStaticTransform().getInverse();
 
         // compute the geometrical value of the inter-satellites range directly from participants positions.
         // Note that this may be different from the value returned by estimated.getEstimatedValue(),
@@ -115,7 +115,7 @@ public class OnBoardAntennaInterSatellitesRangeModifier implements EstimationMod
     /** Apply a modifier to an estimated measurement in the two-way case.
      * @param estimated estimated measurement to modify
      */
-    private void modifyTwoWay(final EstimatedMeasurement<InterSatellitesRange> estimated) {
+    private void modifyTwoWay(final EstimatedMeasurementBase<InterSatellitesRange> estimated) {
 
         // the participants are satellite 1 at emission, satellite 2 at transit, satellite 1 at reception
         final TimeStampedPVCoordinates[] participants  = estimated.getParticipants();
@@ -126,12 +126,12 @@ public class OnBoardAntennaInterSatellitesRangeModifier implements EstimationMod
         // transforms from spacecraft to inertial frame at emission/reception dates
         final SpacecraftState refState1                  = estimated.getStates()[0];
         final SpacecraftState receptionState             = refState1.shiftedBy(receptionDate.durationFrom(refState1.getDate()));
-        final Transform       receptionSpacecraftToInert = receptionState.toTransform().getInverse();
+        final StaticTransform receptionSpacecraftToInert = receptionState.toStaticTransform().getInverse();
         final SpacecraftState refState2                  = estimated.getStates()[1];
         final SpacecraftState transitState               = refState2.shiftedBy(transitDate.durationFrom(refState2.getDate()));
-        final Transform       transitSpacecraftToInert   = transitState.toTransform().getInverse();
+        final StaticTransform transitSpacecraftToInert   = transitState.toStaticTransform().getInverse();
         final SpacecraftState emissionState              = refState1.shiftedBy(emissionDate.durationFrom(refState1.getDate()));
-        final Transform       emissionSpacecraftToInert  = emissionState.toTransform().getInverse();
+        final StaticTransform emissionSpacecraftToInert  = emissionState.toStaticTransform().getInverse();
 
         // compute the geometrical value of the inter-satellites range directly from participants positions.
         // Note that this may be different from the value returned by estimated.getEstimatedValue(),

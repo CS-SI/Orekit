@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,16 +22,14 @@ import java.util.List;
 
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.leastsquares.BatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.sequential.CovarianceMatrixProvider;
-import org.orekit.estimation.sequential.KalmanModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
@@ -43,7 +41,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implements OrbitDeterminationPropagatorBuilder {
+public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;
@@ -62,23 +60,24 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
      * with the {@code positionScale} to convert from the {@link
      * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
      * callers of this builder to the real orbital parameters.
+     * The default attitude provider is aligned with the orbit's inertial frame.
      * </p>
      *
      * @param referenceOrbit reference orbit from which real orbits will be built
      * @param builder first order integrator builder
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @since 8.0
-     * @see #NumericalPropagatorBuilder(Orbit, ODEIntegratorBuilder, PositionAngle,
+     * @see #NumericalPropagatorBuilder(Orbit, ODEIntegratorBuilder, PositionAngleType,
      * double, AttitudeProvider)
      */
     public NumericalPropagatorBuilder(final Orbit referenceOrbit,
                                       final ODEIntegratorBuilder builder,
-                                      final PositionAngle positionAngle,
+                                      final PositionAngleType positionAngleType,
                                       final double positionScale) {
-        this(referenceOrbit, builder, positionAngle, positionScale,
-                InertialProvider.of(referenceOrbit.getFrame()));
+        this(referenceOrbit, builder, positionAngleType, positionScale,
+             FrameAlignedProvider.of(referenceOrbit.getFrame()));
     }
 
     /** Build a new instance.
@@ -92,7 +91,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
      * </p>
      * @param referenceOrbit reference orbit from which real orbits will be built
      * @param builder first order integrator builder
-     * @param positionAngle position angle type to use
+     * @param positionAngleType position angle type to use
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
      * @param attitudeProvider attitude law.
@@ -100,10 +99,10 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
      */
     public NumericalPropagatorBuilder(final Orbit referenceOrbit,
                                       final ODEIntegratorBuilder builder,
-                                      final PositionAngle positionAngle,
+                                      final PositionAngleType positionAngleType,
                                       final double positionScale,
                                       final AttitudeProvider attitudeProvider) {
-        super(referenceOrbit, positionAngle, positionScale, true, attitudeProvider);
+        super(referenceOrbit, positionAngleType, positionScale, true, attitudeProvider);
         this.builder     = builder;
         this.forceModels = new ArrayList<ForceModel>();
         this.mass        = Propagator.DEFAULT_MASS;
@@ -116,7 +115,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
         final NumericalPropagatorBuilder copyBuilder =
                         new NumericalPropagatorBuilder(createInitialOrbit(),
                                                        builder,
-                                                       getPositionAngle(),
+                                                       getPositionAngleType(),
                                                        getPositionScale(),
                                                        getAttitudeProvider());
         copyBuilder.setMass(mass);
@@ -171,9 +170,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
             }
         }
 
-        for (final ParameterDriver driver : model.getParametersDrivers()) {
-            addSupportedParameter(driver);
-        }
+        addSupportedParameters(model.getParametersDrivers());
     }
 
     /** Get the mass.
@@ -193,7 +190,6 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("deprecation")
     public NumericalPropagator buildPropagator(final double[] normalizedParameters) {
 
         setParameters(normalizedParameters);
@@ -206,7 +202,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
                 builder.buildIntegrator(orbit, getOrbitType()),
                 getAttitudeProvider());
         propagator.setOrbitType(getOrbitType());
-        propagator.setPositionAngleType(getPositionAngle());
+        propagator.setPositionAngleType(getPositionAngleType());
 
         // Configure force models
         if (!hasNewtonianAttraction()) {
@@ -224,30 +220,17 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder implem
             propagator.addAdditionalDerivativesProvider(provider);
         }
 
-        // FIXME: remove in 12.0 when AdditionalEquations is removed
-        for (org.orekit.propagation.integration.AdditionalEquations equations : getAdditionalEquations()) {
-            propagator.addAdditionalDerivativesProvider(new org.orekit.propagation.integration.AdditionalEquationsAdapter(equations, propagator::getInitialState));
-        }
-
         return propagator;
-    }
 
-    /** {@inheritDoc} */
-    public BatchLSModel buildLSModel(final OrbitDeterminationPropagatorBuilder[] builders,
-                            final List<ObservedMeasurement<?>> measurements,
-                            final ParameterDriversList estimatedMeasurementsParameters,
-                            final ModelObserver observer) {
-        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
     /** {@inheritDoc} */
     @Override
-    public KalmanModel buildKalmanModel(final List<OrbitDeterminationPropagatorBuilder> propagatorBuilders,
-                                        final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                        final ParameterDriversList estimatedMeasurementsParameters,
-                                        final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        return new KalmanModel(propagatorBuilders, covarianceMatricesProviders,
-                               estimatedMeasurementsParameters, measurementProcessNoiseMatrix);
+    public BatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
+                                               final List<ObservedMeasurement<?>> measurements,
+                                               final ParameterDriversList estimatedMeasurementsParameters,
+                                               final ModelObserver observer) {
+        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
     }
 
     /** Check if Newtonian attraction force model is available.

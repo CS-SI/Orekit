@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -120,7 +120,7 @@ public class FrameFacadeTest {
         // Given
         final Frame pivotFrame = FramesFactory.getGCRF();
         final Orbit orbit = new KeplerianOrbit(7.E6, 0.001, FastMath.toRadians(45.), 0., 0., 0.,
-                                               PositionAngle.TRUE, FramesFactory.getEME2000(),
+                                               PositionAngleType.TRUE, FramesFactory.getEME2000(),
                                                new AbsoluteDate(2000, 1, 1, TimeScalesFactory.getUTC()),
                                                Constants.GRIM5C1_EARTH_MU);
 
@@ -222,7 +222,7 @@ public class FrameFacadeTest {
         final AbsoluteDate date  = new AbsoluteDate();
         final Frame        pivot = FramesFactory.getGCRF();
         final Orbit orbit = new KeplerianOrbit(7.E6, 0.001, FastMath.toRadians(45.), 0., 0., 0.,
-                                               PositionAngle.MEAN, FramesFactory.getEME2000(),
+                                               PositionAngleType.MEAN, FramesFactory.getEME2000(),
                                                date, Constants.IERS2010_EARTH_MU);
 
         final FrameFacade initialFrameFacade =

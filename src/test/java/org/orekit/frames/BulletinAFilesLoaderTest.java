@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,8 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         new BulletinAFilesLoader("bulletina-xxvi-\\d\\d\\d\\.txt", manager, () -> utc).fillHistory(null, history);
         Assertions.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56475),
                                              TimeScalesFactory.getUTC()),
-                            new EOPHistory(IERSConventions.IERS_2010, history, true).getStartDate());
+                            new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                           history, true).getStartDate());
     }
 
     @Test
@@ -52,7 +53,8 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         Assertions.assertTrue(getMaxGap(history) < 2);
         Assertions.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56968),
                                              TimeScalesFactory.getUTC()),
-                            new EOPHistory(IERSConventions.IERS_2010, history, false).getEndDate());
+                            new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                           history, false).getEndDate());
     }
 
     @Test
@@ -60,7 +62,8 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         setRoot("bulletinA");
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinAFilesLoader("bulletina-xxvi-039.txt", manager, () -> utc).fillHistory(null, data);
-        EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, data, true);
+        EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                            data, true);
 
         // earliest date is for pole position, provided days 56546, 56547, 56548
         Assertions.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56546),
@@ -81,7 +84,8 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         setRoot("bulletinA");
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinAFilesLoader(FramesFactory.BULLETINA_FILENAME, manager, () -> utc).fillHistory(null, data);
-        EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, data, true);
+        EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                            data, true);
         AbsoluteDate date = new AbsoluteDate(2013, 10, 14, 12, 0, 0, TimeScalesFactory.getUTC());
         // the following values are from bulletina-xxvi-042.txt, rapid service section, lines 53-56
         Assertions.assertEquals(        (-3 * -0.001957 + 27 * -0.003274 + 27 * -0.004706 - 3 * -0.006211) / 48,  history.getUT1MinusUTC(date), 1.0e-10);
@@ -94,7 +98,8 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         setRoot("bulletinA");
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinAFilesLoader(FramesFactory.BULLETINA_FILENAME, manager, () -> utc).fillHistory(null, data);
-        EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, data, true);
+        EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                            data, true);
         AbsoluteDate date = new AbsoluteDate(2013, 8, 26, 12, 0, 0, TimeScalesFactory.getUTC());
         // the following values are from bulletina-xxvi-040.txt, final values section, lines 79-82
         Assertions.assertEquals(        (-3 * 0.04058 + 27 * 0.04000 + 27 * 0.03953 - 3 * 0.03917) / 48,  history.getUT1MinusUTC(date), 1.0e-10);

@@ -38,16 +38,15 @@ import org.orekit.time.AbsoluteDate;
  *
  * @author Lara Hué
  *
- * @param <D> object type of the detector which is linked to the handler
  * @since 10.3
  */
-public class EventMultipleHandler<D extends EventDetector> implements EventHandler<D> {
+public class EventMultipleHandler implements EventHandler {
 
     /** Default list of handlers for event overrides. */
-    private List<EventHandler<D>> handlers;
+    private List<EventHandler> handlers;
 
     /** List of handlers whose Action returned is RESET_STATE. */
-    private List<EventHandler<D>> resetStateHandlers;
+    private List<EventHandler> resetStateHandlers;
 
     /** Constructor with list initialisation. */
     public EventMultipleHandler() {
@@ -73,16 +72,11 @@ public class EventMultipleHandler<D extends EventDetector> implements EventHandl
      * @param detector event detector related to the event handler
      */
     @Override
-    public void init(final SpacecraftState initialState, final AbsoluteDate target, final D detector) {
+    public void init(final SpacecraftState initialState, final AbsoluteDate target, final EventDetector detector) {
         handlers.forEach(handler -> handler.init(initialState, target, detector));
     }
 
-    /**
-     * eventOccurred method mirrors the same interface method as in {@link EventDetector}
-     * and its subclasses, but with an additional parameter that allows the calling
-     * method to pass in an object from the detector which would have potential
-     * additional data to allow the implementing class to determine the correct
-     * return state.
+    /** Handle an event.
      *
      * The MultipleEventHandler class implies a different behaviour on event detections
      * than with other handlers :
@@ -100,8 +94,8 @@ public class EventMultipleHandler<D extends EventDetector> implements EventHandl
      *
      */
     @Override
-    public Action eventOccurred(final SpacecraftState s, final D detector, final boolean increasing) {
-        final Map<EventHandler<D>, Action> actions =
+    public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
+        final Map<EventHandler, Action> actions =
                 handlers.stream().
                          collect(Collectors.toMap(Function.identity(),
                              handler -> handler.eventOccurred(s, detector, increasing)));
@@ -141,9 +135,9 @@ public class EventMultipleHandler<D extends EventDetector> implements EventHandl
      * @return new state
      */
     @Override
-    public SpacecraftState resetState(final D detector, final SpacecraftState oldState) {
+    public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
         SpacecraftState newState = oldState;
-        for (EventHandler<D> handler : resetStateHandlers) {
+        for (EventHandler handler : resetStateHandlers) {
             newState = handler.resetState(detector, newState);
         }
         return newState;
@@ -153,7 +147,7 @@ public class EventMultipleHandler<D extends EventDetector> implements EventHandl
      * @param handler handler associated with D detector
      * @return this object
      */
-    public EventMultipleHandler<D> addHandler(final EventHandler<D> handler) {
+    public EventMultipleHandler addHandler(final EventHandler handler) {
         handlers.add(handler);
         return this;
     }
@@ -163,7 +157,7 @@ public class EventMultipleHandler<D extends EventDetector> implements EventHandl
      * @return this object
      */
     @SafeVarargs // this method is safe
-    public final EventMultipleHandler<D> addHandlers(final EventHandler<D>... newHandlers) {
+    public final EventMultipleHandler addHandlers(final EventHandler... newHandlers) {
         Arrays.stream(newHandlers).forEach(this::addHandler);
         return this;
     }
@@ -172,14 +166,14 @@ public class EventMultipleHandler<D extends EventDetector> implements EventHandl
      * @param newHandlers new handlers list associated with D detector
      *
      */
-    public void setHandlers(final List<EventHandler<D>> newHandlers) {
+    public void setHandlers(final List<EventHandler> newHandlers) {
         handlers = newHandlers;
     }
 
     /** Retrieve managed handlers list.
      * @return list of handlers for event overrides
      */
-    public List<EventHandler<D>> getHandlers() {
+    public List<EventHandler> getHandlers() {
         return this.handlers;
     }
 }

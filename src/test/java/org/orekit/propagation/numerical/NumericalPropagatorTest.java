@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,18 @@
  * limitations under the License.
  */
 package org.orekit.propagation.numerical;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -34,12 +46,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
@@ -64,7 +76,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
@@ -74,6 +86,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.events.AbstractDetector;
+import org.orekit.propagation.events.AdaptableInterval;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
@@ -99,18 +112,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
 public class NumericalPropagatorTest {
 
     private double               mu;
@@ -134,7 +135,7 @@ public class NumericalPropagatorTest {
                                              });
         ForceModel force = new ForceModelAdapter() {
             @Override
-            public Stream<EventDetector> getEventsDetectors() {
+            public Stream<EventDetector> getEventDetectors() {
                 return Stream.of(singleDetector);
             }
         };
@@ -209,8 +210,11 @@ public class NumericalPropagatorTest {
         propagator.propagate(end);
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
         CountingHandler handler = new CountingHandler();
-        DateDetector detector = new DateDetector(10, 1e-9, end)
-                .withHandler(handler);
+        DateDetector detector = new DateDetector(end).
+                                withMaxCheck(10).
+                                withThreshold(1e-9).
+                                withMinGap(10).
+                                withHandler(handler);
         // propagation works fine w/o event detector, but breaks with it
         ephemeris.addEventDetector(detector);
 
@@ -237,8 +241,11 @@ public class NumericalPropagatorTest {
         // events directly on propagation start date are not triggered,
         // so move the event date slightly after
         AbsoluteDate eventDate = initDate.shiftedBy(FastMath.ulp(100.0) / 10.0);
-        DateDetector detector = new DateDetector(10, 1e-9, eventDate)
-                .withHandler(handler);
+        DateDetector detector = new DateDetector(eventDate).
+                                withMaxCheck(10).
+                                withThreshold(1e-9).
+                                withMinGap(10).
+                                withHandler(handler);
         // propagation works fine w/o event detector, but breaks with it
         ephemeris.addEventDetector(detector);
 
@@ -251,8 +258,7 @@ public class NumericalPropagatorTest {
     }
 
     /** Counts the number of events that have occurred. */
-    private static class CountingHandler
-            implements EventHandler<EventDetector> {
+    private static class CountingHandler implements EventHandler {
 
         /**
          * number of calls to {@link #eventOccurred(SpacecraftState,
@@ -282,10 +288,14 @@ public class NumericalPropagatorTest {
     @Test
     public void testCloseEventDates() {
         // setup
-        DateDetector d1 = new DateDetector(10, 1, initDate.shiftedBy(15))
-                .withHandler(new ContinueOnEvent<DateDetector>());
-        DateDetector d2 = new DateDetector(10, 1, initDate.shiftedBy(15.5))
-                .withHandler(new ContinueOnEvent<DateDetector>());
+        DateDetector d1 = new DateDetector(initDate.shiftedBy(15)).
+                          withMaxCheck(10).
+                          withThreshold(1).
+                          withHandler(new ContinueOnEvent());
+        DateDetector d2 = new DateDetector(initDate.shiftedBy(15.5)).
+                          withMaxCheck(10).
+                          withThreshold(1).
+                          withHandler(new ContinueOnEvent());
         propagator.addEventDetector(d1);
         propagator.addEventDetector(d2);
 
@@ -307,7 +317,7 @@ public class NumericalPropagatorTest {
         Frame eci = FramesFactory.getGCRF();
         KeplerianOrbit orbit = new KeplerianOrbit(
                 600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0, 0, 0, 0,
-                PositionAngle.TRUE, eci, initialDate, mu);
+                PositionAngleType.TRUE, eci, initialDate, mu);
         OrbitType type = OrbitType.CARTESIAN;
         double[][] tol = NumericalPropagator.tolerances(1e-3, orbit, type);
         NumericalPropagator prop = new NumericalPropagator(
@@ -347,7 +357,7 @@ public class NumericalPropagatorTest {
         Frame eci = FramesFactory.getGCRF();
         KeplerianOrbit orbit = new KeplerianOrbit(
                 600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0, 0, 0, 0,
-                PositionAngle.TRUE, eci, initialDate, mu);
+                PositionAngleType.TRUE, eci, initialDate, mu);
         OrbitType type = OrbitType.CARTESIAN;
         double[][] tol = NumericalPropagator.tolerances(1e-3, orbit, type);
         NumericalPropagator prop = new NumericalPropagator(
@@ -384,11 +394,11 @@ public class NumericalPropagatorTest {
         final SpacecraftState finalState = propagator.propagate(initDate);
 
         // Initial orbit definition
-        final Vector3D initialPosition = initialState.getPVCoordinates().getPosition();
+        final Vector3D initialPosition = initialState.getPosition();
         final Vector3D initialVelocity = initialState.getPVCoordinates().getVelocity();
 
         // Final orbit definition
-        final Vector3D finalPosition   = finalState.getPVCoordinates().getPosition();
+        final Vector3D finalPosition   = finalState.getPosition();
         final Vector3D finalVelocity   = finalState.getPVCoordinates().getVelocity();
 
         // Check results
@@ -490,20 +500,20 @@ public class NumericalPropagatorTest {
         final double dV = initialState.getMu() * dP /
                           (pv.getPosition().getNormSq() * pv.getVelocity().getNorm());
 
-        final PVCoordinates pvcM = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngle.MEAN);
-        final PVCoordinates pviM = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngle.MEAN);
-        final PVCoordinates pveM = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngle.MEAN);
-        final PVCoordinates pvkM = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngle.MEAN);
+        final PVCoordinates pvcM = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngleType.MEAN);
+        final PVCoordinates pviM = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngleType.MEAN);
+        final PVCoordinates pveM = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN);
+        final PVCoordinates pvkM = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngleType.MEAN);
 
-        final PVCoordinates pvcE = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngle.ECCENTRIC);
-        final PVCoordinates pviE = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngle.ECCENTRIC);
-        final PVCoordinates pveE = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC);
-        final PVCoordinates pvkE = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngle.ECCENTRIC);
+        final PVCoordinates pvcE = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngleType.ECCENTRIC);
+        final PVCoordinates pviE = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngleType.ECCENTRIC);
+        final PVCoordinates pveE = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngleType.ECCENTRIC);
+        final PVCoordinates pvkE = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngleType.ECCENTRIC);
 
-        final PVCoordinates pvcT = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngle.TRUE);
-        final PVCoordinates pviT = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngle.TRUE);
-        final PVCoordinates pveT = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE);
-        final PVCoordinates pvkT = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngle.TRUE);
+        final PVCoordinates pvcT = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngleType.TRUE);
+        final PVCoordinates pviT = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngleType.TRUE);
+        final PVCoordinates pveT = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngleType.TRUE);
+        final PVCoordinates pvkT = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngleType.TRUE);
 
         Assertions.assertEquals(0, pvcM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 3.0);
         Assertions.assertEquals(0, pvcM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2.0);
@@ -537,7 +547,7 @@ public class NumericalPropagatorTest {
 
         SpacecraftState state =
             new SpacecraftState(new KeplerianOrbit(-10000000.0, 2.5, 0.3, 0, 0, 0.0,
-                                                   PositionAngle.TRUE,
+                                                   PositionAngleType.TRUE,
                                                    FramesFactory.getEME2000(), initDate,
                                                    mu));
 
@@ -552,14 +562,14 @@ public class NumericalPropagatorTest {
         final double dV = state.getMu() * dP /
                           (pv.getPosition().getNormSq() * pv.getVelocity().getNorm());
 
-        final PVCoordinates pvcM = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngle.MEAN);
-        final PVCoordinates pvkM = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngle.MEAN);
+        final PVCoordinates pvcM = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngleType.MEAN);
+        final PVCoordinates pvkM = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngleType.MEAN);
 
-        final PVCoordinates pvcE = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngle.ECCENTRIC);
-        final PVCoordinates pvkE = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC);
+        final PVCoordinates pvcE = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC);
+        final PVCoordinates pvkE = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC);
 
-        final PVCoordinates pvcT = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngle.TRUE);
-        final PVCoordinates pvkT = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngle.TRUE);
+        final PVCoordinates pvcT = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngleType.TRUE);
+        final PVCoordinates pvkT = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngleType.TRUE);
 
         Assertions.assertEquals(0, pvcM.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.3);
         Assertions.assertEquals(0, pvcM.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.4);
@@ -577,7 +587,7 @@ public class NumericalPropagatorTest {
     }
 
     private PVCoordinates propagateInType(SpacecraftState state, double dP,
-                                          OrbitType type, PositionAngle angle)
+                                          OrbitType type, PositionAngleType angle)
         {
 
         final double dt = 3200;
@@ -622,7 +632,7 @@ public class NumericalPropagatorTest {
     @Test
     public void testStopEvent() {
         final AbsoluteDate stopDate = initDate.shiftedBy(1000);
-        CheckingHandler<DateDetector> checking = new CheckingHandler<DateDetector>(Action.STOP);
+        CheckingHandler checking = new CheckingHandler(Action.STOP);
         propagator.addEventDetector(new DateDetector(stopDate).withHandler(checking));
         Assertions.assertEquals(1, propagator.getEventsDetectors().size());
         checking.assertEvent(false);
@@ -637,8 +647,8 @@ public class NumericalPropagatorTest {
     @Test
     public void testResetStateEvent() {
         final AbsoluteDate resetDate = initDate.shiftedBy(1000);
-        CheckingHandler<DateDetector> checking = new CheckingHandler<DateDetector>(Action.RESET_STATE) {
-            public SpacecraftState resetState(DateDetector detector, SpacecraftState oldState) {
+        CheckingHandler checking = new CheckingHandler(Action.RESET_STATE) {
+            public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
                 return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() - 200.0);
             }
         };
@@ -652,7 +662,7 @@ public class NumericalPropagatorTest {
     @Test
     public void testResetDerivativesEvent() {
         final AbsoluteDate resetDate = initDate.shiftedBy(1000);
-        CheckingHandler<DateDetector> checking = new CheckingHandler<DateDetector>(Action.RESET_DERIVATIVES);
+        CheckingHandler checking = new CheckingHandler(Action.RESET_DERIVATIVES);
         propagator.addEventDetector(new DateDetector(resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
@@ -674,7 +684,7 @@ public class NumericalPropagatorTest {
     @Test
     public void testContinueEvent() {
         final AbsoluteDate resetDate = initDate.shiftedBy(1000);
-        CheckingHandler<DateDetector> checking = new CheckingHandler<DateDetector>(Action.CONTINUE);
+        CheckingHandler checking = new CheckingHandler(Action.CONTINUE);
         propagator.addEventDetector(new DateDetector(resetDate).withHandler(checking));
         final double dt = 3200;
         checking.assertEvent(false);
@@ -705,10 +715,6 @@ public class NumericalPropagatorTest {
                 return 1;
             }
 
-            public double[] derivatives(final SpacecraftState state) {
-                return null;
-            }
-
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
@@ -723,10 +729,6 @@ public class NumericalPropagatorTest {
 
                 public int getDimension() {
                     return 1;
-                }
-
-                public double[] derivatives(final SpacecraftState state) {
-                    return null;
                 }
 
                 public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
@@ -746,10 +748,6 @@ public class NumericalPropagatorTest {
 
                public int getDimension() {
                    return 1;
-               }
-
-               public double[] derivatives(final SpacecraftState state) {
-                   return null;
                }
 
                public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
@@ -775,8 +773,7 @@ public class NumericalPropagatorTest {
         Assertions.assertEquals(2, propagator.getManagedAdditionalStates().length);
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
 
-        CheckingHandler<AdditionalStateLinearDetector> checking =
-                new CheckingHandler<AdditionalStateLinearDetector>(Action.STOP);
+        CheckingHandler checking = new CheckingHandler(Action.STOP);
         propagator.addEventDetector(new AdditionalStateLinearDetector(10.0, 1.0e-8).withHandler(checking));
 
         final double dt = 3200;
@@ -792,17 +789,15 @@ public class NumericalPropagatorTest {
     private static class AdditionalStateLinearDetector extends AbstractDetector<AdditionalStateLinearDetector> {
 
         public AdditionalStateLinearDetector(double maxCheck, double threshold) {
-            this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent<AdditionalStateLinearDetector>());
+            this(s -> maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent());
         }
 
-        private AdditionalStateLinearDetector(double maxCheck, double threshold, int maxIter,
-                                              EventHandler<? super AdditionalStateLinearDetector> handler) {
+        private AdditionalStateLinearDetector(AdaptableInterval maxCheck, double threshold, int maxIter, EventHandler handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
 
-        protected AdditionalStateLinearDetector create(final double newMaxCheck, final double newThreshold,
-                                                       final int newMaxIter,
-                                                       final EventHandler<? super AdditionalStateLinearDetector> newHandler) {
+        protected AdditionalStateLinearDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                                       final int newMaxIter, final EventHandler newHandler) {
             return new AdditionalStateLinearDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
@@ -824,19 +819,14 @@ public class NumericalPropagatorTest {
                 return 1;
             }
 
-            public double[] derivatives(final SpacecraftState state) {
-                return null;
-            }
-
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[] { 1.0 }, null);
             }
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
 
-        CheckingHandler<AdditionalStateLinearDetector> checking =
-            new CheckingHandler<AdditionalStateLinearDetector>(Action.RESET_STATE) {
-            public SpacecraftState resetState(AdditionalStateLinearDetector detector, SpacecraftState oldState)
+        CheckingHandler checking = new CheckingHandler(Action.RESET_STATE) {
+            public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState)
                 {
                 return oldState.addAdditionalState("linear", oldState.getAdditionalState("linear")[0] * 2);
             }
@@ -966,9 +956,6 @@ public class NumericalPropagatorTest {
             public int getDimension() {
                 return 1;
             }
-            public double[] derivatives(final SpacecraftState state) {
-                return null;
-            }
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[] { rate }, null);
             }
@@ -1014,7 +1001,7 @@ public class NumericalPropagatorTest {
     @Test
     public void testIssue157() {
         try {
-            Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngle.MEAN,
+            Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngleType.MEAN,
                                              FramesFactory.getTOD(false),
                                              new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
                                              Constants.EIGEN5C_EARTH_MU);
@@ -1056,7 +1043,7 @@ public class NumericalPropagatorTest {
 
     }
 
-    private static class CheckingHandler<T extends EventDetector> implements EventHandler<T> {
+    private static class CheckingHandler implements EventHandler {
 
         private final Action actionOnEvent;
         private boolean gotHere;
@@ -1070,7 +1057,7 @@ public class NumericalPropagatorTest {
             Assertions.assertEquals(expected, gotHere);
         }
 
-        public Action eventOccurred(SpacecraftState s, T detector, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
             gotHere = true;
             return actionOnEvent;
         }
@@ -1094,13 +1081,13 @@ public class NumericalPropagatorTest {
         final Frame inertialFrame = FramesFactory.getEME2000();
         final TimeScale utc = TimeScalesFactory.getUTC();
         final AbsoluteDate initialDate = new AbsoluteDate(2003, 1, 1, 00, 00, 00.000, utc);
-        final Orbit initialOrbit = new CartesianOrbit( new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN,
+        final Orbit initialOrbit = new CartesianOrbit( new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngleType.MEAN,
                                                                           inertialFrame, initialDate, mu));
         final SpacecraftState initialState = new SpacecraftState(initialOrbit, 1000);
 
         // initialize the testing points
         final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
-        final NumericalPropagator propagator = createPropagator(initialState, OrbitType.CARTESIAN, PositionAngle.TRUE);
+        final NumericalPropagator propagator = createPropagator(initialState, OrbitType.CARTESIAN, PositionAngleType.TRUE);
         final double samplingStep = 10000.0;
         propagator.setStepHandler(samplingStep, state -> states.add(state));
         propagator.propagate(initialDate.shiftedBy(5 * samplingStep));
@@ -1135,222 +1122,222 @@ public class NumericalPropagatorTest {
 
     @Test
     public void testShiftKeplerianEllipticTrueWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.TRUE, false,
+        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngleType.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftKeplerianEllipticTrueWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftKeplerianEllipticEccentricWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, false,
+        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftKeplerianEllipticEcentricWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, true,
+        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftKeplerianEllipticMeanWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.MEAN, false,
+        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngleType.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftKeplerianEllipticMeanWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.MEAN, true,
+        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngleType.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftKeplerianHyperbolicTrueWithoutDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.TRUE, false,
+        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngleType.TRUE, false,
                     0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
     @Test
     public void testShiftKeplerianHyperbolicTrueWithDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     public void testShiftKeplerianHyperbolicEccentricWithoutDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, false,
+        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, false,
                     0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
     @Test
     public void testShiftKeplerianHyperbolicEcentricWithDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, true,
+        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngleType.ECCENTRIC, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     public void testShiftKeplerianHyperbolicMeanWithoutDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.MEAN, false,
+        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngleType.MEAN, false,
                     0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
     @Test
     public void testShiftKeplerianHyperbolicMeanWithDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.MEAN, true,
+        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngleType.MEAN, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     public void testShiftCartesianEllipticTrueWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.TRUE, false,
+        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngleType.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftCartesianEllipticTrueWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.TRUE, true,
+        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngleType.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftCartesianEllipticEccentricWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, false,
+        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftCartesianEllipticEcentricWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, true,
+        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftCartesianEllipticMeanWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, false,
+        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngleType.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftCartesianEllipticMeanWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, true,
+        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngleType.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftCartesianHyperbolicTrueWithoutDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.TRUE, false,
+        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngleType.TRUE, false,
                     0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
     @Test
     public void testShiftCartesianHyperbolicTrueWithDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.TRUE, true,
+        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngleType.TRUE, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     public void testShiftCartesianHyperbolicEccentricWithoutDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, false,
+        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, false,
                     0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
     @Test
     public void testShiftCartesianHyperbolicEcentricWithDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, true,
+        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngleType.ECCENTRIC, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     public void testShiftCartesianHyperbolicMeanWithoutDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, false,
+        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngleType.MEAN, false,
                     0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
     @Test
     public void testShiftCartesianHyperbolicMeanWithDerivatives() {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, true,
+        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngleType.MEAN, true,
                     1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     public void testShiftCircularTrueWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.TRUE, false,
+        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngleType.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftCircularTrueWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.TRUE, true,
+        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngleType.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftCircularEccentricWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, false,
+        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngleType.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftCircularEcentricWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, true,
+        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngleType.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftCircularMeanWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.MEAN, false,
+        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngleType.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftCircularMeanWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.MEAN, true,
+        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngleType.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftEquinoctialTrueWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftEquinoctialTrueWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.TRUE, true,
+        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftEquinoctialEccentricWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, false,
+        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngleType.ECCENTRIC, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftEquinoctialEcentricWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, true,
+        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngleType.ECCENTRIC, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftEquinoctialMeanWithoutDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.MEAN, false,
+        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngleType.MEAN, false,
                     18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftEquinoctialMeanWithDerivatives() {
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.MEAN, true,
+        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngleType.MEAN, true,
                     1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     private static void doTestShift(final CartesianOrbit orbit, final OrbitType orbitType,
-                                    final PositionAngle angleType, final boolean withDerivatives,
+                                    final PositionAngleType angleType, final boolean withDerivatives,
                                     final double error60s, final double error120s,
                                     final double error300s, final double error600s,
                                     final double error900s)
@@ -1367,21 +1354,23 @@ public class NumericalPropagatorTest {
                                                         error60s,
                                                         error120s, error300s,
                                                         error600s, error900s);
-        np.addEventDetector(new DateDetector(30.0, 1.0e-9, reference,
+        np.addEventDetector(new DateDetector(reference,
                                              reference.shiftedBy( 60.0),
                                              reference.shiftedBy(120.0),
                                              reference.shiftedBy(300.0),
                                              reference.shiftedBy(600.0),
                                              reference.shiftedBy(900.0)).
+                            withMaxCheck(30.0).
+                            withThreshold(1.0e-9).
                             withHandler(checker));
         np.propagate(reference.shiftedBy(1000.0));
     }
 
-    private static class ShiftChecker implements EventHandler<DateDetector> {
+    private static class ShiftChecker implements EventHandler {
 
         private final boolean       withDerivatives;
         private final OrbitType     orbitType;
-        private final PositionAngle angleType;
+        private final PositionAngleType angleType;
         private final double        error60s;
         private final double        error120s;
         private final double        error300s;
@@ -1390,7 +1379,7 @@ public class NumericalPropagatorTest {
         private SpacecraftState     referenceState;
 
         ShiftChecker(final boolean withDerivatives, final OrbitType orbitType,
-                     final PositionAngle angleType, final double error60s,
+                     final PositionAngleType angleType, final double error60s,
                      final double error120s, final double error300s,
                      final double error600s, final double error900s) {
             this.withDerivatives = withDerivatives;
@@ -1405,9 +1394,8 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public Action eventOccurred(final SpacecraftState s, final DateDetector detector,
-                                    final boolean increasing)
-            {
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector,
+                                    final boolean increasing) {
             if (referenceState == null) {
                 // first event, we retrieve the reference state for later use
                 if (withDerivatives) {
@@ -1425,8 +1413,8 @@ public class NumericalPropagatorTest {
                 // recurring event, we compare with the shifted reference state
                 final double dt = s.getDate().durationFrom(referenceState.getDate());
                 final SpacecraftState shifted = referenceState.shiftedBy(dt);
-                final double error = Vector3D.distance(shifted.getPVCoordinates().getPosition(),
-                                                       s.getPVCoordinates().getPosition());
+                final double error = Vector3D.distance(shifted.getPosition(),
+                                                       s.getPosition());
                 switch ((int) FastMath.rint(dt)) {
                     case 60 :
                         Assertions.assertEquals(error60s,  error, 0.01 * error60s);
@@ -1464,12 +1452,13 @@ public class NumericalPropagatorTest {
     public void testEventAndStepHandlerDeactivationIssue449() {
 
         // Setup
-        RecordAndContinue<DateDetector> recordAndContinue = new RecordAndContinue<>();
-        DateDetector dateDetector = new DateDetector(1, 1E-1,
-                                                     initDate.shiftedBy(10.),
+        RecordAndContinue recordAndContinue = new RecordAndContinue();
+        DateDetector dateDetector = new DateDetector(initDate.shiftedBy(10.),
                                                      initDate.shiftedBy(15.),
-                                                     initDate.shiftedBy(20.))
-                        .withHandler(recordAndContinue);
+                                                     initDate.shiftedBy(20.)).
+                                    withMaxCheck(1).
+                                    withThreshold(1e-1).
+                                    withHandler(recordAndContinue);
 
         propagator.addEventDetector(dateDetector);
 
@@ -1496,7 +1485,7 @@ public class NumericalPropagatorTest {
         final AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 6, 23),
                                                    new TimeComponents(14, 0, 0),
                                                    TimeScalesFactory.getUTC());
-        final Orbit orbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngle.MEAN,
+        final Orbit orbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngleType.MEAN,
                                            eme2000,
                                            date, Constants.EIGEN5C_EARTH_MU);
         final NumericalPropagator propagator =
@@ -1506,9 +1495,9 @@ public class NumericalPropagatorTest {
 
         // maneuver along Z in attitude aligned with LVLH will change orbital plane
         final AbsoluteDate maneuverDate = date.shiftedBy(1000.0);
-        propagator.addEventDetector(new ImpulseManeuver<>(new DateDetector(maneuverDate),
-                                                          new Vector3D(0.0, 0.0, -100.0),
-                                                          350.0));
+        propagator.addEventDetector(new ImpulseManeuver(new DateDetector(maneuverDate),
+                                                        new Vector3D(0.0, 0.0, -100.0),
+                                                        350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
         propagator.setStepHandler(60.0, state -> {
@@ -1530,7 +1519,7 @@ public class NumericalPropagatorTest {
         final AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 6, 23),
                                                    new TimeComponents(14, 0, 0),
                                                    TimeScalesFactory.getUTC());
-        final Orbit orbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngle.MEAN,
+        final Orbit orbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngleType.MEAN,
                                            eme2000,
                                            date, Constants.EIGEN5C_EARTH_MU);
         final NumericalPropagator propagator =
@@ -1540,9 +1529,9 @@ public class NumericalPropagatorTest {
 
         // maneuver along Z in attitude aligned with LVLH will change orbital plane
         final AbsoluteDate maneuverDate = date.shiftedBy(-1000.0);
-        propagator.addEventDetector(new ImpulseManeuver<>(new DateDetector(maneuverDate),
-                                                          new Vector3D(0.0, 0.0, -100.0),
-                                                          350.0));
+        propagator.addEventDetector(new ImpulseManeuver(new DateDetector(maneuverDate),
+                                                        new Vector3D(0.0, 0.0, -100.0),
+                                                        350.0));
 
         final Vector3D initialNormal = orbit.getPVCoordinates().getMomentum();
         propagator.setStepHandler(60.0, state -> {
@@ -1565,10 +1554,10 @@ public class NumericalPropagatorTest {
         final AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 6, 23),
                                                    new TimeComponents(14, 0, 0),
                                                    TimeScalesFactory.getUTC());
-        final Orbit initialOrbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngle.MEAN,
+        final Orbit initialOrbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngleType.MEAN,
                                            eme2000,
                                            date, Constants.EIGEN5C_EARTH_MU);
-        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(initialOrbit, new DormandPrince853IntegratorBuilder(0.02, 0.2, 1.), PositionAngle.TRUE, 10);
+        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(initialOrbit, new DormandPrince853IntegratorBuilder(0.02, 0.2, 1.), PositionAngleType.TRUE, 10);
         NumericalPropagator propagator = builder.buildPropagator(builder.getSelectedNormalizedParameters());
 
         IntStream.
@@ -1606,12 +1595,6 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        @Deprecated
-        public double[] derivatives(final SpacecraftState state) {
-            return null;
-        }
-
-        @Override
         public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
             return new CombinedDerivatives(new double[getDimension()], null);
         }
@@ -1629,6 +1612,41 @@ public class NumericalPropagatorTest {
         public double[] getInitialState() {
             return state;
         }
+    }
+
+    @Test
+    public void testInfinitePropagation() {
+
+        Utils.setDataRoot("regular-data:atmosphere:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        final NumericalPropagator propag = createPropagator(initialState, OrbitType.KEPLERIAN, PositionAngleType.TRUE);
+
+        // Stop condition
+        final double convergenceThreshold = 1e-9;
+        propag.addEventDetector(new DateDetector(initialState.getDate().shiftedBy(60)).
+                                withMaxCheck(1e10).
+                                withThreshold(convergenceThreshold));
+
+        // Propagate until the stop condition is reached
+        final SpacecraftState finalState =  propag.propagate(AbsoluteDate.FUTURE_INFINITY);
+
+        // Check that the expected final state was reached
+        Assertions.assertEquals(60, finalState.getDate().durationFrom(initialState.getDate()), convergenceThreshold);
+
+    }
+
+    @Test
+    void getIntegratorNameTest() {
+        // GIVEN
+        final String expectedName = "Name";
+        final ODEIntegrator mockedIntegrator = Mockito.mock(ODEIntegrator.class);
+        Mockito.when(mockedIntegrator.getName()).thenReturn(expectedName);
+        // WHEN
+        final NumericalPropagator numericalPropagator = new NumericalPropagator(mockedIntegrator);
+        final String actualName = numericalPropagator.getIntegratorName();
+        // THEN
+        Assertions.assertEquals(expectedName, actualName);
     }
 
     /** Record the dates treated by the handler.
@@ -1670,7 +1688,7 @@ public class NumericalPropagatorTest {
     private static double[] recomputeFollowing(final int startIndex, List<SpacecraftState> allPoints)
         {
         SpacecraftState startState = allPoints.get(startIndex);
-        NumericalPropagator innerPropagator = createPropagator(startState, OrbitType.CARTESIAN, PositionAngle.TRUE);
+        NumericalPropagator innerPropagator = createPropagator(startState, OrbitType.CARTESIAN, PositionAngleType.TRUE);
         double[] errors = new double[allPoints.size() - startIndex - 1];
         for (int endIndex = startIndex + 1; endIndex < allPoints.size(); ++endIndex) {
             final TimeStampedPVCoordinates reference  = allPoints.get(endIndex).getPVCoordinates();
@@ -1681,7 +1699,7 @@ public class NumericalPropagatorTest {
     }
 
     private synchronized static NumericalPropagator createPropagator(SpacecraftState spacecraftState,
-                                                                     OrbitType orbitType, PositionAngle angleType)
+                                                                     OrbitType orbitType, PositionAngleType angleType)
         {
 
         final double minStep                         = 0.001;
@@ -1716,13 +1734,11 @@ public class NumericalPropagatorTest {
         MarshallSolarActivityFutureEstimation msafe =
                         new MarshallSolarActivityFutureEstimation("Jan2000F10-edited-data\\.txt",
                                                                   MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
-        DataContext.getDefault().getDataProvidersManager().feed(msafe.getSupportedNames(), msafe);
         DTM2000 atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), earth);
         np.addForceModel(new DragForce(atmosphere, new IsotropicDrag(spacecraftArea, spacecraftDragCoefficient)));
 
         // solar radiation pressure
-        np.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(),
-                                                    earth.getEquatorialRadius(),
+        np.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(), earth,
                                                     new IsotropicRadiationSingleCoefficient(spacecraftArea, spacecraftReflectionCoefficient)));
 
         return np;
@@ -1817,12 +1833,12 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public Stream<EventDetector> getEventsDetectors() {
+        public Stream<EventDetector> getEventDetectors() {
             return Stream.empty();
         }
 
         @Override
-        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
             return Stream.empty();
         }
 
@@ -1830,19 +1846,6 @@ public class NumericalPropagatorTest {
         public List<ParameterDriver> getParametersDrivers() {
             return Collections.emptyList();
         }
-
-        @Override
-        public ParameterDriver getParameterDriver(String name)
-            {
-            final List<ParameterDriver> drivers =  getParametersDrivers();
-            final String[] names = new String[drivers.size()];
-            for (int i = 0; i < names.length; ++i) {
-                names[i] = drivers.get(i).getName();
-            }
-            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                      name, names);
-        }
-
     }
 
 }

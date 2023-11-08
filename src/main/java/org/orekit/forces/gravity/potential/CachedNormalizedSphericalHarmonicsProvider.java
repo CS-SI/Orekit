@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -109,13 +109,6 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
     }
 
     /** {@inheritDoc} */
-    @Deprecated
-    @Override
-    public double getOffset(final AbsoluteDate date) {
-        return rawProvider.getOffset(date);
-    }
-
-    /** {@inheritDoc} */
     @Override
     public TideSystem getTideSystem() {
         return rawProvider.getTideSystem();
@@ -153,8 +146,8 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
                 if (existingDate == null) {
 
                     // no prior existing transforms, just generate a first set
-                    for (int i = 0; i < cache.getNeighborsSize(); ++i) {
-                        final AbsoluteDate t = date.shiftedBy((i - cache.getNeighborsSize() / 2) * step);
+                    for (int i = 0; i < cache.getMaxNeighborsSize(); ++i) {
+                        final AbsoluteDate t = date.shiftedBy((i - cache.getMaxNeighborsSize() / 2) * step);
                         fillArray(rawProvider.onDate(t), cnmsnm);
                         generated.add(new TimeStampedSphericalHarmonics(t, cnmsnm));
                     }

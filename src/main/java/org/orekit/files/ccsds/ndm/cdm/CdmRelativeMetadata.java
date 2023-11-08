@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -556,71 +556,71 @@ public class CdmRelativeMetadata {
         this.screenType = screenType;
     }
 
-    /**
-     * @return the maxCollisionProbability
+    /** Get max collision probability.
+     * @return the max collision probability
      */
     public double getMaxCollisionProbability() {
         return maxCollisionProbability;
     }
 
-    /**
-     * @param maxCollisionProbability the maxCollisionProbability to set
+    /** Set max collision probability.
+     * @param maxCollisionProbability the max collision probability to set
      */
     public void setMaxCollisionProbability(final double maxCollisionProbability) {
         this.maxCollisionProbability = maxCollisionProbability;
     }
 
-    /**
-     * @return the maxCollisionProbabilityMethod
+    /** Get max collision probability method.
+     * @return the max collision probability method
      */
     public PocMethodFacade getMaxCollisionProbabilityMethod() {
         return maxCollisionProbabilityMethod;
     }
 
-    /**
-     * @param pocMethodFacade the maxCollisionProbabilityMethod to set
+    /** Set max collision probability method.
+     * @param pocMethodFacade the max collision probability method to set
      */
     public void setMaxCollisionProbabilityMethod(final PocMethodFacade pocMethodFacade) {
         this.maxCollisionProbabilityMethod = pocMethodFacade;
     }
 
-    /**
-     * @return the sefiCollisionProbability
+    /** Get the Space Environment Fragmentation Impact probability.
+     * @return the Space Environment Fragmentation Impact probability
      */
     public double getSefiCollisionProbability() {
         return sefiCollisionProbability;
     }
 
-    /**
-     * @param sefiCollisionProbability the sefiCollisionProbability to set
+    /** Set the Space Environment Fragmentation Impact probability.
+     * @param sefiCollisionProbability the Space Environment Fragmentation Impact probability to set
      */
     public void setSefiCollisionProbability(final double sefiCollisionProbability) {
         this.sefiCollisionProbability = sefiCollisionProbability;
     }
 
-    /**
-     * @return the sefiCollisionProbabilityMethod
+    /** Get the Space Environment Fragmentation Impact probability method.
+     * @return the Space Environment Fragmentation Impact probability method
      */
     public PocMethodFacade getSefiCollisionProbabilityMethod() {
         return sefiCollisionProbabilityMethod;
     }
 
-    /**
-     * @param pocMethodFacade the sefiCollisionProbabilityMethod to set
+    /** Set the Space Environment Fragmentation Impact probability method.
+     * @param pocMethodFacade the Space Environment Fragmentation Impact probability method to set
      */
     public void setSefiCollisionProbabilityMethod(final PocMethodFacade pocMethodFacade) {
         this.sefiCollisionProbabilityMethod = pocMethodFacade;
     }
 
-    /**
-     * @return the sefiFragmentationModel
+    /** Get the Space Environment Fragmentation Impact fragmentation model.
+     * @return the Space Environment Fragmentation Impact fragmentation model
      */
     public String getSefiFragmentationModel() {
         return sefiFragmentationModel;
     }
 
-    /**
-     * @param sefiFragmentationModel the sefiFragmentationModel to set
+    /** Set the Space Environment Fragmentation Impact fragmentation model.
+     * @param sefiFragmentationModel the Space Environment Fragmentation Impact fragmentation model to set
      */
     public void setSefiFragmentationModel(final String sefiFragmentationModel) {
         this.sefiFragmentationModel = sefiFragmentationModel;
@@ -642,15 +642,15 @@ public class CdmRelativeMetadata {
         this.mahalanobisDistance = mahalanobisDistance;
     }
 
-    /**
-     * @return the screenVolumeRadius
+    /** Get the screen volume radius.
+     * @return the screen volume radius
      */
     public double getScreenVolumeRadius() {
         return screenVolumeRadius;
     }
 
-    /**
-     * @param screenVolumeRadius the screenVolumeRadius to set
+    /** set the screen volume radius.
+     * @param screenVolumeRadius the screen volume radius to set
      */
     public void setScreenVolumeRadius(final double screenVolumeRadius) {
         this.screenVolumeRadius = screenVolumeRadius;
@@ -670,6 +670,13 @@ public class CdmRelativeMetadata {
         this.screenPcThreshold = screenPcThreshold;
     }
 
+    /**
+     * Check screen volume conditions.
+     * <p>
+     * The method verifies that all keys are present.
+     * Otherwise, an exception is thrown.
+     * </p>
+     */
     public void checkScreenVolumeConditions() {
 
         if (this.getScreenType() == ScreenType.SHAPE) {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Decimal64Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,7 +87,7 @@ public class NeQuickModelTest {
 
     @Test
     public void testFieldHighSolarActivity() {
-        doTestFieldHighSolarActivity(Decimal64Field.getInstance());
+        doTestFieldHighSolarActivity(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldHighSolarActivity(final Field<T> field) {
@@ -132,7 +132,7 @@ public class NeQuickModelTest {
 
     @Test
     public void testFieldMediumSolarActivity() {
-        doTestFieldMediumSolarActivity(Decimal64Field.getInstance());
+        doTestFieldMediumSolarActivity(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldMediumSolarActivity(final Field<T> field) {
@@ -176,7 +176,7 @@ public class NeQuickModelTest {
                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Satellite position
         final Vector3D satPosInITRF    = ellipsoid.transform(satP);
-        final Vector3D satPosInEME2000 = ellipsoid.getBodyFrame().getTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
+        final Vector3D satPosInEME2000 = ellipsoid.getBodyFrame().getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
 
         // Spacecraft state
         final PVCoordinates   pv      = new PVCoordinates(satPosInEME2000, new Vector3D(1.0, 1.0, 1.0));
@@ -185,14 +185,14 @@ public class NeQuickModelTest {
 
         final double delay = model.pathDelay(state, new TopocentricFrame(ellipsoid, recP, null),
                                              Frequency.G01.getMHzFrequency() * 1.0E6, model.getParameters());
-
+       
         // Verify
         Assertions.assertEquals(1.13, delay, 0.01);
     }
 
     @Test
     public void testFieldDelay() {
-        doTestFieldDelay(Decimal64Field.getInstance());
+        doTestFieldDelay(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
@@ -221,7 +221,7 @@ public class NeQuickModelTest {
                                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Satellite position
         final FieldVector3D<T> satPosInITRF    = ellipsoid.transform(satP);
-        final FieldVector3D<T> satPosInEME2000 = ellipsoid.getBodyFrame().getTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
+        final FieldVector3D<T> satPosInEME2000 = ellipsoid.getBodyFrame().getStaticTransformTo(FramesFactory.getEME2000(), date).transformPosition(satPosInITRF);
 
         // Spacecraft state
         final FieldPVCoordinates<T>   pv      = new FieldPVCoordinates<>(satPosInEME2000, new FieldVector3D<>(one, one, one));
@@ -230,9 +230,55 @@ public class NeQuickModelTest {
 
         final T delay = model.pathDelay(state, new TopocentricFrame(ellipsoid, recP, null),
                                         Frequency.G01.getMHzFrequency() * 1.0E6, model.getParameters(field));
-
+       
         // Verify
         Assertions.assertEquals(1.13, delay.getReal(), 0.01);
+    }
+
+    @Test
+    public void testAntiMeridian() {
+
+        // Model
+        final NeQuickModel model = new NeQuickModel(medium);
+
+        // Date
+        final AbsoluteDate date = new AbsoluteDate(2018,  4,  2, 16, 0, 0, TimeScalesFactory.getUTC());
+
+        // Geodetic points
+        final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(-31.80), FastMath.toRadians(-179.99), 12.78);
+        final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(-14.31), FastMath.toRadians(-177.43), 20100697.90);
+        double stec = model.stec(date, recP, satP);
+        Assertions.assertEquals(6.839, stec, 0.001);
+
+    }
+
+    @Test
+    public void testFieldAntiMeridian() {
+        doTestFieldAntiMeridian(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestFieldAntiMeridian(final Field<T> field) {
+
+        final T zero = field.getZero();
+
+        // Model
+        final NeQuickModel model = new NeQuickModel(medium);
+
+        // Date
+        final FieldAbsoluteDate<T> date =
+                        new FieldAbsoluteDate<T>(field,
+                                                 new AbsoluteDate(2018,  4,  2, 16, 0, 0, TimeScalesFactory.getUTC()));
+
+        // Geodetic points
+        final FieldGeodeticPoint<T> recP = new FieldGeodeticPoint<>(FastMath.toRadians(zero.newInstance(-31.80)),
+                                                                    FastMath.toRadians(zero.newInstance(-179.99)),
+                                                                    zero.newInstance(12.78));
+        final FieldGeodeticPoint<T> satP = new FieldGeodeticPoint<>(FastMath.toRadians(zero.newInstance(-14.31)),
+                                                                    FastMath.toRadians(zero.newInstance(-177.43)),
+                                                                    zero.newInstance(20100697.90));
+        T stec = model.stec(date, recP, satP);
+        Assertions.assertEquals(6.839, stec.getReal(), 0.001);
+
     }
 
 }

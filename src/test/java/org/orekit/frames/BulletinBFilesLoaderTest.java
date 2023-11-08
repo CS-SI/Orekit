@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,7 +51,8 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME, manager, () -> utc).fillHistory(converter, history);
         Assertions.assertEquals(new AbsoluteDate(2005, 12, 5, TimeScalesFactory.getUTC()),
-                            new EOPHistory(IERSConventions.IERS_2010, history, true).getStartDate());
+                            new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                           history, true).getStartDate());
     }
 
     @Test
@@ -63,7 +64,8 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
         new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME, manager, () -> utc).fillHistory(converter, history);
         Assertions.assertTrue(getMaxGap(history) < 5);
         Assertions.assertEquals(new AbsoluteDate(2006, 3, 5, TimeScalesFactory.getUTC()),
-                            new EOPHistory(IERSConventions.IERS_2010, history, false).getEndDate());
+                            new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                           history, false).getEndDate());
     }
 
     @Test
@@ -73,7 +75,8 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinBFilesLoader("^bulletinb\\.270$", manager, () -> utc).fillHistory(converter, data);
-        EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, data, true);
+        EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                            data, true);
         Assertions.assertEquals(new AbsoluteDate(2010, 6, 2, TimeScalesFactory.getUTC()),
                             history.getStartDate());
         Assertions.assertEquals(new AbsoluteDate(2010, 7, 1, TimeScalesFactory.getUTC()),
@@ -87,7 +90,8 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME, manager, () -> utc).fillHistory(converter, data);
-        EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, data, true);
+        EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                            data, true);
         AbsoluteDate date = new AbsoluteDate(2006, 1, 11, 12, 0, 0, TimeScalesFactory.getUTC());
         Assertions.assertEquals(msToS(  (-3 * 0.073    + 27 * -0.130   + 27 * -0.244   - 3 * -0.264)   / 48), history.getLOD(date), 1.0e-10);
         Assertions.assertEquals(        (-3 * 0.333275 + 27 * 0.333310 + 27 * 0.333506 - 3 * 0.333768) / 48,  history.getUT1MinusUTC(date), 1.0e-10);
@@ -102,7 +106,8 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinBFilesLoader("^bulletinb_IAU1980-220\\.txt$", manager, () -> utc).fillHistory(converter, data);
-        EOPHistory history = new EOPHistory(IERSConventions.IERS_1996, data, true);
+        EOPHistory history = new EOPHistory(IERSConventions.IERS_1996, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                            data, true);
         Assertions.assertEquals(new AbsoluteDate(2006,  4,  4, TimeScalesFactory.getUTC()),
                             history.getStartDate());
         Assertions.assertEquals(new AbsoluteDate(2006,  5,  4, TimeScalesFactory.getUTC()),
@@ -116,7 +121,8 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinBFilesLoader("^bulletinb_IAU1980-220-edited\\.txt$", manager, () -> utc).fillHistory(converter, data);
-        EOPHistory history = new EOPHistory(IERSConventions.IERS_1996, data, true);
+        EOPHistory history = new EOPHistory(IERSConventions.IERS_1996, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                            data, true);
         Assertions.assertEquals(new AbsoluteDate(2006,  4, 14, TimeScalesFactory.getUTC()),
                             history.getStartDate());
         Assertions.assertEquals(new AbsoluteDate(2006,  5,  4, TimeScalesFactory.getUTC()),
@@ -144,7 +150,8 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinBFilesLoader("^bulletinb\\.270$", manager, () -> utc).fillHistory(converter, data);
-        EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, data, true);
+        EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                            data, true);
         AbsoluteDate date = new AbsoluteDate(2010, 6, 12, 12, 0, 0, TimeScalesFactory.getUTC());
         Assertions.assertEquals(msToS((   -3 *   0.1202 + 27 *   0.0294 + 27 *   0.0682 - 3 *   0.1531) / 48), history.getLOD(date), 1.0e-10);
         Assertions.assertEquals(msToS((   -3 * -57.1711 + 27 * -57.2523 + 27 * -57.3103 - 3 * -57.4101) / 48), history.getUT1MinusUTC(date), 1.0e-10);
@@ -161,7 +168,8 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new BulletinBFilesLoader("^bulletinb-edited\\.270$", manager, () -> utc).fillHistory(converter, data);
-        EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, data, true);
+        EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                            data, true);
         Assertions.assertEquals(new AbsoluteDate(2010,  6, 11, TimeScalesFactory.getUTC()),
                             history.getStartDate());
     }

@@ -16,7 +16,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -49,7 +49,7 @@ public class AngularSeparationFromSatelliteDetectorTest {
         Assertions.assertEquals(proximityAngle, detector.getProximityAngle(), 1.0e-15);
         Assertions.assertSame(sun,    detector.getPrimaryObject());
         Assertions.assertSame(acatenango,  detector.getSecondaryObject());
-        Assertions.assertEquals(maxCheck, detector.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(maxCheck, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         propagator.addEventDetector(detector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(3600 * 2));
         Assertions.assertEquals(4587.6472, finalState.getDate().durationFrom(iniDate), 1.0e-3);
@@ -73,20 +73,20 @@ public class AngularSeparationFromSatelliteDetectorTest {
                         new AngularSeparationFromSatelliteDetector(sun, acatenango, proximityAngle).
                         withMaxCheck(maxCheck).
                         withThreshold(1.0e-6).
-                        withHandler(new EventHandler<AngularSeparationFromSatelliteDetector>() {
-                public Action eventOccurred(SpacecraftState s, AngularSeparationFromSatelliteDetector detector, boolean increasing) {
-                    if (increasing) {
-                        Assertions.assertEquals(5259.6649, s.getDate().durationFrom(iniDate), 1.0e-3);
-                    } else {
-                        Assertions.assertEquals(4410.2581, s.getDate().durationFrom(iniDate), 1.0e-3);
-                    }
-                    return Action.CONTINUE;
-                }
-            });
+                        withHandler(new EventHandler() {
+                            public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
+                                if (increasing) {
+                                    Assertions.assertEquals(5259.6649, s.getDate().durationFrom(iniDate), 1.0e-3);
+                                } else {
+                                    Assertions.assertEquals(4410.2581, s.getDate().durationFrom(iniDate), 1.0e-3);
+                                }
+                                return Action.CONTINUE;
+                            }
+                        });
         Assertions.assertEquals(proximityAngle, detector.getProximityAngle(), 1.0e-15);
         Assertions.assertSame(sun,    detector.getPrimaryObject());
         Assertions.assertSame(acatenango,  detector.getSecondaryObject());
-        Assertions.assertEquals(maxCheck, detector.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(maxCheck, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         propagator.addEventDetector(detector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(3600 * 2));
         Assertions.assertEquals(7200.0, finalState.getDate().durationFrom(iniDate), 1.0e-3);
@@ -108,7 +108,7 @@ public class AngularSeparationFromSatelliteDetectorTest {
             iniDate = new AbsoluteDate(2003, 5, 1, 17, 30, 0.0, TimeScalesFactory.getUTC());
             initialOrbit = new KeplerianOrbit(7e6, 1.0e-4, FastMath.toRadians(98.5),
                                               FastMath.toRadians(87.0), FastMath.toRadians(216.59976025619),
-                                              FastMath.toRadians(319.7), PositionAngle.MEAN,
+                                              FastMath.toRadians(319.7), PositionAngleType.MEAN,
                                               FramesFactory.getEME2000(), iniDate,
                                               Constants.EIGEN5C_EARTH_MU);
             propagator = new KeplerianPropagator(initialOrbit);

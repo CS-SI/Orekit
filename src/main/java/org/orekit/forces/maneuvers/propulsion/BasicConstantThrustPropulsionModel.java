@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,13 +18,15 @@
 package org.orekit.forces.maneuvers.propulsion;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.orekit.utils.Constants;
+import org.orekit.forces.maneuvers.Control3DVectorCostType;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Constant thrust propulsion model with:
@@ -67,6 +69,31 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
     /** Thrust direction in spacecraft frame. */
     private final Vector3D direction;
 
+    /** Generic constructor.
+     * @param thrust thrust (N)
+     * @param isp isp (s)
+     * @param direction direction in spacecraft frame
+     * @param control3DVectorCostType control cost type
+     * @param name name of the maneuver
+     * @since 12.0
+     */
+    public BasicConstantThrustPropulsionModel(final double thrust,
+                                              final double isp,
+                                              final Vector3D direction,
+                                              final Control3DVectorCostType control3DVectorCostType,
+                                              final String name) {
+        super(thrust, isp, direction, control3DVectorCostType, name);
+        this.direction = direction.normalize();
+
+        final double initialFlowRate = super.getInitialFlowRate();
+
+        // Build the parameter drivers, using maneuver name as prefix
+        this.thrustDriver   = new ParameterDriver(name + THRUST, thrust, THRUST_SCALE,
+                                                  0.0, Double.POSITIVE_INFINITY);
+        this.flowRateDriver = new ParameterDriver(name + FLOW_RATE, initialFlowRate, FLOW_RATE_SCALE,
+                                                  Double.NEGATIVE_INFINITY, 0.0 );
+    }
+
     /** Simple constructor.
      * @param thrust thrust (N)
      * @param isp isp (s)
@@ -77,36 +104,46 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
                                               final double isp,
                                               final Vector3D direction,
                                               final String name) {
-        super(thrust, isp, direction, name);
-        this.direction = direction.normalize();
-
-        final double initialFlowRate = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
-
-        // Build the parameter drivers, using maneuver name as prefix
-        this.thrustDriver   = new ParameterDriver(name + THRUST, thrust, THRUST_SCALE,
-                                                  0.0, Double.POSITIVE_INFINITY);
-        this.flowRateDriver = new ParameterDriver(name + FLOW_RATE, initialFlowRate, FLOW_RATE_SCALE,
-                                                  Double.NEGATIVE_INFINITY, 0.0 );
+        this(thrust, isp, direction, DEFAULT_CONTROL_3D_VECTOR_COST_TYPE, name);
     }
 
     /** {@inheritDoc} */
     @Override
     public Vector3D getThrustVector() {
         // Thrust vector does not depend on spacecraft state for a constant maneuver.
+        // thrustDriver as only 1 value estimated over the whole time period
+        // by construction thrustDriver has only 1 value estimated over the all period
+        // that is why no argument is acceptable
         return direction.scalarMultiply(thrustDriver.getValue());
     }
 
     /** {@inheritDoc} */
     @Override
+    public Vector3D getThrustVector(final AbsoluteDate date) {
+        // Thrust vector does not depend on spacecraft state for a constant maneuver.
+        return direction.scalarMultiply(thrustDriver.getValue(date));
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double getFlowRate() {
-        // Flow rate does not depend on spacecraft state for a constant maneuver.
+        // Thrust vector does not depend on spacecraft state for a constant maneuver.
+        // thrustDriver has only 1 value estimated over the whole time period
+        // by construction thrustDriver has only 1 value estimated over the all period
+        // that is why no argument is acceptable
         return flowRateDriver.getValue();
     }
 
     /** {@inheritDoc} */
     @Override
+    public double getFlowRate(final AbsoluteDate date) {
+        return flowRateDriver.getValue(date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public List<ParameterDriver> getParametersDrivers() {
-        return Arrays.asList(thrustDriver, flowRateDriver);
+        return Collections.unmodifiableList(Arrays.asList(thrustDriver, flowRateDriver));
     }
 
     /** {@inheritDoc} */
@@ -125,7 +162,7 @@ public class BasicConstantThrustPropulsionModel extends AbstractConstantThrustPr
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final T[] parameters) {
-        return new FieldVector3D<T>(parameters[0], direction);
+        return new FieldVector3D<>(parameters[0], direction);
     }
 
     /** {@inheritDoc} */

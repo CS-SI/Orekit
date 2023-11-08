@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.io.Serializable;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
@@ -68,7 +69,7 @@ public interface Atmosphere extends Serializable {
      */
     default Vector3D getVelocity(AbsoluteDate date, Vector3D position, Frame frame) {
         final Transform     bodyToFrame = getFrame().getTransformTo(frame, date);
-        final Vector3D      posInBody   = bodyToFrame.getInverse().transformPosition(position);
+        final Vector3D      posInBody   = bodyToFrame.toStaticTransform().getInverse().transformPosition(position);
         final PVCoordinates pvBody      = new PVCoordinates(posInBody, Vector3D.ZERO);
         final PVCoordinates pvFrame     = bodyToFrame.transformPVCoordinates(pvBody);
         return pvFrame.getVelocity();
@@ -82,9 +83,10 @@ public interface Atmosphere extends Serializable {
      * @return velocity (m/s) (defined in the same frame as the position)
      */
     default <T extends CalculusFieldElement<T>> FieldVector3D<T> getVelocity(FieldAbsoluteDate<T> date, FieldVector3D<T> position, Frame frame) {
-        final Transform             bodyToFrame = getFrame().getTransformTo(frame, date.toAbsoluteDate());
-        final FieldVector3D<T>      posInBody   = bodyToFrame.getInverse().transformPosition(position);
-        final FieldPVCoordinates<T> pvBody      = new FieldPVCoordinates<>(posInBody, FieldVector3D.getZero(position.getX().getField()));
+        final FieldTransform<T>     bodyToFrame = getFrame().getTransformTo(frame, date);
+        final FieldVector3D<T>      posInBody   = bodyToFrame.toStaticTransform().getInverse().transformPosition(position);
+        final FieldPVCoordinates<T> pvBody      = new FieldPVCoordinates<>(posInBody,
+                FieldVector3D.getZero(date.getField()));
         final FieldPVCoordinates<T> pvFrame     = bodyToFrame.transformPVCoordinates(pvBody);
         return pvFrame.getVelocity();
     }

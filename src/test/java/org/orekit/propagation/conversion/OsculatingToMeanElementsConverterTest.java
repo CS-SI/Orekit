@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,7 @@ import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -42,7 +42,7 @@ public class OsculatingToMeanElementsConverterTest {
         final AbsoluteDate date = new AbsoluteDate("2011-12-12T11:57:20.000", TimeScalesFactory.getUTC());
         final Orbit orbit1 = new CircularOrbit(7204535.848109436, -4.484755873986251E-4, 0.0011562979012178316,
                                                FastMath.toRadians(98.74341600466741), FastMath.toRadians(43.32990110790338),
-                                               FastMath.toRadians(180.0), PositionAngle.MEAN, FramesFactory.getGCRF(),
+                                               FastMath.toRadians(180.0), PositionAngleType.MEAN, FramesFactory.getGCRF(),
                                                date, Constants.WGS84_EARTH_MU);
         final SpacecraftState initialState = new SpacecraftState(orbit1);
         // Set up the numerical propagator

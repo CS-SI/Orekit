@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,7 +64,7 @@ public class AdditionalParameters extends CommonPhysicalProperties {
     private double apoapsisAltitude;
 
     /** The distance of the closest point in the objects orbit above the equatorial radius of the central body . */
-    private double periapsissAltitude;
+    private double periapsisAltitude;
 
     /** The angle between the objects orbit plane and the orbit centers equatorial plane. */
     private double inclination;
@@ -93,9 +93,9 @@ public class AdditionalParameters extends CommonPhysicalProperties {
         thrustAcceleration  = Double.NaN;
         sedr                = Double.NaN;
         hbr                 = Double.NaN;
-        apoapsisAltitude      = Double.NaN;
-        periapsissAltitude    = Double.NaN;
-        inclination         = Double.NaN;
+        apoapsisAltitude  = Double.NaN;
+        periapsisAltitude = Double.NaN;
+        inclination       = Double.NaN;
         covConfidence       = Double.NaN;
     }
 
@@ -304,16 +304,16 @@ public class AdditionalParameters extends CommonPhysicalProperties {
     /** Get the distance of the closest point in the objects orbit above the equatorial radius of the central body.
      * @return the periapsissAltitude
      */
-    public double getPeriapsissAltitude() {
-        return periapsissAltitude;
+    public double getPeriapsisAltitude() {
+        return periapsisAltitude;
     }
 
     /** Set the distance of the closest point in the objects orbit above the equatorial radius of the central body.
-     * @param periapsissAltitude the periapsissHeight to set
+     * @param periapsisAltitude the periapsissHeight to set
      */
-    public void setPeriapsissAltitude(final double periapsissAltitude) {
+    public void setPeriapsisAltitude(final double periapsisAltitude) {
         refuseFurtherComments();
-        this.periapsissAltitude = periapsissAltitude;
+        this.periapsisAltitude = periapsisAltitude;
     }
 
     /** Get the angle between the objects orbit plane and the orbit centers equatorial plane.

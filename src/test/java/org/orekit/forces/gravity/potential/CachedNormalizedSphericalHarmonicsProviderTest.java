@@ -40,7 +40,6 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
         cache = new CachedNormalizedSphericalHarmonicsProvider(raw, step, interpolationPoints, maxSlots, slotSpan, newSlotInterval);
     }
 
-    @Deprecated
     @Test
     public void testGetReferenceDate() {
         AbsoluteDate actualDate = cache.getReferenceDate();
@@ -63,17 +62,6 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
     public void testGetTideSystem() {
         TideSystem actualSystem = cache.getTideSystem();
         Assertions.assertEquals(actualSystem, TideSystem.UNKNOWN);
-    }
-
-    @Deprecated
-    @Test
-    public void testGetOffset() {
-        final double epsilon = 1e-12;
-        AbsoluteDate offsetDate = AbsoluteDate.GALILEO_EPOCH;
-        double targetOffset = offsetDate.durationFrom(date);
-        double actualOffset = cache.getOffset(offsetDate);
-
-        Assertions.assertEquals(targetOffset, actualOffset, epsilon);
     }
 
     @Test
@@ -175,12 +163,7 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
             return date;
         }
 
-        @Override
-        public double getOffset(AbsoluteDate date) {
-            return date.durationFrom(this.date);
-        }
-
-        @Override
+       @Override
         public TideSystem getTideSystem() {
             return TideSystem.UNKNOWN;
         }

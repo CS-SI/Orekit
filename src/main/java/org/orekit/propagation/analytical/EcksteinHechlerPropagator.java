@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -35,7 +35,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
@@ -117,8 +117,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-                DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()));
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()));
     }
 
     /**
@@ -177,8 +177,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-                DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, c60);
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from orbit, mass and potential provider.
@@ -194,8 +194,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
                                      final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-                mass, provider, provider.onDate(initialOrbit.getDate()));
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             mass, provider, provider.onDate(initialOrbit.getDate()));
     }
 
     /** Build a propagator from orbit, mass and potential.
@@ -228,8 +228,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                      final double referenceRadius, final double mu,
                                      final double c20, final double c30, final double c40,
                                      final double c50, final double c60) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
-                mass, referenceRadius, mu, c20, c30, c40, c50, c60);
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
+             mass, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
     /** Build a propagator from orbit, attitude provider and potential provider.
@@ -344,7 +344,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final UnnormalizedSphericalHarmonicsProvider provider,
                                      final PropagationType initialType) {
-        this(initialOrbit, InertialProvider.of(initialOrbit.getFrame()),
+        this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()), initialType);
     }
 
@@ -581,7 +581,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                                  final double epsilon, final int maxIterations) {
         final EcksteinHechlerPropagator propagator =
                         new EcksteinHechlerPropagator(osculating,
-                                                      InertialProvider.of(osculating.getFrame()),
+                                                      FrameAlignedProvider.of(osculating.getFrame()),
                                                       DEFAULT_MASS,
                                                       referenceRadius, mu, c20, c30, c40, c50, c60,
                                                       PropagationType.OSCULATING, epsilon, maxIterations);
@@ -696,7 +696,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                                     current.mean.getI()          + deltaI,
                                                     current.mean.getRightAscensionOfAscendingNode() + deltaRAAN,
                                                     current.mean.getAlphaM()     + deltaAlphaM,
-                                                    PositionAngle.MEAN,
+                                                    PositionAngleType.MEAN,
                                                     current.mean.getFrame(),
                                                     current.mean.getDate(), mu),
                                   mass, referenceRadius, mu, ck0);

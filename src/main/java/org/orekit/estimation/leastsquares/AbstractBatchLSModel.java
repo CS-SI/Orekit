@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,14 +40,15 @@ import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.conversion.OrbitDeterminationPropagatorBuilder;
-import org.orekit.propagation.integration.AbstractJacobiansMapper;
+import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
+import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.TimeSpanMap;
 
 /** Bridge between {@link ObservedMeasurement measurements} and {@link
  * org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem
@@ -55,14 +56,16 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Luc Maisonobe
  * @author Bryan Cazabonne
  * @author Thomas Paulet
+ * @author Melina Vanel
  * @since 11.0
  */
 public abstract class AbstractBatchLSModel implements MultivariateJacobianFunction {
 
     /** Builders for propagators. */
-    private final OrbitDeterminationPropagatorBuilder[] builders;
+    private final PropagatorBuilder[] builders;
 
-    /** Array of each builder's selected orbit drivers.
+    /** Array of each builder's selected orbit drivers. Orbit drivers
+     * should have only 1 span on their value TimeSpanMap.
      * @since 11.1
      */
     private final ParameterDriversList[] estimatedOrbitalParameters;
@@ -130,28 +133,9 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
      * @param propagatorBuilders builders to use for propagation
      * @param measurements measurements
      * @param estimatedMeasurementsParameters estimated measurements parameters
-     * @param harvesters harvesters for matrices (ignored since 11.1)
-     * @param observer observer to be notified at model calls
-     * @deprecated as of 11.1, replaced by [@link #AbstractBatchLSModel(OrbitDeterminationPropagatorBuilder[],
-     * List, ParameterDriversList, ModelObserver)}
-     */
-    @Deprecated
-    public AbstractBatchLSModel(final OrbitDeterminationPropagatorBuilder[] propagatorBuilders,
-                                final List<ObservedMeasurement<?>> measurements,
-                                final ParameterDriversList estimatedMeasurementsParameters,
-                                final MatricesHarvester[] harvesters,
-                                final ModelObserver observer) {
-        this(propagatorBuilders, measurements, estimatedMeasurementsParameters, observer);
-    }
-
-    /**
-     * Constructor.
-     * @param propagatorBuilders builders to use for propagation
-     * @param measurements measurements
-     * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param observer observer to be notified at model calls
      */
-    public AbstractBatchLSModel(final OrbitDeterminationPropagatorBuilder[] propagatorBuilders,
+    public AbstractBatchLSModel(final PropagatorBuilder[] propagatorBuilders,
                                 final List<ObservedMeasurement<?>> measurements,
                                 final ParameterDriversList estimatedMeasurementsParameters,
                                 final ModelObserver observer) {
@@ -159,7 +143,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         this.builders                        = propagatorBuilders.clone();
         this.measurements                    = measurements;
         this.estimatedMeasurementsParameters = estimatedMeasurementsParameters;
-        this.measurementParameterColumns     = new HashMap<>(estimatedMeasurementsParameters.getDrivers().size());
+        this.measurementParameterColumns     = new HashMap<>(estimatedMeasurementsParameters.getNbValuesToEstimate());
         this.estimatedOrbitalParameters      = new ParameterDriversList[builders.length];
         this.estimatedPropagationParameters  = new ParameterDriversList[builders.length];
         this.evaluations                     = new IdentityHashMap<>(measurements.size());
@@ -196,10 +180,20 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             // The index i in array estimatedPropagationParameters (attribute of the class) is populated
             // when the first call to getSelectedPropagationDriversForBuilder(i) is made
             for (final DelegatingDriver delegating : getSelectedPropagationDriversForBuilder(i).getDrivers()) {
-                final String driverName = delegating.getName();
-                // Add the driver name if it has not been added yet
-                if (!estimatedPropagationParametersNames.contains(driverName)) {
-                    estimatedPropagationParametersNames.add(driverName);
+
+                final TimeSpanMap<String> delegatingNameSpanMap = delegating.getNamesSpanMap();
+                // for each span (for each estimated value) corresponding name is added
+                Span<String> currentNameSpan = delegatingNameSpanMap.getFirstSpan();
+                // Add the driver name if it has not been added yet and the number of estimated values for this param
+                if (!estimatedPropagationParametersNames.contains(currentNameSpan.getData())) {
+                    estimatedPropagationParametersNames.add(currentNameSpan.getData());
+                }
+                for (int spanNumber = 1; spanNumber < delegatingNameSpanMap.getSpansNumber(); ++spanNumber) {
+                    currentNameSpan = delegatingNameSpanMap.getSpan(currentNameSpan.getEnd());
+                    // Add the driver name if it has not been added yet and the number of estimated values for this param
+                    if (!estimatedPropagationParametersNames.contains(currentNameSpan.getData())) {
+                        estimatedPropagationParametersNames.add(currentNameSpan.getData());
+                    }
                 }
             }
         }
@@ -210,11 +204,12 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             propagationParameterColumns.put(driverName, columns);
             ++columns;
         }
-
         // Populate the map of measurement drivers' columns and update the total number of columns
         for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
-            measurementParameterColumns.put(parameter.getName(), columns);
-            ++columns;
+            for (Span<String> span = parameter.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                measurementParameterColumns.put(span.getData(), columns);
+                columns++;
+            }
         }
 
         // Initialize point and value
@@ -266,19 +261,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
      * @param propagator {@link Propagator} to configure
      * @return harvester harvester to retrive the State Transition Matrix and Jacobian Matrix
      */
-    protected MatricesHarvester configureHarvester(final Propagator propagator) {
-        // FIXME: this default implementation is only intended for version 11.1 to delegate to a deprecated method
-        // it should be removed in 12.0 when configureDerivatives is removed
-        return configureDerivatives(propagator);
-    }
-
-    /** Configure the propagator to compute derivatives.
-     * @param propagators {@link Propagator} to configure
-     * @return mapper for this propagator
-     * @deprecated as of 11.1, replaced by {@link #configureHarvester(Propagator)}
-     */
-    @Deprecated
-    protected abstract AbstractJacobiansMapper configureDerivatives(Propagator propagators);
+    protected abstract MatricesHarvester configureHarvester(Propagator propagator);
 
     /** Configure the current estimated orbits.
      * <p>
@@ -391,28 +374,42 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
 
         final Propagator[] propagators = new Propagator[builders.length];
 
+
         // Set up the propagators
         for (int i = 0; i < builders.length; ++i) {
 
-            // Get the number of selected orbital drivers in the builder
+            int element = 0;
+            // Get the number of values to estimate for selected orbital drivers in the builder
             final int nbOrb    = orbitsEndColumns[i] - orbitsStartColumns[i];
 
             // Get the list of selected propagation drivers in the builder and its size
             final ParameterDriversList selectedPropagationDrivers = getSelectedPropagationDriversForBuilder(i);
             final int nbParams = selectedPropagationDrivers.getNbParams();
+            final int nbValuesToEstimate = selectedPropagationDrivers.getNbValuesToEstimate();
 
             // Init the array of normalized parameters for the builder
-            final double[] propagatorArray = new double[nbOrb + nbParams];
+            final double[] propagatorArray = new double[nbOrb + nbValuesToEstimate];
 
             // Add the orbital drivers normalized values
             for (int j = 0; j < nbOrb; ++j) {
-                propagatorArray[j] = point.getEntry(orbitsStartColumns[i] + j);
+                propagatorArray[element++] = point.getEntry(orbitsStartColumns[i] + j);
             }
 
             // Add the propagation drivers normalized values
             for (int j = 0; j < nbParams; ++j) {
-                propagatorArray[nbOrb + j] =
-                                point.getEntry(propagationParameterColumns.get(selectedPropagationDrivers.getDrivers().get(j).getName()));
+                final DelegatingDriver driver = selectedPropagationDrivers.getDrivers().get(j);
+                final TimeSpanMap<String> delegatingNameSpanMap = driver.getNamesSpanMap();
+                // get point entry for each span (for each estimated value), point is sorted
+                // with following parameters values and for each parameter driver
+                // span value are sorted in chronological order
+                Span<String> currentNameSpan = delegatingNameSpanMap.getFirstSpan();
+                propagatorArray[element++] = point.getEntry(propagationParameterColumns.get(currentNameSpan.getData()));
+
+                for (int spanNumber = 1; spanNumber < delegatingNameSpanMap.getSpansNumber(); ++spanNumber) {
+                    currentNameSpan = delegatingNameSpanMap.getSpan(currentNameSpan.getEnd());
+                    propagatorArray[element++] = point.getEntry(propagationParameterColumns.get(currentNameSpan.getData()));
+
+                }
             }
 
             // Build the propagator
@@ -454,7 +451,7 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             // partial derivatives of the current Cartesian coordinates with respect to current orbital state
             final double[][] aCY = new double[6][6];
             final Orbit currentOrbit = evaluationStates[k].getOrbit();
-            currentOrbit.getJacobianWrtParameters(builders[p].getPositionAngle(), aCY);
+            currentOrbit.getJacobianWrtParameters(builders[p].getPositionAngleType(), aCY);
             final RealMatrix dCdY = new Array2DRowRealMatrix(aCY, false);
 
             // Jacobian of the measurement with respect to current orbital state
@@ -484,11 +481,19 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
             if (nbParams > 0) {
                 final RealMatrix dYdPp = harvesters[p].getParametersJacobian(evaluationStates[k]);
                 final RealMatrix dMdPp = dMdY.multiply(dYdPp);
+
                 for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
+                    int col = 0;
+
+                    // Add the propagation drivers normalized values
                     for (int j = 0; j < nbParams; ++j) {
                         final ParameterDriver delegating = selectedPropagationDrivers.getDrivers().get(j);
-                        jacobian.addToEntry(index + i, propagationParameterColumns.get(delegating.getName()),
-                                            weight[i] * dMdPp.getEntry(i, j) / sigma[i] * delegating.getScale());
+                        final TimeSpanMap<String> delegatingNameSpanMap = delegating.getNamesSpanMap();
+                        // get point entry for each span (for each estimated value), point is sorted
+                        for (Span<String> currentNameSpan = delegatingNameSpanMap.getFirstSpan(); currentNameSpan != null; currentNameSpan = currentNameSpan.next()) {
+                            jacobian.addToEntry(index + i, propagationParameterColumns.get(currentNameSpan.getData()),
+                                    weight[i] * dMdPp.getEntry(i, col++) / sigma[i] * delegating.getScale());
+                        }
                     }
                 }
             }
@@ -496,10 +501,12 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         // Jacobian of the measurement with respect to measurements parameters
         for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
             if (driver.isSelected()) {
-                final double[] aMPm = evaluation.getParameterDerivatives(driver);
-                for (int i = 0; i < aMPm.length; ++i) {
-                    jacobian.setEntry(index + i, measurementParameterColumns.get(driver.getName()),
-                                      weight[i] * aMPm[i] / sigma[i] * driver.getScale());
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    final double[] aMPm = evaluation.getParameterDerivatives(driver, span.getStart());
+                    for (int i = 0; i < aMPm.length; ++i) {
+                        jacobian.setEntry(index + i, measurementParameterColumns.get(span.getData()),
+                                          weight[i] * aMPm[i] / sigma[i] * driver.getScale());
+                    }
                 }
             }
         }
@@ -515,7 +522,10 @@ public abstract class AbstractBatchLSModel implements MultivariateJacobianFuncti
         // Set up the measurement parameters
         int index = orbitsEndColumns[builders.length - 1] + propagationParameterColumns.size();
         for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
-            parameter.setNormalizedValue(point.getEntry(index++));
+
+            for (Span<Double> span = parameter.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                parameter.setNormalizedValue(point.getEntry(index++), span.getStart());
+            }
         }
 
         // Set up measurements handler

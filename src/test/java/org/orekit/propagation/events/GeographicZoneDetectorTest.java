@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,9 +52,9 @@ public class GeographicZoneDetectorTest {
 
         GeographicZoneDetector d =
                 new GeographicZoneDetector(20.0, 1.e-3, earth, buildFrance(), FastMath.toRadians(0.5)).
-                withHandler(new ContinueOnEvent<GeographicZoneDetector>());
+                withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(20.0, d.getMaxCheckInterval(), 1.0e-15);
+        Assertions.assertEquals(20.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         Assertions.assertEquals(1.0e-3, d.getThreshold(), 1.0e-15);
         Assertions.assertEquals(0.5, FastMath.toDegrees(d.getMargin()), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());

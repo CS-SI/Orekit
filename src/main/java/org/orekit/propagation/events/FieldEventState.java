@@ -32,6 +32,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -51,11 +52,15 @@ import org.orekit.time.FieldAbsoluteDate;
  * occurs at a bound rather than inside the step).</p>
  * @author Luc Maisonobe
  * @param <D> class type for the generic version
+ * @param <T> type of the field elements
  */
 public class FieldEventState<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> {
 
     /** Event detector. */
     private D detector;
+
+    /** Event handler. */
+    private FieldEventHandler<T> handler;
 
     /** Time of the previous call to g. */
     private FieldAbsoluteDate<T> lastT;
@@ -107,9 +112,10 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
     public FieldEventState(final D detector) {
 
         this.detector = detector;
+        this.handler  = detector.getHandler();
 
         // some dummy values ...
-        final Field<T> field   = detector.getMaxCheckInterval().getField();
+        final Field<T> field   = detector.getThreshold().getField();
         final T nan            = field.getZero().add(Double.NaN);
         lastT                  = FieldAbsoluteDate.getPastInfinity(field);
         lastG                  = nan;
@@ -146,7 +152,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
     public void init(final FieldSpacecraftState<T> s0,
                      final FieldAbsoluteDate<T> t) {
         detector.init(s0, t);
-        final Field<T> field = detector.getMaxCheckInterval().getField();
+        final Field<T> field = detector.getThreshold().getField();
         lastT = FieldAbsoluteDate.getPastInfinity(field);
         lastG = field.getZero().add(Double.NaN);
     }
@@ -201,28 +207,29 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
     public boolean evaluateStep(final FieldOrekitStepInterpolator<T> interpolator)
         throws MathRuntimeException {
         forward = interpolator.isForward();
+        final FieldSpacecraftState<T> s0 = interpolator.getPreviousState();
         final FieldSpacecraftState<T> s1 = interpolator.getCurrentState();
         final FieldAbsoluteDate<T> t1 = s1.getDate();
         final T dt = t1.durationFrom(t0);
         if (FastMath.abs(dt.getReal()) < detector.getThreshold().getReal()) {
             // we cannot do anything on such a small step, don't trigger any events
+            pendingEvent     = false;
+            pendingEventTime = null;
             return false;
         }
-        // number of points to check in the current step
-        final int n = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt.getReal()) / detector.getMaxCheckInterval().getReal()));
-        final T h = dt.divide(n);
-
 
         FieldAbsoluteDate<T> ta = t0;
         T ga = g0;
-        for (int i = 0; i < n; ++i) {
+        for (FieldSpacecraftState<T> sb = nextCheck(s0, s1, interpolator);
+             sb != null;
+             sb = nextCheck(sb, s1, interpolator)) {
 
             // evaluate handler value at the end of the substep
-            final FieldAbsoluteDate<T> tb = (i == n - 1) ? t1 : t0.shiftedBy(h.multiply(i + 1));
-            final T gb = g(interpolator.getInterpolatedState(tb));
+            final FieldAbsoluteDate<T> tb = sb.getDate();
+            final T gb = g(sb);
 
             // check events occurrence
-            if (gb.getReal() == 0.0 || (g0Positive ^ (gb.getReal() > 0))) {
+            if (gb.getReal() == 0.0 || (g0Positive ^ gb.getReal() > 0)) {
                 // there is a sign change: an event is expected during this step
                 if (findRoot(interpolator, ta, ga, tb, gb)) {
                     return true;
@@ -239,6 +246,29 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
         pendingEventTime = null;
         return false;
 
+    }
+
+    /** Estimate next state to check.
+     * @param done state already checked
+     * @param target target state towards which we are checking
+     * @param interpolator step interpolator for the proposed step
+     * @return intermediate state to check, or exactly {@code null}
+     * if we already have {@code done == target}
+     * @since 12.0
+     */
+    private FieldSpacecraftState<T> nextCheck(final FieldSpacecraftState<T> done, final FieldSpacecraftState<T> target,
+                                              final FieldOrekitStepInterpolator<T> interpolator) {
+        if (done == target) {
+            // we have already reached target
+            return null;
+        } else {
+            // we have to select some intermediate state
+            // attempting to split the remaining time in an integer number of checks
+            final T dt            = target.getDate().durationFrom(done.getDate());
+            final double maxCheck = detector.getMaxCheckInterval().currentInterval(done);
+            final int    n        = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt).divide(maxCheck).getReal()));
+            return n == 1 ? target : interpolator.getInterpolatedState(done.getDate().shiftedBy(dt.divide(n)));
+        }
     }
 
     /**
@@ -491,8 +521,8 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
 
     /**
      * Notify the user's listener of the event. The event occurs wholly within this method
-     * call including a call to {@link FieldEventDetector#resetState(FieldSpacecraftState)}
-     * if necessary.
+     * call including a call to {@link FieldEventHandler#resetState(FieldEventDetector,
+     * FieldSpacecraftState)} if necessary.
      *
      * @param state the state at the time of the event. This must be at the same time as
      *              the current value of {@link #getEventDate()}.
@@ -508,10 +538,10 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
         check(pendingEvent);
         check(state.getDate().equals(this.pendingEventTime));
 
-        final Action action = detector.eventOccurred(state, increasing == forward);
+        final Action action = handler.eventOccurred(state, detector, increasing == forward);
         final FieldSpacecraftState<T> newState;
         if (action == Action.RESET_STATE) {
-            newState = detector.resetState(state);
+            newState = handler.resetState(detector, state);
         } else {
             newState = state;
         }
@@ -563,7 +593,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
      * @return min(a, b) if forward, else max (a, b)
      */
     private FieldAbsoluteDate<T> minTime(final FieldAbsoluteDate<T> a, final FieldAbsoluteDate<T> b) {
-        return (forward ^ (a.compareTo(b) > 0)) ? a : b;
+        return (forward ^ a.compareTo(b) > 0) ? a : b;
     }
 
     /**
@@ -597,6 +627,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
     /**
      * Class to hold the data related to an event occurrence that is needed to decide how
      * to modify integration.
+     * @param <T> type of the field elements
      */
     public static class EventOccurrence<T extends CalculusFieldElement<T>> {
 

@@ -16,7 +16,6 @@
  */
 package org.orekit.data;
 
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.LazyLoadedCelestialBodies;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -34,7 +33,6 @@ import org.orekit.time.LazyLoadedTimeScales;
  *
  * <ul>
  *     <li>{@link AbsoluteDate}
- *     <li>{@link InertialProvider}
  * </ul>
  *
  * @author Evan Ward
@@ -42,6 +40,17 @@ import org.orekit.time.LazyLoadedTimeScales;
  * @since 10.1
  */
 public class ExceptionalDataContext extends LazyLoadedDataContext implements DataContext {
+
+    /** Empty constructor.
+     * <p>
+     * This constructor is not strictly necessary, but it prevents spurious
+     * javadoc warnings with JDK 18 and later.
+     * </p>
+     * @since 12.0
+     */
+    public ExceptionalDataContext() {
+        // nothing to do
+    }
 
     @Override
     public LazyLoadedTimeScales getTimeScales() {

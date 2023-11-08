@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import org.orekit.files.ccsds.definitions.ElementsType;
 import org.orekit.files.ccsds.ndm.odm.oem.InterpolationMethod;
 import org.orekit.files.ccsds.utils.ContextBinding;
 import org.orekit.files.ccsds.utils.lexical.ParseToken;
@@ -34,19 +33,19 @@ public enum TrajectoryStateHistoryMetadataKey {
             token.getType() == TokenType.ENTRY ? container.addComment(token.getContentAsNormalizedString()) : true),
 
     /** Trajectory identification number. */
-    TRAJ_ID((token, context, container) -> token.processAsNormalizedString(container::setTrajID)),
+    TRAJ_ID((token, context, container) -> token.processAsFreeTextString(container::setTrajID)),
 
     /** Identification number of previous trajectory. */
-    TRAJ_PREV_ID((token, context, container) -> token.processAsNormalizedString(container::setTrajPrevID)),
+    TRAJ_PREV_ID((token, context, container) -> token.processAsFreeTextString(container::setTrajPrevID)),
 
     /** Identification number of next trajectory. */
-    TRAJ_NEXT_ID((token, context, container) -> token.processAsNormalizedString(container::setTrajNextID)),
+    TRAJ_NEXT_ID((token, context, container) -> token.processAsFreeTextString(container::setTrajNextID)),
 
     /** Basis of this trajectory state time history data. */
-    TRAJ_BASIS((token, context, container) -> token.processAsNormalizedString(container::setTrajBasis)),
+    TRAJ_BASIS((token, context, container) -> token.processAsFreeTextString(container::setTrajBasis)),
 
     /** Identification number of the orbit determination or simulation upon which this trajectory is based.*/
-    TRAJ_BASIS_ID((token, context, container) -> token.processAsNormalizedString(container::setTrajBasisID)),
+    TRAJ_BASIS_ID((token, context, container) -> token.processAsFreeTextString(container::setTrajBasisID)),
 
     /** Interpolation method to be used. */
     INTERPOLATION((token, context, container) -> token.processAsEnum(InterpolationMethod.class, container::setInterpolationMethod)),
@@ -57,7 +56,7 @@ public enum TrajectoryStateHistoryMetadataKey {
     /** Orbit propagator used to generate this trajectory.
      * @since 11.2
      */
-    PROPAGATOR((token, context, container) -> token.processAsNormalizedString(container::setPropagator)),
+    PROPAGATOR((token, context, container) -> token.processAsFreeTextString(container::setPropagator)),
 
     /** Origin of the reference frame of the trajectory. */
     CENTER_NAME((token, context, container) -> token.processAsCenter(container::setCenter,
@@ -82,12 +81,12 @@ public enum TrajectoryStateHistoryMetadataKey {
     ORB_REVNUM_BASIS((token, context, container) -> token.processAsInteger(container::setOrbRevNumBasis)),
 
     /** Type of averaging (Osculating, mean Brouwer, other...). */
-    ORB_AVERAGING((token, context, container) -> token.processAsUppercaseString(container::setOrbAveraging)),
+    ORB_AVERAGING((token, context, container) -> token.processAsFreeTextString(container::setOrbAveraging)),
 
     /** Trajectory element set type.
-     * @see ElementsType
+     * @see OrbitElementsType
      */
-    TRAJ_TYPE((token, context, container) -> token.processAsEnum(ElementsType.class, container::setTrajType)),
+    TRAJ_TYPE((token, context, container) -> token.processAsEnum(OrbitElementsType.class, container::setTrajType)),
 
     /** SI units for each elements of the trajectory state. */
     TRAJ_UNITS((token, context, container) -> token.processAsUnitList(container::setTrajUnits));

@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,13 @@
  */
 package org.orekit.forces.drag;
 
+import java.util.List;
+
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
@@ -58,7 +59,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
@@ -73,19 +74,20 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeSpanMap.Span;
 
 public class DragForceTest extends AbstractLegacyForceModelTest {
 
     @Override
     protected FieldVector3D<DerivativeStructure> accelerationDerivatives(final ForceModel forceModel,
-                                                                         final AbsoluteDate date, final  Frame frame,
-                                                                         final FieldVector3D<DerivativeStructure> position,
-                                                                         final FieldVector3D<DerivativeStructure> velocity,
-                                                                         final FieldRotation<DerivativeStructure> rotation,
-                                                                         final DerivativeStructure mass) {
+                                                                         final FieldSpacecraftState<DerivativeStructure> state) {
         try {
 
+            final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
+            final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
+            final FieldVector3D<DerivativeStructure> velocity = state.getPVCoordinates().getVelocity();
             java.lang.reflect.Field atmosphereField = DragForce.class.getDeclaredField("atmosphere");
             atmosphereField.setAccessible(true);
             Atmosphere atmosphere = (Atmosphere) atmosphereField.get(forceModel);
@@ -94,11 +96,11 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
             DragSensitive spacecraft = (DragSensitive) spacecraftField.get(forceModel);
 
             // retrieve derivation properties
-            final DSFactory factory = mass.getFactory();
+            final DSFactory factory = state.getMass().getFactory();
 
             // get atmosphere properties in atmosphere own frame
             final Frame      atmFrame  = atmosphere.getFrame();
-            final Transform  toBody    = frame.getTransformTo(atmFrame, date);
+            final Transform  toBody    = state.getFrame().getTransformTo(atmFrame, date);
             final FieldVector3D<DerivativeStructure> posBodyDS = toBody.transformPosition(position);
             final Vector3D   posBody   = posBodyDS.toVector3D();
             final Vector3D   vAtmBody  = atmosphere.getVelocity(date, posBody, atmFrame);
@@ -145,8 +147,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
             final FieldVector3D<DerivativeStructure> relativeVelocity = pvAtm.getVelocity().subtract(velocity);
 
             // compute acceleration with all its partial derivatives
-            return spacecraft.dragAcceleration(new FieldAbsoluteDate<>(factory.getDerivativeField(), date),
-                                               frame, position, rotation, mass, rho, relativeVelocity,
+            return spacecraft.dragAcceleration(state, rho, relativeVelocity,
                                                forceModel.getParameters(factory.getDerivativeField()));
 
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
@@ -156,13 +157,12 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
 
     @Override
     protected FieldVector3D<Gradient> accelerationDerivativesGradient(final ForceModel forceModel,
-                                                                      final AbsoluteDate date, final  Frame frame,
-                                                                      final FieldVector3D<Gradient> position,
-                                                                      final FieldVector3D<Gradient> velocity,
-                                                                      final FieldRotation<Gradient> rotation,
-                                                                      final Gradient mass) {
+                                                                      final FieldSpacecraftState<Gradient> state) {
         try {
 
+            final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
+            final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
+            final FieldVector3D<Gradient> velocity = state.getPVCoordinates().getVelocity();
             java.lang.reflect.Field atmosphereField = DragForce.class.getDeclaredField("atmosphere");
             atmosphereField.setAccessible(true);
             Atmosphere atmosphere = (Atmosphere) atmosphereField.get(forceModel);
@@ -170,11 +170,11 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
             spacecraftField.setAccessible(true);
             DragSensitive spacecraft = (DragSensitive) spacecraftField.get(forceModel);
 
-            final int freeParameters = mass.getFreeParameters();
+            final int freeParameters = state.getMass().getFreeParameters();
 
             // get atmosphere properties in atmosphere own frame
             final Frame      atmFrame  = atmosphere.getFrame();
-            final Transform  toBody    = frame.getTransformTo(atmFrame, date);
+            final Transform  toBody    = state.getFrame().getTransformTo(atmFrame, date);
             final FieldVector3D<Gradient> posBodyG = toBody.transformPosition(position);
             final Vector3D   posBody   = posBodyG.toVector3D();
             final Vector3D   vAtmBody  = atmosphere.getVelocity(date, posBody, atmFrame);
@@ -217,9 +217,9 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
             final FieldVector3D<Gradient> relativeVelocity = pvAtm.getVelocity().subtract(velocity);
 
             // compute acceleration with all its partial derivatives
-            return spacecraft.dragAcceleration(new FieldAbsoluteDate<>(GradientField.getField(freeParameters), date),
-                                               frame, position, rotation, mass, rho, relativeVelocity,
-                                               forceModel.getParameters(GradientField.getField(freeParameters)));
+            return spacecraft.dragAcceleration(state, rho, relativeVelocity,
+                                               forceModel.getParameters(GradientField.getField(freeParameters),
+                                                                        state.getDate()));
 
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             return null;
@@ -285,7 +285,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
         double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
@@ -328,8 +328,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                              CelestialBodyFactory.getSun(), 20.0, Vector3D.PLUS_J,
                                                              1.2, 0.1, 0.7, 0.2));
 
-        checkParameterDerivative(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 2.0e-12);
-        checkParameterDerivative(state, forceModel, DragSensitive.LIFT_RATIO,       1.0e-4, 2.0e-11);
+        checkParameterDerivative(state, forceModel, DragSensitive.GLOBAL_DRAG_FACTOR, 1.0e-4, 2.0e-11);
 
     }
 
@@ -353,8 +352,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                              CelestialBodyFactory.getSun(), 20.0, Vector3D.PLUS_J,
                                                              1.2, 0.1, 0.7, 0.2));
 
-        checkParameterDerivativeGradient(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 2.0e-12);
-        checkParameterDerivativeGradient(state, forceModel, DragSensitive.LIFT_RATIO,       1.0e-4, 2.0e-11);
+        checkParameterDerivativeGradient(state, forceModel, DragSensitive.GLOBAL_DRAG_FACTOR, 1.0e-4, 2.0e-11);
 
     }
 
@@ -369,7 +367,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final DragForce forceModel =
                 new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
@@ -377,7 +375,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                       Constants.WGS84_EARTH_FLATTENING,
                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
                               new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
-                                                             Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+                                                             Vector3D.PLUS_J, 1.2, 0.0, 0.7, 0.2));
         SpacecraftState state = new SpacecraftState(orbit,
                                                     Utils.defaultLaw().getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
         checkStateJacobianVs80Implementation(state, forceModel,
@@ -397,7 +395,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final DragForce forceModel =
                 new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
@@ -405,7 +403,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                       Constants.WGS84_EARTH_FLATTENING,
                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
                               new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
-                                                             Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+                                                             Vector3D.PLUS_J, 1.2, 0.0, 0.7, 0.2));
         SpacecraftState state = new SpacecraftState(orbit,
                                                     Utils.defaultLaw().getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
         checkStateJacobianVs80ImplementationGradient(state, forceModel,
@@ -425,7 +423,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final DragForce forceModel =
                 new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
@@ -433,7 +431,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                       Constants.WGS84_EARTH_FLATTENING,
                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
                               new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
-                                                             Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+                                                             Vector3D.PLUS_J, 1.2, 0.0, 0.7, 0.2));
         SpacecraftState state = new SpacecraftState(orbit,
                                                     Utils.defaultLaw().getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
         checkStateJacobianVsFiniteDifferences(state, forceModel, Utils.defaultLaw(), 1.0, 5.0e-6, false);
@@ -451,7 +449,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         final DragForce forceModel =
                 new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
@@ -459,7 +457,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                       Constants.WGS84_EARTH_FLATTENING,
                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
                               new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
-                                                             Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+                                                             Vector3D.PLUS_J, 1.2, 0.0, 0.7, 0.2));
         SpacecraftState state = new SpacecraftState(orbit,
                                                     Utils.defaultLaw().getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
         checkStateJacobianVsFiniteDifferencesGradient(state, forceModel, Utils.defaultLaw(), 1.0, 5.0e-6, false);
@@ -477,7 +475,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         double omega = FastMath.toRadians(93.0);
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
-                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date,
+                                         0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
         double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
@@ -492,7 +490,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                       Constants.WGS84_EARTH_FLATTENING,
                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
                               new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
-                                                             Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+                                                             Vector3D.PLUS_J, 1.2, 0.0, 0.7, 0.2));
         propagator.addForceModel(forceModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
 
@@ -513,7 +511,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         double mean        = FastMath.toRadians(180.);
         double mass        = 100.;
         KeplerianOrbit orbit = new KeplerianOrbit(0.5 * (rpe + rap), (rap - rpe) / (rpe + rap),
-                                                  inc, aop, raan, mean, PositionAngle.MEAN,
+                                                  inc, aop, raan, mean, PositionAngleType.MEAN,
                                                   frame, initialDate, Constants.EIGEN5C_EARTH_MU);
 
         IsotropicDrag shape = new IsotropicDrag(10., 2.2);
@@ -536,15 +534,15 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
 
         double delta = 0.1;
         Orbit shifted = new CartesianOrbit(new TimeStampedPVCoordinates(orbit.getDate(),
-                                                                        orbit.getPVCoordinates().getPosition().add(new Vector3D(delta, 0, 0)),
+                                                                        orbit.getPosition().add(new Vector3D(delta, 0, 0)),
                                                                         orbit.getPVCoordinates().getVelocity()),
                                            orbit.getFrame(), orbit.getMu());
         propagator.setInitialState(new SpacecraftState(shifted, mass));
         SpacecraftState newState = propagator.propagate(new AbsoluteDate(2004, 1, 1, 1, 30, 0., TimeScalesFactory.getUTC()));
         double[] dPVdX = new double[] {
-            (newState.getPVCoordinates().getPosition().getX() - state.getPVCoordinates().getPosition().getX()) / delta,
-            (newState.getPVCoordinates().getPosition().getY() - state.getPVCoordinates().getPosition().getY()) / delta,
-            (newState.getPVCoordinates().getPosition().getZ() - state.getPVCoordinates().getPosition().getZ()) / delta,
+            (newState.getPosition().getX() - state.getPVCoordinates().getPosition().getX()) / delta,
+            (newState.getPosition().getY() - state.getPVCoordinates().getPosition().getY()) / delta,
+            (newState.getPosition().getZ() - state.getPVCoordinates().getPosition().getZ()) / delta,
             (newState.getPVCoordinates().getVelocity().getX() - state.getPVCoordinates().getVelocity().getX()) / delta,
             (newState.getPVCoordinates().getVelocity().getY() - state.getPVCoordinates().getVelocity().getY()) / delta,
             (newState.getPVCoordinates().getVelocity().getZ() - state.getPVCoordinates().getVelocity().getZ()) / delta,
@@ -585,7 +583,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
 
         // Create initial field Keplerian orbit
         FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
+                                                                                 PositionAngleType.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
@@ -617,12 +615,12 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                               Constants.WGS84_EARTH_FLATTENING,
                                                                               FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
                                       new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
-                                                                     Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+                                                                     Vector3D.PLUS_J, 1.2, 0.0, 0.7, 0.2));
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
 
         // Do the test
-        checkRealFieldPropagation(FKO, PositionAngle.MEAN, 1000., NP, FNP,
+        checkRealFieldPropagation(FKO, PositionAngleType.MEAN, 1000., NP, FNP,
                                   1.0e-30, 9.0e-9, 9.0e-11, 9.0e-11,
                                   1, false);
     }
@@ -656,7 +654,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
 
         // Create initial field Keplerian orbit
         FieldKeplerianOrbit<Gradient> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
+                                                                                 PositionAngleType.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
@@ -688,12 +686,12 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                               Constants.WGS84_EARTH_FLATTENING,
                                                                               FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
                                       new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
-                                                                     Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+                                                                     Vector3D.PLUS_J, 1.2, 0.0, 0.7, 0.2));
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
 
         // Do the test
-        checkRealFieldPropagationGradient(FKO, PositionAngle.MEAN, 1000., NP, FNP,
+        checkRealFieldPropagationGradient(FKO, PositionAngleType.MEAN, 1000., NP, FNP,
                                   1.0e-30, 3.2e-2, 7.7e-5, 2.8e-4,
                                   1, false);
     }
@@ -721,7 +719,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         Frame EME = FramesFactory.getEME2000();
 
         FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<>(a_0, e_0, i_0, R_0, O_0, n_0,
-                                                                                 PositionAngle.MEAN,
+                                                                                 PositionAngleType.MEAN,
                                                                                  EME,
                                                                                  J2000,
                                                                                  zero.add(Constants.EIGEN5C_EARTH_MU));
@@ -754,7 +752,7 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
                                                                               Constants.WGS84_EARTH_FLATTENING,
                                                                               FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
                                       new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
-                                                                     Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+                                                                     Vector3D.PLUS_J, 1.2, 0.0, 0.7, 0.2));
         FNP.addForceModel(forceModel);
         // NOT ADDING THE FORCE MODEL TO THE NUMERICAL PROPAGATOR   NP.addForceModel(forceModel);
 
@@ -767,6 +765,147 @@ public class DragForceTest extends AbstractLegacyForceModelTest {
         Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
         Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
         Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+    }
+
+    /** Test that the getParameterDrivers method is working as expected
+     * on an IsotropicDrag-based (ie. spherical) DragForce model with
+     * several estimated values.
+     */
+    @Test
+    public void testGetParameterDriversSphereForParameterWithSeveralValues() {
+
+        // Atmosphere
+        final Atmosphere atmosphere = new HarrisPriester(CelestialBodyFactory.getSun(),
+                                                         new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                              Constants.WGS84_EARTH_FLATTENING,
+                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+
+        // A date
+        AbsoluteDate date = new AbsoluteDate("2000-01-01T00:00:00.000", TimeScalesFactory.getUTC());
+        
+        // One IsotropicDrag added, only one driver should be in the drivers' array
+        // its name should be the default name: IsotropicDrag.DRAG_COEFFICIENT
+        // -----------------------
+        double dragArea = 2.;
+        double dragCd0 = 0.;
+        DragForce forceModel = new DragForce(atmosphere, new IsotropicDrag(dragArea, dragCd0));
+        Assertions.assertFalse(forceModel.dependsOnPositionOnly());
+        List<ParameterDriver> drivers = forceModel.getParametersDrivers();
+        Assertions.assertEquals(2,  drivers.size());
+        Assertions.assertEquals(1.0,  drivers.get(0).getValue(), 0.);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.get(0).getName());
+        Assertions.assertEquals(dragCd0,  drivers.get(1).getValue(), 0.);
+        Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT,  drivers.get(1).getName());
+        
+        // Extract drag model at an arbitrary epoch and check it is the one added
+        IsotropicDrag isoDrag = (IsotropicDrag) forceModel.getSpacecraft();
+        drivers = isoDrag.getDragParametersDrivers();
+        Assertions.assertEquals(2, drivers.size());
+        Assertions.assertEquals(1.0,  drivers.get(0).getValue(new AbsoluteDate()), 0.);
+        Assertions.assertEquals(DragSensitive.GLOBAL_DRAG_FACTOR,  drivers.get(0).getName());
+        Assertions.assertEquals(dragCd0,  drivers.get(1).getValue(new AbsoluteDate()), 0.);
+        Assertions.assertEquals(DragSensitive.DRAG_COEFFICIENT,  drivers.get(1).getName());
+        
+        // 3 IsotropicDrag models added, with one default
+        // ----------------------------------------------
+        double dragCd1 = 1.;
+        double dragCd2 = 2.;
+        double dt = 120.;
+        // Build the force model
+        isoDrag = new IsotropicDrag(dragArea, dragCd0);
+        isoDrag.getDragParametersDrivers().get(0).addSpans(date.shiftedBy(-3*dt), date.shiftedBy(2.0*dt), 2*dt);
+        isoDrag.getDragParametersDrivers().get(0).setValue(dragCd2, date.shiftedBy(-2*dt));
+        isoDrag.getDragParametersDrivers().get(0).setValue(dragCd0, date.shiftedBy(-dt));
+        isoDrag.getDragParametersDrivers().get(0).setValue(dragCd1, date.shiftedBy(dt));
+
+        forceModel = new DragForce(atmosphere, isoDrag);
+        // Extract the drivers and check their values and names
+        drivers = forceModel.getParametersDrivers();
+        int nnb = 0;
+        Assertions.assertEquals(3,  drivers.get(0).getNbOfValues());
+        for (Span<String> span = isoDrag.getDragParametersDrivers().get(0).getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+        	Assertions.assertEquals("Span" + drivers.get(0).getName() + Integer.toString(nnb++),
+                    span.getData());
+        }
+        
+        // Check that proper models are returned at significant test dates
+        // Cd0 model
+        double eps = 1.e-14;
+        // Cd2 model
+        Assertions.assertEquals(dragCd2,  drivers.get(0).getValue(date.shiftedBy(-2 * dt)), 0.);
+        Assertions.assertEquals(dragCd2,  drivers.get(0).getValue(date.shiftedBy(-dt - eps)), 0.);
+        Assertions.assertEquals(dragCd2,  drivers.get(0).getValue(date.shiftedBy(-dt - 86400.)), 0.);
+        // Cd0 model
+        Assertions.assertEquals(dragCd0,  drivers.get(0).getValue(date), 0.);
+        Assertions.assertEquals(dragCd0,  drivers.get(0).getValue(date.shiftedBy(dt - eps)), 0.);
+        Assertions.assertEquals(dragCd0,  drivers.get(0).getValue(date.shiftedBy(-dt)), 0.);
+        // Cd1 model
+        Assertions.assertEquals(dragCd1,  drivers.get(0).getValue(date.shiftedBy(2 * dt)), 0.);
+        Assertions.assertEquals(dragCd1,  drivers.get(0).getValue(date.shiftedBy(dt + eps)), 0.);
+        Assertions.assertEquals(dragCd1,  drivers.get(0).getValue(date.shiftedBy(dt + 86400.)), 0.);
+        
+    }
+
+    /** Test parameter derivatives for an IsotropicDrag TimeSpanDragForce.
+     *  This test is more or less a copy of the same one in DragForceTest class
+     *  with addition of several IsotropicDrag models valid at different dates
+     *  to test that the different parameters' derivatives are computed correctly.
+     */
+    @Test
+    public void testParameterDerivativeSphereForParameterWithSeveralValues() {
+
+        // Low Earth orbit definition (about 360km altitude)
+        final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
+        final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
+        final AbsoluteDate date = new AbsoluteDate(2003, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI());
+        final SpacecraftState state =
+                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
+                                                       FramesFactory.getGCRF(),
+                                                       date,
+                                                       Constants.EIGEN5C_EARTH_MU));
+
+        // Atmosphere
+        final Atmosphere atmosphere = new HarrisPriester(CelestialBodyFactory.getSun(),
+                                                         new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                              Constants.WGS84_EARTH_FLATTENING,
+                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        
+        // Constant area for the different tests
+        final double dragArea = 2.5;
+        
+        // Initialize force model (first coef is valid at all epochs)
+        final double dragCd  = 1.2;
+        final IsotropicDrag isotropicDrag = new IsotropicDrag(dragArea, dragCd);
+        isotropicDrag.getDragParametersDrivers().get(0).setName("Cd");
+        
+        // After t2 = t + 4h
+        final double dragCd2 = 3.;
+        final double dt2 = 4 * 3600.;
+        final AbsoluteDate date2 = date.shiftedBy(dt2);
+        isotropicDrag.getDragParametersDrivers().get(0).getValueSpanMap().addValidAfter(dragCd2, date2, false);
+        isotropicDrag.getDragParametersDrivers().get(0).getNamesSpanMap().addValidAfter("Cd2", date2, false);
+        isotropicDrag.getDragParametersDrivers().get(0).getNamesSpanMap().addValidBefore("Cd", date2, false);
+
+        // Before t3 = t - 1day
+        final double dragCd3 = 3.;
+        final double dt3 = -86400.;
+        final AbsoluteDate date3 = date.shiftedBy(dt3);
+        isotropicDrag.getDragParametersDrivers().get(0).getValueSpanMap().addValidAfter(dragCd3, date3, false);
+        isotropicDrag.getDragParametersDrivers().get(0).getNamesSpanMap().addValidAfter("Cd3", date3, false);
+        
+        
+        final DragForce forceModel = new DragForce(atmosphere, isotropicDrag);
+
+        Assertions.assertFalse(forceModel.dependsOnPositionOnly());
+
+        // Check parameter derivatives at initial date: only "Cd" shouldn't be 0.
+        checkParameterDerivative(state, forceModel, "Cd" , 1.0e-4, 2.0e-12);
+
+        // Check parameter derivatives after date3: for "Cd2"
+        checkParameterDerivative(state.shiftedBy(dt2 * 1.1), forceModel, "Cd", 1.0e-4, 2.0e-12);
+        
+        // Check parameter derivatives after date3: for "Cd3"
+        checkParameterDerivative(state.shiftedBy(dt3 * 1.1), forceModel, "Cd", 1.0e-4, 2.0e-12);
     }
 
     @BeforeEach

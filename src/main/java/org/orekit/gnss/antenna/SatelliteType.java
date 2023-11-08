@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -82,6 +82,90 @@ public enum SatelliteType {
 
     /** BeiDou-3 IGSO. */
     BEIDOU_3I("BEIDOU-3I") {
+        /** {@inheritDoc} */
+        @Override
+        public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
+                                                          final AbsoluteDate validityEnd,
+                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final Frame inertialFrame, final int prnNumber) {
+            // it seems Beidou III satellites use Galileo mode
+            return new Galileo(Galileo.DEFAULT_YAW_RATE,
+                               validityStart, validityEnd, sun, inertialFrame);
+        }
+    },
+
+    /** BeiDou-3. */
+    BEIDOU_3SI_SECM("BEIDOU-3SI-SECM") {
+        /** {@inheritDoc} */
+        @Override
+        public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
+                                                          final AbsoluteDate validityEnd,
+                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final Frame inertialFrame, final int prnNumber) {
+            // it seems Beidou III satellites use Galileo mode
+            return new Galileo(Galileo.DEFAULT_YAW_RATE,
+                               validityStart, validityEnd, sun, inertialFrame);
+        }
+    },
+
+    /** BeiDou-3. */
+    BEIDOU_3SI_CAST("BEIDOU-3SI-CAST") {
+        /** {@inheritDoc} */
+        @Override
+        public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
+                                                          final AbsoluteDate validityEnd,
+                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final Frame inertialFrame, final int prnNumber) {
+            // it seems Beidou III satellites use Galileo mode
+            return new Galileo(Galileo.DEFAULT_YAW_RATE,
+                               validityStart, validityEnd, sun, inertialFrame);
+        }
+    },
+
+    /** BeiDou-3. */
+    BEIDOU_3M_CAST("BEIDOU-3M-CAST") {
+        /** {@inheritDoc} */
+        @Override
+        public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
+                                                          final AbsoluteDate validityEnd,
+                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final Frame inertialFrame, final int prnNumber) {
+            // it seems Beidou III satellites use Galileo mode
+            return new Galileo(Galileo.DEFAULT_YAW_RATE,
+                               validityStart, validityEnd, sun, inertialFrame);
+        }
+    },
+
+    /** BeiDou-3. */
+    BEIDOU_3SM_CAST("BEIDOU-3SM-CAST") {
+        /** {@inheritDoc} */
+        @Override
+        public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
+                                                          final AbsoluteDate validityEnd,
+                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final Frame inertialFrame, final int prnNumber) {
+            // it seems Beidou III satellites use Galileo mode
+            return new Galileo(Galileo.DEFAULT_YAW_RATE,
+                               validityStart, validityEnd, sun, inertialFrame);
+        }
+    },
+
+    /** BeiDou-3. */
+    BEIDOU_3M_SECM("BEIDOU-3M-SECM") {
+        /** {@inheritDoc} */
+        @Override
+        public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
+                                                          final AbsoluteDate validityEnd,
+                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final Frame inertialFrame, final int prnNumber) {
+            // it seems Beidou III satellites use Galileo mode
+            return new Galileo(Galileo.DEFAULT_YAW_RATE,
+                               validityStart, validityEnd, sun, inertialFrame);
+        }
+    },
+
+    /** BeiDou-3. */
+    BEIDOU_3G_CAST("BEIDOU-3G-CAST") {
         /** {@inheritDoc} */
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
@@ -336,6 +420,19 @@ public enum SatelliteType {
 
     /** QZSS Block I (Michibiki-1). */
     QZSS("QZSS") {
+        /** {@inheritDoc} */
+        @Override
+        public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,
+                                                          final AbsoluteDate validityEnd,
+                                                          final ExtendedPVCoordinatesProvider sun,
+                                                          final Frame inertialFrame, final int prnNumber) {
+            // we don't have yet a specific mode for QZSS, we use generic GNSS (simple yaw steering)
+            return new GenericGNSS(validityStart, validityEnd, sun, inertialFrame);
+        }
+    },
+
+    /** QZSS Block II (Michibiki-2). */
+    QZSS_2A("QZSS-2A") {
         /** {@inheritDoc} */
         @Override
         public GNSSAttitudeProvider buildAttitudeProvider(final AbsoluteDate validityStart,

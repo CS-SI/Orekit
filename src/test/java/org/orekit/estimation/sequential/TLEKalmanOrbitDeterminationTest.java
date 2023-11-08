@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,16 +47,18 @@ import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.models.earth.atmosphere.Atmosphere;
 import org.orekit.models.earth.atmosphere.HarrisPriester;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEConstants;
+import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -100,10 +102,10 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
     /** {@inheritDoc} */
     @Override
     protected TLEPropagatorBuilder createPropagatorBuilder(final Orbit referenceOrbit,
-                                                            final ODEIntegratorBuilder builder,
-                                                            final double positionScale) {
-        return new TLEPropagatorBuilder(templateTLE, PositionAngle.MEAN,
-                                         positionScale);
+                                                           final ODEIntegratorBuilder builder,
+                                                           final double positionScale) {
+        return new TLEPropagatorBuilder(templateTLE, PositionAngleType.MEAN, positionScale,
+                                        new FixedPointTleGenerationAlgorithm());
     }
 
     /** {@inheritDoc} */
@@ -159,7 +161,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
     /** {@inheritDoc} */
     @Override
     protected List<ParameterDriver> setSolarRadiationPressure(final TLEPropagatorBuilder propagatorBuilder, final CelestialBody sun,
-                                                              final double equatorialRadius, final RadiationSensitive spacecraft) {
+                                                              final OneAxisEllipsoid body, final RadiationSensitive spacecraft) {
         return Collections.emptyList();
     }
 
@@ -369,9 +371,8 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         //test on the estimated position
         TimeStampedPVCoordinates odPV = kalmanGNSS.getEstimatedPV();
-        final Transform transform = FramesFactory.getTEME().getTransformTo(FramesFactory.getGCRF(), odPV.getDate());
-        odPV = transform.transformPVCoordinates(odPV);
-        final Vector3D estimatedPos = odPV.getPosition();
+        final StaticTransform transform = FramesFactory.getTEME().getStaticTransformTo(FramesFactory.getGCRF(), odPV.getDate());
+        final Vector3D estimatedPos = transform.transformPosition(odPV.getPosition());
 
         // Reference position from GPS ephemeris (esa18836.sp3)
         final Vector3D refPos = new Vector3D(2167703.453226041, 19788555.311260417, 17514805.616900872);
@@ -441,8 +442,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         propagator.addForceModel(drag);
 
         // Solar radiation pressure
-        propagator.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(),
-                                                    earth.getEquatorialRadius(),
+        propagator.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(), earth,
                                                     new IsotropicRadiationSingleCoefficient(spacecraftArea, spacecraftReflectionCoefficient)));
 
         // Propagation

@@ -30,9 +30,9 @@ import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovariance;
 import org.orekit.files.ccsds.ndm.odm.CartesianCovarianceKey;
 import org.orekit.files.ccsds.ndm.odm.CommonMetadataKey;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.ndm.odm.OdmMetadataKey;
 import org.orekit.files.ccsds.ndm.odm.StateVectorKey;
-import org.orekit.files.ccsds.section.Header;
 import org.orekit.files.ccsds.section.HeaderKey;
 import org.orekit.files.ccsds.section.KvnStructureKey;
 import org.orekit.files.ccsds.section.MetadataKey;
@@ -189,7 +189,7 @@ import org.orekit.utils.units.Unit;
  *      Data Definitions and Conventions</a>
  * @see StreamingOemWriter
  */
-public class OemWriter extends AbstractMessageWriter<Header, OemSegment, Oem> {
+public class OemWriter extends AbstractMessageWriter<OdmHeader, OemSegment, Oem> {
 
     /** Version number implemented. **/
     public static final double CCSDS_OEM_VERS = 3.0;
@@ -236,8 +236,8 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, Oem> {
 
     /** {@inheritDoc} */
     @Override
-    public void writeSegmentContent(final Generator generator, final double formatVersion,
-                                    final OemSegment segment)
+    protected void writeSegmentContent(final Generator generator, final double formatVersion,
+                                       final OemSegment segment)
         throws IOException {
 
         final OemMetadata metadata = segment.getMetadata();
@@ -303,19 +303,19 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, Oem> {
         if (metadata.getFrameEpoch() != null) {
             generator.writeEntry(CommonMetadataKey.REF_FRAME_EPOCH.name(),
                                  getTimeConverter(), metadata.getFrameEpoch(),
-                                 false);
+                                 true, false);
         }
 
         // time
         generator.writeEntry(MetadataKey.TIME_SYSTEM.name(), metadata.getTimeSystem(), true);
-        generator.writeEntry(OemMetadataKey.START_TIME.name(), getTimeConverter(), metadata.getStartTime(), true);
+        generator.writeEntry(OemMetadataKey.START_TIME.name(), getTimeConverter(), metadata.getStartTime(), false, true);
         if (metadata.getUseableStartTime() != null) {
-            generator.writeEntry(OemMetadataKey.USEABLE_START_TIME.name(), getTimeConverter(), metadata.getUseableStartTime(), false);
+            generator.writeEntry(OemMetadataKey.USEABLE_START_TIME.name(), getTimeConverter(), metadata.getUseableStartTime(), false, false);
         }
         if (metadata.getUseableStopTime() != null) {
-            generator.writeEntry(OemMetadataKey.USEABLE_STOP_TIME.name(), getTimeConverter(), metadata.getUseableStopTime(), false);
+            generator.writeEntry(OemMetadataKey.USEABLE_STOP_TIME.name(), getTimeConverter(), metadata.getUseableStopTime(), false, false);
         }
-        generator.writeEntry(OemMetadataKey.STOP_TIME.name(), getTimeConverter(), metadata.getStopTime(), true);
+        generator.writeEntry(OemMetadataKey.STOP_TIME.name(), getTimeConverter(), metadata.getStopTime(), false, true);
 
         // interpolation
         generator.writeEntry(OemMetadataKey.INTERPOLATION.name(), metadata.getInterpolationMethod(), false);
@@ -384,7 +384,7 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, Oem> {
             generator.enterSection(OemDataSubStructureKey.stateVector.name());
 
             // Epoch
-            generator.writeEntry(StateVectorKey.EPOCH.name(), getTimeConverter(), coordinates.getDate(), true);
+            generator.writeEntry(StateVectorKey.EPOCH.name(), getTimeConverter(), coordinates.getDate(), false, true);
 
             // Position data in km
             generator.writeEntry(StateVectorKey.X.name(), coordinates.getPosition().getX(), Unit.KILOMETRE, true);
@@ -454,7 +454,7 @@ public class OemWriter extends AbstractMessageWriter<Header, OemSegment, Oem> {
         }
 
         // epoch
-        generator.writeEntry(CartesianCovarianceKey.EPOCH.name(), getTimeConverter(), covariance.getEpoch(), true);
+        generator.writeEntry(CartesianCovarianceKey.EPOCH.name(), getTimeConverter(), covariance.getEpoch(), false, true);
 
         // reference frame
         if (covariance.getReferenceFrame() != metadata.getReferenceFrame()) {

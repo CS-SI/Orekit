@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -63,12 +63,13 @@ public class DateDetectorTest {
 
     @Test
     public void testSimpleTimer() {
-        DateDetector dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(2.0*dt));
+        DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(2.0*dt)).
+                                    withMaxCheck(maxCheck).
+                                    withThreshold(threshold);
         Assertions.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate), 1.0e-10);
         propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
             public String   getName()                      { return "dummy"; }
             public int      getDimension()                 { return 1; }
-            public double[] derivatives(final SpacecraftState state) { return null; }
             public CombinedDerivatives combinedDerivatives(SpacecraftState s) {
                 return new CombinedDerivatives(new double[1], null);
             }
@@ -95,12 +96,11 @@ public class DateDetectorTest {
 
     @Test
     public void testEmbeddedTimer() {
-        dateDetector = new DateDetector(maxCheck, threshold);
+        dateDetector = new DateDetector();
         Assertions.assertNull(dateDetector.getDate());
         EventDetector nodeDetector = new NodeDetector(iniOrbit, iniOrbit.getFrame()).
-                withHandler(new ContinueOnEvent<NodeDetector>() {
-                    public Action eventOccurred(SpacecraftState s, NodeDetector nd, boolean increasing)
-                        {
+                withHandler(new ContinueOnEvent() {
+                    public Action eventOccurred(SpacecraftState s, EventDetector nd, boolean increasing) {
                         if (increasing) {
                             nodeDate = s.getDate();
                             dateDetector.addEventDate(nodeDate.shiftedBy(dt));
@@ -118,16 +118,17 @@ public class DateDetectorTest {
 
     @Test
     public void testAutoEmbeddedTimer() {
-        dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(-dt)).
-                withHandler(new ContinueOnEvent<DateDetector>() {
-                    public Action eventOccurred(SpacecraftState s, DateDetector dd,  boolean increasing)
-                            {
-                        AbsoluteDate nextDate = s.getDate().shiftedBy(-dt);
-                        dd.addEventDate(nextDate);
-                        ++evtno;
-                        return Action.CONTINUE;
-                    }
-                });
+        dateDetector = new DateDetector(iniDate.shiftedBy(-dt)).
+                        withMaxCheck(maxCheck).
+                        withThreshold(threshold).
+                        withHandler(new ContinueOnEvent() {
+                            public Action eventOccurred(SpacecraftState s, EventDetector dd,  boolean increasing) {
+                                AbsoluteDate nextDate = s.getDate().shiftedBy(-dt);
+                                ((DateDetector) dd).addEventDate(nextDate);
+                                ++evtno;
+                                return Action.CONTINUE;
+                            }
+                        });
         propagator.addEventDetector(dateDetector);
         propagator.propagate(iniDate.shiftedBy(-100.*dt));
 
@@ -137,17 +138,19 @@ public class DateDetectorTest {
     @Test
     public void testExceptionTimer() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(dt)).
-                    withHandler(new ContinueOnEvent<DateDetector>() {
-                        public Action eventOccurred(SpacecraftState s, DateDetector dd, boolean increasing)
-                        {
-                            double step = (evtno % 2 == 0) ? 2.*maxCheck : maxCheck/2.;
-                            AbsoluteDate nextDate = s.getDate().shiftedBy(step);
-                            dd.addEventDate(nextDate);
-                            ++evtno;
-                            return Action.CONTINUE;
-                        }
-                    });
+            dateDetector = new DateDetector(iniDate.shiftedBy(dt)).
+                            withMaxCheck(maxCheck).
+                            withMinGap(maxCheck).
+                            withThreshold(threshold).
+                            withHandler(new ContinueOnEvent() {
+                                public Action eventOccurred(SpacecraftState s, EventDetector dd, boolean increasing) {
+                                    double step = (evtno % 2 == 0) ? 2.*maxCheck : maxCheck/2.;
+                                    AbsoluteDate nextDate = s.getDate().shiftedBy(step);
+                                    ((DateDetector) dd).addEventDate(nextDate);
+                                    ++evtno;
+                                    return Action.CONTINUE;
+                                }
+                            });
             propagator.addEventDetector(dateDetector);
             propagator.propagate(iniDate.shiftedBy(100.*dt));
         });
@@ -159,9 +162,11 @@ public class DateDetectorTest {
     @Test
     public void testGenericHandler() {
         //setup
-        dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(dt));
+        dateDetector = new DateDetector(iniDate.shiftedBy(dt)).
+                        withMaxCheck(maxCheck).
+                        withThreshold(threshold);
         // generic event handler that works with all detectors.
-        EventHandler<EventDetector> handler = new EventHandler<EventDetector>() {
+        EventHandler handler = new EventHandler() {
             @Override
             public Action eventOccurred(SpacecraftState s,
                                         EventDetector detector,
@@ -202,9 +207,10 @@ public class DateDetectorTest {
 
         // Max check to seconds
         int maxCheck = (int) ((end - start) / 2000);
-        DateDetector dateDetector = new DateDetector(maxCheck, 1.0e-6,
-                                                     getAbsoluteDateFromTimestamp(start)).
-                                    withHandler(new StopOnEvent<>());
+        DateDetector dateDetector = new DateDetector(getAbsoluteDateFromTimestamp(start)).
+                        withMaxCheck(maxCheck).
+                        withThreshold(1.0e-6).
+                        withHandler(new StopOnEvent());
         dateDetector.addEventDate(getAbsoluteDateFromTimestamp(end));
 
         // Add event detectors to orbit

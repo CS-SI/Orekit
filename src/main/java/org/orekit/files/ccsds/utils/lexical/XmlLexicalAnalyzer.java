@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,8 @@ package org.orekit.files.ccsds.utils.lexical;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -120,7 +122,17 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
         private String currentContent;
 
         /** Attributes of the current element. */
-        private Attributes currentAttributes;
+        private Map<String, String> currentAttributes;
+
+        /** Last processed token qualified name.
+         * @since 12.0
+         */
+        private String lastQname;
+
+        /** Last processed token start/end indicator.
+         * @since 12.0
+         */
+        private boolean lastWasStart;
 
         /** Simple constructor.
          * @param messageParser CCSDS Message parser to use
@@ -129,6 +141,8 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
             this.messageParser   = messageParser;
             this.regularBuilder  = new RegularXmlTokenBuilder();
             this.specialElements = messageParser.getSpecialXmlElementsBuilders();
+            this.lastQname       = "";
+            this.lastWasStart    = false;
         }
 
         /** Get a builder for the current element.
@@ -164,7 +178,7 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
                 // it is the end tag of a leaf element, so we just store the characters
                 // and will either use them or drop them when this next tag is seen
                 currentLineNumber = locator.getLineNumber();
-                currentContent    = new String(ch, start, length);
+                this.currentContent = this.currentContent + new String(ch, start, length);
             }
         }
 
@@ -173,36 +187,57 @@ public class XmlLexicalAnalyzer implements LexicalAnalyzer {
         public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) {
 
             currentElementName = qName;
-            currentAttributes  = attributes;
             currentLineNumber  = locator.getLineNumber();
-            currentContent     = null;
+            currentContent     = "";
 
-            for (final ParseToken token : getBuilder(qName).
-                                          buildTokens(true, qName, currentContent, currentAttributes,
-                                          currentLineNumber, source.getName())) {
-                messageParser.process(token);
+            // save attributes in separate map, to avoid overriding during parsing
+            if (attributes.getLength() == 0) {
+                currentAttributes  = Collections.emptyMap();
+            } else {
+                currentAttributes = new HashMap<>(attributes.getLength());
+                for (int i = 0; i < attributes.getLength(); ++i) {
+                    currentAttributes.put(attributes.getQName(i), attributes.getValue(i));
+                }
             }
 
+            for (final ParseToken token : getBuilder(qName).
+                                          buildTokens(true, false, qName, getContent(), currentAttributes,
+                                                      currentLineNumber, source.getName())) {
+                messageParser.process(token);
+            }
+            lastQname    = qName;
+            lastWasStart = true;
+
+        }
+
+        private String getContent() {
+            return currentContent.isEmpty() ? null : currentContent;
         }
 
         /** {@inheritDoc} */
         @Override
         public void endElement(final String uri, final String localName, final String qName) {
 
-            if (currentContent == null) {
+            if (currentContent == null || currentContent.isEmpty()) {
                 // for an end tag without content, we keep the line number of the end tag itself
                 currentLineNumber = locator.getLineNumber();
             }
 
+            // check if we are parsing the end tag of a leaf element
+            final boolean isLeaf = lastWasStart && qName.equals(lastQname);
+
             for (final ParseToken token : getBuilder(qName).
-                                          buildTokens(false, qName, currentContent, currentAttributes,
+                                          buildTokens(false, isLeaf, qName, getContent(), currentAttributes,
                                                       currentLineNumber, source.getName())) {
                 messageParser.process(token);
             }
+            lastQname    = qName;
+            lastWasStart = true;
 
             currentElementName = null;
+            currentAttributes  = null;
             currentLineNumber  = -1;
-            currentContent     = null;
+            currentContent     = "";
 
         }
 

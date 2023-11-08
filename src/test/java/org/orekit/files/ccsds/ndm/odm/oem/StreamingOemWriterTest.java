@@ -1,4 +1,4 @@
-/* Copyright 2002-2022 CS GROUP
+/* Copyright 2002-2023 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,13 @@
  */
 package org.orekit.files.ccsds.ndm.odm.oem;
 
+import java.io.ByteArrayInputStream;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -23,6 +30,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -37,7 +45,7 @@ import org.orekit.files.ccsds.definitions.TimeSystem;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
-import org.orekit.files.ccsds.section.Header;
+import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.Frame;
@@ -48,13 +56,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.io.ByteArrayInputStream;
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Check {@link StreamingOemWriter}.
@@ -139,8 +140,9 @@ public class StreamingOemWriterTest {
             OemSegment block = oem.getSegments().get(0);
             String objectName = block.getMetadata().getObjectName();
             String objectID = block.getMetadata().getObjectID();
+            Frame frame = satellite.getSegments().get(0).getInertialFrame();
 
-            Header header = new Header(3.0);
+            OdmHeader header = new OdmHeader();
             header.setOriginator(originator);
             OemMetadata metadata = new OemMetadata(1);
             metadata.setObjectName(objectName);
@@ -154,10 +156,11 @@ public class StreamingOemWriterTest {
 
             // check using the Propagator / StepHandler interface
             final StringBuilder buffer1 = new StringBuilder();
-            StreamingOemWriter writer = new StreamingOemWriter(new KvnGenerator(buffer1, OemWriter.KVN_PADDING_WIDTH, "some-name", 60),
+            StreamingOemWriter writer = new StreamingOemWriter(new KvnGenerator(buffer1, OemWriter.KVN_PADDING_WIDTH, "some-name",
+                                                                                Constants.JULIAN_DAY, 60),
                                                                new WriterBuilder().buildOemWriter(),
                                                                header, metadata);
-            BoundedPropagator propagator = satellite.getPropagator();
+            BoundedPropagator propagator = satellite.getPropagator(new FrameAlignedProvider(frame));
             propagator.setStepHandler(step, writer.newSegment());
             propagator.propagate(propagator.getMinDate(), propagator.getMaxDate());
             writer.close();
@@ -178,13 +181,13 @@ public class StreamingOemWriterTest {
             // check calling the methods directly
             final StringBuilder buffer2 = new StringBuilder();
             OemWriter oemWriter = new WriterBuilder().buildOemWriter();
-            try (Generator generator = new KvnGenerator(buffer2, OemWriter.KVN_PADDING_WIDTH, "another-name", 60)) {
+            try (Generator generator = new KvnGenerator(buffer2, OemWriter.KVN_PADDING_WIDTH, "another-name",
+                                                        Constants.JULIAN_DAY, 60)) {
                 oemWriter.writeHeader(generator, header);
                 metadata.setObjectName(objectName);
                 metadata.setStartTime(block.getStart());
                 metadata.setStopTime(block.getStop());
-                final Frame      stateFrame = satellite.getPropagator().getFrame();
-                metadata.setReferenceFrame(FrameFacade.map(stateFrame));
+                metadata.setReferenceFrame(FrameFacade.map(frame));
                 oemWriter.writeMetadata(generator, metadata);
                 for (TimeStampedPVCoordinates coordinate : block.getCoordinates()) {
                     oemWriter.writeOrbitEphemerisLine(generator, metadata, coordinate, true);
@@ -218,9 +221,10 @@ public class StreamingOemWriterTest {
         final Oem original = oemParser.parse(source);
         final OemSatelliteEphemeris originalEphem =
                 original.getSatellites().values().iterator().next();
-        final BoundedPropagator propagator = originalEphem.getPropagator();
+        final Frame frame = originalEphem.getSegments().get(0).getInertialFrame();
+        final BoundedPropagator propagator = originalEphem.getPropagator(new FrameAlignedProvider(frame));
         StringBuilder buffer = new StringBuilder();
-        Header header = original.getHeader();
+        OdmHeader header = original.getHeader();
         OemMetadata metadata = original.getSegments().get(0).getMetadata();
         metadata.setTimeSystem(TimeSystem.UTC);
         metadata.setReferenceFrame(FrameFacade.map(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
@@ -229,7 +233,8 @@ public class StreamingOemWriterTest {
 
         // action
         StreamingOemWriter writer = new StreamingOemWriter(
-                new KvnGenerator(buffer, OemWriter.KVN_PADDING_WIDTH, "out", 0),
+                new KvnGenerator(buffer, OemWriter.KVN_PADDING_WIDTH, "out",
+                                 Constants.JULIAN_DAY, 0),
                 new WriterBuilder().buildOemWriter(),
                 header,
                 metadata,
@@ -246,7 +251,7 @@ public class StreamingOemWriterTest {
         Oem actual = oemParser.parse(
                 new DataSource("mem", () -> new StringReader(actualText)));
 
-        compareOems(expected, actual, 1e-6, 1e-9);
+        compareOems(expected, actual, 1.9e-5, 2.2e-8);
         MatcherAssert.assertThat(
                 actualText,
                 CoreMatchers.not(CoreMatchers.containsString("INTERPOLATION_DEGREE")));
@@ -254,7 +259,7 @@ public class StreamingOemWriterTest {
         MatcherAssert.assertThat(
                 actualText,
                 CoreMatchers.containsString(
-                        "\n2017-04-11T22:31:43.121856 -2757.3016318893897 -4173.479601381253 4566.01849801963 6.625901653953951 -1.011817208875361 3.0698336591568833\n"));
+                        "\n2017-04-11T22:31:43.121856 -2757.3016318855234 -4173.47960139054 4566.018498013474 6.625901653955907 -1.0118172088819106 3.0698336591485442\n"));
     }
 
     private static void compareOemEphemerisBlocks(OemSegment block1,
