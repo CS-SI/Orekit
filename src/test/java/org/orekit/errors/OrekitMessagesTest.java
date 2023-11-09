@@ -26,7 +26,7 @@ import java.util.ResourceBundle;
 
 public class OrekitMessagesTest {
 
-    private final String[] LANGUAGES_LIST = { "da", "de", "el", "en", "es", "fr", "gl", "it", "no", "ro" };
+    private final String[] LANGUAGES_LIST = { "ca", "da", "de", "el", "en", "es", "fr", "gl", "it", "no", "ro" };
 
     @Test
     public void testMessageNumber() {

@@ -348,6 +348,7 @@
 
   * Localized in several languages
 
+    * Catalan
     * Danish
     * English
     * French
