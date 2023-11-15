@@ -973,8 +973,8 @@ public class DTM2000 implements Atmosphere {
 
             // compute Legendre polynomials wrt geographic pole
             final T c = scLat.sin();
-            final T c2 = c.multiply(c);
-            final T c4 = c2.multiply(c2);
+            final T c2 = c.square();
+            final T c4 = c2.square();
             final T s = scLat.cos();
             final T s2 = s.multiply(s);
             p10 = c;

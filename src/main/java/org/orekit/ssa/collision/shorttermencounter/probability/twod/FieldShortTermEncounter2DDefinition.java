@@ -334,7 +334,7 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
 
         final T crossTerm = covarianceMatrixToDiagonalize.getEntry(0, 1);
         final T recurrentTerm = sigmaXSquared.subtract(sigmaYSquared).multiply(0.5).pow(2)
-                                             .add(crossTerm.multiply(crossTerm)).sqrt();
+                                             .add(crossTerm.square()).sqrt();
 
         final T eigenValueX = sigmaXSquared.add(sigmaYSquared).multiply(0.5).subtract(recurrentTerm);
         final T eigenValueY = sigmaXSquared.add(sigmaYSquared).multiply(0.5).add(recurrentTerm);

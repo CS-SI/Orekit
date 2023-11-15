@@ -109,7 +109,7 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
 
         // &Chi; = 1 / B
         X = auxiliaryElements.getB().reciprocal();
-        XX = X.multiply(X);
+        XX = X.square();
         XXX = X.multiply(XX);
 
         // 1 / AB

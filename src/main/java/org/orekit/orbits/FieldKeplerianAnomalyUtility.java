@@ -195,7 +195,7 @@ public class FieldKeplerianAnomalyUtility {
      */
     private static <T extends CalculusFieldElement<T>> T eMeSinE(final T e, final T E) {
         T x = (e.negate().add(1)).multiply(E.sin());
-        final T mE2 = E.negate().multiply(E);
+        final T mE2 = E.square().negate();
         T term = E;
         double d = 0;
         // the inequality test below IS intentional and should NOT be replaced by a
@@ -331,7 +331,7 @@ public class FieldKeplerianAnomalyUtility {
                 // Accurate computation of S - (1 - g1) * asinh(S)
                 // when (g1, S) is close to (0, 0).
                 final T t = S.divide(one.add(one.add(S.multiply(S)).sqrt()));
-                final T tsq = t.multiply(t);
+                final T tsq = t.square();
                 T x = S.multiply(g1.add(g.multiply(tsq)));
                 T term = two.multiply(g).multiply(t);
                 T twoI1 = one;

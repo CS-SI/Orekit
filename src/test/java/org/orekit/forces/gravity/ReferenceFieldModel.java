@@ -106,9 +106,9 @@ class ReferenceFieldModel {
         Dfp y      = dfpField.newDfp(position.getY());
         Dfp z      = dfpField.newDfp(position.getZ());
 
-        Dfp rho2     = x.multiply(x).add(y.multiply(y));
+        Dfp rho2     = x.square().add(y.square());
         Dfp rho      = rho2.sqrt();
-        Dfp r2       = rho2.add(z.multiply(z));
+        Dfp r2       = rho2.add(z.square());
         Dfp r        = r2.sqrt();
         Dfp aOr      = dfpField.newDfp(provider.getAe()).divide(r);
         Dfp lambda   = position.getX() > 0 ?

@@ -88,7 +88,7 @@ public class FieldCircularLatitudeArgumentUtility {
      * @return intermediate variable referred to as epsilon.
      */
     private static <T extends CalculusFieldElement<T>> T eccentricAndTrueEpsilon(final T ex, final T ey) {
-        return (ex.multiply(ex).negate().subtract(ey.multiply(ey)).add(1.)).sqrt();
+        return (ex.square().negate().subtract(ey.square()).add(1.)).sqrt();
     }
 
     /**

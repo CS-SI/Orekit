@@ -495,7 +495,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
             // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
             final FieldVector3D<T> fixedP   = new FieldVector3D<>(getOne(), shiftedP,
-                                                                  dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
+                                                                  dt.square().multiply(0.5), nonKeplerianAcceleration);
             final T                fixedR2 = fixedP.getNormSq();
             final T                fixedR  = fixedR2.sqrt();
             final FieldVector3D<T> fixedV  = new FieldVector3D<>(getOne(), shiftedV,
@@ -568,7 +568,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
             // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
             final FieldVector3D<T> fixedP   = new FieldVector3D<>(getOne(), shiftedP,
-                                                                  dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
+                                                                  dt.square().multiply(0.5), nonKeplerianAcceleration);
             final T                fixedR2 = fixedP.getNormSq();
             final T                fixedR  = fixedR2.sqrt();
             final FieldVector3D<T> fixedV  = new FieldVector3D<>(getOne(), shiftedV,

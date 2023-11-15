@@ -668,7 +668,7 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
      */
     public FieldVector3D<T> positionShiftedBy(final T dt) {
         final T one = dt.getField().getOne();
-        return new FieldVector3D<>(one, position, dt, velocity, dt.multiply(dt).multiply(0.5), acceleration);
+        return new FieldVector3D<>(one, position, dt, velocity, dt.square().multiply(0.5), acceleration);
     }
 
     /** Gets the position.

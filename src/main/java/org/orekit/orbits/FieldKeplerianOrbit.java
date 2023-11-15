@@ -945,7 +945,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
             keplerianShifted.computePVWithoutA();
             final FieldVector3D<T> fixedP   = new FieldVector3D<>(getOne(), keplerianShifted.partialPV.getPosition(),
-                                                                  dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
+                                                                  dt.square().multiply(0.5), nonKeplerianAcceleration);
             final T   fixedR2 = fixedP.getNormSq();
             final T   fixedR  = fixedR2.sqrt();
             final FieldVector3D<T> fixedV  = new FieldVector3D<>(getOne(), keplerianShifted.partialPV.getVelocity(),
@@ -1010,7 +1010,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final T mu         = getMu();
         final T sqrtMuA    = FastMath.sqrt(a.multiply(mu));
         final T sqrtAoMu   = FastMath.sqrt(a.divide(mu));
-        final T a2         = a.multiply(a);
+        final T a2         = a.square();
         final T twoA       = a.multiply(2);
         final T rOnA       = r.divide(a);
 
@@ -1149,7 +1149,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final T mu         = getMu();
         final T absA       = a.negate();
         final T sqrtMuA    = absA.multiply(mu).sqrt();
-        final T a2         = a.multiply(a);
+        final T a2         = a.square();
         final T rOa        = r.divide(absA);
 
         final FieldSinCos<T> scI = FastMath.sinCos(i);
@@ -1227,7 +1227,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         // dM
         final T s2a    = pv.divide(absA.multiply(2));
-        final T oObux  = m.multiply(m).add(absA.multiply(mu)).sqrt().reciprocal();
+        final T oObux  = m.square().add(absA.multiply(mu)).sqrt().reciprocal();
         final T scasbu = pv.multiply(oObux);
         final FieldVector3D<T> dauP = new FieldVector3D<>(sqrtMuA.reciprocal(), velocity, s2a.negate().divide(sqrtMuA), vectorAR);
         final FieldVector3D<T> dauV = new FieldVector3D<>(sqrtMuA.reciprocal(), position, s2a.negate().divide(sqrtMuA), vectorARDot);
@@ -1411,12 +1411,12 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                 pDot[5] = pDot[5].add(n);
                 break;
             case ECCENTRIC :
-                oMe2 = e.multiply(e).negate().add(1).abs();
+                oMe2 = e.square().negate().add(1).abs();
                 ksi  = e.multiply(v.cos()).add(1);
                 pDot[5] = pDot[5].add( n.multiply(ksi).divide(oMe2));
                 break;
             case TRUE :
-                oMe2 = e.multiply(e).negate().add(1).abs();
+                oMe2 = e.square().negate().add(1).abs();
                 ksi  = e.multiply(v.cos()).add(1);
                 pDot[5] = pDot[5].add(n.multiply(ksi).multiply(ksi).divide(oMe2.multiply(oMe2.sqrt())));
                 break;

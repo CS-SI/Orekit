@@ -284,7 +284,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         final T f      = eCE.subtract(e2);
         final T g      = eSE.multiply(e2.negate().add(1).sqrt());
         final T aOnR   = a.divide(r);
-        final T a2OnR2 = aOnR.multiply(aOnR);
+        final T a2OnR2 = aOnR.square();
         ex = a2OnR2.multiply(f.multiply(x2).add(g.multiply(y2)));
         ey = a2OnR2.multiply(f.multiply(y2).subtract(g.multiply(x2)));
 
@@ -366,7 +366,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         i    = op.getI();
         final T hx = op.getHx();
         final T hy = op.getHy();
-        final T h2 = hx.multiply(hx).add(hy.multiply(hy));
+        final T h2 = hx.square().add(hy.square());
         final T h  = h2.sqrt();
         raan = hy.atan2(hx);
         final FieldSinCos<T> scRaan = FastMath.sinCos(raan);
@@ -825,8 +825,8 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
 
         // eccentricity-related intermediate parameters
         final T exey = equEx.multiply(equEy);
-        final T ex2  = equEx.multiply(equEx);
-        final T ey2  = equEy.multiply(equEy);
+        final T ex2  = equEx.square();
+        final T ey2  = equEy.square();
         final T e2   = ex2.add(ey2);
         final T eta  = e2.negate().add(1).sqrt().add(1);
         final T beta = eta.reciprocal();
@@ -914,8 +914,8 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
 
         // eccentricity-related intermediate parameters
         final T exey = equEx.multiply(equEy);
-        final T ex2  = equEx.multiply(equEx);
-        final T ey2  = equEy.multiply(equEy);
+        final T ex2  = equEx.square();
+        final T ey2  = equEy.square();
         final T e2   = ex2.add(ey2);
         final T eta  = e2.negate().add(1).sqrt().add(1);
         final T beta = eta.reciprocal();
@@ -975,7 +975,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
             // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
             keplerianShifted.computePVWithoutA();
             final FieldVector3D<T> fixedP   = new FieldVector3D<>(getOne(), keplerianShifted.partialPV.getPosition(),
-                                                                  dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
+                                                                  dt.square().multiply(0.5), nonKeplerianAcceleration);
             final T   fixedR2 = fixedP.getNormSq();
             final T   fixedR  = fixedR2.sqrt();
             final FieldVector3D<T> fixedV  = new FieldVector3D<>(getOne(), keplerianShifted.partialPV.getVelocity(),
@@ -1022,10 +1022,10 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         final T rOa        = r.divide(a);
         final T aOr        = a.divide(r);
         final T aOr2       = a.divide(r2);
-        final T a2         = a.multiply(a);
+        final T a2         = a.square();
 
-        final T ex2        = ex.multiply(ex);
-        final T ey2        = ey.multiply(ey);
+        final T ex2        = ex.square();
+        final T ey2        = ey.square();
         final T e2         = ex2.add(ey2);
         final T epsilon    = e2.negate().add(1.0).sqrt();
         final T beta       = epsilon.add(1).reciprocal();

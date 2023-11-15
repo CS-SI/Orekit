@@ -347,7 +347,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         cosi0 = FastMath.cos(tle.getI());
         theta2 = cosi0.multiply(cosi0);
         final T x3thm1 = theta2.multiply(3.0).subtract(1.0);
-        e0sq = tle.getE().multiply(tle.getE());
+        e0sq = tle.getE().square();
         beta02 = e0sq.negate().add(1.0);
         beta0 = FastMath.sqrt(beta02);
         final T tval = x3thm1.multiply(1.5 * TLEConstants.CK2).divide(beta0.multiply(beta02));
@@ -376,20 +376,20 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
             }
             final T temp_val = s4.negate().add(120.0).multiply(TLEConstants.NORMALIZED_EQUATORIAL_RADIUS / TLEConstants.EARTH_RADIUS);
             final T temp_val_squared = temp_val.multiply(temp_val);
-            q0ms24 = temp_val_squared.multiply(temp_val_squared);
+            q0ms24 = temp_val_squared.square();
             s4 = s4.divide(TLEConstants.EARTH_RADIUS).add(TLEConstants.NORMALIZED_EQUATORIAL_RADIUS); // new value for q0ms2T and s
         }
 
         final T pinv = a0dp.multiply(beta02).reciprocal();
-        final T pinvsq = pinv.multiply(pinv);
+        final T pinvsq = pinv.square();
         tsi = a0dp.subtract(s4).reciprocal();
         eta = a0dp.multiply(tle.getE()).multiply(tsi);
-        etasq = eta.multiply(eta);
+        etasq = eta.square();
         eeta = tle.getE().multiply(eta);
 
         final T psisq = etasq.negate().add(1.0).abs(); // abs because pow 3.5 needs positive value
         final T tsi_squared = tsi.multiply(tsi);
-        coef = q0ms24.multiply(tsi_squared.multiply(tsi_squared));
+        coef = q0ms24.multiply(tsi_squared.square());
         coef1 = coef.divide(psisq.pow(3.5));
 
         // C2 and C1 coefficients computation :
@@ -452,7 +452,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         final T aynl  = temp.multiply(aycof);
         final T xlt   = xl.add(xll);
         final T ayn   = e.multiply(FastMath.sin(omega)).add(aynl);
-        final T elsq  = axn.multiply(axn).add(ayn.multiply(ayn));
+        final T elsq  = axn.square().add(ayn.square());
         final T capu  = MathUtils.normalizeAngle(xlt.subtract(xnode), zero.getPi());
         T epw    = capu;
         T ecosE  = zero;
@@ -461,7 +461,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         T cosEPW = zero;
 
         // Dundee changes:  items dependent on cosio get recomputed:
-        final T cosi0Sq = cosi0.multiply(cosi0);
+        final T cosi0Sq = cosi0.square();
         final T x3thm1  = cosi0Sq.multiply(3.0).subtract(1.0);
         final T x1mth2  = cosi0Sq.negate().add(1.0);
         final T x7thm1  = cosi0Sq.multiply(7.0).subtract(1.0);

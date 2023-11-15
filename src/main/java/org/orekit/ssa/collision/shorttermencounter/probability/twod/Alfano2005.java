@@ -120,7 +120,7 @@ public class Alfano2005 extends AbstractShortTermEncounter2DPOCMethod {
 
         final T rootTwoSigmaY = sigmaY.multiply(FastMath.sqrt(2));
 
-        final T otherTerm = xm.multiply(xm).divide(sigmaX.multiply(sigmaX).multiply(-2.)).exp()
+        final T otherTerm = xm.square().divide(sigmaX.multiply(sigmaX).multiply(-2.)).exp()
                               .multiply(Erf.erf(radius.subtract(ym).divide(rootTwoSigmaY))
                                            .subtract(Erf.erf(radius.add(ym).negate().divide(rootTwoSigmaY))));
 
@@ -248,16 +248,16 @@ public class Alfano2005 extends AbstractShortTermEncounter2DPOCMethod {
      */
     private <T extends CalculusFieldElement<T>> T getRecurrentPart(final T x, final T xm, final T ym, final T sigmaX,
                                                                    final T sigmaY, final T radius) {
-        final T minusTwoSigmaXSquared          = sigmaX.multiply(sigmaX).multiply(-2.);
-        final T radiusSquaredMinusXSquaredSQRT = radius.multiply(radius).subtract(x.multiply(x)).sqrt();
+        final T minusTwoSigmaXSquared          = sigmaX.square().multiply(-2.);
+        final T radiusSquaredMinusXSquaredSQRT = radius.square().subtract(x.square()).sqrt();
         final T rootTwoSigmaY                  = sigmaY.multiply(FastMath.sqrt(2));
         final T xMinusXm                       = x.subtract(xm);
         final T xPlusXm                        = x.add(xm);
 
         return Erf.erf(radiusSquaredMinusXSquaredSQRT.subtract(ym).divide(rootTwoSigmaY)).subtract(
                           Erf.erf(radiusSquaredMinusXSquaredSQRT.add(ym).negate().divide(rootTwoSigmaY)))
-                  .multiply(xMinusXm.multiply(xMinusXm).divide(minusTwoSigmaXSquared).exp()
-                                    .add(xPlusXm.multiply(xPlusXm).divide(minusTwoSigmaXSquared).exp()));
+                  .multiply(xMinusXm.square().divide(minusTwoSigmaXSquared).exp()
+                                    .add(xPlusXm.square().divide(minusTwoSigmaXSquared).exp()));
     }
 
     /** {@inheritDoc} */

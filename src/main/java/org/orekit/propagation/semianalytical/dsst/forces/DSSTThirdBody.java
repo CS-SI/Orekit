@@ -1642,7 +1642,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
             //initialise fields
             c = auxiliaryElements.getEcc().multiply(context.getb());
-            final T c2 = c.multiply(c);
+            final T c2 = c.square();
 
             //b² * χ
             final T b2Chi = context.getb().multiply(context.getb()).multiply(context.getX());
