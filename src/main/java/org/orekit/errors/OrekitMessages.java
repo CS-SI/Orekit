@@ -537,6 +537,12 @@ public enum OrekitMessages implements Localizable {
     /** UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY. */
     UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY("unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations"),
 
+    /** UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT. */
+    UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT("unable to compute eccentric longitude argument from the mean one after {0} iterations"),
+
+    /** UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT. */
+    UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT("unable to compute eccentric latitude argument from the mean one after {0} iterations"),
+
     /** UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS. */
     UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS("unable to compute mean orbit from osculating orbit after {0} iterations"),
 

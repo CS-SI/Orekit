@@ -192,10 +192,10 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
             final UnivariateDerivative1 lvUD;
             switch (type) {
                 case MEAN :
-                    lvUD = FieldEquinoctialOrbit.eccentricToTrue(FieldEquinoctialOrbit.meanToEccentric(lUD, exUD, eyUD), exUD, eyUD);
+                    lvUD = FieldEquinoctialLongitudeArgumentUtility.meanToTrue(exUD, eyUD, lUD);
                     break;
                 case ECCENTRIC :
-                    lvUD = FieldEquinoctialOrbit.eccentricToTrue(lUD, exUD, eyUD);
+                    lvUD = FieldEquinoctialLongitudeArgumentUtility.eccentricToTrue(exUD, eyUD, lUD);
                     break;
                 case TRUE :
                     lvUD = lUD;
@@ -208,10 +208,10 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
         } else {
             switch (type) {
                 case MEAN :
-                    this.lv = eccentricToTrue(meanToEccentric(l, ex, ey), ex, ey);
+                    this.lv = EquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, l);
                     break;
                 case ECCENTRIC :
-                    this.lv = eccentricToTrue(l, ex, ey);
+                    this.lv = EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, l);
                     break;
                 case TRUE :
                     this.lv = l;
@@ -308,7 +308,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
             final UnivariateDerivative1 exUD = new UnivariateDerivative1(ex, exDot);
             final UnivariateDerivative1 eyUD = new UnivariateDerivative1(ey, eyDot);
             final UnivariateDerivative1 lMUD = new UnivariateDerivative1(getLM(), lMDot);
-            final UnivariateDerivative1 lvUD = FieldEquinoctialOrbit.eccentricToTrue(FieldEquinoctialOrbit.meanToEccentric(lMUD, exUD, eyUD), exUD, eyUD);
+            final UnivariateDerivative1 lvUD = FieldEquinoctialLongitudeArgumentUtility.meanToTrue(exUD, eyUD, lMUD);
             lvDot = lvUD.getDerivative(1);
 
         } else {
@@ -433,7 +433,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
 
     /** {@inheritDoc} */
     public double getLE() {
-        return trueToEccentric(lv, ex, ey);
+        return EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, lv);
     }
 
     /** {@inheritDoc} */
@@ -441,13 +441,13 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
         final UnivariateDerivative1 lVUD = new UnivariateDerivative1(lv, lvDot);
         final UnivariateDerivative1 exUD = new UnivariateDerivative1(ex, exDot);
         final UnivariateDerivative1 eyUD = new UnivariateDerivative1(ey, eyDot);
-        final UnivariateDerivative1 lEUD = FieldEquinoctialOrbit.trueToEccentric(lVUD, exUD, eyUD);
+        final UnivariateDerivative1 lEUD = FieldEquinoctialLongitudeArgumentUtility.trueToEccentric(exUD, eyUD, lVUD);
         return lEUD.getDerivative(1);
     }
 
     /** {@inheritDoc} */
     public double getLM() {
-        return eccentricToMean(trueToEccentric(lv, ex, ey), ex, ey);
+        return EquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, lv);
     }
 
     /** {@inheritDoc} */
@@ -455,7 +455,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
         final UnivariateDerivative1 lVUD = new UnivariateDerivative1(lv, lvDot);
         final UnivariateDerivative1 exUD = new UnivariateDerivative1(ex, exDot);
         final UnivariateDerivative1 eyUD = new UnivariateDerivative1(ey, eyDot);
-        final UnivariateDerivative1 lMUD = FieldEquinoctialOrbit.eccentricToMean(FieldEquinoctialOrbit.trueToEccentric(lVUD, exUD, eyUD), exUD, eyUD);
+        final UnivariateDerivative1 lMUD = FieldEquinoctialLongitudeArgumentUtility.trueToMean(exUD, eyUD, lVUD);
         return lMUD.getDerivative(1);
     }
 
@@ -485,12 +485,9 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
      * @param ey second component of the eccentricity vector
      * @return the true longitude argument
      */
+    @Deprecated
     public static double eccentricToTrue(final double lE, final double ex, final double ey) {
-        final double epsilon = FastMath.sqrt(1 - ex * ex - ey * ey);
-        final SinCos scLE    = FastMath.sinCos(lE);
-        final double num     = ex * scLE.sin() - ey * scLE.cos();
-        final double den     = epsilon + 1 - ex * scLE.cos() - ey * scLE.sin();
-        return lE + 2 * FastMath.atan(num / den);
+        return EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, lE);
     }
 
     /** Computes the eccentric longitude argument from the true longitude argument.
@@ -499,12 +496,9 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
      * @param ey second component of the eccentricity vector
      * @return the eccentric longitude argument
      */
+    @Deprecated
     public static double trueToEccentric(final double lv, final double ex, final double ey) {
-        final double epsilon = FastMath.sqrt(1 - ex * ex - ey * ey);
-        final SinCos scLv    = FastMath.sinCos(lv);
-        final double num     = ey * scLv.cos() - ex * scLv.sin();
-        final double den     = epsilon + 1 + ex * scLv.cos() + ey * scLv.sin();
-        return lv + 2 * FastMath.atan(num / den);
+        return EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, lv);
     }
 
     /** Computes the eccentric longitude argument from the mean longitude argument.
@@ -513,31 +507,9 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
      * @param ey second component of the eccentricity vector
      * @return the eccentric longitude argument
      */
+    @Deprecated
     public static double meanToEccentric(final double lM, final double ex, final double ey) {
-        // Generalization of Kepler equation to equinoctial parameters
-        // with lE = PA + RAAN + E and
-        //      lM = PA + RAAN + M = lE - ex.sin(lE) + ey.cos(lE)
-        double lE = lM;
-        double shift = 0.0;
-        double lEmlM = 0.0;
-        SinCos scLE  = FastMath.sinCos(lE);
-        int iter = 0;
-        do {
-            final double f2 = ex * scLE.sin() - ey * scLE.cos();
-            final double f1 = 1.0 - ex * scLE.cos() - ey * scLE.sin();
-            final double f0 = lEmlM - f2;
-
-            final double f12 = 2.0 * f1;
-            shift = f0 * f12 / (f1 * f12 - f0 * f2);
-
-            lEmlM -= shift;
-            lE     = lM + lEmlM;
-            scLE   = FastMath.sinCos(lE);
-
-        } while (++iter < 50 && FastMath.abs(shift) > 1.0e-12);
-
-        return lE;
-
+        return EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, lM);
     }
 
     /** Computes the mean longitude argument from the eccentric longitude argument.
@@ -546,9 +518,9 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
      * @param ey second component of the eccentricity vector
      * @return the mean longitude argument
      */
+    @Deprecated
     public static double eccentricToMean(final double lE, final double ex, final double ey) {
-        final SinCos scLE = FastMath.sinCos(lE);
-        return lE - ex * scLE.sin() + ey * scLE.cos();
+        return EquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, lE);
     }
 
     /** {@inheritDoc} */

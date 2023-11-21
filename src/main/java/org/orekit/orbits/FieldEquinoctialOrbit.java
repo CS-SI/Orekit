@@ -192,10 +192,10 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
             final FieldUnivariateDerivative1<T> lvUD;
             switch (type) {
                 case MEAN :
-                    lvUD = eccentricToTrue(meanToEccentric(lUD, exUD, eyUD), exUD, eyUD);
+                    lvUD = FieldEquinoctialLongitudeArgumentUtility.meanToTrue(exUD, eyUD, lUD);
                     break;
                 case ECCENTRIC :
-                    lvUD = eccentricToTrue(lUD, exUD, eyUD);
+                    lvUD = FieldEquinoctialLongitudeArgumentUtility.eccentricToTrue(exUD, eyUD, lUD);
                     break;
                 case TRUE :
                     lvUD = lUD;
@@ -208,10 +208,10 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         } else {
             switch (type) {
                 case MEAN :
-                    this.lv = eccentricToTrue(meanToEccentric(l, ex, ey), ex, ey);
+                    this.lv = FieldEquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, l);
                     break;
                 case ECCENTRIC :
-                    this.lv = eccentricToTrue(l, ex, ey);
+                    this.lv = FieldEquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, l);
                     break;
                 case TRUE :
                     this.lv = l;
@@ -308,7 +308,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
             final FieldUnivariateDerivative1<T> exUD = new FieldUnivariateDerivative1<>(ex, exDot);
             final FieldUnivariateDerivative1<T> eyUD = new FieldUnivariateDerivative1<>(ey, eyDot);
             final FieldUnivariateDerivative1<T> lMUD = new FieldUnivariateDerivative1<>(getLM(), lMDot);
-            final FieldUnivariateDerivative1<T> lvUD = eccentricToTrue(meanToEccentric(lMUD, exUD, eyUD), exUD, eyUD);
+            final FieldUnivariateDerivative1<T> lvUD = FieldEquinoctialLongitudeArgumentUtility.meanToTrue(exUD, eyUD, lMUD);
             lvDot = lvUD.getDerivative(1);
 
         } else {
@@ -478,7 +478,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
 
     /** {@inheritDoc} */
     public T getLE() {
-        return trueToEccentric(lv, ex, ey);
+        return FieldEquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, lv);
     }
 
     /** {@inheritDoc} */
@@ -491,14 +491,14 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         final FieldUnivariateDerivative1<T> lVUD = new FieldUnivariateDerivative1<>(lv, lvDot);
         final FieldUnivariateDerivative1<T> exUD = new FieldUnivariateDerivative1<>(ex, exDot);
         final FieldUnivariateDerivative1<T> eyUD = new FieldUnivariateDerivative1<>(ey, eyDot);
-        final FieldUnivariateDerivative1<T> lEUD = trueToEccentric(lVUD, exUD, eyUD);
+        final FieldUnivariateDerivative1<T> lEUD = FieldEquinoctialLongitudeArgumentUtility.trueToEccentric(exUD, eyUD, lVUD);
         return lEUD.getDerivative(1);
 
     }
 
     /** {@inheritDoc} */
     public T getLM() {
-        return eccentricToMean(trueToEccentric(lv, ex, ey), ex, ey);
+        return FieldEquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, lv);
     }
 
     /** {@inheritDoc} */
@@ -511,7 +511,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         final FieldUnivariateDerivative1<T> lVUD = new FieldUnivariateDerivative1<>(lv, lvDot);
         final FieldUnivariateDerivative1<T> exUD = new FieldUnivariateDerivative1<>(ex, exDot);
         final FieldUnivariateDerivative1<T> eyUD = new FieldUnivariateDerivative1<>(ey, eyDot);
-        final FieldUnivariateDerivative1<T> lMUD = eccentricToMean(trueToEccentric(lVUD, exUD, eyUD), exUD, eyUD);
+        final FieldUnivariateDerivative1<T> lMUD = FieldEquinoctialLongitudeArgumentUtility.trueToMean(exUD, eyUD, lVUD);
         return lMUD.getDerivative(1);
 
     }
@@ -549,14 +549,9 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @param <T> Type of the field elements
      * @return the true longitude argument
      */
+    @Deprecated
     public static <T extends CalculusFieldElement<T>> T eccentricToTrue(final T lE, final T ex, final T ey) {
-        final T epsilon           = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
-        final FieldSinCos<T> scLE = FastMath.sinCos(lE);
-        final T cosLE             = scLE.cos();
-        final T sinLE             = scLE.sin();
-        final T num               = ex.multiply(sinLE).subtract(ey.multiply(cosLE));
-        final T den               = epsilon.add(1).subtract(ex.multiply(cosLE)).subtract(ey.multiply(sinLE));
-        return lE.add(num.divide(den).atan().multiply(2));
+        return FieldEquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, lE);
     }
 
     /** Computes the eccentric longitude argument from the true longitude argument.
@@ -566,14 +561,9 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @param <T> Type of the field elements
      * @return the eccentric longitude argument
      */
+    @Deprecated
     public static <T extends CalculusFieldElement<T>> T trueToEccentric(final T lv, final T ex, final T ey) {
-        final T epsilon           = ex.multiply(ex).add(ey.multiply(ey)).negate().add(1).sqrt();
-        final FieldSinCos<T> scLv = FastMath.sinCos(lv);
-        final T cosLv             = scLv.cos();
-        final T sinLv             = scLv.sin();
-        final T num               = ey.multiply(cosLv).subtract(ex.multiply(sinLv));
-        final T den               = epsilon.add(1).add(ex.multiply(cosLv)).add(ey.multiply(sinLv));
-        return lv.add(num.divide(den).atan().multiply(2));
+        return FieldEquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, lv);
     }
 
     /** Computes the eccentric longitude argument from the mean longitude argument.
@@ -583,31 +573,9 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @param <T> Type of the field elements
      * @return the eccentric longitude argument
      */
+    @Deprecated
     public static <T extends CalculusFieldElement<T>> T meanToEccentric(final T lM, final T ex, final T ey) {
-        // Generalization of Kepler equation to equinoctial parameters
-        // with lE = PA + RAAN + E and
-        //      lM = PA + RAAN + M = lE - ex.sin(lE) + ey.cos(lE)
-        T lE = lM;
-        T shift = lM.getField().getZero();
-        T lEmlM = lM.getField().getZero();
-        FieldSinCos<T> scLE = FastMath.sinCos(lE);
-        int iter = 0;
-        do {
-            final T f2 = ex.multiply(scLE.sin()).subtract(ey.multiply(scLE.cos()));
-            final T f1 = ex.multiply(scLE.cos()).add(ey.multiply(scLE.sin())).negate().add(1);
-            final T f0 = lEmlM.subtract(f2);
-
-            final T f12 = f1.multiply(2.0);
-            shift = f0.multiply(f12).divide(f1.multiply(f12).subtract(f0.multiply(f2)));
-
-            lEmlM = lEmlM.subtract(shift);
-            lE     = lM.add(lEmlM);
-            scLE = FastMath.sinCos(lE);
-
-        } while (++iter < 50 && FastMath.abs(shift.getReal()) > 1.0e-12);
-
-        return lE;
-
+        return FieldEquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, lM);
     }
 
     /** Computes the mean longitude argument from the eccentric longitude argument.
@@ -617,9 +585,9 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @param <T> Type of the field elements
      * @return the mean longitude argument
      */
+    @Deprecated
     public static <T extends CalculusFieldElement<T>> T eccentricToMean(final T lE, final T ex, final T ey) {
-        final FieldSinCos<T> scLE = FastMath.sinCos(lE);
-        return lE.subtract(ex.multiply(scLE.sin())).add(ey.multiply(scLE.cos()));
+        return FieldEquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, lE);
     }
 
     /** {@inheritDoc} */
