@@ -21,7 +21,6 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeInterpolator;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -342,17 +341,6 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
 
         return subInterpolators;
 
-    }
-
-    /**
-     * @return fail to return number of interpolation points used by this interpolator.
-     *
-     * @throws OrekitException because multiple interpolator are defined so the number of interpolation points used may
-     * differ.
-     */
-    @Override
-    public int getNbInterpolationPoints() {
-        throw new OrekitException(OrekitMessages.MULTIPLE_INTERPOLATOR_USED);
     }
 
     /**

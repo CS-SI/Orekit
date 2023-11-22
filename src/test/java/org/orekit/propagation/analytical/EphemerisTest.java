@@ -27,6 +27,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.orekit.TestUtils;
 import org.orekit.Utils;
@@ -36,6 +37,8 @@ import org.orekit.attitudes.AttitudesSequence;
 import org.orekit.attitudes.CelestialBodyPointed;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitIllegalStateException;
@@ -44,6 +47,9 @@ import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
+import org.orekit.frames.TopocentricFrame;
+import org.orekit.models.earth.EarthStandardAtmosphereRefraction;
+import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitBlender;
@@ -59,7 +65,9 @@ import org.orekit.propagation.StateCovarianceBlender;
 import org.orekit.propagation.StateCovarianceKeplerianHermiteInterpolator;
 import org.orekit.propagation.StateCovarianceTest;
 import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -73,6 +81,7 @@ import org.orekit.utils.AbsolutePVCoordinatesTest;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -81,6 +90,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class EphemerisTest {
 
@@ -298,7 +308,7 @@ public class EphemerisTest {
 
         propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.LVLH_CCSDS));
 
-        List<SpacecraftState> states = new ArrayList<SpacecraftState>(numberOfIntervals + 1);
+        List<SpacecraftState> states = new ArrayList<>(numberOfIntervals + 1);
         for (int j = 0; j <= numberOfIntervals; j++) {
             states.add(propagator.propagate(initDate.shiftedBy((j * deltaT))));
         }
@@ -818,6 +828,47 @@ public class EphemerisTest {
         // WHEN & THEN
         Assertions.assertDoesNotThrow(() -> ephemeris.propagate(ephemeris.getMaxDate()), "No error should have been thrown");
 
+    }
+
+    @Test
+    @Timeout(value = 5000, unit = TimeUnit.SECONDS)
+    void testIssue1277() {
+        // GIVEN
+        // Create orbit
+        double       mu    = Constants.IERS2010_EARTH_MU;
+        AbsoluteDate date  = new AbsoluteDate();
+        Frame        frame = FramesFactory.getEME2000();
+        Orbit orbit = new KeplerianOrbit(6378000 + 500000, 0.01, FastMath.toRadians(15), 0, 0, 0,
+                                         PositionAngleType.MEAN, frame,date, mu);
+        // Create propagator
+        Propagator propagator = new KeplerianPropagator(orbit);
+
+        // Add step handler for saving states
+        List<SpacecraftState> states = new ArrayList<>();
+        propagator.getMultiplexer().add(10, states::add);
+
+        // Run propagation over one week
+        propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY * 7));
+
+        // Create event detector
+        GeodeticPoint    station = new GeodeticPoint(0, 0, 0);
+        Frame            itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        OneAxisEllipsoid wgs84   = ReferenceEllipsoid.getWgs84(itrf);
+        TopocentricFrame topo    = new TopocentricFrame(wgs84, station, "station");
+
+        RecordAndContinue handler = new RecordAndContinue();
+        ElevationDetector detector = new ElevationDetector(topo).withConstantElevation(FastMath.toRadians(5))
+                                                                .withRefraction(new EarthStandardAtmosphereRefraction())
+                                                                .withMaxCheck(60).withHandler(handler);
+
+        // Create ephemeris from states
+        Ephemeris ephemeris = new Ephemeris(states, 4);
+
+        // Add detector
+        ephemeris.addEventDetector(detector);
+
+        // WHEN & THEN
+        ephemeris.propagate(ephemeris.getMinDate(), ephemeris.getMaxDate());
     }
 
     public void setUp() throws IllegalArgumentException, OrekitException {
