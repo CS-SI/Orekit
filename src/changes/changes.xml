@@ -39,6 +39,12 @@
            formats: EOP C04, STK ephemeris files, Rinex 3.05 and 4.0, Rinex 2 navigation
            messages, CCSDS ADM v2, and Sinex Differential Code Bias (DCB).
            See the list below for a full description of the changes.">
+      <action dev="theo611 " type="update" issue="1203">
+          Added new method addSupportedParameters in AbstractPropagatorBuilder.
+      </action>
+      <action dev="jasquier" type="add" issue="982">
+          Added Gauss angles-only initial orbit determination method.
+      </action>
       <action dev="lirw1984" type="update" issue="938">
           Enhanced parsing of CRD files.
       </action>
