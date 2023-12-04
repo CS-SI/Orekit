@@ -32,8 +32,8 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
-@Deprecated
-public class SaastamoinenModelTest {
+
+public class ModifiedSaastamoinenModelTest {
 
     private static double epsilon = 1e-6;
 
@@ -46,12 +46,12 @@ public class SaastamoinenModelTest {
     @Test
     public void testIssue1078() {
         try {
-            new SaastamoinenModel(273.16 + 18, 1013.25, 50.0);
+            new ModifiedSaastamoinenModel(273.16 + 18, 1013.25, 50.0);
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.INVALID_PARAMETER_RANGE, oe.getSpecifier());
         }
         try {
-            new SaastamoinenModel(273.16 + 18, 1013.25, -50.0);
+            new ModifiedSaastamoinenModel(273.16 + 18, 1013.25, -50.0);
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.INVALID_PARAMETER_RANGE, oe.getSpecifier());
         }
@@ -60,7 +60,7 @@ public class SaastamoinenModelTest {
     @Test
     public void testFixedElevation() {
         Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing height of the station
         for (double height = 0; height < 5000; height += 100) {
@@ -78,7 +78,7 @@ public class SaastamoinenModelTest {
     private <T extends CalculusFieldElement<T>> void doTestFieldFixedElevation(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
         T lastDelay = zero.add(Double.MAX_VALUE);
         // delay shall decline with increasing height of the station
         for (double height = 0; height < 5000; height += 100) {
@@ -91,7 +91,7 @@ public class SaastamoinenModelTest {
     @Test
     public void testFixedHeight() {
         Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
@@ -109,7 +109,7 @@ public class SaastamoinenModelTest {
     private <T extends CalculusFieldElement<T>> void doTestFieldFixedHeight(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
         T lastDelay = zero.add(Double.MAX_VALUE);
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
@@ -123,7 +123,7 @@ public class SaastamoinenModelTest {
     public void NoFile() {
         Utils.setDataRoot("atmosphere");
         try {
-            new SaastamoinenModel(273.16 + 18, 1013.25, 0.5, "^non-existent-file$");
+            new ModifiedSaastamoinenModel(273.16 + 18, 1013.25, 0.5, "^non-existent-file$");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
@@ -134,8 +134,8 @@ public class SaastamoinenModelTest {
     @Test
     public void compareDefaultAndLoaded() {
         Utils.setDataRoot("atmosphere");
-        SaastamoinenModel defaultModel = new SaastamoinenModel(273.16 + 18, 1013.25, 0.5, null);
-        SaastamoinenModel loadedModel  = new SaastamoinenModel(273.16 + 18, 1013.25, 0.5, SaastamoinenModel.DELTA_R_FILE_NAME);
+        ModifiedSaastamoinenModel defaultModel = new ModifiedSaastamoinenModel(273.16 + 18, 1013.25, 0.5, null);
+        ModifiedSaastamoinenModel loadedModel  = new ModifiedSaastamoinenModel(273.16 + 18, 1013.25, 0.5, ModifiedSaastamoinenModel.DELTA_R_FILE_NAME);
         double[] heights = new double[] {
             0.0, 250.0, 500.0, 750.0, 1000.0, 1250.0, 1500.0, 1750.0, 2000.0, 2250.0, 2500.0, 2750.0, 3000.0, 3250.0,
             3500.0, 3750.0, 4000.0, 4250.0, 4500.0, 4750.0, 5000.0
@@ -163,7 +163,7 @@ public class SaastamoinenModelTest {
     @Test
     public void testNegativeHeight() {
         Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
         final double height = -500.0;
         for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
             Assertions.assertEquals(model.pathDelay(elevation, new GeodeticPoint(0.0, 0.0, 0.0), null, AbsoluteDate.J2000_EPOCH),
@@ -180,7 +180,7 @@ public class SaastamoinenModelTest {
     private <T extends CalculusFieldElement<T>> void doTestFieldNegativeHeight(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
         final T height = zero.subtract(500.0);
         for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
             Assertions.assertEquals(model.pathDelay(zero.add(elevation), new FieldGeodeticPoint<>(zero, zero, zero), null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(),
@@ -192,14 +192,14 @@ public class SaastamoinenModelTest {
     @Test
     public void testIssue654LowElevation() {
         Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
 
         // Test model new setter/getter
         model.setLowElevationThreshold(1e-3);
         Assertions.assertEquals(1.e-3, model.getLowElevationThreshold(), 0.);
 
         // Reset to default value
-        model.setLowElevationThreshold(SaastamoinenModel.DEFAULT_LOW_ELEVATION_THRESHOLD);
+        model.setLowElevationThreshold(ModifiedSaastamoinenModel.DEFAULT_LOW_ELEVATION_THRESHOLD);
         double lowElevationPathDelay = model.pathDelay(0.001, new GeodeticPoint(0.0, 0.0, 0.0), null, AbsoluteDate.J2000_EPOCH);
         Assertions.assertTrue(lowElevationPathDelay > 0.);
         Assertions.assertEquals(model.pathDelay(model.getLowElevationThreshold(), new GeodeticPoint(0.0, 0.0, 0.0), null, AbsoluteDate.J2000_EPOCH),
@@ -212,7 +212,7 @@ public class SaastamoinenModelTest {
     private <T extends CalculusFieldElement<T>> void doTestFieldLowElevation(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
         final T elevation = zero.add(0.001);
         double lowElevationPathDelay = model.pathDelay(zero.add(elevation), new FieldGeodeticPoint<>(zero, zero, zero), null,
                 FieldAbsoluteDate.getJ2000Epoch(field)).getReal();
@@ -225,7 +225,7 @@ public class SaastamoinenModelTest {
     @Test
     public void compareExpectedValues() {
         Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
 
         for (int h = 0; h < heights.length; h++) {
             for (int e = 0; e < elevations.length; e++) {
@@ -247,7 +247,7 @@ public class SaastamoinenModelTest {
     private <T extends CalculusFieldElement<T>> void doCompareFieldExpectedValues(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
 
         for (int h = 0; h < heights.length; h++) {
             for (int e = 0; e < elevations.length; e++) {
@@ -264,7 +264,7 @@ public class SaastamoinenModelTest {
     @Test
     public void testIssue572() {
         Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
         final double height = 6000.0;
         for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
             Assertions.assertEquals(model.pathDelay(elevation, new GeodeticPoint(0.0, 0.0, 5000.0), null, AbsoluteDate.J2000_EPOCH), model.pathDelay(elevation, new GeodeticPoint(0.0, 0.0, height), null, AbsoluteDate.J2000_EPOCH), 1.e-10);
@@ -279,7 +279,7 @@ public class SaastamoinenModelTest {
     private <T extends CalculusFieldElement<T>> void doTestFieldIssue572(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
+        ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
         final T height = zero.add(6000.0);
         for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
             Assertions.assertEquals(model.pathDelay(zero.add(elevation),new FieldGeodeticPoint<>(zero, zero, zero.add(5000.0)), null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(),

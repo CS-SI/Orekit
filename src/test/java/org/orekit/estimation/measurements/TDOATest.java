@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.TDOATroposphericDelayModifier;
-import org.orekit.models.earth.troposphere.SaastamoinenModel;
+import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -170,7 +170,7 @@ public class TDOATest {
 
         // create a modifier
         final TDOATroposphericDelayModifier modifier =
-                        new TDOATroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+                        new TDOATroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
@@ -328,7 +328,7 @@ public class TDOATest {
 
         // create a modifier
         final TDOATroposphericDelayModifier modifier =
-                        new TDOATroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+                        new TDOATroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
 
         double maxRelativeError = 0;
         for (final ObservedMeasurement<?> measurement : measurements) {
