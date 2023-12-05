@@ -59,7 +59,7 @@ public class EquinoctialOrbitTest {
     private double mu;
 
     @Test
-    public void testEquinoctialToEquinoctialEll() {
+    void testEquinoctialToEquinoctialEll() {
 
         double ix = 1.200e-04;
         double iy = -1.16e-04;
@@ -93,7 +93,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testEquinoctialToEquinoctialCirc() {
+    void testEquinoctialToEquinoctialCirc() {
 
         double ix = 1.200e-04;
         double iy = -1.16e-04;
@@ -129,7 +129,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testEquinoctialToCartesian() {
+    void testEquinoctialToCartesian() {
 
         double ix = 1.200e-04;
         double iy = -1.16e-04;
@@ -159,7 +159,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testEquinoctialToKeplerian() {
+    void testEquinoctialToKeplerian() {
 
         double ix = 1.20e-4;
         double iy = -1.16e-4;
@@ -191,7 +191,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testHyperbolic() {
+    void testHyperbolic() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             new EquinoctialOrbit(42166712.0, 0.9, 0.5, 0.01, -0.02, 5.300,
                     PositionAngleType.MEAN,  FramesFactory.getEME2000(), date, mu);
@@ -199,7 +199,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testNumericalIssue25() {
+    void testNumericalIssue25() {
         Vector3D position = new Vector3D(3782116.14107698, 416663.11924914, 5875541.62103057);
         Vector3D velocity = new Vector3D(-6349.7848910501, 288.4061811651, 4066.9366759691);
         EquinoctialOrbit orbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
@@ -212,7 +212,7 @@ public class EquinoctialOrbitTest {
 
 
     @Test
-    public void testAnomaly() {
+    void testAnomaly() {
 
         // elliptic orbit
         Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
@@ -294,7 +294,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testPositionVelocityNorms() {
+    void testPositionVelocityNorms() {
 
         // elliptic and non equatorial (i retrograde) orbit
         EquinoctialOrbit p =
@@ -343,7 +343,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testGeometry() {
+    void testGeometry() {
 
         // elliptic and non equatorial (i retrograde) orbit
         EquinoctialOrbit p =
@@ -427,7 +427,7 @@ public class EquinoctialOrbitTest {
 
 
     @Test
-    public void testRadiusOfCurvature() {
+    void testRadiusOfCurvature() {
 
         // elliptic and non equatorial (i retrograde) orbit
         EquinoctialOrbit p =
@@ -465,7 +465,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testSymmetry() {
+    void testSymmetry() {
 
         // elliptic and non equatorial orbit
         Vector3D position = new Vector3D(4512.9, 18260., -5127.);
@@ -495,7 +495,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testNonInertialFrame() throws IllegalArgumentException {
+    void testNonInertialFrame() throws IllegalArgumentException {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             Vector3D position = new Vector3D(4512.9, 18260., -5127.);
             Vector3D velocity = new Vector3D(134664.6, 90066.8, 72047.6);
@@ -507,9 +507,9 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testJacobianReference() {
+    void testJacobianReference() {
 
-        AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        AbsoluteDate dateTca = new AbsoluteDate(2000, 4, 1, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
         EquinoctialOrbit orbEqu = new EquinoctialOrbit(7000000.0, 0.01, -0.02, 1.2, 2.1,
                                           FastMath.toRadians(40.), PositionAngleType.MEAN,
@@ -613,9 +613,9 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testJacobianFinitedifferences() {
+    void testJacobianFinitedifferences() {
 
-        AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        AbsoluteDate dateTca = new AbsoluteDate(2000, 4, 1, 0, 0, 0.000, TimeScalesFactory.getUTC());
         double mu =  3.986004415e+14;
         EquinoctialOrbit orbEqu = new EquinoctialOrbit(7000000.0, 0.01, -0.02, 1.2, 2.1,
                                                        FastMath.toRadians(40.), PositionAngleType.MEAN,
@@ -749,7 +749,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testSerialization()
+    void testSerialization()
       throws IOException, ClassNotFoundException {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -786,7 +786,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testSerializationWithDerivatives()
+    void testSerializationWithDerivatives()
       throws IOException, ClassNotFoundException {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -827,7 +827,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testNonKeplerianDerivatives() {
+    void testNonKeplerianDerivatives() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
         final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
@@ -883,16 +883,13 @@ public class EquinoctialOrbitTest {
     double differentiate(TimeStampedPVCoordinates pv, Frame frame, double mu, S picker) {
         final DSFactory factory = new DSFactory(1, 1);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 0.1);
-        UnivariateDifferentiableFunction diff = differentiator.differentiate(new UnivariateFunction() {
-            public double value(double dt) {
-                return picker.apply(new EquinoctialOrbit(pv.shiftedBy(dt), frame, mu));
-            }
-        });
+        UnivariateDifferentiableFunction diff = differentiator.differentiate((UnivariateFunction) dt ->
+                picker.apply(new EquinoctialOrbit(pv.shiftedBy(dt), frame, mu)));
         return diff.value(factory.variable(0, 0.0)).getPartialDerivative(1);
      }
 
     @Test
-    public void testPositionAngleDerivatives() {
+    void testPositionAngleDerivatives() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
         final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
@@ -935,7 +932,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testEquatorialRetrograde() {
+    void testEquatorialRetrograde() {
         Vector3D position = new Vector3D(10000000.0, 0.0, 0.0);
         Vector3D velocity = new Vector3D(0.0, -6500.0, 0.0);
         double r2 = position.getNormSq();
@@ -960,7 +957,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testDerivativesConversionSymmetry() {
+    void testDerivativesConversionSymmetry() {
         final AbsoluteDate date = new AbsoluteDate("2003-05-01T00:01:20.000", TimeScalesFactory.getUTC());
         Vector3D position     = new Vector3D(6893443.400234382, 1886406.1073757345, -589265.1150359757);
         Vector3D velocity     = new Vector3D(-281.1261461082365, -1231.6165642450928, -7348.756363469432);
@@ -990,7 +987,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
@@ -1023,7 +1020,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testCopyNonKeplerianAcceleration() {
+    void testCopyNonKeplerianAcceleration() {
 
         final Frame eme2000     = FramesFactory.getEME2000();
 
@@ -1054,7 +1051,7 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
-    public void testNormalize() {
+    void testNormalize() {
         EquinoctialOrbit withoutDerivatives =
                         new EquinoctialOrbit(42166712.0, 0.005, -0.025, 0.17, 0.34,
                                              0.4, PositionAngleType.MEAN,
@@ -1103,6 +1100,29 @@ public class EquinoctialOrbitTest {
         Assertions.assertEquals(0.0, normalized2.getHyDot()            - withDerivatives.getHyDot(),            1.0e-10);
         Assertions.assertEquals(0.0, normalized2.getLvDot()            - withDerivatives.getLvDot(),            1.0e-10);
 
+    }
+
+    @Test
+    void positionAngleNonRegressionOnDeprecated() {
+        // Can be removed when deprecated routines are removed in next major release (13.0)
+        // GIVEN
+        final double ex = 0.2;
+        final double ey = 0.3;
+        final double originalPositionAngle = 1.;
+        // WHEN
+        final double actualEccentricToMean = EquinoctialOrbit.eccentricToMean(originalPositionAngle, ex, ey);
+        final double actualEccentricToTrue = EquinoctialOrbit.eccentricToTrue(originalPositionAngle, ex, ey);
+        final double actualMeanToEccentric = EquinoctialOrbit.meanToEccentric(originalPositionAngle, ex, ey);
+        final double actualTrueToEccentric = EquinoctialOrbit.trueToEccentric(originalPositionAngle, ex, ey);
+        // THEN
+        Assertions.assertEquals(EquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, originalPositionAngle),
+                actualEccentricToMean);
+        Assertions.assertEquals(EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, originalPositionAngle),
+                actualEccentricToTrue);
+        Assertions.assertEquals(EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, originalPositionAngle),
+                actualMeanToEccentric);
+        Assertions.assertEquals(EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, originalPositionAngle),
+                actualTrueToEccentric);
     }
 
     @BeforeEach

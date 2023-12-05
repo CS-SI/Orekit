@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.0.1" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1275">
+          Added utility classes for position angle conversions for (Field) CircularOrbit and EquinoctialOrbit.
+      </action>
       <action dev="luc" type="add" issue="1278">
           Fixed exceptions occurring in EOP prediction with ill chosen fitting parameters.
       </action>

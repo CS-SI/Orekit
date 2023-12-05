@@ -201,7 +201,7 @@ public class FieldKeplerianAnomalyUtility {
         // the inequality test below IS intentional and should NOT be replaced by a
         // check with a small tolerance
         for (T x0 = E.getField().getZero().add(Double.NaN); !Double.valueOf(x.getReal())
-                .equals(Double.valueOf(x0.getReal()));) {
+                .equals(x0.getReal());) {
             d += 2;
             term = term.multiply(mE2.divide(d * (d + 1)));
             x0 = x;
