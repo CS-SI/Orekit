@@ -2189,7 +2189,7 @@
     view detector, measurement generation feature, possibility to use Marshall Solar Activity Future Estimation
     to feed NRL MSISE 2000 atmosphere model, new tropospheric models: Mendes-Pavlis, Vienna 1, Vienna 3, estimated model,
     new mapping functions for tropospheric effect: Global Mapping Function, Niell Mapping Function, Global
-    Pression Temperature Models GPT and GPT2, possibility to estimate tropospheric zenith delay,
+    Pressure Temperature Models GPT and GPT2, possibility to estimate tropospheric zenith delay,
     clock offset that can be estimated (both for ground station and satellite clocks).">
       <action dev="luc" type="add" issue="516">
         Added a way to manage clock corrections from GPSPropagator.
