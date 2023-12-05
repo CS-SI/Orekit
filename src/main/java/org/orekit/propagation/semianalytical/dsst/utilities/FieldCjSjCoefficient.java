@@ -60,7 +60,7 @@ public class FieldCjSjCoefficient <T extends CalculusFieldElement<T>> {
         zero = field.getZero();
         kih  = new FieldComplex<>(k, h);
         cjsj = new ArrayList<FieldComplex<T>>();
-        cjsj.add(new FieldComplex<>(zero.add(1.), zero));
+        cjsj.add(new FieldComplex<>(zero.newInstance(1.), zero));
         cjsj.add(kih);
         jLast = 1;
     }

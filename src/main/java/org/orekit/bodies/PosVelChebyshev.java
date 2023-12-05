@@ -169,9 +169,9 @@ class PosVelChebyshev implements TimeStamped, Serializable {
         // initialize Chebyshev polynomials recursion
         T pKm1 = one;
         T pK   = t;
-        T xP   = zero.add(xCoeffs[0]);
-        T yP   = zero.add(yCoeffs[0]);
-        T zP   = zero.add(zCoeffs[0]);
+        T xP   = zero.newInstance(xCoeffs[0]);
+        T yP   = zero.newInstance(yCoeffs[0]);
+        T zP   = zero.newInstance(zCoeffs[0]);
 
         // combine polynomials by applying coefficients
         for (int k = 1; k < xCoeffs.length; ++k) {
@@ -281,9 +281,9 @@ class PosVelChebyshev implements TimeStamped, Serializable {
         // initialize Chebyshev polynomials recursion
         T pKm1 = one;
         T pK   = t;
-        T xP   = zero.add(xCoeffs[0]);
-        T yP   = zero.add(yCoeffs[0]);
-        T zP   = zero.add(zCoeffs[0]);
+        T xP   = zero.newInstance(xCoeffs[0]);
+        T yP   = zero.newInstance(yCoeffs[0]);
+        T zP   = zero.newInstance(zCoeffs[0]);
 
         // initialize Chebyshev polynomials derivatives recursion
         T qKm1 = zero;

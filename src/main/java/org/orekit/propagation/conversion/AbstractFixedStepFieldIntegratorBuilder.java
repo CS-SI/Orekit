@@ -83,6 +83,6 @@ public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends Calculus
      * @return "fielded" step size (s)
      */
     protected T getFieldStep(final Field<T> field) {
-        return fieldStep != null ? fieldStep : field.getOne().multiply(step);
+        return fieldStep != null ? fieldStep : field.getZero().newInstance(step);
     }
 }

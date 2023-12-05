@@ -108,7 +108,7 @@ class VEISProvider implements TransformProvider {
         final T vst = ttd.multiply(VST1).add(rdtt.multiply(MathUtils.TWO_PI)).add(VST0).remainder(MathUtils.TWO_PI);
 
         // compute angular rotation of Earth, in rad/s
-        final FieldVector3D<T> rotationRate = new FieldVector3D<>(date.getField().getZero().add(-VSTD),
+        final FieldVector3D<T> rotationRate = new FieldVector3D<>(date.getField().getZero().newInstance(-VSTD),
                                                                   Vector3D.PLUS_K);
 
         // set up the transform from parent GTOD

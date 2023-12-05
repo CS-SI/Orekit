@@ -791,7 +791,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
             final T zero = mass.getField().getZero();
             final T one  = mass.getField().getOne();
             // preliminary processing
-            T q =  zero.add(referenceRadius).divide(mean.getA());
+            T q =  zero.newInstance(referenceRadius).divide(mean.getA());
             T ql = q.multiply(q);
             final T g2 = ql.multiply(ck0[2]);
             ql = ql.multiply(q);
@@ -833,7 +833,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
                     g6.multiply(13.125).multiply(one.subtract(sinI2.multiply(8.0)).add(sinI4.multiply(129.0 / 8.0)).subtract(sinI6.multiply(297.0 / 32.0)) ));
 
 
-            q = zero.add(3.0).divide(rdpom.multiply(32.0));
+            q = zero.newInstance(3.0).divide(rdpom.multiply(32.0));
             eps1 = q.multiply(g4).multiply(sinI2).multiply(sinI2.multiply(-35.0).add(30.0)).subtract(
                    q.multiply(175.0).multiply(g6).multiply(sinI2).multiply(sinI2.multiply(-3.0).add(sinI4.multiply(2.0625)).add(1.0)));
             q = sinI1.multiply(3.0).divide(rdpom.multiply(8.0));
@@ -856,7 +856,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
             final T qC   = g6.multiply(105.0 / 16.0).multiply(sinI2);
             final T qD   = g3.multiply(-0.75).multiply(sinI1);
             final T qE   = g5.multiply(3.75).multiply(sinI1);
-            kh = zero.add(0.375).divide(rdpom);
+            kh = zero.newInstance(0.375).divide(rdpom);
             kl = kh.divide(sinI1);
 
             ax1 = qq.multiply(sinI2.multiply(-3.5).add(2.0));

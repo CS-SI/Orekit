@@ -65,7 +65,7 @@ public class FieldLongitudeCrossingDetector <T extends CalculusFieldElement<T>>
     */
     public FieldLongitudeCrossingDetector(final Field<T> field, final OneAxisEllipsoid body, final double longitude) {
         this(s -> DEFAULT_MAXCHECK,
-            field.getZero().add(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(), body, longitude);
+            field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(), body, longitude);
     }
 
     /**

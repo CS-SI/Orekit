@@ -120,7 +120,7 @@ public interface ParameterDriversProvider {
         int paramIndex = 0;
         for (int i = 0; i < drivers.size(); ++i) {
             for (Span<Double> span = drivers.get(i).getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                parameters[paramIndex++] = field.getZero().add(span.getData());
+                parameters[paramIndex++] = field.getZero().newInstance(span.getData());
             }
         }
         return parameters;
@@ -139,7 +139,7 @@ public interface ParameterDriversProvider {
         final List<ParameterDriver> drivers = getParametersDrivers();
         final T[] parameters = MathArrays.buildArray(field, drivers.size());
         for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = field.getZero().add(drivers.get(i).getValue());
+            parameters[i] = field.getZero().newInstance(drivers.get(i).getValue());
         }
         return parameters;
     }
@@ -156,7 +156,7 @@ public interface ParameterDriversProvider {
         final List<ParameterDriver> drivers = getParametersDrivers();
         final T[] parameters = MathArrays.buildArray(field, drivers.size());
         for (int i = 0; i < drivers.size(); ++i) {
-            parameters[i] = field.getZero().add(drivers.get(i).getValue(date.toAbsoluteDate()));
+            parameters[i] = field.getZero().newInstance(drivers.get(i).getValue(date.toAbsoluteDate()));
         }
         return parameters;
     }

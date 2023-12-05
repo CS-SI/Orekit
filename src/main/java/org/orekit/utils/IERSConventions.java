@@ -1387,8 +1387,8 @@ public enum IERSConventions {
                                                                                                        // for example removing derivatives
                                                                                                        // if T was DerivativeStructure
                             annualCache.getNeighbors(aDate).forEach(neighbor -> {
-                                y[0] = zero.add(neighbor.getX());
-                                y[1] = zero.add(neighbor.getY());
+                                y[0] = zero.newInstance(neighbor.getX());
+                                y[1] = zero.newInstance(neighbor.getY());
                                 interpolator.addSamplePoint(central.durationFrom(neighbor.getDate()).negate(), y);
                             });
                             final T[] interpolated = interpolator.value(date.durationFrom(central)); // here, we introduce derivatives again (in DerivativeStructure case)

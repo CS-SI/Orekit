@@ -60,7 +60,7 @@ class BrouwerLyddaneGradientConverter extends AbstractAnalyticalGradientConverte
         final AttitudeProvider provider = propagator.getAttitudeProvider();
 
         // Central attraction coefficient
-        final Gradient mu = zero.add(propagator.getMu());
+        final Gradient mu = zero.newInstance(propagator.getMu());
 
         // Return the "Field" propagator
         return new FieldBrouwerLyddanePropagator<>(state.getOrbit(), provider, radius, mu,

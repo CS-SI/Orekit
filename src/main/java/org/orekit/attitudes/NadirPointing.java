@@ -109,11 +109,11 @@ public class NadirPointing extends GroundPointing {
         // sample intersection points in current date neighborhood
         final double h  = 0.01;
         final List<TimeStampedFieldPVCoordinates<T>> sample = new ArrayList<>();
-        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-2 * h), frame), refToBody.staticShiftedBy(zero.add(-2 * h))));
-        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-h),     frame), refToBody.staticShiftedBy(zero.add(-h))));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-2 * h), frame), refToBody.staticShiftedBy(zero.newInstance(-2 * h))));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-h),     frame), refToBody.staticShiftedBy(zero.newInstance(-h))));
         sample.add(nadirRef(pvProv.getPVCoordinates(date,                   frame), refToBody));
-        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+h),     frame), refToBody.staticShiftedBy(zero.add(+h))));
-        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+2 * h), frame), refToBody.staticShiftedBy(zero.add(+2 * h))));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+h),     frame), refToBody.staticShiftedBy(zero.newInstance(+h))));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+2 * h), frame), refToBody.staticShiftedBy(zero.newInstance(+2 * h))));
 
         // create interpolator
         final FieldTimeInterpolator<TimeStampedFieldPVCoordinates<T>, T> interpolator =

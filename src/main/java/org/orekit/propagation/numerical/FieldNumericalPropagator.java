@@ -268,13 +268,13 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                     @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
                         // mu PDriver should have only 1 span
-                        superSetMu(field.getZero().add(driver.getValue(date)));
+                        superSetMu(field.getZero().newInstance(driver.getValue(date)));
                     }
                     /** {@inheritDoc} */
                     @Override
                     public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
                         // mu PDriver should have only 1 span
-                        superSetMu(field.getZero().add(driver.getValue()));
+                        superSetMu(field.getZero().newInstance(driver.getValue()));
                     }
                 });
             } catch (OrekitException oe) {

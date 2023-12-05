@@ -523,7 +523,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>>
         FieldVector3D<T> estimateRate(final FieldRotation<T> start,
                                       final FieldRotation<T> end,
                                       final double dt) {
-        return estimateRate(start, end, start.getQ0().getField().getZero().add(dt));
+        return estimateRate(start, end, start.getQ0().getField().getZero().newInstance(dt));
     }
 
     /** Estimate rotation rate between two orientations.
@@ -632,7 +632,7 @@ public class FieldAngularCoordinates<T extends CalculusFieldElement<T>>
      */
     @Override
     public FieldAngularCoordinates<T> shiftedBy(final double dt) {
-        return shiftedBy(rotation.getQ0().getField().getZero().add(dt));
+        return shiftedBy(rotation.getQ0().getField().getZero().newInstance(dt));
     }
 
     /** Get a time-shifted state.

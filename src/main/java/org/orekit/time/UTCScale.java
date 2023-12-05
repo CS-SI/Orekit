@@ -301,7 +301,7 @@ public class UTCScale implements TimeScale {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T getLeap(final FieldAbsoluteDate<T> date) {
-        return date.getField().getZero().add(getLeap(date.toAbsoluteDate()));
+        return date.getField().getZero().newInstance(getLeap(date.toAbsoluteDate()));
     }
 
     /** Find the index of the offset valid at some date.

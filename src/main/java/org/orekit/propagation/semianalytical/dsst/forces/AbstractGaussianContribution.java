@@ -615,7 +615,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         final T b = auxiliaryElements.getB().add(1.).reciprocal();
 
         // (-b)<sup>j</sup>
-        T mbtj = zero.add(1.);
+        T mbtj = zero.newInstance(1.);
 
         for (int j = 1; j <= 3 * JMAX; j++) {
 
@@ -1417,8 +1417,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final T[] adaptedWeights = MathArrays.buildArray(field, numberOfPoints);
 
             for (int i = 0; i < numberOfPoints; i++) {
-                adaptedPoints[i] = zero.add(nodePoints[i]);
-                adaptedWeights[i] = zero.add(nodeWeights[i]);
+                adaptedPoints[i] = zero.newInstance(nodePoints[i]);
+                adaptedWeights[i] = zero.newInstance(nodeWeights[i]);
             }
 
             transform(adaptedPoints, adaptedWeights, lowerBound, upperBound);

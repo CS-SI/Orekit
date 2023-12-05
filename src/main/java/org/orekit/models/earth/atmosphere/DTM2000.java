@@ -1154,8 +1154,8 @@ public class DTM2000 implements Atmosphere {
             fmfb[2]   = f[2] - fbar[2];
             fbm150[1] = fbar[1] - 150.0;
             fbm150[2] = fbar[2];
-            da[4]     = zero.add(fmfb[1]);
-            da[6]     = zero.add(fbm150[1]);
+            da[4]     = zero.newInstance(fmfb[1]);
+            da[6]     = zero.newInstance(fbm150[1]);
             da[4]     = da[4].add(a[70] * fmfb[2]);
             da[6]     = da[6].add(a[71] * fbm150[2]);
             da[70]    = da[4].multiply(a[ 5]).multiply(2).
@@ -1200,10 +1200,10 @@ public class DTM2000 implements Atmosphere {
             da[60]   = dkp.multiply(dkp);
             da[61]   = p20mg.multiply(da[60]);
             da[75]   = da[60].multiply(da[60]);
-            da[64]   = zero.add(dkpm);
+            da[64]   = zero.newInstance(dkpm);
             da[65]   = p20mg.multiply(dkpm);
             da[72]   = p40mg.multiply(dkpm);
-            da[66]   = zero.add(dkpm * dkpm);
+            da[66]   = zero.newInstance(dkpm * dkpm);
             da[73]   = p20mg.multiply(da[66]);
             da[76]   = da[66].multiply(da[66]);
 
@@ -1240,10 +1240,10 @@ public class DTM2000 implements Atmosphere {
                  add(da[78].multiply(a78)).
                  add(da[79].multiply(a[79]));
 //          termes annuels symetriques en latitude
-            da[9]  = zero.add(FastMath.cos(ROT * (day - a[11])));
+            da[9]  = zero.newInstance(FastMath.cos(ROT * (day - a[11])));
             da[10] = p20.multiply(da[9]);
 //          termes semi-annuels symetriques en latitude
-            da[12] = zero.add(FastMath.cos(ROT2 * (day - a[14])));
+            da[12] = zero.newInstance(FastMath.cos(ROT2 * (day - a[14])));
             da[13] = p20.multiply(da[12]);
 //          termes annuels non symetriques en latitude
             final double coste = FastMath.cos(ROT * (day - a[18]));

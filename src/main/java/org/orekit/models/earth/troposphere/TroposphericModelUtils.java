@@ -116,7 +116,7 @@ public class TroposphericModelUtils {
         final T fixedHeight = FastMath.max(zero, height);
         final T sinE = FastMath.sin(elevation);
         // Ref: Eq. 4
-        final T function = TroposphericModelUtils.mappingFunction(zero.add(2.53e-5), zero.add(5.49e-3), zero.add(1.14e-3), elevation);
+        final T function = TroposphericModelUtils.mappingFunction(zero.newInstance(2.53e-5), zero.newInstance(5.49e-3), zero.newInstance(1.14e-3), elevation);
         // Ref: Eq. 6
         final T dmdh = sinE.reciprocal().subtract(function);
         // Ref: Eq. 7

@@ -150,7 +150,7 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
             // a finite value when date is FieldAbsoluteDate.getFutureInfinity(field)
             // without this if statement, the multiplication between an
             // infinite duration and a zero slope would induce a NaN offset
-            return date.getField().getZero().add(offset);
+            return date.getField().getZero().newInstance(offset);
         } else {
             return date.durationFrom(reference).multiply(slopeTAI).add(offset);
         }

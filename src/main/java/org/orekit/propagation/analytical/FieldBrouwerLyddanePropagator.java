@@ -992,7 +992,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                             subtract(epp2.multiply(5.0).add(2.0).multiply(40.0).multiply(cosI4.divide(C5c2))).
                             subtract(epp2.multiply(400.0).multiply(cosI6).divide(C5c2).divide(C5c2));
             final T qyp42 = one.divide(5.0).multiply(qyp22.
-                                                     add(one.multiply(4.0).multiply(epp2.
+                                                     add(one.newInstance(4.0).multiply(epp2.
                                                                                     add(2.0).
                                                                                     subtract(cosI2.multiply(epp2.multiply(3.0).add(2.0))))));
             final T qyp52bis = cosI1.multiply(sinI1).multiply(epp).multiply(epp2.multiply(3.0).add(4.0)).
