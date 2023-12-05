@@ -80,7 +80,7 @@ public class ModifiedSaastamoinenModel implements DiscreteTroposphericModel {
         0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0
     };
 
-    /** E values for the B function. */
+    /** Y values for the B function. */
     private static final double[] Y_VALUES_FOR_B = {
         1.156, 1.079, 1.006, 0.938, 0.874, 0.813, 0.757, 0.654, 0.563
     };

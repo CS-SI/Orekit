@@ -86,7 +86,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
                              final double rh, final double lambda) {
         this.P0     = p0;
         this.T0     = t0;
-        this.e0     = getWaterVapor(rh);
+        this.e0     = new GiacomoDavis().waterVaporPressure(t0, p0, rh);
         this.lambda = lambda;
     }
 
@@ -378,27 +378,4 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
         return point.getAltitude().multiply(a3).add(FastMath.cos(point.getLatitude()).multiply(a2)).add(a0 + a1 * T);
     }
 
-    /** Get the water vapor.
-     * The water vapor model is the one of Giacomo and Davis as indicated in IERS TN 32, chap. 9.
-     *
-     * See: Giacomo, P., Equation for the dertermination of the density of moist air, Metrologia, V. 18, 1982
-     *
-     * @param rh relative humidity, in percent (50% → 0.5).
-     * @return the water vapor, in mbar (1 mbar = 1 hPa).
-     */
-    private double getWaterVapor(final double rh) {
-
-        // saturation water vapor, equation (3) of reference paper, in mbar
-        // with amended 1991 values (see reference paper)
-        final double es = 0.01 * FastMath.exp((1.2378847 * 1e-5) * T0 * T0 -
-                                              (1.9121316 * 1e-2) * T0 +
-                                              33.93711047 -
-                                              (6.3431645 * 1e3) * 1. / T0);
-
-        // enhancement factor, equation (4) of reference paper
-        final double fw = 1.00062 + (3.14 * 1e-6) * P0 + (5.6 * 1e-7) * FastMath.pow(T0 - 273.15, 2);
-
-        final double e = rh * fw * es;
-        return e;
-    }
 }
