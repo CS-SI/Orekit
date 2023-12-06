@@ -185,8 +185,8 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         final T zero = field.getZero();
 
         // bh and ch constants (Boehm, J et al, 2006) | HYDROSTATIC PART
-        final T bh  = zero.add(0.0029);
-        final T c0h = zero.add(0.062);
+        final T bh  = zero.newInstance(0.0029);
+        final T c0h = zero.newInstance(0.062);
         final T c10h;
         final T c11h;
         final T psi;
@@ -197,12 +197,12 @@ public class GlobalMappingFunctionModel implements MappingFunction {
 
         // sin(latitude) > 0 -> northern hemisphere
         if (FastMath.sin(latitude.getReal()) > 0) {
-            c10h = zero.add(0.001);
-            c11h = zero.add(0.005);
+            c10h = zero.newInstance(0.001);
+            c11h = zero.newInstance(0.005);
             psi  = zero;
         } else {
-            c10h = zero.add(0.002);
-            c11h = zero.add(0.007);
+            c10h = zero.newInstance(0.002);
+            c11h = zero.newInstance(0.007);
             psi  = zero.getPi();
         }
 
@@ -215,8 +215,8 @@ public class GlobalMappingFunctionModel implements MappingFunction {
         final T ch = c11h.divide(2.0).multiply(FastMath.cos(coef).add(1.0)).add(c10h).multiply(FastMath.cos(latitude).negate().add(1.0)).add(c0h);
 
         // bw and cw constants (Boehm, J et al, 2006) | WET PART
-        final T bw = zero.add(0.00146);
-        final T cw = zero.add(0.04391);
+        final T bw = zero.newInstance(0.00146);
+        final T cw = zero.newInstance(0.04391);
 
         // Compute coefficients ah and aw with spherical harmonics Eq. 3 (Ref 1)
 

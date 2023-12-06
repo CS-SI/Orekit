@@ -285,7 +285,7 @@ public class FieldHansenThirdBodyLinear <T extends CalculusFieldElement<T>> {
     public void computeInitValues(final T chitm1, final T chitm2, final T chitm3) {
         final Field<T> field = chitm2.getField();
         final T zero = field.getZero();
-        this.hansenRoot[0][0] = zero.add(twosp1dfosp1f);
+        this.hansenRoot[0][0] = zero.newInstance(twosp1dfosp1f);
         this.hansenRoot[0][1] = (chitm2.negate().add(this.twosp3)).multiply(this.twosp1dfosp2f);
         this.hansenDerivRoot[0][0] = zero;
         this.hansenDerivRoot[0][1] = chitm3.multiply(two2sp1dfosp2f);

@@ -157,13 +157,13 @@ public class AttitudesSequence implements AttitudeProvider {
                 /** {@inheritDoc} */
                 @Override
                 public T g(final FieldSpacecraftState<T> s) {
-                    return field.getZero().add(sw.g(s.toSpacecraftState()));
+                    return field.getZero().newInstance(sw.g(s.toSpacecraftState()));
                 }
 
                 /** {@inheritDoc} */
                 @Override
                 public T getThreshold() {
-                    return field.getZero().add(sw.getThreshold());
+                    return field.getZero().newInstance(sw.getThreshold());
                 }
 
                 /** {@inheritDoc} */

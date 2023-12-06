@@ -520,9 +520,9 @@ public class Geoid implements EarthShape {
         }
         // solve line search problem to find the intersection
         final FieldBracketingNthOrderBrentSolver<T> solver =
-                        new FieldBracketingNthOrderBrentSolver<>(field.getZero().add(1.0e-14),
-                                                                 field.getZero().add(1.0e-6),
-                                                                 field.getZero().add(1.0e-15),
+                        new FieldBracketingNthOrderBrentSolver<>(field.getZero().newInstance(1.0e-14),
+                                                                 field.getZero().newInstance(1.0e-6),
+                                                                 field.getZero().newInstance(1.0e-15),
                                                                  5);
         try {
             final T abscissa = solver.solve(MAX_EVALUATIONS, heightFunction, lowPoint, highPoint,

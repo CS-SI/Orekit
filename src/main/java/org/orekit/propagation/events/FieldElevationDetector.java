@@ -70,7 +70,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      */
     public FieldElevationDetector(final Field<T> field, final TopocentricFrame topo) {
         this(s -> DEFAULT_MAXCHECK,
-             field.getZero().add(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+             field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
              new FieldStopOnDecreasing<>(),
              0.0, null, null, topo);
     }

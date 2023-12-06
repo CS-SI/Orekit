@@ -349,11 +349,11 @@ public class Laas2015 extends AbstractShortTermEncounter2DPOCMethod {
             final T auxiliaryTerm4 = pPhiY.multiply(recurrentTerm0).multiply(2.);
             final T auxiliaryTerm5 = p.multiply(phiY.multiply(2.).add(1.));
 
-            T kPlus2 = one.multiply(2.);
-            T kPlus3 = one.multiply(3.);
-            T kPlus4 = one.multiply(4.);
-            T kPlus5 = one.multiply(5.);
-            T halfY  = one.multiply(2.5);
+            T kPlus2 = one.newInstance(2.);
+            T kPlus3 = one.newInstance(3.);
+            T kPlus4 = one.newInstance(4.);
+            T kPlus5 = one.newInstance(5.);
+            T halfY  = one.newInstance(2.5);
 
             // Initialize recurrence
             T c0 = alpha0.multiply(radiusSquared);

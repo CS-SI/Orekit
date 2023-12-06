@@ -374,22 +374,22 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @since 12.0
      */
     public FieldEquinoctialOrbit(final Field<T> field, final EquinoctialOrbit op) {
-        super(op.getFrame(), new FieldAbsoluteDate<>(field, op.getDate()), field.getZero().add(op.getMu()));
+        super(op.getFrame(), new FieldAbsoluteDate<>(field, op.getDate()), field.getZero().newInstance(op.getMu()));
 
-        a     = getZero().add(op.getA());
-        ex    = getZero().add(op.getEquinoctialEx());
-        ey    = getZero().add(op.getEquinoctialEy());
-        hx    = getZero().add(op.getHx());
-        hy    = getZero().add(op.getHy());
-        lv    = getZero().add(op.getLv());
+        a     = getZero().newInstance(op.getA());
+        ex    = getZero().newInstance(op.getEquinoctialEx());
+        ey    = getZero().newInstance(op.getEquinoctialEy());
+        hx    = getZero().newInstance(op.getHx());
+        hy    = getZero().newInstance(op.getHy());
+        lv    = getZero().newInstance(op.getLv());
 
         if (op.hasDerivatives()) {
-            aDot  = getZero().add(op.getADot());
-            exDot = getZero().add(op.getEquinoctialExDot());
-            eyDot = getZero().add(op.getEquinoctialEyDot());
-            hxDot = getZero().add(op.getHxDot());
-            hyDot = getZero().add(op.getHyDot());
-            lvDot = getZero().add(op.getLvDot());
+            aDot  = getZero().newInstance(op.getADot());
+            exDot = getZero().newInstance(op.getEquinoctialExDot());
+            eyDot = getZero().newInstance(op.getEquinoctialEyDot());
+            hxDot = getZero().newInstance(op.getHxDot());
+            hyDot = getZero().newInstance(op.getHyDot());
+            lvDot = getZero().newInstance(op.getLvDot());
         } else {
             aDot  = null;
             exDot = null;
@@ -781,7 +781,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
 
     /** {@inheritDoc} */
     public FieldEquinoctialOrbit<T> shiftedBy(final double dt) {
-        return shiftedBy(getZero().add(dt));
+        return shiftedBy(getZero().newInstance(dt));
     }
 
     /** {@inheritDoc} */
@@ -905,7 +905,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         // dLambdaM
         final T l = ratio.negate().divide(sqrtMuA);
         fillHalfRow(getOne().negate().divide(sqrtMuA), velocity, d2, w, l.multiply(ex), drDotSdEx, l.multiply(ey), drDotSdEy, jacobian[5], 0);
-        fillHalfRow(getZero().add(-2).divide(sqrtMuA), position, ex.multiply(beta), vectorEyRDot, ey.negate().multiply(beta), vectorExRDot, d3, w, jacobian[5], 3);
+        fillHalfRow(getZero().newInstance(-2).divide(sqrtMuA), position, ex.multiply(beta), vectorEyRDot, ey.negate().multiply(beta), vectorExRDot, d3, w, jacobian[5], 3);
 
         return jacobian;
 

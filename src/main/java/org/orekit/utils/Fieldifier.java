@@ -65,7 +65,7 @@ public class Fieldifier {
 
         final T                    one       = field.getOne();
         final FieldAbsoluteDate<T> fieldDate = new FieldAbsoluteDate<>(field, orbit.getDate());
-        final T                    fieldMu   = one.multiply(orbit.getMu());
+        final T                    fieldMu   = one.newInstance(orbit.getMu());
         final Frame                frame     = orbit.getFrame();
 
         switch (orbit.getType()) {
@@ -73,20 +73,20 @@ public class Fieldifier {
                 final CircularOrbit circOrbit = (CircularOrbit) OrbitType.CIRCULAR.convertType(orbit);
 
                 // Get orbital elements
-                final T a      = one.multiply(circOrbit.getA());
-                final T ex     = one.multiply(circOrbit.getCircularEx());
-                final T ey     = one.multiply(circOrbit.getCircularEy());
-                final T i      = one.multiply(circOrbit.getI());
-                final T raan   = one.multiply(circOrbit.getRightAscensionOfAscendingNode());
-                final T alphaM = one.multiply(circOrbit.getAlphaM());
+                final T a      = one.newInstance(circOrbit.getA());
+                final T ex     = one.newInstance(circOrbit.getCircularEx());
+                final T ey     = one.newInstance(circOrbit.getCircularEy());
+                final T i      = one.newInstance(circOrbit.getI());
+                final T raan   = one.newInstance(circOrbit.getRightAscensionOfAscendingNode());
+                final T alphaM = one.newInstance(circOrbit.getAlphaM());
 
                 // Get derivatives
-                final T aDot      = one.multiply(circOrbit.getADot());
-                final T exDot     = one.multiply(circOrbit.getCircularExDot());
-                final T eyDot     = one.multiply(circOrbit.getCircularEyDot());
-                final T iDot      = one.multiply(circOrbit.getIDot());
-                final T raanDot   = one.multiply(circOrbit.getRightAscensionOfAscendingNodeDot());
-                final T alphaMDot = one.multiply(circOrbit.getAlphaMDot());
+                final T aDot      = one.newInstance(circOrbit.getADot());
+                final T exDot     = one.newInstance(circOrbit.getCircularExDot());
+                final T eyDot     = one.newInstance(circOrbit.getCircularEyDot());
+                final T iDot      = one.newInstance(circOrbit.getIDot());
+                final T raanDot   = one.newInstance(circOrbit.getRightAscensionOfAscendingNodeDot());
+                final T alphaMDot = one.newInstance(circOrbit.getAlphaMDot());
 
                 return new FieldCircularOrbit<>(a, ex, ey, i, raan, alphaM, aDot, exDot, eyDot, iDot, raanDot, alphaMDot,
                                                 PositionAngleType.MEAN, frame, fieldDate, fieldMu);
@@ -102,20 +102,20 @@ public class Fieldifier {
                 final KeplerianOrbit kepOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
 
                 // Get orbital elements
-                final T a           = one.multiply(kepOrbit.getA());
-                final T e           = one.multiply(kepOrbit.getE());
-                final T i           = one.multiply(kepOrbit.getI());
-                final T raan        = one.multiply(kepOrbit.getRightAscensionOfAscendingNode());
-                final T pa          = one.multiply(kepOrbit.getPerigeeArgument());
-                final T meanAnomaly = one.multiply(kepOrbit.getMeanAnomaly());
+                final T a           = one.newInstance(kepOrbit.getA());
+                final T e           = one.newInstance(kepOrbit.getE());
+                final T i           = one.newInstance(kepOrbit.getI());
+                final T raan        = one.newInstance(kepOrbit.getRightAscensionOfAscendingNode());
+                final T pa          = one.newInstance(kepOrbit.getPerigeeArgument());
+                final T meanAnomaly = one.newInstance(kepOrbit.getMeanAnomaly());
 
                 // Get derivatives
-                final T aDot           = one.multiply(kepOrbit.getADot());
-                final T eDot           = one.multiply(kepOrbit.getEDot());
-                final T iDot           = one.multiply(kepOrbit.getIDot());
-                final T raanDot        = one.multiply(kepOrbit.getRightAscensionOfAscendingNodeDot());
-                final T paDot          = one.multiply(kepOrbit.getPerigeeArgumentDot());
-                final T meanAnomalyDot = one.multiply(kepOrbit.getMeanAnomalyDot());
+                final T aDot           = one.newInstance(kepOrbit.getADot());
+                final T eDot           = one.newInstance(kepOrbit.getEDot());
+                final T iDot           = one.newInstance(kepOrbit.getIDot());
+                final T raanDot        = one.newInstance(kepOrbit.getRightAscensionOfAscendingNodeDot());
+                final T paDot          = one.newInstance(kepOrbit.getPerigeeArgumentDot());
+                final T meanAnomalyDot = one.newInstance(kepOrbit.getMeanAnomalyDot());
 
                 return new FieldKeplerianOrbit<>(a, e, i, pa, raan, meanAnomaly, aDot, eDot, iDot, paDot, raanDot,
                                                  meanAnomalyDot, PositionAngleType.MEAN, frame, fieldDate, fieldMu);
@@ -124,20 +124,20 @@ public class Fieldifier {
                 final EquinoctialOrbit equiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
 
                 // Get orbital elements
-                final T a  = one.multiply(equiOrbit.getA());
-                final T ex = one.multiply(equiOrbit.getEquinoctialEx());
-                final T ey = one.multiply(equiOrbit.getEquinoctialEy());
-                final T hx = one.multiply(equiOrbit.getHx());
-                final T hy = one.multiply(equiOrbit.getHy());
-                final T lm = one.multiply(equiOrbit.getLM());
+                final T a  = one.newInstance(equiOrbit.getA());
+                final T ex = one.newInstance(equiOrbit.getEquinoctialEx());
+                final T ey = one.newInstance(equiOrbit.getEquinoctialEy());
+                final T hx = one.newInstance(equiOrbit.getHx());
+                final T hy = one.newInstance(equiOrbit.getHy());
+                final T lm = one.newInstance(equiOrbit.getLM());
 
                 // Get derivatives
-                final T aDot  = one.multiply(equiOrbit.getADot());
-                final T exDot = one.multiply(equiOrbit.getEquinoctialExDot());
-                final T eyDot = one.multiply(equiOrbit.getEquinoctialEyDot());
-                final T hxDot = one.multiply(equiOrbit.getHxDot());
-                final T hyDot = one.multiply(equiOrbit.getHyDot());
-                final T lmDot = one.multiply(equiOrbit.getLMDot());
+                final T aDot  = one.newInstance(equiOrbit.getADot());
+                final T exDot = one.newInstance(equiOrbit.getEquinoctialExDot());
+                final T eyDot = one.newInstance(equiOrbit.getEquinoctialEyDot());
+                final T hxDot = one.newInstance(equiOrbit.getHxDot());
+                final T hyDot = one.newInstance(equiOrbit.getHyDot());
+                final T lmDot = one.newInstance(equiOrbit.getLMDot());
 
                 return new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy, lm, aDot, exDot, eyDot, hxDot, hyDot,
                                                    lmDot, PositionAngleType.MEAN, frame, fieldDate, fieldMu);
@@ -168,7 +168,7 @@ public class Fieldifier {
 
         for (int i = 0; i < rowDim; i++) {
             for (int j = 0; j < columnDim; j++) {
-                fieldMatrix.setEntry(i, j, field.getOne().multiply(matrix.getEntry(i, j)));
+                fieldMatrix.setEntry(i, j, field.getOne().newInstance(matrix.getEntry(i, j)));
             }
         }
 

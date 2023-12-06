@@ -74,7 +74,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      */
     public FieldNodeDetector(final T threshold, final FieldOrbit<T> orbit, final Frame frame) {
-        this(s -> orbit.getA().getField().getZero().add(2 * estimateNodesTimeSeparation(orbit.toOrbit()) / 3).getReal(), threshold,
+        this(s -> orbit.getA().getField().getZero().newInstance(2 * estimateNodesTimeSeparation(orbit.toOrbit()) / 3).getReal(), threshold,
              DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
              frame);
     }

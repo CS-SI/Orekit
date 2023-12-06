@@ -168,7 +168,7 @@ public class FieldSGP4<T extends CalculusFieldElement<T>> extends FieldTLEPropag
 
         // A highly arbitrary lower limit on e,  of 1e-6:
         if (e.getReal() < 1e-6) {
-            e = e.getField().getZero().add(1e-6);
+            e = e.getField().getZero().newInstance(1e-6);
         }
 
         xl = xmp.add(omega).add(xnode).add(xn0dp.multiply(templ));

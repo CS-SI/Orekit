@@ -239,11 +239,11 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
                                                                      line1.substring(45, 50) + 'e' +
                                                                      line1.substring(50, 52)).replace(' ', '0'))).divide(5.3747712e13);
 
-        eccentricity = zero.add(Double.parseDouble("." + line2.substring(26, 33).replace(' ', '0')));
-        inclination  = zero.add(FastMath.toRadians(ParseUtils.parseDouble(line2, 8, 8)));
-        pa           = zero.add(FastMath.toRadians(ParseUtils.parseDouble(line2, 34, 8)));
-        raan         = zero.add(FastMath.toRadians(Double.parseDouble(line2.substring(17, 25).replace(' ', '0'))));
-        meanAnomaly  = zero.add(FastMath.toRadians(ParseUtils.parseDouble(line2, 43, 8)));
+        eccentricity = zero.newInstance(Double.parseDouble("." + line2.substring(26, 33).replace(' ', '0')));
+        inclination  = zero.newInstance(FastMath.toRadians(ParseUtils.parseDouble(line2, 8, 8)));
+        pa           = zero.newInstance(FastMath.toRadians(ParseUtils.parseDouble(line2, 34, 8)));
+        raan         = zero.newInstance(FastMath.toRadians(Double.parseDouble(line2.substring(17, 25).replace(' ', '0'))));
+        meanAnomaly  = zero.newInstance(FastMath.toRadians(ParseUtils.parseDouble(line2, 43, 8)));
 
         revolutionNumberAtEpoch = ParseUtils.parseInteger(line2, 63, 5);
         final double bStarValue = Double.parseDouble((line1.substring(53, 54) + '.' +

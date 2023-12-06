@@ -293,7 +293,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         final T zero = field.getZero();
         // there are no data in the model for negative altitudes and altitude bigger than 5000 m
         // limit the height to a range of [0, 5000] m
-        final T fixedHeight = FastMath.min(FastMath.max(zero, point.getAltitude()), zero.add(5000));
+        final T fixedHeight = FastMath.min(FastMath.max(zero, point.getAltitude()), zero.newInstance(5000));
 
         // the corrected temperature using a temperature gradient of -6.5 K/km
         final T T = fixedHeight.multiply(6.5e-3).negate().add(t0);
@@ -308,7 +308,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
         final T e = R.multiply(FastMath.exp(eFunction.value(T)));
 
         // calculate the zenith angle from the elevation
-        final T z = FastMath.abs(FastMath.max(elevation, zero.add(lowElevationThreshold)).negate().add(zero.getPi().multiply(0.5)));
+        final T z = FastMath.abs(FastMath.max(elevation, zero.newInstance(lowElevationThreshold)).negate().add(zero.getPi().multiply(0.5)));
 
         // get correction factor
         final T deltaR = getDeltaR(fixedHeight, z, field);
@@ -346,7 +346,7 @@ public class SaastamoinenModel implements DiscreteTroposphericModel {
                                                          final Field<T> field) {
         final T zero = field.getZero();
         // limit the height to a range of [0, 5000] m
-        final T h = FastMath.min(FastMath.max(zero, height), zero.add(5000));
+        final T h = FastMath.min(FastMath.max(zero, height), zero.newInstance(5000));
         // limit the zenith angle to 90 degree
         // Note: the function is symmetric for negative zenith angles
         final T z = FastMath.min(zenith.abs(), zero.getPi().multiply(0.5));

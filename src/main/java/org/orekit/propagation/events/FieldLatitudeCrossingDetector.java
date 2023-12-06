@@ -53,7 +53,7 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
                                          final OneAxisEllipsoid body,
                                          final double latitude) {
         this(s -> DEFAULT_MAXCHECK,
-                field.getZero().add(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
+                field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
                 body,
                 latitude);
     }

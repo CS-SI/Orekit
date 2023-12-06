@@ -20,7 +20,10 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-  <release version="12.0.1" date="TBD" description="TBD">
+  <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="update" issue="1276">
+          Removed uses of scalar multiply on Field one.
+      </action>
       <action dev="serrof" type="add" issue="1275">
           Added utility classes for position angle conversions for (Field) CircularOrbit and EquinoctialOrbit.
       </action>

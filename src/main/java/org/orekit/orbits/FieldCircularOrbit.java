@@ -411,22 +411,22 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * @since 12.0
      */
     public FieldCircularOrbit(final Field<T> field, final CircularOrbit op) {
-        super(op.getFrame(), new FieldAbsoluteDate<>(field, op.getDate()), field.getZero().add(op.getMu()));
+        super(op.getFrame(), new FieldAbsoluteDate<>(field, op.getDate()), field.getZero().newInstance(op.getMu()));
 
-        a    = getZero().add(op.getA());
-        i    = getZero().add(op.getI());
-        raan = getZero().add(op.getRightAscensionOfAscendingNode());
-        ex   = getZero().add(op.getCircularEx());
-        ey   = getZero().add(op.getCircularEy());
-        alphaV = getZero().add(op.getAlphaV());
+        a    = getZero().newInstance(op.getA());
+        i    = getZero().newInstance(op.getI());
+        raan = getZero().newInstance(op.getRightAscensionOfAscendingNode());
+        ex   = getZero().newInstance(op.getCircularEx());
+        ey   = getZero().newInstance(op.getCircularEy());
+        alphaV = getZero().newInstance(op.getAlphaV());
 
         if (op.hasDerivatives()) {
-            aDot      = getZero().add(op.getADot());
-            iDot      = getZero().add(op.getIDot());
-            raanDot   = getZero().add(op.getRightAscensionOfAscendingNodeDot());
-            exDot     = getZero().add(op.getCircularExDot());
-            eyDot     = getZero().add(op.getCircularEyDot());
-            alphaVDot = getZero().add(op.getAlphaVDot());
+            aDot      = getZero().newInstance(op.getADot());
+            iDot      = getZero().newInstance(op.getIDot());
+            raanDot   = getZero().newInstance(op.getRightAscensionOfAscendingNodeDot());
+            exDot     = getZero().newInstance(op.getCircularExDot());
+            eyDot     = getZero().newInstance(op.getCircularEyDot());
+            alphaVDot = getZero().newInstance(op.getAlphaVDot());
         } else {
             aDot      = null;
             exDot     = null;
@@ -955,7 +955,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
 
     /** {@inheritDoc} */
     public FieldCircularOrbit<T> shiftedBy(final double dt) {
-        return shiftedBy(getZero().add(dt));
+        return shiftedBy(getZero().newInstance(dt));
     }
 
     /** {@inheritDoc} */
@@ -1108,7 +1108,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         final FieldVector3D<T> dc1P = new FieldVector3D<>(aOr2.multiply(eSinE.multiply(eSinE).multiply(2).add(1).subtract(eCosE)).divide(r2), position,
                                                           aOr2.multiply(-2).multiply(eSinE).multiply(oOsqrtMuA), velocity);
         final FieldVector3D<T> dc1V = new FieldVector3D<>(aOr2.multiply(-2).multiply(eSinE).multiply(oOsqrtMuA), position,
-                                                          getZero().add(2).divide(mu), velocity);
+                                                          getZero().newInstance(2).divide(mu), velocity);
         final FieldVector3D<T> dc2P = new FieldVector3D<>(aOr2.multiply(eSinE).multiply(eSinE.multiply(eSinE).subtract(e2.negate().add(1))).divide(r2.multiply(epsilon)), position,
                                                           aOr2.multiply(e2.negate().add(1).subtract(eSinE.multiply(eSinE))).multiply(oOsqrtMuA).divide(epsilon), velocity);
         final FieldVector3D<T> dc2V = new FieldVector3D<>(aOr2.multiply(e2.negate().add(1).subtract(eSinE.multiply(eSinE))).multiply(oOsqrtMuA).divide(epsilon), position,

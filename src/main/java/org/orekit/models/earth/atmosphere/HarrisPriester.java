@@ -361,13 +361,13 @@ public class HarrisPriester implements Atmosphere {
         final T dH = posAlt.negate().add(tabAltRho[ia][0]).divide(tabAltRho[ia][0] - tabAltRho[ia + 1][0]);
 
         // Min exponential density interpolation
-        final T rhoMin = zero.add(tabAltRho[ia + 1][1] / tabAltRho[ia][1]).pow(dH).multiply(tabAltRho[ia][1]);
+        final T rhoMin = zero.newInstance(tabAltRho[ia + 1][1] / tabAltRho[ia][1]).pow(dH).multiply(tabAltRho[ia][1]);
 
         if (Precision.equals(cosPow.getReal(), 0.)) {
             return zero.add(rhoMin);
         } else {
             // Max exponential density interpolation
-            final T rhoMax = zero.add(tabAltRho[ia + 1][2] / tabAltRho[ia][2]).pow(dH).multiply(tabAltRho[ia][2]);
+            final T rhoMax = zero.newInstance(tabAltRho[ia + 1][2] / tabAltRho[ia][2]).pow(dH).multiply(tabAltRho[ia][2]);
             return rhoMin.add(rhoMax.subtract(rhoMin).multiply(cosPow));
         }
 

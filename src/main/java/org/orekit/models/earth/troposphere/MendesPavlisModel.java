@@ -201,7 +201,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
         final T[] delay = MathArrays.buildArray(field, 2);
 
         // Dispertion Equation for the Hydrostatic component
-        final T sigma  = zero.add(1 / lambda);
+        final T sigma  = zero.newInstance(1 / lambda);
         final T sigma2 = sigma.multiply(sigma);
         final T coef1  = sigma2.add(K_COEFFICIENTS[0]);
         final T coef2  = sigma2.negate().add(K_COEFFICIENTS[0]);

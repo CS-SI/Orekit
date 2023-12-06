@@ -47,7 +47,7 @@ public class GPSScale implements TimeScale {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return date.getField().getZero().add(OFFSET);
+        return date.getField().getZero().newInstance(OFFSET);
     }
 
     /** {@inheritDoc} */
