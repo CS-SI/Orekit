@@ -19,6 +19,7 @@ package org.orekit.utils.units;
 import java.io.Serializable;
 import java.util.List;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.fraction.Fraction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -417,6 +418,16 @@ public class Unit implements Serializable {
         return value == null ? Double.NaN : value.doubleValue() * scale;
     }
 
+    /** Convert a value to SI units.
+     * @param <T> type of the field elements
+     * @param value value instance unit
+     * @return value in SI units
+     * @since 12.1
+     */
+    public <T extends CalculusFieldElement<T>> T toSI(final T value) {
+        return value.multiply(scale);
+    }
+
     /** Convert a value from SI units.
      * @param value value SI unit
      * @return value in instance units
@@ -431,6 +442,15 @@ public class Unit implements Serializable {
      */
     public double fromSI(final Double value) {
         return value == null ? Double.NaN : value.doubleValue() / scale;
+    }
+
+    /** Convert a value from SI units.
+     * @param <T> type of the field elements
+     * @param value value SI unit
+     * @return value in instance units
+     */
+    public <T extends CalculusFieldElement<T>> T fromSI(final T value) {
+        return value.divide(scale);
     }
 
     /** Parse a unit.

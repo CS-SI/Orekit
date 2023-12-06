@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="update" issue="1285">
+          Added field versions of unit conversions from and to SI units.
+      </action>
       <action dev="serrof" type="update" issue="1276">
           Removed uses of scalar multiply on Field one.
       </action>
