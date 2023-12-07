@@ -97,9 +97,8 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
     *
     * @return a Saastamoinen model with standard environmental values
     */
-   public static SaastamoinenModel getStandardModel() {
-       return new SaastamoinenModel(273.16 + 18, 1013.25, 0.5);
-   }
+    public static SaastamoinenModel getStandardModel() {
+        return new SaastamoinenModel(273.16 + 18, 1013.25, 0.5);
+    }
 
 }
-

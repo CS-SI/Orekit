@@ -169,10 +169,10 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         final UnivariateDerivative2 w = FastMath.floor(dTpr.divide(GLONASS_MEAN_DRACONIAN_PERIOD + glonassOrbit.getDeltaT()));
 
         // Current inclination
-        final UnivariateDerivative2 i = zero.add(GLONASS_MEAN_INCLINATION / 180 * GNSSConstants.GLONASS_PI + glonassOrbit.getDeltaI());
+        final UnivariateDerivative2 i = zero.newInstance(GLONASS_MEAN_INCLINATION / 180 * GNSSConstants.GLONASS_PI + glonassOrbit.getDeltaI());
 
         // Eccentricity
-        final UnivariateDerivative2 e = zero.add(glonassOrbit.getE());
+        final UnivariateDerivative2 e = zero.newInstance(glonassOrbit.getE());
 
         // Mean draconique period in orbite w+1 and mean motion
         final UnivariateDerivative2 tDR = w.multiply(2.0).add(1.0).multiply(glonassOrbit.getDeltaTDot()).
@@ -227,9 +227,9 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
             paCorr = zero;
         } else {
             if (lCorr.getValue() == eCorr.getValue()) {
-                paCorr = zero.add(0.5 * GNSSConstants.GLONASS_PI);
+                paCorr = zero.newInstance(0.5 * GNSSConstants.GLONASS_PI);
             } else if (lCorr.getValue() == -eCorr.getValue()) {
-                paCorr = zero.add(-0.5 * GNSSConstants.GLONASS_PI);
+                paCorr = zero.newInstance(-0.5 * GNSSConstants.GLONASS_PI);
             } else {
                 paCorr = FastMath.atan2(hCorr, lCorr);
             }
@@ -428,7 +428,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         final UnivariateDerivative2 sin2I        = sinI.multiply(sinI);
         final UnivariateDerivative2 ome2         = e.multiply(e).negate().add(1.0);
         final UnivariateDerivative2 ome2Pow3o2   = FastMath.sqrt(ome2).multiply(ome2);
-        final UnivariateDerivative2 pa           = zero.add(glonassOrbit.getPa());
+        final UnivariateDerivative2 pa           = zero.newInstance(glonassOrbit.getPa());
         final UnivariateDerivative2 cosPA        = FastMath.cos(pa);
         final UnivariateDerivative2 opecosPA     = e.multiply(cosPA).add(1.0);
         final UnivariateDerivative2 opecosPAPow2 = opecosPA.multiply(opecosPA);

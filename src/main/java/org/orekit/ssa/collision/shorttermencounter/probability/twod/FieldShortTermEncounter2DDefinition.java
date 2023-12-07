@@ -455,7 +455,7 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
     public T computeCoppolaEncounterDuration() {
 
         // Default value for γ = 1e-16
-        final T DEFAULT_ALPHA_C = instanceField.getOne().multiply(5.864);
+        final T DEFAULT_ALPHA_C = instanceField.getZero().newInstance(5.864);
 
         final FieldMatrix<T> combinedPositionalCovarianceMatrix = computeCombinedCovarianceInEncounterFrame()
                 .getMatrix().getSubMatrix(0, 2, 0, 2);
@@ -670,7 +670,7 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
         else {
             // Rotation in order to have sigmaXSquared < sigmaYSquared
             if (sigmaXSquared.subtract(sigmaYSquared).getReal() > 0) {
-                theta = tca.getField().getOne().multiply(MathUtils.SEMI_PI);
+                theta = tca.getField().getZero().newInstance(MathUtils.SEMI_PI);
             }
             // Else, there is no need for a rotation
             else {

@@ -419,13 +419,13 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
                     @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
                         // mu PDriver should have only 1 span
-                        superSetMu(field.getZero().add(driver.getValue()));
+                        superSetMu(field.getZero().newInstance(driver.getValue()));
                     }
                     /** {@inheritDoc} */
                     @Override
                     public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
                         // mu PDriver should have only 1 span
-                        superSetMu(field.getZero().add(driver.getValue()));
+                        superSetMu(field.getZero().newInstance(driver.getValue()));
                     }
                 });
             } catch (OrekitException oe) {
@@ -721,7 +721,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
         FieldEquinoctialOrbit<T> meanOrbit = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(osculating.getOrbit());
 
         // threshold for each parameter
-        final T epsilonT   = zero.add(epsilon);
+        final T epsilonT   = zero.newInstance(epsilon);
         final T thresholdA = epsilonT.multiply(FastMath.abs(meanOrbit.getA()).add(1.));
         final T thresholdE = epsilonT.multiply(meanOrbit.getE().add(1.));
         final T thresholdI = epsilonT.multiply(meanOrbit.getI().add(1.));

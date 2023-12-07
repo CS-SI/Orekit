@@ -176,7 +176,7 @@ public final class KeplerianAnomalyUtility {
         double d = 0;
         // the inequality test below IS intentional and should NOT be replaced by a
         // check with a small tolerance
-        for (double x0 = Double.NaN; !Double.valueOf(x).equals(Double.valueOf(x0));) {
+        for (double x0 = Double.NaN; !Double.valueOf(x).equals(x0);) {
             d += 2;
             term *= mE2 / (d * (d + 1));
             x0 = x;

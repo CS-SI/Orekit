@@ -21,6 +21,18 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="update" issue="1285">
+          Added field versions of unit conversions from and to SI units.
+      </action>
+      <action dev="serrof" type="update" issue="1276">
+          Removed uses of scalar multiply on Field one.
+      </action>
+      <action dev="serrof" type="add" issue="1275">
+          Added utility classes for position angle conversions for (Field) CircularOrbit and EquinoctialOrbit.
+      </action>
+      <action dev="luc" type="add" issue="1278">
+          Fixed exceptions occurring in EOP prediction with ill chosen fitting parameters.
+      </action>
       <action dev="luc" type="add" due-to="Elisabet Cid Borobia">
           Added translation of error messages in Catalan language.
       </action>

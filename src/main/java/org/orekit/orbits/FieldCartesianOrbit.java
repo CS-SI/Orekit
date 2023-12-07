@@ -147,7 +147,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      */
     public FieldCartesianOrbit(final Field<T> field, final CartesianOrbit op) {
         super(new TimeStampedFieldPVCoordinates<>(field, op.getPVCoordinates()), op.getFrame(),
-                field.getZero().add(op.getMu()));
+                field.getZero().newInstance(op.getMu()));
         hasNonKeplerianAcceleration = op.hasDerivatives();
         if (op.isElliptical()) {
             equinoctial = new FieldEquinoctialOrbit<>(field, new EquinoctialOrbit(op));
@@ -428,7 +428,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     public FieldCartesianOrbit<T> shiftedBy(final double dt) {
-        return shiftedBy(getZero().add(dt));
+        return shiftedBy(getZero().newInstance(dt));
     }
 
     /** {@inheritDoc} */

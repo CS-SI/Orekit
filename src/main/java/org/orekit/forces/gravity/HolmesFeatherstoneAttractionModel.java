@@ -977,7 +977,7 @@ public class HolmesFeatherstoneAttractionModel implements ForceModel, TideSystem
         // initialize recursion from sectorial terms
         int n = FastMath.max(2, m);
         if (n == m) {
-            pnm0[n] = zero.add(sectorial[n]);
+            pnm0[n] = zero.newInstance(sectorial[n]);
             ++n;
         }
 

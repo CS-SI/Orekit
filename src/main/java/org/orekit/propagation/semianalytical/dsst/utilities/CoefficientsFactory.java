@@ -190,7 +190,7 @@ public class CoefficientsFactory {
         final T kaphb = k.multiply(alpha).add(h.multiply(beta));
         // Initialization
         final T[][] GsHs = MathArrays.buildArray(field, 2, order + 1);
-        GsHs[0][0] = zero.add(1.);
+        GsHs[0][0] = zero.newInstance(1.);
         GsHs[1][0] = zero;
 
         for (int s = 1; s <= order; s++) {

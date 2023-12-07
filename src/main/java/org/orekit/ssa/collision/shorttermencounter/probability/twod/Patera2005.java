@@ -122,7 +122,7 @@ public class Patera2005 extends AbstractShortTermEncounter1DNumerical2DPOCMethod
         final Field<T> field      = xm.getField();
         final T        zero       = field.getZero();
         final T        one        = field.getOne();
-        final T        twoPiField = one.multiply(MathUtils.TWO_PI);
+        final T        twoPiField = one.newInstance(MathUtils.TWO_PI);
 
         final T      value;
         final double missDistance = xm.multiply(xm).add(ym.multiply(ym)).sqrt().getReal();

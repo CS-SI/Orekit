@@ -127,7 +127,7 @@ public class Galileo extends AbstractGNSSAttitudeProvider {
             context.setUpTurnRegion(COS_NIGHT, COS_NOON)) {
 
             final Field<T> field = context.getDate().getField();
-            final T        betaX = field.getZero().add(BETA_X);
+            final T        betaX = field.getZero().newInstance(BETA_X);
             context.setHalfSpan(context.inSunSide() ?
                                 betaX :
                                 context.inOrbitPlaneAbsoluteAngle(betaX),

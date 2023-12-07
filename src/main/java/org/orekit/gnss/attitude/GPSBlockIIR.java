@@ -135,11 +135,11 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
 
                 if (context.inSunSide()) {
                     // noon turn
-                    phiDot    = field.getZero().add(-FastMath.copySign(yawRate, beta.getReal()));
+                    phiDot    = field.getZero().newInstance(-FastMath.copySign(yawRate, beta.getReal()));
                     linearPhi = phiStart.add(phiDot.multiply(dtStart));
                 } else {
                     // midnight turn
-                    phiDot    = field.getZero().add(FastMath.copySign(yawRate, beta.getReal()));
+                    phiDot    = field.getZero().newInstance(FastMath.copySign(yawRate, beta.getReal()));
                     linearPhi = phiStart.add(phiDot.multiply(dtStart));
                 }
 

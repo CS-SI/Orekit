@@ -253,7 +253,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         return selectExtrapolator(
                 tle,
                 FrameAlignedProvider.of(teme),
-                tle.getE().getField().getZero().add(DEFAULT_MASS),
+                tle.getE().getField().getZero().newInstance(DEFAULT_MASS),
                 teme,
                 parameters);
     }
@@ -361,8 +361,8 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         a0dp = a0.divide(delta0.negate().add(1.0));
 
         // Values of s and qms2t :
-        s4 = zero.add(TLEConstants.S);  // unmodified value for s
-        T q0ms24 = zero.add(TLEConstants.QOMS2T); // unmodified value for q0ms2T
+        s4 = zero.newInstance(TLEConstants.S);  // unmodified value for s
+        T q0ms24 = zero.newInstance(TLEConstants.QOMS2T); // unmodified value for q0ms2T
 
         perige = a0dp.multiply(tle.getE().negate().add(1.0)).subtract(TLEConstants.NORMALIZED_EQUATORIAL_RADIUS).multiply(
                                                                                                 TLEConstants.EARTH_RADIUS); // perige
@@ -370,7 +370,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         //  For perigee below 156 km, the values of s and qoms2t are changed :
         if (perige.getReal() < 156.0) {
             if (perige.getReal() <= 98.0) {
-                s4 = zero.add(20.0);
+                s4 = zero.newInstance(20.0);
             } else {
                 s4 = perige.subtract(78.0);
             }
@@ -606,7 +606,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
 
     /** {@inheritDoc} */
     public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
-        return new FieldCartesianOrbit<>(getPVCoordinates(date, parameters), teme, date, date.getField().getZero().add(TLEConstants.MU));
+        return new FieldCartesianOrbit<>(getPVCoordinates(date, parameters), teme, date, date.getField().getZero().newInstance(TLEConstants.MU));
     }
 
     /** Get the underlying TLE.

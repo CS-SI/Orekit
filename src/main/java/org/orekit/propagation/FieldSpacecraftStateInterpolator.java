@@ -405,7 +405,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
             interpolatedMass = massInterpolator.interpolate(interpolationDate, masses).getValue();
         }
         else {
-            interpolatedMass = one.multiply(SpacecraftState.DEFAULT_MASS);
+            interpolatedMass = one.newInstance(SpacecraftState.DEFAULT_MASS);
         }
 
         // Interpolate additional states and derivatives

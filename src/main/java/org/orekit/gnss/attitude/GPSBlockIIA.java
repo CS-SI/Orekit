@@ -159,7 +159,7 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
 
         // noon beta angle limit from yaw rate
         final T      aNoon  = FastMath.atan(context.getMuRate().divide(yawRate));
-        final T      aNight = field.getZero().add(NIGHT_TURN_LIMIT);
+        final T      aNight = field.getZero().newInstance(NIGHT_TURN_LIMIT);
         final double cNoon  = FastMath.cos(aNoon.getReal());
         final double cNight = FastMath.cos(aNight.getReal());
 
@@ -183,16 +183,16 @@ public class GPSBlockIIA extends AbstractGNSSAttitudeProvider {
                     if (beta.getReal() > 0 && beta.getReal() < yawBias) {
                         // noon turn problem for small positive beta in block IIA
                         // rotation is in the wrong direction for these spacecrafts
-                        phiDot    = field.getZero().add(FastMath.copySign(yawRate, beta.getReal()));
+                        phiDot    = field.getZero().newInstance(FastMath.copySign(yawRate, beta.getReal()));
                         linearPhi = phiStart.add(phiDot.multiply(dtStart));
                     } else {
                         // regular noon turn
-                        phiDot    = field.getZero().add(-FastMath.copySign(yawRate, beta.getReal()));
+                        phiDot    = field.getZero().newInstance(-FastMath.copySign(yawRate, beta.getReal()));
                         linearPhi = phiStart.add(phiDot.multiply(dtStart));
                     }
                 } else {
                     // midnight turn
-                    phiDot    = field.getZero().add(yawRate);
+                    phiDot    = field.getZero().newInstance(yawRate);
                     linearPhi = phiStart.add(phiDot.multiply(dtStart));
                 }
 

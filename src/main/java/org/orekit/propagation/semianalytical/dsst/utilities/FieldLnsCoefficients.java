@@ -58,7 +58,7 @@ public class FieldLnsCoefficients <T extends CalculusFieldElement<T>> {
         this.dlns         = MathArrays.buildArray(field, rows, columns);
 
         final T[] roaPow = MathArrays.buildArray(field, rows);
-        roaPow[0] = zero.add(1.);
+        roaPow[0] = zero.newInstance(1.);
         for (int i = 1; i <= nMax; i++) {
             roaPow[i] = roa.multiply(roaPow[i - 1]);
         }

@@ -293,8 +293,8 @@ public class KnockeRediffusedForceModel implements ForceModel {
 
                 // Compute current elementary crown sector area, it results of the integration of an elementary crown sector
                 // over the angular resolution
-                final T sectorArea = zero.add(equatorialRadius * equatorialRadius *
-                                              2.0 * angularResolution * FastMath.sin(0.5 * angularResolution) * FastMath.sin(eastAxisOffset));
+                final T sectorArea = zero.newInstance(equatorialRadius * equatorialRadius *
+                        2.0 * angularResolution * FastMath.sin(0.5 * angularResolution) * FastMath.sin(eastAxisOffset));
 
                 // Add current sector contribution to total rediffused flux
                 rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, earth, sectorArea));

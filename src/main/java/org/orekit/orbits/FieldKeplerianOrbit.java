@@ -428,16 +428,16 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @since 12.0
      */
     public FieldKeplerianOrbit(final Field<T> field, final KeplerianOrbit op) {
-        this(field.getZero().add(op.getA()), field.getZero().add(op.getE()), field.getZero().add(op.getI()),
-                field.getZero().add(op.getPerigeeArgument()), field.getZero().add(op.getRightAscensionOfAscendingNode()),
-                field.getZero().add(op.getTrueAnomaly()),
-                (op.hasDerivatives()) ? field.getZero().add(op.getADot()) : null,
-                (op.hasDerivatives()) ? field.getZero().add(op.getEDot()) : null,
-                (op.hasDerivatives()) ? field.getZero().add(op.getIDot()) : null,
-                (op.hasDerivatives()) ? field.getZero().add(op.getPerigeeArgumentDot()) : null,
-                (op.hasDerivatives()) ? field.getZero().add(op.getRightAscensionOfAscendingNodeDot()) : null,
-                (op.hasDerivatives()) ? field.getZero().add(op.getTrueAnomalyDot()) : null, PositionAngleType.TRUE,
-                op.getFrame(), new FieldAbsoluteDate<>(field, op.getDate()), field.getZero().add(op.getMu()));
+        this(field.getZero().newInstance(op.getA()), field.getZero().newInstance(op.getE()), field.getZero().newInstance(op.getI()),
+                field.getZero().newInstance(op.getPerigeeArgument()), field.getZero().newInstance(op.getRightAscensionOfAscendingNode()),
+                field.getZero().newInstance(op.getTrueAnomaly()),
+                (op.hasDerivatives()) ? field.getZero().newInstance(op.getADot()) : null,
+                (op.hasDerivatives()) ? field.getZero().newInstance(op.getEDot()) : null,
+                (op.hasDerivatives()) ? field.getZero().newInstance(op.getIDot()) : null,
+                (op.hasDerivatives()) ? field.getZero().newInstance(op.getPerigeeArgumentDot()) : null,
+                (op.hasDerivatives()) ? field.getZero().newInstance(op.getRightAscensionOfAscendingNodeDot()) : null,
+                (op.hasDerivatives()) ? field.getZero().newInstance(op.getTrueAnomalyDot()) : null, PositionAngleType.TRUE,
+                op.getFrame(), new FieldAbsoluteDate<>(field, op.getDate()), field.getZero().newInstance(op.getMu()));
     }
 
     /** Constructor from Field and Orbit.
@@ -926,7 +926,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     public FieldKeplerianOrbit<T> shiftedBy(final double dt) {
-        return shiftedBy(getZero().add(dt));
+        return shiftedBy(getZero().newInstance(dt));
     }
 
     /** {@inheritDoc} */
