@@ -25,9 +25,12 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.units.Unit;
 
 /** The Mendes - Pavlis tropospheric delay model for optical techniques.
 * It is valid for a wide range of wavelengths from 0.355µm to 1.064µm (Mendes and Pavlis, 2003)
@@ -65,17 +68,11 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
     /** Laser wavelength [µm]. */
     private double lambda;
 
-    /** The atmospheric pressure [hPa]. */
-    private double P0;
-
-    /** The temperature at the station [K]. */
-    private double T0;
-
-    /** Water vapor pressure at the laser site [hPa]. */
-    private double e0;
+    /** Pressure, temperature and humidity. */
+    private PressureTemperatureHumidity pth;
 
     /** Create a new Mendes-Pavlis model for the troposphere.
-     * This initialisation will compute the water vapor pressure
+     * This initialization will compute the water vapor pressure
      * thanks to the values of the pressure, the temperature and the humidity
      * @param t0 the temperature at the station, K
      * @param p0 the atmospheric pressure at the station, hPa
@@ -84,9 +81,18 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
      * */
     public MendesPavlisModel(final double t0, final double p0,
                              final double rh, final double lambda) {
-        this.P0     = p0;
-        this.T0     = t0;
-        this.e0     = new GiacomoDavis().waterVaporPressure(t0, p0, rh);
+        this(new PressureTemperatureHumidity(Unit.HECTO_PASCAL.toSI(p0),
+                                             t0,
+                                             new CIPM2007().waterVaporPressure(Unit.HECTO_PASCAL.toSI(p0), t0, rh)),
+             lambda);
+    }
+
+    /** Create a new Mendes-Pavlis model for the troposphere.
+     * @param pth atmospheric pressure, temperature and humidity at the station
+     * @param lambda laser wavelength, µm
+     * */
+    public MendesPavlisModel(final PressureTemperatureHumidity pth, final double lambda) {
+        this.pth    = pth;
         this.lambda = lambda;
     }
 
@@ -103,7 +109,12 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
     * @return a Mendes-Pavlis model with standard environmental values
     */
     public static MendesPavlisModel getStandardModel(final double lambda) {
-        return new MendesPavlisModel(273.15 + 18, 1013.25, 0.5, lambda);
+        final double p  = Unit.HECTO_PASCAL.toSI(1013.25);
+        final double t  = 273.15 + 18;
+        final double rh = 0.5;
+        return new MendesPavlisModel(new PressureTemperatureHumidity(p, t,
+                                                                     new CIPM2007().waterVaporPressure(p, t, rh)),
+                                     lambda);
     }
 
     /** {@inheritDoc} */
@@ -161,7 +172,8 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
         final double fLambdaH = 0.01 * (K_COEFFICIENTS[1] * frac1 + K_COEFFICIENTS[3] * frac2) * C02;
 
         // Zenith delay for the hydrostatic component
-        delay[0] = 0.002416579 * (fLambdaH / fsite) * P0;
+        // beware since version 12.1 pressure is in Pa and not in hPa, hence the scaling has changed
+        delay[0] = 0.00002416579 * (fLambdaH / fsite) * pth.getPressure();
 
         // Dispertion Equation for the Non-Hydrostatic component
         final double sigma4 = sigma2 * sigma2;
@@ -173,7 +185,8 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
         final double fLambdaNH = 0.003101 * (W_COEFFICIENTS[0] + w1s2 + w2s4 + w3s6);
 
         // Zenith delay for the non-hydrostatic component
-        delay[1] = 0.0001 * (5.316 * fLambdaNH - 3.759 * fLambdaH) * (e0 / fsite);
+        // beware since version 12.1 e0 is in Pa and not in hPa, hence the scaling has changed
+        delay[1] = 0.000001 * (5.316 * fLambdaNH - 3.759 * fLambdaH) * (pth.getWaterVaporPressure() / fsite);
 
         return delay;
     }
@@ -214,7 +227,8 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
         final T fLambdaH = frac1.multiply(K_COEFFICIENTS[1]).add(frac2.multiply(K_COEFFICIENTS[3])).multiply(0.01 * C02);
 
         // Zenith delay for the hydrostatic component
-        delay[0] =  fLambdaH.divide(fsite).multiply(P0).multiply(0.002416579);
+        // beware since version 12.1 pressure is in Pa and not in hPa, hence the scaling has changed
+        delay[0] =  fLambdaH.divide(fsite).multiply(pth.getPressure()).multiply(0.00002416579);
 
         // Dispertion Equation for the Non-Hydrostatic component
         final T sigma4 = sigma2.multiply(sigma2);
@@ -226,7 +240,9 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
         final T fLambdaNH = w1s2.add(w2s4).add(w3s6).add(W_COEFFICIENTS[0]).multiply(0.003101);
 
         // Zenith delay for the non-hydrostatic component
-        delay[1] = fLambdaNH.multiply(5.316).subtract(fLambdaH.multiply(3.759)).multiply(fsite.divide(e0).reciprocal()).multiply(0.0001);
+        // beware since version 12.1 e0 is in Pa and not in hPa, hence the scaling has changed
+        delay[1] = fLambdaNH.multiply(5.316).subtract(fLambdaH.multiply(3.759)).
+                   multiply(fsite.divide(pth.getWaterVaporPressure()).reciprocal()).multiply(0.000001);
 
         return delay;
     }
@@ -249,7 +265,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
                                    final AbsoluteDate date) {
         final double sinE = FastMath.sin(elevation);
 
-        final double T2degree = T0 - 273.15;
+        final double T2degree = pth.getTemperature() - 273.15;
 
         // Mapping function coefficients
         final double a1 = computeMFCoeffient(A_COEFFICIENTS[0][0], A_COEFFICIENTS[0][1],
@@ -295,7 +311,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
 
         final T sinE = FastMath.sin(elevation);
 
-        final double T2degree = T0 - 273.15;
+        final double T2degree = pth.getTemperature() - 273.15;
 
         // Mapping function coefficients
         final T a1 = computeMFCoeffient(A_COEFFICIENTS[0][0], A_COEFFICIENTS[0][1],

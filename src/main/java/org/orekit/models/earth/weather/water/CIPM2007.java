@@ -14,20 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth.troposphere;
+package org.orekit.models.earth.weather.water;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
+import org.orekit.utils.units.Unit;
 
-/** Giacomo and Davis water vapor mode.
+/** Official model CIPM-2007 (identical to CIPM-1981/91) from Comité International des Poids et Mesures.
+ * <p>
+ * This water vapor model is the one from Giacomo and Davis as indicated in IERS TN 32, chap. 9.
+ * </p>
+ * @see <a href="https://www.nist.gov/system/files/documents/calibrations/CIPM-2007.pdf">Revised
+ * formula for the density of moist air (CIPM-2007), Metrologia 45 (2008) 149–155</a>
  *
- * See: Giacomo, P., Equation for the determination of the density of moist air, Metrologia, V. 18, 1982
- *
- * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class GiacomoDavis implements WaterVaporPressureProvider {
+public class CIPM2007 implements WaterVaporPressureProvider {
 
     /** Saturation water vapor coefficient. */
     private static final double E = 0.01;
@@ -58,34 +61,32 @@ public class GiacomoDavis implements WaterVaporPressureProvider {
 
     /** {@inheritDoc} */
     @Override
-    public double waterVaporPressure(final double t, final double p, final double rh) {
+    public double waterVaporPressure(final double p, final double t, final double rh) {
 
-        // saturation water vapor, equation (3) of reference paper, in mbar
-        // with amended 1991 values (see reference paper)
-        final double es = FastMath.exp(t * (t * L_P2 + L_P1) + L_0 + L_M1 / t) * E;
+        // saturation water vapor, equation A1.1
+        final double psv = FastMath.exp(t * (t * L_P2 + L_P1) + L_0 + L_M1 / t) * E;
 
-        // enhancement factor, equation (4) of reference paper
+        // enhancement factor, equation A1.2
         final double tC = t - CELSIUS;
-        final double fw = p * F_P + tC * tC * F_T2 + F_0;
+        final double fw = Unit.HECTO_PASCAL.fromSI(p) * F_P + tC * tC * F_T2 + F_0;
 
-        return rh * fw * es;
+        return Unit.HECTO_PASCAL.toSI(rh * fw * psv);
 
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T waterVaporPressure(final T t, final T p, final T rh) {
+    public <T extends CalculusFieldElement<T>> T waterVaporPressure(final T p, final T t, final T rh) {
 
-        // saturation water vapor, equation (3) of reference paper, in mbar
-        // with amended 1991 values (see reference paper)
-        final T es = FastMath.exp(t.multiply(t.multiply(L_P2).add(L_P1)).add(L_0).add(t.reciprocal().multiply(L_M1))).
-                     multiply(E);
+        // saturation water vapor, equation A1.1
+        final T psv = FastMath.exp(t.multiply(t.multiply(L_P2).add(L_P1)).add(L_0).add(t.reciprocal().multiply(L_M1))).
+                      multiply(E);
 
-        // enhancement factor, equation (4) of reference paper
+        // enhancement factor, equation A1.2
         final T tC = t.subtract(CELSIUS);
-        final T fw = p.multiply(F_P).add(tC.multiply(tC).multiply(F_T2)).add(F_0);
+        final T fw = Unit.HECTO_PASCAL.fromSI(p).multiply(F_P).add(tC.multiply(tC).multiply(F_T2)).add(F_0);
 
-        return rh.multiply(fw).multiply(es);
+        return Unit.HECTO_PASCAL.toSI(rh.multiply(fw).multiply(psv));
 
     }
 

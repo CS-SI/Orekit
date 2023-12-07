@@ -25,21 +25,21 @@ import org.hipparchus.CalculusFieldElement;
 public interface WaterVaporPressureProvider {
 
     /** Compute water vapor pressure.
-     * @param t temperature (Kelvin)
      * @param p pressure (Pa)
+     * @param t temperature (Kelvin)
      * @param rh relative humidity, in percent (50% → 0.5)
      * @return water vapor pressure (Pa)
      */
-    double waterVaporPressure(double t, double p, double rh);
+    double waterVaporPressure(double p, double t, double rh);
 
     /** Compute water vapor pressure.
-     * @param <T> type of the field elements
-     * @param t temperature (Kelvin)
      * @param p pressure (Pa)
+     * @param t temperature (Kelvin)
      * @param rh relative humidity, in percent (50% → 0.5)
+     * @param <T> type of the field elements
      * @return water vapor pressure (Pa)
      */
-    <T extends CalculusFieldElement<T>> T waterVaporPressure(T t, T p, T rh);
+    <T extends CalculusFieldElement<T>> T waterVaporPressure(T p, T t, T rh);
 
 }
 
