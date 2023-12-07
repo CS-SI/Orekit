@@ -25,19 +25,19 @@ import org.hipparchus.CalculusFieldElement;
  */
 public class FieldPressureTemperatureHumidity<T extends CalculusFieldElement<T>> {
 
-    /** Pressure (hPa). */
+    /** Pressure (Pa). */
     private final T pressure;
 
     /** Temperature (Kelvin). */
     private final T temperature;
 
-    /** Humidity as water vapor pressure (hPa). */
+    /** Humidity as water vapor pressure (Pa). */
     private final T waterVaporPressure;
 
     /** Simple constructor.
-     * @param pressure pressure (hPa)
+     * @param pressure pressure (Pa)
      * @param temperature temperature (Kelvin)
-     * @param humidity humidity as water vapor pressure (hPa)
+     * @param waterVaporPressure humidity as water vapor pressure (Pa)
      */
     public FieldPressureTemperatureHumidity(final T pressure,
                                             final T temperature,
@@ -48,7 +48,7 @@ public class FieldPressureTemperatureHumidity<T extends CalculusFieldElement<T>>
     }
 
     /** Get pressure.
-     * @return pressure hPa
+     * @return pressure (Pa)
      */
     public T getPressure() {
         return pressure;
@@ -62,7 +62,7 @@ public class FieldPressureTemperatureHumidity<T extends CalculusFieldElement<T>>
     }
 
     /** Get humidity as water vapor pressure.
-     * @return humidity as water vapor pressure (hPa)
+     * @return humidity as water vapor pressure (Pa)
      */
     public T getWaterVaporPressure() {
         return waterVaporPressure;

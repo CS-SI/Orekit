@@ -22,19 +22,19 @@ package org.orekit.models.earth.weather;
  */
 public class PressureTemperatureHumidity {
 
-    /** Pressure (hPa). */
+    /** Pressure (Pa). */
     private final double pressure;
 
     /** Temperature (Kelvin). */
     private final double temperature;
 
-    /** Humidity as water vapor pressure (hPa). */
+    /** Humidity as water vapor pressure (Pa). */
     private final double waterVaporPressure;
 
     /** Simple constructor.
-     * @param pressure pressure (hPa)
+     * @param pressure pressure (Pa)
      * @param temperature temperature (Kelvin)
-     * @param humidity humidity as water vapor pressure (hPa)
+     * @param waterVaporPressure humidity as water vapor pressure (Pa)
      */
     public PressureTemperatureHumidity(final double pressure,
                                        final double temperature,
@@ -45,7 +45,7 @@ public class PressureTemperatureHumidity {
     }
 
     /** Get pressure.
-     * @return pressure hPa
+     * @return pressure (Pa)
      */
     public double getPressure() {
         return pressure;
@@ -59,7 +59,7 @@ public class PressureTemperatureHumidity {
     }
 
     /** Get humidity as water vapor pressure.
-     * @return humidity as water vapor pressure (hPa)
+     * @return humidity as water vapor pressure (Pa)
      */
     public double getWaterVaporPressure() {
         return waterVaporPressure;
