@@ -73,8 +73,8 @@ import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.DynamicOutlierFilter;
-import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.estimation.measurements.modifiers.OutlierFilter;
+import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
@@ -97,12 +97,12 @@ import org.orekit.files.ilrs.CRD.MeteorologicalMeasurement;
 import org.orekit.files.ilrs.CRD.RangeMeasurement;
 import org.orekit.files.ilrs.CRDHeader;
 import org.orekit.files.ilrs.CRDHeader.RangeType;
+import org.orekit.files.ilrs.CRDParser;
 import org.orekit.files.rinex.HatanakaCompressFilter;
 import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.files.rinex.observation.RinexObservation;
 import org.orekit.files.rinex.observation.RinexObservationParser;
-import org.orekit.files.ilrs.CRDParser;
 import org.orekit.files.sinex.SinexLoader;
 import org.orekit.files.sinex.Station;
 import org.orekit.forces.drag.DragSensitive;
@@ -136,10 +136,13 @@ import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
 import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
 import org.orekit.models.earth.troposphere.MappingFunction;
 import org.orekit.models.earth.troposphere.MendesPavlisModel;
-import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
+import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.models.earth.troposphere.TimeSpanEstimatedTroposphericModel;
+import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.GlobalPressureTemperatureModel;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -166,6 +169,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.units.Unit;
 
 /** Base class for Orekit orbit determination tutorials.
  * @param <T> type of the propagator builder
@@ -2312,10 +2316,18 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 // Tropospheric model
                 final DiscreteTroposphericModel model;
                 if (meteoData != null) {
-                    model = new MendesPavlisModel(meteoData.getTemperature(), meteoData.getPressure() * 1000.0,
-                                                  0.01 * meteoData.getHumidity(), wavelength * 1.0e6);
+                    final PressureTemperatureHumidity pth =
+                                    new PressureTemperatureHumidity(Unit.BAR.toSI(meteoData.getPressure()),
+                                                                    meteoData.getTemperature(),
+                                                                    0.01 * meteoData.getHumidity(),
+                                                                    new CIPM2007().
+                                                                    waterVaporPressure(Unit.BAR.toSI(meteoData.getPressure()),
+                                                                                       meteoData.getTemperature(),
+                                                                                       0.01 * meteoData.getHumidity()));
+                    model = new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
+                                                  wavelength, Unit.METRE);
                 } else {
-                    model = MendesPavlisModel.getStandardModel(wavelength * 1.0e6);
+                    model = MendesPavlisModel.getStandardModel(wavelength, Unit.METRE);
                 }
                 measurement.addModifier(new RangeTroposphericDelayModifier(model));
 

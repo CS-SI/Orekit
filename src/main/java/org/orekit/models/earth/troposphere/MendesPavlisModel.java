@@ -34,6 +34,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.units.Unit;
+import org.orekit.utils.units.UnitsConverter;
 
 /** The Mendes - Pavlis tropospheric delay model for optical techniques.
 * It is valid for a wide range of wavelengths from 0.355µm to 1.064µm (Mendes and Pavlis, 2003)
@@ -111,7 +112,8 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
         this.pthProvider = pthProvider;
 
         // Dispersion equation for the hydrostatic component
-        final double sigma  = 1 / lambda;
+        final double lambdaMicrometer = new UnitsConverter(lambdaUnits, TropoUnit.MICRO_M).convert(lambda);
+        final double sigma  = 1.0 / lambdaMicrometer;
         final double sigma2 = sigma * sigma;
         final double coef1  = K_COEFFICIENTS[0] + sigma2;
         final double coef2  = K_COEFFICIENTS[0] - sigma2;
