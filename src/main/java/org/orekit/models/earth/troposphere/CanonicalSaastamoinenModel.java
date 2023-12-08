@@ -28,9 +28,11 @@ import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
+import org.orekit.models.earth.weather.HeightDependentPressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.water.NbsNrcSteamTable;
+import org.orekit.models.earth.weather.water.WaterVaporPressureProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -63,19 +65,27 @@ public class CanonicalSaastamoinenModel implements DiscreteTroposphericModel {
 
     /** X values for the B function (table 1 in reference paper). */
     private static final double[] X_VALUES_FOR_B = {
-        0.0, 200.0, 400.0, 600.0, 8000.0, 1000.0, 1500.0, 2000.0, 2500.0, 3000.0, 4000.0, 5000.0, 6000.0
+        0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1500.0, 2000.0, 2500.0, 3000.0, 4000.0, 5000.0, 6000.0
     };
 
-    /** E values for the B function (table 1 in reference paper). */
+    /** Y values for the B function (table 1 in reference paper).
+     * <p>
+     * The values have been scaled up by a factor 100.0 due to conversion from hPa to Pa.
+     * </p>
+     */
     private static final double[] Y_VALUES_FOR_B = {
-        1.16, 1.13, 1.10, 1.07, 1.04, 1.01, 0.94, 0.88, 0.82, 0.76, 0.66, 0.57, 0.49
+        116.0, 113.0, 110.0, 107.0, 104.0, 101.0, 94.0, 88.0, 82.0, 76.0, 66.0, 57.0, 49.0
     };
 
     /** Interpolation function for the B correction term. */
-    private final PolynomialSplineFunction bFunction;
+    private static final PolynomialSplineFunction B_FUNCTION;
 
     /** Provider for pressure, temperature and humidity. */
     private final PressureTemperatureHumidityProvider pthProvider;
+
+    static {
+        B_FUNCTION = new LinearInterpolator().interpolate(X_VALUES_FOR_B, Y_VALUES_FOR_B);
+    }
 
     /** Lowest acceptable elevation angle [rad]. */
     private double lowElevationThreshold;
@@ -85,10 +95,10 @@ public class CanonicalSaastamoinenModel implements DiscreteTroposphericModel {
      * conditions and table from the reference book.
      *
      * @param pthProvider provider for pressure, temperature and humidity
+     * @see HeightDependentPressureTemperatureHumidityProvider
      */
     public CanonicalSaastamoinenModel(final PressureTemperatureHumidityProvider pthProvider) {
         this.pthProvider           = pthProvider;
-        this.bFunction             = new LinearInterpolator().interpolate(X_VALUES_FOR_B, Y_VALUES_FOR_B);
         this.lowElevationThreshold = DEFAULT_LOW_ELEVATION_THRESHOLD;
     }
 
@@ -105,14 +115,22 @@ public class CanonicalSaastamoinenModel implements DiscreteTroposphericModel {
     public static CanonicalSaastamoinenModel getStandardModel() {
 
         // build standard meteorological data
-        final double                      pressure           = Unit.parse("hPa").toSI(1013.25);
-        final double                      temperature        = 273.15 + 18;
-        final double                      waterVaporPressure = new NbsNrcSteamTable().waterVaporPressure(temperature, pressure, 0.5);
-        final PressureTemperatureHumidity pth                = new PressureTemperatureHumidity(pressure,
-                                                                                               temperature,
-                                                                                               waterVaporPressure);
-
-        return new CanonicalSaastamoinenModel(new ConstantPressureTemperatureHumidityProvider(pth));
+        final double pressure           = Unit.parse("hPa").toSI(1013.25);
+        final double temperature        = 273.15 + 18;
+        final double relativeHumidity   = 0.5;
+        final WaterVaporPressureProvider waterPressureProvider = new NbsNrcSteamTable();
+        final double waterVaporPressure = waterPressureProvider.waterVaporPressure(pressure,
+                                                                                   temperature,
+                                                                                   relativeHumidity);
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
+                                                                                temperature,
+                                                                                relativeHumidity,
+                                                                                waterVaporPressure);
+        final PressureTemperatureHumidityProvider pth0Provider =
+                        new ConstantPressureTemperatureHumidityProvider(pth);
+        final PressureTemperatureHumidityProvider pthProvider =
+                        new HeightDependentPressureTemperatureHumidityProvider(0.0, 5000.0, 0.0, pth0Provider, waterPressureProvider);
+        return new CanonicalSaastamoinenModel(pthProvider);
 
     }
 
@@ -141,14 +159,14 @@ public class CanonicalSaastamoinenModel implements DiscreteTroposphericModel {
                                                 X_VALUES_FOR_B[X_VALUES_FOR_B.length - 1]);
 
         // interpolate the b correction term
-        final double B = bFunction.value(fixedHeight);
+        final double B = B_FUNCTION.value(fixedHeight);
 
         // calculate the zenith angle from the elevation
         final double z = FastMath.abs(0.5 * FastMath.PI - FastMath.max(elevation, lowElevationThreshold));
 
         // calculate the path delay in m
         final double tan = FastMath.tan(z);
-        final double delta = 2.277e-3 / FastMath.cos(z) *
+        final double delta = 2.277e-5 / FastMath.cos(z) *
                              (pth.getPressure() +
                               (1255.0 / pth.getTemperature() + 0.05) * pth.getWaterVaporPressure() - B * tan * tan);
 
@@ -183,7 +201,7 @@ public class CanonicalSaastamoinenModel implements DiscreteTroposphericModel {
                                            X_VALUES_FOR_B[X_VALUES_FOR_B.length - 1]);
 
         // interpolate the b correction term
-        final T B = bFunction.value(fixedHeight);
+        final T B = B_FUNCTION.value(fixedHeight);
 
         // calculate the zenith angle from the elevation
         final T z = FastMath.abs(zero.getPi().multiply(0.5).
@@ -191,7 +209,7 @@ public class CanonicalSaastamoinenModel implements DiscreteTroposphericModel {
 
         // calculate the path delay in m
         final T tan = FastMath.tan(z);
-        final T delta = FastMath.cos(z).divide(2.277e-3).reciprocal().
+        final T delta = FastMath.cos(z).divide(2.277e-5).reciprocal().
                         multiply(pth.getPressure().
                                  add(pth.getTemperature().reciprocal().multiply(1255.0).add(0.05).
                                      multiply(pth.getWaterVaporPressure())).

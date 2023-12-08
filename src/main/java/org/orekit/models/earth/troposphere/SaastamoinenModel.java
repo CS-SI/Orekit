@@ -87,7 +87,8 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
                              final double r0,
                              final String deltaRFileName,
                              final DataProvidersManager dataProvidersManager) {
-        super(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(TropoUnit.HECTO_PASCAL.toSI(p0),
+        super(0.0,
+              new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(TropoUnit.HECTO_PASCAL.toSI(p0),
                                                                                               t0,
                                                                                               r0,
                                                                                               new Wang1988().waterVaporPressure(TropoUnit.HECTO_PASCAL.toSI(p0),

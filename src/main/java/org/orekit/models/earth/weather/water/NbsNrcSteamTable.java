@@ -37,7 +37,7 @@ public class NbsNrcSteamTable implements WaterVaporPressureProvider {
     /** Celsius temperature offset. */
     private static final double CELSIUS = 273.15;
 
-    /** Minimum temperature of the model. */
+    /** Minimum temperature of the model, at the triple point of water, i.e. 273.16K (which is 0.01°C). */
     private static final double MIN_T = CELSIUS + 0.01;
 
     /** Saturation pressure model. */
@@ -71,13 +71,13 @@ public class NbsNrcSteamTable implements WaterVaporPressureProvider {
 
     /** {@inheritDoc} */
     @Override
-    public double waterVaporPressure(final double t, final double p, final double rh) {
+    public double waterVaporPressure(final double p, final double t, final double rh) {
         return MODEL.value(FastMath.max(t, MIN_T)) * rh;
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T waterVaporPressure(final T t, final T p, final T rh) {
+    public <T extends CalculusFieldElement<T>> T waterVaporPressure(final T p, final T t, final T rh) {
         return MODEL.value(FastMath.max(t, MIN_T)).multiply(rh);
     }
 
