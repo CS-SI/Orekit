@@ -107,11 +107,6 @@ public class Unit implements Serializable {
     /** Pascal unit. */
     public static final Unit PASCAL = NEWTON.divide("Pa", METRE.power(null, Fraction.TWO));
 
-    /** HectoPascal unit.
-     * @since 12.1
-     */
-    public static final Unit HECTO_PASCAL = PASCAL.scale("hPa", 100.0);
-
     /** Bar unit. */
     public static final Unit BAR = PASCAL.scale("bar", 100000.0);
 

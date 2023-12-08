@@ -99,7 +99,6 @@ public class UnitTest {
         checkReference(Unit.REVOLUTION,                   "rev",       2.0 * FastMath.PI,  0,  0,  0,  0, 1);
         checkReference(Unit.NEWTON,                         "N",                     1.0,  1,  1, -2,  0, 0);
         checkReference(Unit.PASCAL,                        "Pa",                     1.0,  1, -1, -2,  0, 0);
-        checkReference(Unit.HECTO_PASCAL,                 "hPa",                   100.0,  1, -1, -2,  0, 0);
         checkReference(Unit.BAR,                          "bar",                100000.0,  1, -1, -2,  0, 0);
         checkReference(Unit.JOULE,                          "J",                     1.0,  1,  2, -2,  0, 0);
         checkReference(Unit.WATT,                           "W",                     1.0,  1,  2, -3,  0, 0);

@@ -18,7 +18,7 @@ package org.orekit.models.earth.weather.water;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
-import org.orekit.utils.units.Unit;
+import org.orekit.models.earth.troposphere.TropoUnit;
 
 /** Official model CIPM-2007 (identical to CIPM-1981/91) from Comité International des Poids et Mesures.
  * <p>
@@ -68,9 +68,9 @@ public class CIPM2007 implements WaterVaporPressureProvider {
 
         // enhancement factor, equation A1.2
         final double tC = t - CELSIUS;
-        final double fw = Unit.HECTO_PASCAL.fromSI(p) * F_P + tC * tC * F_T2 + F_0;
+        final double fw = TropoUnit.HECTO_PASCAL.fromSI(p) * F_P + tC * tC * F_T2 + F_0;
 
-        return Unit.HECTO_PASCAL.toSI(rh * fw * psv);
+        return TropoUnit.HECTO_PASCAL.toSI(rh * fw * psv);
 
     }
 
@@ -84,9 +84,9 @@ public class CIPM2007 implements WaterVaporPressureProvider {
 
         // enhancement factor, equation A1.2
         final T tC = t.subtract(CELSIUS);
-        final T fw = Unit.HECTO_PASCAL.fromSI(p).multiply(F_P).add(tC.multiply(tC).multiply(F_T2)).add(F_0);
+        final T fw = TropoUnit.HECTO_PASCAL.fromSI(p).multiply(F_P).add(tC.multiply(tC).multiply(F_T2)).add(F_0);
 
-        return Unit.HECTO_PASCAL.toSI(rh.multiply(fw).multiply(psv));
+        return TropoUnit.HECTO_PASCAL.toSI(rh.multiply(fw).multiply(psv));
 
     }
 
