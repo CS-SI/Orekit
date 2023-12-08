@@ -180,7 +180,7 @@ public class ModifiedSaastamoinenModel implements DiscreteTroposphericModel {
      */
     public static ModifiedSaastamoinenModel getStandardModel() {
         final double pressure    = TropoUnit.HECTO_PASCAL.toSI(1013.25);
-        final double temperature = 273.16 + 18;
+        final double temperature = 273.15 + 18;
         final double humidity    = 0.5;
         final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
                                                                                 temperature,

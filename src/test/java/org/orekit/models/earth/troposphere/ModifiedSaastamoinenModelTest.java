@@ -232,7 +232,19 @@ public class ModifiedSaastamoinenModelTest {
     @Test
     public void compareExpectedValues() {
         Utils.setDataRoot("atmosphere");
-        ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
+        final double pressure    = TropoUnit.HECTO_PASCAL.toSI(1013.25);
+        // it seems the reference values for the test have been computed using a wrong conversion
+        // between Celsius and Kelvin (273.16 offset instead of 273.15)
+        // so for the sake of the test, we use a temperature of 18.01°C and not the standard atmosphere at 18.00°C
+        final double temperature = 273.15 + 18.01;
+        final double humidity    = 0.5;
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
+                                                                                temperature,
+                                                                                humidity,
+                                                                                ModifiedSaastamoinenModel.WATER.waterVaporPressure(pressure,
+                                                                                                                                   temperature,
+                                                                                                                                   humidity));
+        ModifiedSaastamoinenModel model = new ModifiedSaastamoinenModel(new ConstantPressureTemperatureHumidityProvider(pth));
 
         for (int h = 0; h < heights.length; h++) {
             for (int e = 0; e < elevations.length; e++) {
@@ -254,7 +266,19 @@ public class ModifiedSaastamoinenModelTest {
     private <T extends CalculusFieldElement<T>> void doCompareFieldExpectedValues(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
-        ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
+        final double pressure    = TropoUnit.HECTO_PASCAL.toSI(1013.25);
+        // it seems the reference values for the test have been computed using a wrong conversion
+        // between Celsius and Kelvin (273.16 offset instead of 273.15)
+        // so for the sake of the test, we use a temperature of 18.01°C and not the standard atmosphere at 18.00°C
+        final double temperature = 273.15 + 18.01;
+        final double humidity    = 0.5;
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
+                                                                                temperature,
+                                                                                humidity,
+                                                                                ModifiedSaastamoinenModel.WATER.waterVaporPressure(pressure,
+                                                                                                                                   temperature,
+                                                                                                                                   humidity));
+        ModifiedSaastamoinenModel model = new ModifiedSaastamoinenModel(new ConstantPressureTemperatureHumidityProvider(pth));
 
         for (int h = 0; h < heights.length; h++) {
             for (int e = 0; e < elevations.length; e++) {
