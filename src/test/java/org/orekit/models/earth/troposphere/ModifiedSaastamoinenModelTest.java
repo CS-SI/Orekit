@@ -29,6 +29,9 @@ import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -42,20 +45,6 @@ public class ModifiedSaastamoinenModelTest {
     private double[] elevations;
 
     private double[] heights;
-
-    @Test
-    public void testIssue1078() {
-        try {
-            new ModifiedSaastamoinenModel(273.16 + 18, 1013.25, 50.0);
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.INVALID_PARAMETER_RANGE, oe.getSpecifier());
-        }
-        try {
-            new ModifiedSaastamoinenModel(273.16 + 18, 1013.25, -50.0);
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.INVALID_PARAMETER_RANGE, oe.getSpecifier());
-        }
-    }
 
     @Test
     public void testFixedElevation() {
@@ -123,7 +112,16 @@ public class ModifiedSaastamoinenModelTest {
     public void NoFile() {
         Utils.setDataRoot("atmosphere");
         try {
-            new ModifiedSaastamoinenModel(273.16 + 18, 1013.25, 0.5, "^non-existent-file$");
+            final double temperature   = 273.15 + 18;
+            final double pressure      = TropoUnit.HECTO_PASCAL.toSI(1013.25);
+            final double humidity      = 0.5;
+            final double waterPressure = ModifiedSaastamoinenModel.WATER.waterVaporPressure(pressure,
+                                                                                            temperature,
+                                                                                            humidity);
+            final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure, temperature, humidity,
+                                                                                    waterPressure);
+            final PressureTemperatureHumidityProvider pthProvider = new ConstantPressureTemperatureHumidityProvider(pth);
+            new ModifiedSaastamoinenModel(pthProvider, "^non-existent-file$");
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
@@ -134,8 +132,17 @@ public class ModifiedSaastamoinenModelTest {
     @Test
     public void compareDefaultAndLoaded() {
         Utils.setDataRoot("atmosphere");
-        ModifiedSaastamoinenModel defaultModel = new ModifiedSaastamoinenModel(273.16 + 18, 1013.25, 0.5, null);
-        ModifiedSaastamoinenModel loadedModel  = new ModifiedSaastamoinenModel(273.16 + 18, 1013.25, 0.5, ModifiedSaastamoinenModel.DELTA_R_FILE_NAME);
+        final double temperature   = 273.15 + 18;
+        final double pressure      = TropoUnit.HECTO_PASCAL.toSI(1013.25);
+        final double humidity      = 0.5;
+        final double waterPressure = ModifiedSaastamoinenModel.WATER.waterVaporPressure(pressure,
+                                                                                        temperature,
+                                                                                        humidity);
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure, temperature, humidity,
+                                                                                waterPressure);
+        final PressureTemperatureHumidityProvider pthProvider = new ConstantPressureTemperatureHumidityProvider(pth);
+        ModifiedSaastamoinenModel defaultModel = new ModifiedSaastamoinenModel(pthProvider, null);
+        ModifiedSaastamoinenModel loadedModel  = new ModifiedSaastamoinenModel(pthProvider, ModifiedSaastamoinenModel.DELTA_R_FILE_NAME);
         double[] heights = new double[] {
             0.0, 250.0, 500.0, 750.0, 1000.0, 1250.0, 1500.0, 1750.0, 2000.0, 2250.0, 2500.0, 2750.0, 3000.0, 3250.0,
             3500.0, 3750.0, 4000.0, 4250.0, 4500.0, 4750.0, 5000.0

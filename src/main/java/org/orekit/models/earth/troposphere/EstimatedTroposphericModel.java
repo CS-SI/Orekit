@@ -23,6 +23,8 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -45,8 +47,10 @@ import org.orekit.utils.ParameterDriver;
  * the {@link GlobalMappingFunctionModel Global Mapping Function}, or
  * the {@link NiellMappingFunctionModel Niell Mapping Function}
  * </p> <p>
- * The tropospheric zenith delay δ<sub>h</sub> is computed empirically with a {@link ModifiedSaastamoinenModel}
- * while the tropospheric total zenith delay δ<sub>t</sub> is estimated as a {@link ParameterDriver}
+ * The tropospheric zenith delay δ<sub>h</sub> is computed empirically with a
+ * {@link DiscreteTroposphericModel tropospheric model}
+ * while the tropospheric total zenith delay δ<sub>t</sub> is estimated as a {@link ParameterDriver},
+ * hence the wet part is the difference between the two.
  */
 public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
 
@@ -59,13 +63,13 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     /** Driver for the tropospheric zenith total delay.*/
     private final ParameterDriver totalZenithDelay;
 
-    /** The temperature at the station [K]. */
-    private double t0;
-
-    /** The atmospheric pressure [mbar]. */
-    private double p0;
+    /** Model for hydrostatic component. */
+    private final DiscreteTroposphericModel hydrostatic;
 
     /** Build a new instance using the given environmental conditions.
+     * <p>
+     * This constructor uses a {@link ModifiedSaastamoinenModel} for the hydrostatic contribution.
+     * </p>
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
      * @param model mapping function model (NMF or GMF).
@@ -73,12 +77,23 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
      */
     public EstimatedTroposphericModel(final double t0, final double p0,
                                       final MappingFunction model, final double totalDelay) {
+        this(new ModifiedSaastamoinenModel(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(p0, t0, 0.0, 0.0))),
+             model, totalDelay);
+    }
+
+    /** Build a new instance using the given environmental conditions.
+     * @param hydrostatic model for hydrostatic component
+     * @param model mapping function model (NMF or GMF).
+     * @param totalDelay initial value for the tropospheric zenith total delay [m]
+     * @since 12.1
+     */
+    public EstimatedTroposphericModel(final DiscreteTroposphericModel hydrostatic,
+                                      final MappingFunction model, final double totalDelay) {
 
         totalZenithDelay = new ParameterDriver(EstimatedTroposphericModel.TOTAL_ZENITH_DELAY,
                                                totalDelay, FastMath.scalb(1.0, 0), 0.0, Double.POSITIVE_INFINITY);
 
-        this.t0    = t0;
-        this.p0    = p0;
+        this.hydrostatic = hydrostatic;
         this.model = model;
     }
 
@@ -104,10 +119,8 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     @Override
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
-        // Use an empirical model for tropospheric zenith hydro-static delay : Saastamoinen model
-        final ModifiedSaastamoinenModel saastamoinen = new ModifiedSaastamoinenModel(t0, p0, 0.0);
         // Zenith delays. elevation = pi/2 because we compute the delay in the zenith direction
-        final double zhd = saastamoinen.pathDelay(0.5 * FastMath.PI, point, parameters, date);
+        final double zhd = hydrostatic.pathDelay(0.5 * FastMath.PI, point, parameters, date);
         final double ztd = parameters[0];
         // Mapping functions
         final double[] mf = model.mappingFactors(elevation, point, date);
@@ -119,10 +132,8 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
     @Override
     public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
-        // Use an empirical model for tropospheric zenith hydro-static delay : Saastamoinen model
-        final ModifiedSaastamoinenModel saastamoinen = new ModifiedSaastamoinenModel(t0, p0, 0.0);
         // Zenith delays. elevation = pi/2 because we compute the delay in the zenith direction
-        final T zhd = saastamoinen.pathDelay(elevation.getPi().multiply(0.5), point, parameters, date);
+        final T zhd = hydrostatic.pathDelay(elevation.getPi().multiply(0.5), point, parameters, date);
         final T ztd = parameters[0];
         // Mapping functions
         final T[] mf = model.mappingFactors(elevation, point, date);

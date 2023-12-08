@@ -19,6 +19,9 @@ package org.orekit.models.earth.troposphere;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.water.Wang1988;
 
 /** The modified Saastamoinen model.
  * @author Luc Maisonobe
@@ -44,7 +47,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
      * @since 10.1
      */
     public SaastamoinenModel(final double t0, final double p0, final double r0) {
-        super(t0, p0, r0);
+        this(t0, p0, r0, DELTA_R_FILE_NAME);
     }
 
     /** Create a new Saastamoinen model for the troposphere using the given
@@ -63,7 +66,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
     @DefaultDataContext
     public SaastamoinenModel(final double t0, final double p0, final double r0,
                              final String deltaRFileName) {
-        super(t0, p0, r0, deltaRFileName);
+        this(t0, p0, r0, deltaRFileName, DataContext.getDefault().getDataProvidersManager());
     }
 
     /** Create a new Saastamoinen model for the troposphere using the given
@@ -84,7 +87,13 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
                              final double r0,
                              final String deltaRFileName,
                              final DataProvidersManager dataProvidersManager) {
-        super(t0, p0, r0, deltaRFileName, dataProvidersManager);
+        super(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(TropoUnit.HECTO_PASCAL.toSI(p0),
+                                                                                              t0,
+                                                                                              r0,
+                                                                                              new Wang1988().waterVaporPressure(TropoUnit.HECTO_PASCAL.toSI(p0),
+                                                                                                                                t0,
+                                                                                                                                r0))),
+              deltaRFileName, dataProvidersManager);
     }
 
     /** Create a new Saastamoinen model using a standard atmosphere model.
