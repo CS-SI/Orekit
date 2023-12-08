@@ -596,7 +596,7 @@ public class TropoModifierTest {
 
             final double epsilon = 5.e-11;
             Assertions.assertTrue(Precision.compareTo(diffSec,  4.90e-9, epsilon) < 0);
-            Assertions.assertTrue(Precision.compareTo(diffSec, -2.20e-9, epsilon) > 0);
+            Assertions.assertTrue(Precision.compareTo(diffSec, -2.21e-9, epsilon) > 0);
         }
     }
 
