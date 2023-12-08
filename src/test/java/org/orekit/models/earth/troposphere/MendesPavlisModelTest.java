@@ -25,6 +25,9 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
+import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
@@ -63,9 +66,15 @@ public class MendesPavlisModelTest {
         final double latitude     = FastMath.toRadians(30.67166667);
         final double longitude    = FastMath.toRadians(-104.0250);
         final double height       = 2010.344;
-        final double pressure     = 798.4188;
+        final double pressure     = TropoUnit.HECTO_PASCAL.toSI(798.4188);
         final double temperature  = 300.15;
         final double humidity     = 0.4;
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
+                                                                                temperature,
+                                                                                new CIPM2007().
+                                                                                waterVaporPressure(pressure,
+                                                                                                   temperature,
+                                                                                                   humidity));
         final double lambda       = 0.532;
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
@@ -80,8 +89,8 @@ public class MendesPavlisModelTest {
 
         final AbsoluteDate date = new AbsoluteDate(2009, 8, 12, TimeScalesFactory.getUTC());
 
-        final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure,
-                                                               humidity, lambda);
+        final MendesPavlisModel model = new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
+                                                              lambda, TropoUnit.MICRO_M);
 
         final double[] computedDelay = model.computeZenithDelay(point, model.getParameters(), date);
 
@@ -112,9 +121,15 @@ public class MendesPavlisModelTest {
         final double latitude     = FastMath.toRadians(30.67166667);
         final double longitude    = FastMath.toRadians(-104.0250);
         final double height       = 2075;
-        final double pressure     = 798.4188;
+        final double pressure     = TropoUnit.HECTO_PASCAL.toSI(798.4188);
         final double temperature  = 300.15;
         final double humidity     = 0.4;
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
+                                                                                temperature,
+                                                                                new CIPM2007().
+                                                                                waterVaporPressure(pressure,
+                                                                                                   temperature,
+                                                                                                   humidity));
         final double lambda       = 0.532;
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
@@ -123,8 +138,8 @@ public class MendesPavlisModelTest {
         final double expectedMapping    = 3.80024367;
 
         // Test for the second constructor
-        final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure,
-                                                               humidity, lambda);
+        final MendesPavlisModel model = new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
+                                                              lambda, TropoUnit.MICRO_M);
 
         final double[] computedMapping = model.mappingFactors(elevation, point, date);
 
@@ -138,7 +153,7 @@ public class MendesPavlisModelTest {
         final double height = 100d;
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
-        MendesPavlisModel model = MendesPavlisModel.getStandardModel( 0.6943);
+        MendesPavlisModel model = MendesPavlisModel.getStandardModel( 0.6943, TropoUnit.MICRO_M);
         final double path = model.pathDelay(FastMath.toRadians(elevation), point, model.getParameters(), date);
         Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
         Assertions.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
@@ -148,7 +163,7 @@ public class MendesPavlisModelTest {
     public void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
-        MendesPavlisModel model = MendesPavlisModel.getStandardModel(0.6943);
+        MendesPavlisModel model = MendesPavlisModel.getStandardModel(0.6943, TropoUnit.MICRO_M);
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
@@ -156,6 +171,66 @@ public class MendesPavlisModelTest {
             Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
+    }
+
+    @Deprecated
+    @Test
+    public void testDeprecatedConstructor1() {
+
+        // Site:   McDonald Observatory
+        //         latitude:  30.67166667 °
+        //         longitude: -104.0250 °
+        //         height:    2010.344 m
+        //
+        // Meteo:  pressure:            798.4188 hPa
+        //         water vapor presure: 14.322 hPa
+        //         temperature:         300.15 K
+        //         humidity:            40 %
+        //
+        // Ref:    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
+        //         IERS Technical Note No. 36, BKG (2010)
+
+        final double latitude     = FastMath.toRadians(30.67166667);
+        final double longitude    = FastMath.toRadians(-104.0250);
+        final double height       = 2010.344;
+        final double pressure     = 798.4188;
+        final double temperature  = 300.15;
+        final double humidity     = 0.4;
+        final double lambda       = 0.532;
+        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
+
+        // Expected zenith hydrostatic delay: 1.932992 m (Ref)
+        final double expectedHydroDelay = 1.932992;
+        // Expected zenith wet delay: 0.223375*10-2 m (Ref)
+        final double expectedWetDelay   = 0.223375e-2;
+        // Expected total zenith delay: 1.935226 m (Ref)
+        final double expectedDelay      = 1.935226;
+
+        final double precision = 4.0e-6;
+
+        final AbsoluteDate date = new AbsoluteDate(2009, 8, 12, TimeScalesFactory.getUTC());
+
+        final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure, humidity, lambda);
+
+        final double[] computedDelay = model.computeZenithDelay(point, model.getParameters(), date);
+
+        Assertions.assertEquals(expectedHydroDelay, computedDelay[0],                    precision);
+        Assertions.assertEquals(expectedWetDelay,                      computedDelay[1], precision);
+        Assertions.assertEquals(expectedDelay,      computedDelay[0] + computedDelay[1], precision);
+
+    }
+
+    @Deprecated
+    @Test
+    public void testDeprecatedConstructor2() {
+        final double elevation = 10d;
+        final double height = 100d;
+        final AbsoluteDate date = new AbsoluteDate();
+        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
+        MendesPavlisModel model = MendesPavlisModel.getStandardModel( 0.6943);
+        final double path = model.pathDelay(FastMath.toRadians(elevation), point, model.getParameters(), date);
+        Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
+        Assertions.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
     }
 
 }

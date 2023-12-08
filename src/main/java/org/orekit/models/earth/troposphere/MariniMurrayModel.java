@@ -23,12 +23,16 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.units.Unit;
+import org.orekit.utils.units.UnitsConverter;
 
 /** The Marini-Murray tropospheric delay model for laser ranging.
  *
@@ -39,11 +43,11 @@ import org.orekit.utils.units.Unit;
  */
 public class MariniMurrayModel implements DiscreteTroposphericModel {
 
-    /** Pressure, temperature and humidity. */
-    private PressureTemperatureHumidity pth;
+    /** Provider for pressure, temperature and humidity. */
+    private PressureTemperatureHumidityProvider pthProvider;
 
-    /** Laser wavelength, micrometers. */
-    private double lambda;
+    /** Laser frequency parameter. */
+    private double fLambda;
 
     /** Create a new Marini-Murray model for the troposphere using the given
      * environmental conditions.
@@ -51,21 +55,39 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
      * @param p0 the atmospheric pressure at the station, mbar
      * @param rh the humidity at the station, percent (50% -&gt; 0.5)
      * @param lambda laser wavelength (c/f), nm
+     * @deprecated as of 12.1, replaced by {@link #MariniMurrayModel(PressureTemperatureHumidityProvider, double, Unit)}
      */
+    @Deprecated
     public MariniMurrayModel(final double t0, final double p0, final double rh, final double lambda) {
-        this(new PressureTemperatureHumidity(Unit.HECTO_PASCAL.toSI(p0),
-                                             t0,
-                                             new CIPM2007().waterVaporPressure(Unit.HECTO_PASCAL.toSI(p0), t0, rh)),
-             lambda);
+        this(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(TropoUnit.HECTO_PASCAL.toSI(p0),
+                                                                                             t0,
+                                                                                             new CIPM2007().
+                                                                                             waterVaporPressure(TropoUnit.HECTO_PASCAL.toSI(p0),
+                                                                                                                t0,
+                                                                                                                rh))),
+             lambda, TropoUnit.NANO_M);
     }
 
     /** Create a new Marini-Murray model for the troposphere.
-     * @param pth atmospheric pressure, temperature and humidity at the station
-     * @param lambda laser wavelength, nm
+     * <p>
+     * BEWARE: this constructor uses
+     * </p>
+     * @param pthProvider provider for atmospheric pressure, temperature and humidity at the station
+     * @param lambda laser wavelength
+     * @param lambdaUnits units in which {@code lambda} is given
+     * @see TropoUnit
+     * @since 12.1
      * */
-    public MariniMurrayModel(final PressureTemperatureHumidity pth, final double lambda) {
-        this.pth    = pth;
-        this.lambda = lambda * 1.0e-3;
+    public MariniMurrayModel(final PressureTemperatureHumidityProvider pthProvider,
+                             final double lambda, final Unit lambdaUnits) {
+
+        this.pthProvider = pthProvider;
+
+        // compute laser frequency parameter
+        final double lambdaMicrometer = new UnitsConverter(lambdaUnits, TropoUnit.MICRO_M).convert(lambda);
+        final double l2 = lambdaMicrometer  * lambdaMicrometer;
+        fLambda = 0.9650 + (0.0164 + 0.000228 / l2) / l2;
+
     }
 
     /** Create a new Marini-Murray model using a standard atmosphere model.
@@ -79,14 +101,35 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
      * @param lambda laser wavelength (c/f), nm
      *
      * @return a Marini-Murray model with standard environmental values
+     * @deprecated since 12.1, replaced by {@link #getStandardModel(double, Unit)}
      */
+    @Deprecated
     public static MariniMurrayModel getStandardModel(final double lambda) {
-        final double p  = Unit.HECTO_PASCAL.toSI(1013.25);
+        return getStandardModel(lambda, TropoUnit.NANO_M);
+    }
+
+    /** Create a new Marini-Murray model using a standard atmosphere model.
+     *
+     * <ul>
+     * <li>temperature: 20 degree Celsius</li>
+     * <li>pressure: 1013.25 mbar</li>
+     * <li>humidity: 50%</li>
+     * </ul>
+     *
+     * @param lambda laser wavelength (c/f)
+     * @param lambdaUnits units in which {@code lambda} is given
+     * @return a Marini-Murray model with standard environmental values
+     * @see TropoUnit
+     * @since 12.1
+     */
+    public static MariniMurrayModel getStandardModel(final double lambda, final Unit lambdaUnits) {
+        final double p  = TropoUnit.HECTO_PASCAL.toSI(1013.25);
         final double t  = 273.15 + 20;
         final double rh = 0.5;
-        return new MariniMurrayModel(new PressureTemperatureHumidity(p, t,
-                                                                     new CIPM2007().waterVaporPressure(p, t, rh)),
-                                     lambda);
+        final PressureTemperatureHumidity pth =
+                        new PressureTemperatureHumidity(p, t, new CIPM2007().waterVaporPressure(p, t, rh));
+        return new MariniMurrayModel(new ConstantPressureTemperatureHumidityProvider(pth),
+                                     lambda, TropoUnit.NANO_M);
     }
 
     /** {@inheritDoc} */
@@ -94,6 +137,7 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
 
+        final PressureTemperatureHumidity pth = pthProvider.getWeatherParamerers(point, date);
         final double p = pth.getPressure();
         final double t = pth.getTemperature();
         final double e = pth.getWaterVaporPressure();
@@ -114,16 +158,21 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
-                                                       final T[] parameters, final FieldAbsoluteDate<T> date) {
+                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
 
-        final double p = pth.getPressure();
-        final double t = pth.getTemperature();
-        final double e = pth.getWaterVaporPressure();
+        final FieldPressureTemperatureHumidity<T> pth = pthProvider.getWeatherParamerers(point, date);
+        final T p = pth.getPressure();
+        final T t = pth.getTemperature();
+        final T e = pth.getWaterVaporPressure();
 
         // beware since version 12.1 pressures are in Pa and not in hPa, hence the scaling has changed
-        final double A = 0.00002357 * p + 0.00000141 * e;
-        final T K = FastMath.cos(point.getLatitude().multiply(2.)).multiply(0.00968).negate().add(1.163).subtract(0.00104 * t).add(0.0000001435 * p);
-        final T B = K.multiply(1.084e-10 * p * t).add(K.multiply(2.).multiply(4.734e-12 * p * (p / t)).divide(K.multiply(3.).subtract(1.)));
+        final T A = p.multiply(0.00002357).add(e.multiply(0.00000141));
+        final T K = FastMath.cos(point.getLatitude().multiply(2.)).multiply(0.00968).negate().
+                    add(1.163).
+                    subtract(t.multiply(0.00104)).
+                    add(p.multiply(0.0000001435));
+        final T B = K.multiply(t.multiply(p).multiply(1.084e-10 )).
+                               add(K.multiply(2.).multiply(p.multiply(p).divide(t).multiply(4.734e-12)).divide(K.multiply(3.).subtract(1.)));
         final double flambda = getLaserFrequencyParameter();
 
         final T fsite = getSiteFunctionValue(point);
@@ -146,23 +195,23 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
      * @return the laser frequency parameter f(lambda).
      */
     private double getLaserFrequencyParameter() {
-        return 0.9650 + 0.0164 * FastMath.pow(lambda, -2) + 0.000228 * FastMath.pow(lambda, -4);
+        return fLambda;
     }
 
-    /** Get the laser frequency parameter f(lambda).
+    /** Get the site parameter.
      *
      * @param point station location
-     * @return the laser frequency parameter f(lambda).
+     * @return the site parameter.
      */
     private double getSiteFunctionValue(final GeodeticPoint point) {
         return 1. - 0.0026 * FastMath.cos(2 * point.getLatitude()) - 0.00031 * 0.001 * point.getAltitude();
     }
 
-    /** Get the laser frequency parameter f(lambda).
+    /** Get the site parameter.
     *
     * @param <T> type of the elements
     * @param point station location
-    * @return the laser frequency parameter f(lambda).
+    * @return the site parameter.
     */
     private <T extends CalculusFieldElement<T>> T getSiteFunctionValue(final FieldGeodeticPoint<T> point) {
         return FastMath.cos(point.getLatitude().multiply(2)).multiply(0.0026).add(point.getAltitude().multiply(0.001).multiply(0.00031)).negate().add(1.);

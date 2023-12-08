@@ -39,6 +39,9 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
@@ -90,9 +93,15 @@ public class FieldMendesPavlisModelTest {
         final double latitude     = FastMath.toRadians(30.67166667);
         final double longitude    = FastMath.toRadians(-104.0250);
         final double height       = 2010.344;
-        final double pressure     = 798.4188;
+        final double pressure     = TropoUnit.HECTO_PASCAL.toSI(798.4188);
         final double temperature  = 300.15;
         final double humidity     = 0.4;
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
+                                                                                temperature,
+                                                                                new CIPM2007().
+                                                                                waterVaporPressure(pressure,
+                                                                                                   temperature,
+                                                                                                   humidity));
         final double lambda       = 0.532;
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
 
@@ -107,8 +116,8 @@ public class FieldMendesPavlisModelTest {
 
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2009, 8, 12, TimeScalesFactory.getUTC());
 
-        final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure,
-                                                               humidity, lambda);
+        final MendesPavlisModel model = new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
+                                                              lambda, TropoUnit.MICRO_M);
         
         final T[] computedDelay = model.computeZenithDelay(point, model.getParameters(field), date);
 
@@ -144,9 +153,15 @@ public class FieldMendesPavlisModelTest {
         final double latitude     = FastMath.toRadians(30.67166667);
         final double longitude    = FastMath.toRadians(-104.0250);
         final double height       = 2075;
-        final double pressure     = 798.4188;
+        final double pressure     = TropoUnit.HECTO_PASCAL.toSI(798.4188);
         final double temperature  = 300.15;
         final double humidity     = 0.4;
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
+                                                                                temperature,
+                                                                                new CIPM2007().
+                                                                                waterVaporPressure(pressure,
+                                                                                                   temperature,
+                                                                                                   humidity));
         final double lambda       = 0.532;
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
 
@@ -155,8 +170,8 @@ public class FieldMendesPavlisModelTest {
         final double expectedMapping    = 3.80024367;
 
         // Test for the second constructor
-        final MendesPavlisModel model = new MendesPavlisModel(temperature, pressure,
-                                                              humidity, lambda);
+        final MendesPavlisModel model = new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
+                                                              lambda, TropoUnit.MICRO_M);
 
         final T[] computedMapping = model.mappingFactors(zero.add(elevation), point, date);
 
@@ -175,7 +190,7 @@ public class FieldMendesPavlisModelTest {
         final double height = 100d;
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(45.0)), zero.add(FastMath.toRadians(45.0)), zero.add(height));
-        MendesPavlisModel model = MendesPavlisModel.getStandardModel(0.6943);
+        MendesPavlisModel model = MendesPavlisModel.getStandardModel(0.6943, TropoUnit.MICRO_M);
         final T path = model.pathDelay(zero.add(FastMath.toRadians(elevation)), point, model.getParameters(field), date);
         Assertions.assertTrue(Precision.compareTo(path.getReal(), 20d, epsilon) < 0);
         Assertions.assertTrue(Precision.compareTo(path.getReal(), 0d, epsilon) > 0);
@@ -190,7 +205,7 @@ public class FieldMendesPavlisModelTest {
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(45.0)), zero.add(FastMath.toRadians(45.0)), zero.add(350.0));
-        MendesPavlisModel model = MendesPavlisModel.getStandardModel(0.6943);
+        MendesPavlisModel model = MendesPavlisModel.getStandardModel(0.6943, TropoUnit.MICRO_M);
         T lastDelay = zero.add(Double.MAX_VALUE);
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
@@ -219,7 +234,7 @@ public class FieldMendesPavlisModelTest {
         final GroundStation station = new GroundStation(baseFrame);
 
         // Tropospheric model
-        final MendesPavlisModel model = MendesPavlisModel.getStandardModel(0.65);
+        final MendesPavlisModel model = MendesPavlisModel.getStandardModel(0.65, TropoUnit.MICRO_M);
 
         // Derivative Structure
         final DSFactory factory = new DSFactory(6, 1);

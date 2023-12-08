@@ -19,13 +19,16 @@ package org.orekit.models.earth.troposphere;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -65,11 +68,14 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
     /** Carbon dioxyde content (IAG recommendations). */
     private static final double C02 = 0.99995995;
 
-    /** Laser wavelength [µm]. */
-    private double lambda;
+    /** Dispersion equation for the hydrostatic component. */
+    private double fLambdaH;
 
-    /** Pressure, temperature and humidity. */
-    private PressureTemperatureHumidity pth;
+    /** Dispersion equation for the non-hydrostatic component. */
+    private double fLambdaNH;
+
+    /** Provider for pressure, temperature and humidity. */
+    private PressureTemperatureHumidityProvider pthProvider;
 
     /** Create a new Mendes-Pavlis model for the troposphere.
      * This initialization will compute the water vapor pressure
@@ -78,43 +84,93 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
      * @param p0 the atmospheric pressure at the station, hPa
      * @param rh the humidity at the station, percent (50% → 0.5)
      * @param lambda laser wavelength, µm
-     * */
+     * @deprecated as of 12.1, replaced by {@link #MendesPavlisModel(PressureTemperatureHumidity, double, Unit)}
+     */
+    @Deprecated
     public MendesPavlisModel(final double t0, final double p0,
                              final double rh, final double lambda) {
-        this(new PressureTemperatureHumidity(Unit.HECTO_PASCAL.toSI(p0),
-                                             t0,
-                                             new CIPM2007().waterVaporPressure(Unit.HECTO_PASCAL.toSI(p0), t0, rh)),
-             lambda);
+        this(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(TropoUnit.HECTO_PASCAL.toSI(p0),
+                                                                                             t0,
+                                                                                             new CIPM2007().
+                                                                                             waterVaporPressure(TropoUnit.HECTO_PASCAL.toSI(p0),
+                                                                                                                t0,
+                                                                                                                rh))),
+             lambda, TropoUnit.MICRO_M);
     }
 
     /** Create a new Mendes-Pavlis model for the troposphere.
-     * @param pth atmospheric pressure, temperature and humidity at the station
-     * @param lambda laser wavelength, µm
+     * @param pthProvider provider for atmospheric pressure, temperature and humidity at the station
+     * @param lambda laser wavelength
+     * @param lambdaUnits units in which {@code lambda} is given
+     * @see TropoUnit
+     * @since 12.1
      * */
-    public MendesPavlisModel(final PressureTemperatureHumidity pth, final double lambda) {
-        this.pth    = pth;
-        this.lambda = lambda;
+    public MendesPavlisModel(final PressureTemperatureHumidityProvider pthProvider,
+                             final double lambda, final Unit lambdaUnits) {
+        this.pthProvider = pthProvider;
+
+        // Dispersion equation for the hydrostatic component
+        final double sigma  = 1 / lambda;
+        final double sigma2 = sigma * sigma;
+        final double coef1  = K_COEFFICIENTS[0] + sigma2;
+        final double coef2  = K_COEFFICIENTS[0] - sigma2;
+        final double coef3  = K_COEFFICIENTS[2] + sigma2;
+        final double coef4  = K_COEFFICIENTS[2] - sigma2;
+        final double frac1 = coef1 / (coef2 * coef2);
+        final double frac2 = coef3 / (coef4 * coef4);
+        fLambdaH = 0.01 * (K_COEFFICIENTS[1] * frac1 + K_COEFFICIENTS[3] * frac2) * C02;
+
+        // Dispersion equation for the non-hydrostatic component
+        final double sigma4 = sigma2 * sigma2;
+        final double sigma6 = sigma4 * sigma2;
+        final double w1s2  = 3 * W_COEFFICIENTS[1] * sigma2;
+        final double w2s4  = 5 * W_COEFFICIENTS[2] * sigma4;
+        final double w3s6  = 7 * W_COEFFICIENTS[3] * sigma6;
+
+        fLambdaNH = 0.003101 * (W_COEFFICIENTS[0] + w1s2 + w2s4 + w3s6);
+
     }
 
     /** Create a new Mendes-Pavlis model using a standard atmosphere model.
     *
     * <ul>
-    * <li>temperature: 18 degree Celsius
-    * <li>pressure: 1013.25 hPa
-    * <li>humidity: 50%
+    * <li>temperature: 18 degree Celsius</li>
+    * <li>pressure: 1013.25 hPa</li>
+    * <li>humidity: 50%</li>
     * </ul>
     *
     * @param lambda laser wavelength, µm
     *
     * @return a Mendes-Pavlis model with standard environmental values
+    * @deprecated as of 12.1, replaced by {@link #getStandardModel(double, Unit)}
     */
+    @Deprecated
     public static MendesPavlisModel getStandardModel(final double lambda) {
-        final double p  = Unit.HECTO_PASCAL.toSI(1013.25);
+        return getStandardModel(lambda, TropoUnit.MICRO_M);
+    }
+
+    /** Create a new Mendes-Pavlis model using a standard atmosphere model.
+     *
+     * <ul>
+     * <li>temperature: 18 degree Celsius</li>
+     * <li>pressure: 1013.25 hPa</li>
+     * <li>humidity: 50%</li>
+     * </ul>
+     *
+     * @param lambda laser wavelength, µm
+     * @param lambdaUnits units in which {@code lambda} is given
+     * @return a Mendes-Pavlis model with standard environmental values
+     * @see TropoUnit
+     * @since 12.1
+     */
+    public static MendesPavlisModel getStandardModel(final double lambda, final Unit lambdaUnits) {
+        final double p  = TropoUnit.HECTO_PASCAL.toSI(1013.25);
         final double t  = 273.15 + 18;
         final double rh = 0.5;
-        return new MendesPavlisModel(new PressureTemperatureHumidity(p, t,
-                                                                     new CIPM2007().waterVaporPressure(p, t, rh)),
-                                     lambda);
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(p, t,
+                                                                                new CIPM2007().waterVaporPressure(p, t, rh));
+        return new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
+                                     lambda, lambdaUnits);
     }
 
     /** {@inheritDoc} */
@@ -153,36 +209,16 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
     public double[] computeZenithDelay(final GeodeticPoint point, final double[] parameters, final AbsoluteDate date) {
+
+        final PressureTemperatureHumidity pth = pthProvider.getWeatherParamerers(point, date);
         final double fsite   = getSiteFunctionValue(point);
 
         // Array for zenith delay
         final double[] delay = new double[2];
 
-        // Dispertion Equation for the Hydrostatic component
-        final double sigma  = 1 / lambda;
-        final double sigma2 = sigma * sigma;
-        final double coef1  = K_COEFFICIENTS[0] + sigma2;
-        final double coef2  = K_COEFFICIENTS[0] - sigma2;
-        final double coef3  = K_COEFFICIENTS[2] + sigma2;
-        final double coef4  = K_COEFFICIENTS[2] - sigma2;
-
-        final double frac1 = coef1 / (coef2 * coef2);
-        final double frac2 = coef3 / (coef4 * coef4);
-
-        final double fLambdaH = 0.01 * (K_COEFFICIENTS[1] * frac1 + K_COEFFICIENTS[3] * frac2) * C02;
-
         // Zenith delay for the hydrostatic component
         // beware since version 12.1 pressure is in Pa and not in hPa, hence the scaling has changed
-        delay[0] = 0.00002416579 * (fLambdaH / fsite) * pth.getPressure();
-
-        // Dispertion Equation for the Non-Hydrostatic component
-        final double sigma4 = sigma2 * sigma2;
-        final double sigma6 = sigma4 * sigma2;
-        final double w1s2  = 3 * W_COEFFICIENTS[1] * sigma2;
-        final double w2s4  = 5 * W_COEFFICIENTS[2] * sigma4;
-        final double w3s6  = 7 * W_COEFFICIENTS[3] * sigma6;
-
-        final double fLambdaNH = 0.003101 * (W_COEFFICIENTS[0] + w1s2 + w2s4 + w3s6);
+        delay[0] = pth.getPressure() * 0.00002416579 * (fLambdaH / fsite);
 
         // Zenith delay for the non-hydrostatic component
         // beware since version 12.1 e0 is in Pa and not in hPa, hence the scaling has changed
@@ -205,46 +241,25 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
      */
     public <T extends CalculusFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
                                                                   final FieldAbsoluteDate<T> date) {
-        final Field<T> field = date.getField();
-        final T zero = field.getZero();
+
+        final FieldPressureTemperatureHumidity<T> pth = pthProvider.getWeatherParamerers(point, date);
 
         final T fsite   = getSiteFunctionValue(point);
 
         // Array for zenith delay
-        final T[] delay = MathArrays.buildArray(field, 2);
-
-        // Dispertion Equation for the Hydrostatic component
-        final T sigma  = zero.newInstance(1 / lambda);
-        final T sigma2 = sigma.multiply(sigma);
-        final T coef1  = sigma2.add(K_COEFFICIENTS[0]);
-        final T coef2  = sigma2.negate().add(K_COEFFICIENTS[0]);
-        final T coef3  = sigma2.add(K_COEFFICIENTS[2]);
-        final T coef4  = sigma2.negate().add(K_COEFFICIENTS[2]);
-
-        final T frac1 = coef1.divide(coef2.multiply(coef2));
-        final T frac2 = coef3.divide(coef4.multiply(coef4));
-
-        final T fLambdaH = frac1.multiply(K_COEFFICIENTS[1]).add(frac2.multiply(K_COEFFICIENTS[3])).multiply(0.01 * C02);
+        final T[] delay = MathArrays.buildArray(date.getField(), 2);
 
         // Zenith delay for the hydrostatic component
         // beware since version 12.1 pressure is in Pa and not in hPa, hence the scaling has changed
-        delay[0] =  fLambdaH.divide(fsite).multiply(pth.getPressure()).multiply(0.00002416579);
-
-        // Dispertion Equation for the Non-Hydrostatic component
-        final T sigma4 = sigma2.multiply(sigma2);
-        final T sigma6 = sigma4.multiply(sigma2);
-        final T w1s2   = sigma2.multiply(3 * W_COEFFICIENTS[1]);
-        final T w2s4   = sigma4.multiply(5 * W_COEFFICIENTS[2]);
-        final T w3s6   = sigma6.multiply(7 * W_COEFFICIENTS[3]);
-
-        final T fLambdaNH = w1s2.add(w2s4).add(w3s6).add(W_COEFFICIENTS[0]).multiply(0.003101);
+        delay[0] =  pth.getPressure().multiply(0.00002416579).multiply(fLambdaH).divide(fsite);
 
         // Zenith delay for the non-hydrostatic component
         // beware since version 12.1 e0 is in Pa and not in hPa, hence the scaling has changed
-        delay[1] = fLambdaNH.multiply(5.316).subtract(fLambdaH.multiply(3.759)).
-                   multiply(fsite.divide(pth.getWaterVaporPressure()).reciprocal()).multiply(0.000001);
+        delay[1] = pth.getWaterVaporPressure().divide(fsite).
+                   multiply(0.000001 * (5.316 * fLambdaNH - 3.759 * fLambdaH));
 
         return delay;
+
     }
 
     /** With the Mendes Pavlis tropospheric model, the mapping
@@ -265,6 +280,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
                                    final AbsoluteDate date) {
         final double sinE = FastMath.sin(elevation);
 
+        final PressureTemperatureHumidity pth = pthProvider.getWeatherParamerers(point, date);
         final double T2degree = pth.getTemperature() - 273.15;
 
         // Mapping function coefficients
@@ -311,7 +327,8 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
 
         final T sinE = FastMath.sin(elevation);
 
-        final double T2degree = pth.getTemperature() - 273.15;
+        final FieldPressureTemperatureHumidity<T> pth = pthProvider.getWeatherParamerers(point, date);
+        final T T2degree = pth.getTemperature().subtract(273.15);
 
         // Mapping function coefficients
         final T a1 = computeMFCoeffient(A_COEFFICIENTS[0][0], A_COEFFICIENTS[0][1],
@@ -344,54 +361,54 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
         return Collections.emptyList();
     }
 
-    /** Get the laser frequency parameter f(lambda).
-    *
-    * @param point station location
-    * @return the laser frequency parameter f(lambda).
-    */
+    /** Get the site parameter.
+     *
+     * @param point station location
+     * @return the site parameter.
+     */
     private double getSiteFunctionValue(final GeodeticPoint point) {
         return 1. - 0.00266 * FastMath.cos(2. * point.getLatitude()) - 0.00000028 * point.getAltitude();
     }
 
-    /** Get the laser frequency parameter f(lambda).
-    *
-    * @param <T> type of the elements
-    * @param point station location
-    * @return the laser frequency parameter f(lambda).
-    */
+    /** Get the site parameter.
+     *
+     * @param <T> type of the elements
+     * @param point station location
+     * @return the site parameter.
+     */
     private <T extends CalculusFieldElement<T>> T getSiteFunctionValue(final FieldGeodeticPoint<T> point) {
         return FastMath.cos(point.getLatitude().multiply(2.)).multiply(0.00266).add(point.getAltitude().multiply(0.00000028)).negate().add(1.);
     }
 
     /** Compute the coefficients of the Mapping Function.
-    *
-    * @param T the temperature at the station site, °C
-    * @param a0 first coefficient
-    * @param a1 second coefficient
-    * @param a2 third coefficient
-    * @param a3 fourth coefficient
-    * @param point station location
-    * @return the value of the coefficient
-    */
+     *
+     * @param t the temperature at the station site, °C
+     * @param a0 first coefficient
+     * @param a1 second coefficient
+     * @param a2 third coefficient
+     * @param a3 fourth coefficient
+     * @param point station location
+     * @return the value of the coefficient
+     */
     private double computeMFCoeffient(final double a0, final double a1, final double a2, final double a3,
-                                      final double T, final GeodeticPoint point) {
-        return a0 + a1 * T + a2 * FastMath.cos(point.getLatitude()) + a3 * point.getAltitude();
+                                      final double t, final GeodeticPoint point) {
+        return a0 + a1 * t + a2 * FastMath.cos(point.getLatitude()) + a3 * point.getAltitude();
     }
 
-   /** Compute the coefficients of the Mapping Function.
-   *
-   * @param <T> type of the elements
-   * @param T the temperature at the station site, °C
-   * @param a0 first coefficient
-   * @param a1 second coefficient
-   * @param a2 third coefficient
-   * @param a3 fourth coefficient
-   * @param point station location
-   * @return the value of the coefficient
-   */
+    /** Compute the coefficients of the Mapping Function.
+     *
+     * @param <T> type of the elements
+     * @param t the temperature at the station site, °C
+     * @param a0 first coefficient
+     * @param a1 second coefficient
+     * @param a2 third coefficient
+     * @param a3 fourth coefficient
+     * @param point station location
+     * @return the value of the coefficient
+     */
     private <T extends CalculusFieldElement<T>> T computeMFCoeffient(final double a0, final double a1, final double a2, final double a3,
-                                                                 final double T, final FieldGeodeticPoint<T> point) {
-        return point.getAltitude().multiply(a3).add(FastMath.cos(point.getLatitude()).multiply(a2)).add(a0 + a1 * T);
+                                                                     final T t, final FieldGeodeticPoint<T> point) {
+        return point.getAltitude().multiply(a3).add(FastMath.cos(point.getLatitude()).multiply(a2)).add(t.multiply(a1).add(a0));
     }
 
 }
