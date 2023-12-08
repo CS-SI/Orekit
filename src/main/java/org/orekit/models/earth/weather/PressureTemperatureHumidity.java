@@ -28,19 +28,25 @@ public class PressureTemperatureHumidity {
     /** Temperature (Kelvin). */
     private final double temperature;
 
+    /** Humidity as relative humididy (50% → 0.5). */
+    private final double relativeHumidity;
+
     /** Humidity as water vapor pressure (Pa). */
     private final double waterVaporPressure;
 
     /** Simple constructor.
      * @param pressure pressure (Pa)
      * @param temperature temperature (Kelvin)
+     * @param relativeHumidity humidity as relative humididy (50% → 0.5)
      * @param waterVaporPressure humidity as water vapor pressure (Pa)
      */
     public PressureTemperatureHumidity(final double pressure,
                                        final double temperature,
+                                       final double relativeHumidity,
                                        final double waterVaporPressure) {
         this.pressure           = pressure;
         this.temperature        = temperature;
+        this.relativeHumidity   = relativeHumidity;
         this.waterVaporPressure = waterVaporPressure;
     }
 
@@ -56,6 +62,13 @@ public class PressureTemperatureHumidity {
      */
     public double getTemperature() {
         return temperature;
+    }
+
+    /** Get humidity as relative humididy (50% → 0.5).
+     * @return humidity as relative humididy (50% → 0.5)
+     */
+    public double getRelativeHumidity() {
+        return relativeHumidity;
     }
 
     /** Get humidity as water vapor pressure.

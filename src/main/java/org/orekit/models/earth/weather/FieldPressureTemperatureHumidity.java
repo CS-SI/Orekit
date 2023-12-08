@@ -31,19 +31,25 @@ public class FieldPressureTemperatureHumidity<T extends CalculusFieldElement<T>>
     /** Temperature (Kelvin). */
     private final T temperature;
 
+    /** Humidity as relative humididy (50% → 0.5). */
+    private final T relativeHumidity;
+
     /** Humidity as water vapor pressure (Pa). */
     private final T waterVaporPressure;
 
     /** Simple constructor.
      * @param pressure pressure (Pa)
      * @param temperature temperature (Kelvin)
+     * @param relativeHumidity humidity as relative humididy (50% → 0.5)
      * @param waterVaporPressure humidity as water vapor pressure (Pa)
      */
     public FieldPressureTemperatureHumidity(final T pressure,
                                             final T temperature,
+                                            final T relativeHumidity,
                                             final T waterVaporPressure) {
         this.pressure           = pressure;
         this.temperature        = temperature;
+        this.relativeHumidity   = relativeHumidity;
         this.waterVaporPressure = waterVaporPressure;
     }
 
@@ -59,6 +65,13 @@ public class FieldPressureTemperatureHumidity<T extends CalculusFieldElement<T>>
      */
     public T getTemperature() {
         return temperature;
+    }
+
+    /** Get humidity as relative humididy (50% → 0.5).
+     * @return humidity as relative humididy (50% → 0.5)
+     */
+    public T getRelativeHumidity() {
+        return relativeHumidity;
     }
 
     /** Get humidity as water vapor pressure.

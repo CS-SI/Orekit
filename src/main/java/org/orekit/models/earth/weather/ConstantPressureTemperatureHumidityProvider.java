@@ -47,11 +47,12 @@ public class ConstantPressureTemperatureHumidityProvider implements PressureTemp
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getWeatherParamerers(final  FieldGeodeticPoint<T> location,
+    public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getWeatherParamerers(final FieldGeodeticPoint<T> location,
                                                                                                         final FieldAbsoluteDate<T> date) {
         final T zero = date.getField().getZero();
         return new FieldPressureTemperatureHumidity<>(zero.newInstance(pth.getPressure()),
                                                       zero.newInstance(pth.getTemperature()),
+                                                      zero.newInstance(pth.getRelativeHumidity()),
                                                       zero.newInstance(pth.getWaterVaporPressure()));
     }
 

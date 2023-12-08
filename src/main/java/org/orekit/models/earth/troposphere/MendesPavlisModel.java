@@ -91,6 +91,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
                              final double rh, final double lambda) {
         this(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(TropoUnit.HECTO_PASCAL.toSI(p0),
                                                                                              t0,
+                                                                                             rh,
                                                                                              new CIPM2007().
                                                                                              waterVaporPressure(TropoUnit.HECTO_PASCAL.toSI(p0),
                                                                                                                 t0,
@@ -167,7 +168,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
         final double p  = TropoUnit.HECTO_PASCAL.toSI(1013.25);
         final double t  = 273.15 + 18;
         final double rh = 0.5;
-        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(p, t,
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(p, t, rh,
                                                                                 new CIPM2007().waterVaporPressure(p, t, rh));
         return new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
                                      lambda, lambdaUnits);
