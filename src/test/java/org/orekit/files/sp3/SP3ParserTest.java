@@ -446,6 +446,29 @@ public class SP3ParserTest {
     }
 
     @Test
+    public void testMissingStandardDeviation() throws IOException {
+        final String    ex     = "/sp3/missing-standard-deviation.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final Frame     frame  = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
+        final SP3Parser parser = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
+        final SP3 sp3 = parser.parse(source);
+        Assertions.assertEquals(32, sp3.getSatelliteCount());
+        List<SP3Coordinate> coordinates06 = sp3.getEphemeris("G06").getSegments().get(0).getCoordinates();
+        Assertions.assertEquals(21, coordinates06.size());
+        for (int i = 0; i < 21; ++i) {
+            final Vector3D positionAccuracy = coordinates06.get(i).getPositionAccuracy();
+            if (i == 7 || i == 8) {
+                // some standard deviations are missing
+                Assertions.assertNull(positionAccuracy);
+            } else {
+                // other are present
+                Assertions.assertTrue(positionAccuracy.getNorm() < 0.0122);
+                Assertions.assertTrue(positionAccuracy.getNorm() > 0.0045);
+            }
+        }
+    }
+
+    @Test
     public void testWrongLineIdentifier() throws IOException {
         try {
             final String    ex     = "/sp3/wrong-line-identifier.sp3";
