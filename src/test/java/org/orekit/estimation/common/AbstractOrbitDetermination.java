@@ -2319,7 +2319,6 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                     final PressureTemperatureHumidity pth =
                                     new PressureTemperatureHumidity(Unit.BAR.toSI(meteoData.getPressure()),
                                                                     meteoData.getTemperature(),
-                                                                    0.01 * meteoData.getHumidity(),
                                                                     new CIPM2007().
                                                                     waterVaporPressure(Unit.BAR.toSI(meteoData.getPressure()),
                                                                                        meteoData.getTemperature(),

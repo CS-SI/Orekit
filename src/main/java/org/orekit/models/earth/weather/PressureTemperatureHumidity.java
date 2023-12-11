@@ -20,16 +20,7 @@ package org.orekit.models.earth.weather;
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class PressureTemperatureHumidity {
-
-    /** Pressure (Pa). */
-    private final double pressure;
-
-    /** Temperature (Kelvin). */
-    private final double temperature;
-
-    /** Humidity as relative humididy (50% → 0.5). */
-    private final double relativeHumidity;
+public class PressureTemperatureHumidity extends PressureTemperature {
 
     /** Humidity as water vapor pressure (Pa). */
     private final double waterVaporPressure;
@@ -37,38 +28,13 @@ public class PressureTemperatureHumidity {
     /** Simple constructor.
      * @param pressure pressure (Pa)
      * @param temperature temperature (Kelvin)
-     * @param relativeHumidity humidity as relative humididy (50% → 0.5)
      * @param waterVaporPressure humidity as water vapor pressure (Pa)
      */
     public PressureTemperatureHumidity(final double pressure,
                                        final double temperature,
-                                       final double relativeHumidity,
                                        final double waterVaporPressure) {
-        this.pressure           = pressure;
-        this.temperature        = temperature;
-        this.relativeHumidity   = relativeHumidity;
+        super(pressure, temperature);
         this.waterVaporPressure = waterVaporPressure;
-    }
-
-    /** Get pressure.
-     * @return pressure (Pa)
-     */
-    public double getPressure() {
-        return pressure;
-    }
-
-    /** Get temperature.
-     * @return temperature (Kelvin)
-     */
-    public double getTemperature() {
-        return temperature;
-    }
-
-    /** Get humidity as relative humididy (50% → 0.5).
-     * @return humidity as relative humididy (50% → 0.5)
-     */
-    public double getRelativeHumidity() {
-        return relativeHumidity;
     }
 
     /** Get humidity as water vapor pressure.

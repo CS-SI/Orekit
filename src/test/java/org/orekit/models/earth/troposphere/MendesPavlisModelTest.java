@@ -71,7 +71,6 @@ public class MendesPavlisModelTest {
         final double humidity     = 0.4;
         final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
                                                                                 temperature,
-                                                                                humidity,
                                                                                 new CIPM2007().
                                                                                 waterVaporPressure(pressure,
                                                                                                    temperature,
@@ -127,7 +126,6 @@ public class MendesPavlisModelTest {
         final double humidity     = 0.4;
         final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
                                                                                 temperature,
-                                                                                humidity,
                                                                                 new CIPM2007().
                                                                                 waterVaporPressure(pressure,
                                                                                                    temperature,

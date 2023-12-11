@@ -52,7 +52,6 @@ public class ConstantPressureTemperatureHumidityProvider implements PressureTemp
         final T zero = date.getField().getZero();
         return new FieldPressureTemperatureHumidity<>(zero.newInstance(pth.getPressure()),
                                                       zero.newInstance(pth.getTemperature()),
-                                                      zero.newInstance(pth.getRelativeHumidity()),
                                                       zero.newInstance(pth.getWaterVaporPressure()));
     }
 

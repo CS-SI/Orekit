@@ -80,7 +80,6 @@ public class EstimatedTroposphericModel implements DiscreteTroposphericModel {
         this(new ModifiedSaastamoinenModel(0.0,
                                            new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(TropoUnit.HECTO_PASCAL.toSI(p0),
                                                                                                                            t0,
-                                                                                                                           0.0,
                                                                                                                            0.0))),
              model, totalDelay);
     }

@@ -101,14 +101,16 @@ public class HeightDependentPressureTemperatureHumidityProvider implements Press
                                                                                                      location.getLongitude(),
                                                                                                      h0),
                                                                                    date);
+        final double saturationPressure0 = provider.waterVaporPressure(pth0.getPressure(), pth0.getTemperature(), 1.0);
+        final double rh0 = pth0.getWaterVaporPressure() / saturationPressure0;
 
         // compute changes due to altitude change
         final double dh = FastMath.min(FastMath.max(location.getAltitude(), hMin), hMax) - h0;
         final double p  = pth0.getPressure() * FastMath.pow(1.0 - 2.26e-5 * dh, 5.225);
         final double t  = pth0.getTemperature() - 6.5e-3 * dh;
-        final double rh = pth0.getRelativeHumidity() * FastMath.exp(-6.396e-4 * dh);
+        final double rh = rh0 * FastMath.exp(-6.396e-4 * dh);
 
-        return new PressureTemperatureHumidity(p, t, rh, provider.waterVaporPressure(p, t, rh));
+        return new PressureTemperatureHumidity(p, t, provider.waterVaporPressure(p, t, rh));
 
     }
 
@@ -122,13 +124,16 @@ public class HeightDependentPressureTemperatureHumidityProvider implements Press
                                                                                    location.getLongitude(),
                                                                                    location.getAltitude().newInstance(h0)),
                                                           date);
+        final T one = date.getField().getOne();
+        final T saturationPressure0 = provider.waterVaporPressure(pth0.getPressure(), pth0.getTemperature(), one);
+        final T rh0 = pth0.getWaterVaporPressure().divide(saturationPressure0);
 
         // compute changes due to altitude change
         final T dh = FastMath.min(FastMath.max(location.getAltitude(), hMin), hMax).subtract(h0);
         final T t  = pth0.getTemperature().subtract(dh.multiply(6.5e-3));
         final T p  = pth0.getPressure().multiply(dh.multiply(2.26e-5).negate().add(1.0).pow(5.225));
-        final T rh = pth0.getRelativeHumidity().multiply(FastMath.exp(dh.multiply(-6.396e-4)));
-        return new FieldPressureTemperatureHumidity<>(p, t, rh, provider.waterVaporPressure(p, t, rh));
+        final T rh = rh0.multiply(FastMath.exp(dh.multiply(-6.396e-4)));
+        return new FieldPressureTemperatureHumidity<>(p, t, provider.waterVaporPressure(p, t, rh));
     }
 
 }

@@ -118,8 +118,7 @@ public class ModifiedSaastamoinenModelTest {
             final double waterPressure = ModifiedSaastamoinenModel.WATER.waterVaporPressure(pressure,
                                                                                             temperature,
                                                                                             humidity);
-            final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure, temperature, humidity,
-                                                                                    waterPressure);
+            final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure, temperature, waterPressure);
             final PressureTemperatureHumidityProvider pthProvider = new ConstantPressureTemperatureHumidityProvider(pth);
             new ModifiedSaastamoinenModel(0.0, pthProvider, "^non-existent-file$");
             Assertions.fail("an exception should have been thrown");
@@ -138,8 +137,7 @@ public class ModifiedSaastamoinenModelTest {
         final double waterPressure = ModifiedSaastamoinenModel.WATER.waterVaporPressure(pressure,
                                                                                         temperature,
                                                                                         humidity);
-        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure, temperature, humidity,
-                                                                                waterPressure);
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure, temperature, waterPressure);
         final PressureTemperatureHumidityProvider pthProvider = new ConstantPressureTemperatureHumidityProvider(pth);
         ModifiedSaastamoinenModel defaultModel = new ModifiedSaastamoinenModel(0.0, pthProvider, null);
         ModifiedSaastamoinenModel loadedModel  = new ModifiedSaastamoinenModel(0.0, pthProvider, ModifiedSaastamoinenModel.DELTA_R_FILE_NAME);
@@ -242,7 +240,6 @@ public class ModifiedSaastamoinenModelTest {
         final double humidity    = 0.5;
         final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
                                                                                 temperature,
-                                                                                humidity,
                                                                                 ModifiedSaastamoinenModel.WATER.waterVaporPressure(pressure,
                                                                                                                                    temperature,
                                                                                                                                    humidity));
@@ -277,7 +274,6 @@ public class ModifiedSaastamoinenModelTest {
         final double humidity    = 0.5;
         final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
                                                                                 temperature,
-                                                                                humidity,
                                                                                 ModifiedSaastamoinenModel.WATER.waterVaporPressure(pressure,
                                                                                                                                    temperature,
                                                                                                                                    humidity));

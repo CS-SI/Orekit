@@ -83,7 +83,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
      * thanks to the values of the pressure, the temperature and the humidity
      * @param t0 the temperature at the station, K
      * @param p0 the atmospheric pressure at the station, hPa
-     * @param rh the humidity at the station, percent (50% → 0.5)
+     * @param rh the humidity at the station, as a ratio (50% → 0.5)
      * @param lambda laser wavelength, µm
      * @deprecated as of 12.1, replaced by {@link #MendesPavlisModel(PressureTemperatureHumidity, double, Unit)}
      */
@@ -92,11 +92,9 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
                              final double rh, final double lambda) {
         this(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(TropoUnit.HECTO_PASCAL.toSI(p0),
                                                                                              t0,
-                                                                                             rh,
                                                                                              new CIPM2007().
                                                                                              waterVaporPressure(TropoUnit.HECTO_PASCAL.toSI(p0),
-                                                                                                                t0,
-                                                                                                                rh))),
+                                                                                                                t0, rh))),
              lambda, TropoUnit.MICRO_M);
     }
 
@@ -170,8 +168,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
         final double p  = TropoUnit.HECTO_PASCAL.toSI(1013.25);
         final double t  = 273.15 + 18;
         final double rh = 0.5;
-        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(p, t, rh,
-                                                                                new CIPM2007().waterVaporPressure(p, t, rh));
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(p, t, new CIPM2007().waterVaporPressure(p, t, rh));
         return new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
                                      lambda, lambdaUnits);
     }

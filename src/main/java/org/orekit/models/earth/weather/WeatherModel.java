@@ -22,7 +22,9 @@ import org.orekit.time.AbsoluteDate;
  * compute the different weather parameters (pressure, temperature, ...).
  * @author Bryan Cazabonne
  * @since 9.3
+ * @deprecated as of 12.1, replaced by {@link PressureTemperatureHumidityProvider}
  */
+@Deprecated
 public interface WeatherModel {
 
     /** Calculates the weather parameters of the model.

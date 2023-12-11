@@ -18,33 +18,40 @@ package org.orekit.models.earth.weather;
 
 import org.hipparchus.CalculusFieldElement;
 
-/** Container for pressure, temperature, and humidity.
+/** Container for pressure and temperature.
  * @param <T> type of the field elements
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class FieldPressureTemperatureHumidity<T extends CalculusFieldElement<T>> extends FieldPressureTemperature<T> {
+public class FieldPressureTemperature<T extends CalculusFieldElement<T>> {
 
-    /** Humidity as water vapor pressure (Pa). */
-    private final T waterVaporPressure;
+    /** Pressure (Pa). */
+    private final T pressure;
+
+    /** Temperature (Kelvin). */
+    private final T temperature;
 
     /** Simple constructor.
      * @param pressure pressure (Pa)
      * @param temperature temperature (Kelvin)
-     * @param waterVaporPressure humidity as water vapor pressure (Pa)
      */
-    public FieldPressureTemperatureHumidity(final T pressure,
-                                            final T temperature,
-                                            final T waterVaporPressure) {
-        super(pressure, temperature);
-        this.waterVaporPressure = waterVaporPressure;
+    public FieldPressureTemperature(final T pressure, final T temperature) {
+        this.pressure           = pressure;
+        this.temperature        = temperature;
     }
 
-    /** Get humidity as water vapor pressure.
-     * @return humidity as water vapor pressure (Pa)
+    /** Get pressure.
+     * @return pressure (Pa)
      */
-    public T getWaterVaporPressure() {
-        return waterVaporPressure;
+    public T getPressure() {
+        return pressure;
+    }
+
+    /** Get temperature.
+     * @return temperature (Kelvin)
+     */
+    public T getTemperature() {
+        return temperature;
     }
 
 }

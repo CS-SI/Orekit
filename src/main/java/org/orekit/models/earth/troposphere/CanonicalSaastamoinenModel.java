@@ -36,7 +36,6 @@ import org.orekit.models.earth.weather.water.WaterVaporPressureProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.units.Unit;
 
 /** The canonical Saastamoinen model.
  * <p>
@@ -115,7 +114,7 @@ public class CanonicalSaastamoinenModel implements DiscreteTroposphericModel {
     public static CanonicalSaastamoinenModel getStandardModel() {
 
         // build standard meteorological data
-        final double pressure           = Unit.parse("hPa").toSI(1013.25);
+        final double pressure           = TropoUnit.HECTO_PASCAL.toSI(1013.25);
         final double temperature        = 273.15 + 18;
         final double relativeHumidity   = 0.5;
         final WaterVaporPressureProvider waterPressureProvider = new NbsNrcSteamTable();
@@ -124,7 +123,6 @@ public class CanonicalSaastamoinenModel implements DiscreteTroposphericModel {
                                                                                    relativeHumidity);
         final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
                                                                                 temperature,
-                                                                                relativeHumidity,
                                                                                 waterVaporPressure);
         final PressureTemperatureHumidityProvider pth0Provider =
                         new ConstantPressureTemperatureHumidityProvider(pth);

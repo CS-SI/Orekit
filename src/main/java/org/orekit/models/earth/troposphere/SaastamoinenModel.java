@@ -42,7 +42,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
      *
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
-     * @param r0 the humidity at the station [fraction] (50% -&gt; 0.5)
+     * @param r0 the humidity at the station [fraction] (50% → 0.5)
      * @see #ModifiedSaastamoinenModel(double, double, double, String, DataProvidersManager)
      * @since 10.1
      */
@@ -56,7 +56,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
      *
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
-     * @param r0 the humidity at the station [fraction] (50% -&gt; 0.5)
+     * @param r0 the humidity at the station [fraction] (50% → 0.5)
      * @param deltaRFileName regular expression for filename containing δR
      * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
      * default values from the reference book are used
@@ -75,7 +75,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
      *
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
-     * @param r0 the humidity at the station [fraction] (50% -&gt; 0.5)
+     * @param r0 the humidity at the station [fraction] (50% → 0.5)
      * @param deltaRFileName regular expression for filename containing δR
      * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
      * default values from the reference book are used
@@ -90,10 +90,10 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
         super(0.0,
               new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(TropoUnit.HECTO_PASCAL.toSI(p0),
                                                                                               t0,
-                                                                                              r0,
-                                                                                              new Wang1988().waterVaporPressure(TropoUnit.HECTO_PASCAL.toSI(p0),
-                                                                                                                                t0,
-                                                                                                                                r0))),
+                                                                                              new Wang1988().
+                                                                                              waterVaporPressure(TropoUnit.HECTO_PASCAL.toSI(p0),
+                                                                                                                 t0,
+                                                                                                                 r0))),
               deltaRFileName, dataProvidersManager);
     }
 

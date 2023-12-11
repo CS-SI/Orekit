@@ -53,7 +53,7 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
      * environmental conditions.
      * @param t0 the temperature at the station, K
      * @param p0 the atmospheric pressure at the station, mbar
-     * @param rh the humidity at the station, percent (50% -&gt; 0.5)
+     * @param rh the humidity at the station, as a ratio (50% → 0.5)
      * @param lambda laser wavelength (c/f), nm
      * @deprecated as of 12.1, replaced by {@link #MariniMurrayModel(PressureTemperatureHumidityProvider, double, Unit)}
      */
@@ -61,7 +61,6 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
     public MariniMurrayModel(final double t0, final double p0, final double rh, final double lambda) {
         this(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(TropoUnit.HECTO_PASCAL.toSI(p0),
                                                                                              t0,
-                                                                                             rh,
                                                                                              new CIPM2007().
                                                                                              waterVaporPressure(TropoUnit.HECTO_PASCAL.toSI(p0),
                                                                                                                 t0,
@@ -128,7 +127,7 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
         final double t  = 273.15 + 20;
         final double rh = 0.5;
         final PressureTemperatureHumidity pth =
-                        new PressureTemperatureHumidity(p, t, rh, new CIPM2007().waterVaporPressure(p, t, rh));
+                        new PressureTemperatureHumidity(p, t, new CIPM2007().waterVaporPressure(p, t, rh));
         return new MariniMurrayModel(new ConstantPressureTemperatureHumidityProvider(pth),
                                      lambda, TropoUnit.NANO_M);
     }

@@ -27,7 +27,7 @@ public interface WaterVaporPressureProvider {
     /** Compute water vapor pressure.
      * @param p pressure (Pa)
      * @param t temperature (Kelvin)
-     * @param rh relative humidity, in percent (50% → 0.5)
+     * @param rh relative humidity, as a ratio (50% → 0.5)
      * @return water vapor pressure (Pa)
      */
     double waterVaporPressure(double p, double t, double rh);
@@ -35,7 +35,7 @@ public interface WaterVaporPressureProvider {
     /** Compute water vapor pressure.
      * @param p pressure (Pa)
      * @param t temperature (Kelvin)
-     * @param rh relative humidity, in percent (50% → 0.5)
+     * @param rh relative humidity, as a ratio (50% → 0.5)
      * @param <T> type of the field elements
      * @return water vapor pressure (Pa)
      */

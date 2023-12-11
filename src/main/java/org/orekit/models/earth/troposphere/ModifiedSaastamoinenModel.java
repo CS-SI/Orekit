@@ -198,7 +198,6 @@ public class ModifiedSaastamoinenModel implements DiscreteTroposphericModel {
         final double humidity    = 0.5;
         final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
                                                                                 temperature,
-                                                                                humidity,
                                                                                 WATER.waterVaporPressure(pressure,
                                                                                                          temperature,
                                                                                                          humidity));
