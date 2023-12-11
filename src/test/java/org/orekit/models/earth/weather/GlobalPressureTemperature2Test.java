@@ -20,6 +20,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
@@ -27,12 +28,12 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.Geoid;
 import org.orekit.models.earth.ReferenceEllipsoid;
+import org.orekit.models.earth.troposphere.TropoUnit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 
-@Deprecated
-public class GlobalPressureTemperature2ModelTest {
+public class GlobalPressureTemperature2Test {
 
     private static double epsilon = 1.0e-12;
 
@@ -64,21 +65,18 @@ public class GlobalPressureTemperature2ModelTest {
         final AbsoluteDate date = AbsoluteDate.createMJDDate(56141, 0.0, TimeScalesFactory.getUTC());
         final Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(12, 12),
                                       ReferenceEllipsoid.getWgs84(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
-        final GlobalPressureTemperature2Model model =
-                        new GlobalPressureTemperature2Model("gpt2_5_extract.grd", latitude, longitude, geoid);
+        final GlobalPressureTemperature2 model =
+                        new GlobalPressureTemperature2("gpt2_5_extract.grd", geoid);
 
-        model.weatherParameters(height, date);
+        final GeodeticPoint               location = new GeodeticPoint(latitude, longitude, height);
+        final double                      a[]      = model.getA(location, date);
+        final PressureTemperatureHumidity pth      = model.getWeatherParamerers(location, date);
 
-        final double a[]         = model.getA();
-        final double temperature = model.getTemperature() - 273.15;
-        final double pressure    = model.getPressure();
-        final double e           = model.getWaterVaporPressure();
-
-        Assertions.assertEquals(22.12,     temperature, 2.3e-1);
-        Assertions.assertEquals(1002.56,   pressure,    5.1e-1);
-        Assertions.assertEquals(0.0012647, a[0],        1.1e-7);
-        Assertions.assertEquals(0.0005726, a[1],        8.6e-8);
-        Assertions.assertEquals(15.63,     e,           5.0e-2);
+        Assertions.assertEquals(0.0012647,      a[0],                        1.1e-7);
+        Assertions.assertEquals(0.0005726,      a[1],                        8.6e-8);
+        Assertions.assertEquals(273.15 + 22.12, pth.getTemperature(),        2.3e-1);
+        Assertions.assertEquals(1002.56,        TropoUnit.HECTO_PASCAL.fromSI(pth.getPressure()),           5.1e-1);
+        Assertions.assertEquals(15.63,          TropoUnit.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()), 5.0e-2);
 
     }
 
@@ -96,59 +94,49 @@ public class GlobalPressureTemperature2ModelTest {
         final double latitude   = FastMath.toRadians(45.0);
         final double height     = 0.0;
 
-        double longitude1;
-        GlobalPressureTemperature2Model model1;
-
-        double longitude2;
-        GlobalPressureTemperature2Model model2;
+        GlobalPressureTemperature2 model = new GlobalPressureTemperature2(geoid);
 
         // Test longitude = 181° and longitude = -179°
-        longitude1 = FastMath.toRadians(181.0);
-        longitude2 = FastMath.toRadians(-179.0);
+        GeodeticPoint               location1 = new GeodeticPoint(latitude, FastMath.toRadians(181.0), height);
+        double[]                    a1        = model.getA(location1, date);
+        PressureTemperatureHumidity pth1      = model.getWeatherParamerers(location1, date);
+        GeodeticPoint               location2 = new GeodeticPoint(latitude, FastMath.toRadians(-179.0), height);
+        double[]                    a2        = model.getA(location2, date);
+        PressureTemperatureHumidity pth2      = model.getWeatherParamerers(location2, date);
 
-        model1 = new GlobalPressureTemperature2Model(latitude, longitude1, geoid);
-        model2 = new GlobalPressureTemperature2Model(latitude, longitude2, geoid);
-
-        model1.weatherParameters(height, date);
-        model2.weatherParameters(height, date);
-
-        Assertions.assertEquals(model1.getTemperature(),        model2.getTemperature(),        epsilon);
-        Assertions.assertEquals(model1.getPressure(),           model2.getPressure(),           epsilon);
-        Assertions.assertEquals(model1.getWaterVaporPressure(), model2.getWaterVaporPressure(), epsilon);
-        Assertions.assertEquals(model1.getA()[0],               model2.getA()[0],               epsilon);
-        Assertions.assertEquals(model1.getA()[1],               model2.getA()[1],               epsilon);
+        Assertions.assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
+        Assertions.assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
+        Assertions.assertEquals(pth1.getWaterVaporPressure(), pth2.getWaterVaporPressure(), epsilon);
+        Assertions.assertEquals(a1[0],                        a2[0],                        epsilon);
+        Assertions.assertEquals(a1[1],                        a2[1],                        epsilon);
 
         // Test longitude = 180° and longitude = -180°
-        longitude1 = FastMath.toRadians(180.0);
-        longitude2 = FastMath.toRadians(-180.0);
+        location1 = new GeodeticPoint(latitude, FastMath.toRadians(180.0), height);
+        a1        = model.getA(location1, date);
+        pth1      = model.getWeatherParamerers(location1, date);
+        location2 = new GeodeticPoint(latitude, FastMath.toRadians(-180.0), height);
+        a2        = model.getA(location2, date);
+        pth2      = model.getWeatherParamerers(location2, date);
 
-        model1 = new GlobalPressureTemperature2Model(latitude, longitude1, geoid);
-        model2 = new GlobalPressureTemperature2Model(latitude, longitude2, geoid);
-
-        model1.weatherParameters(height, date);
-        model2.weatherParameters(height, date);
-
-        Assertions.assertEquals(model1.getTemperature(),        model2.getTemperature(),        epsilon);
-        Assertions.assertEquals(model1.getPressure(),           model2.getPressure(),           epsilon);
-        Assertions.assertEquals(model1.getWaterVaporPressure(), model2.getWaterVaporPressure(), epsilon);
-        Assertions.assertEquals(model1.getA()[0],               model2.getA()[0],               epsilon);
-        Assertions.assertEquals(model1.getA()[1],               model2.getA()[1],               epsilon);
+        Assertions.assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
+        Assertions.assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
+        Assertions.assertEquals(pth1.getWaterVaporPressure(), pth2.getWaterVaporPressure(), epsilon);
+        Assertions.assertEquals(a1[0],                        a2[0],                        epsilon);
+        Assertions.assertEquals(a1[1],                        a2[1],                        epsilon);
 
         // Test longitude = 0° and longitude = 360°
-        longitude1 = FastMath.toRadians(0.0);
-        longitude2 = FastMath.toRadians(360.0);
+        location1 = new GeodeticPoint(latitude, FastMath.toRadians(0.0), height);
+        a1        = model.getA(location1, date);
+        pth1      = model.getWeatherParamerers(location1, date);
+        location2 = new GeodeticPoint(latitude, FastMath.toRadians(360.0), height);
+        a2        = model.getA(location2, date);
+        pth2      = model.getWeatherParamerers(location2, date);
 
-        model1 = new GlobalPressureTemperature2Model(latitude, longitude1, geoid);
-        model2 = new GlobalPressureTemperature2Model(latitude, longitude2, geoid);
-
-        model1.weatherParameters(height, date);
-        model2.weatherParameters(height, date);
-
-        Assertions.assertEquals(model1.getTemperature(),        model2.getTemperature(),        epsilon);
-        Assertions.assertEquals(model1.getPressure(),           model2.getPressure(),           epsilon);
-        Assertions.assertEquals(model1.getWaterVaporPressure(), model2.getWaterVaporPressure(), epsilon);
-        Assertions.assertEquals(model1.getA()[0],               model2.getA()[0],               epsilon);
-        Assertions.assertEquals(model1.getA()[1],               model2.getA()[1],               epsilon);
+        Assertions.assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
+        Assertions.assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
+        Assertions.assertEquals(pth1.getWaterVaporPressure(), pth2.getWaterVaporPressure(), epsilon);
+        Assertions.assertEquals(a1[0],                        a2[0],                        epsilon);
+        Assertions.assertEquals(a1[1],                        a2[1],                        epsilon);
 
     }
 
@@ -158,16 +146,13 @@ public class GlobalPressureTemperature2ModelTest {
         Utils.setDataRoot("regular-data:potential:gpt2-grid");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
-        final double latitude  = FastMath.toRadians(14.0);
-        final double longitude = FastMath.toRadians(67.5);
-
         // Date is not used here
         final Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(12, 12),
                                       ReferenceEllipsoid.getWgs84(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
 
         final String fileName = "corrupted-bad-data-gpt2_5.grd";
         try {
-        new GlobalPressureTemperature2Model(fileName, latitude, longitude, geoid);
+            new GlobalPressureTemperature2(fileName, geoid);
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -183,16 +168,13 @@ public class GlobalPressureTemperature2ModelTest {
         Utils.setDataRoot("regular-data:potential:gpt2-grid");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
-        final double latitude  = FastMath.toRadians(14.0);
-        final double longitude = FastMath.toRadians(68.5);
-
         // Date is not used here
         final Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(12, 12),
                                       ReferenceEllipsoid.getWgs84(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
 
         final String fileName = "corrupted-irregular-grid-gpt2_5.grd";
         try {
-        new GlobalPressureTemperature2Model(fileName, latitude, longitude, geoid);
+            new GlobalPressureTemperature2(fileName, geoid);
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, oe.getSpecifier());
