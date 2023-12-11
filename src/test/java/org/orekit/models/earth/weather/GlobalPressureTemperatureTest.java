@@ -21,16 +21,20 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.FramesFactory;
+import org.orekit.models.earth.Geoid;
+import org.orekit.models.earth.ReferenceEllipsoid;
+import org.orekit.models.earth.troposphere.TropoUnit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 
-@Deprecated
-public class GlobalPressureTemperatureModelTest {
+public class GlobalPressureTemperatureTest {
 
     @BeforeEach
     public void setUp() throws OrekitException {
@@ -59,20 +63,23 @@ public class GlobalPressureTemperatureModelTest {
         //                          pressure    -> 1027.5 hPa
 
         final AbsoluteDate date = new AbsoluteDate(2019, 1, 8, 0, 0, 0.0, TimeScalesFactory.getUTC());
-        final double latitude    = FastMath.toRadians(43.59);
-        final double longitude   = FastMath.toRadians(1.49);
-        final double height      = 140.0;
+        final GeodeticPoint location = new GeodeticPoint(FastMath.toRadians(43.59),
+                                                         FastMath.toRadians(1.49),
+                                                         140.0);
 
         // Given by the model
         final double expectedTemperature = 7.3311;
         final double expectedPressure    = 1010.2749;
 
-        final GlobalPressureTemperatureModel model = new GlobalPressureTemperatureModel(latitude, longitude,
-                                                                                        FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        model.weatherParameters(height, date);
+        final DataContext dataContext = DataContext.getDefault();
+        final Geoid geoid = new Geoid(dataContext.getGravityFields().getNormalizedProvider(9, 9),
+                                      ReferenceEllipsoid.getWgs84(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final GlobalPressureTemperature model = new GlobalPressureTemperature(geoid,
+                                                                              dataContext.getTimeScales().getUTC());
+        PressureTemperature pt = model.getWeatherParameters(location, date);
 
-        final double computedTemperature = model.getTemperature() - 273.15;
-        final double computedPressure    = model.getPressure();
+        final double computedTemperature = pt.getTemperature() - 273.15;
+        final double computedPressure    = TropoUnit.HECTO_PASCAL.fromSI(pt.getPressure());
 
         Assertions.assertEquals(expectedPressure,    computedPressure,    0.1);
         Assertions.assertEquals(expectedTemperature, computedTemperature, 0.1);
@@ -107,20 +114,24 @@ public class GlobalPressureTemperatureModelTest {
         //                          pressure    -> 717.9 hPa
 
         final AbsoluteDate date = new AbsoluteDate(2019, 1, 8, 0, 0, 0.0, TimeScalesFactory.getUTC());
-        final double latitude    = FastMath.toRadians(42.94);
-        final double longitude   = FastMath.toRadians(0.14);
-        final double height      = 2877;
+        final GeodeticPoint location = new GeodeticPoint(FastMath.toRadians(42.94),
+                                                         FastMath.toRadians(0.14),
+                                                         2877);
 
         // Given by the model
         final double expectedTemperature = -9.88;
         final double expectedPressure    = 723.33;
 
-        final GlobalPressureTemperatureModel model = new GlobalPressureTemperatureModel(latitude, longitude,
-                                                                                        FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        model.weatherParameters(height, date);
+        final DataContext dataContext = DataContext.getDefault();
+        final Geoid geoid = new Geoid(dataContext.getGravityFields().getNormalizedProvider(9, 9),
+                                      ReferenceEllipsoid.getWgs84(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final GlobalPressureTemperature model = new GlobalPressureTemperature(geoid,
+                                                                              dataContext.getTimeScales().getUTC());
+        PressureTemperature pt = model.getWeatherParameters(location, date);
 
-        final double computedTemperature = model.getTemperature() - 273.15;
-        final double computedPressure    = model.getPressure();
+
+        final double computedTemperature = pt.getTemperature() - 273.15;
+        final double computedPressure    = TropoUnit.HECTO_PASCAL.fromSI(pt.getPressure());
 
         Assertions.assertEquals(expectedPressure,    computedPressure,    0.1);
         Assertions.assertEquals(expectedTemperature, computedTemperature, 0.1);
