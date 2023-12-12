@@ -32,9 +32,6 @@ import org.orekit.models.earth.troposphere.TropoUnit;
  */
 public class CIPM2007 implements WaterVaporPressureProvider {
 
-    /** Saturation water vapor coefficient. */
-    private static final double E = 0.01;
-
     /** Laurent series coefficient for degree +2. */
     private static final double L_P2 = 1.2378847e-5;
 
@@ -63,14 +60,14 @@ public class CIPM2007 implements WaterVaporPressureProvider {
     @Override
     public double waterVaporPressure(final double p, final double t, final double rh) {
 
-        // saturation water vapor, equation A1.1
-        final double psv = FastMath.exp(t * (t * L_P2 + L_P1) + L_0 + L_M1 / t) * E;
+        // saturation water vapor, equation A1.1 (now in Pa, not hPa)
+        final double psv = FastMath.exp(t * (t * L_P2 + L_P1) + L_0 + L_M1 / t);
 
         // enhancement factor, equation A1.2
         final double tC = t - CELSIUS;
         final double fw = TropoUnit.HECTO_PASCAL.fromSI(p) * F_P + tC * tC * F_T2 + F_0;
 
-        return TropoUnit.HECTO_PASCAL.toSI(rh * fw * psv);
+        return rh * fw * psv;
 
     }
 
@@ -78,15 +75,14 @@ public class CIPM2007 implements WaterVaporPressureProvider {
     @Override
     public <T extends CalculusFieldElement<T>> T waterVaporPressure(final T p, final T t, final T rh) {
 
-        // saturation water vapor, equation A1.1
-        final T psv = FastMath.exp(t.multiply(t.multiply(L_P2).add(L_P1)).add(L_0).add(t.reciprocal().multiply(L_M1))).
-                      multiply(E);
+        // saturation water vapor, equation A1.1 (now in Pa, not hPa)
+        final T psv = FastMath.exp(t.multiply(t.multiply(L_P2).add(L_P1)).add(L_0).add(t.reciprocal().multiply(L_M1)));
 
         // enhancement factor, equation A1.2
         final T tC = t.subtract(CELSIUS);
         final T fw = TropoUnit.HECTO_PASCAL.fromSI(p).multiply(F_P).add(tC.multiply(tC).multiply(F_T2)).add(F_0);
 
-        return TropoUnit.HECTO_PASCAL.toSI(rh.multiply(fw).multiply(psv));
+        return rh.multiply(fw).multiply(psv);
 
     }
 
