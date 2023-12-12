@@ -101,8 +101,7 @@ public class HeightDependentPressureTemperatureHumidityProvider implements Press
                                                                                                      location.getLongitude(),
                                                                                                      h0),
                                                                                    date);
-        final double saturationPressure0 = provider.waterVaporPressure(pth0.getPressure(), pth0.getTemperature(), 1.0);
-        final double rh0 = pth0.getWaterVaporPressure() / saturationPressure0;
+        final double rh0 = provider.relativeHumidity(pth0.getPressure(), pth0.getTemperature(), pth0.getWaterVaporPressure());
 
         // compute changes due to altitude change
         final double dh = FastMath.min(FastMath.max(location.getAltitude(), hMin), hMax) - h0;
@@ -124,9 +123,7 @@ public class HeightDependentPressureTemperatureHumidityProvider implements Press
                                                                                    location.getLongitude(),
                                                                                    location.getAltitude().newInstance(h0)),
                                                           date);
-        final T one = date.getField().getOne();
-        final T saturationPressure0 = provider.waterVaporPressure(pth0.getPressure(), pth0.getTemperature(), one);
-        final T rh0 = pth0.getWaterVaporPressure().divide(saturationPressure0);
+        final T rh0 = provider.relativeHumidity(pth0.getPressure(), pth0.getTemperature(), pth0.getWaterVaporPressure());
 
         // compute changes due to altitude change
         final T dh = FastMath.min(FastMath.max(location.getAltitude(), hMin), hMax).subtract(h0);
