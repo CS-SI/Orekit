@@ -16,7 +16,7 @@
  */
 package org.orekit.models.earth.weather;
 
-/** Container for pressure and temperature
+/** Container for pressure and temperature.
  * @author Luc Maisonobe
  * @since 12.1
  */
