@@ -16,31 +16,17 @@
  */
 package org.orekit.models.earth.troposphere;
 
-/** Chao mapping function for radio wavelengths.
- *
- * @see "C. C. Chao, A model for tropospheric calibration from delay surface and radiosonde ballon measurements, 1972"
- *
- * @author Luc Maisonobe
- * @since 12.1
- */
-public class ChaoMappingFunction extends AbstractChaoMappingFunction {
+import org.junit.jupiter.api.Test;
 
-    /** First coefficient for hydrostatic (dry) component. */
-    private static final double AD = 0.00143;
+public class RevisedChaoMappingFunctionTest extends AbstractMappingFunctionTest {
 
-    /** Second coefficient for hydrostatic (dry) component. */
-    private static final double BD = 0.0445;
+    protected MappingFunction buildMappingFunction() {
+        return new RevisedChaoMappingFunction();
+    }
 
-    /** First coefficient for wet component. */
-    private static final double AW = 0.00035;
-
-    /** Second coefficient for wet component. */
-    private static final double BW = 0.017;
-
-    /** Builds a new instance.
-     */
-    public ChaoMappingFunction() {
-        super(AD, BD, AW, BW);
+    @Test
+    public void testMappingFactors() {
+        doTestMappingFactors(10.13, 11.05);
     }
 
 }

@@ -18,18 +18,18 @@ package org.orekit.models.earth.troposphere;
 
 /** Chao mapping function for radio wavelengths.
  *
- * @see "C. C. Chao, A model for tropospheric calibration from delay surface and radiosonde ballon measurements, 1972"
- *
+ * @see "J. A. Estefan, O. J. Sovers, A Comparative Survey of Current and Proposed Tropospheric
+ * Refraction-Delay Models for DSN Radio Metric Data Calibration", 1994
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class ChaoMappingFunction extends AbstractChaoMappingFunction {
+public class RevisedChaoMappingFunction extends AbstractChaoMappingFunction {
 
     /** First coefficient for hydrostatic (dry) component. */
-    private static final double AD = 0.00143;
+    private static final double AD = 0.00147;
 
     /** Second coefficient for hydrostatic (dry) component. */
-    private static final double BD = 0.0445;
+    private static final double BD = 0.0400;
 
     /** First coefficient for wet component. */
     private static final double AW = 0.00035;
@@ -39,7 +39,7 @@ public class ChaoMappingFunction extends AbstractChaoMappingFunction {
 
     /** Builds a new instance.
      */
-    public ChaoMappingFunction() {
+    public RevisedChaoMappingFunction() {
         super(AD, BD, AW, BW);
     }
 
