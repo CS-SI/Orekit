@@ -1058,8 +1058,8 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
         final FieldUnivariateDerivative2<T> alphaE   = meanToEccentric(parameters[5], parameters[1], parameters[2]);
         final FieldUnivariateDerivative2<T> cosAE    = alphaE.cos();
         final FieldUnivariateDerivative2<T> sinAE    = alphaE.sin();
-        final FieldUnivariateDerivative2<T> ex2      = parameters[1].multiply(parameters[1]);
-        final FieldUnivariateDerivative2<T> ey2      = parameters[2].multiply(parameters[2]);
+        final FieldUnivariateDerivative2<T> ex2      = parameters[1].square();
+        final FieldUnivariateDerivative2<T> ey2      = parameters[2].square();
         final FieldUnivariateDerivative2<T> exy      = parameters[1].multiply(parameters[2]);
         final FieldUnivariateDerivative2<T> q        = ex2.add(ey2).subtract(1).negate().sqrt();
         final FieldUnivariateDerivative2<T> beta     = q.add(1).reciprocal();

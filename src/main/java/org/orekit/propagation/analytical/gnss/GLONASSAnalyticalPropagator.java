@@ -203,7 +203,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
         // Current mean longitude
         final UnivariateDerivative2 correction = dTpr.
                                                  subtract(w.multiply(GLONASS_MEAN_DRACONIAN_PERIOD + glonassOrbit.getDeltaT())).
-                                                 subtract(w.multiply(w).multiply(glonassOrbit.getDeltaTDot()));
+                                                 subtract(w.square().multiply(glonassOrbit.getDeltaTDot()));
         final UnivariateDerivative2 m = m1.add(n.multiply(correction));
 
         // Take into consideration the periodic perturbations
@@ -374,7 +374,7 @@ public class GLONASSAnalyticalPropagator extends AbstractAnalyticalPropagator {
     * @return the true anomaly (rad)
     */
     private UnivariateDerivative2 getTrueAnomaly(final UnivariateDerivative2 ek, final UnivariateDerivative2 ecc) {
-        final UnivariateDerivative2 svk = ek.sin().multiply(FastMath.sqrt( ecc.multiply(ecc).negate().add(1.0)));
+        final UnivariateDerivative2 svk = ek.sin().multiply(FastMath.sqrt( ecc.square().negate().add(1.0)));
         final UnivariateDerivative2 cvk = ek.cos().subtract(ecc);
         return svk.atan2(cvk);
     }

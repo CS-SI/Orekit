@@ -94,7 +94,7 @@ abstract class FieldSDP4<T extends CalculusFieldElement<T>>  extends FieldTLEPro
         final T bStar = parameters[0];
         omgadf = tle.getPerigeeArgument().add(omgdot.multiply(tSince));
         final T xnoddf = tle.getRaan().add(xnodot.multiply(tSince));
-        final T tSinceSq = tSince.multiply(tSince);
+        final T tSinceSq = tSince.square();
         xnode = xnoddf.add(xnodcf.multiply(tSinceSq));
         xn = xn0dp;
 

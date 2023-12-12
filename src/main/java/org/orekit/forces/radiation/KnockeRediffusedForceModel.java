@@ -604,7 +604,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
 
             // Compute attenuated projected elemetary area vector
             final FieldVector3D<T> projectedAreaVector = r.scalarMultiply(elementArea.multiply(FastMath.cos(alpha)).divide(
-                                                                          rNorm.multiply(rNorm).multiply(rNorm).multiply(zero.getPi())));
+                                                                          rNorm.square().multiply(rNorm).multiply(zero.getPi())));
 
             // Compute elementary radiation flux from current elementary area
             return projectedAreaVector.scalarMultiply(albedoAndIR.divide(Constants.SPEED_OF_LIGHT));

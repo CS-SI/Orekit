@@ -72,7 +72,7 @@ public class Alfriend1999 extends AbstractAlfriend1999 {
     @Override
     <T extends CalculusFieldElement<T>> T computeValue(final T radius, final T squaredMahalanobisDistance,
                                                        final T covarianceMatrixDeterminant) {
-        return squaredMahalanobisDistance.multiply(-0.5).exp().multiply(radius).multiply(radius)
+        return squaredMahalanobisDistance.multiply(-0.5).exp().multiply(radius.square())
                                          .divide(covarianceMatrixDeterminant.sqrt().multiply(2.));
     }
 

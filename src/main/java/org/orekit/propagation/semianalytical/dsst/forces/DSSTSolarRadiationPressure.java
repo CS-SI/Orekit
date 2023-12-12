@@ -315,8 +315,8 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             final T h2 = auxiliaryElements.getH().multiply(auxiliaryElements.getH());
             final T k2 = auxiliaryElements.getK().multiply(auxiliaryElements.getK());
             final T m  = (auxiliaryElements.getSma().multiply(auxiliaryElements.getB())).divide(ae).reciprocal();
-            final T m2 = m.multiply(m);
-            final T m4 = m2.multiply(m2);
+            final T m2 = m.square();
+            final T m4 = m2.square();
             final T bb = alpha.multiply(beta).add(m2.multiply(auxiliaryElements.getH()).multiply(auxiliaryElements.getK()));
             final T b2 = bb.multiply(bb);
             final T cc = alpha.multiply(alpha).subtract(bet2).add(m2.multiply(k2.subtract(h2)));
@@ -658,7 +658,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         final T b  =  a[1].divide(a[0].multiply(3.)).negate();
         final T c  =  a[2].divide(a[0]);
         final T d  =  a[3].divide(a[0]);
-        final T b2 =  b.multiply(b);
+        final T b2 =  b.square();
         final T p  =  b2.subtract(c.divide(3.));
         final T q  =  b.multiply(b2.subtract(c.multiply(0.5))).subtract(d.multiply(0.5));
 
@@ -789,7 +789,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         final T c =  a[2].divide(a[0]);
 
         // Compute discriminant
-        final T d =  b.multiply(b).subtract(c);
+        final T d =  b.square().subtract(c);
 
         if (d.getReal() < 0.) {
             // No real roots

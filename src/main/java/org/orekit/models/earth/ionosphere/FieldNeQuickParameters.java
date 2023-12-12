@@ -451,7 +451,7 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         }
 
         // hmF2 Eq. 80
-        final T mF2Sq = mF2.multiply(mF2);
+        final T mF2Sq = mF2.square();
         final T temp  = FastMath.sqrt(mF2Sq.multiply(0.0196).add(1.0).divide(mF2Sq.multiply(1.2967).subtract(1.0)));
         final T height  = mF2.multiply(1490.0).multiply(temp).divide(mF2.add(deltaM)).subtract(176.0);
         return height;

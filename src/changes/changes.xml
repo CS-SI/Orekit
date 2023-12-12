@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1260">
+          Started using new square method for Field.
+      </action>
       <action dev="luc" type="add" issue="1286">
           Fixed parsing of SP3 files with partly missing standard deviations.
       </action>

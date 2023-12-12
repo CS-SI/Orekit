@@ -172,7 +172,7 @@ public class UpperBounds {
         final T zero = gamma.getField().getZero();
         // Initialization
         final int mei = m * eps * irf;
-        final T sinisq = gamma.multiply(gamma).negate().add(1.);
+        final T sinisq = gamma.square().negate().add(1.);
         // Set a lower bound for inclination
         final T sininc = FastMath.max(zero.newInstance(0.03), FastMath.sqrt(sinisq));
         final T onepig = gamma.multiply(irf).add(1.);

@@ -2254,7 +2254,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // Compute the center (l - λ)
             final T center = L.subtract(meanOrbit.getLM());
             // Compute (l - λ)²
-            final T center2 = center.multiply(center);
+            final T center2 = center.square();
 
             // Initialize short periodic variations
             final T[] shortPeriodicVariation = slot.cij[0].value(meanOrbit.getDate());

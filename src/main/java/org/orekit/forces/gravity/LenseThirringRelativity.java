@@ -133,7 +133,7 @@ public class LenseThirringRelativity implements ForceModel {
 
         // Radius
         final T r  = p.getNorm();
-        final T r2 = r.multiply(r);
+        final T r2 = r.square();
 
         // Earth’s angular momentum per unit mass
         final FieldStaticTransform<T> t = bodyFrame.getStaticTransformTo(s.getFrame(), s.getDate());
