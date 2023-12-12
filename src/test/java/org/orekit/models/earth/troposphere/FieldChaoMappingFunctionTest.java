@@ -16,17 +16,23 @@
  */
 package org.orekit.models.earth.troposphere;
 
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
 
-public class NiellMappingFunctionModelTest extends AbstractMappingFunctionTest {
+public class FieldChaoMappingFunctionTest extends AbstractFieldMappingFunctionTest {
 
     protected MappingFunction buildMappingFunction() {
-        return new NiellMappingFunctionModel();
+        return new ChaoMappingFunction();
     }
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(10.16, 10.75);
+        doTestMappingFactors(Binary64Field.getInstance(), 10.21, 11.05);
+    }
+
+    @Test
+    public void testMFStateDerivatives() {
+        doTestMFStateDerivatives(2.2e-11, 9.2e-12);
     }
 
 }

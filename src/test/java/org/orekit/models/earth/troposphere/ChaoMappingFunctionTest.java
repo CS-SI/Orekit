@@ -18,15 +18,15 @@ package org.orekit.models.earth.troposphere;
 
 import org.junit.jupiter.api.Test;
 
-public class NiellMappingFunctionModelTest extends AbstractMappingFunctionTest {
+public class ChaoMappingFunctionTest extends AbstractMappingFunctionTest {
 
     protected MappingFunction buildMappingFunction() {
-        return new NiellMappingFunctionModel();
+        return new ChaoMappingFunction();
     }
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(10.16, 10.75);
+        doTestMappingFactors(10.21, 11.05);
     }
 
 }
