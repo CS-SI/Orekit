@@ -22,7 +22,7 @@ import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.models.earth.Geoid;
 import org.orekit.models.earth.ReferenceEllipsoid;
-import org.orekit.models.earth.troposphere.TropoUnit;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.time.AbsoluteDate;
 
 /** The Global Pressure and Temperature model.
@@ -130,7 +130,7 @@ public class GlobalPressureTemperatureModel extends GlobalPressureTemperature im
         // Pressure and temperature
         final PressureTemperature pt = getWeatherParameters(location, date);
         this.temperature = pt.getTemperature();
-        this.pressure    = TropoUnit.HECTO_PASCAL.fromSI(pt.getPressure());
+        this.pressure    = TroposphericModelUtils.HECTO_PASCAL.fromSI(pt.getPressure());
 
     }
 

@@ -113,7 +113,7 @@ public class ModifiedSaastamoinenModelTest {
         Utils.setDataRoot("atmosphere");
         try {
             final double temperature   = 273.15 + 18;
-            final double pressure      = TropoUnit.HECTO_PASCAL.toSI(1013.25);
+            final double pressure      = TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25);
             final double humidity      = 0.5;
             final double waterPressure = ModifiedSaastamoinenModel.WATER.waterVaporPressure(pressure,
                                                                                             temperature,
@@ -132,7 +132,7 @@ public class ModifiedSaastamoinenModelTest {
     public void compareDefaultAndLoaded() {
         Utils.setDataRoot("atmosphere");
         final double temperature   = 273.15 + 18;
-        final double pressure      = TropoUnit.HECTO_PASCAL.toSI(1013.25);
+        final double pressure      = TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25);
         final double humidity      = 0.5;
         final double waterPressure = ModifiedSaastamoinenModel.WATER.waterVaporPressure(pressure,
                                                                                         temperature,
@@ -230,7 +230,7 @@ public class ModifiedSaastamoinenModelTest {
     @Test
     public void compareExpectedValues() {
         Utils.setDataRoot("atmosphere");
-        final double pressure    = TropoUnit.HECTO_PASCAL.toSI(1013.25);
+        final double pressure    = TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25);
         // it seems the reference values for the test have been computed using a wrong conversion
         // between Celsius and Kelvin (273.16 offset instead of 273.15)
         // which is probably due to a similar error in equation 5.97 of
@@ -266,7 +266,7 @@ public class ModifiedSaastamoinenModelTest {
     private <T extends CalculusFieldElement<T>> void doCompareFieldExpectedValues(final Field<T> field) {
         final T zero = field.getZero();
         Utils.setDataRoot("atmosphere");
-        final double pressure    = TropoUnit.HECTO_PASCAL.toSI(1013.25);
+        final double pressure    = TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25);
         // it seems the reference values for the test have been computed using a wrong conversion
         // between Celsius and Kelvin (273.16 offset instead of 273.15)
         // so for the sake of the test, we use a temperature of 18.01°C and not the standard atmosphere at 18.00°C

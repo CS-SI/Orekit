@@ -114,7 +114,7 @@ public class CanonicalSaastamoinenModel implements DiscreteTroposphericModel {
     public static CanonicalSaastamoinenModel getStandardModel() {
 
         // build standard meteorological data
-        final double pressure           = TropoUnit.HECTO_PASCAL.toSI(1013.25);
+        final double pressure           = TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25);
         final double temperature        = 273.15 + 18;
         final double relativeHumidity   = 0.5;
         final WaterVaporPressureProvider waterPressureProvider = new NbsNrcSteamTable();

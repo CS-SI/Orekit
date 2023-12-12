@@ -90,12 +90,12 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
     @Deprecated
     public MendesPavlisModel(final double t0, final double p0,
                              final double rh, final double lambda) {
-        this(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(TropoUnit.HECTO_PASCAL.toSI(p0),
+        this(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
                                                                                              t0,
                                                                                              new CIPM2007().
-                                                                                             waterVaporPressure(TropoUnit.HECTO_PASCAL.toSI(p0),
+                                                                                             waterVaporPressure(TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
                                                                                                                 t0, rh))),
-             lambda, TropoUnit.MICRO_M);
+             lambda, TroposphericModelUtils.MICRO_M);
     }
 
     /** Create a new Mendes-Pavlis model for the troposphere.
@@ -110,7 +110,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
         this.pthProvider = pthProvider;
 
         // Dispersion equation for the hydrostatic component
-        final double lambdaMicrometer = new UnitsConverter(lambdaUnits, TropoUnit.MICRO_M).convert(lambda);
+        final double lambdaMicrometer = new UnitsConverter(lambdaUnits, TroposphericModelUtils.MICRO_M).convert(lambda);
         final double sigma  = 1.0 / lambdaMicrometer;
         final double sigma2 = sigma * sigma;
         final double coef1  = K_COEFFICIENTS[0] + sigma2;
@@ -147,7 +147,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
     */
     @Deprecated
     public static MendesPavlisModel getStandardModel(final double lambda) {
-        return getStandardModel(lambda, TropoUnit.MICRO_M);
+        return getStandardModel(lambda, TroposphericModelUtils.MICRO_M);
     }
 
     /** Create a new Mendes-Pavlis model using a standard atmosphere model.
@@ -165,7 +165,7 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, MappingFunc
      * @since 12.1
      */
     public static MendesPavlisModel getStandardModel(final double lambda, final Unit lambdaUnits) {
-        final double p  = TropoUnit.HECTO_PASCAL.toSI(1013.25);
+        final double p  = TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25);
         final double t  = 273.15 + 18;
         final double rh = 0.5;
         final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(p, t, new CIPM2007().waterVaporPressure(p, t, rh));

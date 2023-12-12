@@ -56,7 +56,7 @@ public class MariniMurrayModelTest {
         final double height = 100d;
 
         // ruby laser with wavelength 694.3 nm
-        DiscreteTroposphericModel model = MariniMurrayModel.getStandardModel(694.3, TropoUnit.NANO_M);
+        DiscreteTroposphericModel model = MariniMurrayModel.getStandardModel(694.3, TroposphericModelUtils.NANO_M);
         final double path = model.pathDelay(FastMath.toRadians(elevation), new GeodeticPoint(latitude, longitude, height), null, AbsoluteDate.J2000_EPOCH);
 
         Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
@@ -102,7 +102,7 @@ public class MariniMurrayModelTest {
         final T height = zero.add(100d);
 
         // ruby laser with wavelength 694.3 nm
-        DiscreteTroposphericModel model = MariniMurrayModel.getStandardModel(694.3, TropoUnit.NANO_M);
+        DiscreteTroposphericModel model = MariniMurrayModel.getStandardModel(694.3, TroposphericModelUtils.NANO_M);
         final T path = model.pathDelay(elevation, new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), height), null, FieldAbsoluteDate.getJ2000Epoch(field));
 
         Assertions.assertTrue(Precision.compareTo(path.getReal(), 20d, epsilon) < 0);
@@ -112,7 +112,7 @@ public class MariniMurrayModelTest {
     @Test
     public void testFixedHeight() {
         // ruby laser with wavelength 694.3 nm
-        DiscreteTroposphericModel model = MariniMurrayModel.getStandardModel(694.3, TropoUnit.NANO_M);
+        DiscreteTroposphericModel model = MariniMurrayModel.getStandardModel(694.3, TroposphericModelUtils.NANO_M);
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
@@ -129,7 +129,7 @@ public class MariniMurrayModelTest {
 
     private <T extends CalculusFieldElement<T>> void doTestFieldFixedHeight(final Field<T> field) {
         // ruby laser with wavelength 694.3 nm
-        DiscreteTroposphericModel model = MariniMurrayModel.getStandardModel(694.3, TropoUnit.NANO_M);
+        DiscreteTroposphericModel model = MariniMurrayModel.getStandardModel(694.3, TroposphericModelUtils.NANO_M);
         final T zero = field.getZero();
         T lastDelay  = zero.add(Double.MAX_VALUE);
         // delay shall decline with increasing elevation angle
@@ -144,7 +144,7 @@ public class MariniMurrayModelTest {
     public void compareExpectedValues() {
 
         // ruby laser with wavelength 694.3 nm
-        DiscreteTroposphericModel model = MariniMurrayModel.getStandardModel(694.3, TropoUnit.NANO_M);
+        DiscreteTroposphericModel model = MariniMurrayModel.getStandardModel(694.3, TroposphericModelUtils.NANO_M);
 
         double height = 0;
         double elevation = 10;
@@ -162,7 +162,7 @@ public class MariniMurrayModelTest {
     private <T extends CalculusFieldElement<T>> void doCompareFieldExpectedValues(final Field<T> field) {
 
         // ruby laser with wavelength 694.3 nm
-        DiscreteTroposphericModel model = MariniMurrayModel.getStandardModel(694.3, TropoUnit.NANO_M);
+        DiscreteTroposphericModel model = MariniMurrayModel.getStandardModel(694.3, TroposphericModelUtils.NANO_M);
 
         T zero = field.getZero();
         T height = zero;

@@ -22,7 +22,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
 import org.orekit.models.earth.Geoid;
-import org.orekit.models.earth.troposphere.TropoUnit;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
@@ -145,7 +145,7 @@ public class GlobalPressureTemperature {
         final double temperature = degrees + 273.15;
         final double pressure    = pres0 * FastMath.pow(1.0 - correctedheight * 0.0000226, 5.225);
 
-        return new PressureTemperature(TropoUnit.HECTO_PASCAL.toSI(pressure), temperature);
+        return new PressureTemperature(TroposphericModelUtils.HECTO_PASCAL.toSI(pressure), temperature);
 
     }
 

@@ -43,7 +43,7 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.models.earth.Geoid;
-import org.orekit.models.earth.troposphere.TropoUnit;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.models.earth.troposphere.ViennaOneModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -214,9 +214,9 @@ public class GlobalPressureTemperature2 implements PressureTemperatureHumidityPr
         // Water vapor pressure [hPa]
         final double e0 = qv * pressure / (0.622 + 0.378 * qv);
 
-        return new PressureTemperatureHumidity(TropoUnit.HECTO_PASCAL.toSI(pressure),
+        return new PressureTemperatureHumidity(TroposphericModelUtils.HECTO_PASCAL.toSI(pressure),
                                                temperature,
-                                               TropoUnit.HECTO_PASCAL.toSI(e0));
+                                               TroposphericModelUtils.HECTO_PASCAL.toSI(e0));
 
     }
 
@@ -255,9 +255,9 @@ public class GlobalPressureTemperature2 implements PressureTemperatureHumidityPr
         // Water vapor pressure [hPa]
         final T e0 = pressure.multiply(qv / (0.622 + 0.378 * qv));
 
-        return new FieldPressureTemperatureHumidity<>(TropoUnit.HECTO_PASCAL.toSI(pressure),
+        return new FieldPressureTemperatureHumidity<>(TroposphericModelUtils.HECTO_PASCAL.toSI(pressure),
                                                       temperature,
-                                                      TropoUnit.HECTO_PASCAL.toSI(e0));
+                                                      TroposphericModelUtils.HECTO_PASCAL.toSI(e0));
 
     }
 

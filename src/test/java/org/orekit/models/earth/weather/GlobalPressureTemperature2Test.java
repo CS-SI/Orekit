@@ -28,7 +28,7 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.Geoid;
 import org.orekit.models.earth.ReferenceEllipsoid;
-import org.orekit.models.earth.troposphere.TropoUnit;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
@@ -75,8 +75,8 @@ public class GlobalPressureTemperature2Test {
         Assertions.assertEquals(0.0012647,      a[0],                        1.1e-7);
         Assertions.assertEquals(0.0005726,      a[1],                        8.6e-8);
         Assertions.assertEquals(273.15 + 22.12, pth.getTemperature(),        2.3e-1);
-        Assertions.assertEquals(1002.56,        TropoUnit.HECTO_PASCAL.fromSI(pth.getPressure()),           5.1e-1);
-        Assertions.assertEquals(15.63,          TropoUnit.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()), 5.0e-2);
+        Assertions.assertEquals(1002.56,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()),           5.1e-1);
+        Assertions.assertEquals(15.63,          TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()), 5.0e-2);
 
     }
 

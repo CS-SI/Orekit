@@ -19,6 +19,7 @@ package org.orekit.models.earth.troposphere;
 import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
+import org.orekit.utils.units.Unit;
 
 /**
  * Utility class for tropospheric models.
@@ -26,6 +27,21 @@ import org.hipparchus.util.FastMath;
  * @since 11.0
  */
 public class TroposphericModelUtils {
+
+    /** Nanometers unit.
+     * @since 12.1
+     */
+    public static final Unit NANO_M = Unit.parse("nm");
+
+    /** Micrometers unit.
+     * @since 12.1
+     */
+    public static final Unit MICRO_M = Unit.parse("µm");
+
+    /** HectoPascal unit.
+     * @since 12.1
+     */
+    public static final Unit HECTO_PASCAL = Unit.parse("hPa");
 
     /**
      * Private constructor as class is a utility.

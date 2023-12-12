@@ -21,7 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.orekit.models.earth.troposphere.TropoUnit;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 
 public abstract class AbstractWaterVaporPressureProviderTest {
 
@@ -33,8 +33,8 @@ public abstract class AbstractWaterVaporPressureProviderTest {
     protected void doTestReferenceWaterVaporPressure(final double tolerance) {
         // the reference value is from NBS/NRC steam table
         final WaterVaporPressureProvider provider = buildProvider();
-        Assertions.assertEquals(TropoUnit.HECTO_PASCAL.toSI(10.55154),
-                                provider.waterVaporPressure(TropoUnit.HECTO_PASCAL.toSI(1013.25), 273.5 + 18, 0.5),
+        Assertions.assertEquals(TroposphericModelUtils.HECTO_PASCAL.toSI(10.55154),
+                                provider.waterVaporPressure(TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25), 273.5 + 18, 0.5),
                                 tolerance);
     }
 
@@ -45,8 +45,8 @@ public abstract class AbstractWaterVaporPressureProviderTest {
                                                                                               final double tolerance) {
         // the reference value is from NBS/NRC steam table
         final WaterVaporPressureProvider provider = buildProvider();
-        Assertions.assertEquals(TropoUnit.HECTO_PASCAL.toSI(10.55154),
-                                provider.waterVaporPressure(TropoUnit.HECTO_PASCAL.toSI(field.getZero().newInstance(1013.25)),
+        Assertions.assertEquals(TroposphericModelUtils.HECTO_PASCAL.toSI(10.55154),
+                                provider.waterVaporPressure(TroposphericModelUtils.HECTO_PASCAL.toSI(field.getZero().newInstance(1013.25)),
                                                             field.getZero().newInstance(273.5 + 18),
                                                             field.getZero().newInstance(0.5)).getReal(),
                                 tolerance);
@@ -56,7 +56,7 @@ public abstract class AbstractWaterVaporPressureProviderTest {
     public void testRelativeHumidity() {
         final WaterVaporPressureProvider provider = buildProvider();
         for (double pPa = 700; pPa < 1100; pPa += 0.5) {
-            final double p = TropoUnit.HECTO_PASCAL.toSI(pPa);
+            final double p = TroposphericModelUtils.HECTO_PASCAL.toSI(pPa);
             for (double tC = 0.01; tC < 99; tC += 0.25) {
                 final double t = 273.15 + tC;
                 for (double rH = 0.0; rH < 1.0; rH += 0.02) {
@@ -75,7 +75,7 @@ public abstract class AbstractWaterVaporPressureProviderTest {
     private <T extends CalculusFieldElement<T>> void doTestRelativeHumidityField(final Field<T> field) {
         final WaterVaporPressureProvider provider = buildProvider();
         for (double pPa = 700; pPa < 1100; pPa += 0.5) {
-            final T p = TropoUnit.HECTO_PASCAL.toSI(field.getZero().newInstance(pPa));
+            final T p = TroposphericModelUtils.HECTO_PASCAL.toSI(field.getZero().newInstance(pPa));
             for (double tC = 0.01; tC < 99; tC += 0.25) {
                 final T t = field.getZero().newInstance(273.15 + tC);
                 for (double rH = 0.0; rH < 1.0; rH += 0.02) {

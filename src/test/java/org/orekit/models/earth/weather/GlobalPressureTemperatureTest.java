@@ -29,7 +29,7 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.Geoid;
 import org.orekit.models.earth.ReferenceEllipsoid;
-import org.orekit.models.earth.troposphere.TropoUnit;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
@@ -79,7 +79,7 @@ public class GlobalPressureTemperatureTest {
         PressureTemperature pt = model.getWeatherParameters(location, date);
 
         final double computedTemperature = pt.getTemperature() - 273.15;
-        final double computedPressure    = TropoUnit.HECTO_PASCAL.fromSI(pt.getPressure());
+        final double computedPressure    = TroposphericModelUtils.HECTO_PASCAL.fromSI(pt.getPressure());
 
         Assertions.assertEquals(expectedPressure,    computedPressure,    0.1);
         Assertions.assertEquals(expectedTemperature, computedTemperature, 0.1);
@@ -131,7 +131,7 @@ public class GlobalPressureTemperatureTest {
 
 
         final double computedTemperature = pt.getTemperature() - 273.15;
-        final double computedPressure    = TropoUnit.HECTO_PASCAL.fromSI(pt.getPressure());
+        final double computedPressure    = TroposphericModelUtils.HECTO_PASCAL.fromSI(pt.getPressure());
 
         Assertions.assertEquals(expectedPressure,    computedPressure,    0.1);
         Assertions.assertEquals(expectedTemperature, computedTemperature, 0.1);

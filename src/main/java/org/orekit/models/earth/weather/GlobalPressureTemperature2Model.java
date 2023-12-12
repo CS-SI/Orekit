@@ -21,7 +21,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.models.earth.Geoid;
-import org.orekit.models.earth.troposphere.TropoUnit;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.models.earth.troposphere.ViennaOneModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -188,8 +188,8 @@ public class GlobalPressureTemperature2Model extends GlobalPressureTemperature2 
         // Pressure, temperature, humidity
         final PressureTemperatureHumidity pth = getWeatherParamerers(location, currentDate);
         this.temperature = pth.getTemperature();
-        this.pressure    = TropoUnit.HECTO_PASCAL.fromSI(pth.getPressure());
-        this.e0          = TropoUnit.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure());
+        this.pressure    = TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure());
+        this.e0          = TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure());
 
     }
 

@@ -66,7 +66,7 @@ public class MendesPavlisModelTest {
         final double latitude     = FastMath.toRadians(30.67166667);
         final double longitude    = FastMath.toRadians(-104.0250);
         final double height       = 2010.344;
-        final double pressure     = TropoUnit.HECTO_PASCAL.toSI(798.4188);
+        final double pressure     = TroposphericModelUtils.HECTO_PASCAL.toSI(798.4188);
         final double temperature  = 300.15;
         final double humidity     = 0.4;
         final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
@@ -90,7 +90,7 @@ public class MendesPavlisModelTest {
         final AbsoluteDate date = new AbsoluteDate(2009, 8, 12, TimeScalesFactory.getUTC());
 
         final MendesPavlisModel model = new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
-                                                              lambda, TropoUnit.MICRO_M);
+                                                              lambda, TroposphericModelUtils.MICRO_M);
 
         final double[] computedDelay = model.computeZenithDelay(point, model.getParameters(), date);
 
@@ -121,7 +121,7 @@ public class MendesPavlisModelTest {
         final double latitude     = FastMath.toRadians(30.67166667);
         final double longitude    = FastMath.toRadians(-104.0250);
         final double height       = 2075;
-        final double pressure     = TropoUnit.HECTO_PASCAL.toSI(798.4188);
+        final double pressure     = TroposphericModelUtils.HECTO_PASCAL.toSI(798.4188);
         final double temperature  = 300.15;
         final double humidity     = 0.4;
         final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
@@ -139,7 +139,7 @@ public class MendesPavlisModelTest {
 
         // Test for the second constructor
         final MendesPavlisModel model = new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
-                                                              lambda, TropoUnit.MICRO_M);
+                                                              lambda, TroposphericModelUtils.MICRO_M);
 
         final double[] computedMapping = model.mappingFactors(elevation, point, date);
 
@@ -153,7 +153,7 @@ public class MendesPavlisModelTest {
         final double height = 100d;
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
-        MendesPavlisModel model = MendesPavlisModel.getStandardModel( 0.6943, TropoUnit.MICRO_M);
+        MendesPavlisModel model = MendesPavlisModel.getStandardModel( 0.6943, TroposphericModelUtils.MICRO_M);
         final double path = model.pathDelay(FastMath.toRadians(elevation), point, model.getParameters(), date);
         Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
         Assertions.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
@@ -163,7 +163,7 @@ public class MendesPavlisModelTest {
     public void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
-        MendesPavlisModel model = MendesPavlisModel.getStandardModel(0.6943, TropoUnit.MICRO_M);
+        MendesPavlisModel model = MendesPavlisModel.getStandardModel(0.6943, TroposphericModelUtils.MICRO_M);
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {

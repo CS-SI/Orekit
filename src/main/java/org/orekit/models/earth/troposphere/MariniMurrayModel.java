@@ -59,13 +59,13 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
      */
     @Deprecated
     public MariniMurrayModel(final double t0, final double p0, final double rh, final double lambda) {
-        this(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(TropoUnit.HECTO_PASCAL.toSI(p0),
+        this(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
                                                                                              t0,
                                                                                              new CIPM2007().
-                                                                                             waterVaporPressure(TropoUnit.HECTO_PASCAL.toSI(p0),
+                                                                                             waterVaporPressure(TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
                                                                                                                 t0,
                                                                                                                 rh))),
-             lambda, TropoUnit.NANO_M);
+             lambda, TroposphericModelUtils.NANO_M);
     }
 
     /** Create a new Marini-Murray model for the troposphere.
@@ -84,7 +84,7 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
         this.pthProvider = pthProvider;
 
         // compute laser frequency parameter
-        final double lambdaMicrometer = new UnitsConverter(lambdaUnits, TropoUnit.MICRO_M).convert(lambda);
+        final double lambdaMicrometer = new UnitsConverter(lambdaUnits, TroposphericModelUtils.MICRO_M).convert(lambda);
         final double l2 = lambdaMicrometer  * lambdaMicrometer;
         fLambda = 0.9650 + (0.0164 + 0.000228 / l2) / l2;
 
@@ -105,7 +105,7 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
      */
     @Deprecated
     public static MariniMurrayModel getStandardModel(final double lambda) {
-        return getStandardModel(lambda, TropoUnit.NANO_M);
+        return getStandardModel(lambda, TroposphericModelUtils.NANO_M);
     }
 
     /** Create a new Marini-Murray model using a standard atmosphere model.
@@ -123,13 +123,13 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
      * @since 12.1
      */
     public static MariniMurrayModel getStandardModel(final double lambda, final Unit lambdaUnits) {
-        final double p  = TropoUnit.HECTO_PASCAL.toSI(1013.25);
+        final double p  = TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25);
         final double t  = 273.15 + 20;
         final double rh = 0.5;
         final PressureTemperatureHumidity pth =
                         new PressureTemperatureHumidity(p, t, new CIPM2007().waterVaporPressure(p, t, rh));
         return new MariniMurrayModel(new ConstantPressureTemperatureHumidityProvider(pth),
-                                     lambda, TropoUnit.NANO_M);
+                                     lambda, TroposphericModelUtils.NANO_M);
     }
 
     /** {@inheritDoc} */
