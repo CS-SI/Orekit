@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth.weather.water;
 
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
 
 public class NbsNrcSteamTableTest extends AbstractWaterVaporPressureProviderTest {
@@ -27,6 +28,11 @@ public class NbsNrcSteamTableTest extends AbstractWaterVaporPressureProviderTest
     @Test
     public void testReferenceWaterVaporPressure() {
         doTestReferenceWaterVaporPressure(1.0e-3);
+    }
+
+    @Test
+    public void testReferenceWaterVaporPressureField() {
+        doTestReferenceWaterVaporPressureField(Binary64Field.getInstance(), 1.0e-3);
     }
 
 }

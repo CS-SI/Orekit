@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth.weather.water;
 
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
 
 public class CIPM2007Test extends AbstractWaterVaporPressureProviderTest {
@@ -27,6 +28,11 @@ public class CIPM2007Test extends AbstractWaterVaporPressureProviderTest {
     @Test
     public void testReferenceWaterVaporPressure() {
         doTestReferenceWaterVaporPressure(5.0);
+    }
+
+    @Test
+    public void testReferenceWaterVaporPressureField() {
+        doTestReferenceWaterVaporPressureField(Binary64Field.getInstance(), 5.0);
     }
 
 }

@@ -16,6 +16,9 @@
  */
 package org.orekit.models.earth.weather.water;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.models.earth.troposphere.TropoUnit;
@@ -36,6 +39,20 @@ public abstract class AbstractWaterVaporPressureProviderTest {
     }
 
     @Test
+    public abstract void testReferenceWaterVaporPressureField();
+
+    protected <T extends CalculusFieldElement<T>> void doTestReferenceWaterVaporPressureField(final Field<T> field,
+                                                                                              final double tolerance) {
+        // the reference value is from NBS/NRC steam table
+        final WaterVaporPressureProvider provider = buildProvider();
+        Assertions.assertEquals(TropoUnit.HECTO_PASCAL.toSI(10.55154),
+                                provider.waterVaporPressure(TropoUnit.HECTO_PASCAL.toSI(field.getZero().newInstance(1013.25)),
+                                                            field.getZero().newInstance(273.5 + 18),
+                                                            field.getZero().newInstance(0.5)).getReal(),
+                                tolerance);
+    }
+
+    @Test
     public void testRelativeHumidity() {
         final WaterVaporPressureProvider provider = buildProvider();
         for (double pPa = 700; pPa < 1100; pPa += 0.5) {
@@ -45,6 +62,25 @@ public abstract class AbstractWaterVaporPressureProviderTest {
                 for (double rH = 0.0; rH < 1.0; rH += 0.02) {
                     final double e = provider.waterVaporPressure(p, t, rH);
                     Assertions.assertEquals(rH, provider.relativeHumidity(p, t, e), 1.0e-10);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testRelativeHumidityField() {
+        doTestRelativeHumidityField(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestRelativeHumidityField(final Field<T> field) {
+        final WaterVaporPressureProvider provider = buildProvider();
+        for (double pPa = 700; pPa < 1100; pPa += 0.5) {
+            final T p = TropoUnit.HECTO_PASCAL.toSI(field.getZero().newInstance(pPa));
+            for (double tC = 0.01; tC < 99; tC += 0.25) {
+                final T t = field.getZero().newInstance(273.15 + tC);
+                for (double rH = 0.0; rH < 1.0; rH += 0.02) {
+                    final T e = provider.waterVaporPressure(p, t, field.getZero().newInstance(rH));
+                    Assertions.assertEquals(rH, provider.relativeHumidity(p, t, e).getReal(), 1.0e-10);
                 }
             }
         }
