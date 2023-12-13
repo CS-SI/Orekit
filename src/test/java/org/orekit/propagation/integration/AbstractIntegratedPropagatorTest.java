@@ -65,7 +65,7 @@ class AbstractIntegratedPropagatorTest {
      */
     @Test
     public void testIssue1254() {
-        
+        // GIVEN
         // GEO orbit
         final Orbit startOrbit = new EquinoctialOrbit(42165765.0, 0.0, 0.0, 0.0, 0.0, 0.0, PositionAngleType.TRUE,
                                                       FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -75,14 +75,17 @@ class AbstractIntegratedPropagatorTest {
         final NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(300.));
         propagator.setInitialState(new SpacecraftState(startOrbit));
         propagator.setResetAtEnd(false);
-        
+
         // Produce ephemeris
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
-        final AbsoluteDate minDate = startOrbit.getDate().shiftedBy(-3600.0);
-        final AbsoluteDate maxDate = startOrbit.getDate().shiftedBy(+3600.0);
+        final AbsoluteDate       minDate   = startOrbit.getDate().shiftedBy(-3600.0);
+        final AbsoluteDate       maxDate   = startOrbit.getDate().shiftedBy(+3600.0);
         propagator.propagate(minDate, maxDate);
+
+        // WHEN
         final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
+        // THEN
         Assertions.assertEquals(0., ephemeris.getMinDate().durationFrom(minDate), 0.);
         Assertions.assertEquals(0., ephemeris.getMaxDate().durationFrom(maxDate), 0.);
     }
