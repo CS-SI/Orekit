@@ -470,14 +470,14 @@ public class StateCovarianceMatrixProviderTest {
         Assertions.assertEquals(propagatedStateCov.getOrbitType(), shiftedStateCov.getOrbitType());
         Assertions.assertEquals(propagatedStateCov.getPositionAngleType(), shiftedStateCov.getPositionAngleType());
     }
-    
+
     /**
      * Unit test for issue 1253: incorrect covariance propagation with a bounded propagator.
-     * 
+     *
      * <p>Bug detection courtesy of Christophe Le Bris
-     * 
-     * <p>The problem was that, when using ephemeris mode with an integrated propagator, the covariance propagated with the ouput BoundedPropagator was wrong.
-     * Actually, it was always equal to the initial covariance matrix.
+     *
+     * <p>The problem was that, when using ephemeris mode with an integrated propagator, the covariance propagated with the
+     * output BoundedPropagator was wrong. Actually, it was always equal to the initial covariance matrix.
      */
     @Test
     public void testIssue1253_IntegratedPropagator() {
@@ -538,10 +538,10 @@ public class StateCovarianceMatrixProviderTest {
         Assertions.assertEquals(refPropagatedStateCov.getPositionAngleType(), propagatedStateCov.getPositionAngleType());
         compareCovariance(refPropagatedCov, propagatedCov, 0.);
     }
-    
+
     /**
      * Unit test for issue 1253: incorrect covariance propagation with a bounded propagator.
-     * 
+     * <p>
      * With analytical propagators, the former code worked. Test if it still works with the new version of the code.
      */
     @Test
