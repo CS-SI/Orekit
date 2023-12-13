@@ -31,9 +31,10 @@ import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
+import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
-import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
+import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -100,9 +101,9 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = true;
-        double refErrorsPMedian = 7.6e-10;
-        double refErrorsPMean   = 3.2e-09;
-        double refErrorsPMax    = 9.2e-08;
+        double refErrorsPMedian = 6.6e-10;
+        double refErrorsPMean   = 3.1e-09;
+        double refErrorsPMax    = 9.3e-08;
         double refErrorsVMedian = 2.1e-04;
         double refErrorsVMean   = 1.3e-03;
         double refErrorsVMax    = 5.2e-02;
@@ -174,7 +175,7 @@ public class RangeTest {
         boolean isModifier = true;
         double refErrorsMedian = 1.2e-9;
         double refErrorsMean   = 1.9e-9;
-        double refErrorsMax    = 6.6e-9;
+        double refErrorsMax    = 6.9e-9;
         this.genericTestEstimatedParameterDerivatives(isModifier, printResults,
                                                       refErrorsMedian, refErrorsMean, refErrorsMax);
 
@@ -642,7 +643,7 @@ public class RangeTest {
 
                     // Add modifiers if test implies it
                     final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
-                    final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
+                    final EstimatedModel            tropoModel      = new EstimatedModel(mappingFunction, 5.0);
 
                     final List<ParameterDriver> parameters = tropoModel.getParametersDrivers();
                     for (ParameterDriver driver : parameters) {

@@ -26,14 +26,16 @@ public class PressureTemperatureHumidity extends PressureTemperature {
     private final double waterVaporPressure;
 
     /** Simple constructor.
+     * @param altitude altitude at which weather parameters have been computed (m)
      * @param pressure pressure (Pa)
      * @param temperature temperature (Kelvin)
      * @param waterVaporPressure humidity as water vapor pressure (Pa)
      */
-    public PressureTemperatureHumidity(final double pressure,
+    public PressureTemperatureHumidity(final double altitude,
+                                       final double pressure,
                                        final double temperature,
                                        final double waterVaporPressure) {
-        super(pressure, temperature);
+        super(altitude, pressure, temperature);
         this.waterVaporPressure = waterVaporPressure;
     }
 

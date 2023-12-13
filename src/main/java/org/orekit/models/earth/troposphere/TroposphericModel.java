@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2023 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,39 +19,33 @@ package org.orekit.models.earth.troposphere;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriversProvider;
 
 /** Defines a tropospheric model, used to calculate the path delay imposed to
  * electro-magnetic signals between an orbital satellite and a ground station.
- * <p>
- * Models that implement this interface split the delay into hydrostatic
- * and non-hydrostatic part:
- * <p>
- * δ = δ<sub>h</sub> + δ<sub>nh</sub>
- * <p>
- * With:
- * <ul>
- * <li> δ<sub>h</sub>  =  hydrostatic delay </li>
- * <li> δ<sub>nh</sub> =  non-hydrostatic (or wet) delay </li>
- * </ul>
- * @author Bryan Cazabonne
- * @deprecated as of 12.1, replaced by {@link TroposphericModel}
+ * @author Luc Maisonobe
+ * @since 12.1
  */
-@Deprecated
-public interface DiscreteTroposphericModel extends ParameterDriversProvider {
+public interface TroposphericModel extends ParameterDriversProvider {
 
     /** Calculates the tropospheric path delay for the signal path from a ground
      * station to a satellite.
      *
      * @param elevation the elevation of the satellite, in radians
      * @param point station location
+     * @param weather weather parameters
+     * (could be set to {@link TroposphericModelUtils#STANDARD_ATMOSPHERE_PROVIDER}
+     * for constant default values)
      * @param parameters tropospheric model parameters
      * @param date current date
      * @return the path delay due to the troposphere in m
      */
-    double pathDelay(double elevation, GeodeticPoint point, double[] parameters, AbsoluteDate date);
+    double pathDelay(double elevation, GeodeticPoint point, PressureTemperatureHumidity weather,
+                     double[] parameters, AbsoluteDate date);
 
     /** Calculates the tropospheric path delay for the signal path from a ground
      * station to a satellite.
@@ -59,11 +53,14 @@ public interface DiscreteTroposphericModel extends ParameterDriversProvider {
      * @param <T> type of the elements
      * @param elevation the elevation of the satellite, in radians
      * @param point station location
+     * @param weather weather parameters
+     * (could be set to {@link TroposphericModelUtils#STANDARD_ATMOSPHERE_PROVIDER}
+     * for constant default values)
      * @param parameters tropospheric model parameters at current date
      * @param date current date
      * @return the path delay due to the troposphere in m
      */
-    <T extends CalculusFieldElement<T>> T pathDelay(T elevation, FieldGeodeticPoint<T> point, T[] parameters,
-                                                    FieldAbsoluteDate<T> date);
-
+    <T extends CalculusFieldElement<T>> T pathDelay(T elevation, FieldGeodeticPoint<T> point,
+                                                    FieldPressureTemperatureHumidity<T> weather,
+                                                    T[] parameters, FieldAbsoluteDate<T> date);
 }

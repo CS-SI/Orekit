@@ -23,7 +23,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.RangeRate;
-import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 
@@ -44,11 +44,29 @@ public class RangeRateTroposphericDelayModifier extends BaseRangeRateTropospheri
     private final double fTwoWay;
 
     /** Constructor.
+    *
+    * @param model  Tropospheric delay model appropriate for the current range-rate measurement method.
+    * @param tw     Flag indicating whether the measurement is two-way.
+    * @deprecated as of 12.1, replaced byb {@link #RangeRateTroposphericDelayModifier(TroposphericModel, boolean)}
+    */
+    @Deprecated
+    public RangeRateTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model,
+                                              final boolean tw) {
+        super(model);
+        if (tw) {
+            fTwoWay = 2.;
+        } else {
+            fTwoWay = 1.;
+        }
+    }
+
+    /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current range-rate measurement method.
      * @param tw     Flag indicating whether the measurement is two-way.
+     * @since 12.1
      */
-    public RangeRateTroposphericDelayModifier(final DiscreteTroposphericModel model, final boolean tw) {
+    public RangeRateTroposphericDelayModifier(final TroposphericModel model, final boolean tw) {
         super(model);
         if (tw) {
             fTwoWay = 2.;

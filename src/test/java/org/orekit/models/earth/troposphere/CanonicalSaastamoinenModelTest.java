@@ -29,12 +29,12 @@ public class CanonicalSaastamoinenModelTest {
 
     @Test
     public void testComparisonToModifiedModelLowElevation() {
-        doTestComparisonToModifiedModel(FastMath.toRadians(5), 0.06, 0.15);
+        doTestComparisonToModifiedModel(FastMath.toRadians(5), -13.24, -1.04);
     }
 
     @Test
     public void testComparisonToModifiedModelHighElevation() {
-        doTestComparisonToModifiedModel(FastMath.toRadians(60), -0.001, 0.003);
+        doTestComparisonToModifiedModel(FastMath.toRadians(60), -1.35, -0.11);
     }
 
     private void doTestComparisonToModifiedModel(final double elevation,
@@ -43,8 +43,10 @@ public class CanonicalSaastamoinenModelTest {
         final ModifiedSaastamoinenModel  modified  = ModifiedSaastamoinenModel.getStandardModel();
         for (double height = 0; height < 5000; height += 100) {
             final GeodeticPoint location = new GeodeticPoint(0.0, 0.0, height);
-            final double canonicalDelay = canonical.pathDelay(elevation, location, null, AbsoluteDate.J2000_EPOCH);
-            final double modifiedDelay  = modified.pathDelay(elevation, location, null, AbsoluteDate.J2000_EPOCH);
+            final double canonicalDelay = canonical.pathDelay(elevation, location, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                              null, AbsoluteDate.J2000_EPOCH);
+            final double modifiedDelay  = modified.pathDelay(elevation, location, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                             null, AbsoluteDate.J2000_EPOCH);
             Assertions.assertTrue(modifiedDelay - canonicalDelay > minDifference);
             Assertions.assertTrue(modifiedDelay - canonicalDelay < maxDifference);
         }

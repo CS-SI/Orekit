@@ -23,7 +23,7 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
@@ -41,20 +41,31 @@ import org.orekit.utils.ParameterDriver;
 public abstract class BaseRangeTroposphericDelayModifier {
 
     /** Tropospheric delay model. */
-    private final DiscreteTroposphericModel tropoModel;
+    private final TroposphericModel tropoModel;
+
+    /** Constructor.
+    *
+    * @param model  Tropospheric delay model appropriate for the current range measurement method.
+    * @deprecated as of 12.1, replaced by {@link #BaseRangeTroposphericDelayModifier(TroposphericModel)}
+    */
+    @Deprecated
+    protected BaseRangeTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
+        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
+    }
 
     /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current range measurement method.
+     * @since 12.1
      */
-    protected BaseRangeTroposphericDelayModifier(final DiscreteTroposphericModel model) {
+    protected BaseRangeTroposphericDelayModifier(final TroposphericModel model) {
         tropoModel = model;
     }
 
     /** Get the tropospheric delay model.
      * @return tropospheric delay model
      */
-    protected DiscreteTroposphericModel getTropoModel() {
+    protected TroposphericModel getTropoModel() {
         return tropoModel;
     }
 
@@ -75,7 +86,9 @@ public abstract class BaseRangeTroposphericDelayModifier {
         // only consider measures above the horizon
         if (elevation > 0) {
             // tropospheric delay in meters
-            final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(),
+            final double delay = tropoModel.pathDelay(elevation,
+                                                      station.getOffsetGeodeticPoint(state.getDate()),
+                                                      station.getPressureTemperatureHumidity(state.getDate()),
                                                       tropoModel.getParameters(), state.getDate());
 
             return delay;
@@ -108,7 +121,9 @@ public abstract class BaseRangeTroposphericDelayModifier {
         // only consider measures above the horizon
         if (elevation .getReal() > 0) {
             // tropospheric delay in meters
-            final T delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(field),
+            final T delay = tropoModel.pathDelay(elevation,
+                                                 station.getOffsetGeodeticPoint(state.getDate()),
+                                                 station.getPressureTemperatureHumidity(state.getDate()),
                                                  parameters, state.getDate());
 
             return delay;

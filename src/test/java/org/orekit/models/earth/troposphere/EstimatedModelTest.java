@@ -16,13 +16,11 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
@@ -53,10 +51,12 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
-public class FieldViennaOneModelTest {
+import java.util.List;
 
-    private static double epsilon = 1e-6;
+public class EstimatedModelTest {
 
     @BeforeAll
     public static void setUpGlobal() {
@@ -69,109 +69,57 @@ public class FieldViennaOneModelTest {
     }
 
     @Test
-    public void testMappingFactors() {
-        doTestMappingFactors(Binary64Field.getInstance());
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestMappingFactors(final Field<T> field) {
-        final T zero = field.getZero();
-        // Site (NRAO, Green Bank, WV): latitude:  38°
-        //                              longitude: 280°
-        //                              height:    824.17 m
-        //
-        // Date: MJD 55055 -> 12 August 2009 at 0h UT
-        //
-        // Ref for the inputs:    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
-        //                        IERS Technical Note No. 36, BKG (2010)
-        //
-        // Values: ah  = 0.00127683
-        //         aw  = 0.00060955
-        //         zhd = 2.0966 m
-        //         zwd = 0.2140 m
-        //
-        // Values taken from: http://vmf.geo.tuwien.ac.at/trop_products/GRID/2.5x2/VMF1/VMF1_OP/2009/VMFG_20090812.H00
-        //
-        // Expected mapping factors : hydrostatic -> 3.425088
-        //                                    wet -> 3.448300
-        //
-        // Expected outputs are obtained by performing the Matlab script vmf1_ht.m provided by TU WIEN:
-        // http://vmf.geo.tuwien.ac.at/codes/
-        //
-
-        final FieldAbsoluteDate<T> date = FieldAbsoluteDate.createMJDDate(55055, zero, TimeScalesFactory.getUTC());
-
-        final double latitude    = FastMath.toRadians(38.0);
-        final double longitude   = FastMath.toRadians(280.0);
-        final double height      = 824.17;
-
-        final double elevation     = 0.5 * FastMath.PI - 1.278564131;
-        final double expectedHydro = 3.425088;
-        final double expectedWet   = 3.448300;
-
-        final double[] a = { 0.00127683, 0.00060955 };
-        final double[] z = {2.0966, 0.2140};
-
-        final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
-        final ViennaOneModel model = new ViennaOneModel(a, z);
-
-        final T[] computedMapping = model.mappingFactors(zero.add(elevation), point, date);
-
-        Assertions.assertEquals(expectedHydro, computedMapping[0].getReal(), 4.1e-6);
-        Assertions.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-6);
-    }
-
-    @Test
-    public void testDelay() {
-        doTestDelay(Binary64Field.getInstance());
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestDelay(final Field<T> field) {
-        final T zero = field.getZero();
-        final double elevation = 10d;
-        final double height = 100d;
-        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-        final double[] a = { 0.00127683, 0.00060955 };
-        final double[] z = {2.0966, 0.2140};
-        final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(45.0)), zero.add(FastMath.toRadians(45.0)), zero.add(height));
-        ViennaOneModel model = new ViennaOneModel(a, z);
-        final T path = model.pathDelay(zero.add(FastMath.toRadians(elevation)), point,
-                                       new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                                       model.getParameters(field), date);
-        Assertions.assertTrue(Precision.compareTo(path.getReal(), 20d, epsilon) < 0);
-        Assertions.assertTrue(Precision.compareTo(path.getReal(), 0d, epsilon) > 0);
-    }
-
-    @Test
     public void testFixedHeight() {
-        doTestFixedHeight(Binary64Field.getInstance());
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
-        final T zero = field.getZero();
-        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-        final double[] a = { 0.00127683, 0.00060955 };
-        final double[] z = {2.0966, 0.2140};
-        final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(45.0)), zero.add(FastMath.toRadians(45.0)), zero.add(350.0));
-        ViennaOneModel model = new ViennaOneModel(a, z);
-        T lastDelay = zero.add(Double.MAX_VALUE);
+        final AbsoluteDate date = new AbsoluteDate();
+        GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
+        MappingFunction mapping = new NiellMappingFunctionModel();
+        TroposphericModel model = new EstimatedTroposphericModel(mapping, 2.0);
+        double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final T delay = model.pathDelay(zero.add(FastMath.toRadians(elev)), point,
-                                            new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                                            model.getParameters(field), date);
-            Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
+            final double delay = model.pathDelay(FastMath.toRadians(elev), point,
+                                                 TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                 model.getParameters(), date);
+            Assertions.assertTrue(Precision.compareTo(delay, lastDelay, 1.0e-6) < 0);
             lastDelay = delay;
         }
     }
 
     @Test
-    public void testDelayStateDerivatives() {
+    public void testDelay() {
+        final double elevation = 10d;
+        final double height = 100d;
+        final AbsoluteDate date = new AbsoluteDate();
+        GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
+        MappingFunction mapping = new NiellMappingFunctionModel();
+        TroposphericModel model = new EstimatedTroposphericModel(mapping, 2.0);
+        final double path = model.pathDelay(FastMath.toRadians(elevation), point,
+                                            TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                            model.getParameters(), date);
+        Assertions.assertTrue(Precision.compareTo(path, 20d, 1.0e-6) < 0);
+        Assertions.assertTrue(Precision.compareTo(path, 0d, 1.0e-6) > 0);
+    }
 
-        // Geodetic point
+    @Test
+    public void testStateDerivativesGMF() {
         final double latitude     = FastMath.toRadians(45.0);
         final double longitude    = FastMath.toRadians(45.0);
-        final double height       = 0.0;
-        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
+        GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
+        final MappingFunction gmf = new GlobalMappingFunctionModel();
+        doTestDelayStateDerivatives(gmf, point, 4.7e-9);
+    }
+
+    @Test
+    public void testStateDerivativesNMF() {
+        final double latitude     = FastMath.toRadians(45.0);
+        final double longitude    = FastMath.toRadians(45.0);
+        GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
+        final MappingFunction nmf = new NiellMappingFunctionModel();
+        doTestDelayStateDerivatives(nmf, point, 4.4e-9);
+    }
+
+    private void doTestDelayStateDerivatives(final MappingFunction func, final GeodeticPoint point, final double tolerance) {
+
         // Body: earth
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -184,9 +132,7 @@ public class FieldViennaOneModelTest {
                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
 
         // Tropospheric model
-        final double[] a = { 0.00127683, 0.00060955 };
-        final double[] z = {2.0966, 0.2140};
-        final TroposphericModel model = new ViennaOneModel(a, z);
+        final TroposphericModel model = new EstimatedTroposphericModel(func, 2.0);
 
         // Derivative Structure
         final DSFactory factory = new DSFactory(6, 1);
@@ -200,8 +146,7 @@ public class FieldViennaOneModelTest {
         final DerivativeStructure zero = field.getZero();
 
         // Field Date
-        final FieldAbsoluteDate<DerivativeStructure> dsDate = new FieldAbsoluteDate<>(field, 2018, 11, 19, 18, 0, 0.0,
-                                                                                      TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<DerivativeStructure> dsDate = new FieldAbsoluteDate<>(field);
         // Field Orbit
         final Frame frame = FramesFactory.getEME2000();
         final FieldOrbit<DerivativeStructure> dsOrbit = new FieldKeplerianOrbit<>(a0, e0, i0, pa0, raan0, anomaly0,
@@ -214,13 +159,18 @@ public class FieldViennaOneModelTest {
         final FieldVector3D<DerivativeStructure> position = dsState.getPosition();
         final DerivativeStructure dsElevation = baseFrame.getTrackingCoordinates(position, frame, dsDate).getElevation();
 
-        // Compute delay state derivatives
-        final FieldGeodeticPoint<DerivativeStructure> dsPoint = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
+        // Set drivers reference date
+        for (final ParameterDriver driver : model.getParametersDrivers()) {
+            driver.setReferenceDate(dsDate.toAbsoluteDate());
+        }
+
+        // Compute Delay with state derivatives
+        final FieldGeodeticPoint<DerivativeStructure> dsPoint = new FieldGeodeticPoint<>(zero.add(point.getLatitude()), zero.add(point.getLongitude()), zero.add(point.getAltitude()));
         final DerivativeStructure delay = model.pathDelay(dsElevation, dsPoint,
                                                           new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                           model.getParameters(field), dsDate);
 
-        final double[] compDelay = delay.getAllDerivatives();
+        final double[] compDeriv = delay.getAllDerivatives();
 
         // Field -> non-field
         final Orbit orbit = dsOrbit.toOrbit();
@@ -303,22 +253,158 @@ public class FieldViennaOneModelTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assertions.assertEquals(compDelay[i + 1], refDeriv[0][i], 3.0e-11);
+            Assertions.assertEquals(compDeriv[i + 1], refDeriv[0][i], tolerance);
         }
     }
 
-    private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, PositionAngleType angleType, double h,
-                                    double sM4h, double sM3h,
-                                    double sM2h, double sM1h,
-                                    double sP1h, double sP2h,
-                                    double sP3h, double sP4h) {
-        for (int i = 0; i < jacobian.length; ++i) {
-            jacobian[i][column] = ( -3 * (sP4h - sM4h) +
-                                    32 * (sP3h - sM3h) -
-                                   168 * (sP2h - sM2h) +
-                                   672 * (sP1h - sM1h)) / (840 * h);
+    @Test
+    public void testDelayParameterDerivative() {
+        doTestParametersDerivatives(EstimatedTroposphericModel.TOTAL_ZENITH_DELAY, 5.0e-15);
+    }
+
+    private void doTestParametersDerivatives(String parameterName, double tolerance) {
+
+        // Geodetic point
+        final double latitude     = FastMath.toRadians(45.0);
+        final double longitude    = FastMath.toRadians(45.0);
+        final double height       = 0.0;
+        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
+        // Body: earth
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        // Topocentric frame
+        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
+
+        // Tropospheric model
+        final MappingFunction gmf = new GlobalMappingFunctionModel();
+        final TroposphericModel model = new EstimatedTroposphericModel(gmf, 5.0);
+
+        // Set Parameter Driver
+        for (final ParameterDriver driver : model.getParametersDrivers()) {
+            driver.setValue(driver.getReferenceValue());
+            driver.setSelected(driver.getName().equals(parameterName));
         }
+
+        // Count the required number of parameters
+        int nbParams = 0;
+        for (final ParameterDriver driver : model.getParametersDrivers()) {
+            if (driver.isSelected()) {
+                ++nbParams;
+            }
+        }
+
+        // Derivative Structure
+        final DSFactory factory = new DSFactory(6 + nbParams, 1);
+        final DerivativeStructure a0       = factory.variable(0, 24464560.0);
+        final DerivativeStructure e0       = factory.variable(1, 0.05);
+        final DerivativeStructure i0       = factory.variable(2, 0.122138);
+        final DerivativeStructure pa0      = factory.variable(3, 3.10686);
+        final DerivativeStructure raan0    = factory.variable(4, 1.00681);
+        final DerivativeStructure anomaly0 = factory.variable(5, 0.048363);
+        final Field<DerivativeStructure> field = a0.getField();
+        final DerivativeStructure zero = field.getZero();
+
+        // Field Date
+        final FieldAbsoluteDate<DerivativeStructure> dsDate = new FieldAbsoluteDate<>(field, 2018, 11, 19, 18, 0, 0.0,
+                                                                                      TimeScalesFactory.getUTC());
+
+        // Set drivers reference date
+        for (final ParameterDriver driver : model.getParametersDrivers()) {
+            driver.setReferenceDate(dsDate.toAbsoluteDate());
+        }
+
+        // Field Orbit
+        final Frame frame = FramesFactory.getEME2000();
+        final FieldOrbit<DerivativeStructure> dsOrbit = new FieldKeplerianOrbit<>(a0, e0, i0, pa0, raan0, anomaly0,
+                                                                                  PositionAngleType.MEAN, frame,
+                                                                                  dsDate, zero.add(3.9860047e14));
+
+        // Field State
+        final FieldSpacecraftState<DerivativeStructure> dsState = new FieldSpacecraftState<>(dsOrbit);
+
+        // Initial satellite elevation
+        final FieldVector3D<DerivativeStructure> position = dsState.getPosition();
+        final DerivativeStructure dsElevation = baseFrame.getTrackingCoordinates(position, frame, dsState.getDate()).getElevation();
+
+        // Add parameter as a variable
+        final List<ParameterDriver> drivers = model.getParametersDrivers();
+        final DerivativeStructure[] parameters = new DerivativeStructure[drivers.size()];
+        int index = 6;
+        for (int i = 0; i < drivers.size(); ++i) {
+            parameters[i] = drivers.get(i).isSelected() ?
+                            factory.variable(index++, drivers.get(i).getValue()) :
+                            factory.constant(drivers.get(i).getValue());
+        }
+
+        // Compute delay state derivatives
+        final FieldGeodeticPoint<DerivativeStructure> dsPoint = new FieldGeodeticPoint<>(zero.add(point.getLatitude()), zero.add(point.getLongitude()), zero.add(point.getAltitude()));
+        final DerivativeStructure delay = model.pathDelay(dsElevation, dsPoint,
+                                                          new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
+                                                          parameters, dsState.getDate());
+
+        final double[] compDeriv = delay.getAllDerivatives();
+
+        // Field -> non-field
+        final SpacecraftState state = dsState.toSpacecraftState();
+        final double elevation = dsElevation.getReal();
+
+        // Finite differences for reference values
+        final double[][] refDeriv = new double[1][1];
+        ParameterDriversList bound = new ParameterDriversList();
+        for (final ParameterDriver driver : model.getParametersDrivers()) {
+            if (driver.getName().equals(parameterName)) {
+                driver.setSelected(true);
+                bound.add(driver);
+            } else {
+                driver.setSelected(false);
+            }
+        }
+        ParameterDriver selected = bound.getDrivers().get(0);
+        double p0 = selected.getReferenceValue();
+        double h  = selected.getScale();
+
+        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        final PositionAngleType angleType = PositionAngleType.MEAN;
+
+        selected.setValue(p0 - 4 * h);
+        double  delayM4 = model.pathDelay(elevation, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                          model.getParameters(), state.getDate());
+        
+        selected.setValue(p0 - 3 * h);
+        double  delayM3 = model.pathDelay(elevation, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                          model.getParameters(), state.getDate());
+        
+        selected.setValue(p0 - 2 * h);
+        double  delayM2 = model.pathDelay(elevation, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                          model.getParameters(), state.getDate());
+
+        selected.setValue(p0 - 1 * h);
+        double  delayM1 = model.pathDelay(elevation, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                          model.getParameters(), state.getDate());
+
+        selected.setValue(p0 + 1 * h);
+        double  delayP1 = model.pathDelay(elevation, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                          model.getParameters(), state.getDate());
+
+        selected.setValue(p0 + 2 * h);
+        double  delayP2 = model.pathDelay(elevation, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                          model.getParameters(), state.getDate());
+
+        selected.setValue(p0 + 3 * h);
+        double  delayP3 = model.pathDelay(elevation, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                          model.getParameters(), state.getDate());
+
+        selected.setValue(p0 + 4 * h);
+        double  delayP4 = model.pathDelay(elevation, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                          model.getParameters(), state.getDate());
+            
+        fillJacobianColumn(refDeriv, 0, orbitType, angleType, h,
+                           delayM4, delayM3, delayM2, delayM1,
+                           delayP1, delayP2, delayP3, delayP4);
+
+        Assertions.assertEquals(compDeriv[7], refDeriv[0][0], tolerance);
+
     }
 
     private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
@@ -349,6 +435,19 @@ public class FieldViennaOneModelTest {
         return (array.length > 6) ?
                new SpacecraftState(orbit, attitude) :
                new SpacecraftState(orbit, attitude, array[0][6]);
+    }
+
+    private void fillJacobianColumn(double[][] jacobian, int column,
+                                    OrbitType orbitType, PositionAngleType angleType, double h,
+                                    double sM4h, double sM3h,
+                                    double sM2h, double sM1h,
+                                    double sP1h, double sP2h,
+                                    double sP3h, double sP4h) {
+
+        jacobian[0][column] = ( -3 * (sP4h - sM4h) +
+                                32 * (sP3h - sM3h) -
+                               168 * (sP2h - sM2h) +
+                               672 * (sP1h - sM1h)) / (840 * h);
     }
 
 }

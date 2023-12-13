@@ -16,19 +16,24 @@
  */
 package org.orekit.models.earth.troposphere;
 
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.FieldGeodeticPoint;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.water.Wang1988;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** The modified Saastamoinen model.
  * @author Luc Maisonobe
  * @deprecated as of 12.1, replaced by {@link ModifiedSaastamoinenModel}
  */
 @Deprecated
-public class SaastamoinenModel extends ModifiedSaastamoinenModel {
+public class SaastamoinenModel extends ModifiedSaastamoinenModel implements DiscreteTroposphericModel {
 
     /** Default file name for δR correction term table. */
     public static final String DELTA_R_FILE_NAME = ModifiedSaastamoinenModel.DELTA_R_FILE_NAME;
@@ -43,7 +48,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
      * @param r0 the humidity at the station [fraction] (50% → 0.5)
-     * @see #ModifiedSaastamoinenModel(double, double, double, String, DataProvidersManager)
+     * @see #SaastamoinenModel(double, double, double, String, DataProvidersManager)
      * @since 10.1
      */
     public SaastamoinenModel(final double t0, final double p0, final double r0) {
@@ -61,7 +66,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
      * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
      * default values from the reference book are used
      * @since 7.1
-     * @see #ModifiedSaastamoinenModel(double, double, double, String, DataProvidersManager)
+     * @see #SaastamoinenModel(double, double, double, String, DataProvidersManager)
      */
     @DefaultDataContext
     public SaastamoinenModel(final double t0, final double p0, final double r0,
@@ -87,8 +92,8 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
                              final double r0,
                              final String deltaRFileName,
                              final DataProvidersManager dataProvidersManager) {
-        super(0.0,
-              new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
+        super(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(0.0,
+                                                                                              TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
                                                                                               t0,
                                                                                               new Wang1988().
                                                                                               waterVaporPressure(TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
@@ -100,6 +105,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
     /** Create a new Saastamoinen model using a standard atmosphere model.
     *
     * <ul>
+     * <li>altitude: 0m</li>
     * <li>temperature: 18 degree Celsius
     * <li>pressure: 1013.25 mbar
     * <li>humidity: 50%
@@ -109,6 +115,26 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
     */
     public static SaastamoinenModel getStandardModel() {
         return new SaastamoinenModel(273.16 + 18, 1013.25, 0.5);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Deprecated
+    public double pathDelay(final double elevation, final GeodeticPoint point,
+                            final double[] parameters, final AbsoluteDate date) {
+        return pathDelay(elevation, point, getPth0Provider().getWeatherParamerers(point, date), parameters, date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Deprecated
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation,
+                                                           final FieldGeodeticPoint<T> point,
+                                                           final T[] parameters,
+                                                           final FieldAbsoluteDate<T> date) {
+        return pathDelay(elevation, point,
+                         getPth0Provider().getWeatherParamerers(point, date),
+                         parameters, date);
     }
 
 }

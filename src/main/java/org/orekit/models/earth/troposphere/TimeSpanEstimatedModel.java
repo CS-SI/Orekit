@@ -24,6 +24,8 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -42,10 +44,8 @@ import org.orekit.utils.TimeSpanMap.Span;
  * </p>
  * @author Bryan Cazabonne
  * @since 10.2
- * @deprecated as of 12.1, replaced by {@link TimeSpanEstimatedModel}
  */
-@Deprecated
-public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericModel {
+public class TimeSpanEstimatedModel implements TroposphericModel {
 
     /** Prefix for dates before in the tropospheric parameter drivers' name. */
     public static final String DATE_BEFORE = " - Before ";
@@ -57,14 +57,14 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
     private final TimeScale timeScale;
 
     /** It contains all the models use for the whole period of measurements. */
-    private final TimeSpanMap<EstimatedTroposphericModel> troposphericModelMap;
+    private final TimeSpanMap<EstimatedModel> troposphericModelMap;
 
     /**
      * Constructor with default UTC time scale.
      * @param model the initial model which going to be used for all the models initialization.
      */
     @DefaultDataContext
-    public TimeSpanEstimatedTroposphericModel(final EstimatedTroposphericModel model) {
+    public TimeSpanEstimatedModel(final EstimatedModel model) {
         this(model, TimeScalesFactory.getUTC());
     }
 
@@ -73,8 +73,7 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
      * @param model the initial model which going to be used for all the models initialization.
      * @param timeScale  timeScale Time scale used for the default names of the tropospheric parameter drivers
      */
-    public TimeSpanEstimatedTroposphericModel(final EstimatedTroposphericModel model,
-                                              final TimeScale timeScale) {
+    public TimeSpanEstimatedModel(final EstimatedModel model, final TimeScale timeScale) {
         this.troposphericModelMap = new TimeSpanMap<>(model);
         this.timeScale            = timeScale;
     }
@@ -92,7 +91,7 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
         final List<ParameterDriver> listTroposphericParameterDrivers = new ArrayList<>();
 
         // Loop on the spans
-        for (Span<EstimatedTroposphericModel> span = getFirstSpan(); span != null; span = span.next()) {
+        for (Span<EstimatedModel> span = getFirstSpan(); span != null; span = span.next()) {
             // Add all the parameter drivers of each span
             for (ParameterDriver tropoDriver : span.getData().getParametersDrivers()) {
                 // Add the driver only if the name does not exist already
@@ -114,7 +113,7 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
      * @param latestValidityDate date before which the entry is valid
      * (must be different from <b>all</b> dates already used for transitions)
      */
-    public void addTroposphericModelValidBefore(final EstimatedTroposphericModel model, final AbsoluteDate latestValidityDate) {
+    public void addTroposphericModelValidBefore(final EstimatedModel model, final AbsoluteDate latestValidityDate) {
         troposphericModelMap.addValidBefore(changeTroposphericParameterDriversNames(model,
                                                                                     latestValidityDate,
                                                                                     DATE_BEFORE),
@@ -128,7 +127,7 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
      * @param earliestValidityDate date after which the entry is valid
      * (must be different from <b>all</b> dates already used for transitions)
      */
-    public void addTroposphericModelValidAfter(final EstimatedTroposphericModel model, final AbsoluteDate earliestValidityDate) {
+    public void addTroposphericModelValidAfter(final EstimatedModel model, final AbsoluteDate earliestValidityDate) {
         troposphericModelMap.addValidAfter(changeTroposphericParameterDriversNames(model,
                                                                                    earliestValidityDate,
                                                                                    DATE_AFTER),
@@ -139,7 +138,7 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
      * @param date the date of validity
      * @return the EstimatedTroposphericModel model valid at date
      */
-    public EstimatedTroposphericModel getTroposphericModel(final AbsoluteDate date) {
+    public EstimatedModel getTroposphericModel(final AbsoluteDate date) {
         return troposphericModelMap.get(date);
     }
 
@@ -147,7 +146,7 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
      * @return the first {@link Span time span} of the tropospheric model time span map
      * @since 11.1
      */
-    public Span<EstimatedTroposphericModel> getFirstSpan() {
+    public Span<EstimatedModel> getFirstSpan() {
         return troposphericModelMap.getFirstSpan();
     }
 
@@ -210,22 +209,24 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
     /** {@inheritDoc} */
     @Override
     public double pathDelay(final double elevation, final GeodeticPoint point,
+                            final PressureTemperatureHumidity weather,
                             final double[] parameters, final AbsoluteDate date) {
         // Extract the proper parameters valid at date from the input array
         final double[] extractedParameters = extractParameters(parameters, date);
         // Compute and return the path delay
-        return getTroposphericModel(date).pathDelay(elevation, point,
+        return getTroposphericModel(date).pathDelay(elevation, point, weather,
                                                     extractedParameters, date);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final  FieldGeodeticPoint<T> point,
-                                                       final T[] parameters, final FieldAbsoluteDate<T> date) {
+                                                           final FieldPressureTemperatureHumidity<T> weather,
+                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Extract the proper parameters valid at date from the input array
         final T[] extractedParameters = extractParameters(parameters, date);
         // Compute and return the path delay
-        return getTroposphericModel(date.toAbsoluteDate()).pathDelay(elevation, point,
+        return getTroposphericModel(date.toAbsoluteDate()).pathDelay(elevation, point, weather,
                                                                      extractedParameters, date);
     }
 
@@ -253,9 +254,9 @@ public class TimeSpanEstimatedTroposphericModel implements DiscreteTroposphericM
      * @param datePrefix the date prefix used in the parameter driver's name
      * @return the EstimatedTroposphericModel with its drivers' names changed
      */
-    private EstimatedTroposphericModel changeTroposphericParameterDriversNames(final EstimatedTroposphericModel troposphericModel,
-                                                                               final AbsoluteDate date,
-                                                                               final String datePrefix) {
+    private EstimatedModel changeTroposphericParameterDriversNames(final EstimatedModel troposphericModel,
+                                                                   final AbsoluteDate date,
+                                                                   final String datePrefix) {
         // Loop on the parameter drivers of the EstimatedTroposphericModel model
         for (ParameterDriver driver: troposphericModel.getParametersDrivers()) {
             final String driverName = driver.getName();

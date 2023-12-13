@@ -28,7 +28,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.gnss.Phase;
-import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Differentiation;
@@ -47,13 +47,24 @@ import org.orekit.utils.TimeSpanMap.Span;
 public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase> {
 
     /** Tropospheric delay model. */
-    private final DiscreteTroposphericModel tropoModel;
+    private final TroposphericModel tropoModel;
 
     /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current range measurement method.
+     * @deprecated as of 12.1, replaced by {@link #PhaseTroposphericDelayModifier(TroposphericModel)}
      */
-    public PhaseTroposphericDelayModifier(final DiscreteTroposphericModel model) {
+    @Deprecated
+    public PhaseTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
+        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
+    }
+
+    /** Constructor.
+     *
+     * @param model  Tropospheric delay model appropriate for the current range measurement method.
+     * @since 12.1
+     */
+    public PhaseTroposphericDelayModifier(final TroposphericModel model) {
         tropoModel = model;
     }
 
@@ -73,7 +84,10 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         // only consider measures above the horizon
         if (elevation > 0) {
             // delay in meters
-            final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(), tropoModel.getParameters(state.getDate()), state.getDate());
+            final double delay = tropoModel.pathDelay(elevation,
+                                                      station.getOffsetGeodeticPoint(state.getDate()),
+                                                      station.getPressureTemperatureHumidity(state.getDate()),
+                                                      tropoModel.getParameters(state.getDate()), state.getDate());
 
             return delay / wavelength;
         }
@@ -106,7 +120,10 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         // only consider measures above the horizon
         if (elevation.getReal() > 0) {
             // delay in meters
-            final T delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(field), parameters, state.getDate());
+            final T delay = tropoModel.pathDelay(elevation,
+                                                 station.getOffsetGeodeticPoint(state.getDate()),
+                                                 station.getPressureTemperatureHumidity(state.getDate()),
+                                                 parameters, state.getDate());
 
             return delay.divide(wavelength);
         }

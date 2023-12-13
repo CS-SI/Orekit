@@ -439,7 +439,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 //        final double[] CastleAzElBias  = { 0.062701342, -0.003613508 };
 //        final double   CastleRangeBias = 11274.4677;
         final double[] CastleAzElBias  = { 0.062635, -0.003672};
-        final double   CastleRangeBias = 11289.3678;
+        final double   CastleRangeBias = 11289.544;
         Assertions.assertEquals(CastleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
         Assertions.assertEquals(CastleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
         Assertions.assertEquals(CastleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
@@ -459,7 +459,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 //        final double[] KumAzElBias  = { -0.023574208, -0.054520756 };
 //        final double   KumRangeBias = 13512.57594;
         final double[] KumAzElBias  = { -0.022805, -0.055057 };
-        final double   KumRangeBias = 13502.7459;
+        final double   KumRangeBias = 13503.273;
         Assertions.assertEquals(KumAzElBias[0], FastMath.toDegrees(list.get(6).getValue()), angleAccuracy);
         Assertions.assertEquals(KumAzElBias[1], FastMath.toDegrees(list.get(7).getValue()), angleAccuracy);
         Assertions.assertEquals(KumRangeBias,   list.get(8).getValue(),                     distanceAccuracy);
@@ -469,7 +469,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 //        final double[] PreAzElBias = { 0.030201539, 0.009747877 };
 //        final double PreRangeBias = 13594.11889;
         final double[] PreAzElBias = { 0.030353, 0.009658 };
-        final double PreRangeBias = 13609.2516;
+        final double PreRangeBias = 13609.012;
         Assertions.assertEquals(PreAzElBias[0], FastMath.toDegrees(list.get( 9).getValue()), angleAccuracy);
         Assertions.assertEquals(PreAzElBias[1], FastMath.toDegrees(list.get(10).getValue()), angleAccuracy);
         Assertions.assertEquals(PreRangeBias,   list.get(11).getValue(),                     distanceAccuracy);
@@ -479,7 +479,7 @@ public class KalmanNumericalOrbitDeterminationTest extends AbstractOrbitDetermin
 //        final double[] UraAzElBias = { 0.167814449, -0.12305252 };
 //        final double UraRangeBias = 13450.26738;
         final double[] UraAzElBias = { 0.167519, -0.122842 };
-        final double UraRangeBias = 13441.7019;
+        final double UraRangeBias = 13441.978;
         Assertions.assertEquals(UraAzElBias[0], FastMath.toDegrees(list.get(12).getValue()), angleAccuracy);
         Assertions.assertEquals(UraAzElBias[1], FastMath.toDegrees(list.get(13).getValue()), angleAccuracy);
         Assertions.assertEquals(UraRangeBias,   list.get(14).getValue(),                     distanceAccuracy);

@@ -69,7 +69,8 @@ public class MendesPavlisModelTest {
         final double pressure     = TroposphericModelUtils.HECTO_PASCAL.toSI(798.4188);
         final double temperature  = 300.15;
         final double humidity     = 0.4;
-        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(height,
+                                                                                pressure,
                                                                                 temperature,
                                                                                 new CIPM2007().
                                                                                 waterVaporPressure(pressure,
@@ -124,7 +125,8 @@ public class MendesPavlisModelTest {
         final double pressure     = TroposphericModelUtils.HECTO_PASCAL.toSI(798.4188);
         final double temperature  = 300.15;
         final double humidity     = 0.4;
-        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(height,
+                                                                                pressure,
                                                                                 temperature,
                                                                                 new CIPM2007().
                                                                                 waterVaporPressure(pressure,
@@ -154,7 +156,9 @@ public class MendesPavlisModelTest {
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
         MendesPavlisModel model = MendesPavlisModel.getStandardModel( 0.6943, TroposphericModelUtils.MICRO_M);
-        final double path = model.pathDelay(FastMath.toRadians(elevation), point, model.getParameters(), date);
+        final double path = model.pathDelay(FastMath.toRadians(elevation), point,
+                                            TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                            model.getParameters(), date);
         Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
         Assertions.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
     }
@@ -167,7 +171,9 @@ public class MendesPavlisModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.pathDelay(FastMath.toRadians(elev), point, model.getParameters(), date);
+            final double delay = model.pathDelay(FastMath.toRadians(elev), point,
+                                                 TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                 model.getParameters(), date);
             Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }

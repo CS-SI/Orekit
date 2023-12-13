@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
+import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
 import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
@@ -532,7 +533,7 @@ public class RangeRateTest {
 
             // Add modifiers if test implies it
             final GlobalMappingFunctionModel mappingFunction = new GlobalMappingFunctionModel();
-            final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
+            final EstimatedModel             tropoModel      = new EstimatedTroposphericModel(mappingFunction, 5.0);
 
             final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(tropoModel, true);
             ((RangeRate) measurement).addModifier(modifier);
@@ -689,7 +690,7 @@ public class RangeRateTest {
 
             // Add modifiers if test implies it
             final GlobalMappingFunctionModel mappingFunction = new GlobalMappingFunctionModel();
-            final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 10.0);
+            final EstimatedModel             tropoModel     = new EstimatedTroposphericModel(mappingFunction, 10.0);
 
             final List<ParameterDriver> parameters = tropoModel.getParametersDrivers();
             for (ParameterDriver driver : parameters) {

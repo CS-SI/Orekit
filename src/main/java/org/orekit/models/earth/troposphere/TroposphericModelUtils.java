@@ -19,6 +19,9 @@ package org.orekit.models.earth.troposphere;
 import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
+import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.utils.units.Unit;
 
 /**
@@ -42,6 +45,25 @@ public class TroposphericModelUtils {
      * @since 12.1
      */
     public static final Unit HECTO_PASCAL = Unit.parse("hPa");
+
+    /** Standard atmosphere.
+     * <ul>
+     * <li>altitude: 0m</li>
+     * <li>temperature: 20 degree Celsius</li>
+     * <li>pressure: 1013.25 mbar</li>
+     * <li>humidity: 50%</li>
+     * </ul>
+     * @see #STANDARD_ATMOSPHERE_PROVIDER
+     * @since 12.1
+     */
+    public static final PressureTemperatureHumidity STANDARD_ATMOSPHERE =
+                    new PressureTemperatureHumidity(0.0, HECTO_PASCAL.toSI(1013.25), 273.15 + 20, 0.5);
+
+    /** Provider for {@link #STANDARD_ATMOSPHERE standard atmosphere}.
+     * @since 12.1
+     */
+    public static final PressureTemperatureHumidityProvider STANDARD_ATMOSPHERE_PROVIDER =
+                    new ConstantPressureTemperatureHumidityProvider(STANDARD_ATMOSPHERE);
 
     /**
      * Private constructor as class is a utility.

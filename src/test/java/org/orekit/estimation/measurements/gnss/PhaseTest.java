@@ -44,8 +44,10 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
+import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -624,10 +626,10 @@ public class PhaseTest {
                     String stationName  = ((Phase) measurement).getStation().getBaseFrame().getName();
 
                     // Add modifier
-                    final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
-                    final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
-                    final PhaseTroposphericDelayModifier modifier = new PhaseTroposphericDelayModifier(tropoModel);
-                    final List<ParameterDriver> parameters = modifier.getParametersDrivers();
+                    final NiellMappingFunctionModel      mappingFunction = new NiellMappingFunctionModel();
+                    final EstimatedModel                 tropoModel      = new EstimatedTroposphericModel(mappingFunction, 5.0);
+                    final PhaseTroposphericDelayModifier modifier        = new PhaseTroposphericDelayModifier(tropoModel);
+                    final List<ParameterDriver>          parameters      = modifier.getParametersDrivers();
                     parameters.get(0).setName(stationName + "/" + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
                     parameters.get(0).setSelected(true);
                     ((Phase) measurement).addModifier(modifier);
@@ -914,7 +916,7 @@ public class PhaseTest {
         final TopocentricFrame topo = new TopocentricFrame(body,
                                                            new GeodeticPoint(FastMath.toRadians(51.8), FastMath.toRadians(102.2), 811.2),
                                                            "BADG");
-        final GroundStation station = new GroundStation(topo);
+        final GroundStation station = new GroundStation(topo, TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
 
         // Create a phase measurement
         final Phase phase = new Phase(station, AbsoluteDate.J2000_EPOCH, 119866527.060, Frequency.G01.getWavelength(), 0.02, 1.0, new ObservableSatellite(0));

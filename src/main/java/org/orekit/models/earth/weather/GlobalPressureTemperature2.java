@@ -214,7 +214,8 @@ public class GlobalPressureTemperature2 implements PressureTemperatureHumidityPr
         // Water vapor pressure [hPa]
         final double e0 = qv * pressure / (0.622 + 0.378 * qv);
 
-        return new PressureTemperatureHumidity(TroposphericModelUtils.HECTO_PASCAL.toSI(pressure),
+        return new PressureTemperatureHumidity(location.getAltitude(),
+                                               TroposphericModelUtils.HECTO_PASCAL.toSI(pressure),
                                                temperature,
                                                TroposphericModelUtils.HECTO_PASCAL.toSI(e0));
 
@@ -255,7 +256,8 @@ public class GlobalPressureTemperature2 implements PressureTemperatureHumidityPr
         // Water vapor pressure [hPa]
         final T e0 = pressure.multiply(qv / (0.622 + 0.378 * qv));
 
-        return new FieldPressureTemperatureHumidity<>(TroposphericModelUtils.HECTO_PASCAL.toSI(pressure),
+        return new FieldPressureTemperatureHumidity<>(location.getAltitude(),
+                                                      TroposphericModelUtils.HECTO_PASCAL.toSI(pressure),
                                                       temperature,
                                                       TroposphericModelUtils.HECTO_PASCAL.toSI(e0));
 

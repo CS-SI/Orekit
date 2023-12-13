@@ -28,7 +28,7 @@ import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.HeightDependentPressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.HeightDependentPressureTemperatureHumidityConverter;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.water.NbsNrcSteamTable;
@@ -57,7 +57,7 @@ import org.orekit.utils.ParameterDriver;
  * Ranging of Satellites"
  * @since 12.1
  */
-public class CanonicalSaastamoinenModel implements DiscreteTroposphericModel {
+public class CanonicalSaastamoinenModel implements TroposphericModel {
 
     /** Default lowest acceptable elevation angle [rad]. */
     public static final double DEFAULT_LOW_ELEVATION_THRESHOLD = 0.05;
@@ -94,7 +94,7 @@ public class CanonicalSaastamoinenModel implements DiscreteTroposphericModel {
      * conditions and table from the reference book.
      *
      * @param pthProvider provider for pressure, temperature and humidity
-     * @see HeightDependentPressureTemperatureHumidityProvider
+     * @see HeightDependentPressureTemperatureHumidityConverter
      */
     public CanonicalSaastamoinenModel(final PressureTemperatureHumidityProvider pthProvider) {
         this.pthProvider           = pthProvider;
@@ -114,6 +114,7 @@ public class CanonicalSaastamoinenModel implements DiscreteTroposphericModel {
     public static CanonicalSaastamoinenModel getStandardModel() {
 
         // build standard meteorological data
+        final double altitude           = 0.0;
         final double pressure           = TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25);
         final double temperature        = 273.15 + 18;
         final double relativeHumidity   = 0.5;
@@ -121,14 +122,11 @@ public class CanonicalSaastamoinenModel implements DiscreteTroposphericModel {
         final double waterVaporPressure = waterPressureProvider.waterVaporPressure(pressure,
                                                                                    temperature,
                                                                                    relativeHumidity);
-        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(altitude,
+                                                                                pressure,
                                                                                 temperature,
                                                                                 waterVaporPressure);
-        final PressureTemperatureHumidityProvider pth0Provider =
-                        new ConstantPressureTemperatureHumidityProvider(pth);
-        final PressureTemperatureHumidityProvider pthProvider =
-                        new HeightDependentPressureTemperatureHumidityProvider(0.0, 5000.0, 0.0, pth0Provider, waterPressureProvider);
-        return new CanonicalSaastamoinenModel(pthProvider);
+        return new CanonicalSaastamoinenModel(new ConstantPressureTemperatureHumidityProvider(pth));
 
     }
 
@@ -147,6 +145,7 @@ public class CanonicalSaastamoinenModel implements DiscreteTroposphericModel {
      */
     @Override
     public double pathDelay(final double elevation, final GeodeticPoint point,
+                            final PressureTemperatureHumidity weather,
                             final double[] parameters, final AbsoluteDate date) {
 
         final PressureTemperatureHumidity pth = pthProvider.getWeatherParamerers(point, date);
@@ -186,7 +185,8 @@ public class CanonicalSaastamoinenModel implements DiscreteTroposphericModel {
      */
     @Override
     public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
-                                                       final T[] parameters, final FieldAbsoluteDate<T> date) {
+                                                           final FieldPressureTemperatureHumidity<T> weather,
+                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
 
         final Field<T> field = date.getField();
         final T zero = field.getZero();

@@ -40,6 +40,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -96,7 +97,8 @@ public class FieldMendesPavlisModelTest {
         final double pressure     = TroposphericModelUtils.HECTO_PASCAL.toSI(798.4188);
         final double temperature  = 300.15;
         final double humidity     = 0.4;
-        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(height,
+                                                                                pressure,
                                                                                 temperature,
                                                                                 new CIPM2007().
                                                                                 waterVaporPressure(pressure,
@@ -156,7 +158,8 @@ public class FieldMendesPavlisModelTest {
         final double pressure     = TroposphericModelUtils.HECTO_PASCAL.toSI(798.4188);
         final double temperature  = 300.15;
         final double humidity     = 0.4;
-        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(height,
+                                                                                pressure,
                                                                                 temperature,
                                                                                 new CIPM2007().
                                                                                 waterVaporPressure(pressure,
@@ -191,7 +194,9 @@ public class FieldMendesPavlisModelTest {
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(45.0)), zero.add(FastMath.toRadians(45.0)), zero.add(height));
         MendesPavlisModel model = MendesPavlisModel.getStandardModel(0.6943, TroposphericModelUtils.MICRO_M);
-        final T path = model.pathDelay(zero.add(FastMath.toRadians(elevation)), point, model.getParameters(field), date);
+        final T path = model.pathDelay(zero.add(FastMath.toRadians(elevation)), point,
+                                       new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
+                                       model.getParameters(field), date);
         Assertions.assertTrue(Precision.compareTo(path.getReal(), 20d, epsilon) < 0);
         Assertions.assertTrue(Precision.compareTo(path.getReal(), 0d, epsilon) > 0);
     }
@@ -209,7 +214,9 @@ public class FieldMendesPavlisModelTest {
         T lastDelay = zero.add(Double.MAX_VALUE);
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final T delay = model.pathDelay(zero.add(FastMath.toRadians(elev)), point, model.getParameters(field), date);
+            final T delay = model.pathDelay(zero.add(FastMath.toRadians(elev)), point,
+                                            new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
+                                            model.getParameters(field), date);
             Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
             lastDelay = delay;
         }
@@ -231,7 +238,8 @@ public class FieldMendesPavlisModelTest {
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
 
         // Station
-        final GroundStation station = new GroundStation(baseFrame);
+        final GroundStation station = new GroundStation(baseFrame,
+                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
 
         // Tropospheric model
         final MendesPavlisModel model = MendesPavlisModel.getStandardModel(0.65, TroposphericModelUtils.MICRO_M);
@@ -263,7 +271,9 @@ public class FieldMendesPavlisModelTest {
 
         // Compute Delay with state derivatives
         final FieldGeodeticPoint<DerivativeStructure> dsPoint = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
-        final DerivativeStructure delay = model.pathDelay(dsElevation, dsPoint, model.getParameters(field, dsDate), dsDate);
+        final DerivativeStructure delay = model.pathDelay(dsElevation, dsPoint,
+                                                          new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
+                                                          model.getParameters(field, dsDate), dsDate);
 
         final double[] compDeriv = delay.getAllDerivatives();
 
@@ -283,56 +293,64 @@ public class FieldMendesPavlisModelTest {
             final double elevationM4  = station.getBaseFrame().
                                         getTrackingCoordinates(positionM4, stateM4.getFrame(), stateM4.getDate()).
                                         getElevation();
-            double  delayM4 = model.pathDelay(elevationM4, point, model.getParameters(), stateM4.getDate());
+            double  delayM4 = model.pathDelay(elevationM4, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                              model.getParameters(), stateM4.getDate());
             
             SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
             final Vector3D positionM3 = stateM3.getPosition();
             final double elevationM3  = station.getBaseFrame().
                                         getTrackingCoordinates(positionM3, stateM3.getFrame(), stateM3.getDate()).
                                         getElevation();
-            double  delayM3 = model.pathDelay(elevationM3, point, model.getParameters(), stateM3.getDate());
+            double  delayM3 = model.pathDelay(elevationM3, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                              model.getParameters(), stateM3.getDate());
             
             SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
             final Vector3D positionM2 = stateM2.getPosition();
             final double elevationM2  = station.getBaseFrame().
                                         getTrackingCoordinates(positionM2, stateM2.getFrame(), stateM2.getDate()).
                                         getElevation();
-            double  delayM2 = model.pathDelay(elevationM2, point, model.getParameters(), stateM2.getDate());
+            double  delayM2 = model.pathDelay(elevationM2, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                              model.getParameters(), stateM2.getDate());
  
             SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
             final Vector3D positionM1 = stateM1.getPosition();
             final double elevationM1  = station.getBaseFrame().
                                         getTrackingCoordinates(positionM1, stateM1.getFrame(), stateM1.getDate()).
                                         getElevation();
-            double  delayM1 = model.pathDelay(elevationM1, point, model.getParameters(), stateM1.getDate());
+            double  delayM1 = model.pathDelay(elevationM1, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                              model.getParameters(), stateM1.getDate());
            
             SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
             final Vector3D positionP1 = stateP1.getPosition();
             final double elevationP1  = station.getBaseFrame().
                                         getTrackingCoordinates(positionP1, stateP1.getFrame(), stateP1.getDate()).
                                         getElevation();
-            double  delayP1 = model.pathDelay(elevationP1, point, model.getParameters(), stateP1.getDate());
+            double  delayP1 = model.pathDelay(elevationP1, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                              model.getParameters(), stateP1.getDate());
             
             SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
             final Vector3D positionP2 = stateP2.getPosition();
             final double elevationP2  = station.getBaseFrame().
                                         getTrackingCoordinates(positionP2, stateP2.getFrame(), stateP2.getDate()).
                                         getElevation();
-            double  delayP2 = model.pathDelay(elevationP2, point, model.getParameters(), stateP2.getDate());
+            double  delayP2 = model.pathDelay(elevationP2, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                              model.getParameters(), stateP2.getDate());
             
             SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
             final Vector3D positionP3 = stateP3.getPosition();
             final double elevationP3  = station.getBaseFrame().
                                         getTrackingCoordinates(positionP3, stateP3.getFrame(), stateP3.getDate()).
                                         getElevation();
-            double  delayP3 = model.pathDelay(elevationP3, point, model.getParameters(), stateP3.getDate());
+            double  delayP3 = model.pathDelay(elevationP3, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                              model.getParameters(), stateP3.getDate());
             
             SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
             final Vector3D positionP4 = stateP4.getPosition();
             final double elevationP4  = station.getBaseFrame().
                                         getTrackingCoordinates(positionP4, stateP4.getFrame(), stateP4.getDate()).
                                         getElevation();
-            double  delayP4 = model.pathDelay(elevationP4, point, model.getParameters(), stateP4.getDate());
+            double  delayP4 = model.pathDelay(elevationP4, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                              model.getParameters(), stateP4.getDate());
             
             fillJacobianColumn(refDeriv, i, orbitType, angleType, steps[i],
                                delayM4, delayM3, delayM2, delayM1,

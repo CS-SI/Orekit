@@ -25,7 +25,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
-import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -47,13 +47,24 @@ import org.orekit.utils.TrackingCoordinates;
 public class AngularTroposphericDelayModifier implements EstimationModifier<AngularAzEl> {
 
     /** Tropospheric delay model. */
-    private final DiscreteTroposphericModel tropoModel;
+    private final TroposphericModel tropoModel;
 
     /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current angular measurement method.
+     * @deprecated as of 12.1, replaced by {@link #AngularTroposphericDelayModifier(TroposphericModel)}
      */
-    public AngularTroposphericDelayModifier(final DiscreteTroposphericModel model) {
+    @Deprecated
+    public AngularTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
+        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
+    }
+
+    /** Constructor.
+     *
+     * @param model  Tropospheric delay model appropriate for the current angular measurement method.
+     * @since 12.1
+     */
+    public AngularTroposphericDelayModifier(final TroposphericModel model) {
         tropoModel = model;
     }
 
@@ -75,7 +86,10 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
         // only consider measures above the horizon
         if (elevation > 0.0) {
             // delay in meters
-            final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(), tropoModel.getParameters(state.getDate()), state.getDate());
+            final double delay = tropoModel.pathDelay(elevation,
+                                                      station.getOffsetGeodeticPoint(state.getDate()),
+                                                      station.getPressureTemperatureHumidity(state.getDate()),
+                                                      tropoModel.getParameters(state.getDate()), state.getDate());
 
             // one-way measurement.
             return delay;

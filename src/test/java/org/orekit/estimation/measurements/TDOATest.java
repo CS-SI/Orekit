@@ -378,7 +378,7 @@ public class TDOATest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 9.0e-7);
+        Assertions.assertEquals(0, maxRelativeError, 2.5e-6);
 
     }
 

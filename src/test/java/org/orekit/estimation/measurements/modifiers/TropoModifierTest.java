@@ -50,9 +50,10 @@ import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.Frequency;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
+import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
-import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
+import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -146,11 +147,11 @@ public class TropoModifierTest {
             EstimatedMeasurementBase<Range> evalNoMod = range.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
 
             // add modifier
-            final GroundStation stationParameter = ((Range) measurement).getStation();
-            final TopocentricFrame baseFrame = stationParameter.getBaseFrame();
-            final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
-            final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
-            final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(tropoModel);
+            final GroundStation                  stationParameter = ((Range) measurement).getStation();
+            final TopocentricFrame               baseFrame        = stationParameter.getBaseFrame();
+            final NiellMappingFunctionModel      mappingFunction  = new NiellMappingFunctionModel();
+            final EstimatedModel                 tropoModel       = new EstimatedTroposphericModel(mappingFunction, 5.0);
+            final RangeTroposphericDelayModifier modifier         = new RangeTroposphericDelayModifier(tropoModel);
 
             final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
             parameterDriver.setSelected(true);
@@ -256,11 +257,11 @@ public class TropoModifierTest {
 
 
             // add modifier
-            final GroundStation stationParameter = phase.getStation();
-            final TopocentricFrame baseFrame = stationParameter.getBaseFrame();
-            final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
-            final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
-            final PhaseTroposphericDelayModifier modifier = new PhaseTroposphericDelayModifier(tropoModel);
+            final GroundStation                  stationParameter = phase.getStation();
+            final TopocentricFrame               baseFrame        = stationParameter.getBaseFrame();
+            final NiellMappingFunctionModel      mappingFunction  = new NiellMappingFunctionModel();
+            final EstimatedModel                 tropoModel       = new EstimatedTroposphericModel(mappingFunction, 5.0);
+            final PhaseTroposphericDelayModifier modifier         = new PhaseTroposphericDelayModifier(tropoModel);
 
             final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
             parameterDriver.setSelected(true);
@@ -469,7 +470,7 @@ public class TropoModifierTest {
 
             // add modifier
             final NiellMappingFunctionModel mappingFunc = new NiellMappingFunctionModel();
-            final EstimatedTroposphericModel tropoModel = new EstimatedTroposphericModel(mappingFunc, 5.0);
+            final EstimatedModel            tropoModel  = new EstimatedTroposphericModel(mappingFunc, 5.0);
             final BistaticRangeRateTroposphericDelayModifier modifier =
                             new BistaticRangeRateTroposphericDelayModifier(tropoModel);
 
@@ -578,9 +579,9 @@ public class TropoModifierTest {
             EstimatedMeasurementBase<TDOA> evalNoMod = tdoa.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
 
             // add modifier
-            final NiellMappingFunctionModel mappingFunct = new NiellMappingFunctionModel();
-            final EstimatedTroposphericModel tropoModel  = new EstimatedTroposphericModel(mappingFunct, 5.0);
-            final TDOATroposphericDelayModifier modifier = new TDOATroposphericDelayModifier(tropoModel);
+            final NiellMappingFunctionModel     mappingFunct = new NiellMappingFunctionModel();
+            final EstimatedModel                tropoModel   = new EstimatedTroposphericModel(mappingFunct, 5.0);
+            final TDOATroposphericDelayModifier modifier     = new TDOATroposphericDelayModifier(tropoModel);
 
             final TopocentricFrame baseFrame      = tdoa.getPrimeStation().getBaseFrame();
             final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
@@ -676,11 +677,11 @@ public class TropoModifierTest {
             EstimatedMeasurementBase<RangeRate> evalNoMod = rangeRate.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
 
             // add modifier
-            final GroundStation stationParameter = ((RangeRate) measurement).getStation();
-            final TopocentricFrame baseFrame = stationParameter.getBaseFrame();
-            final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
-            final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
-            final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(tropoModel, false);
+            final GroundStation                      stationParameter = ((RangeRate) measurement).getStation();
+            final TopocentricFrame                   baseFrame        = stationParameter.getBaseFrame();
+            final NiellMappingFunctionModel          mappingFunction  = new NiellMappingFunctionModel();
+            final EstimatedModel                     tropoModel       = new EstimatedTroposphericModel(mappingFunction, 5.0);
+            final RangeRateTroposphericDelayModifier modifier         = new RangeRateTroposphericDelayModifier(tropoModel, false);
 
             final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
             parameterDriver.setSelected(true);
@@ -778,11 +779,11 @@ public class TropoModifierTest {
             EstimatedMeasurementBase<AngularAzEl> evalNoMod = angular.estimateWithoutDerivatives(0, 0, new SpacecraftState[] { refState });
 
             // add modifier
-            final GroundStation stationParameter = ((AngularAzEl) measurement).getStation();
-            final TopocentricFrame baseFrame = stationParameter.getBaseFrame();
-            final NiellMappingFunctionModel mappingFunction = new NiellMappingFunctionModel();
-            final EstimatedTroposphericModel tropoModel     = new EstimatedTroposphericModel(mappingFunction, 5.0);
-            final AngularTroposphericDelayModifier modifier = new AngularTroposphericDelayModifier(tropoModel);
+            final GroundStation                    stationParameter = ((AngularAzEl) measurement).getStation();
+            final TopocentricFrame                 baseFrame        = stationParameter.getBaseFrame();
+            final NiellMappingFunctionModel        mappingFunction  = new NiellMappingFunctionModel();
+            final EstimatedModel                   tropoModel       = new EstimatedTroposphericModel(mappingFunction, 5.0);
+            final AngularTroposphericDelayModifier modifier         = new AngularTroposphericDelayModifier(tropoModel);
 
             final ParameterDriver parameterDriver = modifier.getParametersDrivers().get(0);
             parameterDriver.setSelected(true);

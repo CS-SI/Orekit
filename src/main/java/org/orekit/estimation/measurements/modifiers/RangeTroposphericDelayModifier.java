@@ -22,7 +22,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.SpacecraftState;
 
 /** Class modifying theoretical range measurement with tropospheric delay.
@@ -41,8 +41,19 @@ public class RangeTroposphericDelayModifier extends BaseRangeTroposphericDelayMo
     /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current range measurement method.
+     * @deprecated as of 12.1, replaced by {@link #RangeTroposphericDelayModifier(TroposphericModel)}
      */
-    public RangeTroposphericDelayModifier(final DiscreteTroposphericModel model) {
+    @Deprecated
+    public RangeTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
+        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
+    }
+
+    /** Constructor.
+     *
+     * @param model  Tropospheric delay model appropriate for the current range measurement method.
+     * @since 12.1
+     */
+    public RangeTroposphericDelayModifier(final TroposphericModel model) {
         super(model);
     }
 

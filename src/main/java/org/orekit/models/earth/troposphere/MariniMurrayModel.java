@@ -41,7 +41,8 @@ import org.orekit.utils.units.UnitsConverter;
  *
  * @author Joris Olympio
  */
-public class MariniMurrayModel implements DiscreteTroposphericModel {
+@SuppressWarnings("deprecation")
+public class MariniMurrayModel implements DiscreteTroposphericModel, TroposphericModel {
 
     /** Provider for pressure, temperature and humidity. */
     private PressureTemperatureHumidityProvider pthProvider;
@@ -59,7 +60,8 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
      */
     @Deprecated
     public MariniMurrayModel(final double t0, final double p0, final double rh, final double lambda) {
-        this(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
+        this(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(0,
+                                                                                             TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
                                                                                              t0,
                                                                                              new CIPM2007().
                                                                                              waterVaporPressure(TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
@@ -111,6 +113,7 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
     /** Create a new Marini-Murray model using a standard atmosphere model.
      *
      * <ul>
+     * <li>altitude: 0m</li>
      * <li>temperature: 20 degree Celsius</li>
      * <li>pressure: 1013.25 mbar</li>
      * <li>humidity: 50%</li>
@@ -123,18 +126,28 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
      * @since 12.1
      */
     public static MariniMurrayModel getStandardModel(final double lambda, final Unit lambdaUnits) {
+        final double h  = 0.0;
         final double p  = TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25);
         final double t  = 273.15 + 20;
         final double rh = 0.5;
         final PressureTemperatureHumidity pth =
-                        new PressureTemperatureHumidity(p, t, new CIPM2007().waterVaporPressure(p, t, rh));
+                        new PressureTemperatureHumidity(h, p, t, new CIPM2007().waterVaporPressure(p, t, rh));
         return new MariniMurrayModel(new ConstantPressureTemperatureHumidityProvider(pth),
                                      lambda, TroposphericModelUtils.NANO_M);
     }
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public double pathDelay(final double elevation, final GeodeticPoint point,
+                            final double[] parameters, final AbsoluteDate date) {
+        return pathDelay(elevation, point, TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double pathDelay(final double elevation, final GeodeticPoint point,
+                            final PressureTemperatureHumidity weather,
                             final double[] parameters, final AbsoluteDate date) {
 
         final PressureTemperatureHumidity pth = pthProvider.getWeatherParamerers(point, date);
@@ -157,7 +170,21 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+    @Deprecated
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation,
+                                                           final FieldGeodeticPoint<T> point,
+                                                           final T[] parameters,
+                                                           final FieldAbsoluteDate<T> date) {
+        return pathDelay(elevation, point,
+                         new FieldPressureTemperatureHumidity<>(date.getField(), TroposphericModelUtils.STANDARD_ATMOSPHERE),
+                         parameters, date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation,
+                                                           final FieldGeodeticPoint<T> point,
+                                                           final FieldPressureTemperatureHumidity<T> weather,
                                                            final T[] parameters, final FieldAbsoluteDate<T> date) {
 
         final FieldPressureTemperatureHumidity<T> pth = pthProvider.getWeatherParamerers(point, date);

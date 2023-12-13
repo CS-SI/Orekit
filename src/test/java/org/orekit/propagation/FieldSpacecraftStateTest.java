@@ -46,7 +46,6 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.*;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;

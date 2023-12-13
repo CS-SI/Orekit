@@ -29,6 +29,8 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -56,7 +58,8 @@ import org.orekit.utils.ParameterDriver;
  *
  * @author Bryan Cazabonne
  */
-public class ViennaThreeModel implements DiscreteTroposphericModel, MappingFunction {
+@SuppressWarnings("deprecation")
+public class ViennaThreeModel implements DiscreteTroposphericModel, TroposphericModel, MappingFunction {
 
     /** The a coefficient for the computation of the wet and hydrostatic mapping functions.*/
     private final double[] coefficientsA;
@@ -270,7 +273,16 @@ public class ViennaThreeModel implements DiscreteTroposphericModel, MappingFunct
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public double pathDelay(final double elevation, final GeodeticPoint point,
+                            final double[] parameters, final AbsoluteDate date) {
+        return pathDelay(elevation, point, TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double pathDelay(final double elevation, final GeodeticPoint point,
+                            final PressureTemperatureHumidity weather,
                             final double[] parameters, final AbsoluteDate date) {
         // zenith delay
         final double[] delays = computeZenithDelay(point, parameters, date);
@@ -282,8 +294,19 @@ public class ViennaThreeModel implements DiscreteTroposphericModel, MappingFunct
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
                                                        final T[] parameters, final FieldAbsoluteDate<T> date) {
+        return pathDelay(elevation, point,
+                         new FieldPressureTemperatureHumidity<>(date.getField(), TroposphericModelUtils.STANDARD_ATMOSPHERE),
+                         parameters, date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+                                                           final FieldPressureTemperatureHumidity<T> weather,
+                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
         // zenith delay
         final T[] delays = computeZenithDelay(point, parameters, date);
         // mapping function

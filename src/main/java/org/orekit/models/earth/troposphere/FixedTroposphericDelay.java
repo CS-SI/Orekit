@@ -30,6 +30,8 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.InterpolationTableLoader;
@@ -40,7 +42,8 @@ import org.orekit.utils.ParameterDriver;
  * the {@link DataProvidersManager}.
  * @author Thomas Neidhart
  */
-public class FixedTroposphericDelay implements DiscreteTroposphericModel {
+@SuppressWarnings("deprecation")
+public class FixedTroposphericDelay implements DiscreteTroposphericModel, TroposphericModel {
 
     /** Singleton object for the default model. */
     private static FixedTroposphericDelay defaultModel;
@@ -128,7 +131,16 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public double pathDelay(final double elevation, final GeodeticPoint point,
+                            final double[] parameters, final AbsoluteDate date) {
+        return pathDelay(elevation, point, TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double pathDelay(final double elevation, final GeodeticPoint point,
+                            final PressureTemperatureHumidity weather,
                             final double[] parameters, final AbsoluteDate date) {
         // limit the height to 5000 m
         final double h = FastMath.min(FastMath.max(0, point.getAltitude()), 5000);
@@ -142,8 +154,19 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
-                                                       final T[] parameters, final FieldAbsoluteDate<T> date) {
+                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
+        return pathDelay(elevation, point,
+                         new FieldPressureTemperatureHumidity<>(date.getField(), TroposphericModelUtils.STANDARD_ATMOSPHERE),
+                         parameters, date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+                                                           final FieldPressureTemperatureHumidity<T> weather,
+                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
         final T zero = date.getField().getZero();
         final T pi   = zero.getPi();
         // limit the height to 5000 m

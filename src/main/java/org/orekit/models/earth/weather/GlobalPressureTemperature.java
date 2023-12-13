@@ -145,7 +145,9 @@ public class GlobalPressureTemperature {
         final double temperature = degrees + 273.15;
         final double pressure    = pres0 * FastMath.pow(1.0 - correctedheight * 0.0000226, 5.225);
 
-        return new PressureTemperature(TroposphericModelUtils.HECTO_PASCAL.toSI(pressure), temperature);
+        return new PressureTemperature(location.getAltitude(),
+                                       TroposphericModelUtils.HECTO_PASCAL.toSI(pressure),
+                                       temperature);
 
     }
 

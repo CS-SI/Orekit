@@ -22,6 +22,9 @@ package org.orekit.models.earth.weather;
  */
 public class PressureTemperature {
 
+    /** Altitude at which weather parameters have been computed. */
+    private final double altitude;
+
     /** Pressure (Pa). */
     private final double pressure;
 
@@ -29,12 +32,22 @@ public class PressureTemperature {
     private final double temperature;
 
     /** Simple constructor.
+     * @param altitude altitude at which weather parameters have been computed (m)
      * @param pressure pressure (Pa)
      * @param temperature temperature (Kelvin)
      */
-    public PressureTemperature(final double pressure, final double temperature) {
-        this.pressure           = pressure;
-        this.temperature        = temperature;
+    public PressureTemperature(final double altitude,
+                               final double pressure, final double temperature) {
+        this.altitude    = altitude;
+        this.pressure    = pressure;
+        this.temperature = temperature;
+    }
+
+    /** Get altitude at which weather parameters have been computed.
+     * @return altitude at which weather parameters have been computed (m)
+     */
+    public double getAltitude() {
+        return altitude;
     }
 
     /** Get pressure.

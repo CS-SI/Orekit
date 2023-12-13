@@ -28,7 +28,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.TDOA;
-import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Constants;
@@ -47,13 +47,24 @@ import org.orekit.utils.ParameterDriver;
 public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
 
     /** Tropospheric delay model. */
-    private final DiscreteTroposphericModel tropoModel;
+    private final TroposphericModel tropoModel;
 
     /** Constructor.
      *
      * @param model tropospheric model appropriate for the current TDOA measurement method.
+     * @deprecated as of 12.1, replaced by {@link #TDOATroposphericDelayModifier(TroposphericModel)}
      */
-    public TDOATroposphericDelayModifier(final DiscreteTroposphericModel model) {
+    @Deprecated
+    public TDOATroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
+        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
+    }
+
+    /** Constructor.
+     *
+     * @param model tropospheric model appropriate for the current TDOA measurement method.
+     * @since 12.1
+     */
+    public TDOATroposphericDelayModifier(final TroposphericModel model) {
         tropoModel = model;
     }
 
@@ -73,7 +84,9 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
         // only consider measurements above the horizon
         if (elevation > 0) {
             // Delay in meters
-            final double delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(),
+            final double delay = tropoModel.pathDelay(elevation,
+                                                      station.getOffsetGeodeticPoint(state.getDate()),
+                                                      station.getPressureTemperatureHumidity(state.getDate()),
                                                       tropoModel.getParameters(state.getDate()), state.getDate());
             // return delay in seconds
             return delay / Constants.SPEED_OF_LIGHT;
@@ -105,7 +118,9 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
         // only consider measurements above the horizon
         if (elevation.getReal() > 0) {
             // delay in meters
-            final T delay = tropoModel.pathDelay(elevation, station.getBaseFrame().getPoint(field),
+            final T delay = tropoModel.pathDelay(elevation,
+                                                 station.getOffsetGeodeticPoint(state.getDate()),
+                                                 station.getPressureTemperatureHumidity(state.getDate()),
                                                  parameters, state.getDate());
             // return delay in seconds
             return delay.divide(Constants.SPEED_OF_LIGHT);

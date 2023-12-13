@@ -35,7 +35,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
-import org.orekit.models.earth.weather.HeightDependentPressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.HeightDependentPressureTemperatureHumidityConverter;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.water.Wang1988;
@@ -66,7 +66,7 @@ import org.orekit.utils.ParameterDriver;
  * @see "Guochang Xu, GPS - Theory, Algorithms and Applications, Springer, 2007"
  * @since 12.1
  */
-public class ModifiedSaastamoinenModel implements DiscreteTroposphericModel {
+public class ModifiedSaastamoinenModel implements TroposphericModel {
 
     /** Default file name for δR correction term table. */
     public static final String DELTA_R_FILE_NAME = "^saastamoinen-correction\\.txt$";
@@ -103,8 +103,11 @@ public class ModifiedSaastamoinenModel implements DiscreteTroposphericModel {
     /** Interpolation function for the delta R correction term. */
     private final BilinearInterpolatingFunction deltaRFunction;
 
-    /** Height dependent provider for pressure, temperature and humidity. */
-    private HeightDependentPressureTemperatureHumidityProvider pthProvider;
+    /** Provider for atmospheric pressure, temperature and humidity at reference altitude. */
+    private final PressureTemperatureHumidityProvider pth0Provider;
+
+    /** Height dependent converter for pressure, temperature and humidity. */
+    private HeightDependentPressureTemperatureHumidityConverter converter;
 
     /** Lowest acceptable elevation angle [rad]. */
     private double lowElevationThreshold;
@@ -113,31 +116,28 @@ public class ModifiedSaastamoinenModel implements DiscreteTroposphericModel {
      * Create a new Saastamoinen model for the troposphere using the given environmental
      * conditions and table from the reference book.
      *
-     * @param h0 reference altitude
      * @param pth0Provider provider for atmospheric pressure, temperature and humidity at reference altitude
-     * @see #ModifiedSaastamoinenModel(double, PressureTemperatureHumidityProvider, String, DataProvidersManager)
+     * @see #ModifiedSaastamoinenModel(PressureTemperatureHumidityProvider, String, DataProvidersManager)
      */
     @DefaultDataContext
-    public ModifiedSaastamoinenModel(final double h0, final PressureTemperatureHumidityProvider pth0Provider) {
-        this(h0, pth0Provider, defaultDeltaR());
+    public ModifiedSaastamoinenModel(final PressureTemperatureHumidityProvider pth0Provider) {
+        this(pth0Provider, defaultDeltaR());
     }
 
     /** Create a new Saastamoinen model for the troposphere using the given
      * environmental conditions. This constructor uses the {@link DataContext#getDefault()
      * default data context} if {@code deltaRFileName != null}.
      *
-     * @param h0 reference altitude
      * @param pth0Provider provider for atmospheric pressure, temperature and humidity at reference altitude
      * @param deltaRFileName regular expression for filename containing δR
      * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
      * default values from the reference book are used
-     * @see #ModifiedSaastamoinenModel(double, PressureTemperatureHumidityProvider, String, DataProvidersManager)
+     * @see #ModifiedSaastamoinenModel(PressureTemperatureHumidityProvider, String, DataProvidersManager)
      */
     @DefaultDataContext
-    public ModifiedSaastamoinenModel(final double h0,
-                                     final PressureTemperatureHumidityProvider pth0Provider,
+    public ModifiedSaastamoinenModel(final PressureTemperatureHumidityProvider pth0Provider,
                                      final String deltaRFileName) {
-        this(h0, pth0Provider, deltaRFileName,
+        this(pth0Provider, deltaRFileName,
              DataContext.getDefault().getDataProvidersManager());
     }
 
@@ -145,18 +145,16 @@ public class ModifiedSaastamoinenModel implements DiscreteTroposphericModel {
      * environmental conditions. This constructor allows the user to specify the source of
      * of the δR file.
      *
-     * @param h0 reference altitude
      * @param pth0Provider provider for atmospheric pressure, temperature and humidity at reference altitude
      * @param deltaRFileName regular expression for filename containing δR
      * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
      * default values from the reference book are used
      * @param dataProvidersManager provides access to auxiliary data.
      */
-    public ModifiedSaastamoinenModel(final double h0,
-                                     final PressureTemperatureHumidityProvider pth0Provider,
+    public ModifiedSaastamoinenModel(final PressureTemperatureHumidityProvider pth0Provider,
                                      final String deltaRFileName,
                                      final DataProvidersManager dataProvidersManager) {
-        this(h0, pth0Provider,
+        this(pth0Provider,
              deltaRFileName == null ?
                      defaultDeltaR() :
                      loadDeltaR(deltaRFileName, dataProvidersManager));
@@ -164,18 +162,13 @@ public class ModifiedSaastamoinenModel implements DiscreteTroposphericModel {
 
     /** Create a new Saastamoinen model.
      *
-     * @param h0 reference altitude
      * @param pth0Provider provider for atmospheric pressure, temperature and humidity at reference altitude
      * @param deltaR δR correction term function
      */
-    private ModifiedSaastamoinenModel(final double h0,
-                                      final PressureTemperatureHumidityProvider pth0Provider,
+    private ModifiedSaastamoinenModel(final PressureTemperatureHumidityProvider pth0Provider,
                                       final BilinearInterpolatingFunction deltaR) {
-        final double hMin = X_VALUES_FOR_B[0];
-        final double hMax = X_VALUES_FOR_B[X_VALUES_FOR_B.length - 1];
-        this.pthProvider           = new HeightDependentPressureTemperatureHumidityProvider(hMin, hMax,
-                                                                                            hMin, pth0Provider,
-                                                                                            WATER);
+        this.pth0Provider          = pth0Provider;
+        this.converter             = new HeightDependentPressureTemperatureHumidityConverter(WATER);
         this.deltaRFunction        = deltaR;
         this.lowElevationThreshold = DEFAULT_LOW_ELEVATION_THRESHOLD;
     }
@@ -183,6 +176,7 @@ public class ModifiedSaastamoinenModel implements DiscreteTroposphericModel {
     /** Create a new Saastamoinen model using a standard atmosphere model.
      *
      * <ul>
+     * <li>altitude: 0m</li>
      * <li>temperature: 18 degree Celsius</li>
      * <li>pressure: 1013.25 mbar</li>
      * <li>humidity: 50%</li>
@@ -193,16 +187,25 @@ public class ModifiedSaastamoinenModel implements DiscreteTroposphericModel {
      */
     @DefaultDataContext
     public static ModifiedSaastamoinenModel getStandardModel() {
+        final double altitude    = 0;
         final double pressure    = TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25);
         final double temperature = 273.15 + 18;
         final double humidity    = 0.5;
-        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(pressure,
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(altitude,
+                                                                                pressure,
                                                                                 temperature,
                                                                                 WATER.waterVaporPressure(pressure,
                                                                                                          temperature,
                                                                                                          humidity));
         final PressureTemperatureHumidityProvider pth0Provider = new ConstantPressureTemperatureHumidityProvider(pth);
-        return new ModifiedSaastamoinenModel(X_VALUES_FOR_B[0], pth0Provider);
+        return new ModifiedSaastamoinenModel(pth0Provider);
+    }
+
+    /** Get provider for atmospheric pressure, temperature and humidity at reference altitude.
+     * @return provider for atmospheric pressure, temperature and humidity at reference altitude
+     */
+    public PressureTemperatureHumidityProvider getPth0Provider() {
+        return pth0Provider;
     }
 
     /** {@inheritDoc}
@@ -220,13 +223,14 @@ public class ModifiedSaastamoinenModel implements DiscreteTroposphericModel {
      */
     @Override
     public double pathDelay(final double elevation, final GeodeticPoint point,
+                            final PressureTemperatureHumidity weather,
                             final double[] parameters, final AbsoluteDate date) {
 
-        final PressureTemperatureHumidity pth = pthProvider.getWeatherParamerers(point, date);
-
         // limit the height to model range
-        final double fixedHeight = FastMath.min(FastMath.max(point.getAltitude(), pthProvider.getHMin()),
-                                                pthProvider.getHMax()) - pthProvider.getH0();
+        final double fixedHeight = FastMath.min(FastMath.max(point.getAltitude(), X_VALUES_FOR_B[0]),
+                                                X_VALUES_FOR_B[X_VALUES_FOR_B.length - 1]);
+
+        final PressureTemperatureHumidity pth = converter.convert(weather, fixedHeight);
 
         // interpolate the b correction term
         final double B = B_FUNCTION.value(fixedHeight);
@@ -263,21 +267,23 @@ public class ModifiedSaastamoinenModel implements DiscreteTroposphericModel {
      */
     @Override
     public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+                                                           final FieldPressureTemperatureHumidity<T> weather,
                                                            final T[] parameters, final FieldAbsoluteDate<T> date) {
 
-        final FieldPressureTemperatureHumidity<T> pth = pthProvider.getWeatherParamerers(point, date);
+        // limit the height to model range
+        final T fixedHeight = FastMath.min(FastMath.max(point.getAltitude(), X_VALUES_FOR_B[0]),
+                                           X_VALUES_FOR_B[X_VALUES_FOR_B.length - 1]);
+
+        final FieldPressureTemperatureHumidity<T> pth = converter.convert(weather, fixedHeight);
 
         final Field<T> field = date.getField();
         final T zero = field.getZero();
-        // limit the height to model range
-        final T fixedHeight = FastMath.min(FastMath.max(point.getAltitude(), pthProvider.getHMin()),
-                                                pthProvider.getHMax()).subtract(pthProvider.getH0());
 
         // interpolate the b correction term
         final T B = B_FUNCTION.value(fixedHeight);
 
         // calculate the zenith angle from the elevation
-        final T z = FastMath.abs(FastMath.max(elevation, zero.add(lowElevationThreshold)).negate().
+        final T z = FastMath.abs(FastMath.max(elevation, zero.newInstance(lowElevationThreshold)).negate().
                                  add(zero.getPi().multiply(0.5)));
 
         // get correction factor

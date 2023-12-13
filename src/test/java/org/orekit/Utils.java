@@ -28,7 +28,6 @@ import org.orekit.frames.EOPEntry;
 import org.orekit.frames.EopHistoryLoader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
-import org.orekit.models.earth.weather.GlobalPressureTemperature2Model;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
@@ -70,6 +69,7 @@ public class Utils {
     public static final double ae =  6378136.460;
     public static final double mu =  3.986004415e+14;
 
+    @SuppressWarnings("deprecation")
     public static void clearFactories() {
         DataContext.setDefault(new LazyLoadedDataContext());
         clearFactoryMaps(CelestialBodyFactory.class);
@@ -88,7 +88,7 @@ public class Utils {
                 clearFactoryMaps(c);
             }
         }
-        clearAtomicReference(GlobalPressureTemperature2Model.class);
+        clearAtomicReference(org.orekit.models.earth.weather.GlobalPressureTemperature2Model.class);
         FramesFactory.clearEOPHistoryLoaders();
         FramesFactory.setEOPContinuityThreshold(5 * Constants.JULIAN_DAY);
         TimeScalesFactory.clearUTCTAIOffsetsLoaders();

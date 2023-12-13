@@ -17,6 +17,7 @@
 package org.orekit.models.earth.weather;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 
 /** Container for pressure and temperature.
  * @param <T> type of the field elements
@@ -25,6 +26,9 @@ import org.hipparchus.CalculusFieldElement;
  */
 public class FieldPressureTemperature<T extends CalculusFieldElement<T>> {
 
+    /** Altitude at which weather parameters have been computed. */
+    private final T altitude;
+
     /** Pressure (Pa). */
     private final T pressure;
 
@@ -32,12 +36,31 @@ public class FieldPressureTemperature<T extends CalculusFieldElement<T>> {
     private final T temperature;
 
     /** Simple constructor.
+     * @param altitude altitude at which weather parameters have been computed (m)
      * @param pressure pressure (Pa)
      * @param temperature temperature (Kelvin)
      */
-    public FieldPressureTemperature(final T pressure, final T temperature) {
-        this.pressure           = pressure;
-        this.temperature        = temperature;
+    public FieldPressureTemperature(final T altitude, final T pressure, final T temperature) {
+        this.altitude    = altitude;
+        this.pressure    = pressure;
+        this.temperature = temperature;
+    }
+
+    /** Simple constructor.
+     * @param field field to which elements belong
+     * @param weather regular weather parameters
+     */
+    public FieldPressureTemperature(final Field<T> field, final PressureTemperatureHumidity weather) {
+        this.altitude    = field.getZero().newInstance(weather.getAltitude());
+        this.pressure    = field.getZero().newInstance(weather.getPressure());
+        this.temperature = field.getZero().newInstance(weather.getTemperature());
+    }
+
+    /** Get altitude at which weather parameters have been computed.
+     * @return altitude at which weather parameters have been computed (m)
+     */
+    public T getAltitude() {
+        return altitude;
     }
 
     /** Get pressure.

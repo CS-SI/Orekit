@@ -57,6 +57,7 @@ import org.orekit.utils.ParameterDriversList;
 
 import java.util.List;
 
+@Deprecated
 public class TimeSpanEstimatedTroposphericModelTest {
 
     @BeforeAll

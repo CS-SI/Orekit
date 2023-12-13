@@ -232,7 +232,9 @@ public class SaastamoinenModelTest {
                 double height = heights[h];
                 double elevation = elevations[e];
                 double expectedValue = expectedValues[h][e];
-                double actualValue = model.pathDelay(elevation, new GeodeticPoint(0.0, 0.0, height), null, AbsoluteDate.J2000_EPOCH);
+                final GeodeticPoint location = new GeodeticPoint(0.0, 0.0, height);
+                final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+                double actualValue = model.pathDelay(elevation, location, null, date);
                 Assertions.assertEquals(expectedValue, actualValue, epsilon, "For height=" + height + " elevation = " +
                         FastMath.toDegrees(elevation) + " precision not met");
             }
@@ -254,7 +256,9 @@ public class SaastamoinenModelTest {
                 T height = zero.add(heights[h]);
                 T elevation = zero.add(elevations[e]);
                 double expectedValue = expectedValues[h][e];
-                T actualValue = model.pathDelay(elevation, new FieldGeodeticPoint<>(zero, zero, zero.add(height)), null, FieldAbsoluteDate.getJ2000Epoch(field));
+                FieldGeodeticPoint<T> location = new FieldGeodeticPoint<>(zero, zero, zero.add(height));
+                FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field);
+                T actualValue = model.pathDelay(elevation, location, null, date);
                 Assertions.assertEquals(expectedValue, actualValue.getReal(), epsilon, "For height=" + height + " elevation = " +
                         FastMath.toDegrees(elevation.getReal()) + " precision not met");
             }

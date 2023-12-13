@@ -24,6 +24,7 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
@@ -67,6 +68,7 @@ public class TLEContext implements StationDataProvider {
                                                    FastMath.toRadians(longitudeInDegrees),
                                                    altitude);
         return new GroundStation(new TopocentricFrame(earth, gp, name),
+                                 TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                                  ut1.getEOPHistory(), displacements);
     }
 

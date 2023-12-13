@@ -154,12 +154,12 @@ public class TurnAroundRangeTest {
         }
         // Run test
         boolean isModifier = true;
-        double refErrorQMMedian = 2.6e-6;
-        double refErrorQMMean   = 2.5e-6;
-        double refErrorQMMax    = 5.6e-6;
-        double refErrorQSMedian = 3.7e-7;
-        double refErrorQSMean   = 3.6e-7;
-        double refErrorQSMax    = 7.7e-7;
+        double refErrorQMMedian = 1.3e-8;
+        double refErrorQMMean   = 8.9e-8;
+        double refErrorQMMax    = 5.1e-6;
+        double refErrorQSMedian = 3.4e-7;
+        double refErrorQSMean   = 1.3e-5;
+        double refErrorQSMax    = 1.5e-4;
         this.genericTestParameterDerivatives(isModifier, printResults,
                                              refErrorQMMedian, refErrorQMMean, refErrorQMMax,
                                              refErrorQSMedian, refErrorQSMean, refErrorQSMax);

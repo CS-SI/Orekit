@@ -23,7 +23,7 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.models.earth.troposphere.DiscreteTroposphericModel;
+import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
@@ -42,20 +42,31 @@ import org.orekit.utils.ParameterDriver;
 public abstract class BaseRangeRateTroposphericDelayModifier {
 
     /** Tropospheric delay model. */
-    private final DiscreteTroposphericModel tropoModel;
+    private final TroposphericModel tropoModel;
 
     /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current range-rate measurement method.
+     * @deprecated as of 12.1, replaced by {@link #BaseRangeRateTroposphericDelayModifier(TroposphericModel)}
      */
-    protected BaseRangeRateTroposphericDelayModifier(final DiscreteTroposphericModel model) {
+    @Deprecated
+    protected BaseRangeRateTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
+        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
+    }
+
+    /** Constructor.
+     *
+     * @param model  Tropospheric delay model appropriate for the current range-rate measurement method.
+     * @since 12.1
+     */
+    protected BaseRangeRateTroposphericDelayModifier(final TroposphericModel model) {
         tropoModel = model;
     }
 
     /** Get the tropospheric delay model.
      * @return tropospheric delay model
      */
-    protected DiscreteTroposphericModel getTropoModel() {
+    protected TroposphericModel getTropoModel() {
         return tropoModel;
     }
 
@@ -82,7 +93,10 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
         // only consider measures above the horizon
         if (elevation1 > 0) {
             // tropospheric delay in meters
-            final double d1 = tropoModel.pathDelay(elevation1, station.getBaseFrame().getPoint(), tropoModel.getParameters(state.getDate()), state.getDate());
+            final double d1 = tropoModel.pathDelay(elevation1,
+                                                   station.getOffsetGeodeticPoint(state.getDate()),
+                                                   station.getPressureTemperatureHumidity(state.getDate()),
+                                                   tropoModel.getParameters(state.getDate()), state.getDate());
 
             // propagate spacecraft state forward by dt
             final SpacecraftState state2 = state.shiftedBy(dt);
@@ -96,7 +110,10 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
                             getElevation();
 
             // tropospheric delay dt after
-            final double d2 = tropoModel.pathDelay(elevation2, station.getBaseFrame().getPoint(), tropoModel.getParameters(state2.getDate()), state2.getDate());
+            final double d2 = tropoModel.pathDelay(elevation2,
+                                                   station.getOffsetGeodeticPoint(state.getDate()),
+                                                   station.getPressureTemperatureHumidity(state.getDate()),
+                                                   tropoModel.getParameters(state2.getDate()), state2.getDate());
 
             return (d2 - d1) / dt;
         }
@@ -133,7 +150,10 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
         // only consider measures above the horizon
         if (elevation1.getReal() > 0) {
             // tropospheric delay in meters
-            final T d1 = tropoModel.pathDelay(elevation1, station.getBaseFrame().getPoint(field), parameters, state.getDate());
+            final T d1 = tropoModel.pathDelay(elevation1,
+                                              station.getOffsetGeodeticPoint(state.getDate()),
+                                              station.getPressureTemperatureHumidity(state.getDate()),
+                                              parameters, state.getDate());
 
             // propagate spacecraft state forward by dt
             final FieldSpacecraftState<T> state2 = state.shiftedBy(dt);
@@ -148,7 +168,10 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
 
 
             // tropospheric delay dt after
-            final T d2 = tropoModel.pathDelay(elevation2, station.getBaseFrame().getPoint(field), parameters, state2.getDate());
+            final T d2 = tropoModel.pathDelay(elevation2,
+                                              station.getOffsetGeodeticPoint(state.getDate()),
+                                              station.getPressureTemperatureHumidity(state.getDate()),
+                                              parameters, state2.getDate());
 
             return d2.subtract(d1).divide(dt);
         }

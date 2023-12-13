@@ -144,7 +144,8 @@ public class FieldGlobalMappingFunctionModelTest {
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
 
         // Station
-        final GroundStation station = new GroundStation(baseFrame);
+        final GroundStation station = new GroundStation(baseFrame,
+                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
 
         // Mapping Function model
         final MappingFunction model = new GlobalMappingFunctionModel();

@@ -25,6 +25,7 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.displacement.StationDisplacement;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
@@ -87,6 +88,7 @@ public class EcksteinHechlerContext implements StationDataProvider {
                                                    FastMath.toRadians(longitudeInDegrees),
                                                    altitude);
         return new GroundStation(new TopocentricFrame(earth, gp, name),
+                                 TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                                  ut1.getEOPHistory(), displacements);
     }
 
