@@ -761,7 +761,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
                                                      current.mean.getPerigeeArgument() + deltaOmega,
                                                      current.mean.getRightAscensionOfAscendingNode() + deltaRAAN,
                                                      current.mean.getMeanAnomaly() + deltaAnom,
-                                                     PositionAngleType.MEAN,
+                                                     PositionAngleType.MEAN, PositionAngleType.TRUE,
                                                      current.mean.getFrame(),
                                                      current.mean.getDate(), mu),
                                   mass, referenceRadius, mu, ck0);
@@ -1435,7 +1435,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
                                       g.getValue(), h.getValue(), l.getValue(),
                                       a.getFirstDerivative(), e.getFirstDerivative(), i.getFirstDerivative(),
                                       g.getFirstDerivative(), h.getFirstDerivative(), l.getFirstDerivative(),
-                                      PositionAngleType.MEAN, mean.getFrame(), date, mu);
+                                      PositionAngleType.MEAN, PositionAngleType.TRUE, mean.getFrame(), date, mu);
 
         }
 
