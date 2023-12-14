@@ -45,7 +45,6 @@ import org.orekit.gnss.Frequency;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.models.earth.troposphere.EstimatedModel;
-import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.OrbitType;
@@ -627,10 +626,10 @@ public class PhaseTest {
 
                     // Add modifier
                     final NiellMappingFunctionModel      mappingFunction = new NiellMappingFunctionModel();
-                    final EstimatedModel                 tropoModel      = new EstimatedTroposphericModel(mappingFunction, 5.0);
+                    final EstimatedModel                 tropoModel      = new EstimatedModel(mappingFunction, 5.0);
                     final PhaseTroposphericDelayModifier modifier        = new PhaseTroposphericDelayModifier(tropoModel);
                     final List<ParameterDriver>          parameters      = modifier.getParametersDrivers();
-                    parameters.get(0).setName(stationName + "/" + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+                    parameters.get(0).setName(stationName + "/" + EstimatedModel.TOTAL_ZENITH_DELAY);
                     parameters.get(0).setSelected(true);
                     ((Phase) measurement).addModifier(modifier);
 

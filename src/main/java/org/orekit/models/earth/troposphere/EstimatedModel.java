@@ -75,7 +75,7 @@ public class EstimatedModel implements TroposphericModel {
      * @param h0 altitude of the station [m]
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
-     * @param model mapping function model (NMF or GMF).
+     * @param model mapping function model.
      * @param totalDelay initial value for the tropospheric zenith total delay [m]
      */
     public EstimatedModel(final double h0, final double t0, final double p0,
@@ -89,7 +89,7 @@ public class EstimatedModel implements TroposphericModel {
 
     /** Build a new instance using the given environmental conditions.
      * @param hydrostatic model for hydrostatic component
-     * @param model mapping function model (NMF or GMF).
+     * @param model mapping function model.
      * @param totalDelay initial value for the tropospheric zenith total delay [m]
      * @since 12.1
      */
@@ -110,7 +110,7 @@ public class EstimatedModel implements TroposphericModel {
      * <li>temperature: 18 degree Celsius
      * <li>pressure: 1013.25 mbar
      * </ul>
-     * @param model mapping function model (NMF or GMF).
+     * @param model mapping function model.
      * @param totalDelay initial value for the tropospheric zenith total delay [m]
      */
     public EstimatedModel(final MappingFunction model, final double totalDelay) {

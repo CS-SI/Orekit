@@ -37,8 +37,8 @@ import org.orekit.utils.TimeSpanMap.Span;
 /**
  * Time span estimated tropospheric model.
  * <p>
- * This class is closely related to {@link org.orekit.models.earth.troposphere EstimatedTroposphericModel} class.<br>
- * The difference is that it has a {@link TimeSpanMap} of {@link EstimatedTroposphericModel} objects as attribute. <br>
+ * This class is closely related to {@link org.orekit.models.earth.troposphere EstimatedModel} class.<br>
+ * The difference is that it has a {@link TimeSpanMap} of {@link EstimatedModel} objects as attribute. <br>
  * The idea behind this model is to allow the user to design a tropospheric model that can see its physical parameters
  * (total zenith delay) change with time, at dates chosen by the user. <br>
  * </p>

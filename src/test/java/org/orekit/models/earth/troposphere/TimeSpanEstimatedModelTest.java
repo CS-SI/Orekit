@@ -75,7 +75,7 @@ public class TimeSpanEstimatedModelTest {
         final AbsoluteDate date = new AbsoluteDate();
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
         MappingFunction mapping = new NiellMappingFunctionModel();
-        EstimatedTroposphericModel model = new EstimatedTroposphericModel(mapping, 2.0);
+        EstimatedModel model = new EstimatedModel(mapping, 2.0);
         TroposphericModel  timeSpanModel = new TimeSpanEstimatedModel(model);
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
@@ -95,7 +95,7 @@ public class TimeSpanEstimatedModelTest {
         final AbsoluteDate date = new AbsoluteDate();
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
         MappingFunction mapping = new NiellMappingFunctionModel();
-        EstimatedTroposphericModel model = new EstimatedTroposphericModel(mapping, 2.0);
+        EstimatedModel model = new EstimatedModel(mapping, 2.0);
         TroposphericModel  timeSpanModel = new TimeSpanEstimatedModel(model);
         final double path = timeSpanModel.pathDelay(FastMath.toRadians(elevation), point,
                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE,
@@ -135,7 +135,7 @@ public class TimeSpanEstimatedModelTest {
         final GroundStation station = new GroundStation(baseFrame);
 
         // Tropospheric model
-        EstimatedTroposphericModel model = new EstimatedTroposphericModel(func, 2.0);
+        EstimatedModel model = new EstimatedModel(func, 2.0);
         TroposphericModel  timeSpanModel = new TimeSpanEstimatedModel(model);
 
         // Derivative Structure
@@ -263,7 +263,7 @@ public class TimeSpanEstimatedModelTest {
 
     @Test
     public void testDelayParameterDerivative() {
-        doTestParametersDerivatives(EstimatedTroposphericModel.TOTAL_ZENITH_DELAY, 5.0e-15);
+        doTestParametersDerivatives(EstimatedModel.TOTAL_ZENITH_DELAY, 5.0e-15);
     }
 
     private void doTestParametersDerivatives(String parameterName, double tolerance) {
@@ -282,7 +282,7 @@ public class TimeSpanEstimatedModelTest {
 
         // Tropospheric model
         final MappingFunction gmf = new GlobalMappingFunctionModel();
-        final TroposphericModel model = new EstimatedTroposphericModel(gmf, 5.0);
+        final TroposphericModel model = new EstimatedModel(gmf, 5.0);
 
         // Set Parameter Driver
         for (final ParameterDriver driver : model.getParametersDrivers()) {
@@ -415,7 +415,7 @@ public class TimeSpanEstimatedModelTest {
     public void testComparisonWithEstimatedModel() {
         final AbsoluteDate date = new AbsoluteDate();
         MappingFunction mapping = new NiellMappingFunctionModel();
-        EstimatedTroposphericModel estimatedModel = new EstimatedTroposphericModel(mapping, 2.0);
+        EstimatedModel estimatedModel = new EstimatedModel(mapping, 2.0);
         TroposphericModel  timeSpanModel  = new TimeSpanEstimatedModel(estimatedModel);
         final double elevation = 45.0;
         final double height    = 100.0;
@@ -439,7 +439,7 @@ public class TimeSpanEstimatedModelTest {
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         MappingFunction mapping = new NiellMappingFunctionModel();
-        EstimatedTroposphericModel estimatedModel = new EstimatedTroposphericModel(mapping, 2.0);
+        EstimatedModel estimatedModel = new EstimatedModel(mapping, 2.0);
         TroposphericModel  timeSpanModel  = new TimeSpanEstimatedModel(estimatedModel);
         final T elevation = zero.add(45.0);
         final T height    = zero.add(100.0);

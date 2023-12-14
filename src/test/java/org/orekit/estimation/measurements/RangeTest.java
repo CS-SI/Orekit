@@ -32,7 +32,6 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.models.earth.troposphere.EstimatedModel;
-import org.orekit.models.earth.troposphere.EstimatedTroposphericModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
 import org.orekit.orbits.OrbitType;
@@ -650,7 +649,7 @@ public class RangeTest {
                         driver.setSelected(true);
                     }
 
-                    parameters.get(0).setName(stationName + "/" + EstimatedTroposphericModel.TOTAL_ZENITH_DELAY);
+                    parameters.get(0).setName(stationName + "/" + EstimatedModel.TOTAL_ZENITH_DELAY);
                     final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(tropoModel);
                     if (isModifier) {
                         ((Range) measurement).addModifier(modifier);

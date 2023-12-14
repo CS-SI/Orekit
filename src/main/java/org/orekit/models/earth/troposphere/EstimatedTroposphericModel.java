@@ -46,8 +46,9 @@ import org.orekit.utils.ParameterDriver;
  * {@link DiscreteTroposphericModel tropospheric model}
  * while the tropospheric total zenith delay δ<sub>t</sub> is estimated as a {@link ParameterDriver},
  * hence the wet part is the difference between the two.
+ * @deprecated as of 12.1, replaced by {@link EstimatedModel}
  */
-@SuppressWarnings("deprecation")
+@Deprecated
 public class EstimatedTroposphericModel extends EstimatedModel implements DiscreteTroposphericModel {
 
     /** Name of the parameter of this model: the total zenith delay. */

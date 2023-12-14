@@ -73,7 +73,7 @@ public class EstimatedModelTest {
         final AbsoluteDate date = new AbsoluteDate();
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
         MappingFunction mapping = new NiellMappingFunctionModel();
-        TroposphericModel model = new EstimatedTroposphericModel(mapping, 2.0);
+        TroposphericModel model = new EstimatedModel(mapping, 2.0);
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
@@ -92,7 +92,7 @@ public class EstimatedModelTest {
         final AbsoluteDate date = new AbsoluteDate();
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
         MappingFunction mapping = new NiellMappingFunctionModel();
-        TroposphericModel model = new EstimatedTroposphericModel(mapping, 2.0);
+        TroposphericModel model = new EstimatedModel(mapping, 2.0);
         final double path = model.pathDelay(FastMath.toRadians(elevation), point,
                                             TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                             model.getParameters(), date);
@@ -132,7 +132,7 @@ public class EstimatedModelTest {
                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
 
         // Tropospheric model
-        final TroposphericModel model = new EstimatedTroposphericModel(func, 2.0);
+        final TroposphericModel model = new EstimatedModel(func, 2.0);
 
         // Derivative Structure
         final DSFactory factory = new DSFactory(6, 1);
@@ -259,7 +259,7 @@ public class EstimatedModelTest {
 
     @Test
     public void testDelayParameterDerivative() {
-        doTestParametersDerivatives(EstimatedTroposphericModel.TOTAL_ZENITH_DELAY, 5.0e-15);
+        doTestParametersDerivatives(EstimatedModel.TOTAL_ZENITH_DELAY, 5.0e-15);
     }
 
     private void doTestParametersDerivatives(String parameterName, double tolerance) {
@@ -278,7 +278,7 @@ public class EstimatedModelTest {
 
         // Tropospheric model
         final MappingFunction gmf = new GlobalMappingFunctionModel();
-        final TroposphericModel model = new EstimatedTroposphericModel(gmf, 5.0);
+        final TroposphericModel model = new EstimatedModel(gmf, 5.0);
 
         // Set Parameter Driver
         for (final ParameterDriver driver : model.getParametersDrivers()) {
