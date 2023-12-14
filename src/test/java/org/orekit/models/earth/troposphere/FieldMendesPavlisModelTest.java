@@ -176,7 +176,10 @@ public class FieldMendesPavlisModelTest {
         final MendesPavlisModel model = new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
                                                               lambda, TroposphericModelUtils.MICRO_M);
 
-        final T[] computedMapping = model.mappingFactors(zero.add(elevation), point, date);
+        final T[] computedMapping = model.mappingFactors(zero.add(elevation), point,
+                                                         new FieldPressureTemperatureHumidity<>(field,
+                                                                                                TroposphericModelUtils.STANDARD_ATMOSPHERE),
+                                                         date);
 
         Assertions.assertEquals(expectedMapping, computedMapping[0].getReal(), 5.0e-8);
         Assertions.assertEquals(expectedMapping, computedMapping[1].getReal(), 5.0e-8);

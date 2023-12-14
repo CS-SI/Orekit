@@ -65,7 +65,7 @@ public class EstimatedTroposphericModel extends EstimatedModel implements Discre
      */
     public EstimatedTroposphericModel(final double t0, final double p0,
                                       final MappingFunction model, final double totalDelay) {
-        super(0.0, t0, p0, model, totalDelay);
+        super(0.0, t0, p0, new TroposphereMappingFunctionAdapter(model), totalDelay);
     }
 
     /** Build a new instance using the given environmental conditions.
@@ -77,7 +77,9 @@ public class EstimatedTroposphericModel extends EstimatedModel implements Discre
     public EstimatedTroposphericModel(final DiscreteTroposphericModel hydrostatic,
                                       final MappingFunction model,
                                       final double totalDelay) {
-        super(new TroposphericModelAdapter(hydrostatic), model, totalDelay);
+        super(new TroposphericModelAdapter(hydrostatic),
+              new TroposphereMappingFunctionAdapter(model),
+              totalDelay);
     }
 
     /** Build a new instance using a standard atmosphere model.

@@ -59,7 +59,8 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  */
 @SuppressWarnings("deprecation")
-public class ViennaThreeModel implements DiscreteTroposphericModel, TroposphericModel, MappingFunction {
+public class ViennaThreeModel
+    implements DiscreteTroposphericModel, TroposphericModel, MappingFunction, TroposphereMappingFunction {
 
     /** The a coefficient for the computation of the wet and hydrostatic mapping functions.*/
     private final double[] coefficientsA;
@@ -100,7 +101,18 @@ public class ViennaThreeModel implements DiscreteTroposphericModel, Tropospheric
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+                                   final AbsoluteDate date) {
+        return mappingFactors(elevation, point,
+                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                              date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+                                   final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(utc);
@@ -185,8 +197,21 @@ public class ViennaThreeModel implements DiscreteTroposphericModel, Tropospheric
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
-                                                              final FieldAbsoluteDate<T> date) {
+                                                                  final FieldAbsoluteDate<T> date) {
+        return mappingFactors(elevation, point,
+                              new FieldPressureTemperatureHumidity<>(date.getField(),
+                                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE),
+                              date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation,
+                                                                  final FieldGeodeticPoint<T> point,
+                                                                  final FieldPressureTemperatureHumidity<T> weather,
+                                                                  final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero         = field.getZero();
 

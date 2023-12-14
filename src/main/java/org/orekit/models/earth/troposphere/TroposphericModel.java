@@ -38,7 +38,6 @@ public interface TroposphericModel extends ParameterDriversProvider {
      * @param elevation the elevation of the satellite, in radians
      * @param point station location
      * @param weather weather parameters
-     * (could be set to {@link TroposphericModelUtils#STANDARD_ATMOSPHERE_PROVIDER}
      * for constant default values)
      * @param parameters tropospheric model parameters
      * @param date current date
@@ -54,7 +53,6 @@ public interface TroposphericModel extends ParameterDriversProvider {
      * @param elevation the elevation of the satellite, in radians
      * @param point station location
      * @param weather weather parameters
-     * (could be set to {@link TroposphericModelUtils#STANDARD_ATMOSPHERE_PROVIDER}
      * for constant default values)
      * @param parameters tropospheric model parameters at current date
      * @param date current date

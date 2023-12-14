@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 
 public class RevisedChaoMappingFunctionTest extends AbstractMappingFunctionTest {
 
-    protected MappingFunction buildMappingFunction() {
+    protected TroposphereMappingFunction buildMappingFunction() {
         return new RevisedChaoMappingFunction();
     }
 

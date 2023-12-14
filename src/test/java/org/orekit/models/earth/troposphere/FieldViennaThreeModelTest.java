@@ -115,6 +115,8 @@ public class FieldViennaThreeModelTest {
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
 
         final T[] computedMapping = model.mappingFactors(zero.add(elevation), point,
+                                                         new FieldPressureTemperatureHumidity<>(field,
+                                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                          date);
 
         Assertions.assertEquals(expectedHydro, computedMapping[0].getReal(), epsilon);
@@ -168,6 +170,8 @@ public class FieldViennaThreeModelTest {
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
 
         final T[] computedMapping = model.mappingFactors(zero.add(elevation), point,
+                                                         new FieldPressureTemperatureHumidity<>(field,
+                                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                          date);
 
         Assertions.assertEquals(expectedHydro, computedMapping[0].getReal(), epsilon);
@@ -221,6 +225,8 @@ public class FieldViennaThreeModelTest {
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
 
         final T[] computedMapping = model.mappingFactors(zero.add(elevation), point,
+                                                         new FieldPressureTemperatureHumidity<>(field,
+                                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                          date);
 
         Assertions.assertEquals(expectedHydro, computedMapping[0].getReal(), epsilon);

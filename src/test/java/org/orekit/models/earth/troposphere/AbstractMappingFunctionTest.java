@@ -28,7 +28,7 @@ import org.orekit.time.TimeScalesFactory;
 
 public abstract class AbstractMappingFunctionTest {
 
-    protected abstract MappingFunction buildMappingFunction();
+    protected abstract TroposphereMappingFunction buildMappingFunction();
 
     @Test
     public abstract void testMappingFactors();
@@ -49,9 +49,11 @@ public abstract class AbstractMappingFunctionTest {
 
         final double elevation     = FastMath.toRadians(5.0);
 
-        final MappingFunction model = buildMappingFunction();
+        final TroposphereMappingFunction model = buildMappingFunction();
 
-        final double[] computedMapping = model.mappingFactors(elevation, point, date);
+        final double[] computedMapping = model.mappingFactors(elevation, point,
+                                                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                              date);
         Assertions.assertEquals(expectedHydro, computedMapping[0], 1.0e-2);
         Assertions.assertEquals(expectedWet,   computedMapping[1], 1.0e-2);
 
@@ -61,14 +63,16 @@ public abstract class AbstractMappingFunctionTest {
     public void doTestFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
-        MappingFunction model = buildMappingFunction();
+        TroposphereMappingFunction model = buildMappingFunction();
         double[] lastFactors = new double[] {
             Double.MAX_VALUE,
             Double.MAX_VALUE
         };
         // mapping functions shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double[] factors = model.mappingFactors(FastMath.toRadians(elev), point, date);
+            final double[] factors = model.mappingFactors(FastMath.toRadians(elev), point,
+                                                          TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                          date);
             Assertions.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
             Assertions.assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
             lastFactors[0] = factors[0];

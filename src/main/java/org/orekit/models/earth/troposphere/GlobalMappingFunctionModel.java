@@ -16,8 +16,8 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
@@ -26,6 +26,8 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -54,7 +56,8 @@ import org.orekit.utils.LegendrePolynomials;
  *  @author Bryan Cazabonne
  *
  */
-public class GlobalMappingFunctionModel implements MappingFunction {
+@SuppressWarnings("deprecation")
+public class GlobalMappingFunctionModel implements MappingFunction, TroposphereMappingFunction {
 
     /** Multiplication factor for mapping function coefficients. */
     private static final double FACTOR = 1.0e-5;
@@ -83,7 +86,18 @@ public class GlobalMappingFunctionModel implements MappingFunction {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+                                   final AbsoluteDate date) {
+        return mappingFactors(elevation, point,
+                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                              date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+                                   final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(utc);
@@ -175,8 +189,21 @@ public class GlobalMappingFunctionModel implements MappingFunction {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
-                                                              final FieldAbsoluteDate<T> date) {
+                                                                  final FieldAbsoluteDate<T> date) {
+        return mappingFactors(elevation, point,
+                              new FieldPressureTemperatureHumidity<>(date.getField(),
+                                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE),
+                              date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation,
+                                                                  final FieldGeodeticPoint<T> point,
+                                                                  final FieldPressureTemperatureHumidity<T> weather,
+                                                                  final FieldAbsoluteDate<T> date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(utc);
         final int dofyear = dtc.getDate().getDayOfYear();

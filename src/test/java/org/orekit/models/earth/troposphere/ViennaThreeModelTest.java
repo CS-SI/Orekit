@@ -81,7 +81,9 @@ public class ViennaThreeModelTest {
 
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
 
-        final double[] computedMapping = model.mappingFactors(elevation, point, date);
+        final double[] computedMapping = model.mappingFactors(elevation, point,
+                                                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                              date);
 
         Assertions.assertEquals(expectedHydro, computedMapping[0], epsilon);
         Assertions.assertEquals(expectedWet,   computedMapping[1], epsilon);
@@ -126,7 +128,9 @@ public class ViennaThreeModelTest {
 
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
 
-        final double[] computedMapping = model.mappingFactors(elevation, point, date);
+        final double[] computedMapping = model.mappingFactors(elevation, point,
+                                                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                              date);
 
         Assertions.assertEquals(expectedHydro, computedMapping[0], epsilon);
         Assertions.assertEquals(expectedWet,   computedMapping[1], epsilon);
@@ -171,7 +175,9 @@ public class ViennaThreeModelTest {
 
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
 
-        final double[] computedMapping = model.mappingFactors(elevation, point, date);
+        final double[] computedMapping = model.mappingFactors(elevation, point,
+                                                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                              date);
 
         Assertions.assertEquals(expectedHydro, computedMapping[0], epsilon);
         Assertions.assertEquals(expectedWet,   computedMapping[1], epsilon);

@@ -136,7 +136,7 @@ import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.models.earth.ionosphere.SingleLayerModelMappingFunction;
 import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.GlobalMappingFunctionModel;
-import org.orekit.models.earth.troposphere.MappingFunction;
+import org.orekit.models.earth.troposphere.TroposphereMappingFunction;
 import org.orekit.models.earth.troposphere.MendesPavlisModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
@@ -1602,7 +1602,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             final RangeTroposphericDelayModifier rangeTroposphericCorrection;
             if (stationRangeTropospheric[i]) {
 
-                MappingFunction mappingModel = null;
+                TroposphereMappingFunction mappingModel = null;
                 if (stationGlobalMappingFunction[i]) {
                     mappingModel = new GlobalMappingFunctionModel();
                 } else if (stationNiellMappingFunction[i]) {

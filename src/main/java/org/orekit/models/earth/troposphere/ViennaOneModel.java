@@ -51,7 +51,8 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  */
 @SuppressWarnings("deprecation")
-public class ViennaOneModel implements DiscreteTroposphericModel, TroposphericModel, MappingFunction {
+public class ViennaOneModel
+    implements DiscreteTroposphericModel, TroposphericModel, MappingFunction, TroposphereMappingFunction {
 
     /** The a coefficient for the computation of the wet and hydrostatic mapping functions.*/
     private final double[] coefficientsA;
@@ -118,7 +119,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel, TroposphericMo
     @Override
     @Deprecated
     public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
-                                                       final T[] parameters, final FieldAbsoluteDate<T> date) {
+                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
         return pathDelay(elevation, point,
                          new FieldPressureTemperatureHumidity<>(date.getField(), TroposphericModelUtils.STANDARD_ATMOSPHERE),
                          parameters, date);
@@ -165,7 +166,7 @@ public class ViennaOneModel implements DiscreteTroposphericModel, TroposphericMo
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
     public <T extends CalculusFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
-                                                                  final FieldAbsoluteDate<T> date) {
+                                                                      final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero = field.getZero();
         final T[] delays = MathArrays.buildArray(field, 2);
@@ -176,7 +177,18 @@ public class ViennaOneModel implements DiscreteTroposphericModel, TroposphericMo
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+                                   final AbsoluteDate date) {
+        return mappingFactors(elevation, point,
+                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                              date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+                                   final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
         // Day of year computation
         final DateTimeComponents dtc = date.getComponents(utc);
@@ -230,8 +242,21 @@ public class ViennaOneModel implements DiscreteTroposphericModel, TroposphericMo
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
-                                                              final FieldAbsoluteDate<T> date) {
+                                                                  final FieldAbsoluteDate<T> date) {
+        return mappingFactors(elevation, point,
+                              new FieldPressureTemperatureHumidity<>(date.getField(),
+                                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE),
+                              date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation,
+                                                                  final FieldGeodeticPoint<T> point,
+                                                                  final FieldPressureTemperatureHumidity<T> weather,
+                                                                  final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
         final T zero = field.getZero();
 

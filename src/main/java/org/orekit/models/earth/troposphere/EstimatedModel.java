@@ -60,7 +60,7 @@ public class EstimatedModel implements TroposphericModel {
     public static final String TOTAL_ZENITH_DELAY = "total zenith delay";
 
     /** Mapping Function model. */
-    private final MappingFunction model;
+    private final TroposphereMappingFunction model;
 
     /** Driver for the tropospheric zenith total delay.*/
     private final ParameterDriver totalZenithDelay;
@@ -79,7 +79,7 @@ public class EstimatedModel implements TroposphericModel {
      * @param totalDelay initial value for the tropospheric zenith total delay [m]
      */
     public EstimatedModel(final double h0, final double t0, final double p0,
-                          final MappingFunction model, final double totalDelay) {
+                          final TroposphereMappingFunction model, final double totalDelay) {
         this(new ModifiedSaastamoinenModel(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(h0,
                                                                                                                            TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
                                                                                                                            t0,
@@ -94,7 +94,7 @@ public class EstimatedModel implements TroposphericModel {
      * @since 12.1
      */
     public EstimatedModel(final TroposphericModel hydrostatic,
-                          final MappingFunction model,
+                          final TroposphereMappingFunction model,
                           final double totalDelay) {
 
         totalZenithDelay = new ParameterDriver(EstimatedModel.TOTAL_ZENITH_DELAY,
@@ -113,7 +113,7 @@ public class EstimatedModel implements TroposphericModel {
      * @param model mapping function model.
      * @param totalDelay initial value for the tropospheric zenith total delay [m]
      */
-    public EstimatedModel(final MappingFunction model, final double totalDelay) {
+    public EstimatedModel(final TroposphereMappingFunction model, final double totalDelay) {
         this(0.0, 273.15 + 18.0, 1013.25, model, totalDelay);
     }
 
@@ -132,7 +132,7 @@ public class EstimatedModel implements TroposphericModel {
         final double zhd = hydrostatic.pathDelay(0.5 * FastMath.PI, point, weather, parameters, date);
         final double ztd = parameters[0];
         // Mapping functions
-        final double[] mf = model.mappingFactors(elevation, point, date);
+        final double[] mf = model.mappingFactors(elevation, point, weather, date);
         // Total delay
         return mf[0] * zhd + mf[1] * (ztd - zhd);
     }
@@ -146,7 +146,7 @@ public class EstimatedModel implements TroposphericModel {
         final T zhd = hydrostatic.pathDelay(elevation.getPi().multiply(0.5), point, weather, parameters, date);
         final T ztd = parameters[0];
         // Mapping functions
-        final T[] mf = model.mappingFactors(elevation, point, date);
+        final T[] mf = model.mappingFactors(elevation, point, weather, date);
         // Total delay
         return mf[0].multiply(zhd).add(mf[1].multiply(ztd.subtract(zhd)));
     }

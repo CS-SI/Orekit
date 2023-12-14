@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2023 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,15 +19,32 @@ package org.orekit.models.earth.troposphere;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
-/** Interface for mapping functions used in the tropospheric delay computation.
- * @author Bryan Cazabonne
- * @deprecated as of 12.1, replaced by {@link TroposphereMappingFunction}
+/** Adapter between {@link MappingFunction} and {@link TroposphereMappingFunction}.
+ * <p>
+ * This class is a temporary adapter, it will be removed when
+ * {@link MappingFunction} is removed.
+ * <p>
+ * @author Luc Maisonobe
+ * @since 12.1
+ * @deprecated temporary adapter to be removed when {@link MappingFunction} is removed
  */
 @Deprecated
-public interface MappingFunction {
+public class TroposphereMappingFunctionAdapter implements TroposphereMappingFunction {
+
+    /** Underlying model. */
+    private final MappingFunction model;
+
+    /** Simple constructor.
+     * @param model underlying model
+     */
+    public TroposphereMappingFunctionAdapter(final MappingFunction model) {
+        this.model = model;
+    }
 
     /** This method allows the computation of the hydrostatic and
      * wet mapping functions. The resulting element is an array having the following form:
@@ -37,10 +54,14 @@ public interface MappingFunction {
      * </ul>
      * @param elevation the elevation of the satellite, in radians
      * @param point station location
+     * @param weather weather parameters
      * @param date current date
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    double[] mappingFactors(double elevation, GeodeticPoint point, AbsoluteDate date);
+    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+                                   final PressureTemperatureHumidity weather, final AbsoluteDate date) {
+        return model.mappingFactors(elevation, point, date);
+    }
 
     /** This method allows the computation of the hydrostatic and
      * wet mapping functions. The resulting element is an array having the following form:
@@ -50,10 +71,16 @@ public interface MappingFunction {
      * </ul>
      * @param elevation the elevation of the satellite, in radians
      * @param point station location
+     * @param weather weather parameters
      * @param date current date
      * @param <T> type of the elements
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    <T extends CalculusFieldElement<T>> T[] mappingFactors(T elevation, FieldGeodeticPoint<T> point, FieldAbsoluteDate<T> date);
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation,
+                                                                  final FieldGeodeticPoint<T> point,
+                                                                  final FieldPressureTemperatureHumidity<T> weather,
+                                                                  final FieldAbsoluteDate<T> date) {
+        return model.mappingFactors(elevation, point, date);
+    }
 
 }

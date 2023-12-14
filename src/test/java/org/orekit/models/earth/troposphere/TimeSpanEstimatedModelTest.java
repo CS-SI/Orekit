@@ -74,7 +74,7 @@ public class TimeSpanEstimatedModelTest {
     public void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
-        MappingFunction mapping = new NiellMappingFunctionModel();
+        TroposphereMappingFunction mapping = new NiellMappingFunctionModel();
         EstimatedModel model = new EstimatedModel(mapping, 2.0);
         TroposphericModel  timeSpanModel = new TimeSpanEstimatedModel(model);
         double lastDelay = Double.MAX_VALUE;
@@ -94,7 +94,7 @@ public class TimeSpanEstimatedModelTest {
         final double height = 100d;
         final AbsoluteDate date = new AbsoluteDate();
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
-        MappingFunction mapping = new NiellMappingFunctionModel();
+        TroposphereMappingFunction mapping = new NiellMappingFunctionModel();
         EstimatedModel model = new EstimatedModel(mapping, 2.0);
         TroposphericModel  timeSpanModel = new TimeSpanEstimatedModel(model);
         final double path = timeSpanModel.pathDelay(FastMath.toRadians(elevation), point,
@@ -109,7 +109,7 @@ public class TimeSpanEstimatedModelTest {
         final double latitude     = FastMath.toRadians(45.0);
         final double longitude    = FastMath.toRadians(45.0);
         GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
-        final MappingFunction gmf = new GlobalMappingFunctionModel();
+        final TroposphereMappingFunction gmf = new GlobalMappingFunctionModel();
         doTestDelayStateDerivatives(gmf, point, 4.7e-9);
     }
 
@@ -118,11 +118,11 @@ public class TimeSpanEstimatedModelTest {
         final double latitude     = FastMath.toRadians(45.0);
         final double longitude    = FastMath.toRadians(45.0);
         GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
-        final MappingFunction nmf = new NiellMappingFunctionModel();
+        final TroposphereMappingFunction nmf = new NiellMappingFunctionModel();
         doTestDelayStateDerivatives(nmf, point, 4.4e-9);
     }
 
-    private void doTestDelayStateDerivatives(final MappingFunction func, final GeodeticPoint point, final double tolerance) {
+    private void doTestDelayStateDerivatives(final TroposphereMappingFunction func, final GeodeticPoint point, final double tolerance) {
 
         // Body: earth
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -281,7 +281,7 @@ public class TimeSpanEstimatedModelTest {
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
 
         // Tropospheric model
-        final MappingFunction gmf = new GlobalMappingFunctionModel();
+        final TroposphereMappingFunction gmf = new GlobalMappingFunctionModel();
         final TroposphericModel model = new EstimatedModel(gmf, 5.0);
 
         // Set Parameter Driver
@@ -414,7 +414,7 @@ public class TimeSpanEstimatedModelTest {
     @Test
     public void testComparisonWithEstimatedModel() {
         final AbsoluteDate date = new AbsoluteDate();
-        MappingFunction mapping = new NiellMappingFunctionModel();
+        TroposphereMappingFunction mapping = new NiellMappingFunctionModel();
         EstimatedModel estimatedModel = new EstimatedModel(mapping, 2.0);
         TroposphericModel  timeSpanModel  = new TimeSpanEstimatedModel(estimatedModel);
         final double elevation = 45.0;
@@ -438,7 +438,7 @@ public class TimeSpanEstimatedModelTest {
     private <T extends CalculusFieldElement<T>> void doTestFieldComparisonWithEstimatedModel(final Field<T> field) {
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-        MappingFunction mapping = new NiellMappingFunctionModel();
+        TroposphereMappingFunction mapping = new NiellMappingFunctionModel();
         EstimatedModel estimatedModel = new EstimatedModel(mapping, 2.0);
         TroposphericModel  timeSpanModel  = new TimeSpanEstimatedModel(estimatedModel);
         final T elevation = zero.add(45.0);

@@ -21,6 +21,8 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -31,7 +33,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class AbstractChaoMappingFunction implements MappingFunction {
+public class AbstractChaoMappingFunction implements TroposphereMappingFunction {
 
     /** First coefficient for hydrostatic (dry) component. */
     private final double ad;
@@ -61,6 +63,7 @@ public class AbstractChaoMappingFunction implements MappingFunction {
     /** {@inheritDoc} */
     @Override
     public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+                                   final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
         final double sinE = FastMath.sin(elevation);
         final double tanE = FastMath.tan(elevation);
@@ -72,7 +75,9 @@ public class AbstractChaoMappingFunction implements MappingFunction {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation,
+                                                                  final FieldGeodeticPoint<T> point,
+                                                                  final FieldPressureTemperatureHumidity<T> weather,
                                                                   final FieldAbsoluteDate<T> date) {
         final T sinE = FastMath.sin(elevation);
         final T tanE = FastMath.tan(elevation);

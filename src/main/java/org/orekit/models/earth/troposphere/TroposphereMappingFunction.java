@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2023 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,15 +19,16 @@ package org.orekit.models.earth.troposphere;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Interface for mapping functions used in the tropospheric delay computation.
  * @author Bryan Cazabonne
- * @deprecated as of 12.1, replaced by {@link TroposphereMappingFunction}
+ * @author Luc Maisonobe
  */
-@Deprecated
-public interface MappingFunction {
+public interface TroposphereMappingFunction {
 
     /** This method allows the computation of the hydrostatic and
      * wet mapping functions. The resulting element is an array having the following form:
@@ -37,10 +38,12 @@ public interface MappingFunction {
      * </ul>
      * @param elevation the elevation of the satellite, in radians
      * @param point station location
+     * @param weather weather parameters
      * @param date current date
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    double[] mappingFactors(double elevation, GeodeticPoint point, AbsoluteDate date);
+    double[] mappingFactors(double elevation, GeodeticPoint point,
+                            PressureTemperatureHumidity weather, AbsoluteDate date);
 
     /** This method allows the computation of the hydrostatic and
      * wet mapping functions. The resulting element is an array having the following form:
@@ -50,10 +53,13 @@ public interface MappingFunction {
      * </ul>
      * @param elevation the elevation of the satellite, in radians
      * @param point station location
+     * @param weather weather parameters
      * @param date current date
      * @param <T> type of the elements
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    <T extends CalculusFieldElement<T>> T[] mappingFactors(T elevation, FieldGeodeticPoint<T> point, FieldAbsoluteDate<T> date);
+    <T extends CalculusFieldElement<T>> T[] mappingFactors(T elevation, FieldGeodeticPoint<T> point,
+                                                           FieldPressureTemperatureHumidity<T> weather,
+                                                           FieldAbsoluteDate<T> date);
 
 }

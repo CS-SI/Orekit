@@ -263,7 +263,7 @@ public class TimeSpanEstimatedModel implements TroposphericModel {
 
             // If the name is the default name for EstimatedTroposphericModel parameter drivers
             // Modify the name to add the prefix and the date
-            if (driverName.equals(EstimatedTroposphericModel.TOTAL_ZENITH_DELAY)) {
+            if (driverName.equals(EstimatedModel.TOTAL_ZENITH_DELAY)) {
                 driver.setName(driverName + datePrefix + date.toString(timeScale));
             }
         }

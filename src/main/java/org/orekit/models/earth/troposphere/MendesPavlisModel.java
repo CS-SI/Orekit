@@ -48,7 +48,8 @@ import org.orekit.utils.units.UnitsConverter;
 * @author Bryan Cazabonne
 */
 @SuppressWarnings("deprecation")
-public class MendesPavlisModel implements DiscreteTroposphericModel, TroposphericModel, MappingFunction {
+public class MendesPavlisModel
+    implements DiscreteTroposphericModel, TroposphericModel, MappingFunction, TroposphereMappingFunction {
 
     /** Coefficients for the dispertion equation for the hydrostatic component [µm<sup>-2</sup>]. */
     private static final double[] K_COEFFICIENTS = {
@@ -263,8 +264,9 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, Tropospheri
      * @param date current date
      * @return a two components array containing the zenith hydrostatic and wet delays.
      */
-    public <T extends CalculusFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point, final T[] parameters,
-                                                                  final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> T[] computeZenithDelay(final FieldGeodeticPoint<T> point,
+                                                                      final T[] parameters,
+                                                                      final FieldAbsoluteDate<T> date) {
 
         final FieldPressureTemperatureHumidity<T> pth = pthProvider.getWeatherParamerers(point, date);
 
@@ -300,7 +302,30 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, Tropospheri
      * δ = (D<sub>hz</sub> + D<sub>wz</sub>) * m(e) = δ<sub>z</sub> * m(e)
      */
     @Override
+    @Deprecated
     public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+                                   final AbsoluteDate date) {
+        return mappingFactors(elevation, point,
+                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                              date);
+    }
+
+    /** With the Mendes Pavlis tropospheric model, the mapping
+     * function is not split into hydrostatic and wet component.
+     * <p>
+     * Therefore, the two components of the resulting array are equals.
+     * <ul>
+     * <li>double[0] = m(e) → total mapping function
+     * <li>double[1] = m(e) → total mapping function
+     * </ul>
+     * <p>
+     * The total delay will thus be computed as:<br>
+     * δ = D<sub>hz</sub> * m(e) + D<sub>wz</sub> * m(e)<br>
+     * δ = (D<sub>hz</sub> + D<sub>wz</sub>) * m(e) = δ<sub>z</sub> * m(e)
+     */
+    @Override
+    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+                                   final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
         final double sinE = FastMath.sin(elevation);
 
@@ -345,8 +370,33 @@ public class MendesPavlisModel implements DiscreteTroposphericModel, Tropospheri
      * δ = (D<sub>hz</sub> + D<sub>wz</sub>) * m(e) = δ<sub>z</sub> * m(e)
      */
     @Override
+    @Deprecated
     public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
-                                                              final FieldAbsoluteDate<T> date) {
+                                                                  final FieldAbsoluteDate<T> date) {
+        return mappingFactors(elevation, point,
+                              new FieldPressureTemperatureHumidity<>(date.getField(),
+                                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE),
+                              date);
+    }
+
+    /** With the Mendes Pavlis tropospheric model, the mapping
+     * function is not split into hydrostatic and wet component.
+     * <p>
+     * Therefore, the two components of the resulting array are equals.
+     * <ul>
+     * <li>double[0] = m(e) → total mapping function
+     * <li>double[1] = m(e) → total mapping function
+     * </ul>
+     * <p>
+     * The total delay will thus be computed as:<br>
+     * δ = D<sub>hz</sub> * m(e) + D<sub>wz</sub> * m(e)<br>
+     * δ = (D<sub>hz</sub> + D<sub>wz</sub>) * m(e) = δ<sub>z</sub> * m(e)
+     */
+    @Override
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation,
+                                                                  final FieldGeodeticPoint<T> point,
+                                                                  final FieldPressureTemperatureHumidity<T> weather,
+                                                                  final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
 
         final T sinE = FastMath.sin(elevation);
