@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.models.earth.weather.water.WaterVaporPressureProvider;
 
-/** Conoverter for weather parameters that change with height.
+/** Converter for weather parameters that change with height.
  * <p>
  * Height variations correspond to equations 5.98, 5.99 and 5.100 from
  * Guochang Xu, GPS - Theory, Algorithms and Applications, Springer, 2007
