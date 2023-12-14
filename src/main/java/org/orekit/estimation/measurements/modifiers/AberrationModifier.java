@@ -419,6 +419,13 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
         }
     }
 
+    /**
+     * Check that given frame is pseudo-inertial. Throws an error otherwise.
+     *
+     * @param frame to check
+     *
+     * @throws OrekitException if given frame is not pseudo-inertial
+     */
     private static void ensureFrameIsPseudoInertial(final Frame frame) {
         // Check measurement frame is inertial
         if (!frame.isPseudoInertial()) {
