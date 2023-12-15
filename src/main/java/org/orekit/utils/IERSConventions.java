@@ -258,7 +258,7 @@ public enum IERSConventions {
                     final T f         = elements.getF();
                     final T d         = elements.getD();
                     final T t         = elements.getTC();
-                    final T t2        = t.multiply(t);
+                    final T t2        = t.square();
 
                     final FieldSinCos<T> scOmega  = FastMath.sinCos(omega);
                     final FieldSinCos<T> sc2omega = FieldSinCos.sum(scOmega, scOmega);

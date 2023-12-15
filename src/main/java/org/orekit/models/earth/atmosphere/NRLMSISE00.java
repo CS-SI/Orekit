@@ -3656,10 +3656,10 @@ public class NRLMSISE00 implements Atmosphere {
             final double g04 = g0(ap[4], p24, p25);
             final double g05 = g0(ap[5], p24, p25);
             final double g06 = g0(ap[6], p24, p25);
-            final T ex2      = ex.multiply(ex);
+            final T ex2      = ex.square();
             final T ex3      = ex.multiply(ex2);
-            final T ex4      = ex2.multiply(ex2);
-            final T ex8      = ex4.multiply(ex4);
+            final T ex4      = ex2.square();
+            final T ex8      = ex4.square();
             final T ex12     = ex4.multiply(ex8);
             final T g234     = ex.multiply(g02).add(ex2.multiply(g03)).add(ex3.multiply(g04));
             final T g56      = ex4.multiply(g05).add(ex12.multiply(g06));
@@ -3730,7 +3730,7 @@ public class NRLMSISE00 implements Atmosphere {
         private T scalh(final double alt, final double xm, final double temp) {
             // Gravity at altitude
             final T denom = rlat.reciprocal().multiply(alt).add(1);
-            final T galt = glat.divide(denom.multiply(denom));
+            final T galt = glat.divide(denom.square());
             return galt.reciprocal().multiply(R_GAS * temp / xm);
         }
 
@@ -3788,11 +3788,11 @@ public class NRLMSISE00 implements Atmosphere {
                 final T h = xa[khi].subtract(xa[klo]);
                 final T a = xa[khi].subtract(xx).divide(h);
                 final T b = xx.subtract(xa[klo]).divide(h);
-                final T a2 = a.multiply(a);
-                final T b2 = b.multiply(b);
+                final T a2 = a.square();
+                final T b2 = b.square();
 
                 final T z =
-                           a2.divide(2).subtract(a2.multiply(a2).add(1).divide(4)).multiply(y2a[klo]).
+                           a2.divide(2).subtract(a2.square().add(1).divide(4)).multiply(y2a[klo]).
                            add(b2.multiply(b2).divide(4).subtract(b2.divide(2)).multiply(y2a[khi]));
                 yi = yi.add(    a2.negate().add(1).multiply(ya[klo]).divide(2).
                             add(b2.multiply(ya[khi]).divide(2)).
@@ -3828,7 +3828,7 @@ public class NRLMSISE00 implements Atmosphere {
             final T a = xa[khi].subtract(x).divide(h);
             final T b = x.subtract(xa[klo]).divide(h);
             return a.multiply(ya[klo]).add(b.multiply(ya[khi])).
-                   add((    a.multiply(a).multiply(a).subtract(a).multiply(y2a[klo]).
+                   add((    a.square().multiply(a).subtract(a).multiply(y2a[klo]).
                         add(b.multiply(b).multiply(b).subtract(b).multiply(y2a[khi]))
                        ).multiply(h).multiply(h).divide(6));
         }

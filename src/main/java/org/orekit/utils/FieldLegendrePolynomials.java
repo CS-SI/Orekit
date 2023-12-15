@@ -51,7 +51,7 @@ public class FieldLegendrePolynomials<T extends CalculusFieldElement<T>> {
         // Initialize array
         this.pCoef = MathArrays.buildArray(field, degree + 1, order + 1);
 
-        final T t2 = t.multiply(t);
+        final T t2 = t.square();
 
         for (int n = 0; n <= degree; n++) {
 

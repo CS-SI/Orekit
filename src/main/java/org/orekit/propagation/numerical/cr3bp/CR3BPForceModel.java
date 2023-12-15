@@ -151,17 +151,17 @@ public class CR3BPForceModel implements ForceModel {
 
         // Norm of the Spacecraft position relative to the primary body
         final DerivativeStructure r1 =
-            FastMath.sqrt((fpx.add(d1)).multiply(fpx.add(d1)).add(fpy.multiply(fpy))
-                .add(fpz.multiply(fpz)));
+            FastMath.sqrt((fpx.add(d1)).multiply(fpx.add(d1)).add(fpy.square())
+                .add(fpz.square()));
 
         // Norm of the Spacecraft position relative to the secondary body
         final DerivativeStructure r2 =
             FastMath.sqrt((fpx.subtract(d2)).multiply(fpx.subtract(d2))
-                .add(fpy.multiply(fpy)).add(fpz.multiply(fpz)));
+                .add(fpy.square()).add(fpz.square()));
 
         // Potential of the Spacecraft
         return (mu.negate().add(1.0).divide(r1)).add(mu.divide(r2))
-                .add(fpx.multiply(fpx).add(fpy.multiply(fpy)).multiply(0.5)).add(d1.multiply(d2).multiply(0.5));
+                .add(fpx.square().add(fpy.square()).multiply(0.5)).add(d1.multiply(d2).multiply(0.5));
     }
 
     /**
@@ -194,17 +194,17 @@ public class CR3BPForceModel implements ForceModel {
 
         // Norm of the Spacecraft position relative to the primary body
         final FieldDerivativeStructure<T> r1 =
-            FastMath.sqrt((fpx.add(d1)).multiply(fpx.add(d1)).add(fpy.multiply(fpy))
-                .add(fpz.multiply(fpz)));
+            FastMath.sqrt((fpx.add(d1)).multiply(fpx.add(d1)).add(fpy.square())
+                .add(fpz.square()));
 
         // Norm of the Spacecraft position relative to the secondary body
         final FieldDerivativeStructure<T> r2 =
             FastMath.sqrt((fpx.subtract(d2)).multiply(fpx.subtract(d2))
-                .add(fpy.multiply(fpy)).add(fpz.multiply(fpz)));
+                .add(fpy.square()).add(fpz.square()));
 
         // Potential of the Spacecraft
         return (mu.negate().add(1.0).divide(r1)).add(mu.divide(r2))
-                .add(fpx.multiply(fpx).add(fpy.multiply(fpy)).multiply(0.5)).add(d1.multiply(d2).multiply(0.5));
+                .add(fpx.square().add(fpy.square()).multiply(0.5)).add(d1.multiply(d2).multiply(0.5));
     }
 
     /** {@inheritDoc} */

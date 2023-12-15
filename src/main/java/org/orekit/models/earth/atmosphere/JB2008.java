@@ -544,9 +544,9 @@ public class JB2008 implements Atmosphere {
 
         // Equation (17)
         final T cos     = eta.cos();
-        final T cosEta  = cos.multiply(cos).multiply(cos.sqrt());
+        final T cosEta  = cos.square().multiply(cos.sqrt());
         final T sin     = theta.sin();
-        final T sinTeta = sin.multiply(sin).multiply(sin.sqrt());
+        final T sinTeta = sin.square().multiply(sin.sqrt());
         final T cosTau  = tau.multiply(0.5).cos().abs();
         final T df      = sinTeta.add(cosEta.subtract(sinTeta).multiply(cosTau).multiply(cosTau).multiply(cosTau));
         final T tsubl   = df.multiply(0.31).add(1).multiply(tsubc);

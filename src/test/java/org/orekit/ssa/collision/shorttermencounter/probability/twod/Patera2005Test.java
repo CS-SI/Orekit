@@ -899,7 +899,7 @@ class Patera2005Test {
                 1e-15);
 
         // THEN
-        Assertions.assertEquals(0.0034965176443840836, result.getValue().getReal(), 1e-19);
+        Assertions.assertEquals(0.0034965176443840836, result.getValue().getReal(), 2e-18);
     }
 
 

@@ -919,11 +919,11 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             final T y2 = ql.multiply(-0.5 * ck0[2]);
 
             n = ((mean.getE().multiply(mean.getE()).negate()).add(1.0)).sqrt();
-            final T n2 = n.multiply(n);
+            final T n2 = n.square();
             final T n3 = n2.multiply(n);
-            final T n4 = n2.multiply(n2);
+            final T n4 = n2.square();
             final T n6 = n4.multiply(n2);
-            final T n8 = n4.multiply(n4);
+            final T n8 = n4.square();
             final T n10 = n8.multiply(n2);
 
             final T yp2 = y2.divide(n4);
@@ -939,17 +939,17 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             final T sinI1 = sc.sin();
             final T sinI2 = sinI1.multiply(sinI1);
             final T cosI1 = sc.cos();
-            final T cosI2 = cosI1.multiply(cosI1);
+            final T cosI2 = cosI1.square();
             final T cosI3 = cosI2.multiply(cosI1);
-            final T cosI4 = cosI2.multiply(cosI2);
+            final T cosI4 = cosI2.square();
             final T cosI6 = cosI4.multiply(cosI2);
             final T C5c2 = T2(cosI1).reciprocal();
             final T C3c2 = cosI2.multiply(3.0).subtract(1.0);
 
             final T epp = mean.getE();
-            final T epp2 = epp.multiply(epp);
+            final T epp2 = epp.square();
             final T epp3 = epp2.multiply(epp);
-            final T epp4 = epp2.multiply(epp2);
+            final T epp4 = epp2.square();
 
             if (epp.getReal() >= 1) {
                 // Only for elliptical (e < 1) orbits
@@ -1101,7 +1101,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
          */
         private FieldUnivariateDerivative2<T> eMeSinE(final FieldUnivariateDerivative2<T> E) {
             FieldUnivariateDerivative2<T> x = E.sin().multiply(mean.getE().negate().add(1.0));
-            final FieldUnivariateDerivative2<T> mE2 = E.negate().multiply(E);
+            final FieldUnivariateDerivative2<T> mE2 = E.square().negate();
             FieldUnivariateDerivative2<T> term = E;
             FieldUnivariateDerivative2<T> d    = E.getField().getZero();
             // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
@@ -1206,8 +1206,8 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         private T T2(final T cosInc) {
 
             // X = (1.0 - 5.0 * cos²(inc))
-            final T x  = cosInc.multiply(cosInc).multiply(-5.0).add(1.0);
-            final T x2 = x.multiply(x);
+            final T x  = cosInc.square().multiply(-5.0).add(1.0);
+            final T x2 = x.square();
 
             // Eq. 2.48
             T sum = x.getField().getZero();
@@ -1280,7 +1280,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             final FieldUnivariateDerivative2<T> c2g = cg1.multiply(cg1).subtract(sg1.multiply(sg1));
             final FieldUnivariateDerivative2<T> s2g = cg1.multiply(sg1).add(sg1.multiply(cg1));
             final FieldUnivariateDerivative2<T> c3g = c2g.multiply(cg1).subtract(s2g.multiply(sg1));
-            final FieldUnivariateDerivative2<T> sg2 = sg1.multiply(sg1);
+            final FieldUnivariateDerivative2<T> sg2 = sg1.square();
             final FieldUnivariateDerivative2<T> sg3 = sg1.multiply(sg2);
 
 

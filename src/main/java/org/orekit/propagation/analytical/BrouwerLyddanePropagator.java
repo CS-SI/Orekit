@@ -1315,10 +1315,10 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
             // Long periodical terms
             final UnivariateDerivative2 cg1 = gpp.cos();
             final UnivariateDerivative2 sg1 = gpp.sin();
-            final UnivariateDerivative2 c2g = cg1.multiply(cg1).subtract(sg1.multiply(sg1));
+            final UnivariateDerivative2 c2g = cg1.square().subtract(sg1.square());
             final UnivariateDerivative2 s2g = cg1.multiply(sg1).add(sg1.multiply(cg1));
             final UnivariateDerivative2 c3g = c2g.multiply(cg1).subtract(s2g.multiply(sg1));
-            final UnivariateDerivative2 sg2 = sg1.multiply(sg1);
+            final UnivariateDerivative2 sg2 = sg1.square();
             final UnivariateDerivative2 sg3 = sg1.multiply(sg2);
 
 
