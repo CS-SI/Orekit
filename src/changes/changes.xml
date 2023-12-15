@@ -21,6 +21,54 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+          Added ChaoMappingFunction for tropospheric mapping function.
+      </action>
+      <action dev="luc" type="add">
+          Added ModifiedHopfieldModel for tropospheric delay.
+      </action>
+      <action dev="luc" type="add">
+          Added CanonicalSaastamoinenModel for tropospheric delay.
+      </action>
+      <action dev="luc" type="update">
+          Replaced SaastamoinenModel by ModifiedSaastamoinenModel for tropospheric delay.
+      </action>
+      <action dev="luc" type="add">
+          Added NBS/NRC steam table model for water vapor pressure.
+      </action>
+      <action dev="luc" type="add">
+          Added Wang1988 model for water vapor pressure.
+      </action>
+      <action dev="luc" type="add">
+          Added CIPM2007 model for water vapor pressure.
+      </action>
+      <action dev="luc" type="add">
+          Added WaterVaporPressureProvider interface.
+      </action>
+      <action dev="luc" type="add">
+          Added HeightDependentPressureTemperatureHumidityConverter for converting weather parameters.
+      </action>
+      <action dev="luc" type="update" issue="1287">
+          Replaced WeatherModel by {Field}PressureTemperatureHumidityProvider.
+      </action>
+      <action dev="luc" type="add" issue="1287">
+          Added {Field}PressureTemperature and {Field}PressureTemperatureHumidity containers.
+      </action>
+      <action dev="luc" type="update" issue="1287">
+          Replaced GlobalPressureTemperature2Model by GlobalPressureTemperature2.
+      </action>
+      <action dev="luc" type="update" issue="1287">
+          Replaced GlobalPressureTemperatureModel by GlobalPressureTemperature.
+      </action>
+      <action dev="luc" type="update" issue="1287">
+          Replaced MappingFunction by TroposphereMappingFunction.
+      </action>
+      <action dev="luc" type="update" issue="1287">
+          Replaced EstimatedTroposphericModel by EstimatedModel.
+      </action>
+      <action dev="luc" type="update" issue="1287">
+          Replaced DiscreteTroposphericModel by TroposphericModel.
+      </action>
       <action dev="luc" type="add" issue="1286">
           Fixed parsing of SP3 files with partly missing standard deviations.
       </action>
