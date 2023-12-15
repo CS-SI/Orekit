@@ -90,7 +90,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 public class EphemerisTest {
 
@@ -142,6 +144,35 @@ public class EphemerisTest {
                                     defaultStateInterpolator.getAdditionalStateInterpolator().get());
 
         Assertions.assertFalse(defaultEphemeris.getCovarianceInterpolator().isPresent());
+
+    }
+
+    @Test
+    @DisplayName("test error thrown when using an empty list to create an Ephemeris")
+    void testErrorThrownWhenUsingEmptyStateList() {
+        // Given
+        final SpacecraftState firstState  = Mockito.mock(SpacecraftState.class);
+        final SpacecraftState secondState = Mockito.mock(SpacecraftState.class);
+
+        Mockito.when(firstState.isOrbitDefined()).thenReturn(true);
+        Mockito.when(secondState.isOrbitDefined()).thenReturn(true);
+
+        final List<SpacecraftState> states = new ArrayList<>();
+
+        // Create interpolator
+        final Frame inertialFrameMock = Mockito.mock(Frame.class);
+        Mockito.when(inertialFrameMock.isPseudoInertial()).thenReturn(true);
+
+        final int nbInterpolationPoints = 3;
+        final TimeInterpolator<SpacecraftState> stateInterpolator =
+                new SpacecraftStateInterpolator(nbInterpolationPoints, inertialFrameMock, inertialFrameMock);
+
+        // When & Then
+        OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
+                                                                        () -> new Ephemeris(states, stateInterpolator));
+
+        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        Assertions.assertEquals(0, ((Integer) thrown.getParts()[0]).intValue());
 
     }
 
@@ -293,6 +324,72 @@ public class EphemerisTest {
                 Assertions.assertThrows(OrekitException.class, () -> ephemeris.resetIntermediateState(firstState, true));
 
         Assertions.assertEquals("reset state not allowed", thrown.getMessage());
+    }
+
+    @Test
+    @DisplayName("test that an empty optional is returned when getting covariance from a state only ephemeris")
+    void testEmptyCovarianceGetter() {
+        // GIVEN
+        final AbsoluteDate initialDate  = new AbsoluteDate();
+        final Orbit        initialOrbit = TestUtils.getDefaultOrbit(initialDate);
+
+        // Setup propagator
+        final Orbit                 finalOrbit = initialOrbit.shiftedBy(1);
+        final List<SpacecraftState> states     = new ArrayList<>();
+        states.add(new SpacecraftState(initialOrbit));
+        states.add(new SpacecraftState(finalOrbit));
+
+        final Ephemeris ephemeris = new Ephemeris(states, 2);
+
+        // When
+        final Optional<StateCovariance> optionalCovariance = ephemeris.getCovariance(Mockito.mock(AbsoluteDate.class));
+
+        // Then
+        Assertions.assertFalse(optionalCovariance.isPresent());
+
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    @DisplayName("test that the expected spacecraft state is returned when no attitude provider is given at construction")
+    void testExpectedStateReturnedWhenNoAttitudeProvider() {
+        // GIVEN
+        final AbsoluteDate initialDate  = new AbsoluteDate();
+        final Orbit        initialOrbit = TestUtils.getDefaultOrbit(initialDate);
+
+        // Setup behaviour
+        final AbsoluteDate    propDate          = initialDate.shiftedBy(0.5);
+        final SpacecraftState mockExpectedState = Mockito.mock(SpacecraftState.class);
+
+        // Setup propagator
+        final Orbit                 finalOrbit = initialOrbit.shiftedBy(1);
+        final List<SpacecraftState> states     = new ArrayList<>();
+
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit);
+        final SpacecraftState finalState   = new SpacecraftState(finalOrbit);
+
+        states.add(initialState);
+        states.add(finalState);
+
+        // Setup mock interpolator
+        final TimeInterpolator<SpacecraftState> mockInterpolator = Mockito.mock(TimeInterpolator.class);
+
+        Mockito.when(mockInterpolator.getNbInterpolationPoints()).thenReturn(2);
+        Mockito.when(mockInterpolator.getExtrapolationThreshold()).thenReturn(0.001);
+
+        Mockito.when(mockInterpolator.interpolate(Mockito.eq(initialDate), Mockito.any(Stream.class)))
+               .thenReturn(initialState);
+        Mockito.when(mockInterpolator.interpolate(Mockito.eq(propDate), Mockito.any(Stream.class)))
+               .thenReturn(mockExpectedState);
+
+        final Ephemeris ephemeris = new Ephemeris(states, mockInterpolator, null);
+
+        // When
+        final SpacecraftState propState = ephemeris.basicPropagate(propDate);
+
+        // Then
+        Assertions.assertEquals(mockExpectedState, propState);
+
     }
 
     @Test
