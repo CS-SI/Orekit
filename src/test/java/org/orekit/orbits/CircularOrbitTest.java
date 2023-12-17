@@ -1199,6 +1199,28 @@ public class CircularOrbitTest {
                 actualTrueToEccentric);
     }
 
+    @Test
+    void testCoverageCachedPositionAngleTypeWithRates() {
+        // GIVEN
+        final double semiMajorAxis = 1e4;
+        final double eccentricity = 0.;
+        final double expectedAlpha = 0.;
+        final double expectedAlphaDot = 0.;
+        // WHEN & THEN
+        for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
+            for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+                final CircularOrbit circularOrbit = new CircularOrbit(semiMajorAxis, eccentricity, 0., 0., 0.,
+                        expectedAlpha, 0., 0., 0., 0., 0., expectedAlphaDot,
+                        inputPositionAngleType, cachedPositionAngleType, FramesFactory.getGCRF(), date, mu);
+                Assertions.assertEquals(expectedAlpha, circularOrbit.getAlphaV());
+                Assertions.assertEquals(expectedAlpha, circularOrbit.getAlphaM());
+                Assertions.assertEquals(expectedAlpha, circularOrbit.getAlphaE());
+                Assertions.assertEquals(expectedAlphaDot, circularOrbit.getAlphaVDot());
+                Assertions.assertEquals(expectedAlphaDot, circularOrbit.getAlphaMDot());
+                Assertions.assertEquals(expectedAlphaDot, circularOrbit.getAlphaEDot());
+            }
+        }
+    }
     @BeforeEach
     public void setUp() {
 

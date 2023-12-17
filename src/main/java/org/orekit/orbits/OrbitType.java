@@ -345,6 +345,7 @@ public enum OrbitType {
             // convert input to proper type
             final CircularOrbit cO = convertType(orbit);
             final CircularOrbit cR = convertType(reference);
+            final PositionAngleType cachedPositionAngle = cR.getCachedPositionAngleType();
 
             // perform normalization
             if (cO.hasDerivatives()) {
@@ -352,15 +353,17 @@ public enum OrbitType {
                                          cO.getCircularEx(),
                                          cO.getCircularEy(),
                                          cO.getI(),
-                                         MathUtils.normalizeAngle(cO.getRightAscensionOfAscendingNode(), cR.getRightAscensionOfAscendingNode()),
-                                         MathUtils.normalizeAngle(cO.getAlphaV(), cR.getAlphaV()),
+                                         MathUtils.normalizeAngle(cO.getRightAscensionOfAscendingNode(),
+                                                 cR.getRightAscensionOfAscendingNode()),
+                                         MathUtils.normalizeAngle(cO.getAlpha(cachedPositionAngle),
+                                                 cR.getAlpha(cachedPositionAngle)),
                                          cO.getADot(),
                                          cO.getCircularExDot(),
                                          cO.getCircularEyDot(),
                                          cO.getIDot(),
                                          cO.getRightAscensionOfAscendingNodeDot(),
-                                         cO.getAlphaVDot(),
-                                         PositionAngleType.TRUE,
+                                         cO.getAlphaDot(cachedPositionAngle),
+                                         cachedPositionAngle,
                                          cO.getFrame(),
                                          cO.getDate(),
                                          cO.getMu());
@@ -369,9 +372,11 @@ public enum OrbitType {
                                          cO.getCircularEx(),
                                          cO.getCircularEy(),
                                          cO.getI(),
-                                         MathUtils.normalizeAngle(cO.getRightAscensionOfAscendingNode(), cR.getRightAscensionOfAscendingNode()),
-                                         MathUtils.normalizeAngle(cO.getAlphaV(), cR.getAlphaV()),
-                                         PositionAngleType.TRUE,
+                                         MathUtils.normalizeAngle(cO.getRightAscensionOfAscendingNode(),
+                                                 cR.getRightAscensionOfAscendingNode()),
+                                         MathUtils.normalizeAngle(cO.getAlpha(cachedPositionAngle),
+                                                 cR.getAlpha(cachedPositionAngle)),
+                                         cachedPositionAngle,
                                          cO.getFrame(),
                                          cO.getDate(),
                                          cO.getMu());
