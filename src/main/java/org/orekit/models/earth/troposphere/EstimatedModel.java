@@ -115,6 +115,7 @@ public class EstimatedModel implements TroposphericModel {
      * @param model mapping function model.
      * @param totalDelay initial value for the tropospheric zenith total delay [m]
      */
+    @DefaultDataContext
     public EstimatedModel(final TroposphereMappingFunction model, final double totalDelay) {
         this(0.0, 273.15 + 18.0, 1013.25, model, totalDelay);
     }

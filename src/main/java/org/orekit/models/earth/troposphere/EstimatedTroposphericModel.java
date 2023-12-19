@@ -17,6 +17,7 @@
 package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.CalculusFieldElement;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
@@ -63,6 +64,7 @@ public class EstimatedTroposphericModel extends EstimatedModel implements Discre
      * @param model mapping function model (NMF or GMF).
      * @param totalDelay initial value for the tropospheric zenith total delay [m]
      */
+    @DefaultDataContext
     public EstimatedTroposphericModel(final double t0, final double p0,
                                       final MappingFunction model, final double totalDelay) {
         super(0.0, t0, p0, new TroposphereMappingFunctionAdapter(model), totalDelay);
@@ -90,6 +92,7 @@ public class EstimatedTroposphericModel extends EstimatedModel implements Discre
      * @param model mapping function model (NMF or GMF).
      * @param totalDelay initial value for the tropospheric zenith total delay [m]
      */
+    @DefaultDataContext
     public EstimatedTroposphericModel(final MappingFunction model, final double totalDelay) {
         this(273.15 + 18.0, 1013.25, model, totalDelay);
     }
