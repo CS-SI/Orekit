@@ -23,6 +23,8 @@ import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
+import org.orekit.utils.TrackingCoordinates;
 
 /** Adapter between {@link MappingFunction} and {@link TroposphereMappingFunction}.
  * <p>
@@ -52,15 +54,15 @@ public class TroposphereMappingFunctionAdapter implements TroposphereMappingFunc
      * <li>double[0] = m<sub>h</sub>(e) → hydrostatic mapping function
      * <li>double[1] = m<sub>w</sub>(e) → wet mapping function
      * </ul>
-     * @param elevation the elevation of the satellite, in radians
+     * @param trackingCoordinates tracking coordinates of the satellite
      * @param point station location
      * @param weather weather parameters
      * @param date current date
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+    public double[] mappingFactors(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
                                    final PressureTemperatureHumidity weather, final AbsoluteDate date) {
-        return model.mappingFactors(elevation, point, date);
+        return model.mappingFactors(trackingCoordinates.getElevation(), point, date);
     }
 
     /** This method allows the computation of the hydrostatic and
@@ -69,18 +71,18 @@ public class TroposphereMappingFunctionAdapter implements TroposphereMappingFunc
      * <li>T[0] = m<sub>h</sub>(e) → hydrostatic mapping function
      * <li>T[1] = m<sub>w</sub>(e) → wet mapping function
      * </ul>
-     * @param elevation the elevation of the satellite, in radians
+     * @param trackingCoordinates tracking coordinates of the satellite
      * @param point station location
      * @param weather weather parameters
      * @param date current date
      * @param <T> type of the elements
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation,
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                   final FieldGeodeticPoint<T> point,
                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                   final FieldAbsoluteDate<T> date) {
-        return model.mappingFactors(elevation, point, date);
+        return model.mappingFactors(trackingCoordinates.getElevation(), point, date);
     }
 
 }

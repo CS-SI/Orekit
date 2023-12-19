@@ -35,7 +35,9 @@ import org.orekit.models.earth.weather.water.NbsNrcSteamTable;
 import org.orekit.models.earth.weather.water.WaterVaporPressureProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 
 /** The canonical Saastamoinen model.
  * <p>
@@ -144,7 +146,7 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
      * @see #setLowElevationThreshold(double)
      */
     @Override
-    public double pathDelay(final double elevation, final GeodeticPoint point,
+    public double pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
                             final PressureTemperatureHumidity weather,
                             final double[] parameters, final AbsoluteDate date) {
 
@@ -159,7 +161,8 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
         final double B = B_FUNCTION.value(fixedHeight);
 
         // calculate the zenith angle from the elevation
-        final double z = FastMath.abs(0.5 * FastMath.PI - FastMath.max(elevation, lowElevationThreshold));
+        final double z = FastMath.abs(0.5 * FastMath.PI - FastMath.max(trackingCoordinates.getElevation(),
+                                                                       lowElevationThreshold));
 
         // calculate the path delay in m
         final double tan = FastMath.tan(z);
@@ -184,7 +187,8 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
      * @see #setLowElevationThreshold(double)
      */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                           final FieldGeodeticPoint<T> point,
                                                            final FieldPressureTemperatureHumidity<T> weather,
                                                            final T[] parameters, final FieldAbsoluteDate<T> date) {
 
@@ -203,7 +207,7 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
 
         // calculate the zenith angle from the elevation
         final T z = FastMath.abs(zero.getPi().multiply(0.5).
-                                 subtract(FastMath.max(elevation, lowElevationThreshold)));
+                                 subtract(FastMath.max(trackingCoordinates.getElevation(), lowElevationThreshold)));
 
         // calculate the path delay in m
         final T tan = FastMath.tan(z);

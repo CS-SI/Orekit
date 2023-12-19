@@ -23,6 +23,8 @@ import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
+import org.orekit.utils.TrackingCoordinates;
 
 /** Interface for mapping functions used in the tropospheric delay computation.
  * @author Bryan Cazabonne
@@ -36,13 +38,13 @@ public interface TroposphereMappingFunction {
      * <li>double[0] = m<sub>h</sub>(e) → hydrostatic mapping function
      * <li>double[1] = m<sub>w</sub>(e) → wet mapping function
      * </ul>
-     * @param elevation the elevation of the satellite, in radians
+     * @param trackingCoordinates tracking coordinates of the satellite
      * @param point station location
      * @param weather weather parameters
      * @param date current date
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    double[] mappingFactors(double elevation, GeodeticPoint point,
+    double[] mappingFactors(TrackingCoordinates trackingCoordinates, GeodeticPoint point,
                             PressureTemperatureHumidity weather, AbsoluteDate date);
 
     /** This method allows the computation of the hydrostatic and
@@ -51,14 +53,15 @@ public interface TroposphereMappingFunction {
      * <li>T[0] = m<sub>h</sub>(e) → hydrostatic mapping function
      * <li>T[1] = m<sub>w</sub>(e) → wet mapping function
      * </ul>
-     * @param elevation the elevation of the satellite, in radians
+     * @param trackingCoordinates tracking coordinates of the satellite
      * @param point station location
      * @param weather weather parameters
      * @param date current date
      * @param <T> type of the elements
      * @return a two components array containing the hydrostatic and wet mapping functions.
      */
-    <T extends CalculusFieldElement<T>> T[] mappingFactors(T elevation, FieldGeodeticPoint<T> point,
+    <T extends CalculusFieldElement<T>> T[] mappingFactors(FieldTrackingCoordinates<T> trackingCoordinates,
+                                                           FieldGeodeticPoint<T> point,
                                                            FieldPressureTemperatureHumidity<T> weather,
                                                            FieldAbsoluteDate<T> date);
 

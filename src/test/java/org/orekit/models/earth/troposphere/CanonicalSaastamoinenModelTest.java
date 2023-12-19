@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TrackingCoordinates;
 
 
 public class CanonicalSaastamoinenModelTest {
@@ -39,13 +40,16 @@ public class CanonicalSaastamoinenModelTest {
 
     private void doTestComparisonToModifiedModel(final double elevation,
                                                  final double minDifference, final double maxDifference) {
+        final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(0.0, elevation, 0.0);
         final CanonicalSaastamoinenModel canonical = CanonicalSaastamoinenModel.getStandardModel();
         final ModifiedSaastamoinenModel  modified  = ModifiedSaastamoinenModel.getStandardModel();
         for (double height = 0; height < 5000; height += 100) {
             final GeodeticPoint location = new GeodeticPoint(0.0, 0.0, height);
-            final double canonicalDelay = canonical.pathDelay(elevation, location, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+            final double canonicalDelay = canonical.pathDelay(trackingCoordinates, location,
+                                                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               null, AbsoluteDate.J2000_EPOCH);
-            final double modifiedDelay  = modified.pathDelay(elevation, location, TroposphericModelUtils.STANDARD_ATMOSPHERE,
+            final double modifiedDelay  = modified.pathDelay(trackingCoordinates, location,
+                                                             TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                              null, AbsoluteDate.J2000_EPOCH);
             Assertions.assertTrue(modifiedDelay - canonicalDelay > minDifference);
             Assertions.assertTrue(modifiedDelay - canonicalDelay < maxDifference);

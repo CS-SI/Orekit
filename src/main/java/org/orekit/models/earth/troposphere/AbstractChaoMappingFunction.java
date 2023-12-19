@@ -25,6 +25,8 @@ import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
+import org.orekit.utils.TrackingCoordinates;
 
 /** Chao mapping function for radio wavelengths.
  *
@@ -62,11 +64,11 @@ public class AbstractChaoMappingFunction implements TroposphereMappingFunction {
 
     /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+    public double[] mappingFactors(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
                                    final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
-        final double sinE = FastMath.sin(elevation);
-        final double tanE = FastMath.tan(elevation);
+        final double sinE = FastMath.sin(trackingCoordinates.getElevation());
+        final double tanE = FastMath.tan(trackingCoordinates.getElevation());
         return new double[] {
             1 / (sinE + ad / (tanE + bd)),
             1 / (sinE + aw / (tanE + bw))
@@ -75,12 +77,12 @@ public class AbstractChaoMappingFunction implements TroposphereMappingFunction {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation,
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                   final FieldGeodeticPoint<T> point,
                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                   final FieldAbsoluteDate<T> date) {
-        final T sinE = FastMath.sin(elevation);
-        final T tanE = FastMath.tan(elevation);
+        final T sinE = FastMath.sin(trackingCoordinates.getElevation());
+        final T tanE = FastMath.tan(trackingCoordinates.getElevation());
         final T[] mapping = MathArrays.buildArray(date.getField(), 2);
         mapping[0] = sinE.add(tanE.add(bd).reciprocal().multiply(ad)).reciprocal();
         mapping[1] = sinE.add(tanE.add(bw).reciprocal().multiply(aw)).reciprocal();

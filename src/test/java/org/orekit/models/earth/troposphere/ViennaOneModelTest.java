@@ -27,6 +27,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.TrackingCoordinates;
 
 public class ViennaOneModelTest {
 
@@ -75,7 +76,7 @@ public class ViennaOneModelTest {
         final double height       = 824.17;
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
-        final double elevation     = 0.5 * FastMath.PI - 1.278564131;
+        final TrackingCoordinates trackingCoordinates  = new TrackingCoordinates(0.0, 0.5 * FastMath.PI - 1.278564131, 0.0);
         final double expectedHydro = 3.425088;
         final double expectedWet   = 3.448300;
 
@@ -84,7 +85,7 @@ public class ViennaOneModelTest {
 
         final ViennaOneModel model = new ViennaOneModel(a, z);
 
-        final double[] computedMapping = model.mappingFactors(elevation, point,
+        final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               date);
 
@@ -101,7 +102,8 @@ public class ViennaOneModelTest {
         final double[] z = {2.0966, 0.2140};
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
         ViennaOneModel model = new ViennaOneModel(a, z);
-        final double path = model.pathDelay(FastMath.toRadians(elevation), point,
+        final double path = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
+                                            point,
                                             TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                             model.getParameters(date), date);
         Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
@@ -118,7 +120,8 @@ public class ViennaOneModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.pathDelay(FastMath.toRadians(elev), point,
+            final double delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
+                                                 point,
                                                  TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                  model.getParameters(date), date);
             Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);

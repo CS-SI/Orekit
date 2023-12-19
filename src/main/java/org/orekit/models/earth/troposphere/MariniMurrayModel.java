@@ -30,7 +30,9 @@ import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 import org.orekit.utils.units.Unit;
 import org.orekit.utils.units.UnitsConverter;
 
@@ -141,12 +143,13 @@ public class MariniMurrayModel implements DiscreteTroposphericModel, Tropospheri
     @Deprecated
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
-        return pathDelay(elevation, point, TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date);
+        return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0), point,
+                         TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final double elevation, final GeodeticPoint point,
+    public double pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
                             final PressureTemperatureHumidity weather,
                             final double[] parameters, final AbsoluteDate date) {
 
@@ -163,7 +166,7 @@ public class MariniMurrayModel implements DiscreteTroposphericModel, Tropospheri
 
         final double fsite = getSiteFunctionValue(point);
 
-        final double sinE = FastMath.sin(elevation);
+        final double sinE = FastMath.sin(trackingCoordinates.getElevation());
         final double dR = (flambda / fsite) * (A + B) / (sinE + B / ((A + B) * (sinE + 0.01)) );
         return dR;
     }
@@ -175,14 +178,15 @@ public class MariniMurrayModel implements DiscreteTroposphericModel, Tropospheri
                                                            final FieldGeodeticPoint<T> point,
                                                            final T[] parameters,
                                                            final FieldAbsoluteDate<T> date) {
-        return pathDelay(elevation, point,
+        return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
+                         point,
                          new FieldPressureTemperatureHumidity<>(date.getField(), TroposphericModelUtils.STANDARD_ATMOSPHERE),
                          parameters, date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                            final FieldGeodeticPoint<T> point,
                                                            final FieldPressureTemperatureHumidity<T> weather,
                                                            final T[] parameters, final FieldAbsoluteDate<T> date) {
@@ -204,7 +208,7 @@ public class MariniMurrayModel implements DiscreteTroposphericModel, Tropospheri
 
         final T fsite = getSiteFunctionValue(point);
 
-        final T sinE = FastMath.sin(elevation);
+        final T sinE = FastMath.sin(trackingCoordinates.getElevation());
         final T dR = fsite.divide(flambda).reciprocal().multiply(B.add(A)).divide(sinE.add(sinE.add(0.01).multiply(B.add(A)).divide(B).reciprocal()));
         return dR;
     }

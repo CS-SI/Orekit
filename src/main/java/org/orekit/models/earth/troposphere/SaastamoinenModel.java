@@ -27,6 +27,8 @@ import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.water.Wang1988;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
+import org.orekit.utils.TrackingCoordinates;
 
 /** The modified Saastamoinen model.
  * @author Luc Maisonobe
@@ -124,7 +126,8 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel implements Disc
     @Deprecated
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
-        return pathDelay(elevation, point, getPth0Provider().getWeatherParamerers(point, date), parameters, date);
+        return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0), point,
+                         getPth0Provider().getWeatherParamerers(point, date), parameters, date);
     }
 
     /** {@inheritDoc} */
@@ -134,7 +137,8 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel implements Disc
                                                            final FieldGeodeticPoint<T> point,
                                                            final T[] parameters,
                                                            final FieldAbsoluteDate<T> date) {
-        return pathDelay(elevation, point,
+        return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
+                         point,
                          getPth0Provider().getWeatherParamerers(point, date),
                          parameters, date);
     }

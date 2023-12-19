@@ -33,7 +33,9 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldLegendrePolynomials;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.LegendrePolynomials;
+import org.orekit.utils.TrackingCoordinates;
 
 /** The Global Mapping Function  model for radio techniques.
  *  This model is an empirical mapping function. It only needs the
@@ -89,14 +91,15 @@ public class GlobalMappingFunctionModel implements MappingFunction, TroposphereM
     @Deprecated
     public double[] mappingFactors(final double elevation, final GeodeticPoint point,
                                    final AbsoluteDate date) {
-        return mappingFactors(elevation, point,
+        return mappingFactors(new TrackingCoordinates(0.0, elevation, 0.0), point,
                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                               date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+    public double[] mappingFactors(final TrackingCoordinates trackingCoordinates,
+                                   final GeodeticPoint point,
                                    final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
         // Day of year computation
@@ -177,11 +180,14 @@ public class GlobalMappingFunctionModel implements MappingFunction, TroposphereM
         final double aw = a0Wet + amplWet * FastMath.cos(coef - psi);
 
         final double[] function = new double[2];
-        function[0] = TroposphericModelUtils.mappingFunction(ah, bh, ch, elevation);
-        function[1] = TroposphericModelUtils.mappingFunction(aw, bw, cw, elevation);
+        function[0] = TroposphericModelUtils.mappingFunction(ah, bh, ch,
+                                                             trackingCoordinates.getElevation());
+        function[1] = TroposphericModelUtils.mappingFunction(aw, bw, cw,
+                                                             trackingCoordinates.getElevation());
 
         // Apply height correction
-        final double correction = TroposphericModelUtils.computeHeightCorrection(elevation, point.getAltitude());
+        final double correction = TroposphericModelUtils.computeHeightCorrection(trackingCoordinates.getElevation(),
+                                                                                 point.getAltitude());
         function[0] = function[0] + correction;
 
         return function;
@@ -192,7 +198,8 @@ public class GlobalMappingFunctionModel implements MappingFunction, TroposphereM
     @Deprecated
     public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
                                                                   final FieldAbsoluteDate<T> date) {
-        return mappingFactors(elevation, point,
+        return mappingFactors(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
+                              point,
                               new FieldPressureTemperatureHumidity<>(date.getField(),
                                                                      TroposphericModelUtils.STANDARD_ATMOSPHERE),
                               date);
@@ -200,7 +207,7 @@ public class GlobalMappingFunctionModel implements MappingFunction, TroposphereM
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation,
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                   final FieldGeodeticPoint<T> point,
                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                   final FieldAbsoluteDate<T> date) {
@@ -289,11 +296,15 @@ public class GlobalMappingFunctionModel implements MappingFunction, TroposphereM
         final T aw = a0Wet.add(amplWet.multiply(FastMath.cos(coef.subtract(psi))));
 
         final T[] function = MathArrays.buildArray(field, 2);
-        function[0] = TroposphericModelUtils.mappingFunction(ah, bh, ch, elevation);
-        function[1] = TroposphericModelUtils.mappingFunction(aw, bw, cw, elevation);
+        function[0] = TroposphericModelUtils.mappingFunction(ah, bh, ch,
+                                                             trackingCoordinates.getElevation());
+        function[1] = TroposphericModelUtils.mappingFunction(aw, bw, cw,
+                                                             trackingCoordinates.getElevation());
 
         // Apply height correction
-        final T correction = TroposphericModelUtils.computeHeightCorrection(elevation, point.getAltitude(), field);
+        final T correction = TroposphericModelUtils.computeHeightCorrection(trackingCoordinates.getElevation(),
+                                                                            point.getAltitude(),
+                                                                            field);
         function[0] = function[0].add(correction);
 
         return function;

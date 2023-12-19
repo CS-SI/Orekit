@@ -25,7 +25,9 @@ import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 
 /** Adapter between {@link DiscreteTroposphericModel} and {@link TroposphericModel}.
  * <p>
@@ -51,22 +53,22 @@ public class TroposphericModelAdapter implements TroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final double elevation,
+    public double pathDelay(final TrackingCoordinates trackingCoordinates,
                             final GeodeticPoint point,
                             final PressureTemperatureHumidity weather,
                             final double[] parameters,
                             final AbsoluteDate date) {
-        return model.pathDelay(elevation, point, parameters, date);
+        return model.pathDelay(trackingCoordinates.getElevation(), point, parameters, date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                            final FieldGeodeticPoint<T> point,
                                                            final FieldPressureTemperatureHumidity<T> weather,
                                                            final T[] parameters,
                                                            final FieldAbsoluteDate<T> date) {
-        return model.pathDelay(elevation, point, parameters, date);
+        return model.pathDelay(trackingCoordinates.getElevation(), point, parameters, date);
     }
 
     /** {@inheritDoc} */

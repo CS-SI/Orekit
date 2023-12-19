@@ -31,6 +31,8 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
+import org.orekit.utils.TrackingCoordinates;
 
 public class MariniMurrayModelTest {
 
@@ -58,7 +60,8 @@ public class MariniMurrayModelTest {
 
         // ruby laser with wavelength 694.3 nm
         TroposphericModel model = MariniMurrayModel.getStandardModel(694.3, TroposphericModelUtils.NANO_M);
-        final double path = model.pathDelay(FastMath.toRadians(elevation), new GeodeticPoint(latitude, longitude, height),
+        final double path = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
+                                            new GeodeticPoint(latitude, longitude, height),
                                             TroposphericModelUtils.STANDARD_ATMOSPHERE, null, AbsoluteDate.J2000_EPOCH);
 
         Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
@@ -73,7 +76,8 @@ public class MariniMurrayModelTest {
 
         // ruby laser with wavelength 694.3 nm
         TroposphericModel model = MariniMurrayModel.getStandardModel(694.3);
-        final double path = model.pathDelay(FastMath.toRadians(elevation), new GeodeticPoint(latitude, longitude, height),
+        final double path = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
+                                            new GeodeticPoint(latitude, longitude, height),
                                             TroposphericModelUtils.STANDARD_ATMOSPHERE, null, AbsoluteDate.J2000_EPOCH);
 
         Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
@@ -88,7 +92,8 @@ public class MariniMurrayModelTest {
 
         // ruby laser with wavelength 694.3 nm
         TroposphericModel model = new MariniMurrayModel(273.15 + 20, 1013.25, 0.5, 694.3);
-        final double path = model.pathDelay(FastMath.toRadians(elevation), new GeodeticPoint(latitude, longitude, height),
+        final double path = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
+                                            new GeodeticPoint(latitude, longitude, height),
                                             TroposphericModelUtils.STANDARD_ATMOSPHERE, null, AbsoluteDate.J2000_EPOCH);
 
         Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
@@ -102,12 +107,15 @@ public class MariniMurrayModelTest {
 
     private <T extends CalculusFieldElement<T>> void doTestFieldDelay(final Field<T> field) {
         final T zero = field.getZero();
-        final T elevation = zero.add(FastMath.toRadians(10d));
+        final FieldTrackingCoordinates<T> trackingCoordinates =
+                        new FieldTrackingCoordinates<>(zero,
+                                                       zero.newInstance(FastMath.toRadians(10d)),
+                                                       zero);
         final T height = zero.add(100d);
 
         // ruby laser with wavelength 694.3 nm
         TroposphericModel model = MariniMurrayModel.getStandardModel(694.3, TroposphericModelUtils.NANO_M);
-        final T path = model.pathDelay(elevation, new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), height),
+        final T path = model.pathDelay(trackingCoordinates, new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), height),
                                        new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                        null, FieldAbsoluteDate.getJ2000Epoch(field));
 
@@ -122,7 +130,8 @@ public class MariniMurrayModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.pathDelay(FastMath.toRadians(elev), new GeodeticPoint(latitude, longitude, 350.0),
+            final double delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
+                                                 new GeodeticPoint(latitude, longitude, 350.0),
                                                  TroposphericModelUtils.STANDARD_ATMOSPHERE, null, AbsoluteDate.J2000_EPOCH);
             Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
@@ -141,7 +150,8 @@ public class MariniMurrayModelTest {
         T lastDelay  = zero.add(Double.MAX_VALUE);
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final T delay = model.pathDelay(zero.add(FastMath.toRadians(elev)), new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(350.0)),
+            final T delay = model.pathDelay(new FieldTrackingCoordinates<>(zero, zero.newInstance(FastMath.toRadians(elev)), zero),
+                                            new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(350.0)),
                                             new FieldPressureTemperatureHumidity<T>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                             null, FieldAbsoluteDate.getJ2000Epoch(field));
             Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
@@ -158,7 +168,8 @@ public class MariniMurrayModelTest {
         double height = 0;
         double elevation = 10;
         double expectedValue = 13.26069;
-        double actualValue = model.pathDelay(FastMath.toRadians(elevation), new GeodeticPoint(latitude, longitude, height),
+        double actualValue = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
+                                             new GeodeticPoint(latitude, longitude, height),
                                              TroposphericModelUtils.STANDARD_ATMOSPHERE, null, AbsoluteDate.J2000_EPOCH);
 
         Assertions.assertEquals(expectedValue, actualValue, 1.0e-5);
@@ -176,9 +187,10 @@ public class MariniMurrayModelTest {
 
         T zero = field.getZero();
         T height = zero;
-        T elevation = zero.add(FastMath.toRadians(10));
+        T elevation = zero.newInstance(FastMath.toRadians(10));
         double expectedValue = 13.26069;
-        T actualValue = model.pathDelay(elevation, new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), height),
+        T actualValue = model.pathDelay(new FieldTrackingCoordinates<>(zero, elevation, zero),
+                                        new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), height),
                                         new FieldPressureTemperatureHumidity<T>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                         null, FieldAbsoluteDate.getJ2000Epoch(field));
 

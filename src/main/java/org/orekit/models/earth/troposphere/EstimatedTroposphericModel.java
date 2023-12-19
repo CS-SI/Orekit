@@ -23,7 +23,9 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 
 /** An estimated tropospheric model. The tropospheric delay is computed according to the formula:
  * <p>
@@ -102,7 +104,8 @@ public class EstimatedTroposphericModel extends EstimatedModel implements Discre
     @Deprecated
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
-        return pathDelay(elevation, point, TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date);
+        return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0), point,
+                         TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date);
     }
 
     /** {@inheritDoc} */
@@ -112,7 +115,8 @@ public class EstimatedTroposphericModel extends EstimatedModel implements Discre
                                                            final FieldGeodeticPoint<T> point,
                                                            final T[] parameters,
                                                            final FieldAbsoluteDate<T> date) {
-        return pathDelay(elevation, point,
+        return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
+                         point,
                          new FieldPressureTemperatureHumidity<>(date.getField(), TroposphericModelUtils.STANDARD_ATMOSPHERE),
                          parameters, date);
     }

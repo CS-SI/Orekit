@@ -33,7 +33,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 
 /** The Vienna1 tropospheric delay model for radio techniques.
  * The Vienna model data are given with a time interval of 6 hours
@@ -99,18 +101,19 @@ public class ViennaOneModel
     @Deprecated
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
-        return pathDelay(elevation, point, TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date);
+        return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
+                         point, TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final double elevation, final GeodeticPoint point,
+    public double pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
                             final PressureTemperatureHumidity weather,
                             final double[] parameters, final AbsoluteDate date) {
         // zenith delay
         final double[] delays = computeZenithDelay(point, parameters, date);
         // mapping function
-        final double[] mappingFunction = mappingFactors(elevation, point, date);
+        final double[] mappingFunction = mappingFactors(trackingCoordinates, point, weather, date);
         // Tropospheric path delay
         return delays[0] * mappingFunction[0] + delays[1] * mappingFunction[1];
     }
@@ -120,20 +123,22 @@ public class ViennaOneModel
     @Deprecated
     public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
                                                            final T[] parameters, final FieldAbsoluteDate<T> date) {
-        return pathDelay(elevation, point,
+        return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
+                         point,
                          new FieldPressureTemperatureHumidity<>(date.getField(), TroposphericModelUtils.STANDARD_ATMOSPHERE),
                          parameters, date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                           final FieldGeodeticPoint<T> point,
                                                            final FieldPressureTemperatureHumidity<T> weather,
                                                            final T[] parameters, final FieldAbsoluteDate<T> date) {
         // zenith delay
         final T[] delays = computeZenithDelay(point, parameters, date);
         // mapping function
-        final T[] mappingFunction = mappingFactors(elevation, point, date);
+        final T[] mappingFunction = mappingFactors(trackingCoordinates, point, weather, date);
         // Tropospheric path delay
         return delays[0].multiply(mappingFunction[0]).add(delays[1].multiply(mappingFunction[1]));
     }
@@ -180,14 +185,16 @@ public class ViennaOneModel
     @Deprecated
     public double[] mappingFactors(final double elevation, final GeodeticPoint point,
                                    final AbsoluteDate date) {
-        return mappingFactors(elevation, point,
+        return mappingFactors(new TrackingCoordinates(0.0, elevation, 0.0),
+                              point,
                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                               date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+    public double[] mappingFactors(final TrackingCoordinates trackingCoordinates,
+                                   final GeodeticPoint point,
                                    final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
         // Day of year computation
@@ -230,11 +237,14 @@ public class ViennaOneModel
         final double cw = 0.04391;
 
         final double[] function = new double[2];
-        function[0] = TroposphericModelUtils.mappingFunction(coefficientsA[0], bh, ch, elevation);
-        function[1] = TroposphericModelUtils.mappingFunction(coefficientsA[1], bw, cw, elevation);
+        function[0] = TroposphericModelUtils.mappingFunction(coefficientsA[0], bh, ch,
+                                                             trackingCoordinates.getElevation());
+        function[1] = TroposphericModelUtils.mappingFunction(coefficientsA[1], bw, cw,
+                                                             trackingCoordinates.getElevation());
 
         // Apply height correction
-        final double correction = TroposphericModelUtils.computeHeightCorrection(elevation, point.getAltitude());
+        final double correction = TroposphericModelUtils.computeHeightCorrection(trackingCoordinates.getElevation(),
+                                                                                 point.getAltitude());
         function[0] = function[0] + correction;
 
         return function;
@@ -245,7 +255,8 @@ public class ViennaOneModel
     @Deprecated
     public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
                                                                   final FieldAbsoluteDate<T> date) {
-        return mappingFactors(elevation, point,
+        return mappingFactors(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
+                              point,
                               new FieldPressureTemperatureHumidity<>(date.getField(),
                                                                      TroposphericModelUtils.STANDARD_ATMOSPHERE),
                               date);
@@ -253,7 +264,7 @@ public class ViennaOneModel
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation,
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                   final FieldGeodeticPoint<T> point,
                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                   final FieldAbsoluteDate<T> date) {
@@ -300,11 +311,15 @@ public class ViennaOneModel
         final T cw = zero.newInstance(0.04391);
 
         final T[] function = MathArrays.buildArray(field, 2);
-        function[0] = TroposphericModelUtils.mappingFunction(zero.newInstance(coefficientsA[0]), bh, ch, elevation);
-        function[1] = TroposphericModelUtils.mappingFunction(zero.newInstance(coefficientsA[1]), bw, cw, elevation);
+        function[0] = TroposphericModelUtils.mappingFunction(zero.newInstance(coefficientsA[0]), bh, ch,
+                                                             trackingCoordinates.getElevation());
+        function[1] = TroposphericModelUtils.mappingFunction(zero.newInstance(coefficientsA[1]), bw, cw,
+                                                             trackingCoordinates.getElevation());
 
         // Apply height correction
-        final T correction = TroposphericModelUtils.computeHeightCorrection(elevation, point.getAltitude(), field);
+        final T correction = TroposphericModelUtils.computeHeightCorrection(trackingCoordinates.getElevation(),
+                                                                            point.getAltitude(),
+                                                                            field);
         function[0] = function[0].add(correction);
 
         return function;

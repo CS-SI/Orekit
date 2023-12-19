@@ -23,7 +23,9 @@ import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.TrackingCoordinates;
 
 /** Defines a tropospheric model, used to calculate the path delay imposed to
  * electro-magnetic signals between an orbital satellite and a ground station.
@@ -35,7 +37,7 @@ public interface TroposphericModel extends ParameterDriversProvider {
     /** Calculates the tropospheric path delay for the signal path from a ground
      * station to a satellite.
      *
-     * @param elevation the elevation of the satellite, in radians
+     * @param trackingCoordinates tracking coordinates of the satellite
      * @param point station location
      * @param weather weather parameters
      * for constant default values)
@@ -43,14 +45,14 @@ public interface TroposphericModel extends ParameterDriversProvider {
      * @param date current date
      * @return the path delay due to the troposphere in m
      */
-    double pathDelay(double elevation, GeodeticPoint point, PressureTemperatureHumidity weather,
+    double pathDelay(TrackingCoordinates trackingCoordinates, GeodeticPoint point, PressureTemperatureHumidity weather,
                      double[] parameters, AbsoluteDate date);
 
     /** Calculates the tropospheric path delay for the signal path from a ground
      * station to a satellite.
      *
      * @param <T> type of the elements
-     * @param elevation the elevation of the satellite, in radians
+     * @param trackingCoordinates tracking coordinates of the satellite
      * @param point station location
      * @param weather weather parameters
      * for constant default values)
@@ -58,7 +60,8 @@ public interface TroposphericModel extends ParameterDriversProvider {
      * @param date current date
      * @return the path delay due to the troposphere in m
      */
-    <T extends CalculusFieldElement<T>> T pathDelay(T elevation, FieldGeodeticPoint<T> point,
+    <T extends CalculusFieldElement<T>> T pathDelay(FieldTrackingCoordinates<T> trackingCoordinates,
+                                                    FieldGeodeticPoint<T> point,
                                                     FieldPressureTemperatureHumidity<T> weather,
                                                     T[] parameters, FieldAbsoluteDate<T> date);
 }

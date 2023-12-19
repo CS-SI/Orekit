@@ -35,6 +35,8 @@ import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
+import org.orekit.utils.TrackingCoordinates;
 
 
 public class ModifiedSaastamoinenModelTest {
@@ -54,7 +56,8 @@ public class ModifiedSaastamoinenModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing height of the station
         for (double height = 0; height < 5000; height += 100) {
-            final double delay = model.pathDelay(FastMath.toRadians(5), new GeodeticPoint(0.0, 0.0, height),
+            final double delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(5), 0.0),
+                                                 new GeodeticPoint(0.0, 0.0, height),
                                                  TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                  null, AbsoluteDate.J2000_EPOCH);
             Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
@@ -74,7 +77,10 @@ public class ModifiedSaastamoinenModelTest {
         T lastDelay = zero.add(Double.MAX_VALUE);
         // delay shall decline with increasing height of the station
         for (double height = 0; height < 5000; height += 100) {
-            final T delay = model.pathDelay(zero.add(FastMath.toRadians(5)), new FieldGeodeticPoint<>(zero, zero, zero.add(height)),
+            final T delay = model.pathDelay(new FieldTrackingCoordinates<>(zero,
+                                                                           zero.newInstance(FastMath.toRadians(5)),
+                                                                           zero),
+                                            new FieldGeodeticPoint<>(zero, zero, zero.add(height)),
                                             new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                             null, FieldAbsoluteDate.getJ2000Epoch(field));
             Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
@@ -89,7 +95,8 @@ public class ModifiedSaastamoinenModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.pathDelay(FastMath.toRadians(elev), new GeodeticPoint(0.0, 0.0, 350.0),
+            final double delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
+                                                 new GeodeticPoint(0.0, 0.0, 350.0),
                                                  TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                  null, AbsoluteDate.J2000_EPOCH);
             Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
@@ -109,7 +116,10 @@ public class ModifiedSaastamoinenModelTest {
         T lastDelay = zero.add(Double.MAX_VALUE);
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final T delay = model.pathDelay(zero.add(FastMath.toRadians(elev)), new FieldGeodeticPoint<>(zero, zero, zero.add(350.0)),
+            final T delay = model.pathDelay(new FieldTrackingCoordinates<>(zero,
+                                                                           zero.newInstance(FastMath.toRadians(elev)),
+                                                                           zero),
+                                            new FieldGeodeticPoint<>(zero, zero, zero.add(350.0)),
                                             new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                             null, FieldAbsoluteDate.getJ2000Epoch(field));
             Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
@@ -168,10 +178,12 @@ public class ModifiedSaastamoinenModelTest {
             for (int e = 0; e < elevations.length; e++) {
                 double height = heights[h];
                 double elevation = elevations[e];
-                double expectedValue = defaultModel.pathDelay(elevation, new GeodeticPoint(0.0, 0.0, height),
+                double expectedValue = defaultModel.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
+                                                              new GeodeticPoint(0.0, 0.0, height),
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               null, AbsoluteDate.J2000_EPOCH);
-                double actualValue = loadedModel.pathDelay(elevation, new GeodeticPoint(0.0, 0.0, height),
+                double actualValue = loadedModel.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
+                                                           new GeodeticPoint(0.0, 0.0, height),
                                                            TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                            null, AbsoluteDate.J2000_EPOCH);
                 Assertions.assertEquals(expectedValue, actualValue, epsilon, "For height=" + height + " elevation = " +
@@ -186,10 +198,12 @@ public class ModifiedSaastamoinenModelTest {
         ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
         final double height = -500.0;
         for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
-            Assertions.assertEquals(model.pathDelay(elevation, new GeodeticPoint(0.0, 0.0, 0.0),
+            Assertions.assertEquals(model.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
+                                                    new GeodeticPoint(0.0, 0.0, 0.0),
                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                     null, AbsoluteDate.J2000_EPOCH),
-                                model.pathDelay(elevation, new GeodeticPoint(0.0, 0.0, height),
+                                model.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
+                                                new GeodeticPoint(0.0, 0.0, height),
                                                 TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                 null, AbsoluteDate.J2000_EPOCH),
                                 1.e-10);
@@ -207,10 +221,16 @@ public class ModifiedSaastamoinenModelTest {
         ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
         final T height = zero.subtract(500.0);
         for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
-            Assertions.assertEquals(model.pathDelay(zero.add(elevation), new FieldGeodeticPoint<>(zero, zero, zero),
+            Assertions.assertEquals(model.pathDelay(new FieldTrackingCoordinates<>(zero,
+                                                                                   zero.newInstance(elevation),
+                                                                                   zero),
+                                                    new FieldGeodeticPoint<>(zero, zero, zero),
                                                     new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                     null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(),
-                                model.pathDelay(zero.add(elevation), new FieldGeodeticPoint<>(zero, zero, zero.add(height)),
+                                model.pathDelay(new FieldTrackingCoordinates<>(zero,
+                                                                               zero.newInstance(elevation),
+                                                                               zero),
+                                                new FieldGeodeticPoint<>(zero, zero, zero.add(height)),
                                                 new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                 null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(),
                                 1.e-10);
@@ -228,11 +248,13 @@ public class ModifiedSaastamoinenModelTest {
 
         // Reset to default value
         model.setLowElevationThreshold(ModifiedSaastamoinenModel.DEFAULT_LOW_ELEVATION_THRESHOLD);
-        double lowElevationPathDelay = model.pathDelay(0.001, new GeodeticPoint(0.0, 0.0, 0.0),
+        double lowElevationPathDelay = model.pathDelay(new TrackingCoordinates(0.0, 0.001, 0.0),
+                                                       new GeodeticPoint(0.0, 0.0, 0.0),
                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                        null, AbsoluteDate.J2000_EPOCH);
         Assertions.assertTrue(lowElevationPathDelay > 0.);
-        Assertions.assertEquals(model.pathDelay(model.getLowElevationThreshold(), new GeodeticPoint(0.0, 0.0, 0.0),
+        Assertions.assertEquals(model.pathDelay(new TrackingCoordinates(0.0, model.getLowElevationThreshold(), 0.0),
+                                                new GeodeticPoint(0.0, 0.0, 0.0),
                                                 TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                 null, AbsoluteDate.J2000_EPOCH),
                 lowElevationPathDelay, 1.e-10);
@@ -246,10 +268,14 @@ public class ModifiedSaastamoinenModelTest {
         Utils.setDataRoot("atmosphere");
         ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
         final T elevation = zero.add(0.001);
-        double lowElevationPathDelay = model.pathDelay(zero.add(elevation), new FieldGeodeticPoint<>(zero, zero, zero),
+        double lowElevationPathDelay = model.pathDelay(new FieldTrackingCoordinates<>(zero, elevation, zero),
+                                                       new FieldGeodeticPoint<>(zero, zero, zero),
                                                        new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                        null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal();
-        double thresholdElevationPathDelay = model.pathDelay(zero.add(model.getLowElevationThreshold()), new FieldGeodeticPoint<>(zero, zero, zero),
+        double thresholdElevationPathDelay = model.pathDelay(new FieldTrackingCoordinates<>(zero,
+                                                                                            zero.newInstance(model.getLowElevationThreshold()),
+                                                                                            zero),
+                                                             new FieldGeodeticPoint<>(zero, zero, zero),
                                                              new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                              null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal();
         Assertions.assertTrue(lowElevationPathDelay > 0.);
@@ -284,7 +310,8 @@ public class ModifiedSaastamoinenModelTest {
                 double expectedValue = expectedValues[h][e];
                 final GeodeticPoint location = new GeodeticPoint(0.0, 0.0, height);
                 final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-                double actualValue = model.pathDelay(elevation, location,
+                double actualValue = model.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
+                                                     location,
                                                      pth0Provider.getWeatherParamerers(location, date),
                                                      null, date);
                 Assertions.assertEquals(expectedValue, actualValue, epsilon, "For height=" + height + " elevation = " +
@@ -324,7 +351,8 @@ public class ModifiedSaastamoinenModelTest {
                 double expectedValue = expectedValues[h][e];
                 FieldGeodeticPoint<T> location = new FieldGeodeticPoint<>(zero, zero, zero.add(height));
                 FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field);
-                T actualValue = model.pathDelay(elevation, location,
+                T actualValue = model.pathDelay(new FieldTrackingCoordinates<>(zero, elevation, zero),
+                                                location,
                                                 pth0Provider.getWeatherParamerers(location, date),
                                                 null, date);
                 Assertions.assertEquals(expectedValue, actualValue.getReal(), epsilon, "For height=" + height + " elevation = " +
@@ -339,10 +367,12 @@ public class ModifiedSaastamoinenModelTest {
         ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
         final double height = 6000.0;
         for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
-            Assertions.assertEquals(model.pathDelay(elevation, new GeodeticPoint(0.0, 0.0, 5000.0),
+            Assertions.assertEquals(model.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
+                                                    new GeodeticPoint(0.0, 0.0, 5000.0),
                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                     null, AbsoluteDate.J2000_EPOCH),
-                                    model.pathDelay(elevation, new GeodeticPoint(0.0, 0.0, height),
+                                    model.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
+                                                    new GeodeticPoint(0.0, 0.0, height),
                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                     null, AbsoluteDate.J2000_EPOCH),
                                     1.e-10);
@@ -360,10 +390,16 @@ public class ModifiedSaastamoinenModelTest {
         ModifiedSaastamoinenModel model = ModifiedSaastamoinenModel.getStandardModel();
         final T height = zero.add(6000.0);
         for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
-            Assertions.assertEquals(model.pathDelay(zero.add(elevation),new FieldGeodeticPoint<>(zero, zero, zero.add(5000.0)),
+            Assertions.assertEquals(model.pathDelay(new FieldTrackingCoordinates<>(zero,
+                                                                                   zero.newInstance(elevation),
+                                                                                   zero),
+                                                    new FieldGeodeticPoint<>(zero, zero, zero.add(5000.0)),
                                                     new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                     null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(),
-                                    model.pathDelay(zero.add(elevation), new FieldGeodeticPoint<>(zero, zero, zero.add(height)),
+                                    model.pathDelay(new FieldTrackingCoordinates<>(zero,
+                                                                                   zero.newInstance(elevation),
+                                                                                   zero),
+                                                    new FieldGeodeticPoint<>(zero, zero, zero.add(height)),
                                                     new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                     null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(),
                                     1.e-10);

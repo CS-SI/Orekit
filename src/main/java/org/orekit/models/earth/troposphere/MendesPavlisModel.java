@@ -32,7 +32,9 @@ import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 import org.orekit.utils.units.Unit;
 import org.orekit.utils.units.UnitsConverter;
 
@@ -183,18 +185,19 @@ public class MendesPavlisModel
     @Deprecated
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
-        return pathDelay(elevation, point, TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date);
+        return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0), point,
+                         TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final double elevation, final GeodeticPoint point,
+    public double pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
                             final PressureTemperatureHumidity weather,
                             final double[] parameters, final AbsoluteDate date) {
         // Zenith delay
         final double[] zenithDelay = computeZenithDelay(point, parameters, date);
         // Mapping function
-        final double[] mappingFunction = mappingFactors(elevation, point, date);
+        final double[] mappingFunction = mappingFactors(trackingCoordinates, point, weather, date);
         // Tropospheric path delay
         return zenithDelay[0] * mappingFunction[0] + zenithDelay[1] * mappingFunction[1];
     }
@@ -204,20 +207,22 @@ public class MendesPavlisModel
     @Deprecated
     public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
                                                            final T[] parameters, final FieldAbsoluteDate<T> date) {
-        return pathDelay(elevation, point,
+        return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
+                         point,
                          new FieldPressureTemperatureHumidity<>(date.getField(), TroposphericModelUtils.STANDARD_ATMOSPHERE),
                          parameters, date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                           final FieldGeodeticPoint<T> point,
                                                            final FieldPressureTemperatureHumidity<T> weather,
                                                            final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Zenith delay
         final T[] delays = computeZenithDelay(point, parameters, date);
         // Mapping function
-        final T[] mappingFunction = mappingFactors(elevation, point, date);
+        final T[] mappingFunction = mappingFactors(trackingCoordinates, point, weather, date);
         // Tropospheric path delay
         return delays[0].multiply(mappingFunction[0]).add(delays[1].multiply(mappingFunction[1]));
     }
@@ -305,7 +310,7 @@ public class MendesPavlisModel
     @Deprecated
     public double[] mappingFactors(final double elevation, final GeodeticPoint point,
                                    final AbsoluteDate date) {
-        return mappingFactors(elevation, point,
+        return mappingFactors(new TrackingCoordinates(0.0, elevation, 0.0), point,
                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                               date);
     }
@@ -324,10 +329,11 @@ public class MendesPavlisModel
      * δ = (D<sub>hz</sub> + D<sub>wz</sub>) * m(e) = δ<sub>z</sub> * m(e)
      */
     @Override
-    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
+    public double[] mappingFactors(final TrackingCoordinates trackingCoordinates,
+                                   final GeodeticPoint point,
                                    final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
-        final double sinE = FastMath.sin(elevation);
+        final double sinE = FastMath.sin(trackingCoordinates.getElevation());
 
         final PressureTemperatureHumidity pth = pthProvider.getWeatherParamerers(point, date);
         final double T2degree = pth.getTemperature() - 273.15;
@@ -371,9 +377,11 @@ public class MendesPavlisModel
      */
     @Override
     @Deprecated
-    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation,
+                                                                  final FieldGeodeticPoint<T> point,
                                                                   final FieldAbsoluteDate<T> date) {
-        return mappingFactors(elevation, point,
+        return mappingFactors(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
+                              point,
                               new FieldPressureTemperatureHumidity<>(date.getField(),
                                                                      TroposphericModelUtils.STANDARD_ATMOSPHERE),
                               date);
@@ -393,13 +401,13 @@ public class MendesPavlisModel
      * δ = (D<sub>hz</sub> + D<sub>wz</sub>) * m(e) = δ<sub>z</sub> * m(e)
      */
     @Override
-    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation,
+    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final FieldTrackingCoordinates<T> trackingCoordinates,
                                                                   final FieldGeodeticPoint<T> point,
                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                   final FieldAbsoluteDate<T> date) {
         final Field<T> field = date.getField();
 
-        final T sinE = FastMath.sin(elevation);
+        final T sinE = FastMath.sin(trackingCoordinates.getElevation());
 
         final FieldPressureTemperatureHumidity<T> pth = pthProvider.getWeatherParamerers(point, date);
         final T T2degree = pth.getTemperature().subtract(273.15);

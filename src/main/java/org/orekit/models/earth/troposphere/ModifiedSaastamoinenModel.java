@@ -41,8 +41,10 @@ import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.water.Wang1988;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.InterpolationTableLoader;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 
 /** The modified Saastamoinen model. Estimates the path delay imposed to
  * electro-magnetic signals by the troposphere according to the formula:
@@ -222,7 +224,8 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
      * @see #setLowElevationThreshold(double)
      */
     @Override
-    public double pathDelay(final double elevation, final GeodeticPoint point,
+    public double pathDelay(final TrackingCoordinates trackingCoordinates,
+                            final GeodeticPoint point,
                             final PressureTemperatureHumidity weather,
                             final double[] parameters, final AbsoluteDate date) {
 
@@ -236,7 +239,8 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
         final double B = B_FUNCTION.value(fixedHeight);
 
         // calculate the zenith angle from the elevation
-        final double z = FastMath.abs(0.5 * FastMath.PI - FastMath.max(elevation, lowElevationThreshold));
+        final double z = FastMath.abs(0.5 * FastMath.PI -
+                                      FastMath.max(trackingCoordinates.getElevation(), lowElevationThreshold));
 
         // get correction factor
         final double deltaR = getDeltaR(fixedHeight, z);
@@ -266,7 +270,8 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
      * @see #setLowElevationThreshold(double)
      */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                           final FieldGeodeticPoint<T> point,
                                                            final FieldPressureTemperatureHumidity<T> weather,
                                                            final T[] parameters, final FieldAbsoluteDate<T> date) {
 
@@ -283,7 +288,8 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
         final T B = B_FUNCTION.value(fixedHeight);
 
         // calculate the zenith angle from the elevation
-        final T z = FastMath.abs(FastMath.max(elevation, zero.newInstance(lowElevationThreshold)).negate().
+        final T z = FastMath.abs(FastMath.max(trackingCoordinates.getElevation(),
+                                              zero.newInstance(lowElevationThreshold)).negate().
                                  add(zero.getPi().multiply(0.5)));
 
         // get correction factor

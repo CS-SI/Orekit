@@ -78,15 +78,14 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
         //
         final Vector3D position = state.getPosition();
 
-        // elevation
-        final double elevation =
-                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate()).
-                        getElevation();
+        // tracking
+        final TrackingCoordinates trackingCoordinates =
+                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate());
 
         // only consider measures above the horizon
-        if (elevation > 0.0) {
+        if (trackingCoordinates.getElevation() > 0.0) {
             // delay in meters
-            final double delay = tropoModel.pathDelay(elevation,
+            final double delay = tropoModel.pathDelay(trackingCoordinates,
                                                       station.getOffsetGeodeticPoint(state.getDate()),
                                                       station.getPressureTemperatureHumidity(state.getDate()),
                                                       tropoModel.getParameters(state.getDate()), state.getDate());

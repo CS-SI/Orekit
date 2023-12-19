@@ -30,7 +30,9 @@ import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 
 /** The modified Hopfield model.
  * <p>
@@ -76,12 +78,13 @@ public class ModifiedHopfieldModel implements TroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final double elevation, final GeodeticPoint point,
+    public double pathDelay(final TrackingCoordinates trackingCoordinates,
+                            final GeodeticPoint point,
                             final PressureTemperatureHumidity weather,
                             final double[] parameters, final AbsoluteDate date) {
 
         // zenith angle
-        final double zenithAngle = MathUtils.SEMI_PI - elevation;
+        final double zenithAngle = MathUtils.SEMI_PI - trackingCoordinates.getElevation();
 
         // dry component
         final double hd     = HD0 + HD1 * (weather.getTemperature() - T0);
@@ -112,12 +115,13 @@ public class ModifiedHopfieldModel implements TroposphericModel {
      * @see #setLowElevationThreshold(double)
      */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                           final FieldGeodeticPoint<T> point,
                                                            final FieldPressureTemperatureHumidity<T> weather,
                                                            final T[] parameters, final FieldAbsoluteDate<T> date) {
 
         // zenith angle
-        final T zenithAngle = elevation.negate().add(MathUtils.SEMI_PI);
+        final T zenithAngle = trackingCoordinates.getElevation().negate().add(MathUtils.SEMI_PI);
 
         // dry component
         final T hd     = weather.getTemperature().subtract(T0).multiply(HD1).add(HD0);
@@ -127,7 +131,7 @@ public class ModifiedHopfieldModel implements TroposphericModel {
         final T deltaD = delay(zenithAngle, hd, nd);
 
         // wet component
-        final T hw     = elevation.getField().getZero().newInstance(HW0);
+        final T hw     = date.getField().getZero().newInstance(HW0);
         final T nw     = weather.getTemperature().reciprocal().multiply(NW2).add(NW1).divide(weather.getTemperature());
         final T deltaW = delay(zenithAngle, hw, nw);
 

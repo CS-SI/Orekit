@@ -34,8 +34,10 @@ import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.InterpolationTableLoader;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 
 /** A static tropospheric model that interpolates the actual tropospheric delay
  * based on values read from a configuration file (tropospheric-delay.txt) via
@@ -134,18 +136,19 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel, Tropos
     @Deprecated
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
-        return pathDelay(elevation, point, TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date);
+        return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0), point,
+                         TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final double elevation, final GeodeticPoint point,
+    public double pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
                             final PressureTemperatureHumidity weather,
                             final double[] parameters, final AbsoluteDate date) {
         // limit the height to 5000 m
         final double h = FastMath.min(FastMath.max(0, point.getAltitude()), 5000);
         // limit the elevation to 0 - π
-        final double ele = FastMath.min(FastMath.PI, FastMath.max(0d, elevation));
+        final double ele = FastMath.min(FastMath.PI, FastMath.max(0d, trackingCoordinates.getElevation()));
         // mirror elevation at the right angle of π/2
         final double e = ele > 0.5 * FastMath.PI ? FastMath.PI - ele : ele;
 
@@ -157,14 +160,16 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel, Tropos
     @Deprecated
     public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
                                                            final T[] parameters, final FieldAbsoluteDate<T> date) {
-        return pathDelay(elevation, point,
+        return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
+                         point,
                          new FieldPressureTemperatureHumidity<>(date.getField(), TroposphericModelUtils.STANDARD_ATMOSPHERE),
                          parameters, date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                           final FieldGeodeticPoint<T> point,
                                                            final FieldPressureTemperatureHumidity<T> weather,
                                                            final T[] parameters, final FieldAbsoluteDate<T> date) {
         final T zero = date.getField().getZero();
@@ -172,7 +177,7 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel, Tropos
         // limit the height to 5000 m
         final T h = FastMath.min(FastMath.max(zero, point.getAltitude()), zero.newInstance(5000));
         // limit the elevation to 0 - π
-        final T ele = FastMath.min(pi, FastMath.max(zero, elevation));
+        final T ele = FastMath.min(pi, FastMath.max(zero, trackingCoordinates.getElevation()));
         // mirror elevation at the right angle of π/2
         final T e = ele.getReal() > pi.multiply(0.5).getReal() ? ele.negate().add(pi) : ele;
 

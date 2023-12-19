@@ -30,9 +30,11 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.TrackingCoordinates;
 
 /**
  * Time span estimated tropospheric model.
@@ -208,25 +210,26 @@ public class TimeSpanEstimatedModel implements TroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final double elevation, final GeodeticPoint point,
+    public double pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
                             final PressureTemperatureHumidity weather,
                             final double[] parameters, final AbsoluteDate date) {
         // Extract the proper parameters valid at date from the input array
         final double[] extractedParameters = extractParameters(parameters, date);
         // Compute and return the path delay
-        return getTroposphericModel(date).pathDelay(elevation, point, weather,
+        return getTroposphericModel(date).pathDelay(trackingCoordinates, point, weather,
                                                     extractedParameters, date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final  FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                           final  FieldGeodeticPoint<T> point,
                                                            final FieldPressureTemperatureHumidity<T> weather,
                                                            final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Extract the proper parameters valid at date from the input array
         final T[] extractedParameters = extractParameters(parameters, date);
         // Compute and return the path delay
-        return getTroposphericModel(date.toAbsoluteDate()).pathDelay(elevation, point, weather,
+        return getTroposphericModel(date.toAbsoluteDate()).pathDelay(trackingCoordinates, point, weather,
                                                                      extractedParameters, date);
     }
 

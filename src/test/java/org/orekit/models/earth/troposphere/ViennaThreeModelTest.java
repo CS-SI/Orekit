@@ -27,6 +27,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.TrackingCoordinates;
 
 public class ViennaThreeModelTest {
 
@@ -72,7 +73,7 @@ public class ViennaThreeModelTest {
         final double height       = 824.0;
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
-        final double elevation     = FastMath.toRadians(38.0);
+        final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(0.0, FastMath.toRadians(38.0), 0.0);
         final double expectedHydro = 1.621024;
         final double expectedWet   = 1.623023;
 
@@ -81,7 +82,7 @@ public class ViennaThreeModelTest {
 
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
 
-        final double[] computedMapping = model.mappingFactors(elevation, point,
+        final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               date);
 
@@ -119,7 +120,7 @@ public class ViennaThreeModelTest {
         final double height       = 824.0;
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
-        final double elevation     = FastMath.toRadians(5.0);
+        final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(0.0, FastMath.toRadians(5.0), 0.0);
         final double expectedHydro = 10.132802;
         final double expectedWet   = 10.879154;
 
@@ -128,7 +129,7 @@ public class ViennaThreeModelTest {
 
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
 
-        final double[] computedMapping = model.mappingFactors(elevation, point,
+        final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               date);
 
@@ -166,7 +167,7 @@ public class ViennaThreeModelTest {
         final double height       = 824.0;
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
-        final double elevation     = FastMath.toRadians(85.0);
+        final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(0.0, FastMath.toRadians(85.0), 0.0);
         final double expectedHydro = 1.003810;
         final double expectedWet   = 1.003816;
 
@@ -175,7 +176,7 @@ public class ViennaThreeModelTest {
 
         final ViennaThreeModel model = new ViennaThreeModel(a, z);
 
-        final double[] computedMapping = model.mappingFactors(elevation, point,
+        final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               date);
 
@@ -192,7 +193,8 @@ public class ViennaThreeModelTest {
         final double[] z = {2.1993, 0.0690};
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(37.5), FastMath.toRadians(277.5), height);
         ViennaThreeModel model = new ViennaThreeModel(a, z);
-        final double path = model.pathDelay(FastMath.toRadians(elevation), point,
+        final double path = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
+                                            point,
                                             TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                             model.getParameters(date), date);
         Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
@@ -209,7 +211,8 @@ public class ViennaThreeModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.pathDelay(FastMath.toRadians(elev), point,
+            final double delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
+                                                 point,
                                                  TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                  model.getParameters(date), date);
             Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);

@@ -30,6 +30,7 @@ import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.TrackingCoordinates;
 
 ;
 
@@ -135,7 +136,7 @@ public class MendesPavlisModelTest {
         final double lambda       = 0.532;
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
-        final double elevation        = FastMath.toRadians(15.0);
+        final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(0.0, FastMath.toRadians(15.0), 0.0);
         // Expected mapping factor: 3.80024367 (Ref)
         final double expectedMapping    = 3.80024367;
 
@@ -143,7 +144,7 @@ public class MendesPavlisModelTest {
         final MendesPavlisModel model = new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
                                                               lambda, TroposphericModelUtils.MICRO_M);
 
-        final double[] computedMapping = model.mappingFactors(elevation, point,
+        final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               date);
 
@@ -158,7 +159,8 @@ public class MendesPavlisModelTest {
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
         MendesPavlisModel model = MendesPavlisModel.getStandardModel( 0.6943, TroposphericModelUtils.MICRO_M);
-        final double path = model.pathDelay(FastMath.toRadians(elevation), point,
+        final double path = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
+                                            point,
                                             TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                             model.getParameters(), date);
         Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
@@ -173,7 +175,8 @@ public class MendesPavlisModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.pathDelay(FastMath.toRadians(elev), point,
+            final double delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
+                                                 point,
                                                  TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                  model.getParameters(), date);
             Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);

@@ -31,6 +31,8 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
+import org.orekit.utils.TrackingCoordinates;
 
 public class FixedTroposphericModelTest {
 
@@ -41,32 +43,39 @@ public class FixedTroposphericModelTest {
     @Test
     public void testModel() {
         // check with (artificial) test values from tropospheric-delay.txt
-        Assertions.assertEquals(2.5d, model.pathDelay(FastMath.toRadians(90d), new GeodeticPoint(0., 0., 0.),
+        Assertions.assertEquals(2.5d, model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(90d), 0.0),
+                                                      new GeodeticPoint(0., 0., 0.),
                                                       TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                       null, AbsoluteDate.J2000_EPOCH), epsilon);
-        Assertions.assertEquals(20.8d, model.pathDelay(FastMath.toRadians(0d), new GeodeticPoint(0., 0., 0.),
+        Assertions.assertEquals(20.8d, model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(0d), 0.0),
+                                                       new GeodeticPoint(0., 0., 0.),
                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                        null, AbsoluteDate.J2000_EPOCH), epsilon);
 
-        Assertions.assertEquals(12.1d, model.pathDelay(FastMath.toRadians(0d), new GeodeticPoint(0., 0., 5000.),
+        Assertions.assertEquals(12.1d, model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(0d), 0.0),
+                                                       new GeodeticPoint(0., 0., 5000.),
                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                        null, AbsoluteDate.J2000_EPOCH), epsilon);
-        Assertions.assertEquals(2.5d, model.pathDelay(FastMath.toRadians(90d), new GeodeticPoint(0., 0., 5000.),
+        Assertions.assertEquals(2.5d, model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(90d), 0.0),
+                                                      new GeodeticPoint(0., 0., 5000.),
                                                       TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                       null, AbsoluteDate.J2000_EPOCH), epsilon);
 
         // interpolation between two elevation angles in the table
-        final double delay = model.pathDelay(FastMath.toRadians(35d), new GeodeticPoint(0., 0., 1200.),
+        final double delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(35d), 0.0),
+                                             new GeodeticPoint(0., 0., 1200.),
                                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                              null, AbsoluteDate.J2000_EPOCH);
         Assertions.assertTrue(Precision.compareTo(delay, 6.4d, epsilon) < 0);
         Assertions.assertTrue(Precision.compareTo(delay, 3.2d, epsilon) > 0);
 
         // sanity checks
-        Assertions.assertEquals(12.1d, model.pathDelay(FastMath.toRadians(-20d), new GeodeticPoint(0., 0., 5000.),
+        Assertions.assertEquals(12.1d, model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(-20d), 0.0),
+                                                       new GeodeticPoint(0., 0., 5000.),
                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                        null, AbsoluteDate.J2000_EPOCH), epsilon);
-        Assertions.assertEquals(2.5d, model.pathDelay(FastMath.toRadians(90d), new GeodeticPoint(0., 0., 100000.),
+        Assertions.assertEquals(2.5d, model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(90d),0.0),
+                                                      new GeodeticPoint(0., 0., 100000.),
                                                       TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                       null, AbsoluteDate.J2000_EPOCH), epsilon);
     }
@@ -79,32 +88,39 @@ public class FixedTroposphericModelTest {
     private <T extends CalculusFieldElement<T>> void doTestFieldModel(final Field<T> field) {
         final T zero = field.getZero();
         // check with (artificial) test values from tropospheric-delay.txt
-        Assertions.assertEquals(2.5d, model.pathDelay(zero.add(FastMath.toRadians(90d)), new FieldGeodeticPoint<T>(zero, zero, zero),
+        Assertions.assertEquals(2.5d, model.pathDelay(new FieldTrackingCoordinates<>(zero, zero.newInstance(FastMath.toRadians(90d)), zero),
+                                                      new FieldGeodeticPoint<T>(zero, zero, zero),
                                                       new FieldPressureTemperatureHumidity<T>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                       null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(), epsilon);
-        Assertions.assertEquals(20.8d, model.pathDelay(zero.add(FastMath.toRadians(0d)), new FieldGeodeticPoint<T>(zero, zero, zero),
+        Assertions.assertEquals(20.8d, model.pathDelay(new FieldTrackingCoordinates<>(zero, zero.newInstance(FastMath.toRadians(0d)), zero),
+                                                       new FieldGeodeticPoint<T>(zero, zero, zero),
                                                        new FieldPressureTemperatureHumidity<T>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                        null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(), epsilon);
 
-        Assertions.assertEquals(12.1d, model.pathDelay(zero.add(FastMath.toRadians(0d)), new FieldGeodeticPoint<T>(zero, zero, zero.add(5000.0)),
+        Assertions.assertEquals(12.1d, model.pathDelay(new FieldTrackingCoordinates<>(zero, zero.newInstance(FastMath.toRadians(0d)), zero),
+                                                       new FieldGeodeticPoint<T>(zero, zero, zero.add(5000.0)),
                                                        new FieldPressureTemperatureHumidity<T>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                        null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(), epsilon);
-        Assertions.assertEquals(2.5d, model.pathDelay(zero.add(FastMath.toRadians(90d)), new FieldGeodeticPoint<T>(zero, zero, zero.add(5000.0)),
+        Assertions.assertEquals(2.5d, model.pathDelay(new FieldTrackingCoordinates<>(zero, zero.newInstance(FastMath.toRadians(90d)), zero),
+                                                      new FieldGeodeticPoint<T>(zero, zero, zero.add(5000.0)),
                                                       new FieldPressureTemperatureHumidity<T>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                       null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(), epsilon);
 
         // interpolation between two elevation angles in the table
-        final double delay = model.pathDelay(zero.add(FastMath.toRadians(35d)), new FieldGeodeticPoint<T>(zero, zero, zero.add(1200.0)),
+        final double delay = model.pathDelay(new FieldTrackingCoordinates<>(zero, zero.newInstance(FastMath.toRadians(35d)), zero),
+                                             new FieldGeodeticPoint<T>(zero, zero, zero.add(1200.0)),
                                              new FieldPressureTemperatureHumidity<T>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                              null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal();
         Assertions.assertTrue(Precision.compareTo(delay, 6.4d, epsilon) < 0);
         Assertions.assertTrue(Precision.compareTo(delay, 3.2d, epsilon) > 0);
 
         // sanity checks
-        Assertions.assertEquals(12.1d, model.pathDelay(zero.add(FastMath.toRadians(-20d)), new FieldGeodeticPoint<T>(zero, zero, zero.add(5000.0)),
+        Assertions.assertEquals(12.1d, model.pathDelay(new FieldTrackingCoordinates<>(zero, zero.newInstance(FastMath.toRadians(-20d)), zero),
+                                                       new FieldGeodeticPoint<T>(zero, zero, zero.add(5000.0)),
                                                        new FieldPressureTemperatureHumidity<T>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                        null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(), epsilon);
-        Assertions.assertEquals(2.5d, model.pathDelay(zero.add(FastMath.toRadians(90d)), new FieldGeodeticPoint<T>(zero, zero, zero.add(100000.0)),
+        Assertions.assertEquals(2.5d, model.pathDelay(new FieldTrackingCoordinates<>(zero, zero.newInstance(FastMath.toRadians(90d)), zero),
+                                                      new FieldGeodeticPoint<T>(zero, zero, zero.add(100000.0)),
                                                       new FieldPressureTemperatureHumidity<T>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                       null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(), epsilon);
     }
@@ -112,9 +128,11 @@ public class FixedTroposphericModelTest {
     @Test
     public void testSymmetry() {
         for (int elevation = 0; elevation < 90; elevation += 10) {
-            final double delay1 = model.pathDelay(FastMath.toRadians(elevation), new GeodeticPoint(0., 0., 100.),
+            final double delay1 = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
+                                                  new GeodeticPoint(0., 0., 100.),
                                                   TroposphericModelUtils.STANDARD_ATMOSPHERE, null, AbsoluteDate.J2000_EPOCH);
-            final double delay2 = model.pathDelay(FastMath.toRadians(180 - elevation), new GeodeticPoint(0., 0., 100.),
+            final double delay2 = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(180 - elevation), 0.0),
+                                                  new GeodeticPoint(0., 0., 100.),
                                                   TroposphericModelUtils.STANDARD_ATMOSPHERE, null, AbsoluteDate.J2000_EPOCH);
 
             Assertions.assertEquals(delay1, delay2, epsilon);
@@ -129,12 +147,12 @@ public class FixedTroposphericModelTest {
     private <T extends CalculusFieldElement<T>> void doTestFieldSymmetry(final Field<T> field) {
         final T zero = field.getZero();
         for (int elevation = 0; elevation < 90; elevation += 10) {
-            final T delay1 = model.pathDelay(zero.add(FastMath.toRadians(elevation)),
+            final T delay1 = model.pathDelay(new FieldTrackingCoordinates<>(zero, zero.newInstance(FastMath.toRadians(elevation)), zero),
                                              new FieldGeodeticPoint<T>(zero, zero, zero.add(100.)),
                                              new FieldPressureTemperatureHumidity<T>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                              null,
                                              FieldAbsoluteDate.getJ2000Epoch(field));
-            final T delay2 = model.pathDelay(zero.add(FastMath.toRadians(180 - elevation)),
+            final T delay2 = model.pathDelay(new FieldTrackingCoordinates<>(zero, zero.newInstance(FastMath.toRadians(180 - elevation)), zero),
                                              new FieldGeodeticPoint<T>(zero, zero, zero.add(100.)),
                                              new FieldPressureTemperatureHumidity<T>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                              null,

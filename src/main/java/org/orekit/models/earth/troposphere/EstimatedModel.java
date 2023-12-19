@@ -29,7 +29,9 @@ import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 
 /** An estimated tropospheric model. The tropospheric delay is computed according to the formula:
  * <p>
@@ -128,28 +130,36 @@ public class EstimatedModel implements TroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final double elevation, final GeodeticPoint point,
+    public double pathDelay(final TrackingCoordinates trackingCoordinates,
+                            final GeodeticPoint point,
                             final PressureTemperatureHumidity weather,
                             final double[] parameters, final AbsoluteDate date) {
         // Zenith delays. elevation = pi/2 because we compute the delay in the zenith direction
-        final double zhd = hydrostatic.pathDelay(0.5 * FastMath.PI, point, weather, parameters, date);
+        final double zhd = hydrostatic.pathDelay(new TrackingCoordinates(trackingCoordinates.getAzimuth(),
+                                                                         0.5 * FastMath.PI,
+                                                                         trackingCoordinates.getRange()),
+                                                 point, weather, parameters, date);
         final double ztd = parameters[0];
         // Mapping functions
-        final double[] mf = model.mappingFactors(elevation, point, weather, date);
+        final double[] mf = model.mappingFactors(trackingCoordinates, point, weather, date);
         // Total delay
         return mf[0] * zhd + mf[1] * (ztd - zhd);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                           final FieldGeodeticPoint<T> point,
                                                            final FieldPressureTemperatureHumidity<T> weather,
                                                            final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Zenith delays. elevation = pi/2 because we compute the delay in the zenith direction
-        final T zhd = hydrostatic.pathDelay(elevation.getPi().multiply(0.5), point, weather, parameters, date);
+        final T zhd = hydrostatic.pathDelay(new FieldTrackingCoordinates<>(trackingCoordinates.getAzimuth(),
+                                                                           trackingCoordinates.getElevation().getPi().multiply(0.5),
+                                                                           trackingCoordinates.getRange()),
+                                            point, weather, parameters, date);
         final T ztd = parameters[0];
         // Mapping functions
-        final T[] mf = model.mappingFactors(elevation, point, weather, date);
+        final T[] mf = model.mappingFactors(trackingCoordinates, point, weather, date);
         // Total delay
         return mf[0].multiply(zhd).add(mf[1].multiply(ztd.subtract(zhd)));
     }

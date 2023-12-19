@@ -25,6 +25,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.TrackingCoordinates;
 
 public abstract class AbstractMappingFunctionTest {
 
@@ -47,11 +48,11 @@ public abstract class AbstractMappingFunctionTest {
         final double height      = 68.0;
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
-        final double elevation     = FastMath.toRadians(5.0);
+        final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(0.0, FastMath.toRadians(5.0), 0.0);
 
         final TroposphereMappingFunction model = buildMappingFunction();
 
-        final double[] computedMapping = model.mappingFactors(elevation, point,
+        final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               date);
         Assertions.assertEquals(expectedHydro, computedMapping[0], 1.0e-2);
@@ -70,7 +71,8 @@ public abstract class AbstractMappingFunctionTest {
         };
         // mapping functions shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double[] factors = model.mappingFactors(FastMath.toRadians(elev), point,
+            final double[] factors = model.mappingFactors(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
+                                                          point,
                                                           TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                           date);
             Assertions.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);

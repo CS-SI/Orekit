@@ -26,7 +26,9 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 
 /** Base class modifying theoretical range measurements with tropospheric delay.
  * The effect of tropospheric correction on the range is directly computed
@@ -79,14 +81,13 @@ public abstract class BaseRangeTroposphericDelayModifier {
 
         // spacecraft position and elevation as seen from the ground station
         final Vector3D position = state.getPosition();
-        final double elevation  =
-                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate()).
-                        getElevation();
+        final TrackingCoordinates trackingCoordinates =
+                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate());
 
         // only consider measures above the horizon
-        if (elevation > 0) {
+        if (trackingCoordinates.getElevation() > 0) {
             // tropospheric delay in meters
-            final double delay = tropoModel.pathDelay(elevation,
+            final double delay = tropoModel.pathDelay(trackingCoordinates,
                                                       station.getOffsetGeodeticPoint(state.getDate()),
                                                       station.getPressureTemperatureHumidity(state.getDate()),
                                                       tropoModel.getParameters(), state.getDate());
@@ -114,14 +115,13 @@ public abstract class BaseRangeTroposphericDelayModifier {
 
         // spacecraft position and elevation as seen from the ground station
         final FieldVector3D<T> position = state.getPosition();
-        final T elevation =
-                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate()).
-                        getElevation();
+        final FieldTrackingCoordinates<T> trackingCoordinates =
+                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate());
 
         // only consider measures above the horizon
-        if (elevation .getReal() > 0) {
+        if (trackingCoordinates.getElevation() .getReal() > 0) {
             // tropospheric delay in meters
-            final T delay = tropoModel.pathDelay(elevation,
+            final T delay = tropoModel.pathDelay(trackingCoordinates,
                                                  station.getOffsetGeodeticPoint(state.getDate()),
                                                  station.getPressureTemperatureHumidity(state.getDate()),
                                                  parameters, state.getDate());

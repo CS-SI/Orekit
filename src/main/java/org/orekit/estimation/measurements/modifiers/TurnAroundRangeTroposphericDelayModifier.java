@@ -35,9 +35,11 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Differentiation;
+import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeSpanMap.Span;
+import org.orekit.utils.TrackingCoordinates;
 
 /** Class modifying theoretical turn-around TurnAroundRange measurement with tropospheric delay.
  * The effect of tropospheric correction on the TurnAroundRange is directly computed
@@ -82,15 +84,14 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         //
         final Vector3D position = state.getPosition();
 
-        // elevation
-        final double elevation =
-                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate()).
-                        getElevation();
+        // tracking
+        final TrackingCoordinates trackingCoordinates =
+                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate());
 
         // only consider measures above the horizon
-        if (elevation > 0) {
+        if (trackingCoordinates.getElevation() > 0) {
             // Delay in meters
-            final double delay = tropoModel.pathDelay(elevation,
+            final double delay = tropoModel.pathDelay(trackingCoordinates,
                                                       station.getOffsetGeodeticPoint(state.getDate()),
                                                       station.getPressureTemperatureHumidity(state.getDate()),
                                                       tropoModel.getParameters(state.getDate()), state.getDate());
@@ -117,14 +118,13 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
 
         //
         final FieldVector3D<T> position = state.getPosition();
-        final T dsElevation             =
-                        station.getBaseFrame().getTrackingCoordinates(position,  state.getFrame(), state.getDate()).
-                        getElevation();
+        final FieldTrackingCoordinates<T> trackingCoordinates =
+                        station.getBaseFrame().getTrackingCoordinates(position,  state.getFrame(), state.getDate());
 
         // only consider measures above the horizon
-        if (dsElevation.getReal() > 0) {
+        if (trackingCoordinates.getElevation().getReal() > 0) {
             // Delay in meters
-            final T delay = tropoModel.pathDelay(dsElevation,
+            final T delay = tropoModel.pathDelay(trackingCoordinates,
                                                  station.getOffsetGeodeticPoint(state.getDate()),
                                                  station.getPressureTemperatureHumidity(state.getDate()),
                                                  parameters, state.getDate());
