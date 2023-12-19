@@ -51,6 +51,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel implements Disc
      * @see #SaastamoinenModel(double, double, double, String, DataProvidersManager)
      * @since 10.1
      */
+    @DefaultDataContext
     public SaastamoinenModel(final double t0, final double p0, final double r0) {
         this(t0, p0, r0, DELTA_R_FILE_NAME);
     }
