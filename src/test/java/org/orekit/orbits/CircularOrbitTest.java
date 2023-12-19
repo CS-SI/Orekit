@@ -1176,6 +1176,7 @@ public class CircularOrbitTest {
     }
 
     @Test
+    @Deprecated
     void positionAngleNonRegressionOnDeprecated() {
         // Can be removed when deprecated routines are removed in next major release (13.0)
         // GIVEN

@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
