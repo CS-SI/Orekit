@@ -58,7 +58,7 @@ public class ModifiedHopfieldModelTest {
             final double delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(5), 0.0),
                                                  new GeodeticPoint(0.0, 0.0, height),
                                                  converter.convert(TroposphericModelUtils.STANDARD_ATMOSPHERE, height),
-                                                 null, AbsoluteDate.J2000_EPOCH);
+                                                 null, AbsoluteDate.J2000_EPOCH).getDelay();
             Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
@@ -85,7 +85,7 @@ public class ModifiedHopfieldModelTest {
                                             converter.convert(new FieldPressureTemperatureHumidity<>(field,
                                                                                                      TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                               zero.newInstance(height)),
-                                            null, FieldAbsoluteDate.getJ2000Epoch(field));
+                                            null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay();
             Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
             lastDelay = delay;
         }
@@ -101,7 +101,7 @@ public class ModifiedHopfieldModelTest {
             final double delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
                                                  new GeodeticPoint(0.0, 0.0, 350.0),
                                                  TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                                 null, AbsoluteDate.J2000_EPOCH);
+                                                 null, AbsoluteDate.J2000_EPOCH).getDelay();
             Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
@@ -124,7 +124,7 @@ public class ModifiedHopfieldModelTest {
                                                                            zero),
                                             new FieldGeodeticPoint<>(zero, zero, zero.newInstance(350.0)),
                                             new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                                            null, FieldAbsoluteDate.getJ2000Epoch(field));
+                                            null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay();
             Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
             lastDelay = delay;
         }
@@ -146,7 +146,7 @@ public class ModifiedHopfieldModelTest {
                 final double delayN = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(e), 0.0),
                                                       new GeodeticPoint(0, 0, h),
                                                       converter.convert(TroposphericModelUtils.STANDARD_ATMOSPHERE, h),
-                                                      null, AbsoluteDate.J2000_EPOCH);
+                                                      null, AbsoluteDate.J2000_EPOCH).getDelay();
                 final T delayT = model.pathDelay(new FieldTrackingCoordinates<>(zero,
                                                                                 zero.newInstance(FastMath.toRadians(e)),
                                                                                 zero),
@@ -154,7 +154,7 @@ public class ModifiedHopfieldModelTest {
                                                  converter.convert(new FieldPressureTemperatureHumidity<>(field,
                                                                                                           TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                                    zero.newInstance(h)),
-                                                 null, FieldAbsoluteDate.getJ2000Epoch(field));
+                                                 null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay();
                 Assertions.assertEquals(delayN, delayT.getReal(), epsilon);
             }
         }
@@ -169,11 +169,11 @@ public class ModifiedHopfieldModelTest {
             Assertions.assertEquals(model.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
                                                     new GeodeticPoint(0.0, 0.0, 0.0),
                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                                    null, AbsoluteDate.J2000_EPOCH),
+                                                    null, AbsoluteDate.J2000_EPOCH).getDelay(),
                                     model.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
                                                     new GeodeticPoint(0.0, 0.0, height),
                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                                    null, AbsoluteDate.J2000_EPOCH),
+                                                    null, AbsoluteDate.J2000_EPOCH).getDelay(),
                                     1.e-10);
         }
     }
@@ -194,13 +194,13 @@ public class ModifiedHopfieldModelTest {
                                                                                    zero),
                                                     new FieldGeodeticPoint<>(zero, zero, zero),
                                                     new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                                                    null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(),
+                                                    null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay().getReal(),
                                     model.pathDelay(new FieldTrackingCoordinates<>(zero,
                                                                                    zero.newInstance(elevation),
                                                                                    zero),
                                                     new FieldGeodeticPoint<>(zero, zero, height),
                                                     new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                                                    null, FieldAbsoluteDate.getJ2000Epoch(field)).getReal(),
+                                                    null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay().getReal(),
                                     1.e-10);
         }
     }
@@ -227,7 +227,7 @@ public class ModifiedHopfieldModelTest {
                 double actualValue = model.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
                                                      location,
                                                      converter.convert(TroposphericModelUtils.STANDARD_ATMOSPHERE, height),
-                                                     null, date);
+                                                     null, date).getDelay();
                 Assertions.assertEquals(expectedValue, actualValue, epsilon, "For height=" + height + " elevation = " +
                         FastMath.toDegrees(elevation) + " precision not met");
             }
@@ -263,7 +263,7 @@ public class ModifiedHopfieldModelTest {
                                                 converter.convert(new FieldPressureTemperatureHumidity<>(field,
                                                                                                          TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                                   height),
-                                                null, date);
+                                                null, date).getDelay();
                 Assertions.assertEquals(expectedValue, actualValue.getReal(), epsilon, "For height=" + height + " elevation = " +
                         FastMath.toDegrees(elevation.getReal()) + " precision not met");
             }

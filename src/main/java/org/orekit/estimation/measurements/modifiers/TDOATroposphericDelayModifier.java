@@ -88,7 +88,8 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
             final double delay = tropoModel.pathDelay(trackingCoordinates,
                                                       station.getOffsetGeodeticPoint(state.getDate()),
                                                       station.getPressureTemperatureHumidity(state.getDate()),
-                                                      tropoModel.getParameters(state.getDate()), state.getDate());
+                                                      tropoModel.getParameters(state.getDate()), state.getDate()).
+                                 getDelay();
             // return delay in seconds
             return delay / Constants.SPEED_OF_LIGHT;
         }
@@ -121,7 +122,8 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
             final T delay = tropoModel.pathDelay(trackingCoordinates,
                                                  station.getOffsetGeodeticPoint(state.getDate()),
                                                  station.getPressureTemperatureHumidity(state.getDate()),
-                                                 parameters, state.getDate());
+                                                 parameters, state.getDate()).
+                            getDelay();
             // return delay in seconds
             return delay.divide(Constants.SPEED_OF_LIGHT);
         }

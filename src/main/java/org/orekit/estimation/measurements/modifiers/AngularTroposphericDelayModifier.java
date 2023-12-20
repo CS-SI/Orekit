@@ -88,7 +88,8 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
             final double delay = tropoModel.pathDelay(trackingCoordinates,
                                                       station.getOffsetGeodeticPoint(state.getDate()),
                                                       station.getPressureTemperatureHumidity(state.getDate()),
-                                                      tropoModel.getParameters(state.getDate()), state.getDate());
+                                                      tropoModel.getParameters(state.getDate()), state.getDate()).
+                                 getDelay();
 
             // one-way measurement.
             return delay;

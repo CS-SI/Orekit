@@ -43,10 +43,11 @@ public interface TroposphericModel extends ParameterDriversProvider {
      * for constant default values)
      * @param parameters tropospheric model parameters
      * @param date current date
-     * @return the path delay due to the troposphere in m
+     * @return the path delay due to the troposphere
      */
-    double pathDelay(TrackingCoordinates trackingCoordinates, GeodeticPoint point, PressureTemperatureHumidity weather,
-                     double[] parameters, AbsoluteDate date);
+    TroposphericDelay pathDelay(TrackingCoordinates trackingCoordinates, GeodeticPoint point,
+                                PressureTemperatureHumidity weather,
+                                double[] parameters, AbsoluteDate date);
 
     /** Calculates the tropospheric path delay for the signal path from a ground
      * station to a satellite.
@@ -58,10 +59,10 @@ public interface TroposphericModel extends ParameterDriversProvider {
      * for constant default values)
      * @param parameters tropospheric model parameters at current date
      * @param date current date
-     * @return the path delay due to the troposphere in m
+     * @return the path delay due to the troposphere
      */
-    <T extends CalculusFieldElement<T>> T pathDelay(FieldTrackingCoordinates<T> trackingCoordinates,
-                                                    FieldGeodeticPoint<T> point,
-                                                    FieldPressureTemperatureHumidity<T> weather,
-                                                    T[] parameters, FieldAbsoluteDate<T> date);
+    <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(FieldTrackingCoordinates<T> trackingCoordinates,
+                                                                            FieldGeodeticPoint<T> point,
+                                                                            FieldPressureTemperatureHumidity<T> weather,
+                                                                            T[] parameters, FieldAbsoluteDate<T> date);
 }

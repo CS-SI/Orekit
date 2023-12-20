@@ -144,14 +144,15 @@ public class MariniMurrayModel implements DiscreteTroposphericModel, Tropospheri
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
         return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0), point,
-                         TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date);
+                         TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date).
+               getDelay();
     }
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
-                            final PressureTemperatureHumidity weather,
-                            final double[] parameters, final AbsoluteDate date) {
+    public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
+                                       final PressureTemperatureHumidity weather,
+                                       final double[] parameters, final AbsoluteDate date) {
 
         final PressureTemperatureHumidity pth = pthProvider.getWeatherParamerers(point, date);
         final double p = pth.getPressure();
@@ -159,7 +160,8 @@ public class MariniMurrayModel implements DiscreteTroposphericModel, Tropospheri
         final double e = pth.getWaterVaporPressure();
 
         // beware since version 12.1 pressures are in Pa and not in hPa, hence the scaling has changed
-        final double A = 0.00002357 * p + 0.00000141 * e;
+        final double Ah = 0.00002357 * p;
+        final double Aw = 0.00000141 * e;
         final double K = 1.163 - 0.00968 * FastMath.cos(2 * point.getLatitude()) - 0.00104 * t + 0.0000001435 * p;
         final double B = 1.084e-10 * p * t * K + 4.734e-12 * p * (p / t) * (2 * K) / (3 * K - 1);
         final double flambda = getLaserFrequencyParameter();
@@ -167,8 +169,12 @@ public class MariniMurrayModel implements DiscreteTroposphericModel, Tropospheri
         final double fsite = getSiteFunctionValue(point);
 
         final double sinE = FastMath.sin(trackingCoordinates.getElevation());
-        final double dR = (flambda / fsite) * (A + B) / (sinE + B / ((A + B) * (sinE + 0.01)) );
-        return dR;
+        final double totalZenith       = (flambda / fsite) * (Ah + Aw + B) / (1.0   + B / ((Ah + Aw + B) * (1.0   + 0.01)));
+        final double totalElev         = (flambda / fsite) * (Ah + Aw + B) / (sinE  + B / ((Ah + Aw + B) * (sinE  + 0.01)));
+        final double hydrostaticZenith = (flambda / fsite) * (Ah +      B) / (1.0   + B / ((Ah +      B) * (1.0   + 0.01)));
+        final double hydrostaticElev   = (flambda / fsite) * (Ah +      B) / (sinE  + B / ((Ah +      B) * (sinE  + 0.01)));
+        return new TroposphericDelay(hydrostaticZenith, totalZenith - hydrostaticZenith,
+                                     hydrostaticElev,   totalElev   - hydrostaticElev);
     }
 
     /** {@inheritDoc} */
@@ -181,15 +187,16 @@ public class MariniMurrayModel implements DiscreteTroposphericModel, Tropospheri
         return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
                          point,
                          new FieldPressureTemperatureHumidity<>(date.getField(), TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                         parameters, date);
+                         parameters, date).
+               getDelay();
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
-                                                           final FieldGeodeticPoint<T> point,
-                                                           final FieldPressureTemperatureHumidity<T> weather,
-                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                                                   final FieldGeodeticPoint<T> point,
+                                                                                   final FieldPressureTemperatureHumidity<T> weather,
+                                                                                   final T[] parameters, final FieldAbsoluteDate<T> date) {
 
         final FieldPressureTemperatureHumidity<T> pth = pthProvider.getWeatherParamerers(point, date);
         final T p = pth.getPressure();
@@ -197,7 +204,8 @@ public class MariniMurrayModel implements DiscreteTroposphericModel, Tropospheri
         final T e = pth.getWaterVaporPressure();
 
         // beware since version 12.1 pressures are in Pa and not in hPa, hence the scaling has changed
-        final T A = p.multiply(0.00002357).add(e.multiply(0.00000141));
+        final T Ah = p.multiply(0.00002357);
+        final T Aw = e.multiply(0.00000141);
         final T K = FastMath.cos(point.getLatitude().multiply(2.)).multiply(0.00968).negate().
                     add(1.163).
                     subtract(t.multiply(0.00104)).
@@ -209,8 +217,21 @@ public class MariniMurrayModel implements DiscreteTroposphericModel, Tropospheri
         final T fsite = getSiteFunctionValue(point);
 
         final T sinE = FastMath.sin(trackingCoordinates.getElevation());
-        final T dR = fsite.divide(flambda).reciprocal().multiply(B.add(A)).divide(sinE.add(sinE.add(0.01).multiply(B.add(A)).divide(B).reciprocal()));
-        return dR;
+        final T one  = date.getField().getOne();
+        final T totalZenith       = fsite.divide(flambda).reciprocal().
+                                    multiply(B.add(Ah).add(Aw)).
+                                    divide(one.add(one.add(0.01).multiply(B.add(Ah).add(Aw)).divide(B).reciprocal()));
+        final T totalElev         = fsite.divide(flambda).reciprocal().
+                                    multiply(B.add(Ah).add(Aw)).
+                                    divide(sinE.add(sinE.add(0.01).multiply(B.add(Ah).add(Aw)).divide(B).reciprocal()));
+        final T hydrostaticZenith = fsite.divide(flambda).reciprocal().
+                                    multiply(B.add(Ah)).
+                                    divide(one.add(one.add(0.01).multiply(B.add(Ah)).divide(B).reciprocal()));
+        final T hydrostaticElev   = fsite.divide(flambda).reciprocal().
+                                    multiply(B.add(Ah)).
+                                    divide(sinE.add(sinE.add(0.01).multiply(B.add(Ah)).divide(B).reciprocal()));
+        return new FieldTroposphericDelay<>(hydrostaticZenith, totalZenith.subtract(hydrostaticZenith),
+                                            hydrostaticElev,   totalElev.subtract(hydrostaticElev));
     }
 
     /** {@inheritDoc} */

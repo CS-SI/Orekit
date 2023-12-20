@@ -102,20 +102,25 @@ public class ViennaOneModel
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
         return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
-                         point, TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date);
+                         point, TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date).
+               getDelay();
     }
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
-                            final PressureTemperatureHumidity weather,
-                            final double[] parameters, final AbsoluteDate date) {
+    public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates,
+                                       final GeodeticPoint point,
+                                       final PressureTemperatureHumidity weather,
+                                       final double[] parameters, final AbsoluteDate date) {
         // zenith delay
         final double[] delays = computeZenithDelay(point, parameters, date);
         // mapping function
         final double[] mappingFunction = mappingFactors(trackingCoordinates, point, weather, date);
         // Tropospheric path delay
-        return delays[0] * mappingFunction[0] + delays[1] * mappingFunction[1];
+        return new TroposphericDelay(delays[0],
+                                     delays[1],
+                                     delays[0] * mappingFunction[0],
+                                     delays[1] * mappingFunction[1]);
     }
 
     /** {@inheritDoc} */
@@ -126,21 +131,25 @@ public class ViennaOneModel
         return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
                          point,
                          new FieldPressureTemperatureHumidity<>(date.getField(), TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                         parameters, date);
+                         parameters, date).
+               getDelay();
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
-                                                           final FieldGeodeticPoint<T> point,
-                                                           final FieldPressureTemperatureHumidity<T> weather,
-                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                                                   final FieldGeodeticPoint<T> point,
+                                                                                   final FieldPressureTemperatureHumidity<T> weather,
+                                                                                   final T[] parameters, final FieldAbsoluteDate<T> date) {
         // zenith delay
         final T[] delays = computeZenithDelay(point, parameters, date);
         // mapping function
         final T[] mappingFunction = mappingFactors(trackingCoordinates, point, weather, date);
         // Tropospheric path delay
-        return delays[0].multiply(mappingFunction[0]).add(delays[1].multiply(mappingFunction[1]));
+        return new FieldTroposphericDelay<>(delays[0],
+                                            delays[1],
+                                            delays[0].multiply(mappingFunction[0]),
+                                            delays[1].multiply(mappingFunction[1]));
     }
 
     /** This method allows the  computation of the zenith hydrostatic and

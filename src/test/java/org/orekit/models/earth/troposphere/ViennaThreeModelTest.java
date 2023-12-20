@@ -193,12 +193,15 @@ public class ViennaThreeModelTest {
         final double[] z = {2.1993, 0.0690};
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(37.5), FastMath.toRadians(277.5), height);
         ViennaThreeModel model = new ViennaThreeModel(a, z);
-        final double path = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
-                                            point,
-                                            TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                            model.getParameters(date), date);
-        Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
-        Assertions.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
+        final TroposphericDelay delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
+                                                        point,
+                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                        model.getParameters(date), date);
+        Assertions.assertEquals( 2.1993, delay.getZh(),    1.0e-4);
+        Assertions.assertEquals( 0.069,  delay.getZw(),    1.0e-4);
+        Assertions.assertEquals(12.2124, delay.getSh(),    1.0e-4);
+        Assertions.assertEquals( 0.3916, delay.getSw(),    1.0e-4);
+        Assertions.assertEquals(12.6041, delay.getDelay(), 1.0e-4);
     }
 
     @Test
@@ -214,7 +217,7 @@ public class ViennaThreeModelTest {
             final double delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
                                                  point,
                                                  TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                                 model.getParameters(date), date);
+                                                 model.getParameters(date), date).getDelay();
             Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }

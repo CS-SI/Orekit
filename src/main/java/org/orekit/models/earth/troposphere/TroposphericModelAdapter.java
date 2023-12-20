@@ -19,6 +19,7 @@ package org.orekit.models.earth.troposphere;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
@@ -51,24 +52,46 @@ public class TroposphericModelAdapter implements TroposphericModel {
         this.model = model;
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * All delays are affected to {@link TroposphericDelay#getZh() hydrostatic zenith}
+     * and {@link TroposphericDelay#getSh() hydrostatic slanted} delays, the wet delays
+     * are arbitrarily set to 0.
+     * </p>
+     */
     @Override
-    public double pathDelay(final TrackingCoordinates trackingCoordinates,
-                            final GeodeticPoint point,
-                            final PressureTemperatureHumidity weather,
-                            final double[] parameters,
-                            final AbsoluteDate date) {
-        return model.pathDelay(trackingCoordinates.getElevation(), point, parameters, date);
+    public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates,
+                                       final GeodeticPoint point,
+                                       final PressureTemperatureHumidity weather,
+                                       final double[] parameters,
+                                       final AbsoluteDate date) {
+        return new TroposphericDelay(model.pathDelay(MathUtils.SEMI_PI,
+                                                     point, parameters, date),
+                                     0.0,
+                                     model.pathDelay(trackingCoordinates.getElevation(),
+                                                     point, parameters, date),
+                                     0.0);
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * All delays are affected to {@link FieldTroposphericDelay#getZh() hydrostatic zenith}
+     * and {@link FieldTroposphericDelay#getSh() hydrostatic slanted} delays, the wet delays
+     * are arbitrarily set to 0.
+     * </p>
+     */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
-                                                           final FieldGeodeticPoint<T> point,
-                                                           final FieldPressureTemperatureHumidity<T> weather,
-                                                           final T[] parameters,
-                                                           final FieldAbsoluteDate<T> date) {
-        return model.pathDelay(trackingCoordinates.getElevation(), point, parameters, date);
+    public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                                                   final FieldGeodeticPoint<T> point,
+                                                                                   final FieldPressureTemperatureHumidity<T> weather,
+                                                                                   final T[] parameters,
+                                                                                   final FieldAbsoluteDate<T> date) {
+        return new FieldTroposphericDelay<>(model.pathDelay(date.getField().getZero().newInstance(MathUtils.SEMI_PI),
+                                                            point, parameters, date),
+                                            date.getField().getZero(),
+                                            model.pathDelay(trackingCoordinates.getElevation(),
+                                                            point, parameters, date),
+                                            date.getField().getZero());
     }
 
     /** {@inheritDoc} */

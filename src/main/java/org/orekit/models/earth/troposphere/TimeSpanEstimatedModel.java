@@ -210,9 +210,10 @@ public class TimeSpanEstimatedModel implements TroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
-                            final PressureTemperatureHumidity weather,
-                            final double[] parameters, final AbsoluteDate date) {
+    public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates,
+                                       final GeodeticPoint point,
+                                       final PressureTemperatureHumidity weather,
+                                       final double[] parameters, final AbsoluteDate date) {
         // Extract the proper parameters valid at date from the input array
         final double[] extractedParameters = extractParameters(parameters, date);
         // Compute and return the path delay
@@ -222,10 +223,10 @@ public class TimeSpanEstimatedModel implements TroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
-                                                           final  FieldGeodeticPoint<T> point,
-                                                           final FieldPressureTemperatureHumidity<T> weather,
-                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                                                   final  FieldGeodeticPoint<T> point,
+                                                                                   final FieldPressureTemperatureHumidity<T> weather,
+                                                                                   final T[] parameters, final FieldAbsoluteDate<T> date) {
         // Extract the proper parameters valid at date from the input array
         final T[] extractedParameters = extractParameters(parameters, date);
         // Compute and return the path delay

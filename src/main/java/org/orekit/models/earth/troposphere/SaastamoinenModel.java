@@ -127,7 +127,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel implements Disc
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
         return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0), point,
-                         getPth0Provider().getWeatherParamerers(point, date), parameters, date);
+                         getPth0Provider().getWeatherParamerers(point, date), parameters, date).getDelay();
     }
 
     /** {@inheritDoc} */
@@ -140,7 +140,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel implements Disc
         return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
                          point,
                          getPth0Provider().getWeatherParamerers(point, date),
-                         parameters, date);
+                         parameters, date).getDelay();
     }
 
 }

@@ -78,26 +78,27 @@ public class ModifiedHopfieldModel implements TroposphericModel {
 
     /** {@inheritDoc} */
     @Override
-    public double pathDelay(final TrackingCoordinates trackingCoordinates,
-                            final GeodeticPoint point,
-                            final PressureTemperatureHumidity weather,
-                            final double[] parameters, final AbsoluteDate date) {
+    public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates,
+                                       final GeodeticPoint point,
+                                       final PressureTemperatureHumidity weather,
+                                       final double[] parameters, final AbsoluteDate date) {
 
         // zenith angle
         final double zenithAngle = MathUtils.SEMI_PI - trackingCoordinates.getElevation();
 
         // dry component
-        final double hd     = HD0 + HD1 * (weather.getTemperature() - T0);
-        final double nd     = ND * TroposphericModelUtils.HECTO_PASCAL.fromSI(weather.getPressure()) /
-                              weather.getTemperature();
-        final double deltaD = delay(zenithAngle, hd, nd);
+        final double hd  = HD0 + HD1 * (weather.getTemperature() - T0);
+        final double nd  = ND * TroposphericModelUtils.HECTO_PASCAL.fromSI(weather.getPressure()) /
+                           weather.getTemperature();
 
         // wet component
-        final double hw     = HW0;
-        final double nw     = (NW1 + NW2 / weather.getTemperature()) / weather.getTemperature();
-        final double deltaW = delay(zenithAngle, hw, nw);
+        final double hw  = HW0;
+        final double nw  = (NW1 + NW2 / weather.getTemperature()) / weather.getTemperature();
 
-        return deltaD + deltaW;
+        return  new TroposphericDelay(delay(0.0,         hd, nd),
+                                      delay(0.0,         hw, nw),
+                                      delay(zenithAngle, hd, nd),
+                                      delay(zenithAngle, hw, nw));
 
     }
 
@@ -115,27 +116,28 @@ public class ModifiedHopfieldModel implements TroposphericModel {
      * @see #setLowElevationThreshold(double)
      */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
-                                                           final FieldGeodeticPoint<T> point,
-                                                           final FieldPressureTemperatureHumidity<T> weather,
-                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                                                   final FieldGeodeticPoint<T> point,
+                                                                                   final FieldPressureTemperatureHumidity<T> weather,
+                                                                                   final T[] parameters, final FieldAbsoluteDate<T> date) {
 
         // zenith angle
         final T zenithAngle = trackingCoordinates.getElevation().negate().add(MathUtils.SEMI_PI);
 
         // dry component
-        final T hd     = weather.getTemperature().subtract(T0).multiply(HD1).add(HD0);
-        final T nd     = TroposphericModelUtils.HECTO_PASCAL.fromSI(weather.getPressure()).
-                         multiply(ND).
-                         divide(weather.getTemperature());
-        final T deltaD = delay(zenithAngle, hd, nd);
+        final T hd = weather.getTemperature().subtract(T0).multiply(HD1).add(HD0);
+        final T nd = TroposphericModelUtils.HECTO_PASCAL.fromSI(weather.getPressure()).
+                     multiply(ND).
+                     divide(weather.getTemperature());
 
         // wet component
-        final T hw     = date.getField().getZero().newInstance(HW0);
-        final T nw     = weather.getTemperature().reciprocal().multiply(NW2).add(NW1).divide(weather.getTemperature());
-        final T deltaW = delay(zenithAngle, hw, nw);
+        final T hw = date.getField().getZero().newInstance(HW0);
+        final T nw = weather.getTemperature().reciprocal().multiply(NW2).add(NW1).divide(weather.getTemperature());
 
-        return deltaD.add(deltaW);
+        return  new FieldTroposphericDelay<>(delay(date.getField().getZero(), hd, nd),
+                                             delay(date.getField().getZero(), hw, nw),
+                                             delay(zenithAngle,               hd, nd),
+                                             delay(zenithAngle,               hw, nw));
 
     }
 

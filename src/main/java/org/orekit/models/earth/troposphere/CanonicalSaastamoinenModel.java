@@ -64,6 +64,15 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
     /** Default lowest acceptable elevation angle [rad]. */
     public static final double DEFAULT_LOW_ELEVATION_THRESHOLD = 0.05;
 
+    /** Base delay coefficient. */
+    private static final double L0 = 2.2768e-5;
+
+    /** Temperature numerator. */
+    private static final double T_NUM = 1255;
+
+    /** Wet offset. */
+    private static final double WET_OFFSET = 0.05;
+
     /** X values for the B function (table 1 in reference paper). */
     private static final double[] X_VALUES_FOR_B = {
         0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1500.0, 2000.0, 2500.0, 3000.0, 4000.0, 5000.0, 6000.0
@@ -146,9 +155,9 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
      * @see #setLowElevationThreshold(double)
      */
     @Override
-    public double pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
-                            final PressureTemperatureHumidity weather,
-                            final double[] parameters, final AbsoluteDate date) {
+    public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
+                                       final PressureTemperatureHumidity weather,
+                                       final double[] parameters, final AbsoluteDate date) {
 
         final PressureTemperatureHumidity pth = pthProvider.getWeatherParamerers(point, date);
 
@@ -164,13 +173,15 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
         final double z = FastMath.abs(0.5 * FastMath.PI - FastMath.max(trackingCoordinates.getElevation(),
                                                                        lowElevationThreshold));
 
-        // calculate the path delay in m
-        final double tan = FastMath.tan(z);
-        final double delta = 2.2768e-5 / FastMath.cos(z) *
-                             (pth.getPressure() +
-                              (1255.0 / pth.getTemperature() + 0.05) * pth.getWaterVaporPressure() - B * tan * tan);
+        // calculate the path delay
+        final double invCos = 1.0 / FastMath.cos(z);
+        final double tan    = FastMath.tan(z);
+        final double zh     = L0 * pth.getPressure();
+        final double zw     = L0 * (T_NUM / pth.getTemperature() + WET_OFFSET) * pth.getWaterVaporPressure();
+        final double sh     = zh * invCos;
+        final double sw     = (zw - L0 * B * tan * tan) * invCos;
+        return new TroposphericDelay(zh, zw, sh, sw);
 
-        return delta;
     }
 
     /** {@inheritDoc}
@@ -187,10 +198,10 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
      * @see #setLowElevationThreshold(double)
      */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
-                                                           final FieldGeodeticPoint<T> point,
-                                                           final FieldPressureTemperatureHumidity<T> weather,
-                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                                                   final FieldGeodeticPoint<T> point,
+                                                                                   final FieldPressureTemperatureHumidity<T> weather,
+                                                                                   final T[] parameters, final FieldAbsoluteDate<T> date) {
 
         final Field<T> field = date.getField();
         final T zero = field.getZero();
@@ -210,14 +221,14 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
                                  subtract(FastMath.max(trackingCoordinates.getElevation(), lowElevationThreshold)));
 
         // calculate the path delay in m
-        final T tan = FastMath.tan(z);
-        final T delta = FastMath.cos(z).divide(2.2768e-5).reciprocal().
-                        multiply(pth.getPressure().
-                                 add(pth.getTemperature().reciprocal().multiply(1255.0).add(0.05).
-                                     multiply(pth.getWaterVaporPressure())).
-                                 subtract(B.multiply(tan).multiply(tan)));
-
-        return delta;
+        final T invCos = FastMath.cos(z).reciprocal();
+        final T tan    = FastMath.tan(z);
+        final T zh     = pth.getPressure().multiply(L0);
+        final T zw     = pth.getTemperature().reciprocal().multiply(T_NUM).add(WET_OFFSET).
+                         multiply(pth.getWaterVaporPressure()).multiply(L0);
+        final T sh     = zh.multiply(invCos);
+        final T sw     = zw.subtract(B.multiply(tan).multiply(tan).multiply(L0)).multiply(invCos);
+        return new FieldTroposphericDelay<>(zh, zw, sh, sw);
 
     }
 

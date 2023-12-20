@@ -90,7 +90,8 @@ public abstract class BaseRangeTroposphericDelayModifier {
             final double delay = tropoModel.pathDelay(trackingCoordinates,
                                                       station.getOffsetGeodeticPoint(state.getDate()),
                                                       station.getPressureTemperatureHumidity(state.getDate()),
-                                                      tropoModel.getParameters(), state.getDate());
+                                                      tropoModel.getParameters(), state.getDate()).
+                                 getDelay();
 
             return delay;
         }
@@ -124,7 +125,8 @@ public abstract class BaseRangeTroposphericDelayModifier {
             final T delay = tropoModel.pathDelay(trackingCoordinates,
                                                  station.getOffsetGeodeticPoint(state.getDate()),
                                                  station.getPressureTemperatureHumidity(state.getDate()),
-                                                 parameters, state.getDate());
+                                                 parameters, state.getDate()).
+                            getDelay();
 
             return delay;
         }

@@ -85,6 +85,15 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
     /** Second pattern for δR correction term table. */
     private static final Pattern SECOND_DELTA_R_PATTERN = Pattern.compile("\\$$");
 
+    /** Base delay coefficient. */
+    private static final double L0 = 2.277e-5;
+
+    /** Temperature numerator. */
+    private static final double T_NUM = 1255;
+
+    /** Wet offset. */
+    private static final double WET_OFFSET = 0.05;
+
     /** X values for the B function. */
     private static final double[] X_VALUES_FOR_B = {
         0.0, 500.0, 1000.0, 1500.0, 2000.0, 2500.0, 3000.0, 4000.0, 5000.0
@@ -224,10 +233,10 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
      * @see #setLowElevationThreshold(double)
      */
     @Override
-    public double pathDelay(final TrackingCoordinates trackingCoordinates,
-                            final GeodeticPoint point,
-                            final PressureTemperatureHumidity weather,
-                            final double[] parameters, final AbsoluteDate date) {
+    public TroposphericDelay pathDelay(final TrackingCoordinates trackingCoordinates,
+                                       final GeodeticPoint point,
+                                       final PressureTemperatureHumidity weather,
+                                       final double[] parameters, final AbsoluteDate date) {
 
         // limit the height to model range
         final double fixedHeight = FastMath.min(FastMath.max(point.getAltitude(), X_VALUES_FOR_B[0]),
@@ -247,13 +256,14 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
 
         // calculate the path delay in m
         // beware since version 12.1 pressures are in Pa and not in hPa, hence the scaling has changed
-        final double tan = FastMath.tan(z);
-        final double delta = 2.277e-5 / FastMath.cos(z) *
-                             (pth.getPressure() +
-                              (1255d / pth.getTemperature() + 5e-2) * pth.getWaterVaporPressure() -
-                              B * tan * tan) + deltaR;
+        final double invCos = 1.0 / FastMath.cos(z);
+        final double tan    = FastMath.tan(z);
+        final double zh     = L0 * pth.getPressure();
+        final double zw     = L0 * (T_NUM / pth.getTemperature() + WET_OFFSET) * pth.getWaterVaporPressure();
+        final double sh     = zh * invCos;
+        final double sw     = (zw - L0 * B * tan * tan) * invCos + deltaR;
+        return new TroposphericDelay(zh, zw, sh, sw);
 
-        return delta;
     }
 
     /** {@inheritDoc}
@@ -270,10 +280,10 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
      * @see #setLowElevationThreshold(double)
      */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
-                                                           final FieldGeodeticPoint<T> point,
-                                                           final FieldPressureTemperatureHumidity<T> weather,
-                                                           final T[] parameters, final FieldAbsoluteDate<T> date) {
+    public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,
+                                                                                   final FieldGeodeticPoint<T> point,
+                                                                                   final FieldPressureTemperatureHumidity<T> weather,
+                                                                                   final T[] parameters, final FieldAbsoluteDate<T> date) {
 
         // limit the height to model range
         final T fixedHeight = FastMath.min(FastMath.max(point.getAltitude(), X_VALUES_FOR_B[0]),
@@ -297,13 +307,15 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
 
         // calculate the path delay in m
         // beware since version 12.1 pressures are in Pa and not in hPa, hence the scaling has changed
-        final T tan = FastMath.tan(z);
-        final T delta = FastMath.cos(z).divide(2.277e-5).reciprocal().
-                        multiply(pth.getPressure().
-                                 add(pth.getTemperature().divide(1255d).reciprocal().add(5e-2).multiply(pth.getWaterVaporPressure())).
-                                 subtract(B.multiply(tan).multiply(tan))).add(deltaR);
+        final T invCos = FastMath.cos(z).reciprocal();
+        final T tan    = FastMath.tan(z);
+        final T zh     = pth.getPressure().multiply(L0);
+        final T zw     = pth.getTemperature().reciprocal().multiply(T_NUM).add(WET_OFFSET).
+                         multiply(pth.getWaterVaporPressure()).multiply(L0);
+        final T sh     = zh.multiply(invCos);
+        final T sw     = zw.subtract(B.multiply(tan).multiply(tan).multiply(L0)).multiply(invCos).add(deltaR);
+        return new FieldTroposphericDelay<>(zh, zw, sh, sw);
 
-        return delta;
     }
 
     /** Calculates the delta R correction term using linear interpolation.

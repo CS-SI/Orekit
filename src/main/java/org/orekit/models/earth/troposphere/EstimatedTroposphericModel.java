@@ -105,7 +105,7 @@ public class EstimatedTroposphericModel extends EstimatedModel implements Discre
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
         return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0), point,
-                         TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date);
+                         TroposphericModelUtils.STANDARD_ATMOSPHERE, parameters, date).getDelay();
     }
 
     /** {@inheritDoc} */
@@ -118,7 +118,7 @@ public class EstimatedTroposphericModel extends EstimatedModel implements Discre
         return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
                          point,
                          new FieldPressureTemperatureHumidity<>(date.getField(), TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                         parameters, date);
+                         parameters, date).getDelay();
     }
 
 }

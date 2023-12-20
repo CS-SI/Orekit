@@ -47,10 +47,10 @@ public class CanonicalSaastamoinenModelTest {
             final GeodeticPoint location = new GeodeticPoint(0.0, 0.0, height);
             final double canonicalDelay = canonical.pathDelay(trackingCoordinates, location,
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                                              null, AbsoluteDate.J2000_EPOCH);
+                                                              null, AbsoluteDate.J2000_EPOCH).getDelay();
             final double modifiedDelay  = modified.pathDelay(trackingCoordinates, location,
                                                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                                             null, AbsoluteDate.J2000_EPOCH);
+                                                             null, AbsoluteDate.J2000_EPOCH).getDelay();
             Assertions.assertTrue(modifiedDelay - canonicalDelay > minDifference);
             Assertions.assertTrue(modifiedDelay - canonicalDelay < maxDifference);
         }

@@ -162,7 +162,7 @@ public class MendesPavlisModelTest {
         final double path = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
                                             point,
                                             TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                            model.getParameters(), date);
+                                            model.getParameters(), date).getDelay();
         Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
         Assertions.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
     }
@@ -178,7 +178,7 @@ public class MendesPavlisModelTest {
             final double delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
                                                  point,
                                                  TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                                 model.getParameters(), date);
+                                                 model.getParameters(), date).getDelay();
             Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
