@@ -166,7 +166,7 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
 
         // calculate the path delay in m
         final double tan = FastMath.tan(z);
-        final double delta = 2.277e-5 / FastMath.cos(z) *
+        final double delta = 2.2768e-5 / FastMath.cos(z) *
                              (pth.getPressure() +
                               (1255.0 / pth.getTemperature() + 0.05) * pth.getWaterVaporPressure() - B * tan * tan);
 
@@ -211,7 +211,7 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
 
         // calculate the path delay in m
         final T tan = FastMath.tan(z);
-        final T delta = FastMath.cos(z).divide(2.277e-5).reciprocal().
+        final T delta = FastMath.cos(z).divide(2.2768e-5).reciprocal().
                         multiply(pth.getPressure().
                                  add(pth.getTemperature().reciprocal().multiply(1255.0).add(0.05).
                                      multiply(pth.getWaterVaporPressure())).

@@ -30,7 +30,7 @@ public class CanonicalSaastamoinenModelTest {
 
     @Test
     public void testComparisonToModifiedModelLowElevation() {
-        doTestComparisonToModifiedModel(FastMath.toRadians(5), -13.24, -1.04);
+        doTestComparisonToModifiedModel(FastMath.toRadians(5), -13.24, -1.03);
     }
 
     @Test
