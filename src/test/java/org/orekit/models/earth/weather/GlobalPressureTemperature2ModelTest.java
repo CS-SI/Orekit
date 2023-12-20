@@ -75,7 +75,7 @@ public class GlobalPressureTemperature2ModelTest {
         final double e           = model.getWaterVaporPressure();
 
         Assertions.assertEquals(22.12,     temperature, 2.3e-1);
-        Assertions.assertEquals(1002.56,   pressure,    5.1e-1);
+        Assertions.assertEquals(1002.56,   pressure,    7.4e-1);
         Assertions.assertEquals(0.0012647, a[0],        1.1e-7);
         Assertions.assertEquals(0.0005726, a[1],        8.6e-8);
         Assertions.assertEquals(15.63,     e,           5.0e-2);

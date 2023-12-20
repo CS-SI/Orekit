@@ -16,31 +16,32 @@
  */
 package org.orekit.models.earth.weather;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.frames.FramesFactory;
-import org.orekit.models.earth.Geoid;
-import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.IERSConventions;
 
 public class GlobalPressureTemperature2Test {
 
     private static double epsilon = 1.0e-12;
 
     @Test
-    public void testWeatherParameters() {
+    public void testWeatherParameters() throws IOException, URISyntaxException {
 
-        Utils.setDataRoot("regular-data:potential:gpt2-grid");
+        Utils.setDataRoot("regular-data:potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         // Site Vienna: latitude:  48.20°N
@@ -63,10 +64,10 @@ public class GlobalPressureTemperature2Test {
         final double longitude = FastMath.toRadians(16.37);
         final double height    = 156.0;
         final AbsoluteDate date = AbsoluteDate.createMJDDate(56141, 0.0, TimeScalesFactory.getUTC());
-        final Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(12, 12),
-                                      ReferenceEllipsoid.getWgs84(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt2-grid/gpt2_5_extract.grd");
         final GlobalPressureTemperature2 model =
-                        new GlobalPressureTemperature2("gpt2_5_extract.grd", geoid);
+                        new GlobalPressureTemperature2(new DataSource(url.toURI()),
+                                                       TimeScalesFactory.getUTC());
 
         final GeodeticPoint               location = new GeodeticPoint(latitude, longitude, height);
         final double                      a[]      = model.getA(location, date);
@@ -75,26 +76,25 @@ public class GlobalPressureTemperature2Test {
         Assertions.assertEquals(0.0012647,      a[0],                        1.1e-7);
         Assertions.assertEquals(0.0005726,      a[1],                        8.6e-8);
         Assertions.assertEquals(273.15 + 22.12, pth.getTemperature(),        2.3e-1);
-        Assertions.assertEquals(1002.56,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()),           5.1e-1);
+        Assertions.assertEquals(1002.56,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()),           7.4e-1);
         Assertions.assertEquals(15.63,          TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()), 5.0e-2);
 
     }
 
     @Test
-    public void testEquality() {
+    public void testEquality() throws IOException, URISyntaxException {
 
-        Utils.setDataRoot("regular-data:potential:gpt2-grid");
+        Utils.setDataRoot("regular-data:potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         // Commons parameters
-        final Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(12, 12),
-                                      ReferenceEllipsoid.getWgs84(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
-
         final AbsoluteDate date = AbsoluteDate.createMJDDate(56141, 0.0, TimeScalesFactory.getUTC());
         final double latitude   = FastMath.toRadians(45.0);
         final double height     = 0.0;
 
-        GlobalPressureTemperature2 model = new GlobalPressureTemperature2(geoid);
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt2-grid/gpt2_15.grd");
+        GlobalPressureTemperature2 model = new GlobalPressureTemperature2(new DataSource(url.toURI()),
+                                                                          TimeScalesFactory.getUTC());
 
         // Test longitude = 181° and longitude = -179°
         GeodeticPoint               location1 = new GeodeticPoint(latitude, FastMath.toRadians(181.0), height);
@@ -141,18 +141,15 @@ public class GlobalPressureTemperature2Test {
     }
 
     @Test
-    public void testCorruptedFileBadData() {
+    public void testCorruptedFileBadData() throws IOException, URISyntaxException {
 
-        Utils.setDataRoot("regular-data:potential:gpt2-grid");
+        Utils.setDataRoot("regular-data:potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
-        // Date is not used here
-        final Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(12, 12),
-                                      ReferenceEllipsoid.getWgs84(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
-
         final String fileName = "corrupted-bad-data-gpt2_5.grd";
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt2-grid/" + fileName);
         try {
-            new GlobalPressureTemperature2(fileName, geoid);
+            new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -163,18 +160,15 @@ public class GlobalPressureTemperature2Test {
     }
 
     @Test
-    public void testCorruptedIrregularGrid() {
+    public void testCorruptedIrregularGrid() throws IOException, URISyntaxException {
 
-        Utils.setDataRoot("regular-data:potential:gpt2-grid");
+        Utils.setDataRoot("regular-data:potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
-        // Date is not used here
-        final Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(12, 12),
-                                      ReferenceEllipsoid.getWgs84(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
-
         final String fileName = "corrupted-irregular-grid-gpt2_5.grd";
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt2-grid/" + fileName);
         try {
-            new GlobalPressureTemperature2(fileName, geoid);
+            new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, oe.getSpecifier());

@@ -64,7 +64,7 @@ import org.orekit.time.TimeScale;
 public class GlobalPressureTemperature2Model extends GlobalPressureTemperature2 implements WeatherModel {
 
     /** Default supported files name pattern. */
-    public static final String DEFAULT_SUPPORTED_NAMES = GlobalPressureTemperature2.DEFAULT_SUPPORTED_NAMES;
+    public static final String DEFAULT_SUPPORTED_NAMES = "gpt2_\\d+.grd";
 
     /** The hydrostatic and wet a coefficients loaded. */
     private double[] coefficientsA;
@@ -91,7 +91,7 @@ public class GlobalPressureTemperature2Model extends GlobalPressureTemperature2 
      * @param supportedNames supported names
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude longitude geodetic longitude of the station, in radians
-     * @param geoid level surface of the gravity potential of a body
+     * @param geoid level surface of the gravity potential of a body (ignored since 12.1)
      * @see #GlobalPressureTemperature2Model(String, double, double, Geoid,
      * DataProvidersManager, TimeScale)
      */
@@ -109,7 +109,7 @@ public class GlobalPressureTemperature2Model extends GlobalPressureTemperature2 
      * @param supportedNames supported names
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude longitude geodetic longitude of the station, in radians
-     * @param geoid level surface of the gravity potential of a body
+     * @param geoid level surface of the gravity potential of a body (ignored since 12.1)
      * @param dataProvidersManager provides access to auxiliary data.
      * @param utc UTC time scale.
      * @since 10.1
@@ -120,7 +120,7 @@ public class GlobalPressureTemperature2Model extends GlobalPressureTemperature2 
                                            final Geoid geoid,
                                            final DataProvidersManager dataProvidersManager,
                                            final TimeScale utc) {
-        super(supportedNames, geoid, dataProvidersManager, utc);
+        super(supportedNames, dataProvidersManager, utc);
         this.coefficientsA = null;
         this.temperature   = Double.NaN;
         this.pressure      = Double.NaN;
@@ -136,7 +136,7 @@ public class GlobalPressureTemperature2Model extends GlobalPressureTemperature2 
      *
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude geodetic latitude of the station, in radians
-     * @param geoid level surface of the gravity potential of a body
+     * @param geoid level surface of the gravity potential of a body (ignored since 12.1)
      * @see #GlobalPressureTemperature2Model(String, double, double, Geoid,
      * DataProvidersManager, TimeScale)
      */

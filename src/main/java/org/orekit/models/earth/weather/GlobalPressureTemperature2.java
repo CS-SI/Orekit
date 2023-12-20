@@ -16,12 +16,12 @@
  */
 package org.orekit.models.earth.weather;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -34,15 +34,13 @@ import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.models.earth.Geoid;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.models.earth.troposphere.ViennaOneModel;
 import org.orekit.time.AbsoluteDate;
@@ -87,9 +85,6 @@ import org.orekit.utils.Constants;
  */
 public class GlobalPressureTemperature2 implements PressureTemperatureHumidityProvider {
 
-    /** Default supported files name pattern. */
-    public static final String DEFAULT_SUPPORTED_NAMES = "gpt2_\\d+.grd";
-
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
@@ -105,59 +100,47 @@ public class GlobalPressureTemperature2 implements PressureTemperatureHumidityPr
     /** Loaded grid. */
     private final Grid grid;
 
-    /** Geoid used to compute the undulations. */
-    private final Geoid geoid;
-
     /** UTC time scale. */
     private final TimeScale utc;
 
     /**
-     * Constructor with supported names given by user. This constructor uses the {@link
-     * DataContext#getDefault() default data context}.
+     * Constructor with supported names and source of GPT2 auxiliary data given by user.
      *
-     * @param supportedNames supported names
-     * @param geoid level surface of the gravity potential of a body
-     * @see #GlobalPressureTemperature2(String, Geoid, DataProvidersManager, TimeScale)
+     * @param source grid data source
+     * @param utc UTC time scale.
+     * @exception IOException if grid data cannot be read
      */
-    @DefaultDataContext
-    public GlobalPressureTemperature2(final String supportedNames, final Geoid geoid) {
-        this(supportedNames, geoid,
-             DataContext.getDefault().getDataProvidersManager(),
-             DataContext.getDefault().getTimeScales().getUTC());
+    public GlobalPressureTemperature2(final DataSource source,
+                                      final TimeScale utc)
+        throws IOException {
+        this.utc = utc;
+
+        // load the grid data
+        try (InputStream         is  = source.getOpener().openStreamOnce();
+             BufferedInputStream bis = new BufferedInputStream(is)) {
+            final Parser parser = new Parser();
+            parser.loadData(bis, source.getName());
+            grid = parser.grid;
+        }
+
     }
 
     /**
      * Constructor with supported names and source of GPT2 auxiliary data given by user.
      *
      * @param supportedNames supported names
-     * @param geoid level surface of the gravity potential of a body
      * @param dataProvidersManager provides access to auxiliary data.
      * @param utc UTC time scale.
+     * @deprecated as of 12.1 used only by {@link GlobalPressureTemperature2Model}
      */
-    public GlobalPressureTemperature2(final String supportedNames,
-                                      final Geoid geoid,
-                                      final DataProvidersManager dataProvidersManager,
-                                      final TimeScale utc) {
-        this.geoid = geoid;
-        this.utc   = utc;
-
-        // load the grid data
+    @Deprecated
+    protected GlobalPressureTemperature2(final String supportedNames,
+                                         final DataProvidersManager dataProvidersManager,
+                                         final TimeScale utc) {
+        this.utc = utc;
         final Parser parser = new Parser();
         dataProvidersManager.feed(supportedNames, parser);
-        this.grid = parser.grid;
-
-    }
-
-    /**
-     * Constructor with default supported names. This constructor uses the {@link
-     * DataContext#getDefault() default data context}.
-     *
-     * @param geoid level surface of the gravity potential of a body
-     * @see #GlobalPressureTemperature2String, Geoid, DataProvidersManager, TimeScale)
-     */
-    @DefaultDataContext
-    public GlobalPressureTemperature2(final Geoid geoid) {
-        this(DEFAULT_SUPPORTED_NAMES, geoid);
+        grid = parser.grid;
     }
 
     /** Get coefficients array for VMF mapping function.
@@ -190,7 +173,7 @@ public class GlobalPressureTemperature2 implements PressureTemperatureHumidityPr
         final int dayOfYear = date.getComponents(utc).getDate().getDayOfYear();
 
         // Corrected height (can be negative)
-        final double undu            = geoid.getUndulation(neighbors.latitude, neighbors.longitude, date);
+        final double undu            = neighbors.interpolate(e -> e.undulation);
         final double correctedheight = location.getAltitude() - undu - neighbors.interpolate(e -> e.hS);
 
         // Temperature gradient [K/m]
@@ -232,7 +215,7 @@ public class GlobalPressureTemperature2 implements PressureTemperatureHumidityPr
         final int dayOfYear = date.getComponents(utc).getDate().getDayOfYear();
 
         // Corrected height (can be negative)
-        final double undu       = geoid.getUndulation(neighbors.latitude, neighbors.longitude, date.toAbsoluteDate());
+        final double undu       = neighbors.interpolate(e -> e.undulation);
         final T correctedheight = location.getAltitude().subtract(undu).subtract(neighbors.interpolate(e -> e.hS));
 
         // Temperature gradient [K/m]
@@ -365,7 +348,7 @@ public class GlobalPressureTemperature2 implements PressureTemperatureHumidityPr
 
         @Override
         public void loadData(final InputStream input, final String name)
-            throws IOException, ParseException {
+            throws IOException {
 
             final SortedSet<Integer> latSample = new TreeSet<>();
             final SortedSet<Integer> lonSample = new TreeSet<>();
@@ -450,7 +433,8 @@ public class GlobalPressureTemperature2 implements PressureTemperatureHumidityPr
                 row[nO - 1] = new GridEntry(row[0].latitude, row[0].latKey,
                                             row[0].longitude + 2 * FastMath.PI,
                                             row[0].lonKey + DEG_TO_MAS * 360,
-                                            row[0].hS, row[0].pressure0, row[0].temperature0,
+                                            row[0].undulation, row[0].hS,
+                                            row[0].pressure0, row[0].temperature0,
                                             row[0].qv0, row[0].dT, row[0].ah, row[0].aw);
 
             }
@@ -502,6 +486,9 @@ public class GlobalPressureTemperature2 implements PressureTemperatureHumidityPr
         /** Longitude key (mas). */
         private final int lonKey;
 
+        /** Undulation. */
+        private final double undulation;
+
         /** Height correction. */
         private final double hS;
 
@@ -535,6 +522,7 @@ public class GlobalPressureTemperature2 implements PressureTemperatureHumidityPr
             latKey       = (int) FastMath.rint(latDegree * DEG_TO_MAS);
             lonKey       = (int) FastMath.rint(lonDegree * DEG_TO_MAS);
 
+            undulation   = Double.parseDouble(fields[22]);
             hS           = Double.parseDouble(fields[23]);
 
             pressure0    = createModel(fields, 2);
@@ -551,6 +539,7 @@ public class GlobalPressureTemperature2 implements PressureTemperatureHumidityPr
          * @param latKey latitude key (mas)
          * @param longitude longitude (radian)
          * @param lonKey longitude key (mas)
+         * @param undulation undulation (m)
          * @param hS height correction
          * @param pressure0 pressure model
          * @param temperature0 temperature model
@@ -560,13 +549,14 @@ public class GlobalPressureTemperature2 implements PressureTemperatureHumidityPr
          * @param aw aw coefficient model
          */
         GridEntry(final double latitude, final int latKey, final double longitude, final int lonKey,
-                  final double hS, final double[] pressure0, final double[] temperature0,
+                  final double undulation, final double hS, final double[] pressure0, final double[] temperature0,
                   final double[] qv0, final double[] dT, final double[] ah, final double[] aw) {
 
             this.latitude     = latitude;
             this.latKey       = latKey;
             this.longitude    = longitude;
             this.lonKey       = lonKey;
+            this.undulation   = undulation;
             this.hS           = hS;
             this.pressure0    = pressure0.clone();
             this.temperature0 = temperature0.clone();
