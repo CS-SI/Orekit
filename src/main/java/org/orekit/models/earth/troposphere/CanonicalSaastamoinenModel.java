@@ -26,13 +26,9 @@ import org.hipparchus.analysis.polynomials.PolynomialSplineFunction;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.HeightDependentPressureTemperatureHumidityConverter;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
-import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
-import org.orekit.models.earth.weather.water.NbsNrcSteamTable;
-import org.orekit.models.earth.weather.water.WaterVaporPressureProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
@@ -90,9 +86,6 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
     /** Interpolation function for the B correction term. */
     private static final PolynomialSplineFunction B_FUNCTION;
 
-    /** Provider for pressure, temperature and humidity. */
-    private final PressureTemperatureHumidityProvider pthProvider;
-
     static {
         B_FUNCTION = new LinearInterpolator().interpolate(X_VALUES_FOR_B, Y_VALUES_FOR_B);
     }
@@ -104,41 +97,10 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
      * Create a new Saastamoinen model for the troposphere using the given environmental
      * conditions and table from the reference book.
      *
-     * @param pthProvider provider for pressure, temperature and humidity
      * @see HeightDependentPressureTemperatureHumidityConverter
      */
-    public CanonicalSaastamoinenModel(final PressureTemperatureHumidityProvider pthProvider) {
-        this.pthProvider           = pthProvider;
+    public CanonicalSaastamoinenModel() {
         this.lowElevationThreshold = DEFAULT_LOW_ELEVATION_THRESHOLD;
-    }
-
-    /** Create a new Saastamoinen model using a standard atmosphere model.
-     *
-     * <ul>
-     * <li>temperature: 18 degree Celsius
-     * <li>pressure: 1013.25 mbar
-     * <li>humidity: 50%
-     * </ul>
-     *
-     * @return a Saastamoinen model with standard environmental values
-     */
-    public static CanonicalSaastamoinenModel getStandardModel() {
-
-        // build standard meteorological data
-        final double altitude           = 0.0;
-        final double pressure           = TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25);
-        final double temperature        = 273.15 + 18;
-        final double relativeHumidity   = 0.5;
-        final WaterVaporPressureProvider waterPressureProvider = new NbsNrcSteamTable();
-        final double waterVaporPressure = waterPressureProvider.waterVaporPressure(pressure,
-                                                                                   temperature,
-                                                                                   relativeHumidity);
-        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(altitude,
-                                                                                pressure,
-                                                                                temperature,
-                                                                                waterVaporPressure);
-        return new CanonicalSaastamoinenModel(new ConstantPressureTemperatureHumidityProvider(pth));
-
     }
 
     /** {@inheritDoc}
@@ -159,8 +121,6 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
                                        final PressureTemperatureHumidity weather,
                                        final double[] parameters, final AbsoluteDate date) {
 
-        final PressureTemperatureHumidity pth = pthProvider.getWeatherParamerers(point, date);
-
         // there are no data in the model for negative altitudes and altitude bigger than 6000 m
         // limit the height to a range of [0, 5000] m
         final double fixedHeight = FastMath.min(FastMath.max(point.getAltitude(), X_VALUES_FOR_B[0]),
@@ -176,8 +136,8 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
         // calculate the path delay
         final double invCos = 1.0 / FastMath.cos(z);
         final double tan    = FastMath.tan(z);
-        final double zh     = L0 * pth.getPressure();
-        final double zw     = L0 * (T_NUM / pth.getTemperature() + WET_OFFSET) * pth.getWaterVaporPressure();
+        final double zh     = L0 * weather.getPressure();
+        final double zw     = L0 * (T_NUM / weather.getTemperature() + WET_OFFSET) * weather.getWaterVaporPressure();
         final double sh     = zh * invCos;
         final double sw     = (zw - L0 * B * tan * tan) * invCos;
         return new TroposphericDelay(zh, zw, sh, sw);
@@ -206,8 +166,6 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
         final Field<T> field = date.getField();
         final T zero = field.getZero();
 
-        final FieldPressureTemperatureHumidity<T> pth = pthProvider.getWeatherParamerers(point, date);
-
         // there are no data in the model for negative altitudes and altitude bigger than 5000 m
         // limit the height to a range of [0, 5000] m
         final T fixedHeight = FastMath.min(FastMath.max(point.getAltitude(), X_VALUES_FOR_B[0]),
@@ -223,9 +181,9 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
         // calculate the path delay in m
         final T invCos = FastMath.cos(z).reciprocal();
         final T tan    = FastMath.tan(z);
-        final T zh     = pth.getPressure().multiply(L0);
-        final T zw     = pth.getTemperature().reciprocal().multiply(T_NUM).add(WET_OFFSET).
-                         multiply(pth.getWaterVaporPressure()).multiply(L0);
+        final T zh     = weather.getPressure().multiply(L0);
+        final T zw     = weather.getTemperature().reciprocal().multiply(T_NUM).add(WET_OFFSET).
+                         multiply(weather.getWaterVaporPressure()).multiply(L0);
         final T sh     = zh.multiply(invCos);
         final T sw     = zw.subtract(B.multiply(tan).multiply(tan).multiply(L0)).multiply(invCos);
         return new FieldTroposphericDelay<>(zh, zw, sh, sw);

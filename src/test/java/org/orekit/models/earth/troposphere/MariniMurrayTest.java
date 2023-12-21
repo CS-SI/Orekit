@@ -34,8 +34,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.TrackingCoordinates;
 
-@Deprecated
-public class MariniMurrayModelTest {
+public class MariniMurrayTest {
 
     private static double epsilon = 1e-6;
 
@@ -60,39 +59,7 @@ public class MariniMurrayModelTest {
         final double height = 100d;
 
         // ruby laser with wavelength 694.3 nm
-        TroposphericModel model = MariniMurrayModel.getStandardModel(694.3);
-        final double path = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
-                                            new GeodeticPoint(latitude, longitude, height),
-                                            TroposphericModelUtils.STANDARD_ATMOSPHERE, null, AbsoluteDate.J2000_EPOCH).getDelay();
-
-        Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
-        Assertions.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecatedConstructor1() {
-        final double elevation = 10d;
-        final double height = 100d;
-
-        // ruby laser with wavelength 694.3 nm
-        TroposphericModel model = MariniMurrayModel.getStandardModel(694.3);
-        final double path = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
-                                            new GeodeticPoint(latitude, longitude, height),
-                                            TroposphericModelUtils.STANDARD_ATMOSPHERE, null, AbsoluteDate.J2000_EPOCH).getDelay();
-
-        Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
-        Assertions.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecatedConstructor2() {
-        final double elevation = 10d;
-        final double height = 100d;
-
-        // ruby laser with wavelength 694.3 nm
-        TroposphericModel model = new MariniMurrayModel(273.15 + 20, 1013.25, 0.5, 694.3);
+        TroposphericModel model = new MariniMurray(694.3, TroposphericModelUtils.NANO_M);
         final double path = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
                                             new GeodeticPoint(latitude, longitude, height),
                                             TroposphericModelUtils.STANDARD_ATMOSPHERE, null, AbsoluteDate.J2000_EPOCH).getDelay();
@@ -115,7 +82,7 @@ public class MariniMurrayModelTest {
         final T height = zero.add(100d);
 
         // ruby laser with wavelength 694.3 nm
-        TroposphericModel model = MariniMurrayModel.getStandardModel(694.3);
+        TroposphericModel model = new MariniMurray(694.3, TroposphericModelUtils.NANO_M);
         final T path = model.pathDelay(trackingCoordinates, new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), height),
                                        new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                        null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay();
@@ -127,7 +94,7 @@ public class MariniMurrayModelTest {
     @Test
     public void testFixedHeight() {
         // ruby laser with wavelength 694.3 nm
-        TroposphericModel model = MariniMurrayModel.getStandardModel(694.3);
+        TroposphericModel model = new MariniMurray(694.3, TroposphericModelUtils.NANO_M);
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
@@ -146,7 +113,7 @@ public class MariniMurrayModelTest {
 
     private <T extends CalculusFieldElement<T>> void doTestFieldFixedHeight(final Field<T> field) {
         // ruby laser with wavelength 694.3 nm
-        TroposphericModel model = MariniMurrayModel.getStandardModel(694.3);
+        TroposphericModel model = new MariniMurray(694.3, TroposphericModelUtils.NANO_M);
         final T zero = field.getZero();
         T lastDelay  = zero.add(Double.MAX_VALUE);
         // delay shall decline with increasing elevation angle
@@ -164,7 +131,7 @@ public class MariniMurrayModelTest {
     public void compareExpectedValues() {
 
         // ruby laser with wavelength 694.3 nm
-        TroposphericModel model = MariniMurrayModel.getStandardModel(694.3);
+        TroposphericModel model = new MariniMurray(694.3, TroposphericModelUtils.NANO_M);
 
         double height = 0;
         double elevation = 10;
@@ -184,7 +151,7 @@ public class MariniMurrayModelTest {
     private <T extends CalculusFieldElement<T>> void doCompareFieldExpectedValues(final Field<T> field) {
 
         // ruby laser with wavelength 694.3 nm
-        TroposphericModel model = MariniMurrayModel.getStandardModel(694.3);
+        TroposphericModel model = new MariniMurray(694.3, TroposphericModelUtils.NANO_M);
 
         T zero = field.getZero();
         T height = zero;

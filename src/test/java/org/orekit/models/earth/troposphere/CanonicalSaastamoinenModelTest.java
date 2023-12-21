@@ -30,18 +30,18 @@ public class CanonicalSaastamoinenModelTest {
 
     @Test
     public void testComparisonToModifiedModelLowElevation() {
-        doTestComparisonToModifiedModel(FastMath.toRadians(5), -13.24, -1.03);
+        doTestComparisonToModifiedModel(FastMath.toRadians(5), -13.4, 0.14);
     }
 
     @Test
     public void testComparisonToModifiedModelHighElevation() {
-        doTestComparisonToModifiedModel(FastMath.toRadians(60), -1.35, -0.11);
+        doTestComparisonToModifiedModel(FastMath.toRadians(60), -1.36, 0.002);
     }
 
     private void doTestComparisonToModifiedModel(final double elevation,
                                                  final double minDifference, final double maxDifference) {
         final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(0.0, elevation, 0.0);
-        final CanonicalSaastamoinenModel canonical = CanonicalSaastamoinenModel.getStandardModel();
+        final CanonicalSaastamoinenModel canonical = new CanonicalSaastamoinenModel();
         final ModifiedSaastamoinenModel  modified  = ModifiedSaastamoinenModel.getStandardModel();
         for (double height = 0; height < 5000; height += 100) {
             final GeodeticPoint location = new GeodeticPoint(0.0, 0.0, height);
