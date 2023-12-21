@@ -92,11 +92,8 @@ public class GlobalPressureTemperature2 implements ViennaAProvider, PressureTemp
     /** Ideal gas constant for dry air [J/kg/K]. */
     private static final double R = 287.0;
 
-    /** Conversion factor from degrees to mill arcseconds. */
-    private static final int DEG_TO_MAS = 3600000;
-
     /** Loaded grid. */
-    private final Grid grid;
+    private final Grid<Grid2Entry> grid;
 
     /** UTC time scale. */
     private final TimeScale utc;
@@ -144,7 +141,7 @@ public class GlobalPressureTemperature2 implements ViennaAProvider, PressureTemp
     @Override
     public ViennaACoefficients getA(final GeodeticPoint location, final AbsoluteDate date) {
 
-        final CellInterpolator interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
+        final CellInterpolator<Grid2Entry> interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
         final int dayOfYear = date.getComponents(utc).getDate().getDayOfYear();
 
         // ah and aw coefficients
@@ -157,7 +154,7 @@ public class GlobalPressureTemperature2 implements ViennaAProvider, PressureTemp
     @Override
     public PressureTemperatureHumidity getWeatherParamerers(final GeodeticPoint location, final AbsoluteDate date) {
 
-        final CellInterpolator interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
+        final CellInterpolator<Grid2Entry> interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
         final int dayOfYear = date.getComponents(utc).getDate().getDayOfYear();
 
         // Corrected height (can be negative)
@@ -188,7 +185,9 @@ public class GlobalPressureTemperature2 implements ViennaAProvider, PressureTemp
         return new PressureTemperatureHumidity(location.getAltitude(),
                                                TroposphericModelUtils.HECTO_PASCAL.toSI(pressure),
                                                temperature,
-                                               TroposphericModelUtils.HECTO_PASCAL.toSI(e0));
+                                               TroposphericModelUtils.HECTO_PASCAL.toSI(e0),
+                                               Double.NaN,
+                                               Double.NaN);
 
     }
 
@@ -197,7 +196,7 @@ public class GlobalPressureTemperature2 implements ViennaAProvider, PressureTemp
     public <T extends CalculusFieldElement<T>> FieldViennaACoefficients<T> getA(final FieldGeodeticPoint<T> location,
                                                                                 final FieldAbsoluteDate<T> date) {
 
-        final FieldCellInterpolator<T> interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
+        final FieldCellInterpolator<T, Grid2Entry> interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
         final int dayOfYear = date.getComponents(utc).getDate().getDayOfYear();
 
         // ah and aw coefficients
@@ -211,7 +210,7 @@ public class GlobalPressureTemperature2 implements ViennaAProvider, PressureTemp
     public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getWeatherParamerers(final FieldGeodeticPoint<T> location,
                                                                                                         final FieldAbsoluteDate<T> date) {
 
-        final FieldCellInterpolator<T> interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
+        final FieldCellInterpolator<T, Grid2Entry> interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
         final int dayOfYear = date.getComponents(utc).getDate().getDayOfYear();
 
         // Corrected height (can be negative)
@@ -242,7 +241,9 @@ public class GlobalPressureTemperature2 implements ViennaAProvider, PressureTemp
         return new FieldPressureTemperatureHumidity<>(location.getAltitude(),
                                                       TroposphericModelUtils.HECTO_PASCAL.toSI(pressure),
                                                       temperature,
-                                                      TroposphericModelUtils.HECTO_PASCAL.toSI(e0));
+                                                      TroposphericModelUtils.HECTO_PASCAL.toSI(e0),
+                                                      date.getField().getZero().newInstance(Double.NaN),
+                                                      date.getField().getZero().newInstance(Double.NaN));
 
     }
 
@@ -250,7 +251,7 @@ public class GlobalPressureTemperature2 implements ViennaAProvider, PressureTemp
     private static class Parser implements DataLoader {
 
         /** Grid entries. */
-        private Grid grid;
+        private Grid<Grid2Entry> grid;
 
         @Override
         public boolean stillAcceptsData() {
@@ -263,7 +264,7 @@ public class GlobalPressureTemperature2 implements ViennaAProvider, PressureTemp
 
             final SortedSet<Integer> latSample = new TreeSet<>();
             final SortedSet<Integer> lonSample = new TreeSet<>();
-            final List<GridEntry>    entries   = new ArrayList<>();
+            final List<Grid2Entry>   entries   = new ArrayList<>();
 
             // Open stream and parse data
             int   lineNumber = 0;
@@ -280,18 +281,18 @@ public class GlobalPressureTemperature2 implements ViennaAProvider, PressureTemp
                         final String[] fields = SEPARATOR.split(line);
                         final double latDegree = Double.parseDouble(fields[0]);
                         final double lonDegree = Double.parseDouble(fields[1]);
-                        final GridEntry entry = new GridEntry(FastMath.toRadians(latDegree),
-                                                              (int) FastMath.rint(latDegree * DEG_TO_MAS),
-                                                              FastMath.toRadians(lonDegree),
-                                                              (int) FastMath.rint(lonDegree * DEG_TO_MAS),
-                                                              Double.parseDouble(fields[22]),
-                                                              Double.parseDouble(fields[23]),
-                                                              createModel(fields,  2),
-                                                              createModel(fields,  7),
-                                                              createModel(fields, 12),
-                                                              createModel(fields, 17),
-                                                              createModel(fields, 24),
-                                                              createModel(fields, 29));
+                        final Grid2Entry entry = new Grid2Entry(FastMath.toRadians(latDegree),
+                                                                (int) FastMath.rint(latDegree * GridEntry.DEG_TO_MAS),
+                                                                FastMath.toRadians(lonDegree),
+                                                                (int) FastMath.rint(lonDegree * GridEntry.DEG_TO_MAS),
+                                                                Double.parseDouble(fields[22]),
+                                                                Double.parseDouble(fields[23]),
+                                                                createModel(fields,  2),
+                                                                createModel(fields,  7),
+                                                                createModel(fields, 12),
+                                                                createModel(fields, 17),
+                                                                createModel(fields, 24),
+                                                                createModel(fields, 29));
                         latSample.add(entry.getLatKey());
                         lonSample.add(entry.getLonKey());
                         entries.add(entry);
@@ -304,7 +305,7 @@ public class GlobalPressureTemperature2 implements ViennaAProvider, PressureTemp
             }
 
             // organize entries in a grid that wraps arouns Earth in longitude
-            grid = new Grid(latSample, lonSample, entries, name);
+            grid = new Grid<>(latSample, lonSample, entries, name);
 
         }
 

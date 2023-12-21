@@ -2334,7 +2334,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                                     new CIPM2007().
                                                                     waterVaporPressure(Unit.BAR.toSI(meteoData.getPressure()),
                                                                                        meteoData.getTemperature(),
-                                                                                       0.01 * meteoData.getHumidity()));
+                                                                                       0.01 * meteoData.getHumidity()),
+                                                                    Double.NaN, Double.NaN);
                     model = new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
                                                   wavelength, Unit.METRE);
                 } else {

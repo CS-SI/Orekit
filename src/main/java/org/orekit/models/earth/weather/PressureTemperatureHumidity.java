@@ -25,18 +25,30 @@ public class PressureTemperatureHumidity extends PressureTemperature {
     /** Humidity as water vapor pressure (Pa). */
     private final double waterVaporPressure;
 
+    /** Mean temperature weighted with water vapor pressure. */
+    private final double tm;
+
+    /** Water vapor decrease factor. */
+    private final double lambda;
+
     /** Simple constructor.
      * @param altitude altitude at which weather parameters have been computed (m)
      * @param pressure pressure (Pa)
      * @param temperature temperature (Kelvin)
      * @param waterVaporPressure humidity as water vapor pressure (Pa)
+     * @param tm mean temperature weighted with water vapor pressure
+     * @param lambda water vapor decrease factor
      */
     public PressureTemperatureHumidity(final double altitude,
                                        final double pressure,
                                        final double temperature,
-                                       final double waterVaporPressure) {
+                                       final double waterVaporPressure,
+                                       final double tm,
+                                       final double lambda) {
         super(altitude, pressure, temperature);
         this.waterVaporPressure = waterVaporPressure;
+        this.tm                 = tm;
+        this.lambda             = lambda;
     }
 
     /** Get humidity as water vapor pressure.
@@ -44,6 +56,20 @@ public class PressureTemperatureHumidity extends PressureTemperature {
      */
     public double getWaterVaporPressure() {
         return waterVaporPressure;
+    }
+
+    /** Get mean temperature weighted with water vapor pressure.
+     * @return mean temperature weighted with water vapor pressure
+     */
+    public double getTm() {
+        return tm;
+    }
+
+    /** Get water vapor decrease factor.
+     * @return water vapor decrease factor
+     */
+    public double getLambda() {
+        return lambda;
     }
 
 }

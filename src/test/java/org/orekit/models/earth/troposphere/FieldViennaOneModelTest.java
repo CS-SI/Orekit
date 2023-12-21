@@ -56,6 +56,7 @@ import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TrackingCoordinates;
 
+@Deprecated
 public class FieldViennaOneModelTest {
 
     private static double epsilon = 1e-6;

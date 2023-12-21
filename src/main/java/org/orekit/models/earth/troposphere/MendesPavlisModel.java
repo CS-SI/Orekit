@@ -99,7 +99,9 @@ public class MendesPavlisModel
                                                                                              t0,
                                                                                              new CIPM2007().
                                                                                              waterVaporPressure(TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
-                                                                                                                t0, rh))),
+                                                                                                                t0, rh),
+                                                                                             Double.NaN,
+                                                                                             Double.NaN)),
              lambda, TroposphericModelUtils.MICRO_M);
     }
 
@@ -175,7 +177,10 @@ public class MendesPavlisModel
         final double p  = TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25);
         final double t  = 273.15 + 18;
         final double rh = 0.5;
-        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(h, p, t, new CIPM2007().waterVaporPressure(p, t, rh));
+        final PressureTemperatureHumidity pth = new PressureTemperatureHumidity(h, p, t,
+                                                                                new CIPM2007().waterVaporPressure(p, t, rh),
+                                                                                Double.NaN,
+                                                                                Double.NaN);
         return new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
                                      lambda, lambdaUnits);
     }

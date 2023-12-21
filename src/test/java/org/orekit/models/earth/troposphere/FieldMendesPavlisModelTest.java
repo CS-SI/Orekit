@@ -105,7 +105,9 @@ public class FieldMendesPavlisModelTest {
                                                                                 new CIPM2007().
                                                                                 waterVaporPressure(pressure,
                                                                                                    temperature,
-                                                                                                   humidity));
+                                                                                                   humidity),
+                                                                                Double.NaN,
+                                                                                Double.NaN);
         final double lambda       = 0.532;
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
 
@@ -166,7 +168,9 @@ public class FieldMendesPavlisModelTest {
                                                                                 new CIPM2007().
                                                                                 waterVaporPressure(pressure,
                                                                                                    temperature,
-                                                                                                   humidity));
+                                                                                                   humidity),
+                                                                                Double.NaN,
+                                                                                Double.NaN);
         final double lambda       = 0.532;
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
 

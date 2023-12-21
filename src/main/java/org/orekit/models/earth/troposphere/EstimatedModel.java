@@ -87,7 +87,9 @@ public class EstimatedModel implements TroposphericModel {
         this(new ModifiedSaastamoinenModel(new ConstantPressureTemperatureHumidityProvider(new PressureTemperatureHumidity(h0,
                                                                                                                            TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
                                                                                                                            t0,
-                                                                                                                           0.0))),
+                                                                                                                           0.0,
+                                                                                                                           Double.NaN,
+                                                                                                                           Double.NaN))),
              model, totalDelay);
     }
 

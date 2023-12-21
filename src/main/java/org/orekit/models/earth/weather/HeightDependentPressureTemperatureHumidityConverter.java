@@ -60,7 +60,8 @@ public class HeightDependentPressureTemperatureHumidityConverter {
         final double t  = pth0.getTemperature() - 6.5e-3 * dh;
         final double rh = rh0 * FastMath.exp(-6.396e-4 * dh);
 
-        return new PressureTemperatureHumidity(h, p, t, provider.waterVaporPressure(p, t, rh));
+        return new PressureTemperatureHumidity(h, p, t, provider.waterVaporPressure(p, t, rh),
+                                               pth0.getTm(), pth0.getLambda());
 
     }
 
@@ -80,7 +81,8 @@ public class HeightDependentPressureTemperatureHumidityConverter {
         final T t  = pth0.getTemperature().subtract(dh.multiply(6.5e-3));
         final T p  = pth0.getPressure().multiply(dh.multiply(2.26e-5).negate().add(1.0).pow(5.225));
         final T rh = rh0.multiply(FastMath.exp(dh.multiply(-6.396e-4)));
-        return new FieldPressureTemperatureHumidity<>(h, p, t, provider.waterVaporPressure(p, t, rh));
+        return new FieldPressureTemperatureHumidity<>(h, p, t, provider.waterVaporPressure(p, t, rh),
+                                                      pth0.getTm(), pth0.getLambda());
     }
 
 }

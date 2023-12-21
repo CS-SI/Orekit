@@ -101,7 +101,9 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel implements Disc
                                                                                               new Wang1988().
                                                                                               waterVaporPressure(TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
                                                                                                                  t0,
-                                                                                                                 r0))),
+                                                                                                                 r0),
+                                                                                              Double.NaN,
+                                                                                              Double.NaN)),
               deltaRFileName, dataProvidersManager);
     }
 

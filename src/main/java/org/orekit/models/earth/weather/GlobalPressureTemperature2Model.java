@@ -128,7 +128,6 @@ public class GlobalPressureTemperature2Model extends GlobalPressureTemperature2 
         this.e0            = Double.NaN;
         this.latitude      = latitude;
         this.longitude     = longitude;
-
     }
 
     /**

@@ -56,8 +56,7 @@ import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TrackingCoordinates;
 
-@Deprecated
-public class FieldViennaThreeModelTest {
+public class FieldViennaThreeTest {
 
     private static double epsilon = 1e-6;
 
@@ -111,12 +110,11 @@ public class FieldViennaThreeModelTest {
         final double expectedHydro = 1.621024;
         final double expectedWet   = 1.623023;
 
-        final double[] a = {0.00123462, 0.00047101};
-        final double[] z = {2.1993, 0.0690};
-
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
 
-        final ViennaThreeModel model = new ViennaThreeModel(a, z);
+        final ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                                  new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
+                                                  TimeScalesFactory.getUTC());
 
         final T[] computedMapping = model.mappingFactors(trackingCoordinates, point,
                                                          new FieldPressureTemperatureHumidity<>(field,
@@ -166,12 +164,11 @@ public class FieldViennaThreeModelTest {
         final double expectedHydro = 10.132802;
         final double expectedWet   = 10.879154;
 
-        final double[] a = {0.00123462, 0.00047101};
-        final double[] z = {2.1993, 0.0690};
-
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
 
-        final ViennaThreeModel model = new ViennaThreeModel(a, z);
+        final ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                                  new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
+                                                  TimeScalesFactory.getUTC());
 
         final T[] computedMapping = model.mappingFactors(new FieldTrackingCoordinates<T>(zero, zero.newInstance(elevation), zero),
                                                          point,
@@ -222,12 +219,11 @@ public class FieldViennaThreeModelTest {
         final double expectedHydro = 1.003810;
         final double expectedWet   = 1.003816;
 
-        final double[] a = {0.00123462, 0.00047101};
-        final double[] z = {2.1993, 0.0690};
-
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
 
-        final ViennaThreeModel model = new ViennaThreeModel(a, z);
+        final ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                                  new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
+                                                  TimeScalesFactory.getUTC());
 
         final T[] computedMapping = model.mappingFactors(new FieldTrackingCoordinates<T>(zero, zero.newInstance(elevation), zero),
                                                          point,
@@ -249,10 +245,10 @@ public class FieldViennaThreeModelTest {
         final double elevation = 10d;
         final double height = 100d;
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-        final double[] a = { 0.00123462, 0.00047101};
-        final double[] z = {2.1993, 0.0690};
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(37.5)), zero.add(FastMath.toRadians(277.5)), zero.add(height));
-        ViennaThreeModel model = new ViennaThreeModel(a, z);
+        ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                            new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
+                                            TimeScalesFactory.getUTC());
         final FieldTroposphericDelay<T> delay = model.pathDelay(new FieldTrackingCoordinates<T>(zero, zero.newInstance(FastMath.toRadians(elevation)), zero),
                                                                 point,
                                                                 new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
@@ -272,10 +268,10 @@ public class FieldViennaThreeModelTest {
     private <T extends CalculusFieldElement<T>> void doTestFixedHeight(final Field<T> field) {
         final T zero = field.getZero();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
-        final double[] a = { 0.00123462, 0.00047101};
-        final double[] z = {2.1993, 0.0690};
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(37.5)), zero.add(FastMath.toRadians(277.5)), zero.add(350.0));
-        ViennaThreeModel model = new ViennaThreeModel(a, z);
+        ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                            new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
+                                            TimeScalesFactory.getUTC());
         T lastDelay = zero.add(Double.MAX_VALUE);
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
@@ -308,9 +304,9 @@ public class FieldViennaThreeModelTest {
                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
 
         // Tropospheric model
-        final double[] a = { 0.00127683, 0.00060955 };
-        final double[] z = {2.0966, 0.2140};
-        final TroposphericModel model = new ViennaThreeModel(a, z);
+        final TroposphericModel model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(00.00127683, 0.00060955)),
+                                                        new ConstantTroposphericModel(new TroposphericDelay(2.0966, 0.2140, 0, 0)),
+                                                        TimeScalesFactory.getUTC());
 
         // Derivative Structure
         final DSFactory factory = new DSFactory(6, 1);

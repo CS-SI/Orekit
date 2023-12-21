@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2023 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,15 @@
  */
 package org.orekit.models.earth.weather;
 
-/** Grid entry in Global Pressure Temperature models.
+/** Base grid entry in Global Pressure Temperature models.
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 12.1
  */
-class GridEntry {
+abstract class GridEntry {
+
+    /** Conversion factor from degrees to mill arcseconds. */
+    public static final int DEG_TO_MAS = 3600000;
 
     /** Latitude (radian). */
     private final double latitude;
@@ -41,24 +44,6 @@ class GridEntry {
     /** Height correction. */
     private final double hS;
 
-    /** Pressure model. */
-    private final SeasonalModel pressure0;
-
-    /** Temperature model. */
-    private final SeasonalModel temperature0;
-
-    /** Specific humidity model. */
-    private final SeasonalModel qv0;
-
-    /** Temperature gradient model. */
-    private final SeasonalModel dT;
-
-    /** ah coefficient model. */
-    private final SeasonalModel ah;
-
-    /** aw coefficient model. */
-    private final SeasonalModel aw;
-
     /** Build an entry from its components.
      * @param latitude latitude (radian)
      * @param latKey latitude key (mas)
@@ -66,18 +51,9 @@ class GridEntry {
      * @param lonKey longitude key (mas)
      * @param undulation undulation (m)
      * @param hS height correction
-     * @param pressure0 pressure model
-     * @param temperature0 temperature model
-     * @param qv0 specific humidity model
-     * @param dT temperature gradient model
-     * @param ah ah coefficient model
-     * @param aw aw coefficient model
      */
     GridEntry(final double latitude, final int latKey, final double longitude, final int lonKey,
-              final double undulation, final double hS,
-              final SeasonalModel pressure0, final SeasonalModel temperature0,
-              final SeasonalModel qv0, final SeasonalModel dT,
-              final SeasonalModel ah, final SeasonalModel aw) {
+              final double undulation, final double hS) {
 
         this.latitude     = latitude;
         this.latKey       = latKey;
@@ -85,13 +61,12 @@ class GridEntry {
         this.lonKey       = lonKey;
         this.undulation   = undulation;
         this.hS           = hS;
-        this.pressure0    = pressure0;
-        this.temperature0 = temperature0;
-        this.qv0          = qv0;
-        this.dT           = dT;
-        this.ah           = ah;
-        this.aw           = aw;
     }
+
+    /** Build a new entry 360° to the East of instance.
+     * @return new wrapping entry
+     */
+    public abstract GridEntry buildWrappedEntry();
 
     /** Get latitude (radian).
      * @return latitude (radian)
@@ -133,48 +108,6 @@ class GridEntry {
      */
     double getHs() {
         return hS;
-    }
-
-    /** Get pressure model.
-     * @return pressure model
-     */
-    SeasonalModel getPressure0() {
-        return pressure0;
-    }
-
-    /** Get temperature model.
-     * @return temperature model
-     */
-    SeasonalModel getTemperature0() {
-        return temperature0;
-    }
-
-    /** Get specific humidity model.
-     * @return specific humidity model
-     */
-    SeasonalModel getQv0() {
-        return qv0;
-    }
-
-    /** Get temperature gradient model.
-     * @return temperature gradient model
-     */
-    SeasonalModel getDt() {
-        return dT;
-    }
-
-    /** Get ah coefficient model.
-     * @return ah coefficient model
-     */
-    SeasonalModel getAh() {
-        return ah;
-    }
-
-    /** Get aw coefficient model.
-     * @return aw coefficient model
-     */
-    SeasonalModel getAw() {
-        return aw;
     }
 
 }

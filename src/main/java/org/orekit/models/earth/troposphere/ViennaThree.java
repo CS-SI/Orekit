@@ -40,7 +40,7 @@ import org.orekit.utils.TrackingCoordinates;
  *  The empirical coefficients b<sub>h</sub>, b<sub>w</sub>, c<sub>h</sub>
  *  and c<sub>w</sub> are computed with spherical harmonics.
  *  In that respect, they are considerably more advanced than those of
- *  {@link ViennaOneModel VMF1} model.
+ *  {@link ViennaOne VMF1} model.
  *  </p>
  *
  * @see "Landskron, D. & Böhm, J. J Geod (2018)

@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth.weather;
 
+import java.lang.reflect.Array;
 import java.util.List;
 import java.util.SortedSet;
 
@@ -30,10 +31,7 @@ import org.orekit.errors.OrekitMessages;
  * @author Luc Maisonobe
  * @since 12.1
  */
-class Grid {
-
-    /** Conversion factor from degrees to mill arcseconds. */
-    private static final int DEG_TO_MAS = 3600000;
+class Grid<G extends GridEntry> {
 
     /** Latitude sample. */
     private final SortedSet<Integer> latitudeSample;
@@ -42,7 +40,7 @@ class Grid {
     private final SortedSet<Integer> longitudeSample;
 
     /** Grid entries. */
-    private final GridEntry[][] entries;
+    private final G[][] entries;
 
     /** Simple constructor.
      * @param latitudeSample latitude sample
@@ -50,24 +48,25 @@ class Grid {
      * @param loadedEntries loaded entries, organized as a simple list
      * @param name file name
      */
+    @SuppressWarnings("unchecked")
     Grid(final SortedSet<Integer> latitudeSample, final SortedSet<Integer> longitudeSample,
-         final List<GridEntry> loadedEntries, final String name) {
+         final List<G> loadedEntries, final String name) {
 
         final int nA         = latitudeSample.size();
         final int nO         = longitudeSample.size() + 1; // we add one here for wrapping the grid
-        this.entries         = new GridEntry[nA][nO];
+        this.entries         = (G[][]) Array.newInstance(GridEntry.class, nA, nO);
         this.latitudeSample  = latitudeSample;
         this.longitudeSample = longitudeSample;
 
         // organize entries in the regular grid
-        for (final GridEntry entry : loadedEntries) {
+        for (final G entry : loadedEntries) {
             final int latitudeIndex  = latitudeSample.headSet(entry.getLatKey() + 1).size() - 1;
             final int longitudeIndex = longitudeSample.headSet(entry.getLonKey() + 1).size() - 1;
             entries[latitudeIndex][longitudeIndex] = entry;
         }
 
         // finalize the grid
-        for (final GridEntry[] row : entries) {
+        for (final G[] row : entries) {
 
             // check for missing entries
             for (int longitudeIndex = 0; longitudeIndex < nO - 1; ++longitudeIndex) {
@@ -77,13 +76,7 @@ class Grid {
             }
 
             // wrap the grid around the Earth in longitude
-            row[nO - 1] = new GridEntry(row[0].getLatitude(), row[0].getLatKey(),
-                                        row[0].getLongitude() + MathUtils.TWO_PI,
-                                        row[0].getLonKey() + DEG_TO_MAS * 360,
-                                        row[0].getUndulation(), row[0].getHs(),
-                                        row[0].getPressure0(), row[0].getTemperature0(),
-                                        row[0].getQv0(), row[0].getDt(),
-                                        row[0].getAh(), row[0].getAw());
+            row[nO - 1] = (G) row[0].buildWrappedEntry();
 
         }
 
@@ -95,7 +88,7 @@ class Grid {
      */
     private int getSouthIndex(final double latitude) {
 
-        final int latKey = (int) FastMath.rint(FastMath.toDegrees(latitude) * DEG_TO_MAS);
+        final int latKey = (int) FastMath.rint(FastMath.toDegrees(latitude) * GridEntry.DEG_TO_MAS);
         final int index  = latitudeSample.headSet(latKey + 1).size() - 1;
 
         // make sure we have at least one point remaining on North by clipping to size - 2
@@ -109,7 +102,7 @@ class Grid {
      */
     private int getWestIndex(final double longitude) {
 
-        final int lonKey = (int) FastMath.rint(FastMath.toDegrees(longitude) * DEG_TO_MAS);
+        final int lonKey = (int) FastMath.rint(FastMath.toDegrees(longitude) * GridEntry.DEG_TO_MAS);
         final int index  = longitudeSample.headSet(lonKey + 1).size() - 1;
 
         // we don't do clipping in longitude because we have added a row to wrap around the Earth
@@ -122,7 +115,7 @@ class Grid {
      * @param longitude longitude of point of interest
      * @return interpolator for the cell
      */
-    CellInterpolator getInterpolator(final double latitude, final double longitude) {
+    CellInterpolator<G> getInterpolator(final double latitude, final double longitude) {
 
         // keep longitude within grid range
         final double normalizedLongitude =
@@ -134,11 +127,11 @@ class Grid {
         final int westIndex  = getWestIndex(normalizedLongitude);
 
         // build interpolator
-        return new CellInterpolator(latitude, normalizedLongitude,
-                             entries[southIndex    ][westIndex    ],
-                             entries[southIndex    ][westIndex + 1],
-                             entries[southIndex + 1][westIndex    ],
-                             entries[southIndex + 1][westIndex + 1]);
+        return new CellInterpolator<>(latitude, normalizedLongitude,
+                                      entries[southIndex    ][westIndex    ],
+                                      entries[southIndex    ][westIndex + 1],
+                                      entries[southIndex + 1][westIndex    ],
+                                      entries[southIndex + 1][westIndex + 1]);
 
     }
 
@@ -148,7 +141,7 @@ class Grid {
      * @param longitude longitude of point of interest
      * @return interpolator for the cell
      */
-    <T extends CalculusFieldElement<T>> FieldCellInterpolator<T> getInterpolator(final T latitude, final T longitude) {
+    <T extends CalculusFieldElement<T>> FieldCellInterpolator<T, G> getInterpolator(final T latitude, final T longitude) {
 
         // keep longitude within grid range
         final T normalizedLongitude =

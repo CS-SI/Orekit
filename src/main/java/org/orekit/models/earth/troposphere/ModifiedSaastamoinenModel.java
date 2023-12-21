@@ -207,7 +207,9 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
                                                                                 temperature,
                                                                                 WATER.waterVaporPressure(pressure,
                                                                                                          temperature,
-                                                                                                         humidity));
+                                                                                                         humidity),
+                                                                                Double.NaN,
+                                                                                Double.NaN);
         final PressureTemperatureHumidityProvider pth0Provider = new ConstantPressureTemperatureHumidityProvider(pth);
         return new ModifiedSaastamoinenModel(pth0Provider);
     }

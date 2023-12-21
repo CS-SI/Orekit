@@ -76,7 +76,9 @@ public class MendesPavlisModelTest {
                                                                                 new CIPM2007().
                                                                                 waterVaporPressure(pressure,
                                                                                                    temperature,
-                                                                                                   humidity));
+                                                                                                   humidity),
+                                                                                Double.NaN,
+                                                                                Double.NaN);
         final double lambda       = 0.532;
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
@@ -132,7 +134,9 @@ public class MendesPavlisModelTest {
                                                                                 new CIPM2007().
                                                                                 waterVaporPressure(pressure,
                                                                                                    temperature,
-                                                                                                   humidity));
+                                                                                                   humidity),
+                                                                                Double.NaN,
+                                                                                Double.NaN);
         final double lambda       = 0.532;
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 

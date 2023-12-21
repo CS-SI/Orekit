@@ -29,18 +29,30 @@ public class FieldPressureTemperatureHumidity<T extends CalculusFieldElement<T>>
     /** Humidity as water vapor pressure (Pa). */
     private final T waterVaporPressure;
 
+    /** Mean temperature weighted with water vapor pressure. */
+    private final T tm;
+
+    /** Water vapor decrease factor. */
+    private final T lambda;
+
     /** Simple constructor.
      * @param altitude altitude at which weather parameters have been computed (m)
      * @param pressure pressure (Pa)
      * @param temperature temperature (Kelvin)
      * @param waterVaporPressure humidity as water vapor pressure (Pa)
+     * @param tm mean temperature weighted with water vapor pressure
+     * @param lambda water vapor decrease factor
      */
     public FieldPressureTemperatureHumidity(final T altitude,
                                             final T pressure,
                                             final T temperature,
-                                            final T waterVaporPressure) {
+                                            final T waterVaporPressure,
+                                            final T tm,
+                                            final T lambda) {
         super(altitude, pressure, temperature);
         this.waterVaporPressure = waterVaporPressure;
+        this.tm                 = tm;
+        this.lambda             = lambda;
     }
 
     /** Simple constructor.
@@ -50,6 +62,8 @@ public class FieldPressureTemperatureHumidity<T extends CalculusFieldElement<T>>
     public FieldPressureTemperatureHumidity(final Field<T> field, final PressureTemperatureHumidity weather) {
         super(field, weather);
         this.waterVaporPressure = field.getZero().newInstance(weather.getWaterVaporPressure());
+        this.tm                 = field.getZero().newInstance(weather.getTm());
+        this.lambda             = field.getZero().newInstance(weather.getLambda());
     }
 
     /** Get humidity as water vapor pressure.
@@ -57,6 +71,20 @@ public class FieldPressureTemperatureHumidity<T extends CalculusFieldElement<T>>
      */
     public T getWaterVaporPressure() {
         return waterVaporPressure;
+    }
+
+    /** Get mean temperature weighted with water vapor pressure.
+     * @return mean temperature weighted with water vapor pressure
+     */
+    public T getTm() {
+        return tm;
+    }
+
+    /** Get water vapor decrease factor.
+     * @return water vapor decrease factor
+     */
+    public T getLambda() {
+        return lambda;
     }
 
 }
