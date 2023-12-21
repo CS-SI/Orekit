@@ -22,6 +22,7 @@ import org.orekit.data.DataContext;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.models.earth.Geoid;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
+import org.orekit.models.earth.troposphere.ViennaACoefficients;
 import org.orekit.models.earth.troposphere.ViennaOneModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -183,7 +184,10 @@ public class GlobalPressureTemperature2Model extends GlobalPressureTemperature2 
         final GeodeticPoint location = new GeodeticPoint(latitude, longitude, stationHeight);
 
         // ah and aw coefficients
-        coefficientsA = getA(location, currentDate);
+        final ViennaACoefficients aC = getA(location, currentDate);
+        coefficientsA = new double[] {
+            aC.getAh(), aC.getAw()
+        };
 
         // Pressure, temperature, humidity
         final PressureTemperatureHumidity pth = getWeatherParamerers(location, currentDate);

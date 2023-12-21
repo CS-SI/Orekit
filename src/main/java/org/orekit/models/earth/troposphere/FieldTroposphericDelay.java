@@ -58,7 +58,7 @@ public class FieldTroposphericDelay<T extends CalculusFieldElement<T>> {
     }
 
     /** Get wet zenith delay (m).
-     * @return w et zenith delay (m)
+     * @return wet zenith delay (m)
      */
     public T getZw() {
         return zw;

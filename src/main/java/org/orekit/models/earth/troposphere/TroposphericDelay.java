@@ -55,7 +55,7 @@ public class TroposphericDelay {
     }
 
     /** Get wet zenith delay (m).
-     * @return w et zenith delay (m)
+     * @return wet zenith delay (m)
      */
     public double getZw() {
         return zw;

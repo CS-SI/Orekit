@@ -31,6 +31,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
+import org.orekit.models.earth.troposphere.ViennaACoefficients;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
@@ -70,11 +71,11 @@ public class GlobalPressureTemperature2Test {
                                                        TimeScalesFactory.getUTC());
 
         final GeodeticPoint               location = new GeodeticPoint(latitude, longitude, height);
-        final double                      a[]      = model.getA(location, date);
+        final ViennaACoefficients         a        = model.getA(location, date);
         final PressureTemperatureHumidity pth      = model.getWeatherParamerers(location, date);
 
-        Assertions.assertEquals(0.0012647,      a[0],                        1.1e-7);
-        Assertions.assertEquals(0.0005726,      a[1],                        8.6e-8);
+        Assertions.assertEquals(0.0012647,      a.getAh(),                   1.1e-7);
+        Assertions.assertEquals(0.0005726,      a.getAw(),                   8.6e-8);
         Assertions.assertEquals(273.15 + 22.12, pth.getTemperature(),        2.3e-1);
         Assertions.assertEquals(1002.56,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()),           7.4e-1);
         Assertions.assertEquals(15.63,          TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()), 5.0e-2);
@@ -98,17 +99,17 @@ public class GlobalPressureTemperature2Test {
 
         // Test longitude = 181° and longitude = -179°
         GeodeticPoint               location1 = new GeodeticPoint(latitude, FastMath.toRadians(181.0), height);
-        double[]                    a1        = model.getA(location1, date);
+        ViennaACoefficients         a1        = model.getA(location1, date);
         PressureTemperatureHumidity pth1      = model.getWeatherParamerers(location1, date);
         GeodeticPoint               location2 = new GeodeticPoint(latitude, FastMath.toRadians(-179.0), height);
-        double[]                    a2        = model.getA(location2, date);
+        ViennaACoefficients         a2        = model.getA(location2, date);
         PressureTemperatureHumidity pth2      = model.getWeatherParamerers(location2, date);
 
         Assertions.assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
         Assertions.assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
         Assertions.assertEquals(pth1.getWaterVaporPressure(), pth2.getWaterVaporPressure(), epsilon);
-        Assertions.assertEquals(a1[0],                        a2[0],                        epsilon);
-        Assertions.assertEquals(a1[1],                        a2[1],                        epsilon);
+        Assertions.assertEquals(a1.getAh(),                   a2.getAh(),                   epsilon);
+        Assertions.assertEquals(a1.getAw(),                   a2.getAw(),                   epsilon);
 
         // Test longitude = 180° and longitude = -180°
         location1 = new GeodeticPoint(latitude, FastMath.toRadians(180.0), height);
@@ -121,8 +122,8 @@ public class GlobalPressureTemperature2Test {
         Assertions.assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
         Assertions.assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
         Assertions.assertEquals(pth1.getWaterVaporPressure(), pth2.getWaterVaporPressure(), epsilon);
-        Assertions.assertEquals(a1[0],                        a2[0],                        epsilon);
-        Assertions.assertEquals(a1[1],                        a2[1],                        epsilon);
+        Assertions.assertEquals(a1.getAh(),                   a2.getAh(),                   epsilon);
+        Assertions.assertEquals(a1.getAw(),                   a2.getAw(),                   epsilon);
 
         // Test longitude = 0° and longitude = 360°
         location1 = new GeodeticPoint(latitude, FastMath.toRadians(0.0), height);
@@ -135,8 +136,8 @@ public class GlobalPressureTemperature2Test {
         Assertions.assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
         Assertions.assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
         Assertions.assertEquals(pth1.getWaterVaporPressure(), pth2.getWaterVaporPressure(), epsilon);
-        Assertions.assertEquals(a1[0],                        a2[0],                        epsilon);
-        Assertions.assertEquals(a1[1],                        a2[1],                        epsilon);
+        Assertions.assertEquals(a1.getAh(),                   a2.getAh(),                   epsilon);
+        Assertions.assertEquals(a1.getAw(),                   a2.getAw(),                   epsilon);
 
     }
 
