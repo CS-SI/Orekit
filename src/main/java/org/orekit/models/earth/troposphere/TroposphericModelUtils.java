@@ -22,6 +22,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.utils.units.Unit;
 
 /**
@@ -56,14 +57,24 @@ public class TroposphericModelUtils {
      * @see #STANDARD_ATMOSPHERE_PROVIDER
      * @since 12.1
      */
-    public static final PressureTemperatureHumidity STANDARD_ATMOSPHERE =
-                    new PressureTemperatureHumidity(0.0, HECTO_PASCAL.toSI(1013.25), 273.15 + 20, 0.5);
+    public static final PressureTemperatureHumidity STANDARD_ATMOSPHERE;
 
     /** Provider for {@link #STANDARD_ATMOSPHERE standard atmosphere}.
      * @since 12.1
      */
-    public static final PressureTemperatureHumidityProvider STANDARD_ATMOSPHERE_PROVIDER =
-                    new ConstantPressureTemperatureHumidityProvider(STANDARD_ATMOSPHERE);
+    public static final PressureTemperatureHumidityProvider STANDARD_ATMOSPHERE_PROVIDER;
+
+    static {
+        final double h  = 0.0;
+        final double p  = HECTO_PASCAL.toSI(1013.25);
+        final double t  = 273.15 + 20;
+        final double rh = 0.5;
+        STANDARD_ATMOSPHERE = new PressureTemperatureHumidity(h, p, t,
+                                                              new CIPM2007().waterVaporPressure(p, t, rh),
+                                                              Double.NaN, Double.NaN);
+        STANDARD_ATMOSPHERE_PROVIDER =
+                        new ConstantPressureTemperatureHumidityProvider(STANDARD_ATMOSPHERE);
+    }
 
     /**
      * Private constructor as class is a utility.
