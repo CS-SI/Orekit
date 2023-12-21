@@ -61,7 +61,7 @@ public abstract class AbstractMappingFunctionTest {
     }
 
     @Test
-    public void doTestFixedHeight() {
+    public void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
         TroposphereMappingFunction model = buildMappingFunction();
