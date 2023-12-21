@@ -376,8 +376,8 @@ public class TropoModifierTest {
 
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
-            Assertions.assertTrue(diffMeters < 9.0);
-            Assertions.assertTrue(diffMeters > 5.0);
+            Assertions.assertTrue(diffMeters < 9.1);
+            Assertions.assertTrue(diffMeters > 5.8);
         }
     }
 

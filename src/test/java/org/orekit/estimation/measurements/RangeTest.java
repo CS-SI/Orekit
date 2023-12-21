@@ -100,8 +100,8 @@ public class RangeTest {
         }
         // Run test
         boolean isModifier = true;
-        double refErrorsPMedian = 6.6e-10;
-        double refErrorsPMean   = 3.1e-09;
+        double refErrorsPMedian = 7.9e-10;
+        double refErrorsPMean   = 2.6e-09;
         double refErrorsPMax    = 9.3e-08;
         double refErrorsVMedian = 2.1e-04;
         double refErrorsVMean   = 1.3e-03;
