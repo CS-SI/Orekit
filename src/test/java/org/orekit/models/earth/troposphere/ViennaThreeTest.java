@@ -29,8 +29,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TrackingCoordinates;
 
-@Deprecated
-public class ViennaThreeModelTest {
+public class ViennaThreeTest {
 
     private static double epsilon = 1e-6;
 
@@ -78,10 +77,9 @@ public class ViennaThreeModelTest {
         final double expectedHydro = 1.621024;
         final double expectedWet   = 1.623023;
 
-        final double[] a = {0.00123462, 0.00047101};
-        final double[] z = {2.1993, 0.0690};
-
-        final ViennaThreeModel model = new ViennaThreeModel(a, z);
+        final ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                                  new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
+                                                  TimeScalesFactory.getUTC());
 
         final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
@@ -125,10 +123,9 @@ public class ViennaThreeModelTest {
         final double expectedHydro = 10.132802;
         final double expectedWet   = 10.879154;
 
-        final double[] a = {0.00123462, 0.00047101};
-        final double[] z = {2.1993, 0.0690};
-
-        final ViennaThreeModel model = new ViennaThreeModel(a, z);
+        final ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                                  new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
+                                                  TimeScalesFactory.getUTC());
 
         final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
@@ -172,10 +169,9 @@ public class ViennaThreeModelTest {
         final double expectedHydro = 1.003810;
         final double expectedWet   = 1.003816;
 
-        final double[] a = {0.00123462, 0.00047101};
-        final double[] z = {2.1993, 0.0690};
-
-        final ViennaThreeModel model = new ViennaThreeModel(a, z);
+        final ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                                  new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
+                                                  TimeScalesFactory.getUTC());
 
         final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
@@ -190,10 +186,10 @@ public class ViennaThreeModelTest {
         final double elevation = 10d;
         final double height = 100d;
         final AbsoluteDate date = new AbsoluteDate();
-        final double[] a = { 0.00123462, 0.00047101};
-        final double[] z = {2.1993, 0.0690};
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(37.5), FastMath.toRadians(277.5), height);
-        ViennaThreeModel model = new ViennaThreeModel(a, z);
+        ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                            new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
+                                            TimeScalesFactory.getUTC());
         final TroposphericDelay delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
                                                         point,
                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE,
@@ -208,10 +204,10 @@ public class ViennaThreeModelTest {
     @Test
     public void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
-        final double[] a = { 0.00123462, 0.00047101};
-        final double[] z = {2.1993, 0.0690};
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(37.5), FastMath.toRadians(277.5), 350.0);
-        ViennaThreeModel model = new ViennaThreeModel(a, z);
+        ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                            new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
+                                            TimeScalesFactory.getUTC());
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {

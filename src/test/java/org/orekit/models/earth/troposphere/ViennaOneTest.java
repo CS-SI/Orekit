@@ -29,8 +29,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TrackingCoordinates;
 
-@Deprecated
-public class ViennaOneModelTest {
+public class ViennaOneTest {
 
     private static double epsilon = 1e-6;
 
@@ -81,10 +80,9 @@ public class ViennaOneModelTest {
         final double expectedHydro = 3.425088;
         final double expectedWet   = 3.448300;
 
-        final double[] a = { 0.00127683, 0.00060955 };
-        final double[] z = {2.0966, 0.2140};
-
-        final ViennaOneModel model = new ViennaOneModel(a, z);
+        final ViennaOne model = new ViennaOne(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
+                                              new ConstantTroposphericModel(new TroposphericDelay(2.0966, 0.2140, 0, 0)),
+                                              TimeScalesFactory.getUTC());
 
         final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
@@ -99,10 +97,10 @@ public class ViennaOneModelTest {
         final double elevation = 10d;
         final double height = 100d;
         final AbsoluteDate date = new AbsoluteDate();
-        final double[] a = { 0.00127683, 0.00060955 };
-        final double[] z = {2.0966, 0.2140};
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
-        ViennaOneModel model = new ViennaOneModel(a, z);
+        ViennaOne model = new ViennaOne(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
+                                        new ConstantTroposphericModel(new TroposphericDelay(2.0966, 0.2140, 0, 0)),
+                                        TimeScalesFactory.getUTC());
         final double path = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
                                             point,
                                             TroposphericModelUtils.STANDARD_ATMOSPHERE,
@@ -114,10 +112,10 @@ public class ViennaOneModelTest {
     @Test
     public void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
-        final double[] a = { 0.00127683, 0.00060955 };
-        final double[] z = {2.0966, 0.2140};
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
-        ViennaOneModel model = new ViennaOneModel(a, z);
+        ViennaOne model = new ViennaOne(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
+                                        new ConstantTroposphericModel(new TroposphericDelay(2.0966, 0.2140, 0, 0)),
+                                        TimeScalesFactory.getUTC());
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {

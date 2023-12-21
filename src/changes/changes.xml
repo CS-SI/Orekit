@@ -22,6 +22,9 @@
   <body>
   <release version="12.1" date="TBD" description="TBD">
       <action dev="luc" type="add">
+          Replaced Vienna{One|Three}Model by Vienna{One|Three}.
+      </action>
+      <action dev="luc" type="add">
           Added ConstantTroposphericModel.
       </action>
       <action dev="luc" type="add">

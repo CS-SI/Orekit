@@ -41,7 +41,6 @@ import org.orekit.models.earth.troposphere.FieldViennaACoefficients;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.models.earth.troposphere.ViennaACoefficients;
 import org.orekit.models.earth.troposphere.ViennaAProvider;
-import org.orekit.models.earth.troposphere.ViennaOneModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -49,8 +48,8 @@ import org.orekit.utils.Constants;
 
 /** The Global Pressure and Temperature 2 (GPT2) model.
  * This model is an empirical model that provides the temperature, the pressure and the water vapor pressure
- * of a site depending its latitude and  longitude. This model also provides the a<sub>h</sub>
- * and a<sub>w</sub> coefficients used for the {@link ViennaOneModel Vienna 1} model.
+ * of a site depending its latitude and  longitude. This model also {@link ViennaACoefficients provides}
+ * the a<sub>h</sub> and a<sub>w</sub> coefficients for Vienna models.
  * <p>
  * The requisite coefficients for the computation of the weather parameters are provided by the
  * Department of Geodesy and Geoinformation of the Vienna University. They are based on an
