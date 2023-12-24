@@ -1182,6 +1182,15 @@ public class SP3ParserTest {
         return SP3.splice(Arrays.asList(file1, file2));
     }
 
+    @Test
+    void testTimeSystem() {
+        final String ex = "/sp3/qzs-timesystem.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3 file = new SP3Parser().parse(source);
+
+        Assertions.assertEquals(TimeSystem.QZSS, file.getHeader().getTimeSystem());
+    }
+
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
