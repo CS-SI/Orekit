@@ -78,6 +78,9 @@
       <action dev="luc" type="update" issue="1287">
           Replaced DiscreteTroposphericModel by TroposphericModel.
       </action>
+      <action dev="luc" type="add" issue="1294">
+          Added NsgfV00Filter to allow parsing some wrong SP3 files.
+      </action>
       <action dev="serrof" type="add" issue="1260">
           Started using new square method for Field.
       </action>

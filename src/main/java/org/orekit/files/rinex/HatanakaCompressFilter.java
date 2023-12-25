@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import org.hipparchus.util.FastMath;
 import org.orekit.data.DataFilter;
 import org.orekit.data.DataSource;
+import org.orekit.data.LineOrientedFilteringReader;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
@@ -86,19 +87,10 @@ public class HatanakaCompressFilter implements DataFilter {
     }
 
     /** Filtering of Hatanaka compressed characters stream. */
-    private static class HatanakaReader extends Reader {
+    private static class HatanakaReader extends LineOrientedFilteringReader {
 
         /** Format of the current file. */
         private final CompactRinexFormat format;
-
-        /** Line-oriented input. */
-        private final BufferedReader reader;
-
-        /** Pending uncompressed output lines. */
-        private CharSequence pending;
-
-        /** Number of characters already output in pending lines. */
-        private int countOut;
 
         /** Simple constructor.
          * @param name file name
@@ -107,56 +99,14 @@ public class HatanakaCompressFilter implements DataFilter {
          */
         HatanakaReader(final String name, final Reader input)
             throws IOException {
-
-            reader = new BufferedReader(input);
-
-            // check header
-            format = CompactRinexFormat.getFormat(name, reader);
-
-            pending = null;
-
+            super(name, input);
+            format = CompactRinexFormat.getFormat(name, getBufferedReader());
         }
 
         /** {@inheritDoc} */
         @Override
-        public int read(final char[] b, final int offset, final int len) throws IOException {
-
-            if (pending == null) {
-                // we need to read another section from the underlying characters stream and uncompress it
-                countOut = 0;
-                final String firstLine = reader.readLine();
-                if (firstLine == null) {
-                    // there are no lines left
-                    return -1;
-                } else {
-                    pending = format.uncompressSection(firstLine);
-                }
-            }
-
-            // copy as many characters as possible from current line
-            int n = FastMath.min(len, pending.length() - countOut);
-            for (int i = 0; i < n; ++i) {
-                b[offset + i] = pending.charAt(countOut + i);
-            }
-
-            if (n < len) {
-                // line has been completed and we can still output end of line
-                b[offset + n] = '\n';
-                pending       = null;
-                ++n;
-            } else {
-                // there are still some pending characters
-                countOut += n;
-            }
-
-            return n;
-
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void close() throws IOException {
-            reader.close();
+        protected CharSequence filterLine(final int lineNumber, final String originalLine) throws IOException {
+            return format.uncompressSection(originalLine);
         }
 
     }
