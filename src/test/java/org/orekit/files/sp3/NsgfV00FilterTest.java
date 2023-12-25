@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.data.FiltersManager;
+import org.orekit.data.GzipFilter;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.utils.Constants;
@@ -33,7 +34,7 @@ public class NsgfV00FilterTest {
 
     @Test
     public void testFiltered() throws IOException {
-        doTestFilter("/sp3/nsgf.orb.stella.v00.sp3", "L56", 1831);
+        doTestFilter("/sp3/nsgf.orb.stella.v00.sp3.gz", "L56", 100);
     }
 
     @Test
@@ -48,6 +49,7 @@ public class NsgfV00FilterTest {
 
         final FiltersManager manager = new FiltersManager();
         manager.addFilter(new NsgfV00Filter());
+        manager.addFilter(new GzipFilter());
 
         final SP3 file = parser.parse(manager.applyRelevantFilters(original));
         for (int i = 0; i < nbCoords.length; ++i) {
