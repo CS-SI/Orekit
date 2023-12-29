@@ -29,7 +29,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.AngularRaDec;
@@ -42,6 +42,7 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
@@ -57,15 +58,28 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  */
 public class AberrationModifier implements EstimationModifier<AngularRaDec> {
 
+    /** Data context. */
+    private final DataContext dataContext;
+
     /** Empty constructor.
      * <p>
-     * This constructor is not strictly necessary, but it prevents spurious
-     * javadoc warnings with JDK 18 and later.
+     * This constructor uses the {@link DefaultDataContext default data context}
      * </p>
      * @since 12.0
+     * @see #AberrationModifier(DataContext)
      */
+    @DefaultDataContext
     public AberrationModifier() {
-        // nothing to do
+        this(DataContext.getDefault());
+    }
+
+    /**
+     * Constructor.
+     * @param dataContext data context
+     * @since 12.0.1
+     */
+    public AberrationModifier(final DataContext dataContext) {
+        this.dataContext = dataContext;
     }
 
     /**
@@ -80,15 +94,27 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
     @DefaultDataContext
     public static double[] naturalToProper(final double[] naturalRaDec, final GroundStation station,
                                            final AbsoluteDate date, final Frame frame) {
+        return naturalToProper(naturalRaDec, station, date, frame, DataContext.getDefault());
+    }
 
-        // Check measurement frame is inertial
-        if (!frame.isPseudoInertial()) {
-            throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, frame.getName());
-        }
+    /**
+     * Natural to proper correction for aberration of light.
+     *
+     * @param naturalRaDec the "natural" direction (in barycentric coordinates)
+     * @param station      the observer ground station
+     * @param date         the date of the measurement
+     * @param frame        the frame of the measurement
+     * @param context      the data context
+     * @return the "proper" direction (station-relative coordinates)
+     * @since 12.0.1
+     */
+    public static double[] naturalToProper(final double[] naturalRaDec, final GroundStation station,
+                                           final AbsoluteDate date, final Frame frame, final DataContext context) {
+
+        ensureFrameIsPseudoInertial(frame);
 
         // Velocity of station relative to barycentre (units of c)
-        final PVCoordinates baryPV = CelestialBodyFactory.getSolarSystemBarycenter()
-                .getPVCoordinates(date, frame);
+        final PVCoordinates baryPV = context.getCelestialBodies().getSolarSystemBarycenter().getPVCoordinates(date, frame);
         final PVCoordinates stationPV = station.getBaseFrame().getPVCoordinates(date, frame);
         final Vector3D stationBaryVel = stationPV.getVelocity()
                 .subtract(baryPV.getVelocity())
@@ -110,15 +136,28 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
     @DefaultDataContext
     public static double[] properToNatural(final double[] properRaDec, final GroundStation station,
                                            final AbsoluteDate date, final Frame frame) {
+        return properToNatural(properRaDec, station, date, frame, DataContext.getDefault());
+    }
+
+    /**
+     * Proper to natural correction for aberration of light.
+     *
+     * @param properRaDec the "proper" direction (station-relative coordinates)
+     * @param station     the observer ground station
+     * @param date        the date of the measurement
+     * @param frame       the frame of the measurement
+     * @param context     the data context
+     * @return the "natural" direction (in barycentric coordinates)
+     * @since 12.0.1
+     */
+    public static double[] properToNatural(final double[] properRaDec, final GroundStation station,
+                                           final AbsoluteDate date, final Frame frame, final DataContext context) {
 
         // Check measurement frame is inertial
-        if (!frame.isPseudoInertial()) {
-            throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, frame.getName());
-        }
+        ensureFrameIsPseudoInertial(frame);
 
         // Velocity of barycentre relative to station (units of c)
-        final PVCoordinates baryPV = CelestialBodyFactory.getSolarSystemBarycenter()
-                .getPVCoordinates(date, frame);
+        final PVCoordinates baryPV = context.getCelestialBodies().getSolarSystemBarycenter().getPVCoordinates(date, frame);
         final PVCoordinates stationPV = station.getBaseFrame().getPVCoordinates(date, frame);
         final Vector3D baryStationVel = baryPV.getVelocity()
                 .subtract(stationPV.getVelocity())
@@ -163,11 +202,26 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
     public static Gradient[] fieldNaturalToProper(final Gradient[] naturalRaDec,
                                                   final FieldTransform<Gradient> stationToInertial,
                                                   final Frame frame) {
+        return fieldNaturalToProper(naturalRaDec, stationToInertial, frame, DataContext.getDefault());
+    }
+
+    /**
+     * Natural to proper correction for aberration of light.
+     *
+     * @param naturalRaDec      the "natural" direction (in barycentric coordinates)
+     * @param stationToInertial the transform from station to inertial coordinates
+     * @param frame             the frame of the measurement
+     * @param context           the data context
+     * @return the "proper" direction (station-relative coordinates)
+     * @since 12.0.1
+     */
+    public static Gradient[] fieldNaturalToProper(final Gradient[] naturalRaDec,
+                                                  final FieldTransform<Gradient> stationToInertial,
+                                                  final Frame frame,
+                                                  final DataContext context) {
 
         // Check measurement frame is inertial
-        if (!frame.isPseudoInertial()) {
-            throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, frame.getName());
-        }
+        ensureFrameIsPseudoInertial(frame);
 
         // Set up field
         final Field<Gradient> field = naturalRaDec[0].getField();
@@ -175,8 +229,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
         final FieldAbsoluteDate<Gradient> date = stationToInertial.getFieldDate();
 
         // Barycentre in inertial coordinates
-        final PVCoordinates baryPV = CelestialBodyFactory.getSolarSystemBarycenter()
-                .getPVCoordinates(date.toAbsoluteDate(), frame);
+        final FieldPVCoordinates<Gradient> baryPV = context.getCelestialBodies().getSolarSystemBarycenter().getPVCoordinates(date, frame);
 
         // Station in inertial coordinates
         final TimeStampedFieldPVCoordinates<Gradient> stationPV =
@@ -190,7 +243,6 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
         return fieldLorentzVelocitySum(naturalRaDec, stationBaryVel);
     }
 
-
     /**
      * Proper to natural correction for aberration of light.
      *
@@ -203,11 +255,26 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
     public static Gradient[] fieldProperToNatural(final Gradient[] properRaDec,
                                                   final FieldTransform<Gradient> stationToInertial,
                                                   final Frame frame) {
+        return fieldProperToNatural(properRaDec, stationToInertial, frame, DataContext.getDefault());
+    }
+
+    /**
+     * Proper to natural correction for aberration of light.
+     *
+     * @param properRaDec       the "proper" direction (station-relative coordinates)
+     * @param stationToInertial the transform from station to inertial coordinates
+     * @param frame             the frame of the measurement
+     * @param context           the data context
+     * @return the "natural" direction (in barycentric coordinates)
+     * @since 12.0.1
+     */
+    public static Gradient[] fieldProperToNatural(final Gradient[] properRaDec,
+                                                  final FieldTransform<Gradient> stationToInertial,
+                                                  final Frame frame,
+                                                  final DataContext context) {
 
         // Check measurement frame is inertial
-        if (!frame.isPseudoInertial()) {
-            throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, frame.getName());
-        }
+        ensureFrameIsPseudoInertial(frame);
 
         // Set up field
         final Field<Gradient> field = properRaDec[0].getField();
@@ -215,8 +282,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
         final FieldAbsoluteDate<Gradient> date = stationToInertial.getFieldDate();
 
         // Barycentre in inertial coordinates
-        final PVCoordinates baryPV = CelestialBodyFactory.getSolarSystemBarycenter()
-                .getPVCoordinates(date.toAbsoluteDate(), frame);
+        final FieldPVCoordinates<Gradient> baryPV = context.getCelestialBodies().getSolarSystemBarycenter().getPVCoordinates(date, frame);
 
         // Station in inertial coordinates
         final TimeStampedFieldPVCoordinates<Gradient> stationPV =
@@ -256,17 +322,14 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.emptyList();
     }
 
-
+    /** {@inheritDoc} */
     @Override
-    @DefaultDataContext
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<AngularRaDec> estimated) {
 
         // Observation date
@@ -280,7 +343,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
 
         // Convert measurement to natural direction
         final double[] estimatedRaDec = estimated.getEstimatedValue();
-        final double[] naturalRaDec = properToNatural(estimatedRaDec, station, date, frame);
+        final double[] naturalRaDec = properToNatural(estimatedRaDec, station, date, frame, dataContext);
 
         // Normalise RA
         final double[] observed           = estimated.getObservedValue();
@@ -293,8 +356,8 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
 
     }
 
+    /** {@inheritDoc} */
     @Override
-    @DefaultDataContext
     public void modify(final EstimatedMeasurement<AngularRaDec> estimated) {
 
         // Observation date
@@ -327,7 +390,7 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
                 field.getZero().add(estimatedRaDec[0]),
                 field.getZero().add(estimatedRaDec[1])
         };
-        final Gradient[] naturalRaDec = fieldProperToNatural(estimatedRaDecDS, stationToInertial, frame);
+        final Gradient[] naturalRaDec = fieldProperToNatural(estimatedRaDecDS, stationToInertial, frame, dataContext);
 
         // Normalise RA
         final double[] observed = estimated.getObservedValue();
@@ -353,6 +416,20 @@ public class AberrationModifier implements EstimationModifier<AngularRaDec> {
                     estimated.setParameterDerivatives(driver, span.getStart(), parameterDerivative[0], parameterDerivative[1]);
                 }
             }
+        }
+    }
+
+    /**
+     * Check that given frame is pseudo-inertial. Throws an error otherwise.
+     *
+     * @param frame to check
+     *
+     * @throws OrekitException if given frame is not pseudo-inertial
+     */
+    private static void ensureFrameIsPseudoInertial(final Frame frame) {
+        // Check measurement frame is inertial
+        if (!frame.isPseudoInertial()) {
+            throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, frame.getName());
         }
     }
 
