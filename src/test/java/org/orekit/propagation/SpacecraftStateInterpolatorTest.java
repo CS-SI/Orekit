@@ -419,9 +419,11 @@ class SpacecraftStateInterpolatorTest {
 
         // When & Then
         Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
-                                                   () -> new SpacecraftStateInterpolator(inertialFrameMock,
-                                                                                         null, null, null, null,
-                                                                                         null));
+                                                   () -> new SpacecraftStateInterpolator(
+                                                           AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                           AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                           inertialFrameMock, null, null,
+                                                           null, null, null));
 
         Assertions.assertEquals("creating a spacecraft state interpolator requires at least one orbit interpolator or an "
                                         + "absolute position-velocity-acceleration interpolator", thrown.getMessage());
@@ -453,7 +455,9 @@ class SpacecraftStateInterpolatorTest {
         final TimeInterpolator<Orbit> orbitInterpolatorMock = Mockito.mock(TimeInterpolator.class);
 
         final TimeInterpolator<SpacecraftState> interpolator =
-                new SpacecraftStateInterpolator(inertialFrame, orbitInterpolatorMock, null, null, null, null);
+                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                inertialFrame, orbitInterpolatorMock, null, null, null, null);
 
         // When & Then
         Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
@@ -471,7 +475,9 @@ class SpacecraftStateInterpolatorTest {
         final Frame frame = Mockito.mock(Frame.class);
 
         final SpacecraftStateInterpolator stateInterpolator =
-                new SpacecraftStateInterpolator(frame, orbitInterpolator, null, null, null, null);
+                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                frame, orbitInterpolator, null, null, null, null);
 
         // WHEN & THEN
         Exception exception = Assertions.assertThrows(OrekitException.class, stateInterpolator::getNbInterpolationPoints);
@@ -498,7 +504,9 @@ class SpacecraftStateInterpolatorTest {
         final TimeInterpolator<Orbit> orbitInterpolatorMock = Mockito.mock(TimeInterpolator.class);
 
         final TimeInterpolator<SpacecraftState> interpolator =
-                new SpacecraftStateInterpolator(inertialFrame, orbitInterpolatorMock, null, null, null, null);
+                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                inertialFrame, orbitInterpolatorMock, null, null, null, null);
 
         // When & Then
         OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
@@ -537,7 +545,9 @@ class SpacecraftStateInterpolatorTest {
 
         // When
         final SpacecraftStateInterpolator interpolator =
-                new SpacecraftStateInterpolator(inertialFrameMock, orbitInterpolatorMock, absPVInterpolatorMock,
+                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                inertialFrameMock, orbitInterpolatorMock, absPVInterpolatorMock,
                                                 massInterpolatorMock, attitudeInterpolatorMock, additionalInterpolatorMock);
 
         // Then
@@ -547,6 +557,24 @@ class SpacecraftStateInterpolatorTest {
         Assertions.assertEquals(massInterpolatorMock, interpolator.getMassInterpolator().get());
         Assertions.assertEquals(attitudeInterpolatorMock, interpolator.getAttitudeInterpolator().get());
         Assertions.assertEquals(additionalInterpolatorMock, interpolator.getAdditionalStateInterpolator().get());
+
+    }
+
+    @Test
+    void testIssue1266() {
+        // Given
+        final Frame inertialFrameMock = Mockito.mock(Frame.class);
+        Mockito.when(inertialFrameMock.isPseudoInertial()).thenReturn(true);
+        final int    interpolationPoints    = 3;
+        final double extrapolationThreshold = 10;
+
+        // When
+        final SpacecraftStateInterpolator interpolator =
+                new SpacecraftStateInterpolator(interpolationPoints, extrapolationThreshold,
+                                                inertialFrameMock, inertialFrameMock);
+
+        // Then
+        Assertions.assertEquals(extrapolationThreshold, interpolator.getExtrapolationThreshold());
 
     }
 }

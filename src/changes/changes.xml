@@ -20,6 +20,12 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+  <release version="12.0.1" date="TBD"
+           description="Version 12.0.1 is a patch release of Orekit.">
+      <action dev="vincent" type="fix" issue="1266">
+        SpacecraftStateInterpolator now takes into account the extrapolation threshold given at construction.
+      </action>
+  </release>
   <release version="12.0" date="2023-11-08"
            description="Orekit 12.0 is a major new release.
            It includes both new features and bug fixes. The main new features
