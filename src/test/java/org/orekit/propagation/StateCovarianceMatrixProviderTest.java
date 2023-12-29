@@ -56,8 +56,15 @@ import org.orekit.utils.PVCoordinates;
 
 public class StateCovarianceMatrixProviderTest {
 
+    /** Initial S/C state. */
     private SpacecraftState initialState;
-    private double[][]      initCov;
+    
+    /** Initial covariance. */
+    private RealMatrix  initCov;
+    
+    /** Reference covariance after 60s prop with a J2 numerical model (computed with another solution). */
+    private RealMatrix  refCovAfter60s;
+    
 
     public void setUp() {
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
@@ -69,20 +76,24 @@ public class StateCovarianceMatrixProviderTest {
                 new AbsoluteDate("2016-02-13T16:00:00.000", TimeScalesFactory.getUTC()),
                 Constants.WGS84_EARTH_MU);
         initialState = new SpacecraftState(initialOrbit);
-        initCov = new double[][] {
-                { 8.651816029e+01, 5.689987127e+01, -2.763870764e+01, -2.435617201e-02, 2.058274137e-02,
-                        -5.872883051e-03 },
-                { 5.689987127e+01, 7.070624321e+01, 1.367120909e+01, -6.112622013e-03, 7.623626008e-03,
-                        -1.239413190e-02 },
-                { -2.763870764e+01, 1.367120909e+01, 1.811858898e+02, 3.143798992e-02, -4.963106559e-02,
-                        -7.420114385e-04 },
-                { -2.435617201e-02, -6.112622013e-03, 3.143798992e-02, 4.657077389e-05, 1.469943634e-05,
-                        3.328475593e-05 },
-                { 2.058274137e-02, 7.623626008e-03, -4.963106559e-02, 1.469943634e-05, 3.950715934e-05,
-                        2.516044258e-05 },
-                { -5.872883051e-03, -1.239413190e-02, -7.420114385e-04, 3.328475593e-05, 2.516044258e-05,
-                        3.547466120e-05 }
-        };
+        initCov = MatrixUtils.createRealMatrix( new double[][] {
+            { 8.651816029e+01, 5.689987127e+01, -2.763870764e+01, -2.435617201e-02, 2.058274137e-02, -5.872883051e-03 },
+            { 5.689987127e+01, 7.070624321e+01, 1.367120909e+01, -6.112622013e-03, 7.623626008e-03, -1.239413190e-02 },
+            { -2.763870764e+01, 1.367120909e+01, 1.811858898e+02, 3.143798992e-02, -4.963106559e-02, -7.420114385e-04 },
+            { -2.435617201e-02, -6.112622013e-03, 3.143798992e-02, 4.657077389e-05, 1.469943634e-05, 3.328475593e-05 },
+            { 2.058274137e-02, 7.623626008e-03, -4.963106559e-02, 1.469943634e-05, 3.950715934e-05, 2.516044258e-05 },
+            { -5.872883051e-03, -1.239413190e-02, -7.420114385e-04, 3.328475593e-05, 2.516044258e-05, 3.547466120e-05 }
+        });
+        
+        // Reference covariance after 60s prop with a J2 numerical model (computed with another solution)
+        refCovAfter60s = MatrixUtils.createRealMatrix( new double[][] {
+            { 5.770543135e+02, 2.316979550e+02, -5.172369105e+02, -2.585893247e-01, 2.113809017e-01, -1.759509343e-01 },
+            { 2.316979550e+02, 1.182942930e+02, -1.788422178e+02, -9.570305681e-02, 7.792155309e-02, -7.435822327e-02 },
+            { -5.172369105e+02, -1.788422178e+02, 6.996248500e+02, 2.633605389e-01, -2.480144888e-01, 1.908427233e-01 },
+            { -2.585893247e-01, -9.570305681e-02, 2.633605389e-01, 1.419148897e-04, -8.715858320e-05, 1.024944399e-04 },
+            { 2.113809017e-01, 7.792155309e-02, -2.480144888e-01, -8.715858320e-05, 1.069566588e-04, -5.667563856e-05 },
+            { -1.759509343e-01, -7.435822327e-02, 1.908427233e-01, 1.024944399e-04, -5.667563856e-05, 8.178356868e-05 }
+        });
     }
 
     /**
@@ -121,7 +132,6 @@ public class StateCovarianceMatrixProviderTest {
         final ODEIntegrator integrator = new ClassicalRungeKuttaIntegrator(step);
 
         // Numerical propagator
-        final String              stmName    = "STM";
         final OrbitType           propType   = OrbitType.CARTESIAN;
         final PositionAngleType angleType  = PositionAngleType.MEAN;
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
@@ -130,19 +140,15 @@ public class StateCovarianceMatrixProviderTest {
         final ForceModel holmesFeatherstone =
                 new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), gravity);
         propagator.addForceModel(holmesFeatherstone);
+        
         // Finalize setting
-        final MatricesHarvester harvester = propagator.setupMatricesComputation(stmName, null, null);
         propagator.setOrbitType(propType);
         propagator.setPositionAngleType(angleType);
-
-        // Create additional state
-        final String     additionalName = "cartCov";
-        final RealMatrix initialCov     = MatrixUtils.createRealMatrix(initCov);
-        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
-        final StateCovarianceMatrixProvider provider =
-                new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovariance);
         propagator.setInitialState(initialState);
-        propagator.addAdditionalStateProvider(provider);
+
+        // Configure covariance propagation
+        final StateCovarianceMatrixProvider provider = setUpCovariancePropagation(propagator);
+        
 
         // Propagate
         final SpacecraftState propagated = propagator.propagate(initialState.getDate().shiftedBy(Constants.JULIAN_DAY));
@@ -151,25 +157,8 @@ public class StateCovarianceMatrixProviderTest {
         final StateCovariance propagatedStateCov = provider.getStateCovariance(propagated);
         final RealMatrix propagatedCov = propagatedStateCov.getMatrix();
 
-        // Reference (computed using a different solution)
-        final double[][] ref = new double[][] {
-                { 5.770543135e+02, 2.316979550e+02, -5.172369105e+02, -2.585893247e-01, 2.113809017e-01,
-                        -1.759509343e-01 },
-                { 2.316979550e+02, 1.182942930e+02, -1.788422178e+02, -9.570305681e-02, 7.792155309e-02,
-                        -7.435822327e-02 },
-                { -5.172369105e+02, -1.788422178e+02, 6.996248500e+02, 2.633605389e-01, -2.480144888e-01,
-                        1.908427233e-01 },
-                { -2.585893247e-01, -9.570305681e-02, 2.633605389e-01, 1.419148897e-04, -8.715858320e-05,
-                        1.024944399e-04 },
-                { 2.113809017e-01, 7.792155309e-02, -2.480144888e-01, -8.715858320e-05, 1.069566588e-04,
-                        -5.667563856e-05 },
-                { -1.759509343e-01, -7.435822327e-02, 1.908427233e-01, 1.024944399e-04, -5.667563856e-05,
-                        8.178356868e-05 }
-        };
-        final RealMatrix referenceCov = MatrixUtils.createRealMatrix(ref);
-
         // Verify
-        compareCovariance(referenceCov, propagatedCov, 4.0e-7);
+        compareCovariance(refCovAfter60s, propagatedCov, 4.0e-7);
         Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
         Assertions.assertEquals(OrbitType.CARTESIAN, propagatedStateCov.getOrbitType());
         Assertions.assertNull(propagatedStateCov.getLOF());
@@ -226,24 +215,16 @@ public class StateCovarianceMatrixProviderTest {
         final ODEIntegrator integrator = new ClassicalRungeKuttaIntegrator(step);
 
         // Numerical propagator
-        final String              stmName    = "STM";
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         // Add a force model
         final NormalizedSphericalHarmonicsProvider gravity = GravityFieldFactory.getNormalizedProvider(2, 0);
         final ForceModel holmesFeatherstone =
                 new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), gravity);
         propagator.addForceModel(holmesFeatherstone);
-        // Finalize setting
-        final MatricesHarvester harvester = propagator.setupMatricesComputation(stmName, null, null);
-
-        // Create additional state
-        final String     additionalName = "cartCov";
-        final RealMatrix initialCov     = MatrixUtils.createRealMatrix(initCov);
-        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
-        final StateCovarianceMatrixProvider provider =
-                new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovariance);
         propagator.setInitialState(initialState);
-        propagator.addAdditionalStateProvider(provider);
+
+        // Configure covariance propagation
+        final StateCovarianceMatrixProvider provider = setUpCovariancePropagation(propagator);
 
         // Propagate
         final SpacecraftState propagated = propagator.propagate(initialState.getDate().shiftedBy(Constants.JULIAN_DAY));
@@ -252,25 +233,8 @@ public class StateCovarianceMatrixProviderTest {
         final StateCovariance propagatedStateCov = provider.getStateCovariance(propagated);
         final RealMatrix propagatedCov = propagatedStateCov.getMatrix();
 
-        // Reference (computed using a different solution)
-        final double[][] ref = new double[][] {
-                { 5.770543135e+02, 2.316979550e+02, -5.172369105e+02, -2.585893247e-01, 2.113809017e-01,
-                        -1.759509343e-01 },
-                { 2.316979550e+02, 1.182942930e+02, -1.788422178e+02, -9.570305681e-02, 7.792155309e-02,
-                        -7.435822327e-02 },
-                { -5.172369105e+02, -1.788422178e+02, 6.996248500e+02, 2.633605389e-01, -2.480144888e-01,
-                        1.908427233e-01 },
-                { -2.585893247e-01, -9.570305681e-02, 2.633605389e-01, 1.419148897e-04, -8.715858320e-05,
-                        1.024944399e-04 },
-                { 2.113809017e-01, 7.792155309e-02, -2.480144888e-01, -8.715858320e-05, 1.069566588e-04,
-                        -5.667563856e-05 },
-                { -1.759509343e-01, -7.435822327e-02, 1.908427233e-01, 1.024944399e-04, -5.667563856e-05,
-                        8.178356868e-05 }
-        };
-        final RealMatrix referenceCov = MatrixUtils.createRealMatrix(ref);
-
         // Verify
-        compareCovariance(referenceCov, propagatedCov, 3.0e-5);
+        compareCovariance(refCovAfter60s, propagatedCov, 3.0e-5);
         Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
 
         ///////////
@@ -340,8 +304,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Create additional state
         final String     additionalName = "cartCov";
-        final RealMatrix initialCov     = MatrixUtils.createRealMatrix(initCov);
-        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
+        final StateCovariance initialStateCovariance = new StateCovariance(initCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
         final StateCovariance initialStateCovarianceInKep = initialStateCovariance.changeCovarianceType(initialState.getOrbit(), OrbitType.KEPLERIAN, PositionAngleType.MEAN);
         final StateCovarianceMatrixProvider provider =
                 new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovarianceInKep);
@@ -356,25 +319,8 @@ public class StateCovarianceMatrixProviderTest {
         final StateCovariance propagatedStateCovInCart = propagatedStateCov.changeCovarianceType(propagated.getOrbit(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
         final RealMatrix propagatedCovInCart = propagatedStateCovInCart.getMatrix();
 
-        // Reference (computed using a different solution)
-        final double[][] ref = new double[][] {
-                { 5.770543135e+02, 2.316979550e+02, -5.172369105e+02, -2.585893247e-01, 2.113809017e-01,
-                  -1.759509343e-01 },
-                { 2.316979550e+02, 1.182942930e+02, -1.788422178e+02, -9.570305681e-02, 7.792155309e-02,
-                  -7.435822327e-02 },
-                { -5.172369105e+02, -1.788422178e+02, 6.996248500e+02, 2.633605389e-01, -2.480144888e-01,
-                  1.908427233e-01 },
-                { -2.585893247e-01, -9.570305681e-02, 2.633605389e-01, 1.419148897e-04, -8.715858320e-05,
-                  1.024944399e-04 },
-                { 2.113809017e-01, 7.792155309e-02, -2.480144888e-01, -8.715858320e-05, 1.069566588e-04,
-                  -5.667563856e-05 },
-                { -1.759509343e-01, -7.435822327e-02, 1.908427233e-01, 1.024944399e-04, -5.667563856e-05,
-                  8.178356868e-05 }
-        };
-        final RealMatrix referenceCov = MatrixUtils.createRealMatrix(ref);
-
         // Verify
-        compareCovariance(referenceCov, propagatedCovInCart, 3.0e-5);
+        compareCovariance(refCovAfter60s, propagatedCovInCart, 3.0e-5);
         Assertions.assertEquals(OrbitType.KEPLERIAN, provider.getCovarianceOrbitType());
         Assertions.assertEquals(OrbitType.KEPLERIAN, propagatedStateCov.getOrbitType());
 
@@ -390,20 +336,11 @@ public class StateCovarianceMatrixProviderTest {
         setUp();
 
         // Numerical propagator
-        final String stmName= "STM";
         final EcksteinHechlerPropagator propagator = new EcksteinHechlerPropagator(initialState.getOrbit(),
                                                                                    GravityFieldFactory.getUnnormalizedProvider(6, 0));
 
-        // Finalize setting
-        final MatricesHarvester harvester = propagator.setupMatricesComputation(stmName, null, null);
-
-        // Create additional state
-        final String     additionalName = "cartCov";
-        final RealMatrix initialCov     = MatrixUtils.createRealMatrix(initCov);
-        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
-        final StateCovarianceMatrixProvider provider =
-                new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovariance);
-        propagator.addAdditionalStateProvider(provider);
+        // Configure covariance propagation
+        final StateCovarianceMatrixProvider provider = setUpCovariancePropagation(propagator);
 
         // Propagate
         final SpacecraftState propagated = propagator.propagate(initialState.getDate().shiftedBy(Constants.JULIAN_DAY));
@@ -412,25 +349,8 @@ public class StateCovarianceMatrixProviderTest {
         final StateCovariance propagatedStateCov = provider.getStateCovariance(propagated);
         final RealMatrix propagatedCov = propagatedStateCov.getMatrix();
 
-        // Reference (computed using a numerical solution)
-        final double[][] ref = new double[][] {
-                { 5.770543135e+02, 2.316979550e+02, -5.172369105e+02, -2.585893247e-01, 2.113809017e-01,
-                        -1.759509343e-01 },
-                { 2.316979550e+02, 1.182942930e+02, -1.788422178e+02, -9.570305681e-02, 7.792155309e-02,
-                        -7.435822327e-02 },
-                { -5.172369105e+02, -1.788422178e+02, 6.996248500e+02, 2.633605389e-01, -2.480144888e-01,
-                        1.908427233e-01 },
-                { -2.585893247e-01, -9.570305681e-02, 2.633605389e-01, 1.419148897e-04, -8.715858320e-05,
-                        1.024944399e-04 },
-                { 2.113809017e-01, 7.792155309e-02, -2.480144888e-01, -8.715858320e-05, 1.069566588e-04,
-                        -5.667563856e-05 },
-                { -1.759509343e-01, -7.435822327e-02, 1.908427233e-01, 1.024944399e-04, -5.667563856e-05,
-                        8.178356868e-05 }
-        };
-        final RealMatrix referenceCov = MatrixUtils.createRealMatrix(ref);
-
         // Verify
-        compareCovariance(referenceCov, propagatedCov, 5.0e-4);
+        compareCovariance(refCovAfter60s, propagatedCov, 5.0e-4);
         Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
 
         ///////////
@@ -497,8 +417,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Create additional state
         final String     additionalName = "cartCov";
-        final RealMatrix initialCov     = MatrixUtils.createRealMatrix(initCov);
-        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
+        final StateCovariance initialStateCovariance = new StateCovariance(initCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
         final StateCovarianceMatrixProvider provider =
                 new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovariance);
         propagator.setInitialState(initialState);
@@ -511,27 +430,9 @@ public class StateCovarianceMatrixProviderTest {
         final StateCovariance propagatedStateCov = provider.getStateCovariance(propagated);
         final RealMatrix propagatedCov = propagatedStateCov.getMatrix();
 
-        // Reference (computed using a different solution)
-        final double[][] ref = new double[][] {
-                { 5.770543135e+02, 2.316979550e+02, -5.172369105e+02, -2.585893247e-01, 2.113809017e-01,
-                        -1.759509343e-01 },
-                { 2.316979550e+02, 1.182942930e+02, -1.788422178e+02, -9.570305681e-02, 7.792155309e-02,
-                        -7.435822327e-02 },
-                { -5.172369105e+02, -1.788422178e+02, 6.996248500e+02, 2.633605389e-01, -2.480144888e-01,
-                        1.908427233e-01 },
-                { -2.585893247e-01, -9.570305681e-02, 2.633605389e-01, 1.419148897e-04, -8.715858320e-05,
-                        1.024944399e-04 },
-                { 2.113809017e-01, 7.792155309e-02, -2.480144888e-01, -8.715858320e-05, 1.069566588e-04,
-                        -5.667563856e-05 },
-                { -1.759509343e-01, -7.435822327e-02, 1.908427233e-01, 1.024944399e-04, -5.667563856e-05,
-                        8.178356868e-05 }
-        };
-        final RealMatrix referenceCov = MatrixUtils.createRealMatrix(ref);
-
         // Verify (3% error with respect to reference)
-        compareCovariance(referenceCov, propagatedCov, 0.03);
+        compareCovariance(refCovAfter60s, propagatedCov, 0.03);
         Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
-
     }
 
     /**
@@ -545,20 +446,11 @@ public class StateCovarianceMatrixProviderTest {
         setUp();
 
         // Keplerian propagator
-        final String stmName = "STM";
         final KeplerianPropagator propagator = new KeplerianPropagator(initialState.getOrbit());
         final double dt = 60.0;
 
-        // Finalize setting
-        final MatricesHarvester harvester = propagator.setupMatricesComputation(stmName, null, null);
-
-        // Create additional state
-        final String     additionalName = "cartCov";
-        final RealMatrix initialCov     = MatrixUtils.createRealMatrix(initCov);
-        final StateCovariance initialStateCovariance = new StateCovariance(initialCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
-        final StateCovarianceMatrixProvider provider =
-                new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovariance);
-        propagator.addAdditionalStateProvider(provider);
+        // Configure covariance propagation
+        final StateCovarianceMatrixProvider provider = setUpCovariancePropagation(propagator);
 
         // Propagate
         final SpacecraftState propagated = propagator.propagate(initialState.getDate().shiftedBy(dt));
@@ -568,6 +460,7 @@ public class StateCovarianceMatrixProviderTest {
         final RealMatrix propagatedCov = propagatedStateCov.getMatrix();
 
         // Use of shiftedBy
+        final StateCovariance initialStateCovariance = new StateCovariance(initCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
         final StateCovariance shiftedStateCov = initialStateCovariance.shiftedBy(initialState.getOrbit(), dt);
         final RealMatrix shiftedCov = shiftedStateCov.getMatrix();
 
@@ -576,7 +469,153 @@ public class StateCovarianceMatrixProviderTest {
         Assertions.assertEquals(propagatedStateCov.getDate(), shiftedStateCov.getDate());
         Assertions.assertEquals(propagatedStateCov.getOrbitType(), shiftedStateCov.getOrbitType());
         Assertions.assertEquals(propagatedStateCov.getPositionAngleType(), shiftedStateCov.getPositionAngleType());
+    }
 
+    /**
+     * Unit test for issue 1253: incorrect covariance propagation with a bounded propagator.
+     *
+     * <p>Bug detection courtesy of Christophe Le Bris
+     *
+     * <p>The problem was that, when using ephemeris mode with an integrated propagator, the covariance propagated with the
+     * output BoundedPropagator was wrong. Actually, it was always equal to the initial covariance matrix.
+     */
+    @Test
+    public void testIssue1253_IntegratedPropagator() {
+
+        // GIVEN
+        // -----
+        
+        // Initialization
+        setUp();
+
+        // dt
+        final double dt = 3600.0;
+        final AbsoluteDate propDate = initialState.getDate().shiftedBy(dt);
+
+        // Numerical propagator
+        final OrbitType           propType   = OrbitType.CARTESIAN;
+        final PositionAngleType angleType  = PositionAngleType.MEAN;
+        NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(60.));
+        propagator.setOrbitType(propType);
+        propagator.setPositionAngleType(angleType);
+        propagator.setInitialState(initialState);
+        StateCovarianceMatrixProvider provider = setUpCovariancePropagation(propagator);
+
+        // Propagate to dt/2
+        SpacecraftState propagated = propagator.propagate(propDate);
+
+        // Get the reference propagated covariance
+        final StateCovariance refPropagatedStateCov = provider.getStateCovariance(propagated);
+        final RealMatrix refPropagatedCov = refPropagatedStateCov.getMatrix();
+        
+        // WHEN
+        // ----
+        
+        // 2. Ephemeris on [t0, t0 + dt]
+        propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(60.));
+        propagator.setOrbitType(propType);
+        propagator.setPositionAngleType(angleType);
+        propagator.setInitialState(initialState);
+        provider = setUpCovariancePropagation(propagator);
+
+        // Propagate to dt and store ephemeris
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
+        propagator.propagate(propDate);
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+        
+        // 3. Propagate ephemeris to dt
+        propagated = ephemeris.propagate(propDate);
+        final StateCovariance propagatedStateCov = provider.getStateCovariance(propagated);
+        final RealMatrix propagatedCov = provider.getStateCovariance(propagated).getMatrix();
+        
+        
+        // THEN
+        // ----
+
+        // Verify that both covariances are equal
+        Assertions.assertEquals(refPropagatedStateCov.getDate(), propagatedStateCov.getDate());
+        Assertions.assertEquals(refPropagatedStateCov.getOrbitType(), propagatedStateCov.getOrbitType());
+        Assertions.assertEquals(refPropagatedStateCov.getPositionAngleType(), propagatedStateCov.getPositionAngleType());
+        compareCovariance(refPropagatedCov, propagatedCov, 0.);
+    }
+
+    /**
+     * Unit test for issue 1253: incorrect covariance propagation with a bounded propagator.
+     * <p>
+     * With analytical propagators, the former code worked. Test if it still works with the new version of the code.
+     */
+    @Test
+    public void testIssue1253_AnalyticalPropagator() {
+
+        // GIVEN
+        // -----
+        
+        // Initialization
+        setUp();
+
+        // dt
+        final double dt = 3600.0;
+        final AbsoluteDate propDate = initialState.getDate().shiftedBy(dt);
+
+        // Keplerian propagator
+        Propagator propagator = new KeplerianPropagator(initialState.getOrbit());
+        StateCovarianceMatrixProvider provider = setUpCovariancePropagation(propagator);
+
+        // Propagate to dt/2
+        SpacecraftState propagated = propagator.propagate(propDate);
+
+        // Get the reference propagated covariance
+        final StateCovariance refPropagatedStateCov = provider.getStateCovariance(propagated);
+        final RealMatrix refPropagatedCov = refPropagatedStateCov.getMatrix();
+        
+        // WHEN
+        // ----
+        
+        // 2. Ephemeris on [t0, t0 + dt]
+        propagator = new KeplerianPropagator(initialState.getOrbit());
+        provider = setUpCovariancePropagation(propagator);
+
+        // Propagate to dt and store ephemeris
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
+        propagator.propagate(propDate);
+        final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
+        
+        // 3. Propagate ephemeris to dt
+        propagated = ephemeris.propagate(propDate);
+        final StateCovariance propagatedStateCov = provider.getStateCovariance(propagated);
+        final RealMatrix propagatedCov = provider.getStateCovariance(propagated).getMatrix();
+        
+        
+        // THEN
+        // ----
+
+        // Verify that both covariances are equal
+        Assertions.assertEquals(refPropagatedStateCov.getDate(), propagatedStateCov.getDate());
+        Assertions.assertEquals(refPropagatedStateCov.getOrbitType(), propagatedStateCov.getOrbitType());
+        Assertions.assertEquals(refPropagatedStateCov.getPositionAngleType(), propagatedStateCov.getPositionAngleType());
+        compareCovariance(refPropagatedCov, propagatedCov, 0.);
+    }
+    
+    /** Setup a StateCovarianceMatrixProvider without changing orbit type.
+     * 
+     * @param propagator input propagator
+     * @return configured StateCovarianceMatrixProvider
+     */
+    private StateCovarianceMatrixProvider setUpCovariancePropagation(final Propagator propagator) {
+        
+        final String stmName = "STM";
+        final String     additionalName = "cartCov";
+        
+        // Finalize setting
+        final MatricesHarvester harvester = propagator.setupMatricesComputation(stmName, null, null);
+
+        // Create additional state
+        final StateCovariance initialStateCovariance = new StateCovariance(initCov, initialState.getDate(), initialState.getFrame(), OrbitType.CARTESIAN, PositionAngleType.MEAN);
+        final StateCovarianceMatrixProvider provider =
+                new StateCovarianceMatrixProvider(additionalName, stmName, harvester, initialStateCovariance);
+        propagator.addAdditionalStateProvider(provider);
+        
+        return provider;
     }
 
 }
