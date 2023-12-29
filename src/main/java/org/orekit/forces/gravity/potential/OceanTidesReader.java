@@ -65,7 +65,7 @@ public abstract class OceanTidesReader implements DataLoader {
         this.supportedNames = supportedNames;
         this.maxParseDegree = Integer.MAX_VALUE;
         this.maxParseOrder  = Integer.MAX_VALUE;
-        this.waves          = new ArrayList<OceanTidesWave>();
+        this.waves          = new ArrayList<>();
     }
 
     /** Get the regular expression for supported files names.
@@ -108,7 +108,7 @@ public abstract class OceanTidesReader implements DataLoader {
     /** {@inheritDoc} */
     @Override
     public boolean stillAcceptsData() {
-        return waves.isEmpty();
+        return !(getMaxAvailableDegree() == getMaxParseDegree() && getMaxAvailableOrder() == getMaxParseOrder());
     }
 
     /** Start parsing.
@@ -118,9 +118,9 @@ public abstract class OceanTidesReader implements DataLoader {
      * @param fileName name of the file (or zip entry)
      */
     protected void startParse(final String fileName) {
-
+        this.waves        = new ArrayList<>();
         this.name         = fileName;
-        this.coefficients = new HashMap<Integer, double[][][]>();
+        this.coefficients = new HashMap<>();
         this.maxDegree    = -1;
         this.maxOrder     = -1;
     }
@@ -212,6 +212,22 @@ public abstract class OceanTidesReader implements DataLoader {
      */
     public List<OceanTidesWave> getWaves() {
         return waves;
+    }
+
+   /** Get the maximal degree available in the last file parsed.
+    * @return maximal degree available in the last file parsed
+    * @since 12.0.1
+    */
+    public int getMaxAvailableDegree() {
+        return waves.stream().map(OceanTidesWave::getMaxDegree).max(Integer::compareTo).orElse(-1);
+    }
+
+    /** Get the maximal order available in the last file parsed.
+     * @return maximal order available in the last file parsed
+     * @since 12.0.1
+     */
+    public int getMaxAvailableOrder() {
+        return waves.stream().map(OceanTidesWave::getMaxOrder).max(Integer::compareTo).orElse(-1);
     }
 
 }
