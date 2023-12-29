@@ -66,8 +66,14 @@ public interface TimeInterpolator<T extends TimeStamped> {
      */
     List<TimeInterpolator<? extends TimeStamped>> getSubInterpolators();
 
-    /** Get the number of interpolation points.
-     * @return get the number of interpolation points
+    /**
+     * Get the number of interpolation points. In the specific case where this interpolator contains multiple
+     * sub-interpolators, this method will return the maximum number of interpolation points required among all
+     * sub-interpolators.
+     *
+     * @return the number of interpolation points
+     *
+     * @since 12.0.1
      */
     int getNbInterpolationPoints();
 

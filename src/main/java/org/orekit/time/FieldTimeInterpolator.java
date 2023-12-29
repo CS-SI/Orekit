@@ -106,8 +106,14 @@ public interface FieldTimeInterpolator<T extends FieldTimeStamped<KK>, KK extend
      */
     List<FieldTimeInterpolator<? extends FieldTimeStamped<KK>, KK>> getSubInterpolators();
 
-    /** Get the number of interpolation points.
-     * @return the number of interpolation points.
+    /**
+     * Get the number of interpolation points. In the specific case where this interpolator contains multiple
+     * sub-interpolators, this method will return the maximum number of interpolation points required among all
+     * sub-interpolators.
+     *
+     * @return the number of interpolation points
+     *
+     * @since 12.0.1
      */
     int getNbInterpolationPoints();
 

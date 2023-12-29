@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeInterpolator;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -43,6 +44,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitHermiteInterpolator;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -53,7 +55,9 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStampedDouble;
+import org.orekit.time.TimeStampedDoubleHermiteInterpolator;
 import org.orekit.utils.AbsolutePVCoordinates;
+import org.orekit.utils.AbsolutePVCoordinatesHermiteInterpolator;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -61,6 +65,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 class SpacecraftStateInterpolatorTest {
@@ -468,25 +473,52 @@ class SpacecraftStateInterpolatorTest {
     }
 
     @Test
-    void testErrorThrownWhenGettingNbInterpolationPoints() {
+    void testGetNbInterpolationsWithMultipleSubInterpolators() {
         // GIVEN
-        @SuppressWarnings("unchecked")
-        final TimeInterpolator<Orbit> orbitInterpolator = Mockito.mock(TimeInterpolator.class);
+        // Create mock interpolators
         final Frame frame = Mockito.mock(Frame.class);
 
+        final TimeInterpolator<Orbit> orbitInterpolator = Mockito.mock(OrbitHermiteInterpolator.class);
+
+        final TimeInterpolator<AbsolutePVCoordinates> absPVAInterpolator =
+                Mockito.mock(AbsolutePVCoordinatesHermiteInterpolator.class);
+
+        final TimeInterpolator<TimeStampedDouble> massInterpolator =
+                Mockito.mock(TimeStampedDoubleHermiteInterpolator.class);
+
+        final TimeInterpolator<Attitude> attitudeInterpolator = Mockito.mock(AttitudeInterpolator.class);
+
+        final TimeInterpolator<TimeStampedDouble> additionalStateInterpolator =
+                Mockito.mock(TimeStampedDoubleHermiteInterpolator.class);
+
+        // Implement mocks behaviours
+        final int orbitNbInterpolationPoints           = 2;
+        final int absPVANbInterpolationPoints          = 3;
+        final int massNbInterpolationPoints            = 4;
+        final int AttitudeNbInterpolationPoints        = 5;
+        final int AdditionalStateNbInterpolationPoints = 6;
+
+        Mockito.when(orbitInterpolator.getNbInterpolationPoints()).thenReturn(orbitNbInterpolationPoints);
+        Mockito.when(absPVAInterpolator.getNbInterpolationPoints()).thenReturn(absPVANbInterpolationPoints);
+        Mockito.when(massInterpolator.getNbInterpolationPoints()).thenReturn(massNbInterpolationPoints);
+        Mockito.when(attitudeInterpolator.getNbInterpolationPoints()).thenReturn(AttitudeNbInterpolationPoints);
+        Mockito.when(additionalStateInterpolator.getNbInterpolationPoints()).thenReturn(AdditionalStateNbInterpolationPoints);
+
+        Mockito.when(orbitInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(orbitInterpolator));
+        Mockito.when(absPVAInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(absPVAInterpolator));
+        Mockito.when(massInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(massInterpolator));
+        Mockito.when(attitudeInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(attitudeInterpolator));
+        Mockito.when(additionalStateInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(additionalStateInterpolator));
+
         final SpacecraftStateInterpolator stateInterpolator =
-                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
-                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
-                                                frame, orbitInterpolator, null, null, null, null);
+                new SpacecraftStateInterpolator(frame, orbitInterpolator, absPVAInterpolator, massInterpolator,
+                                                attitudeInterpolator, additionalStateInterpolator);
 
-        // WHEN & THEN
-        Exception exception = Assertions.assertThrows(OrekitException.class, stateInterpolator::getNbInterpolationPoints);
+        // WHEN
+        final int returnedNbInterpolationPoints = stateInterpolator.getNbInterpolationPoints();
 
-        String expectedMessage = "multiple interpolators are used so they may use different numbers of interpolation points";
-        String actualMessage   = exception.getMessage();
-
-        Assertions.assertTrue(actualMessage.contains(expectedMessage));
-
+        // THEN
+        Assertions.assertEquals(AdditionalStateNbInterpolationPoints, returnedNbInterpolationPoints);
     }
 
     @Test
