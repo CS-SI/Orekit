@@ -20,6 +20,32 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+  <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="1294">
+          Added NsgfV00Filter to allow parsing some wrong SP3 files.
+      </action>
+      <action dev="serrof" type="add" issue="1260">
+          Started using new square method for Field.
+      </action>
+      <action dev="luc" type="add" issue="1286">
+          Fixed parsing of SP3 files with partly missing standard deviations.
+      </action>
+      <action dev="luc" type="update" issue="1285">
+          Added field versions of unit conversions from and to SI units.
+      </action>
+      <action dev="serrof" type="update" issue="1276">
+          Removed uses of scalar multiply on Field one.
+      </action>
+      <action dev="serrof" type="add" issue="1275">
+          Added utility classes for position angle conversions for (Field) CircularOrbit and EquinoctialOrbit.
+      </action>
+      <action dev="luc" type="add" issue="1278">
+          Fixed exceptions occurring in EOP prediction with ill chosen fitting parameters.
+      </action>
+      <action dev="luc" type="add" due-to="Elisabet Cid Borobia">
+          Added translation of error messages in Catalan language.
+      </action>
+  </release>
   <release version="12.0.1" date="31/12/2023"
            description="Version 12.0.1 is a patch release of Orekit.
            It fixes several issues related to the Ephemeris class, interpolation and caching behaviours.
@@ -33,9 +59,6 @@
       </action>
       <action dev="luc" type="add" issue="1278">
         Fixed exceptions occurring in EOP prediction with ill chosen fitting parameters.
-      </action>
-      <action dev="luc" type="add" due-to="Elisabet Cid Borobia">
-        Added translation of error messages in Catalan language.
       </action>
       <action dev="vincent" type="fix" issue="1277">
         Fixed regression in computation speed when using Ephemeris.
@@ -63,32 +86,6 @@
       </action>
       <action dev="bryan" type="fix" issue="1055">
         Fixed bad caching of the ocean tides model.
-      </action>
-  </release>
-  <release version="12.1" date="TBD" description="TBD">
-      <action dev="luc" type="add" issue="1294">
-          Added NsgfV00Filter to allow parsing some wrong SP3 files.
-      </action>
-      <action dev="serrof" type="add" issue="1260">
-          Started using new square method for Field.
-      </action>
-      <action dev="luc" type="add" issue="1286">
-          Fixed parsing of SP3 files with partly missing standard deviations.
-      </action>
-      <action dev="luc" type="update" issue="1285">
-          Added field versions of unit conversions from and to SI units.
-      </action>
-      <action dev="serrof" type="update" issue="1276">
-          Removed uses of scalar multiply on Field one.
-      </action>
-      <action dev="serrof" type="add" issue="1275">
-          Added utility classes for position angle conversions for (Field) CircularOrbit and EquinoctialOrbit.
-      </action>
-      <action dev="luc" type="add" issue="1278">
-          Fixed exceptions occurring in EOP prediction with ill chosen fitting parameters.
-      </action>
-      <action dev="luc" type="add" due-to="Elisabet Cid Borobia">
-          Added translation of error messages in Catalan language.
       </action>
   </release>
   <release version="12.0" date="2023-11-08"
@@ -1199,7 +1196,7 @@
              orbit determination. It also fixes bugs in TLE and CRD files.
              Finally it includes an update of the release guide.">
          <action dev="bryan" type="fix" issue="859" due-to="Emmanuel Papanagiotou">
-        Allowed custom setting of state to TLE conversion in propagator builder. 
+        Allowed custom setting of state to TLE conversion in propagator builder.
       </action>
          <action dev="bryan" type="fix" issue="847">
         Fixed handling of comments in CRD files.
@@ -1881,13 +1878,13 @@
         Improve performance of ZipJarCrawler.
       </action>
       <action dev="bryan" type="add" issue="625">
-          Added default constructors for DSSTZonal and DSSTTesseral. 
-      </action>   
+          Added default constructors for DSSTZonal and DSSTTesseral.
+      </action>
       <action dev="bryan" type="add" issue="622">
-          Added OrekitException for unknown number of frequencies in ANTEX files. 
+          Added OrekitException for unknown number of frequencies in ANTEX files.
       </action>
       <action dev="bryan" type="add" issue="621">
-          Added OrekitException in the case where IONEX header is corrupted. 
+          Added OrekitException in the case where IONEX header is corrupted.
       </action>
       <action dev="dylan" type="add" issue="359">
           Added a specific test for issue 359 in BatchLSEstimatorTest.
@@ -2134,7 +2131,7 @@
         Changing AbstractGNSSAttitudeProvider from public to package-private.
       </action>
       <action dev="romaric" type="fix" issue="551">
-        Fix the bug of attitude transition with analytical propagator 
+        Fix the bug of attitude transition with analytical propagator
         by refreshing the attitude after the events triggering
       </action>
       <action dev="romaric" type="fix" issue="552">
@@ -2182,7 +2179,7 @@
       </action>
       <action dev="maxime" type="fix" issue="514">
         Deprecated unused DerivativeStructure acceleration computation methods.
-        In interfaces radiationPressureAcceleration and dragAcceleration, and all their implementations and their tests. 
+        In interfaces radiationPressureAcceleration and dragAcceleration, and all their implementations and their tests.
       </action>
       <action dev="luc" type="add" issue="536">
         Take target radius into account in CircularFieldOfViewDetector and FieldOfViewDetector.
@@ -2359,7 +2356,7 @@
         Fixes issue #492.
       </action>
       <action dev="maxime" type="fix" issue="490">
-        Fixed reference value of parameter drivers updating in Kalman filter. 
+        Fixed reference value of parameter drivers updating in Kalman filter.
         When resetting the orbit in the propagator builder, the reference values
         of the drivers are now reset too.
         Fixes issue #490.
@@ -2741,7 +2738,7 @@
        Forced states derivatives to be dimension 6 rather than either 6 or 7. The
        additional mass was not really useful, it was intended for maneuvers calibration,
        but in fact during maneuver calibration we adjust either flow rate or specific
-       impulse but not directly mass itself. 
+       impulse but not directly mass itself.
      </action>
       <action dev="luc" type="add">
         Added parametric acceleration force models, where acceleration amplitude is a
@@ -2997,7 +2994,7 @@
         file formats, and implemented the OEMWriter for CCSDS OEM file export support.
       </action>
       <action dev="hank" type="add">
-        Added OrekitEphemerisFile object for encapsulating propagator outputs into an 
+        Added OrekitEphemerisFile object for encapsulating propagator outputs into an
         EphemerisFile which can then be exported with EphemerisFileWriter classes.
       </action>
       <action dev="luc" type="fix">
@@ -3483,7 +3480,7 @@
         provided by NOAA.
       </action>
       <action dev="tn" type="fix">
-        Fixed javadoc of method "GeoMagneticField#calculateField(...)": 
+        Fixed javadoc of method "GeoMagneticField#calculateField(...)":
         the provided altitude is expected to be a height above the WGS84 ellipsoid.
       </action>
       <action dev="luc" type="update">
@@ -3594,7 +3591,7 @@
       </action>
       <action dev="luc" type="add" due-to="Hank Grabowski">
         Allow attitude overriding during impulsive maneuvers.
-        Fixes issue #176.  
+        Fixes issue #176.
       </action>
       <action dev="evan" type="add">
           Added general relativity force model.
@@ -3760,7 +3757,7 @@
         Merged all elevation detectors into one. The new detector supports all
         features from the previous (and now deprecated) ApparentElevationDetector
         and GroundMaskElevationDetector.
-        Fixes issue #144.  
+        Fixes issue #144.
       </action>
       <action dev="luc" type="add" due-to="Hank Grabowski">
         Added a DetectorEventHandler interface aimed at handling only the
@@ -4016,7 +4013,7 @@
         IERS does not provide anymore data to link TIRF 2003 with ITRF, ITRF
         based on 2003 convention is not available. ITRF can only be based on
         either 2010 conventions for CIO-based paradigm or on 1996 conventions
-        for equinox-based paradigm. 
+        for equinox-based paradigm.
       </action>
       <action dev="luc" type="add" >
         Atmosphere models now provide their central body frame.
@@ -4068,7 +4065,7 @@
         Streamlined the force models partial derivatives computation for numerical
         propagation. It is now far simpler to compute analytically the derivatives
         with respect to state and with respect to force models specific parameters,
-        thanks to the new Apache Commons Math differentiation framework. 
+        thanks to the new Apache Commons Math differentiation framework.
       </action>
       <action dev="luc" type="add" >
         Added a new force model for central body gravity field, based on Holmes and Featherstone
@@ -4153,7 +4150,7 @@
         (fixes bug #116).
       </action>
       <action dev="tn" type="fix" due-to="Evan Ward">
-        Make TidalCorrections class thread-safe by using the new TimeStampedCache. 
+        Make TidalCorrections class thread-safe by using the new TimeStampedCache.
         (fixes bug #117).
       </action>
       <action dev="tn" type="fix" due-to="Evan Ward">
@@ -4230,7 +4227,7 @@
       </action>
       <action dev="luc" type="fix">
         Removed too stringent test on trajectory in TLE propagator (fixes bug #86).
-      </action>      
+      </action>
       <action dev="thomas" type="fix">
           Set the initial state for a TLEPropagator (fixes bug #85).
       </action>
