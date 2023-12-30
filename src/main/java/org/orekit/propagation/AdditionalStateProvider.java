@@ -51,7 +51,7 @@ import org.orekit.time.AbsoluteDate;
  * </p>
  * <p>
  * It is possible that at some stages in the propagation, a subset of the providers registered to a
- * propagator all yied and cannot {@link #getAdditionalState(SpacecraftState) retrieve} their additional
+ * propagator all yield and cannot {@link #getAdditionalState(SpacecraftState) retrieve} their additional
  * state. This happens for example during the initialization phase of a propagator that
  * computes State Transition Matrices or Jacobian matrices. These features are managed as secondary equations
  * in the ODE integrator, and initialized after the primary equations (which correspond to orbit) have
@@ -97,7 +97,7 @@ public interface AdditionalStateProvider {
      * matrix, it could implement this method as:
      * </p>
      * <pre>{@code
-     * public boolean yield(final SpacecraftState state) {
+     * public boolean yields(final SpacecraftState state) {
      *     return !state.getAdditionalStates().containsKey("STM");
      * }
      * }</pre>

@@ -20,6 +20,51 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+  <release version="12.0.1" date="31/12/2023"
+           description="Version 12.0.1 is a patch release of Orekit.
+           It fixes several issues related to the Ephemeris class, interpolation and caching behaviours.
+           Checkstyle configuration for IntelliJ is added and some javadocs have been updated. Finally, missing
+           contributions have been added to the changes.">
+      <action dev="luc" type="add" issue="1286">
+        Fixed parsing of SP3 files with partly missing standard deviations.
+      </action>
+      <action dev="maxime" type="update" issue="1280">
+        Added missing contributions for 12.0 in changes.xml.
+      </action>
+      <action dev="luc" type="add" issue="1278">
+        Fixed exceptions occurring in EOP prediction with ill chosen fitting parameters.
+      </action>
+      <action dev="luc" type="add" due-to="Elisabet Cid Borobia">
+        Added translation of error messages in Catalan language.
+      </action>
+      <action dev="vincent" type="fix" issue="1277">
+        Fixed regression in computation speed when using Ephemeris.
+      </action>
+      <action dev="bryan" type="add" issue="1271">
+        Added checkstyle configuration for Intellij in contributing.md.
+      </action>
+      <action dev="vincent" type="fix" issue="1269">
+        Fixed infinite loop when using specific date with CssiSpaceWeatherData.
+      </action>
+      <action dev="vincent" type="fix" issue="1266">
+        SpacecraftStateInterpolator now takes into account the extrapolation threshold given at construction.
+      </action>
+      <action dev="tmills" type="update" issue="1261">
+        Updated JavaDoc for references to the yields method where applicable.
+      </action>
+      <action dev="maxime" type="fix" issue="1254">
+        Fixed bad dates in ephemeris when reset-at-end is set to false.
+      </action>
+      <action dev="maxime" type="fix" issue="1253">
+        Fixed covariance computation with ephemeris propagation.
+      </action>
+      <action dev="bryan" type="update" issue="1230">
+        AberrationModifier shall be used with user defined DataContext.
+      </action>
+      <action dev="bryan" type="fix" issue="1055">
+        Fixed bad caching of the ocean tides model.
+      </action>
+  </release>
   <release version="12.0" date="2023-11-08"
            description="Orekit 12.0 is a major new release.
            It includes both new features and bug fixes. The main new features
@@ -39,6 +84,12 @@
            formats: EOP C04, STK ephemeris files, Rinex 3.05 and 4.0, Rinex 2 navigation
            messages, CCSDS ADM v2, and Sinex Differential Code Bias (DCB).
            See the list below for a full description of the changes.">
+      <action dev="theo611 " type="update" issue="1203">
+          Added new method addSupportedParameters in AbstractPropagatorBuilder.
+      </action>
+      <action dev="jasquier" type="add" issue="982">
+          Added Gauss angles-only initial orbit determination method.
+      </action>
       <action dev="lirw1984" type="update" issue="938">
           Enhanced parsing of CRD files.
       </action>

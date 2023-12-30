@@ -138,7 +138,7 @@ public class CssiSpaceWeatherData extends AbstractSolarActivityData<LineParamete
     public CssiSpaceWeatherData(final String supportedNames, final CssiSpaceWeatherDataLoader loader,
                                 final DataProvidersManager dataProvidersManager, final TimeScale utc, final int maxSlots,
                                 final double maxSpan, final double maxInterval) {
-        super(supportedNames, loader, dataProvidersManager, utc, maxSlots, maxSpan, maxInterval, Double.NaN);
+        super(supportedNames, loader, dataProvidersManager, utc, maxSlots, maxSpan, maxInterval, Constants.JULIAN_DAY);
 
         // Initialise fields
         this.lastObservedDate       = loader.getLastObservedDate();
@@ -219,7 +219,7 @@ public class CssiSpaceWeatherData extends AbstractSolarActivityData<LineParamete
      */
     public CssiSpaceWeatherData(final DataSource source, final CssiSpaceWeatherDataLoader loader, final TimeScale utc,
                                 final int maxSlots, final double maxSpan, final double maxInterval) {
-        super(source, loader, utc, maxSlots, maxSpan, maxInterval, Double.NaN);
+        super(source, loader, utc, maxSlots, maxSpan, maxInterval, Constants.JULIAN_DAY);
         this.lastObservedDate       = loader.getLastObservedDate();
         this.lastDailyPredictedDate = loader.getLastDailyPredictedDate();
     }
