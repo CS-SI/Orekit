@@ -18,12 +18,14 @@ package org.orekit.time;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.ImmutableTimeStampedCache;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -91,6 +93,37 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
         return interpolate(interpolationData);
     }
 
+    /**
+     * Get the central date to use to find neighbors while taking into account extrapolation threshold.
+     *
+     * @param date interpolation date
+     * @param cachedSamples cached samples
+     * @param threshold extrapolation threshold
+     * @param <T> type of element
+     *
+     * @return central date to use to find neighbors
+     * @since 12.0.1
+     */
+    public static <T extends TimeStamped> AbsoluteDate getCentralDate(final AbsoluteDate date,
+                                                                      final ImmutableTimeStampedCache<T> cachedSamples,
+                                                                      final double threshold) {
+        final AbsoluteDate central;
+        final AbsoluteDate minDate = cachedSamples.getEarliest().getDate();
+        final AbsoluteDate maxDate = cachedSamples.getLatest().getDate();
+
+        if (date.compareTo(minDate) < 0 && FastMath.abs(date.durationFrom(minDate)) <= threshold) {
+            // avoid TimeStampedCacheException as we are still within the tolerance before minDate
+            central = minDate;
+        } else if (date.compareTo(maxDate) > 0 && FastMath.abs(date.durationFrom(maxDate)) <= threshold) {
+            // avoid TimeStampedCacheException as we are still within the tolerance after maxDate
+            central = maxDate;
+        } else {
+            central = date;
+        }
+
+        return central;
+    }
+
     /** {@inheritDoc} */
     public List<TimeInterpolator<? extends TimeStamped>> getSubInterpolators() {
         return Collections.singletonList(this);
@@ -98,7 +131,22 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
 
     /** {@inheritDoc} */
     public int getNbInterpolationPoints() {
-        return interpolationPoints;
+        final List<TimeInterpolator<? extends TimeStamped>> subInterpolators = getSubInterpolators();
+        // In case the interpolator does not have sub interpolators
+        if (subInterpolators.size() == 1) {
+            return interpolationPoints;
+        }
+        // Otherwise find maximum number of interpolation points among sub interpolators
+        else {
+            final Optional<Integer> optionalMaxNbInterpolationPoints =
+                    subInterpolators.stream().map(TimeInterpolator::getNbInterpolationPoints).max(Integer::compareTo);
+            if (optionalMaxNbInterpolationPoints.isPresent()) {
+                return optionalMaxNbInterpolationPoints.get();
+            } else {
+                // This should never happen
+                throw new OrekitInternalError(null);
+            }
+        }
     }
 
     /** {@inheritDoc} */
@@ -195,23 +243,7 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
          * @return central date to use to find neighbors
          */
         protected AbsoluteDate getCentralDate(final AbsoluteDate date) {
-            final AbsoluteDate central;
-            final AbsoluteDate minDate = cachedSamples.getEarliest().getDate();
-            final AbsoluteDate maxDate = cachedSamples.getLatest().getDate();
-
-            if (date.compareTo(minDate) < 0 &&
-                    FastMath.abs(date.durationFrom(minDate)) <= extrapolationThreshold) {
-                // avoid TimeStampedCacheException as we are still within the tolerance before minDate
-                central = minDate;
-            } else if (date.compareTo(maxDate) > 0 &&
-                    FastMath.abs(date.durationFrom(maxDate)) <= extrapolationThreshold) {
-                // avoid TimeStampedCacheException as we are still within the tolerance after maxDate
-                central = maxDate;
-            } else {
-                central = date;
-            }
-
-            return central;
+            return AbstractTimeInterpolator.getCentralDate(date, cachedSamples, extrapolationThreshold);
         }
 
         /** Get interpolation date.

@@ -38,6 +38,7 @@ import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeStampedPair;
 import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.ImmutableTimeStampedCache;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,10 +68,10 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     private final String[] additional;
 
     /** List of spacecraft states. */
-    private final transient List<SpacecraftState> states;
+    private final transient ImmutableTimeStampedCache<SpacecraftState> statesCache;
 
     /** List of covariances. **/
-    private final transient List<StateCovariance> covariances;
+    private final transient ImmutableTimeStampedCache<StateCovariance> covariancesCache;
 
     /** Spacecraft state interpolator. */
     private final transient TimeInterpolator<SpacecraftState> stateInterpolator;
@@ -101,9 +102,9 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints)
             throws MathIllegalArgumentException {
         // If states is empty an exception will be thrown in the other constructor
-        this(states, states.isEmpty() ? null : new SpacecraftStateInterpolator(interpolationPoints,
-                                                                               states.get(0).getFrame(),
-                                                                               states.get(0).getFrame()),
+        this(states, new SpacecraftStateInterpolator(interpolationPoints,
+                                                     states.get(0).getFrame(),
+                                                     states.get(0).getFrame()),
              new ArrayList<>(), null);
     }
 
@@ -214,12 +215,16 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
             additional[i] = as.get(i).getKey();
         }
 
-        this.states            = states;
+        this.statesCache       = new ImmutableTimeStampedCache<>(stateInterpolator.getNbInterpolationPoints(), states);
         this.stateInterpolator = stateInterpolator;
 
-        this.covariances            = covariances;
         this.covarianceInterpolator = covarianceInterpolator;
-
+        if (covarianceInterpolator != null) {
+            this.covariancesCache = new ImmutableTimeStampedCache<>(covarianceInterpolator.getNbInterpolationPoints(),
+                                                                    covariances);
+        } else {
+            this.covariancesCache = null;
+        }
         this.statesAreOrbitDefined = s0.isOrbitDefined();
 
         // Initialize initial state
@@ -325,7 +330,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * @see Optional
      */
     public Optional<StateCovariance> getCovariance(final AbsoluteDate date) {
-        if (covarianceInterpolator != null && statesAreOrbitDefined) {
+        if (covarianceInterpolator != null && covariancesCache != null && statesAreOrbitDefined) {
 
             // Build list of time stamped pair of orbits and their associated covariances
             final List<TimeStampedPair<Orbit, StateCovariance>> sample = buildOrbitAndCovarianceSample();
@@ -344,8 +349,9 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
     /** @return sample of orbits and their associated covariances */
     private List<TimeStampedPair<Orbit, StateCovariance>> buildOrbitAndCovarianceSample() {
-        final List<TimeStampedPair<Orbit, StateCovariance>> sample = new ArrayList<>();
-
+        final List<TimeStampedPair<Orbit, StateCovariance>> sample      = new ArrayList<>();
+        final List<SpacecraftState>                         states      = statesCache.getAll();
+        final List<StateCovariance>                         covariances = covariancesCache.getAll();
         for (int i = 0; i < states.size(); i++) {
             sample.add(new TimeStampedPair<>(states.get(i).getOrbit(), covariances.get(i)));
         }
@@ -357,7 +363,9 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     @Override
     public SpacecraftState basicPropagate(final AbsoluteDate date) {
 
-        final SpacecraftState  evaluatedState   = stateInterpolator.interpolate(date, states);
+        final AbsoluteDate centralDate =
+                AbstractTimeInterpolator.getCentralDate(date, statesCache, stateInterpolator.getExtrapolationThreshold());
+        final SpacecraftState  evaluatedState   = stateInterpolator.interpolate(date, statesCache.getNeighbors(centralDate));
         final AttitudeProvider attitudeProvider = getAttitudeProvider();
         if (attitudeProvider == null) {
             return evaluatedState;

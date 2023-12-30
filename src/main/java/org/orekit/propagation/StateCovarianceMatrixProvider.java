@@ -170,7 +170,7 @@ public class StateCovarianceMatrixProvider implements AdditionalStateProvider {
     public StateCovariance getStateCovariance(final SpacecraftState state) {
 
         // Get the current propagated covariance
-        final RealMatrix covarianceMatrix = toRealMatrix(state.getAdditionalState(additionalName));
+        final RealMatrix covarianceMatrix = toRealMatrix(getAdditionalState(state));
 
         // Create associated state covariance
         final StateCovariance covariance =

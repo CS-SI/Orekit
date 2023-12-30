@@ -23,7 +23,6 @@ import java.util.function.ToDoubleFunction;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.SecularAndHarmonic;
 
@@ -45,9 +44,6 @@ public class SingleParameterFitter implements Serializable {
     /** Serializable UID. */
     private static final long serialVersionUID = 20230309L;
 
-    /** Duration of the fitting window at the end of the raw history (s). */
-    private final double fittingDuration;
-
     /** Time constant of the exponential decay weight. */
     private final double timeConstant;
 
@@ -61,7 +57,7 @@ public class SingleParameterFitter implements Serializable {
     private final double[] pulsations;
 
     /** Simple constructor.
-     * @param fittingDuration duration of the fitting window at the end of the raw history (s)
+     * @param fittingDuration ignored parameter since 12.0
      * @param timeConstant time constant \(\tau\) of the exponential decay weight, point weight is \(e^{\frac{t-t_0}{\tau}}\),
      * i.e. points far in the past before \(t_0\) have smaller weights
      * @param convergence convergence on fitted parameter
@@ -74,10 +70,31 @@ public class SingleParameterFitter implements Serializable {
      * @see #createDefaultNutationFitterShortTermPrediction()
      * @see #createDefaultNutationFitterLongTermPrediction()
      * @see SecularAndHarmonic
+     * @deprecated replaced by {@link #SingleParameterFitter(double, double, int, double...)}
      */
+    @Deprecated
     public SingleParameterFitter(final double fittingDuration, final double timeConstant, final double convergence,
                                  final int degree, final double... pulsations) {
-        this.fittingDuration = fittingDuration;
+        this(timeConstant, convergence, degree, pulsations);
+    }
+
+    /** Simple constructor.
+     * @param timeConstant time constant \(\tau\) of the exponential decay weight, point weight is \(e^{\frac{t-t_0}{\tau}}\),
+     * i.e. points far in the past before \(t_0\) have smaller weights
+     * @param convergence convergence on fitted parameter
+     * @param degree degree of the polynomial model
+     * @param pulsations pulsations of harmonic part (rad/s)
+     * @see #createDefaultDut1FitterShortTermPrediction()
+     * @see #createDefaultDut1FitterLongTermPrediction()
+     * @see #createDefaultPoleFitterShortTermPrediction()
+     * @see #createDefaultPoleFitterLongTermPrediction()
+     * @see #createDefaultNutationFitterShortTermPrediction()
+     * @see #createDefaultNutationFitterLongTermPrediction()
+     * @see SecularAndHarmonic
+     * @since 12.0.1
+     */
+    public SingleParameterFitter(final double timeConstant, final double convergence,
+                                 final int degree, final double... pulsations) {
         this.timeConstant    = timeConstant;
         this.convergence     = convergence;
         this.degree          = degree;
@@ -106,18 +123,11 @@ public class SingleParameterFitter implements Serializable {
         sh.resetFitting(last.getDate(), initialGuess);
 
         // sample history
-        final AbsoluteDate           fitStart         = last.getDate().shiftedBy(-fittingDuration);
         final ListIterator<EOPEntry> backwardIterator = rawEntries.listIterator(rawEntries.size());
         while (backwardIterator.hasPrevious()) {
             final EOPEntry entry = backwardIterator.previous();
-            if (entry.getDate().isAfterOrEqualTo(fitStart)) {
-                // the entry belongs to the fitting interval
-                sh.addWeightedPoint(entry.getDate(), extractor.applyAsDouble(entry),
-                                    FastMath.exp(entry.getDate().durationFrom(fitStart) / timeConstant));
-            } else {
-                // we have processed all entries from the fitting interval
-                break;
-            }
+            sh.addWeightedPoint(entry.getDate(), extractor.applyAsDouble(entry),
+                                FastMath.exp(entry.getDate().durationFrom(last.getDate()) / timeConstant));
         }
 
         // perform fitting
@@ -138,7 +148,6 @@ public class SingleParameterFitter implements Serializable {
      * These settings are intended when prediction is used for at most 5 days after raw EOP end.
      * </p>
      * <ul>
-     *   <li>fitting duration set to one {@link Constants#JULIAN_YEAR year}</li>
      *   <li>time constant \(\tau\) of the exponential decay set to 6 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² s</li>
      *   <li>polynomial part set to degree 3</li>
@@ -153,9 +162,9 @@ public class SingleParameterFitter implements Serializable {
      * @see #createDefaultDut1FitterShortTermPrediction()
      */
     public static SingleParameterFitter createDefaultDut1FitterShortTermPrediction() {
-        return new SingleParameterFitter(Constants.JULIAN_YEAR, 6 * Constants.JULIAN_DAY, 1.0e-12, 3,
-                             SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
-                             MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
+        return new SingleParameterFitter(6 * Constants.JULIAN_DAY, 1.0e-12, 3,
+                                         SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
+                                         MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
     }
 
     /** Create fitter with default parameters adapted for fitting orientation parameters dUT1 and LOD
@@ -169,7 +178,6 @@ public class SingleParameterFitter implements Serializable {
      * These settings are intended when prediction is used for 5 days after raw EOP end or more.
      * </p>
      * <ul>
-     *   <li>fitting duration set to three {@link Constants#JULIAN_YEAR years}</li>
      *   <li>time constant \(\tau\) of the exponential decay set to 60 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² s</li>
      *   <li>polynomial part set to degree 3</li>
@@ -184,9 +192,9 @@ public class SingleParameterFitter implements Serializable {
      * @see #createDefaultDut1FitterShortTermPrediction()
      */
     public static SingleParameterFitter createDefaultDut1FitterLongTermPrediction() {
-        return new SingleParameterFitter(3 * Constants.JULIAN_YEAR, 60 * Constants.JULIAN_DAY, 1.0e-12, 3,
-                             SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
-                             MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
+        return new SingleParameterFitter(60 * Constants.JULIAN_DAY, 1.0e-12, 3,
+                                         SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
+                                         MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
     }
 
     /** Create fitter with default parameters adapted for fitting pole parameters Xp and Yp
@@ -200,7 +208,6 @@ public class SingleParameterFitter implements Serializable {
      * These settings are intended when prediction is used for at most 5 days after raw EOP end.
      * </p>
      * <ul>
-     *   <li>fitting duration set to one {@link Constants#JULIAN_YEAR year}</li>
      *   <li>time constant \(\tau\) of the exponential decay set to 12 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² rad</li>
      *   <li>polynomial part set to degree 3</li>
@@ -214,9 +221,9 @@ public class SingleParameterFitter implements Serializable {
      * @return fitter with default configuration for pole parameters Xp and Yp
      */
     public static SingleParameterFitter createDefaultPoleFitterShortTermPrediction() {
-        return new SingleParameterFitter(Constants.JULIAN_YEAR, 12 * Constants.JULIAN_DAY, 1.0e-12, 3,
-                             SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
-                             MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
+        return new SingleParameterFitter(12 * Constants.JULIAN_DAY, 1.0e-12, 3,
+                                         SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
+                                         MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
     }
 
     /** Create fitter with default parameters adapted for fitting pole parameters Xp and Yp
@@ -230,7 +237,6 @@ public class SingleParameterFitter implements Serializable {
      * These settings are intended when prediction is used for 5 days after raw EOP end or more.
      * </p>
      * <ul>
-     *   <li>fitting duration set to three {@link Constants#JULIAN_YEAR years}</li>
      *   <li>time constant \(\tau\) of the exponential decay set to 60 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² rad</li>
      *   <li>polynomial part set to degree 3</li>
@@ -244,9 +250,9 @@ public class SingleParameterFitter implements Serializable {
      * @return fitter with default configuration for pole parameters Xp and Yp
      */
     public static SingleParameterFitter createDefaultPoleFitterLongTermPrediction() {
-        return new SingleParameterFitter(3 * Constants.JULIAN_YEAR, 60 * Constants.JULIAN_DAY, 1.0e-12, 3,
-                             SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
-                             MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
+        return new SingleParameterFitter(60 * Constants.JULIAN_DAY, 1.0e-12, 3,
+                                         SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
+                                         MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
     }
 
     /** Create fitter with default parameters adapted for fitting nutation parameters dx and dy
@@ -260,7 +266,6 @@ public class SingleParameterFitter implements Serializable {
      * These settings are intended when prediction is used for at most 5 days after raw EOP end.
      * </p>
      * <ul>
-     *   <li>fitting duration set to one {@link Constants#JULIAN_YEAR year}</li>
      *   <li>time constant \(\tau\) of the exponential decay set to 12 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² s</li>
      *   <li>polynomial part set to degree 3</li>
@@ -274,9 +279,9 @@ public class SingleParameterFitter implements Serializable {
      * @return fitter with default configuration for pole nutation parameters dx and dy
      */
     public static SingleParameterFitter createDefaultNutationFitterShortTermPrediction() {
-        return new SingleParameterFitter(Constants.JULIAN_YEAR, 12 * Constants.JULIAN_DAY, 1.0e-12, 3,
-                             SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
-                             MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
+        return new SingleParameterFitter(12 * Constants.JULIAN_DAY, 1.0e-12, 3,
+                                         SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
+                                         MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
     }
 
     /** Create fitter with default parameters adapted for fitting nutation parameters dx and dy
@@ -290,7 +295,6 @@ public class SingleParameterFitter implements Serializable {
      * These settings are intended when prediction is used for 5 days after raw EOP end or more.
      * </p>
      * <ul>
-     *   <li>fitting duration set to three {@link Constants#JULIAN_YEAR years}</li>
      *   <li>time constant \(\tau\) of the exponential decay set to 60 {@link Constants#JULIAN_DAY days}</li>
      *   <li>convergence set to 10⁻¹² s</li>
      *   <li>polynomial part set to degree 3</li>
@@ -304,9 +308,9 @@ public class SingleParameterFitter implements Serializable {
      * @return fitter with default configuration for pole nutation parameters dx and dy
      */
     public static SingleParameterFitter createDefaultNutationFitterLongTermPrediction() {
-        return new SingleParameterFitter(3 * Constants.JULIAN_YEAR, 60 * Constants.JULIAN_DAY, 1.0e-12, 3,
-                             SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
-                             MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
+        return new SingleParameterFitter(60 * Constants.JULIAN_DAY, 1.0e-12, 3,
+                                         SUN_PULSATION, 2 * SUN_PULSATION, 3 * SUN_PULSATION,
+                                         MOON_DRACONIC_PULSATION, 2 * MOON_DRACONIC_PULSATION, 3 * MOON_DRACONIC_PULSATION);
     }
 
 }

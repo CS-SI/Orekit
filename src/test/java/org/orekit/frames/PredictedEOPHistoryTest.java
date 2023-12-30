@@ -110,14 +110,14 @@ public class PredictedEOPHistoryTest {
             final double[]       predENC   = predicted.getEquinoxNutationCorrection(date);
             final double[]       rawNroNC  = truncatedEOP.getNonRotatinOriginNutationCorrection(date);
             final double[]       predNroNC = predicted.getNonRotatinOriginNutationCorrection(date);
-            maxErrorUT1  = FastMath.max(maxErrorUT1,  truncatedEOP.getUT1MinusUTC(date) - predicted.getUT1MinusUTC(date));
-            maxErrorLOD  = FastMath.max(maxErrorLOD,  truncatedEOP.getLOD(date)         - predicted.getLOD(date));
-            maxErrorXp   = FastMath.max(maxErrorXp,   rawPC.getXp()            - predPC.getXp());
-            maxErrorYp   = FastMath.max(maxErrorYp,   rawPC.getYp()            - predPC.getYp());
-            maxErrordPsi = FastMath.max(maxErrordPsi, rawENC[0]                - predENC[0]);
-            maxErrordEps = FastMath.max(maxErrordEps, rawENC[1]                - predENC[1]);
-            maxErrordx   = FastMath.max(maxErrordx,   rawNroNC[0]              - predNroNC[0]);
-            maxErrordy   = FastMath.max(maxErrordy,   rawNroNC[1]              - predNroNC[1]);
+            maxErrorUT1  = FastMath.max(maxErrorUT1,  FastMath.abs(truncatedEOP.getUT1MinusUTC(date) - predicted.getUT1MinusUTC(date)));
+            maxErrorLOD  = FastMath.max(maxErrorLOD,  FastMath.abs(truncatedEOP.getLOD(date)         - predicted.getLOD(date)));
+            maxErrorXp   = FastMath.max(maxErrorXp,   FastMath.abs(rawPC.getXp()            - predPC.getXp()));
+            maxErrorYp   = FastMath.max(maxErrorYp,   FastMath.abs(rawPC.getYp()            - predPC.getYp()));
+            maxErrordPsi = FastMath.max(maxErrordPsi, FastMath.abs(rawENC[0]                - predENC[0]));
+            maxErrordEps = FastMath.max(maxErrordEps, FastMath.abs(rawENC[1]                - predENC[1]));
+            maxErrordx   = FastMath.max(maxErrordx,   FastMath.abs(rawNroNC[0]              - predNroNC[0]));
+            maxErrordy   = FastMath.max(maxErrordy,   FastMath.abs(rawNroNC[1]              - predNroNC[1]));
         }
         Assertions.assertEquals(0.0, maxErrorUT1,  1.0e-15);
         Assertions.assertEquals(0.0, maxErrorLOD,  1.0e-15);
@@ -130,13 +130,54 @@ public class PredictedEOPHistoryTest {
     }
 
     @Test
+    @Deprecated
+    public void testDeprecated() {
+
+        // truncate EOP between 2018 and 2021
+        final int mjdLimit = new DateComponents(2022, 1, 1).getMJD();
+        final EOPHistory truncatedEOP = new EOPHistory(trueEOP.getConventions(),
+                                                       EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
+                                                       trueEOP.getEntries().
+                                                               stream().
+                                                               filter(e -> e.getMjd() < mjdLimit).
+                                                               collect(Collectors.toList()),
+                                                       trueEOP.isSimpleEop(),
+                                                       trueEOP.getTimeScales());
+
+        EOPHistory predicted = new PredictedEOPHistory(truncatedEOP,
+                                                       30 * Constants.JULIAN_DAY,
+                                                       new EOPFitter(new SingleParameterFitter(3 * Constants.JULIAN_YEAR,
+                                                                                               Constants.JULIAN_DAY,
+                                                                                               1.0e-12, 3,
+                                                                                               SingleParameterFitter.SUN_PULSATION,
+                                                                                               2 * SingleParameterFitter.SUN_PULSATION,
+                                                                                               3 * SingleParameterFitter.SUN_PULSATION,
+                                                                                               SingleParameterFitter.MOON_DRACONIC_PULSATION,
+                                                                                               2 * SingleParameterFitter.MOON_DRACONIC_PULSATION,
+                                                                                               3 * SingleParameterFitter.MOON_DRACONIC_PULSATION),
+                                                                     SingleParameterFitter.createDefaultPoleFitterLongTermPrediction(),
+                                                                     SingleParameterFitter.createDefaultPoleFitterLongTermPrediction(),
+                                                                     SingleParameterFitter.createDefaultNutationFitterLongTermPrediction(),
+                                                                     SingleParameterFitter.createDefaultNutationFitterLongTermPrediction()));
+
+        // check we get the same value as raw EOP (dropping the last interpolated day)
+        double maxErrorUT1  = 0;
+        for (double dt = Constants.JULIAN_DAY; dt < 10 * Constants.JULIAN_DAY; dt += 20000.0) {
+            final AbsoluteDate   date      = truncatedEOP.getEndDate().shiftedBy(dt);
+            maxErrorUT1  = FastMath.max(maxErrorUT1,  FastMath.abs(trueEOP.getUT1MinusUTC(date) - predicted.getUT1MinusUTC(date)));
+        }
+        Assertions.assertEquals(4.563, maxErrorUT1, 0.001);
+
+    }
+
+    @Test
     public void testAccuracyShortTerm() {
-        doTestAccuracy(true, 0.147, 0.580, 1.529, 7.842, 316.169, 6077.219, 40759.570);
+        doTestAccuracy(true, 0.148, 0.580, 1.528, 7.842, 316.165, 6077.182, 40759.430);
     }
 
     @Test
     public void testAccuracyLongTerm() {
-        doTestAccuracy(false, 1.514, 1.987, 2.291, 3.014, 7.416, 17.635, 27.392);
+        doTestAccuracy(false, 1.518, 1.993, 2.298, 3.013, 7.398, 17.582, 27.296);
     }
 
     private void doTestAccuracy(final boolean shortTerm,
