@@ -35,6 +35,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.SingleBodyAbsoluteAttraction;
@@ -54,6 +55,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeStamped;
 import org.orekit.time.TimeStampedDouble;
 import org.orekit.time.TimeStampedDoubleHermiteInterpolator;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -599,5 +601,33 @@ class SpacecraftStateInterpolatorTest {
         // Then
         Assertions.assertEquals(extrapolationThreshold, interpolator.getExtrapolationThreshold());
 
+    }
+
+    @Test
+    @DisplayName("Test error thrown when sub interpolator is not present")
+    void testErrorThrownWhenSubInterpolatorIsNotPresent() {
+        // GIVEN
+        final FakeStateInterpolator fakeStateInterpolator = new FakeStateInterpolator();
+
+        // WHEN & THEN
+        Assertions.assertThrows(OrekitInternalError.class, fakeStateInterpolator::getNbInterpolationPoints);
+    }
+
+    private static class FakeStateInterpolator extends AbstractTimeInterpolator<SpacecraftState> {
+
+        public FakeStateInterpolator() {
+            super(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                  AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC);
+        }
+
+        @Override
+        protected SpacecraftState interpolate(AbstractTimeInterpolator<SpacecraftState>.InterpolationData interpolationData) {
+            return null;
+        }
+
+        @Override
+        public List<TimeInterpolator<? extends TimeStamped>> getSubInterpolators() {
+            return Collections.emptyList();
+        }
     }
 }

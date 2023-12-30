@@ -39,6 +39,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.SingleBodyAbsoluteAttraction;
@@ -55,9 +56,11 @@ import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.AbstractFieldTimeInterpolator;
+import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStampedField;
@@ -675,5 +678,43 @@ class FieldSpacecraftStateInterpolatorTest {
         Assertions.assertEquals(attitudeInterpolatorMock, interpolator.getAttitudeInterpolator().get());
         Assertions.assertEquals(additionalInterpolatorMock, interpolator.getAdditionalStateInterpolator().get());
 
+    }
+
+    @Test
+    @DisplayName("Test error thrown when sub interpolator is not present")
+    void testErrorThrownWhenSubInterpolatorIsNotPresent() {
+        // GIVEN
+        final FakeFieldStateInterpolator fakeStateInterpolator = new FakeFieldStateInterpolator();
+
+        // WHEN & THEN
+        Assertions.assertThrows(OrekitInternalError.class, fakeStateInterpolator::getNbInterpolationPoints);
+    }
+
+    @Test
+    @DisplayName("Test does not throw error when checking interpolator compatibility")
+    void testDoesNotThrowWhenCheckingInterpolatorCompatibility() {
+        // GIVEN
+        final FakeFieldStateInterpolator fakeStateInterpolator = new FakeFieldStateInterpolator();
+
+        // WHEN & THEN
+        Assertions.assertThrows(OrekitInternalError.class, fakeStateInterpolator::getNbInterpolationPoints);
+    }
+
+    private static class FakeFieldStateInterpolator extends AbstractFieldTimeInterpolator<FieldSpacecraftState<Binary64>,Binary64> {
+
+        public FakeFieldStateInterpolator() {
+            super(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                  AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC);
+        }
+
+        @Override
+        public List<FieldTimeInterpolator<? extends FieldTimeStamped<Binary64>, Binary64>> getSubInterpolators() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        protected FieldSpacecraftState<Binary64> interpolate(AbstractFieldTimeInterpolator<FieldSpacecraftState<Binary64>, Binary64>.InterpolationData interpolationData) {
+            return null;
+        }
     }
 }

@@ -102,9 +102,9 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints)
             throws MathIllegalArgumentException {
         // If states is empty an exception will be thrown in the other constructor
-        this(states, states.isEmpty() ? null : new SpacecraftStateInterpolator(interpolationPoints,
-                                                                               states.get(0).getFrame(),
-                                                                               states.get(0).getFrame()),
+        this(states, new SpacecraftStateInterpolator(interpolationPoints,
+                                                     states.get(0).getFrame(),
+                                                     states.get(0).getFrame()),
              new ArrayList<>(), null);
     }
 
