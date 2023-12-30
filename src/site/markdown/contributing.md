@@ -269,6 +269,50 @@ Press *OK* and *Apply and Close* to finish the installation.
 Select *Checkstyle* -> *Activate Checkstyle* by right-clicking in the context
 menu of the project explorer panel.
 
+### Configure checkstyle in Intellij
+
+As in Eclipse IDE, configuring checkstyle in Intellij IDE can be difficult. Here are the steps you
+will need to follow to configure checkstyle in Intellij IDE.
+
+#### Installing Intellij Checkstyle plugin.
+
+In your Intellij IDE, select *File* -> *Settings* -> *Plugins* -> *Marketplace*
+
+* Name = CheckStyle-IDEA
+* Location = https://plugins.jetbrains.com/plugin/1065-checkstyle-idea
+
+Once installed, restart IDE
+
+#### Configuring the project.
+
+Select *File* -> *Settings* -> *Tools* -> *Checkstyle*
+
+![main-checkstyle-configuration-intellij](./images/main-checkstyle-configuration-intellij.png)
+
+Press the "+" icon to add a new configuration. A new window will popup. Fill it in as shown below by using
+your own location for Orekit's *checkstyle.xml* file.
+
+![project-checkstyle-configuration-intellij](./images/project-checkstyle-configuration-intellij.png)
+
+Press *Next*. A new window will popup to configure the *checkstyle.header.file*.
+The value is equal to *license-header.txt* as presented below.
+
+![additional-properties-intellij](./images/additional-properties-intellij.png)
+
+Press *Finish*.
+
+The checkstyle configuration is almost finished. In the main configuration tab, the last
+step to perform are:
+
+1. Select *Orekit Checkstyle* as *Active*.
+2. Verify that *Scan Scope* is equal to *Only Java sources (but not tests)*.
+3. The *Checkstyle version* shall be equal to the version used by the project. The current version of checkstyle in 
+   Orekit is available in the [pom.xml](https://gitlab.orekit.org/orekit/orekit/-/blob/master/pom.xml) file.
+
+![properties-checkstyle-intellij](./images/properties-checkstyle-intellij.png)
+
+Press *Apply* and *OK* to finish the installation. The checkstyle is automatically activated.
+
 ## Configure SonarQube
 
 In order for SonarQube to check the quality of your source code, you must

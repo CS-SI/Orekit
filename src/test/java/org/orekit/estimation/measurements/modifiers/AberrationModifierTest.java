@@ -26,6 +26,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataContext;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.AngularRaDec;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
@@ -38,6 +41,7 @@ import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -61,12 +65,23 @@ public class AberrationModifierTest {
         Frame fixedFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
         // Observer
-        GeodeticPoint stationLocation = new GeodeticPoint(Math.toRadians(-31.511673),
-                Math.toRadians(139.343695),
+        GeodeticPoint stationLocation = new GeodeticPoint(FastMath.toRadians(-31.511673),
+                FastMath.toRadians(139.343695),
                 51.8);
         TopocentricFrame stationFrame = new TopocentricFrame(ReferenceEllipsoid.getWgs84(fixedFrame),
                 stationLocation, "station");
         groundStation = new GroundStation(stationFrame);
+
+        // Select parameters and set reference date
+        List<ParameterDriver> parameterDrivers = new ArrayList<>();
+        parameterDrivers.add(groundStation.getPrimeMeridianOffsetDriver());
+        parameterDrivers.add(groundStation.getPolarOffsetXDriver());
+        parameterDrivers.add(groundStation.getPolarOffsetYDriver());
+        for (ParameterDriver driver : parameterDrivers) {
+            driver.setReferenceDate(AbsoluteDate.ARBITRARY_EPOCH);
+            driver.setSelected(true);
+        }
+
     }
 
     @Test
@@ -263,23 +278,8 @@ public class AberrationModifierTest {
         CartesianOrbit orbit = new CartesianOrbit(coordinates, FramesFactory.getGCRF(), epoch, Constants.IERS2010_EARTH_MU);
         SpacecraftState state = new SpacecraftState(orbit);
 
-        // Select parameters and set reference date
-        List<ParameterDriver> parameterDrivers = new ArrayList<>();
-        parameterDrivers.add(groundStation.getPrimeMeridianOffsetDriver());
-        parameterDrivers.add(groundStation.getPolarOffsetXDriver());
-        parameterDrivers.add(groundStation.getPolarOffsetYDriver());
-
-        for (ParameterDriver driver : parameterDrivers) {
-            driver.setReferenceDate(epoch);
-            driver.setSelected(true);
-        }
-
-        // Satellite
-        ObservableSatellite satellite = new ObservableSatellite(0);
-
         // RA/Dec no modifier
-        AngularRaDec raDec = new AngularRaDec(groundStation, FramesFactory.getGCRF(), epoch,
-                new double[]{0.0, 0.0}, new double[]{1.0, 1.0}, new double[]{1.0, 1.0}, satellite);
+        AngularRaDec raDec = defaultRaDec(FramesFactory.getGCRF(), epoch);
 
         // Estimated (no modifier)
         double[] estimatedRaDec = raDec
@@ -287,8 +287,7 @@ public class AberrationModifierTest {
                 .getEstimatedValue();
 
         // RA/Dec with modifier
-        AngularRaDec modifiedRaDec = new AngularRaDec(groundStation, FramesFactory.getGCRF(), epoch,
-                new double[]{0.0, 0.0}, new double[]{1.0, 1.0}, new double[]{1.0, 1.0}, satellite);
+        AngularRaDec modifiedRaDec = defaultRaDec(FramesFactory.getGCRF(), epoch);
         modifiedRaDec.addModifier(new AberrationModifier());
 
         // Estimated value
@@ -301,4 +300,90 @@ public class AberrationModifierTest {
         Assertions.assertArrayEquals(estimatedRaDec, unmodRaDec, 1e-12);
     }
 
+    @Test
+    public void testIssue1230() {
+
+        // Calculate spacecraft state
+        final AbsoluteDate    epoch       = new AbsoluteDate(2022, 11, 9, 3, 15, 18.454, TimeScalesFactory.getUTC());
+        final Frame           frame       = FramesFactory.getGCRF();
+        final Vector3D        position    = new Vector3D(-4350341.308092136, 2.5233509978715107E7, -8187957.452234574);
+        final Vector3D        velocity    = new Vector3D(-2097.9025703889993, -1293.1199759574952, -2928.2553383447744);
+        final PVCoordinates   coordinates = new PVCoordinates(position, velocity);
+        final CartesianOrbit  orbit       = new CartesianOrbit(coordinates, frame, epoch, Constants.IERS2010_EARTH_MU);
+        final SpacecraftState state       = new SpacecraftState(orbit);
+
+        // RA/Dec with modifier
+        final AngularRaDec raDec1 = defaultRaDec(frame, epoch);
+        final AngularRaDec raDec2 = defaultRaDec(frame, epoch);
+
+        // Estimated values
+        final EstimatedMeasurement<AngularRaDec> estimated1 = raDec1.estimate(0, 0, new SpacecraftState[] { state });
+        final EstimatedMeasurement<AngularRaDec> estimated2 = raDec2.estimate(0, 0, new SpacecraftState[] { state });
+
+        // Default data context
+        final DataContext dataContext = DataContext.getDefault();
+
+        // Test after modification
+        new AberrationModifier().modify(estimated1);
+        new AberrationModifier(dataContext).modify(estimated2);
+        Assertions.assertEquals(estimated1.getEstimatedValue()[0], estimated2.getEstimatedValue()[0]);
+        Assertions.assertEquals(estimated1.getEstimatedValue()[1], estimated2.getEstimatedValue()[1]);
+
+        // Apply a second modification to verify the "modifyWithoutDerivatives" signature
+        new AberrationModifier().modifyWithoutDerivatives(estimated1);
+        new AberrationModifier(dataContext).modifyWithoutDerivatives(estimated2);
+        Assertions.assertEquals(estimated1.getEstimatedValue()[0], estimated2.getEstimatedValue()[0]);
+        Assertions.assertEquals(estimated1.getEstimatedValue()[1], estimated2.getEstimatedValue()[1]);
+
+        // Verify "naturalToProper" and "properToNatural" methods
+        final double[] proper1  = AberrationModifier.naturalToProper(raDec1.getObservedValue(), groundStation, epoch, frame);
+        final double[] natural1 = AberrationModifier.properToNatural(proper1, groundStation, epoch, frame);
+        final double[] proper2  = AberrationModifier.naturalToProper(raDec2.getObservedValue(), groundStation, epoch, frame, dataContext);
+        final double[] natural2 = AberrationModifier.properToNatural(proper2, groundStation, epoch, frame, dataContext);
+        Assertions.assertEquals(natural1[0], natural2[0]);
+        Assertions.assertEquals(natural1[1], natural2[1]);
+
+        // Verify Field versions of "naturalToProper" and "properToNatural" methods
+        final Field<Gradient> field = GradientField.getField(6);
+        final Gradient[] raDecG = new Gradient[] { field.getZero().add(raDec1.getObservedValue()[0]),
+                                                   field.getZero().add(raDec1.getObservedValue()[1]) };
+        final FieldTransform<Gradient> stationToInertial =
+                groundStation.getBaseFrame().getTransformTo(frame, new FieldAbsoluteDate<>(field, epoch));
+
+        final Gradient[] proper1G  = AberrationModifier.fieldNaturalToProper(raDecG, stationToInertial, frame);
+        final Gradient[] natural1G = AberrationModifier.fieldProperToNatural(proper1G, stationToInertial, frame);
+        final Gradient[] proper2G  = AberrationModifier.fieldNaturalToProper(raDecG, stationToInertial, frame, dataContext);
+        final Gradient[] natural2G = AberrationModifier.fieldProperToNatural(proper2G, stationToInertial, frame, dataContext);
+
+        Assertions.assertEquals(natural1G[0].getValue(), natural2G[0].getValue());
+        Assertions.assertEquals(natural1G[1].getValue(), natural2G[1].getValue());
+
+    }
+
+    @Test
+    public void testExceptionIfNonInertialFrame() {
+        // GIVEN
+        final AbsoluteDate epoch  = new AbsoluteDate(2022, 11, 9, 3, 15, 18.454, TimeScalesFactory.getUTC());
+        final double[]     raDec1 = new double[] { 1.0, 1.0 };
+        final Frame        itrf   = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+
+        // WHEN & THEN
+        // Assert that an error is thrown
+        final OrekitException exceptionNToP = Assertions.assertThrows(OrekitException.class,
+                                                                      () -> AberrationModifier.naturalToProper(raDec1,
+                                                                                                               groundStation,
+                                                                                                               epoch, itrf));
+        final OrekitException exceptionPToN = Assertions.assertThrows(OrekitException.class,
+                                                                      () -> AberrationModifier.properToNatural(raDec1,
+                                                                                                               groundStation,
+                                                                                                               epoch, itrf));
+        // Assert that the expected kind of error is thrown
+        Assertions.assertEquals(exceptionNToP.getSpecifier(), OrekitMessages.NON_PSEUDO_INERTIAL_FRAME);
+        Assertions.assertEquals(exceptionPToN.getSpecifier(), OrekitMessages.NON_PSEUDO_INERTIAL_FRAME);
+    }
+
+    private static AngularRaDec defaultRaDec(Frame frame, AbsoluteDate date) {
+        return  new AngularRaDec(groundStation, frame, date, new double[]{0.0, 0.0},
+            new double[]{1.0, 1.0}, new double[]{1.0, 1.0}, new ObservableSatellite(0));
+    }
 }

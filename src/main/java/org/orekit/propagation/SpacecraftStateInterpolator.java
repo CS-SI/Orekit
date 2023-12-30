@@ -21,7 +21,6 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeInterpolator;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -103,6 +102,8 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
      * tabulated spacecraft states defined by orbit, will throw an error otherwise.
      *
      * @param outputFrame output frame
+     *
+     * @see AbstractTimeInterpolator
      */
     public SpacecraftStateInterpolator(final Frame outputFrame) {
         this(DEFAULT_INTERPOLATION_POINTS, outputFrame);
@@ -128,6 +129,8 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
      *
      * @param interpolationPoints number of interpolation points
      * @param outputFrame output frame
+     *
+     * @see AbstractTimeInterpolator
      */
     public SpacecraftStateInterpolator(final int interpolationPoints, final Frame outputFrame) {
         this(interpolationPoints, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC, outputFrame, outputFrame);
@@ -153,6 +156,8 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
      * @param interpolationPoints number of interpolation points
      * @param outputFrame output frame
      * @param attitudeReferenceFrame reference frame from which attitude is defined
+     *
+     * @see AbstractTimeInterpolator
      */
     public SpacecraftStateInterpolator(final int interpolationPoints, final Frame outputFrame,
                                        final Frame attitudeReferenceFrame) {
@@ -208,7 +213,8 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
                                        final Frame outputFrame, final Frame attitudeReferenceFrame,
                                        final CartesianDerivativesFilter pvaFilter,
                                        final AngularDerivativesFilter angularFilter) {
-        this(outputFrame, new OrbitHermiteInterpolator(interpolationPoints, extrapolationThreshold, outputFrame, pvaFilter),
+        this(interpolationPoints, extrapolationThreshold, outputFrame,
+             new OrbitHermiteInterpolator(interpolationPoints, extrapolationThreshold, outputFrame, pvaFilter),
              new AbsolutePVCoordinatesHermiteInterpolator(interpolationPoints, extrapolationThreshold, outputFrame,
                                                           pvaFilter),
              new TimeStampedDoubleHermiteInterpolator(interpolationPoints, extrapolationThreshold),
@@ -220,7 +226,11 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
     }
 
     /**
-     * Constructor.
+     * Constructor with:
+     * <ul>
+     *     <li>Default number of interpolation points of {@code DEFAULT_INTERPOLATION_POINTS}</li>
+     *     <li>Default extrapolation threshold of {@code DEFAULT_EXTRAPOLATION_THRESHOLD_SEC} s</li>
+     * </ul>
      * <p>
      * At least one interpolator for either orbit or absolute position-velocity-acceleration is needed. All the other
      * interpolators can be left to null if the user do not want to interpolate these values.
@@ -236,6 +246,8 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
      * @param massInterpolator mass interpolator (can be null)
      * @param attitudeInterpolator attitude interpolator (can be null)
      * @param additionalStateInterpolator additional state interpolator (can be null)
+     *
+     * @see AbstractTimeInterpolator
      */
     public SpacecraftStateInterpolator(final Frame outputFrame, final TimeInterpolator<Orbit> orbitInterpolator,
                                        final TimeInterpolator<AbsolutePVCoordinates> absPVAInterpolator,
@@ -243,6 +255,44 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
                                        final TimeInterpolator<Attitude> attitudeInterpolator,
                                        final TimeInterpolator<TimeStampedDouble> additionalStateInterpolator) {
         super(DEFAULT_INTERPOLATION_POINTS, DEFAULT_EXTRAPOLATION_THRESHOLD_SEC);
+        checkAtLeastOneInterpolator(orbitInterpolator, absPVAInterpolator);
+        this.outputFrame                 = outputFrame;
+        this.orbitInterpolator           = orbitInterpolator;
+        this.absPVAInterpolator          = absPVAInterpolator;
+        this.massInterpolator            = massInterpolator;
+        this.attitudeInterpolator        = attitudeInterpolator;
+        this.additionalStateInterpolator = additionalStateInterpolator;
+    }
+
+    /**
+     * Constructor.
+     * <p>
+     * At least one interpolator for either orbit or absolute position-velocity-acceleration is needed. All the other
+     * interpolators can be left to null if the user do not want to interpolate these values.
+     * <p>
+     * <b>BEWARE:</b> output frame <b>must be inertial</b> if interpolated spacecraft states are defined by orbit. Throws an
+     * error otherwise.
+     * <p>
+     * <b>BEWARE:</b> it is up to the user to check the consistency of input interpolators.
+     *
+     * @param interpolationPoints number of interpolation points
+     * @param extrapolationThreshold extrapolation threshold beyond which the propagation will fail
+     * @param outputFrame output frame (inertial if the user is planning to use the orbit interpolator)
+     * @param orbitInterpolator orbit interpolator (can be null if absPVAInterpolator is defined)
+     * @param absPVAInterpolator absolute position-velocity-acceleration (can be null if orbitInterpolator is defined)
+     * @param massInterpolator mass interpolator (can be null)
+     * @param attitudeInterpolator attitude interpolator (can be null)
+     * @param additionalStateInterpolator additional state interpolator (can be null)
+     *
+     * @since 12.0.1
+     */
+    public SpacecraftStateInterpolator(final int interpolationPoints, final double extrapolationThreshold,
+                                       final Frame outputFrame, final TimeInterpolator<Orbit> orbitInterpolator,
+                                       final TimeInterpolator<AbsolutePVCoordinates> absPVAInterpolator,
+                                       final TimeInterpolator<TimeStampedDouble> massInterpolator,
+                                       final TimeInterpolator<Attitude> attitudeInterpolator,
+                                       final TimeInterpolator<TimeStampedDouble> additionalStateInterpolator) {
+        super(interpolationPoints, extrapolationThreshold);
         checkAtLeastOneInterpolator(orbitInterpolator, absPVAInterpolator);
         this.outputFrame                 = outputFrame;
         this.orbitInterpolator           = orbitInterpolator;
@@ -342,17 +392,6 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
 
         return subInterpolators;
 
-    }
-
-    /**
-     * @return fail to return number of interpolation points used by this interpolator.
-     *
-     * @throws OrekitException because multiple interpolator are defined so the number of interpolation points used may
-     * differ.
-     */
-    @Override
-    public int getNbInterpolationPoints() {
-        throw new OrekitException(OrekitMessages.MULTIPLE_INTERPOLATOR_USED);
     }
 
     /**

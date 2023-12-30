@@ -34,10 +34,12 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.attitudes.FieldAttitude;
+import org.orekit.attitudes.FieldAttitudeInterpolator;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.SingleBodyAbsoluteAttraction;
@@ -47,22 +49,27 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.FieldOrbitHermiteInterpolator;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.AbstractFieldTimeInterpolator;
+import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
+import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStampedField;
+import org.orekit.time.TimeStampedFieldHermiteInterpolator;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
+import org.orekit.utils.FieldAbsolutePVCoordinatesHermiteInterpolator;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 
@@ -266,7 +273,7 @@ class FieldSpacecraftStateInterpolatorTest {
         Binary64 deltaT            = finalDate.durationFrom(initDate).divide(numberOfIntervals);
 
         // Build the list of spacecraft states
-        List<FieldSpacecraftState<Binary64>> states = new ArrayList<FieldSpacecraftState<Binary64>>(numberOfIntervals + 1);
+        List<FieldSpacecraftState<Binary64>> states = new ArrayList<>(numberOfIntervals + 1);
         for (int j = 0; j <= numberOfIntervals; j++) {
             states.add(new FieldSpacecraftState<>(initAbsPV).shiftedBy(deltaT.multiply(j)));
         }
@@ -493,24 +500,55 @@ class FieldSpacecraftStateInterpolatorTest {
     }
 
     @Test
-    void testErrorThrownWhenGettingNbInterpolationPoints() {
+    void testGetNbInterpolationsWithMultipleSubInterpolators() {
         // GIVEN
-        @SuppressWarnings("unchecked")
-        final FieldTimeInterpolator<FieldOrbit<Binary64>, Binary64> orbitInterpolator =
-                Mockito.mock(FieldTimeInterpolator.class);
+        // Create mock interpolators
         final Frame frame = Mockito.mock(Frame.class);
 
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<FieldOrbit<Binary64>, Binary64> orbitInterpolator =
+                Mockito.mock(FieldOrbitHermiteInterpolator.class);
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<FieldAbsolutePVCoordinates<Binary64>, Binary64> absPVAInterpolator =
+                Mockito.mock(FieldAbsolutePVCoordinatesHermiteInterpolator.class);
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<TimeStampedField<Binary64>, Binary64> massInterpolator =
+                Mockito.mock(TimeStampedFieldHermiteInterpolator.class);
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<FieldAttitude<Binary64>, Binary64> attitudeInterpolator =
+                Mockito.mock(FieldAttitudeInterpolator.class);
+        @SuppressWarnings("unchecked")
+        final FieldTimeInterpolator<TimeStampedField<Binary64>, Binary64> additionalStateInterpolator =
+                Mockito.mock(TimeStampedFieldHermiteInterpolator.class);
+
+        // Implement mocks behaviours
+        final int orbitNbInterpolationPoints           = 2;
+        final int absPVANbInterpolationPoints          = 3;
+        final int massNbInterpolationPoints            = 4;
+        final int AttitudeNbInterpolationPoints        = 5;
+        final int AdditionalStateNbInterpolationPoints = 6;
+
+        Mockito.when(orbitInterpolator.getNbInterpolationPoints()).thenReturn(orbitNbInterpolationPoints);
+        Mockito.when(absPVAInterpolator.getNbInterpolationPoints()).thenReturn(absPVANbInterpolationPoints);
+        Mockito.when(massInterpolator.getNbInterpolationPoints()).thenReturn(massNbInterpolationPoints);
+        Mockito.when(attitudeInterpolator.getNbInterpolationPoints()).thenReturn(AttitudeNbInterpolationPoints);
+        Mockito.when(additionalStateInterpolator.getNbInterpolationPoints()).thenReturn(AdditionalStateNbInterpolationPoints);
+
+        Mockito.when(orbitInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(orbitInterpolator));
+        Mockito.when(absPVAInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(absPVAInterpolator));
+        Mockito.when(massInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(massInterpolator));
+        Mockito.when(attitudeInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(attitudeInterpolator));
+        Mockito.when(additionalStateInterpolator.getSubInterpolators()).thenReturn(Collections.singletonList(additionalStateInterpolator));
+
         final FieldSpacecraftStateInterpolator<Binary64> stateInterpolator =
-                new FieldSpacecraftStateInterpolator<>(frame, orbitInterpolator, null, null, null, null);
+                new FieldSpacecraftStateInterpolator<>(frame, orbitInterpolator, absPVAInterpolator, massInterpolator,
+                                                       attitudeInterpolator, additionalStateInterpolator);
 
-        // WHEN & THEN
-        Exception exception = Assertions.assertThrows(OrekitException.class, stateInterpolator::getNbInterpolationPoints);
+        // WHEN
+        final int returnedNbInterpolationPoints = stateInterpolator.getNbInterpolationPoints();
 
-        String expectedMessage = "multiple interpolators are used so they may use different numbers of interpolation points";
-        String actualMessage   = exception.getMessage();
-
-        Assertions.assertTrue(actualMessage.contains(expectedMessage));
-
+        // THEN
+        Assertions.assertEquals(AdditionalStateNbInterpolationPoints, returnedNbInterpolationPoints);
     }
 
     @Test
@@ -640,5 +678,43 @@ class FieldSpacecraftStateInterpolatorTest {
         Assertions.assertEquals(attitudeInterpolatorMock, interpolator.getAttitudeInterpolator().get());
         Assertions.assertEquals(additionalInterpolatorMock, interpolator.getAdditionalStateInterpolator().get());
 
+    }
+
+    @Test
+    @DisplayName("Test error thrown when sub interpolator is not present")
+    void testErrorThrownWhenSubInterpolatorIsNotPresent() {
+        // GIVEN
+        final FakeFieldStateInterpolator fakeStateInterpolator = new FakeFieldStateInterpolator();
+
+        // WHEN & THEN
+        Assertions.assertThrows(OrekitInternalError.class, fakeStateInterpolator::getNbInterpolationPoints);
+    }
+
+    @Test
+    @DisplayName("Test does not throw error when checking interpolator compatibility")
+    void testDoesNotThrowWhenCheckingInterpolatorCompatibility() {
+        // GIVEN
+        final FakeFieldStateInterpolator fakeStateInterpolator = new FakeFieldStateInterpolator();
+
+        // WHEN & THEN
+        Assertions.assertThrows(OrekitInternalError.class, fakeStateInterpolator::getNbInterpolationPoints);
+    }
+
+    private static class FakeFieldStateInterpolator extends AbstractFieldTimeInterpolator<FieldSpacecraftState<Binary64>,Binary64> {
+
+        public FakeFieldStateInterpolator() {
+            super(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                  AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC);
+        }
+
+        @Override
+        public List<FieldTimeInterpolator<? extends FieldTimeStamped<Binary64>, Binary64>> getSubInterpolators() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        protected FieldSpacecraftState<Binary64> interpolate(AbstractFieldTimeInterpolator<FieldSpacecraftState<Binary64>, Binary64>.InterpolationData interpolationData) {
+            return null;
+        }
     }
 }

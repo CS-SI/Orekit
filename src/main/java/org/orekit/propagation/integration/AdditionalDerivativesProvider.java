@@ -79,7 +79,7 @@ public interface AdditionalDerivativesProvider {
      * matrix, it could implement this method as:
      * </p>
      * <pre>{@code
-     * public boolean yield(final SpacecraftState state) {
+     * public boolean yields(final SpacecraftState state) {
      *     return !state.getAdditionalStates().containsKey("STM");
      * }
      * }</pre>
@@ -98,7 +98,7 @@ public interface AdditionalDerivativesProvider {
     /** Compute the derivatives related to the additional state (and optionally main state increments).
      * @param s current state information: date, kinematics, attitude, and
      * additional states this equations depend on (according to the
-     * {@link #yields(SpacecraftState) yield} method)
+     * {@link #yields(SpacecraftState) yields} method)
      * @return computed combined derivatives, which may include some incremental
      * coupling effect to add to main state derivatives
      * @since 11.2
