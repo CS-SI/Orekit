@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -404,7 +404,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 // if propagation start date is not initial date,
                 // propagate from initial to start date without event detection
                 try (IntegratorResetter startResetter = new IntegratorResetter(integrator)) {
-                    integrateDynamics(tStart);
+                    integrateDynamics(tStart, true);
                 }
             }
 
@@ -421,7 +421,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             // propagate from start date to end date with event detection
-            final SpacecraftState finalState = integrateDynamics(tEnd);
+            final SpacecraftState finalState = integrateDynamics(tEnd, false);
 
             return finalState;
 
@@ -438,9 +438,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Propagation with or without event detection.
      * @param tEnd target date to which orbit should be propagated
+     * @param forceResetAtEnd flag to force resetting state and date after integration
      * @return state at end of propagation
      */
-    private SpacecraftState integrateDynamics(final AbsoluteDate tEnd) {
+    private SpacecraftState integrateDynamics(final AbsoluteDate tEnd, final boolean forceResetAtEnd) {
         try {
 
             initializePropagation();
@@ -499,7 +500,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
             finalState = updateAdditionalStates(finalState);
 
-            if (resetAtEnd) {
+            if (resetAtEnd || forceResetAtEnd) {
                 resetInitialState(finalState);
                 setStartDate(finalState.getDate());
             }

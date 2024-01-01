@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -81,7 +81,7 @@ public interface FieldAdditionalDerivativesProvider<T extends CalculusFieldEleme
      * matrix, it could implement this method as:
      * </p>
      * <pre>{@code
-     * public boolean yield(final FieldSpacecraftState<T> state) {
+     * public boolean yields(final FieldSpacecraftState<T> state) {
      *     return !state.getAdditionalStates().containsKey("STM");
      * }
      * }</pre>
@@ -100,7 +100,7 @@ public interface FieldAdditionalDerivativesProvider<T extends CalculusFieldEleme
     /** Compute the derivatives related to the additional state (and optionally main state increments).
      * @param s current state information: date, kinematics, attitude, and
      * additional states this equations depend on (according to the
-     * {@link #yields(FieldSpacecraftState) yield} method)
+     * {@link #yields(FieldSpacecraftState) yields} method)
      * @return computed combined derivatives, which may include some incremental
      * coupling effect to add to main state derivatives
      * @since 11.2
