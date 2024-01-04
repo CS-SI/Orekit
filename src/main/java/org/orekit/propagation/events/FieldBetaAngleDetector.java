@@ -40,7 +40,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * satellite's orbital momentum vector.</p>
  * <p>The default implementation behavior is to {@link Action#STOP stop}
  * propagation at the first event date occurrence. This can be changed by calling
- * {@link #withHandler(FieldEventHandler) after construction.</p>
+ * {@link #withHandler(FieldEventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @param <T> The field type
  * @author Joe Reed
