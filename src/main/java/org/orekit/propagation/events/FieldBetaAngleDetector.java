@@ -35,14 +35,14 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Finder for beta angle crossing events.
  * <p>Locate events when the beta angle (the angle between the orbit plane and the celestial body)
- * crosses a threshold. The {@link #g(SpacecraftState)} function is negative when the beta angle
+ * crosses a threshold. The {@link #g(FieldSpacecraftState)} function is negative when the beta angle
  * is above the threshold and positive when the beta angle is below the threshold.</p>
  * <p>The inertial frame provided must have it's origin centered at the satellite's orbit plane. The
  * beta angle is computed as the angle between the celestial body's position in this frame with the
  * satellite's orbital momentum vector.</p>
  * <p>The default implementation behavior is to {@link Action#STOP stop}
  * propagation at the first event date occurrence. This can be changed by calling
- * {@link #withHandler(EventHandler)} after construction.</p>
+ * {@link #withHandler(FieldEventHandler) after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @param <T> The field type
  * @author Joe Reed
