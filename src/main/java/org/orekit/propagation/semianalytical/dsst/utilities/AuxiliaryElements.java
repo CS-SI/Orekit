@@ -330,25 +330,25 @@ public class AuxiliaryElements {
         return w;
     }
 
-    /** Get direction cosine α for central body.
-     * @return α
-     */
-    public double getAlpha() {
-        return alpha;
-    }
-
-    /** Get direction cosine β for central body.
-     * @return β
-     */
-    public double getBeta() {
-        return beta;
-    }
-
-    /** Get direction cosine γ for central body.
-     * @return γ
-     */
-    public double getGamma() {
-        return gamma;
-    }
+//    /** Get direction cosine α for central body.
+//     * @return α
+//     */
+//    public double getAlpha() {
+//        return alpha;
+//    }
+//
+//    /** Get direction cosine β for central body.
+//     * @return β
+//     */
+//    public double getBeta() {
+//        return beta;
+//    }
+//
+//    /** Get direction cosine γ for central body.
+//     * @return γ
+//     */
+//    public double getGamma() {
+//        return gamma;
+//    }
 
 }

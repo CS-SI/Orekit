@@ -32,7 +32,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class DSSTTesseralContext extends ForceModelContext {
+public class DSSTTesseralContext extends DSSTGravityContext {
 
     /** Retrograde factor I.
      * <p>
@@ -113,7 +113,7 @@ public class DSSTTesseralContext extends ForceModelContext {
                         final double bodyPeriod,
                         final double[] parameters) {
 
-        super(auxiliaryElements);
+        super(auxiliaryElements, centralBodyFrame);
 
         final double mu = parameters[0];
 
@@ -131,9 +131,7 @@ public class DSSTTesseralContext extends ForceModelContext {
         e2 = auxiliaryElements.getEcc() * auxiliaryElements.getEcc();
 
         // Central body rotation angle from equation 2.7.1-(3)(4).
-        final StaticTransform t = centralBodyFrame.getStaticTransformTo(
-                auxiliaryElements.getFrame(),
-                auxiliaryElements.getDate());
+        final StaticTransform t = getCentralBodyToInertialTransform();
         final Vector3D xB = t.transformVector(Vector3D.PLUS_I);
         final Vector3D yB = t.transformVector(Vector3D.PLUS_J);
         theta = FastMath.atan2(-auxiliaryElements.getVectorF().dotProduct(yB) + I * auxiliaryElements.getVectorG().dotProduct(xB),

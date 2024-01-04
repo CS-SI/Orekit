@@ -242,7 +242,7 @@ public class DSSTPropagatorTest {
                                                   FastMath.toRadians(12.0),
                                                   PositionAngleType.TRUE, eci, initialDate, Constants.EIGEN5C_EARTH_MU);
         SpacecraftState oscuState = DSSTPropagator.computeOsculatingState(new SpacecraftState(orbit), null, forces);
-        Assertions.assertEquals(7119927.097122, oscuState.getA(), 0.001);
+        Assertions.assertEquals(7119927.147704, oscuState.getA(), 1.e-6);
     }
 
     @Test
