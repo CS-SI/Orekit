@@ -345,7 +345,7 @@ public enum OrbitType {
             // convert input to proper type
             final CircularOrbit cO = convertType(orbit);
             final CircularOrbit cR = convertType(reference);
-            final PositionAngleType cachedPositionAngle = cR.getCachedPositionAngleType();
+            final PositionAngleType cachedPositionAngleType = cR.getCachedPositionAngleType();
 
             // perform normalization
             if (cO.hasDerivatives()) {
@@ -355,15 +355,15 @@ public enum OrbitType {
                                          cO.getI(),
                                          MathUtils.normalizeAngle(cO.getRightAscensionOfAscendingNode(),
                                                  cR.getRightAscensionOfAscendingNode()),
-                                         MathUtils.normalizeAngle(cO.getAlpha(cachedPositionAngle),
-                                                 cR.getAlpha(cachedPositionAngle)),
+                                         MathUtils.normalizeAngle(cO.getAlpha(cachedPositionAngleType),
+                                                 cR.getAlpha(cachedPositionAngleType)),
                                          cO.getADot(),
                                          cO.getCircularExDot(),
                                          cO.getCircularEyDot(),
                                          cO.getIDot(),
                                          cO.getRightAscensionOfAscendingNodeDot(),
-                                         cO.getAlphaDot(cachedPositionAngle),
-                                         cachedPositionAngle,
+                                         cO.getAlphaDot(cachedPositionAngleType),
+                                         cachedPositionAngleType,
                                          cO.getFrame(),
                                          cO.getDate(),
                                          cO.getMu());
@@ -374,9 +374,9 @@ public enum OrbitType {
                                          cO.getI(),
                                          MathUtils.normalizeAngle(cO.getRightAscensionOfAscendingNode(),
                                                  cR.getRightAscensionOfAscendingNode()),
-                                         MathUtils.normalizeAngle(cO.getAlpha(cachedPositionAngle),
-                                                 cR.getAlpha(cachedPositionAngle)),
-                                         cachedPositionAngle,
+                                         MathUtils.normalizeAngle(cO.getAlpha(cachedPositionAngleType),
+                                                 cR.getAlpha(cachedPositionAngleType)),
+                                         cachedPositionAngleType,
                                          cO.getFrame(),
                                          cO.getDate(),
                                          cO.getMu());
@@ -584,6 +584,7 @@ public enum OrbitType {
             // convert input to proper type
             final EquinoctialOrbit eO = convertType(orbit);
             final EquinoctialOrbit eR = convertType(reference);
+            final PositionAngleType cachedPositionAngleType = eR.getCachedPositionAngleType();
 
             // perform normalization
             if (eO.hasDerivatives()) {
@@ -592,14 +593,15 @@ public enum OrbitType {
                                             eO.getEquinoctialEy(),
                                             eO.getHx(),
                                             eO.getHy(),
-                                            MathUtils.normalizeAngle(eO.getLv(), eR.getLv()),
+                                            MathUtils.normalizeAngle(eO.getL(cachedPositionAngleType),
+                                            eR.getL(cachedPositionAngleType)),
                                             eO.getADot(),
                                             eO.getEquinoctialExDot(),
                                             eO.getEquinoctialEyDot(),
                                             eO.getHxDot(),
                                             eO.getHyDot(),
-                                            eO.getLvDot(),
-                                            PositionAngleType.TRUE,
+                                            eO.getLDot(cachedPositionAngleType),
+                                            cachedPositionAngleType,
                                             eO.getFrame(),
                                             eO.getDate(),
                                             eO.getMu());

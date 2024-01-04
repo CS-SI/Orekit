@@ -765,8 +765,7 @@ public class CircularOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertTrue(bos.size() > 350);
-        Assertions.assertTrue(bos.size() < 400);
+        Assertions.assertEquals(bos.size(), 527);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -806,8 +805,7 @@ public class CircularOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertTrue(bos.size() > 400);
-        Assertions.assertTrue(bos.size() < 450);
+        Assertions.assertEquals(bos.size(), 575);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -858,8 +856,7 @@ public class CircularOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertTrue(bos.size() > 330);
-        Assertions.assertTrue(bos.size() < 380);
+        Assertions.assertEquals(bos.size(), 503);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -1221,6 +1218,7 @@ public class CircularOrbitTest {
             }
         }
     }
+
     @BeforeEach
     public void setUp() {
 
