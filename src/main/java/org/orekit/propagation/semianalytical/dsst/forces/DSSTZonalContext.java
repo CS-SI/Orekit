@@ -18,6 +18,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 
 /**
@@ -29,7 +30,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class DSSTZonalContext extends ForceModelContext {
+public class DSSTZonalContext extends DSSTGravityContext {
 
     // Common factors for potential computation
     /** A = sqrt(μ * a). */
@@ -81,17 +82,20 @@ public class DSSTZonalContext extends ForceModelContext {
     private double BB;
 
     /**
-     * Simple constructor.
+     * Constructor with central body frame potentially different than orbit frame.
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
+     * @param centralBodyFrame rotating body frame
      * @param provider          provider for spherical harmonics
      * @param parameters        values of the force model parameters
+     * @since 12.1
      */
     DSSTZonalContext(final AuxiliaryElements auxiliaryElements,
+                     final Frame centralBodyFrame,
                      final UnnormalizedSphericalHarmonicsProvider provider,
-            final double[] parameters) {
+                     final double[] parameters) {
 
-        super(auxiliaryElements);
+        super(auxiliaryElements, centralBodyFrame);
 
         final double mu = parameters[0];
 

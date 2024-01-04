@@ -475,9 +475,9 @@ public class DSSTTesseral implements DSSTForceModel {
         final UAnddU udu = new UAnddU(spacecraftState.getDate(), context, hansen);
 
         // Compute the cross derivative operator :
-        final double UAlphaGamma   = auxiliaryElements.getAlpha() * udu.getdUdGa() - auxiliaryElements.getGamma() * udu.getdUdAl();
-        final double UAlphaBeta    = auxiliaryElements.getAlpha() * udu.getdUdBe() - auxiliaryElements.getBeta()  * udu.getdUdAl();
-        final double UBetaGamma    = auxiliaryElements.getBeta() * udu.getdUdGa() - auxiliaryElements.getGamma() * udu.getdUdBe();
+        final double UAlphaGamma   = context.getAlpha() * udu.getdUdGa() - context.getGamma() * udu.getdUdAl();
+        final double UAlphaBeta    = context.getAlpha() * udu.getdUdBe() - context.getBeta()  * udu.getdUdAl();
+        final double UBetaGamma    = context.getBeta() * udu.getdUdGa() - context.getGamma() * udu.getdUdBe();
         final double Uhk           = auxiliaryElements.getH() * udu.getdUdk()  - auxiliaryElements.getK() * udu.getdUdh();
         final double pUagmIqUbgoAB = (auxiliaryElements.getP() * UAlphaGamma - I * auxiliaryElements.getQ() * UBetaGamma) * context.getOoAB();
         final double UhkmUabmdUdl  = Uhk - UAlphaBeta - udu.getdUdl();
@@ -889,7 +889,7 @@ public class DSSTTesseral implements DSSTForceModel {
                 // Jacobi l-index from 2.7.1-(15)
                 final int l = FastMath.min(n - m, n - FastMath.abs(s));
                 // Jacobi polynomial and derivative
-                final double[] jacobi = JacobiPolynomials.getValueAndDerivative(l, v, w, auxiliaryElements.getGamma());
+                final double[] jacobi = JacobiPolynomials.getValueAndDerivative(l, v, w, context.getGamma());
 
                 // Geopotential coefficients
                 final double cnm = harmonics.getUnnormalizedCnm(n, m);
@@ -1195,10 +1195,10 @@ public class DSSTTesseral implements DSSTForceModel {
             // Compute only if there is at least one non-resonant tesseral
             if (!nonResOrders.isEmpty() || maxDegreeTesseralSP < 0) {
                 // Gmsj and Hmsj polynomials
-                ghMSJ = new GHmsjPolynomials(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), I);
+                ghMSJ = new GHmsjPolynomials(auxiliaryElements.getK(), auxiliaryElements.getH(), context.getAlpha(), context.getBeta(), I);
 
                 // GAMMAmns function
-                gammaMNS = new GammaMnsFunction(maxDegree, auxiliaryElements.getGamma(), I);
+                gammaMNS = new GammaMnsFunction(maxDegree, context.getGamma(), I);
 
                 final int maxRoaPower = FastMath.max(maxDegreeTesseralSP, maxDegreeMdailyTesseralSP);
 
@@ -1315,12 +1315,12 @@ public class DSSTTesseral implements DSSTForceModel {
             dRdGaSin *=  context.getMoa();
 
             // Compute the cross derivative operator :
-            final double RAlphaGammaCos   = auxiliaryElements.getAlpha() * dRdGaCos - auxiliaryElements.getGamma() * dRdAlCos;
-            final double RAlphaGammaSin   = auxiliaryElements.getAlpha() * dRdGaSin - auxiliaryElements.getGamma() * dRdAlSin;
-            final double RAlphaBetaCos    = auxiliaryElements.getAlpha() * dRdBeCos - auxiliaryElements.getBeta()  * dRdAlCos;
-            final double RAlphaBetaSin    = auxiliaryElements.getAlpha() * dRdBeSin - auxiliaryElements.getBeta()  * dRdAlSin;
-            final double RBetaGammaCos    =  auxiliaryElements.getBeta() * dRdGaCos - auxiliaryElements.getGamma() * dRdBeCos;
-            final double RBetaGammaSin    =  auxiliaryElements.getBeta() * dRdGaSin - auxiliaryElements.getGamma() * dRdBeSin;
+            final double RAlphaGammaCos   = context.getAlpha() * dRdGaCos - context.getGamma() * dRdAlCos;
+            final double RAlphaGammaSin   = context.getAlpha() * dRdGaSin - context.getGamma() * dRdAlSin;
+            final double RAlphaBetaCos    = context.getAlpha() * dRdBeCos - context.getBeta()  * dRdAlCos;
+            final double RAlphaBetaSin    = context.getAlpha() * dRdBeSin - context.getBeta()  * dRdAlSin;
+            final double RBetaGammaCos    =  context.getBeta() * dRdGaCos - context.getGamma() * dRdBeCos;
+            final double RBetaGammaSin    =  context.getBeta() * dRdGaSin - context.getGamma() * dRdBeSin;
             final double RhkCos           =     auxiliaryElements.getH() * dRdkCos  -     auxiliaryElements.getK() * dRdhCos;
             final double RhkSin           =     auxiliaryElements.getH() * dRdkSin  -     auxiliaryElements.getK() * dRdhSin;
             final double pRagmIqRbgoABCos = (auxiliaryElements.getP() * RAlphaGammaCos - I * auxiliaryElements.getQ() * RBetaGammaCos) * context.getOoAB();
@@ -2325,10 +2325,10 @@ public class DSSTTesseral implements DSSTForceModel {
             // Compute only if there is at least one resonant tesseral
             if (!resOrders.isEmpty()) {
                 // Gmsj and Hmsj polynomials
-                final GHmsjPolynomials ghMSJ = new GHmsjPolynomials(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), I);
+                final GHmsjPolynomials ghMSJ = new GHmsjPolynomials(auxiliaryElements.getK(), auxiliaryElements.getH(), context.getAlpha(), context.getBeta(), I);
 
                 // GAMMAmns function
-                final GammaMnsFunction gammaMNS = new GammaMnsFunction(maxDegree, auxiliaryElements.getGamma(), I);
+                final GammaMnsFunction gammaMNS = new GammaMnsFunction(maxDegree, context.getGamma(), I);
 
                 // R / a up to power degree
                 final double[] roaPow = new double[maxDegree + 1];

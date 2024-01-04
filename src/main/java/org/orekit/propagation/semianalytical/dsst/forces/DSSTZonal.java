@@ -29,6 +29,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
+import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -111,6 +112,9 @@ public class DSSTZonal implements DSSTForceModel {
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
 
+    /** Central body rotating frame. */
+    private final Frame bodyFrame;
+
     /** Maximal degree to consider for harmonics potential. */
     private final int maxDegree;
 
@@ -155,14 +159,42 @@ public class DSSTZonal implements DSSTForceModel {
      *         This parameter should not exceed 4 as higher values will exceed computer capacity </li>
      *    <li> {@link #maxFrequencyShortPeriodics} is set to {@code 2 * provider.getMaxDegree() + 1} </li>
      * </ul>
+     * @param centralBodyFrame rotating body frame
+     * @param provider provider for spherical harmonics
+     * @since 12.1
+     */
+    public DSSTZonal(final Frame centralBodyFrame, final UnnormalizedSphericalHarmonicsProvider provider) {
+        this(centralBodyFrame, provider, provider.getMaxDegree(), FastMath.min(4, provider.getMaxDegree() - 1), 2 * provider.getMaxDegree() + 1);
+    }
+
+    /**
+     * Constructor with centralBodyFrame = orbit frame, and default reference values.
+     * <p>
+     * Added for retro-compatibility with anterior versions for initialization.
+     * <p>
+     * Setting centralBodyFrame to null will lead to large errors if the orbit frame is far from Earth rotating frame (GCRF, EME2000...).
+     * The error gets smaller as the orbit frame gets closer to Earth rotating frame (MOD, then TOD).
+     * <p>
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1104">issue-1104 on the forge</a>
+     * <p>
+     * When this constructor is used, maximum allowed values are used
+     * for the short periodic coefficients:
+     * </p>
+     * <ul>
+     *    <li> {@link #maxDegreeShortPeriodics} is set to {@code provider.getMaxDegree()} </li>
+     *    <li> {@link #maxEccPowShortPeriodics} is set to {@code min(provider.getMaxDegree() - 1, 4)}.
+     *         This parameter should not exceed 4 as higher values will exceed computer capacity </li>
+     *    <li> {@link #maxFrequencyShortPeriodics} is set to {@code 2 * provider.getMaxDegree() + 1} </li>
+     * </ul>
      * @param provider provider for spherical harmonics
      * @since 10.1
      */
     public DSSTZonal(final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(provider, provider.getMaxDegree(), FastMath.min(4, provider.getMaxDegree() - 1), 2 * provider.getMaxDegree() + 1);
+        this(null, provider);
     }
 
-    /** Simple constructor.
+    /** Constructor.
+     * @param centralBodyFrame rotating body frame
      * @param provider provider for spherical harmonics
      * @param maxDegreeShortPeriodics maximum degree to consider for short periodics zonal harmonics potential
      * (must be between 2 and {@code provider.getMaxDegree()})
@@ -171,9 +203,10 @@ public class DSSTZonal implements DSSTForceModel {
      * values will exceed computer capacity)
      * @param maxFrequencyShortPeriodics maximum frequency in true longitude for short periodic computations
      * (must be between 1 and {@code 2 * maxDegreeShortPeriodics + 1})
-     * @since 7.2
+     * @since 12.1
      */
-    public DSSTZonal(final UnnormalizedSphericalHarmonicsProvider provider,
+    public DSSTZonal(final Frame centralBodyFrame,
+                     final UnnormalizedSphericalHarmonicsProvider provider,
                      final int maxDegreeShortPeriodics,
                      final int maxEccPowShortPeriodics,
                      final int maxFrequencyShortPeriodics) {
@@ -181,6 +214,9 @@ public class DSSTZonal implements DSSTForceModel {
         gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                 provider.getMu(), MU_SCALE,
                                                 0.0, Double.POSITIVE_INFINITY);
+
+        // Central body rotating frame
+        this.bodyFrame = centralBodyFrame;
 
         // Vns coefficients
         this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
@@ -202,7 +238,33 @@ public class DSSTZonal implements DSSTForceModel {
 
         zonalFieldSPCoefs = new HashMap<>();
         fieldHansen       = new HashMap<>();
+    }
 
+    /**
+     * Constructor with centralBodyFrame = orbit frame.
+     * <p>
+     * Added for retro-compatibility with anterior versions for initialization.
+     * <p>
+     * Setting centralBodyFrame to null will lead to large errors if the orbit frame is far from Earth rotating frame (GCRF, EME2000...).
+     * The error gets smaller as the orbit frame gets closer to Earth rotating frame (MOD, then TOD).
+     * <p>
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1104">issue-1104 on the forge</a>
+     * <p>
+     * @param provider provider for spherical harmonics
+     * @param maxDegreeShortPeriodics maximum degree to consider for short periodics zonal harmonics potential
+     * (must be between 2 and {@code provider.getMaxDegree()})
+     * @param maxEccPowShortPeriodics maximum power of the eccentricity to be used in short periodic computations
+     * (must be between 0 and {@code maxDegreeShortPeriodics - 1}, but should typically not exceed 4 as higher
+     * values will exceed computer capacity)
+     * @param maxFrequencyShortPeriodics maximum frequency in true longitude for short periodic computations
+     * (must be between 1 and {@code 2 * maxDegreeShortPeriodics + 1})
+     * @since 7.2
+     */
+    public DSSTZonal(final UnnormalizedSphericalHarmonicsProvider provider,
+                     final int maxDegreeShortPeriodics,
+                     final int maxEccPowShortPeriodics,
+                     final int maxFrequencyShortPeriodics) {
+        this(null, provider, maxDegreeShortPeriodics, maxEccPowShortPeriodics, maxFrequencyShortPeriodics);
     }
 
     /** Check an index range.
@@ -313,7 +375,7 @@ public class DSSTZonal implements DSSTForceModel {
      */
     private void computeMeanElementsTruncations(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
-        final DSSTZonalContext context = new DSSTZonalContext(auxiliaryElements, provider, parameters);
+        final DSSTZonalContext context = new DSSTZonalContext(auxiliaryElements, bodyFrame, provider, parameters);
         //Compute the max eccentricity power for the mean element rate expansion
         if (maxDegree == 2) {
             maxEccPowMeanElements = 0;
@@ -370,12 +432,12 @@ public class DSSTZonal implements DSSTForceModel {
                                     (CombinatoricsUtils.factorialDouble(maxDeg - l) / (CombinatoricsUtils.factorialDouble(maxDeg - m))) *
                                     (CombinatoricsUtils.factorialDouble(maxDeg + l) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l))) *
                                     eccPwr[l] * UpperBounds.getDnl(context.getXX(), chiPwr[l], maxDeg, l) *
-                                    (UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, l, m, 1, I) + UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, l, m, -1, I));
+                                    (UpperBounds.getRnml(context.getGamma(), maxDeg, l, m, 1, I) + UpperBounds.getRnml(context.getGamma(), maxDeg, l, m, -1, I));
                         } else {
                             term =  csnm * xmuran *
                                     (CombinatoricsUtils.factorialDouble(maxDeg + m) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l))) *
                                     eccPwr[l] * hafPwr[m - l] * UpperBounds.getDnl(context.getXX(), chiPwr[l], maxDeg, l) *
-                                    (UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, m, l, 1, I) + UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, m, l, -1, I));
+                                    (UpperBounds.getRnml(context.getGamma(), maxDeg, m, l, 1, I) + UpperBounds.getRnml(context.getGamma(), maxDeg, m, l, -1, I));
                         }
                         // Is the current spherical harmonic term bigger than the truncation tolerance ?
                         if (term >= TRUNCATION_TOLERANCE) {
@@ -523,7 +585,7 @@ public class DSSTZonal implements DSSTForceModel {
      *  @return new force model context
      */
     private DSSTZonalContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
-        return new DSSTZonalContext(auxiliaryElements, provider, parameters);
+        return new DSSTZonalContext(auxiliaryElements, bodyFrame, provider, parameters);
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -589,9 +651,9 @@ public class DSSTZonal implements DSSTForceModel {
 
         // Compute cross derivatives [Eq. 2.2-(8)]
         // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
-        final double UAlphaGamma   = auxiliaryElements.getAlpha() * udu.getdUdGa() - auxiliaryElements.getGamma() * udu.getdUdAl();
+        final double UAlphaGamma   = context.getAlpha() * udu.getdUdGa() - context.getGamma() * udu.getdUdAl();
         // U(beta,gamma) = beta * dU/dgamma - gamma * dU/dbeta
-        final double UBetaGamma    =  auxiliaryElements.getBeta() * udu.getdUdGa() - auxiliaryElements.getGamma() * udu.getdUdBe();
+        final double UBetaGamma    =  context.getBeta() * udu.getdUdGa() - context.getGamma() * udu.getdUdBe();
         // Common factor
         final double pUAGmIqUBGoAB = (auxiliaryElements.getP() * UAlphaGamma - I * auxiliaryElements.getQ() * UBetaGamma) * context.getOoAB();
 
@@ -1004,19 +1066,19 @@ public class DSSTZonal implements DSSTForceModel {
             if (isBetween(j, 1, 2 * nMax - 1) && j < cjsj.jMax) {
                 // Compute cross derivatives
                 // Cj(alpha,gamma) = alpha * dC/dgamma - gamma * dC/dalpha
-                final double CjAlphaGamma   = auxiliaryElements.getAlpha() * cjsj.getdCjdGamma(j) - auxiliaryElements.getGamma() * cjsj.getdCjdAlpha(j);
+                final double CjAlphaGamma   = context.getAlpha() * cjsj.getdCjdGamma(j) - context.getGamma() * cjsj.getdCjdAlpha(j);
                 // Cj(alpha,beta) = alpha * dC/dbeta - beta * dC/dalpha
-                final double CjAlphaBeta   = auxiliaryElements.getAlpha() * cjsj.getdCjdBeta(j) - auxiliaryElements.getBeta() * cjsj.getdCjdAlpha(j);
+                final double CjAlphaBeta   = context.getAlpha() * cjsj.getdCjdBeta(j) - context.getBeta() * cjsj.getdCjdAlpha(j);
                 // Cj(beta,gamma) = beta * dC/dgamma - gamma * dC/dbeta
-                final double CjBetaGamma    =  auxiliaryElements.getBeta() * cjsj.getdCjdGamma(j) - auxiliaryElements.getGamma() * cjsj.getdCjdBeta(j);
+                final double CjBetaGamma    =  context.getBeta() * cjsj.getdCjdGamma(j) - context.getGamma() * cjsj.getdCjdBeta(j);
                 // Cj(h,k) = h * dC/dk - k * dC/dh
                 final double CjHK   = auxiliaryElements.getH() * cjsj.getdCjdK(j) - auxiliaryElements.getK() * cjsj.getdCjdH(j);
                 // Sj(alpha,gamma) = alpha * dS/dgamma - gamma * dS/dalpha
-                final double SjAlphaGamma   = auxiliaryElements.getAlpha() * cjsj.getdSjdGamma(j) - auxiliaryElements.getGamma() * cjsj.getdSjdAlpha(j);
+                final double SjAlphaGamma   = context.getAlpha() * cjsj.getdSjdGamma(j) - context.getGamma() * cjsj.getdSjdAlpha(j);
                 // Sj(alpha,beta) = alpha * dS/dbeta - beta * dS/dalpha
-                final double SjAlphaBeta   = auxiliaryElements.getAlpha() * cjsj.getdSjdBeta(j) - auxiliaryElements.getBeta() * cjsj.getdSjdAlpha(j);
+                final double SjAlphaBeta   = context.getAlpha() * cjsj.getdSjdBeta(j) - context.getBeta() * cjsj.getdSjdAlpha(j);
                 // Sj(beta,gamma) = beta * dS/dgamma - gamma * dS/dbeta
-                final double SjBetaGamma    =  auxiliaryElements.getBeta() * cjsj.getdSjdGamma(j) - auxiliaryElements.getGamma() * cjsj.getdSjdBeta(j);
+                final double SjBetaGamma    =  context.getBeta() * cjsj.getdSjdGamma(j) - context.getGamma() * cjsj.getdSjdBeta(j);
                 // Sj(h,k) = h * dS/dk - k * dS/dh
                 final double SjHK   = auxiliaryElements.getH() * cjsj.getdSjdK(j) - auxiliaryElements.getK() * cjsj.getdSjdH(j);
 
@@ -1770,9 +1832,9 @@ public class DSSTZonal implements DSSTForceModel {
 
             final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
-            this.ghijCoef = new GHIJjsPolynomials(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta());
+            this.ghijCoef = new GHIJjsPolynomials(auxiliaryElements.getK(), auxiliaryElements.getH(), context.getAlpha(), context.getBeta());
             // Qns coefficients
-            final double[][] Qns  = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), nMax, nMax);
+            final double[][] Qns  = CoefficientsFactory.computeQns(context.getGamma(), nMax, nMax);
 
             this.lnsCoef = new LnsCoefficients(nMax, nMax, Qns, Vns, context.getRoa());
             this.nMax = nMax;
@@ -3505,9 +3567,9 @@ public class DSSTZonal implements DSSTForceModel {
             U = 0.;
 
             // Gs and Hs coefficients
-            final double[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), maxEccPowMeanElements);
+            final double[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), context.getAlpha(), context.getBeta(), maxEccPowMeanElements);
             // Qns coefficients
-            final double[][] Qns  = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), maxDegree, maxEccPowMeanElements);
+            final double[][] Qns  = CoefficientsFactory.computeQns(context.getGamma(), maxDegree, maxEccPowMeanElements);
 
             final double[] roaPow = new double[maxDegree + 1];
             roaPow[0] = 1.;
@@ -3540,8 +3602,8 @@ public class DSSTZonal implements DSSTForceModel {
                     final double sxgsm1 = s * GsHs[0][s - 1];
                     final double sxhsm1 = s * GsHs[1][s - 1];
                     // Then compute derivatives
-                    dGsdh  = auxiliaryElements.getBeta()  * sxgsm1 - auxiliaryElements.getAlpha() * sxhsm1;
-                    dGsdk  = auxiliaryElements.getAlpha() * sxgsm1 + auxiliaryElements.getBeta()  * sxhsm1;
+                    dGsdh  = context.getBeta()  * sxgsm1 - context.getAlpha() * sxhsm1;
+                    dGsdk  = context.getAlpha() * sxgsm1 + context.getBeta()  * sxhsm1;
                     dGsdAl = auxiliaryElements.getK() * sxgsm1 - auxiliaryElements.getH() * sxhsm1;
                     dGsdBe = auxiliaryElements.getH() * sxgsm1 + auxiliaryElements.getK() * sxhsm1;
                 }
