@@ -64,7 +64,7 @@ abstract class GridEntry {
     }
 
     /** Build a new entry 360° to the East of instance.
-     * @return new wrapping entry
+     * @return new wrapping entry (always same type as instance)
      */
     public abstract GridEntry buildWrappedEntry();
 

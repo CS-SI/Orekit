@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
 /** Container for a complete grid.
+ * @param <G> type 
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 12.1
