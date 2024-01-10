@@ -177,21 +177,25 @@ public class LazyLoadedTimeScales extends AbstractTimeScales {
 
         UTCScale refUtc = utc.get();
         if (refUtc == null) {
-            List<OffsetModel> entries = Collections.emptyList();
-            if (loaders.isEmpty()) {
-                addDefaultUTCTAIOffsetsLoaders();
-            }
-            for (UTCTAIOffsetsLoader loader : loaders) {
-                entries = loader.loadOffsets();
-                if (!entries.isEmpty()) {
-                    break;
+            synchronized (this) {
+                if (utc.get() == null) { // Check if utc was not loaded in the meantime
+                    List<OffsetModel> entries = Collections.emptyList();
+                    if (loaders.isEmpty()) {
+                        addDefaultUTCTAIOffsetsLoaders();
+                    }
+                    for (UTCTAIOffsetsLoader loader : loaders) {
+                        entries = loader.loadOffsets();
+                        if (!entries.isEmpty()) {
+                            break;
+                        }
+                    }
+                    if (entries.isEmpty()) {
+                        throw new OrekitException(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED);
+                    }
+                    utc.compareAndSet(null, new UTCScale(getTAI(), entries));
                 }
+                refUtc = utc.get();
             }
-            if (entries.isEmpty()) {
-                throw new OrekitException(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED);
-            }
-            utc.compareAndSet(null, new UTCScale(getTAI(), entries));
-            refUtc = utc.get();
         }
 
         return refUtc;
