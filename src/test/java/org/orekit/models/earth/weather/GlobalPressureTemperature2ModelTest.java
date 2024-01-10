@@ -39,7 +39,7 @@ public class GlobalPressureTemperature2ModelTest {
     @Test
     public void testWeatherParameters() {
 
-        Utils.setDataRoot("regular-data:potential:gpt2-grid");
+        Utils.setDataRoot("regular-data:potential:gpt-grid");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         // Site Vienna: latitude:  48.20°N
@@ -85,7 +85,7 @@ public class GlobalPressureTemperature2ModelTest {
     @Test
     public void testEquality() {
 
-        Utils.setDataRoot("regular-data:potential:gpt2-grid");
+        Utils.setDataRoot("regular-data:potential:gpt-grid");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         // Commons parameters
@@ -155,7 +155,7 @@ public class GlobalPressureTemperature2ModelTest {
     @Test
     public void testCorruptedFileBadData() {
 
-        Utils.setDataRoot("regular-data:potential:gpt2-grid");
+        Utils.setDataRoot("regular-data:potential:gpt-grid");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         final double latitude  = FastMath.toRadians(14.0);
@@ -180,7 +180,7 @@ public class GlobalPressureTemperature2ModelTest {
     @Test
     public void testCorruptedIrregularGrid() {
 
-        Utils.setDataRoot("regular-data:potential:gpt2-grid");
+        Utils.setDataRoot("regular-data:potential:gpt-grid");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         final double latitude  = FastMath.toRadians(14.0);

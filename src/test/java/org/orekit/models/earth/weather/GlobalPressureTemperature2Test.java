@@ -65,7 +65,7 @@ public class GlobalPressureTemperature2Test {
         final double longitude = FastMath.toRadians(16.37);
         final double height    = 156.0;
         final AbsoluteDate date = AbsoluteDate.createMJDDate(56141, 0.0, TimeScalesFactory.getUTC());
-        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt2-grid/gpt2_5_extract.grd");
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/gpt2_5_extract.grd");
         final GlobalPressureTemperature2 model =
                         new GlobalPressureTemperature2(new DataSource(url.toURI()),
                                                        TimeScalesFactory.getUTC());
@@ -93,7 +93,7 @@ public class GlobalPressureTemperature2Test {
         final double latitude   = FastMath.toRadians(45.0);
         final double height     = 0.0;
 
-        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt2-grid/gpt2_15.grd");
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/gpt2_15.grd");
         GlobalPressureTemperature2 model = new GlobalPressureTemperature2(new DataSource(url.toURI()),
                                                                           TimeScalesFactory.getUTC());
 
@@ -148,7 +148,7 @@ public class GlobalPressureTemperature2Test {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         final String fileName = "corrupted-bad-data-gpt2_5.grd";
-        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt2-grid/" + fileName);
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
             new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
             Assertions.fail("An exception should have been thrown");
@@ -167,7 +167,7 @@ public class GlobalPressureTemperature2Test {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         final String fileName = "corrupted-irregular-grid-gpt2_5.grd";
-        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt2-grid/" + fileName);
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
             new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
             Assertions.fail("An exception should have been thrown");
