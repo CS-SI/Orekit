@@ -43,7 +43,7 @@ import org.orekit.utils.Constants;
  * Department of Geodesy and Geoinformation of the Vienna University. They are based on an
  * external grid file like "gpt2_1.grd" (1° x 1°), "gpt2_5.grd" (5° x 5°), "gpt2_1w.grd" (1° x 1°),
  * "gpt2_5w.grd" (5° x 5°), "gpt3_1.grd" (1° x 1°), or "gpt3_5.grd" (5° x 5°) available at:
- * <a href="http://vmf.geo.tuwien.ac.at/codes/"> link</a>
+ * <a href="https://vmf.geo.tuwien.ac.at/codes/"> link</a>
  * </p>
  * <p>
  * A bilinear interpolation is performed in order to obtained the correct values of the weather parameters.
@@ -68,12 +68,11 @@ import org.orekit.utils.Constants;
  * GPT2: empirical slant delay model for radio space geodetic techniques. Geophys
  * Res Lett 40(6):1069–1073. doi:10.1002/grl.50288"
  *
- * @param <G> type of the grid elements
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class AbstractGlobalPressureTemperature<G extends Grid2Entry>
+public class AbstractGlobalPressureTemperature
     implements ViennaAProvider, PressureTemperatureHumidityProvider {
 
     /** Standard gravity constant [m/s²]. */
@@ -83,7 +82,7 @@ public class AbstractGlobalPressureTemperature<G extends Grid2Entry>
     private static final double R = 287.0;
 
     /** Loaded grid. */
-    private final Grid<G> grid;
+    private final Grid grid;
 
     /** UTC time scale. */
     private final TimeScale utc;
@@ -92,19 +91,19 @@ public class AbstractGlobalPressureTemperature<G extends Grid2Entry>
      * Constructor with supported names and source of GPT2 auxiliary data given by user.
      *
      * @param source grid data source
-     * @param parser grid parser
      * @param utc UTC time scale.
+     * @param expected expected seasonal models types
      * @exception IOException if grid data cannot be read
      */
-    protected AbstractGlobalPressureTemperature(final DataSource source,
-                                                final AbstractGptParser<G> parser,
-                                                final TimeScale utc)
+    protected AbstractGlobalPressureTemperature(final DataSource source, final TimeScale utc,
+                                                final SeasonalModelType... expected)
         throws IOException {
         this.utc = utc;
 
         // load the grid data
-        try (InputStream         is  = source.getOpener().openStreamOnce();
-             BufferedInputStream bis = new BufferedInputStream(is)) {
+        try (InputStream         is     = source.getOpener().openStreamOnce();
+             BufferedInputStream bis    = new BufferedInputStream(is)) {
+            final GptNParser     parser = new GptNParser(expected);
             parser.loadData(bis, source.getName());
             grid = parser.getGrid();
         }
@@ -119,7 +118,7 @@ public class AbstractGlobalPressureTemperature<G extends Grid2Entry>
      * @deprecated as of 12.1 used only by {@link GlobalPressureTemperature2Model}
      */
     @Deprecated
-    protected AbstractGlobalPressureTemperature(final Grid<G> grid, final TimeScale utc) {
+    protected AbstractGlobalPressureTemperature(final Grid grid, final TimeScale utc) {
         this.grid = grid;
         this.utc  = utc;
     }
@@ -128,12 +127,12 @@ public class AbstractGlobalPressureTemperature<G extends Grid2Entry>
     @Override
     public ViennaACoefficients getA(final GeodeticPoint location, final AbsoluteDate date) {
 
-        final CellInterpolator<G> interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
+        final CellInterpolator interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
         final int dayOfYear = date.getComponents(utc).getDate().getDayOfYear();
 
         // ah and aw coefficients
-        return new ViennaACoefficients(interpolator.interpolate(e -> e.getAh().evaluate(dayOfYear)) * 0.001,
-                                       interpolator.interpolate(e -> e.getAw().evaluate(dayOfYear)) * 0.001);
+        return new ViennaACoefficients(interpolator.interpolate(e -> e.getModel(SeasonalModelType.AH).evaluate(dayOfYear)) * 0.001,
+                                       interpolator.interpolate(e -> e.getModel(SeasonalModelType.AW).evaluate(dayOfYear)) * 0.001);
 
     }
 
@@ -141,7 +140,7 @@ public class AbstractGlobalPressureTemperature<G extends Grid2Entry>
     @Override
     public PressureTemperatureHumidity getWeatherParamerers(final GeodeticPoint location, final AbsoluteDate date) {
 
-        final CellInterpolator<G> interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
+        final CellInterpolator interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
         final int dayOfYear = date.getComponents(utc).getDate().getDayOfYear();
 
         // Corrected height (can be negative)
@@ -149,20 +148,20 @@ public class AbstractGlobalPressureTemperature<G extends Grid2Entry>
         final double correctedheight = location.getAltitude() - undu - interpolator.interpolate(e -> e.getHs());
 
         // Temperature gradient [K/m]
-        final double dTdH = interpolator.interpolate(e -> e.getDt().evaluate(dayOfYear)) * 0.001;
+        final double dTdH = interpolator.interpolate(e -> e.getModel(SeasonalModelType.DT).evaluate(dayOfYear)) * 0.001;
 
         // Specific humidity
-        final double qv = interpolator.interpolate(e -> e.getQv0().evaluate(dayOfYear)) * 0.001;
+        final double qv = interpolator.interpolate(e -> e.getModel(SeasonalModelType.QV).evaluate(dayOfYear)) * 0.001;
 
         // For the computation of the temperature and the pressure, we use
         // the standard ICAO atmosphere formulas.
 
         // Temperature [K]
-        final double t0 = interpolator.interpolate(e -> e.getTemperature0().evaluate(dayOfYear));
+        final double t0 = interpolator.interpolate(e -> e.getModel(SeasonalModelType.TEMPERATURE).evaluate(dayOfYear));
         final double temperature = t0 + dTdH * correctedheight;
 
         // Pressure [hPa]
-        final double p0       = interpolator.interpolate(e -> e.getPressure0().evaluate(dayOfYear));
+        final double p0       = interpolator.interpolate(e -> e.getModel(SeasonalModelType.PRESSURE).evaluate(dayOfYear));
         final double exponent = G / (dTdH * R);
         final double pressure = p0 * FastMath.pow(1 - (dTdH / t0) * correctedheight, exponent) * 0.01;
 
@@ -183,12 +182,12 @@ public class AbstractGlobalPressureTemperature<G extends Grid2Entry>
     public <T extends CalculusFieldElement<T>> FieldViennaACoefficients<T> getA(final FieldGeodeticPoint<T> location,
                                                                                 final FieldAbsoluteDate<T> date) {
 
-        final FieldCellInterpolator<T, G> interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
+        final FieldCellInterpolator<T> interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
         final int dayOfYear = date.getComponents(utc).getDate().getDayOfYear();
 
         // ah and aw coefficients
-        return new FieldViennaACoefficients<>(interpolator.interpolate(e -> e.getAh().evaluate(dayOfYear)).multiply(0.001),
-                                              interpolator.interpolate(e -> e.getAw().evaluate(dayOfYear)).multiply(0.001));
+        return new FieldViennaACoefficients<>(interpolator.interpolate(e -> e.getModel(SeasonalModelType.AH).evaluate(dayOfYear)).multiply(0.001),
+                                              interpolator.interpolate(e -> e.getModel(SeasonalModelType.AW).evaluate(dayOfYear)).multiply(0.001));
 
     }
 
@@ -197,7 +196,7 @@ public class AbstractGlobalPressureTemperature<G extends Grid2Entry>
     public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getWeatherParamerers(final FieldGeodeticPoint<T> location,
                                                                                                         final FieldAbsoluteDate<T> date) {
 
-        final FieldCellInterpolator<T, G> interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
+        final FieldCellInterpolator<T> interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
         final int dayOfYear = date.getComponents(utc).getDate().getDayOfYear();
 
         // Corrected height (can be negative)
@@ -205,20 +204,20 @@ public class AbstractGlobalPressureTemperature<G extends Grid2Entry>
         final T correctedheight = location.getAltitude().subtract(undu).subtract(interpolator.interpolate(e -> e.getHs()));
 
         // Temperature gradient [K/m]
-        final T dTdH = interpolator.interpolate(e -> e.getDt().evaluate(dayOfYear)).multiply(0.001);
+        final T dTdH = interpolator.interpolate(e -> e.getModel(SeasonalModelType.DT).evaluate(dayOfYear)).multiply(0.001);
 
         // Specific humidity
-        final T qv = interpolator.interpolate(e -> e.getQv0().evaluate(dayOfYear)).multiply(0.001);
+        final T qv = interpolator.interpolate(e -> e.getModel(SeasonalModelType.QV).evaluate(dayOfYear)).multiply(0.001);
 
         // For the computation of the temperature and the pressure, we use
         // the standard ICAO atmosphere formulas.
 
         // Temperature [K]
-        final T t0 = interpolator.interpolate(e -> e.getTemperature0().evaluate(dayOfYear));
+        final T t0 = interpolator.interpolate(e -> e.getModel(SeasonalModelType.TEMPERATURE).evaluate(dayOfYear));
         final T temperature = correctedheight.multiply(dTdH).add(t0);
 
         // Pressure [hPa]
-        final T p0       = interpolator.interpolate(e -> e.getPressure0().evaluate(dayOfYear));
+        final T p0       = interpolator.interpolate(e -> e.getModel(SeasonalModelType.PRESSURE).evaluate(dayOfYear));
         final T exponent = dTdH.multiply(R).reciprocal().multiply(G);
         final T pressure = FastMath.pow(correctedheight.multiply(dTdH.negate().divide(t0)).add(1), exponent).multiply(p0.multiply(0.001));
 

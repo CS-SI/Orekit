@@ -18,18 +18,15 @@ package org.orekit.models.earth.weather;
 
 import java.io.IOException;
 
-import org.hipparchus.util.FastMath;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DataSource;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.time.TimeScale;
 
 /** The Global Pressure and Temperature 2 (GPT2) model.
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class GlobalPressureTemperature2 extends AbstractGlobalPressureTemperature<Grid2Entry> {
+public class GlobalPressureTemperature2 extends AbstractGlobalPressureTemperature {
 
     /**
      * Constructor with supported names and source of GPT2 auxiliary data given by user.
@@ -40,7 +37,13 @@ public class GlobalPressureTemperature2 extends AbstractGlobalPressureTemperatur
      */
     public GlobalPressureTemperature2(final DataSource source, final TimeScale utc)
         throws IOException {
-        super(source, new GPT2Parser(), utc);
+        super(source, utc,
+              SeasonalModelType.PRESSURE,
+              SeasonalModelType.TEMPERATURE,
+              SeasonalModelType.QV,
+              SeasonalModelType.DT,
+              SeasonalModelType.AH,
+              SeasonalModelType.AW);
     }
 
     /**
@@ -62,46 +65,20 @@ public class GlobalPressureTemperature2 extends AbstractGlobalPressureTemperatur
      *
      * @param supportedNames supported names
      * @param dataProvidersManager provides access to auxiliary data.
+     * @return built grid
      * @deprecated as of 12.1 used only by {@link GlobalPressureTemperature2Model}
      */
     @Deprecated
-    private static Grid<Grid2Entry> buildGrid(final String supportedNames,
-                                              final DataProvidersManager dataProvidersManager) {
-        final GPT2Parser parser = new GPT2Parser();
+    private static Grid buildGrid(final String supportedNames,
+                                  final DataProvidersManager dataProvidersManager) {
+        final GptNParser parser = new GptNParser(SeasonalModelType.PRESSURE,
+                                                 SeasonalModelType.TEMPERATURE,
+                                                 SeasonalModelType.QV,
+                                                 SeasonalModelType.DT,
+                                                 SeasonalModelType.AH,
+                                                 SeasonalModelType.AW);
         dataProvidersManager.feed(supportedNames, parser);
         return parser.getGrid();
-    }
-
-    /** Parser for GPT2 grid files. */
-    private static class GPT2Parser extends AbstractGptParser<Grid2Entry> {
-
-        /** {@inheritDoc} */
-        @Override
-        protected Grid2Entry parseEntry(final String line, final int lineNumber, final String name) {
-
-            try {
-                final String[] fields = SEPARATOR.split(line);
-                final double latDegree = Double.parseDouble(fields[0]);
-                final double lonDegree = Double.parseDouble(fields[1]);
-                return new Grid2Entry(FastMath.toRadians(latDegree),
-                                      (int) FastMath.rint(latDegree * GridEntry.DEG_TO_MAS),
-                                      FastMath.toRadians(lonDegree),
-                                      (int) FastMath.rint(lonDegree * GridEntry.DEG_TO_MAS),
-                                      Double.parseDouble(fields[22]),
-                                      Double.parseDouble(fields[23]),
-                                      createModel(fields,  2),
-                                      createModel(fields,  7),
-                                      createModel(fields, 12),
-                                      createModel(fields, 17),
-                                      createModel(fields, 24),
-                                      createModel(fields, 29));
-            } catch (NumberFormatException nfe) {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          lineNumber, name, line);
-            }
-
-        }
-
     }
 
 }

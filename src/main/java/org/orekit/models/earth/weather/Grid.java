@@ -16,7 +16,6 @@
  */
 package org.orekit.models.earth.weather;
 
-import java.lang.reflect.Array;
 import java.util.List;
 import java.util.SortedSet;
 
@@ -27,12 +26,11 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
 /** Container for a complete grid.
- * @param <G> type 
  * @author Bryan Cazabonne
  * @author Luc Maisonobe
  * @since 12.1
  */
-class Grid<G extends GridEntry> {
+class Grid {
 
     /** Latitude sample. */
     private final SortedSet<Integer> latitudeSample;
@@ -41,7 +39,7 @@ class Grid<G extends GridEntry> {
     private final SortedSet<Integer> longitudeSample;
 
     /** Grid entries. */
-    private final G[][] entries;
+    private final GridEntry[][] entries;
 
     /** Simple constructor.
      * @param latitudeSample latitude sample
@@ -49,25 +47,24 @@ class Grid<G extends GridEntry> {
      * @param loadedEntries loaded entries, organized as a simple list
      * @param name file name
      */
-    @SuppressWarnings("unchecked")
     Grid(final SortedSet<Integer> latitudeSample, final SortedSet<Integer> longitudeSample,
-         final List<G> loadedEntries, final String name) {
+         final List<GridEntry> loadedEntries, final String name) {
 
         final int nA         = latitudeSample.size();
         final int nO         = longitudeSample.size() + 1; // we add one here for wrapping the grid
-        this.entries         = (G[][]) Array.newInstance(GridEntry.class, nA, nO);
+        this.entries         = new GridEntry[nA][nO];
         this.latitudeSample  = latitudeSample;
         this.longitudeSample = longitudeSample;
 
         // organize entries in the regular grid
-        for (final G entry : loadedEntries) {
+        for (final GridEntry entry : loadedEntries) {
             final int latitudeIndex  = latitudeSample.headSet(entry.getLatKey() + 1).size() - 1;
             final int longitudeIndex = longitudeSample.headSet(entry.getLonKey() + 1).size() - 1;
             entries[latitudeIndex][longitudeIndex] = entry;
         }
 
         // finalize the grid
-        for (final G[] row : entries) {
+        for (final GridEntry[] row : entries) {
 
             // check for missing entries
             for (int longitudeIndex = 0; longitudeIndex < nO - 1; ++longitudeIndex) {
@@ -77,7 +74,7 @@ class Grid<G extends GridEntry> {
             }
 
             // wrap the grid around the Earth in longitude
-            row[nO - 1] = (G) row[0].buildWrappedEntry();
+            row[nO - 1] = row[0].buildWrappedEntry();
 
         }
 
@@ -116,7 +113,7 @@ class Grid<G extends GridEntry> {
      * @param longitude longitude of point of interest
      * @return interpolator for the cell
      */
-    CellInterpolator<G> getInterpolator(final double latitude, final double longitude) {
+    CellInterpolator getInterpolator(final double latitude, final double longitude) {
 
         // keep longitude within grid range
         final double normalizedLongitude =
@@ -128,11 +125,11 @@ class Grid<G extends GridEntry> {
         final int westIndex  = getWestIndex(normalizedLongitude);
 
         // build interpolator
-        return new CellInterpolator<>(latitude, normalizedLongitude,
-                                      entries[southIndex    ][westIndex    ],
-                                      entries[southIndex    ][westIndex + 1],
-                                      entries[southIndex + 1][westIndex    ],
-                                      entries[southIndex + 1][westIndex + 1]);
+        return new CellInterpolator(latitude, normalizedLongitude,
+                                    entries[southIndex    ][westIndex    ],
+                                    entries[southIndex    ][westIndex + 1],
+                                    entries[southIndex + 1][westIndex    ],
+                                    entries[southIndex + 1][westIndex + 1]);
 
     }
 
@@ -142,7 +139,7 @@ class Grid<G extends GridEntry> {
      * @param longitude longitude of point of interest
      * @return interpolator for the cell
      */
-    <T extends CalculusFieldElement<T>> FieldCellInterpolator<T, G> getInterpolator(final T latitude, final T longitude) {
+    <T extends CalculusFieldElement<T>> FieldCellInterpolator<T> getInterpolator(final T latitude, final T longitude) {
 
         // keep longitude within grid range
         final T normalizedLongitude =

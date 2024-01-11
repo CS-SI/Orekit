@@ -37,10 +37,10 @@ class SeasonalModel {
     /** Annual sine amplitude. */
     private final double b1;
 
-    /** Semi-nnual cosine amplitude. */
+    /** Semi-annual cosine amplitude. */
     private final double a2;
 
-    /** Semi-nnual sine amplitude. */
+    /** Semi-annual sine amplitude. */
     private final double b2;
 
     /** Simple constructor.

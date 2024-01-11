@@ -16,12 +16,15 @@
  */
 package org.orekit.models.earth.weather;
 
-/** Base grid entry in Global Pressure Temperature models.
- * @author Bryan Cazabonne
+import java.util.Map;
+
+import org.hipparchus.util.MathUtils;
+
+/** Grid entry in Global Pressure Temperature models.
  * @author Luc Maisonobe
  * @since 12.1
  */
-abstract class GridEntry {
+class GridEntry {
 
     /** Conversion factor from degrees to mill arcseconds. */
     public static final int DEG_TO_MAS = 3600000;
@@ -44,6 +47,9 @@ abstract class GridEntry {
     /** Height correction. */
     private final double hS;
 
+    /** Seasonal models. */
+    private Map<SeasonalModelType, SeasonalModel> models;
+
     /** Build an entry from its components.
      * @param latitude latitude (radian)
      * @param latKey latitude key (mas)
@@ -51,9 +57,10 @@ abstract class GridEntry {
      * @param lonKey longitude key (mas)
      * @param undulation undulation (m)
      * @param hS height correction
+     * @param models seasonal models
      */
     GridEntry(final double latitude, final int latKey, final double longitude, final int lonKey,
-              final double undulation, final double hS) {
+              final double undulation, final double hS, final Map<SeasonalModelType, SeasonalModel> models) {
 
         this.latitude     = latitude;
         this.latKey       = latKey;
@@ -61,12 +68,19 @@ abstract class GridEntry {
         this.lonKey       = lonKey;
         this.undulation   = undulation;
         this.hS           = hS;
+        this.models       = models;
     }
 
     /** Build a new entry 360° to the East of instance.
      * @return new wrapping entry (always same type as instance)
      */
-    public abstract GridEntry buildWrappedEntry();
+    public GridEntry buildWrappedEntry() {
+        return new GridEntry(latitude, latKey,
+                             longitude + MathUtils.TWO_PI,
+                             lonKey + DEG_TO_MAS * 360,
+                             undulation, hS,
+                             models);
+    }
 
     /** Get latitude (radian).
      * @return latitude (radian)
@@ -108,6 +122,14 @@ abstract class GridEntry {
      */
     double getHs() {
         return hS;
+    }
+
+    /** Get a model.
+     * @param type model type
+     * @return model
+     */
+    SeasonalModel getModel(final SeasonalModelType type) {
+        return models.get(type);
     }
 
 }

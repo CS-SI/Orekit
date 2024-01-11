@@ -21,11 +21,10 @@ import java.util.function.ToDoubleFunction;
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 
 /** Interpolator within a grid cell.
- * @param <G> type of the grid entries
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class CellInterpolator<G extends GridEntry> {
+public class CellInterpolator {
 
     /** Latitude of point of interest. */
     private final double latitude;
@@ -34,16 +33,16 @@ public class CellInterpolator<G extends GridEntry> {
     private final double longitude;
 
     /** South-West grid entry. */
-    private final G southWest;
+    private final GridEntry southWest;
 
     /** South-East grid entry. */
-    private final G southEast;
+    private final GridEntry southEast;
 
     /** North-West grid entry. */
-    private final G northWest;
+    private final GridEntry northWest;
 
     /** North-East grid entry. */
-    private final G northEast;
+    private final GridEntry northEast;
 
     /** Simple constructor.
      * @param latitude latitude of point of interest
@@ -54,8 +53,8 @@ public class CellInterpolator<G extends GridEntry> {
      * @param northEast North-East grid entry
      */
     CellInterpolator(final double latitude, final double longitude,
-                     final G southWest, final G southEast,
-                     final G northWest, final G northEast) {
+                     final GridEntry southWest, final GridEntry southEast,
+                     final GridEntry northWest, final GridEntry northEast) {
         this.latitude  = latitude;
         this.longitude = longitude;
         this.southWest = southWest;
@@ -68,7 +67,7 @@ public class CellInterpolator<G extends GridEntry> {
      * @param gridGetter getter for the grid function
      * @return interpolated function"
      */
-    double interpolate(final ToDoubleFunction<G> gridGetter) {
+    double interpolate(final ToDoubleFunction<GridEntry> gridGetter) {
 
         // cell surrounding the point
         final double[] xVal = new double[] {

@@ -28,8 +28,6 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.gravity.potential.GRGSFormatReader;
-import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.models.earth.troposphere.ViennaACoefficients;
 import org.orekit.time.AbsoluteDate;
@@ -42,8 +40,7 @@ public class GlobalPressureTemperature2Test {
     @Test
     public void testWeatherParameters() throws IOException, URISyntaxException {
 
-        Utils.setDataRoot("regular-data:potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+        Utils.setDataRoot("regular-data");
 
         // Site Vienna: latitude:  48.20°N
         //              longitude: 16.37°E
@@ -85,8 +82,7 @@ public class GlobalPressureTemperature2Test {
     @Test
     public void testEquality() throws IOException, URISyntaxException {
 
-        Utils.setDataRoot("regular-data:potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+        Utils.setDataRoot("regular-data");
 
         // Commons parameters
         final AbsoluteDate date = AbsoluteDate.createMJDDate(56141, 0.0, TimeScalesFactory.getUTC());
@@ -144,8 +140,7 @@ public class GlobalPressureTemperature2Test {
     @Test
     public void testCorruptedFileBadData() throws IOException, URISyntaxException {
 
-        Utils.setDataRoot("regular-data:potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+        Utils.setDataRoot("regular-data");
 
         final String fileName = "corrupted-bad-data-gpt2_5.grd";
         final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
@@ -163,8 +158,7 @@ public class GlobalPressureTemperature2Test {
     @Test
     public void testCorruptedIrregularGrid() throws IOException, URISyntaxException {
 
-        Utils.setDataRoot("regular-data:potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+        Utils.setDataRoot("regular-data");
 
         final String fileName = "corrupted-irregular-grid-gpt2_5.grd";
         final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
@@ -174,6 +168,42 @@ public class GlobalPressureTemperature2Test {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, oe.getSpecifier());
             Assertions.assertTrue(((String) oe.getParts()[0]).endsWith(fileName));
+        }
+
+    }
+
+    @Test
+    public void testCorruptedIncompleteHEader() throws IOException, URISyntaxException {
+
+        Utils.setDataRoot("regular-data");
+
+        final String fileName = "corrupted-incomplete-header.grd";
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
+        try {
+            new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
+            Assertions.fail("An exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(3, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
+        }
+
+    }
+
+    @Test
+    public void testCorruptedMissingDataFields() throws IOException, URISyntaxException {
+
+        Utils.setDataRoot("regular-data");
+
+        final String fileName = "corrupted-missing-data-fields.grd";
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
+        try {
+            new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
+            Assertions.fail("An exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(5, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
         }
 
     }

@@ -21,23 +21,23 @@ import java.io.IOException;
 import org.orekit.data.DataSource;
 import org.orekit.time.TimeScale;
 
-/** The Global Pressure and Temperature 2w (GPT2w) model.
+/** The Global Pressure and Temperature 3 (GPT3) model.
  * <p>
- * This model adds humidity data to {@link GlobalPressureTemperature2 GPT2}.
+ * This model adds horizontal gradient data to {@link GlobalPressureTemperature2w GPT2w}.
  * </p>
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class GlobalPressureTemperature2w extends AbstractGlobalPressureTemperature {
+public class GlobalPressureTemperature3 extends AbstractGlobalPressureTemperature {
 
     /**
-     * Constructor with supported names and source of GPT2w auxiliary data given by user.
+     * Constructor with supported names and source of GPT3 auxiliary data given by user.
      *
      * @param source grid data source
      * @param utc UTC time scale.
      * @exception IOException if grid data cannot be read
      */
-    public GlobalPressureTemperature2w(final DataSource source, final TimeScale utc)
+    public GlobalPressureTemperature3(final DataSource source, final TimeScale utc)
         throws IOException {
         super(source, utc,
               SeasonalModelType.PRESSURE,
@@ -47,7 +47,11 @@ public class GlobalPressureTemperature2w extends AbstractGlobalPressureTemperatu
               SeasonalModelType.AH,
               SeasonalModelType.AW,
               SeasonalModelType.LAMBDA,
-              SeasonalModelType.TM);
+              SeasonalModelType.TM,
+              SeasonalModelType.GN_H,
+              SeasonalModelType.GE_H,
+              SeasonalModelType.GN_W,
+              SeasonalModelType.GE_W);
     }
 
 }

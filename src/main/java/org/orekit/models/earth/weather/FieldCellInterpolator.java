@@ -23,11 +23,10 @@ import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 
 /** Interpolator within a grid cell.
  * @param <T> type of the field elements
- * @param <G> type of the grid entries
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class FieldCellInterpolator<T extends CalculusFieldElement<T>, G extends GridEntry> {
+public class FieldCellInterpolator<T extends CalculusFieldElement<T>> {
 
     /** Latitude of point of interest. */
     private final T latitude;
@@ -36,16 +35,16 @@ public class FieldCellInterpolator<T extends CalculusFieldElement<T>, G extends 
     private final T longitude;
 
     /** South-West grid entry. */
-    private final G southWest;
+    private final GridEntry southWest;
 
     /** South-East grid entry. */
-    private final G southEast;
+    private final GridEntry southEast;
 
     /** North-West grid entry. */
-    private final G northWest;
+    private final GridEntry northWest;
 
     /** North-East grid entry. */
-    private final G northEast;
+    private final GridEntry northEast;
 
     /** Simple constructor.
      * @param latitude latitude of point of interest
@@ -56,8 +55,8 @@ public class FieldCellInterpolator<T extends CalculusFieldElement<T>, G extends 
      * @param northEast North-East grid entry
      */
     FieldCellInterpolator(final T latitude, final T longitude,
-                          final G southWest, final G southEast,
-                          final G northWest, final G northEast) {
+                          final GridEntry southWest, final GridEntry southEast,
+                          final GridEntry northWest, final GridEntry northEast) {
         this.latitude  = latitude;
         this.longitude = longitude;
         this.southWest = southWest;
@@ -70,7 +69,7 @@ public class FieldCellInterpolator<T extends CalculusFieldElement<T>, G extends 
      * @param gridGetter getter for the grid function
      * @return interpolated function"
      */
-    T interpolate(final ToDoubleFunction<G> gridGetter) {
+    T interpolate(final ToDoubleFunction<GridEntry> gridGetter) {
 
         // cell surrounding the point
         final double[] xVal = new double[] {
