@@ -312,7 +312,7 @@
     * Global Ionospheric Map (GIM) model
     * NeQuick ionospheric model
     * VTEC estimated ionospheric model with Single Layer Model (SLM) ionospheric mapping function
-    * Global Pression and Temperature models (GPT and GPT2)
+    * Global Pressure and Temperature models (GPT, GPT2, GPT2w, GPT3)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field
     * displacement of ground points due to tides

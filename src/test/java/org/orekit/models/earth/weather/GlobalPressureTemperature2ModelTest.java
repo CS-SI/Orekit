@@ -165,7 +165,7 @@ public class GlobalPressureTemperature2ModelTest {
         final Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(12, 12),
                                       ReferenceEllipsoid.getWgs84(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
 
-        final String fileName = "corrupted-bad-data-gpt2_5.grd";
+        final String fileName = "corrupted-bad-data-gpt3_15.grd";
         try {
         new GlobalPressureTemperature2Model(fileName, latitude, longitude, geoid);
             Assertions.fail("An exception should have been thrown");
@@ -190,7 +190,7 @@ public class GlobalPressureTemperature2ModelTest {
         final Geoid geoid = new Geoid(GravityFieldFactory.getNormalizedProvider(12, 12),
                                       ReferenceEllipsoid.getWgs84(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
 
-        final String fileName = "corrupted-irregular-grid-gpt2_5.grd";
+        final String fileName = "corrupted-irregular-grid-gpt3_15.grd";
         try {
         new GlobalPressureTemperature2Model(fileName, latitude, longitude, geoid);
             Assertions.fail("An exception should have been thrown");

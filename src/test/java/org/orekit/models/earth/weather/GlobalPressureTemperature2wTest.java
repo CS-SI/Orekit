@@ -33,7 +33,7 @@ import org.orekit.models.earth.troposphere.ViennaACoefficients;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
-public class GlobalPressureTemperature2Test {
+public class GlobalPressureTemperature2wTest {
 
     private static double epsilon = 1.0e-12;
 
@@ -47,47 +47,32 @@ public class GlobalPressureTemperature2Test {
         //              height:    156 m
         //
         // Date: 2 August 2012
-        //
-        // Expected outputs are given by the Department of Geodesy and Geoinformation of the Vienna University.
-        // Expected parameters : temperature -> 22.12 °C
-        //                       pressure    -> 1002.56 hPa
-        //                       e           -> 15.63 hPa
-        //                       ah          -> 0.0012647
-        //                       aw          -> 0.0005726
-        //
-        // We test the fiability of our implementation by comparing our output values with
-        // the ones obtained by the Vienna University.
 
         final double latitude  = FastMath.toRadians(48.20);
         final double longitude = FastMath.toRadians(16.37);
         final double height    = 156.0;
         final AbsoluteDate date = AbsoluteDate.createMJDDate(56141, 0.0, TimeScalesFactory.getUTC());
-        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/gpt2_5_extract.grd");
-        final GlobalPressureTemperature2 model =
-                        new GlobalPressureTemperature2(new DataSource(url.toURI()),
-                                                       TimeScalesFactory.getUTC());
+        final URL url = GlobalPressureTemperature2wTest.class.getClassLoader().getResource("gpt-grid/gpt2_15w.grd");
+        final GlobalPressureTemperature2w model =
+                        new GlobalPressureTemperature2w(new DataSource(url.toURI()),
+                                                        TimeScalesFactory.getUTC());
 
         final GeodeticPoint               location = new GeodeticPoint(latitude, longitude, height);
         final ViennaACoefficients         a        = model.getA(location, date);
         final PressureTemperatureHumidity pth      = model.getWeatherParamerers(location, date);
 
-        Assertions.assertEquals(0.0012647,      a.getAh(),                   1.1e-7);
-        Assertions.assertEquals(0.0005726,      a.getAw(),                   8.6e-8);
-        Assertions.assertEquals(273.15 + 22.12, pth.getTemperature(),        2.3e-1);
-        Assertions.assertEquals(1002.56,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()),           7.4e-1);
-        Assertions.assertEquals(15.63,          TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()), 5.0e-2);
-        Assertions.assertTrue(Double.isNaN(pth.getTm()));
-        Assertions.assertTrue(Double.isNaN(pth.getLambda()));
+        Assertions.assertEquals(0.0012658,      a.getAh(),                   1.0e-7);
+        Assertions.assertEquals(0.0005684,      a.getAw(),                   1.0e-7);
+        Assertions.assertEquals(273.15 + 21.50, pth.getTemperature(),        1.0e-2);
+        Assertions.assertEquals(1000.72,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()),           1.0e-2);
+        Assertions.assertEquals(16.38,          TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()), 1.0e-2);
+        Assertions.assertEquals(273.15 +  9.41, pth.getTm(),                 1.0e-2);
+        Assertions.assertEquals(3.105482,       pth.getLambda(),             1.0e-6);
 
     }
 
     @Test
     public void testEquality() throws IOException, URISyntaxException {
-        doTestEquality("gpt-grid/gpt2_15.grd");
-    }
-
-    @Test
-    public void testEqualityLoadingGpt2w() throws IOException, URISyntaxException {
         doTestEquality("gpt-grid/gpt2_15w.grd");
     }
 
@@ -105,9 +90,9 @@ public class GlobalPressureTemperature2Test {
         final double latitude   = FastMath.toRadians(45.0);
         final double height     = 0.0;
 
-        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource(resourceName);
-        GlobalPressureTemperature2 model = new GlobalPressureTemperature2(new DataSource(url.toURI()),
-                                                                          TimeScalesFactory.getUTC());
+        final URL url = GlobalPressureTemperature2wTest.class.getClassLoader().getResource(resourceName);
+        GlobalPressureTemperature2w model = new GlobalPressureTemperature2w(new DataSource(url.toURI()),
+                                                                            TimeScalesFactory.getUTC());
 
         // Test longitude = 181° and longitude = -179°
         GeodeticPoint               location1 = new GeodeticPoint(latitude, FastMath.toRadians(181.0), height);
@@ -159,9 +144,9 @@ public class GlobalPressureTemperature2Test {
         Utils.setDataRoot("regular-data");
 
         final String fileName = "corrupted-bad-data-gpt3_15.grd";
-        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
+        final URL url = GlobalPressureTemperature2wTest.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
-            new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
+            new GlobalPressureTemperature2w(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -177,9 +162,9 @@ public class GlobalPressureTemperature2Test {
         Utils.setDataRoot("regular-data");
 
         final String fileName = "corrupted-irregular-grid-gpt3_15.grd";
-        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
+        final URL url = GlobalPressureTemperature2wTest.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
-            new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
+            new GlobalPressureTemperature2w(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, oe.getSpecifier());
@@ -194,9 +179,9 @@ public class GlobalPressureTemperature2Test {
         Utils.setDataRoot("regular-data");
 
         final String fileName = "corrupted-incomplete-header.grd";
-        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
+        final URL url = GlobalPressureTemperature2wTest.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
-            new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
+            new GlobalPressureTemperature2w(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -212,9 +197,9 @@ public class GlobalPressureTemperature2Test {
         Utils.setDataRoot("regular-data");
 
         final String fileName = "corrupted-missing-seasonal-columns-gpt3_15.grd";
-        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
+        final URL url = GlobalPressureTemperature2wTest.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
-            new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
+            new GlobalPressureTemperature2w(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -230,9 +215,9 @@ public class GlobalPressureTemperature2Test {
         Utils.setDataRoot("regular-data");
 
         final String fileName = "corrupted-missing-data-fields-gpt3_15.grd";
-        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
+        final URL url = GlobalPressureTemperature2wTest.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
-            new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
+            new GlobalPressureTemperature2w(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());

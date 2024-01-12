@@ -168,12 +168,22 @@ public class AbstractGlobalPressureTemperature
         // Water vapor pressure [hPa]
         final double e0 = qv * pressure / (0.622 + 0.378 * qv);
 
+        // mean temperature weighted with water vapor pressure
+        final double tm = grid.hasModel(SeasonalModelType.TM) ?
+                          interpolator.interpolate(e -> e.getModel(SeasonalModelType.TM).evaluate(dayOfYear)) :
+                          Double.NaN;
+
+        // water vapor decrease factor
+        final double lambda = grid.hasModel(SeasonalModelType.LAMBDA) ?
+                              interpolator.interpolate(e -> e.getModel(SeasonalModelType.LAMBDA).evaluate(dayOfYear)) :
+                              Double.NaN;
+
         return new PressureTemperatureHumidity(location.getAltitude(),
                                                TroposphericModelUtils.HECTO_PASCAL.toSI(pressure),
                                                temperature,
                                                TroposphericModelUtils.HECTO_PASCAL.toSI(e0),
-                                               Double.NaN,
-                                               Double.NaN);
+                                               tm,
+                                               lambda);
 
     }
 

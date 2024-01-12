@@ -159,4 +159,12 @@ class Grid {
 
     }
 
+    /** Check if grid contains a specific model.
+     * @param type model type
+     * @return true if grid contain the model
+     */
+    boolean hasModel(final SeasonalModelType type) {
+        return entries[0][0].getModel(type) != null;
+    }
+
 }
