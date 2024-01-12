@@ -57,13 +57,15 @@ public class ViennaThree extends AbstractVienna {
 
     /** Build a new instance.
      * @param aProvider provider for a<sub>h</sub> and a<sub>w</sub> coefficients
+     * @param gProvider provider for {@link AzimuthalGradientCoefficients} and {@link FieldAzimuthalGradientCoefficients}
      * @param zenithDelayProvider provider for zenith delays
      * @param utc                 UTC time scale
      */
     public ViennaThree(final ViennaAProvider aProvider,
+                       final AzimuthalGradientProvider gProvider,
                        final TroposphericModel zenithDelayProvider,
                        final TimeScale utc) {
-        super(aProvider, zenithDelayProvider, utc);
+        super(aProvider, gProvider, zenithDelayProvider, utc);
     }
 
     /** {@inheritDoc} */

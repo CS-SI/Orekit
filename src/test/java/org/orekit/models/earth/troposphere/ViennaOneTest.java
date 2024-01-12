@@ -81,6 +81,7 @@ public class ViennaOneTest {
         final double expectedWet   = 3.448300;
 
         final ViennaOne model = new ViennaOne(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
+                                              new ConstantAzimuthalGradientProvider(null),
                                               new ConstantTroposphericModel(new TroposphericDelay(2.0966, 0.2140, 0, 0)),
                                               TimeScalesFactory.getUTC());
 
@@ -99,6 +100,7 @@ public class ViennaOneTest {
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
         ViennaOne model = new ViennaOne(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
+                                        new ConstantAzimuthalGradientProvider(null),
                                         new ConstantTroposphericModel(new TroposphericDelay(2.0966, 0.2140, 0, 0)),
                                         TimeScalesFactory.getUTC());
         final double path = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
@@ -114,6 +116,7 @@ public class ViennaOneTest {
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
         ViennaOne model = new ViennaOne(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
+                                        new ConstantAzimuthalGradientProvider(null),
                                         new ConstantTroposphericModel(new TroposphericDelay(2.0966, 0.2140, 0, 0)),
                                         TimeScalesFactory.getUTC());
         double lastDelay = Double.MAX_VALUE;

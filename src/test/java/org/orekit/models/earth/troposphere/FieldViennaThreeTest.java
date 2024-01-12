@@ -113,6 +113,7 @@ public class FieldViennaThreeTest {
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
 
         final ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                                  new ConstantAzimuthalGradientProvider(null),
                                                   new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
                                                   TimeScalesFactory.getUTC());
 
@@ -167,6 +168,7 @@ public class FieldViennaThreeTest {
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
 
         final ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                                  new ConstantAzimuthalGradientProvider(null),
                                                   new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
                                                   TimeScalesFactory.getUTC());
 
@@ -222,6 +224,7 @@ public class FieldViennaThreeTest {
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
 
         final ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                                  new ConstantAzimuthalGradientProvider(null),
                                                   new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
                                                   TimeScalesFactory.getUTC());
 
@@ -247,9 +250,10 @@ public class FieldViennaThreeTest {
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(37.5)), zero.add(FastMath.toRadians(277.5)), zero.add(height));
         ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                            new ConstantAzimuthalGradientProvider(null),
                                             new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
                                             TimeScalesFactory.getUTC());
-        final FieldTroposphericDelay<T> delay = model.pathDelay(new FieldTrackingCoordinates<T>(zero, zero.newInstance(FastMath.toRadians(elevation)), zero),
+        final FieldTroposphericDelay<T> delay = model.pathDelay(new FieldTrackingCoordinates<>(zero, zero.newInstance(FastMath.toRadians(elevation)), zero),
                                                                 point,
                                                                 new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                                 model.getParameters(field), date);
@@ -258,6 +262,36 @@ public class FieldViennaThreeTest {
         Assertions.assertEquals(12.2124, delay.getSh().getReal(),    1.0e-4);
         Assertions.assertEquals( 0.3916, delay.getSw().getReal(),    1.0e-4);
         Assertions.assertEquals(12.6041, delay.getDelay().getReal(), 1.0e-4);
+    }
+
+    @Test
+    public void testDelayWithAzimuthalAsymmetry() {
+        doTestDelayWithAzimuthalAsymmetry(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestDelayWithAzimuthalAsymmetry(final Field<T> field) {
+        final T zero = field.getZero();
+        final double        azimuth   = 30.0;
+        final double        elevation = 10.0;
+        final double        height    = 100.0;
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
+        final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(37.5)), zero.add(FastMath.toRadians(277.5)), zero.add(height));
+        ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                            new ConstantAzimuthalGradientProvider(new AzimuthalGradientCoefficients(12.0, 4.5,
+                                                                                                                    0.8, 1.25)),
+                                            new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
+                                            TimeScalesFactory.getUTC());
+        final FieldTroposphericDelay<T> delay = model.pathDelay(new FieldTrackingCoordinates<>(zero.newInstance(FastMath.toRadians(azimuth)),
+                                                                                               zero.newInstance(FastMath.toRadians(elevation)),
+                                                                                               zero),
+                                                                point,
+                                                                new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
+                                                                model.getParameters(field), date);
+        Assertions.assertEquals( 2.1993,                      delay.getZh().getReal(),    1.0e-4);
+        Assertions.assertEquals( 0.069,                       delay.getZw().getReal(),    1.0e-4);
+        Assertions.assertEquals(12.2124 + 373.8241,           delay.getSh().getReal(),    1.0e-4); // second term is due to azimuthal gradient
+        Assertions.assertEquals( 0.3916 +  38.9670,           delay.getSw().getReal(),    1.0e-4); // second term is due to azimuthal gradient
+        Assertions.assertEquals(12.6041 + 373.8241 + 38.9670, delay.getDelay().getReal(), 1.0e-4);
     }
 
     @Test
@@ -270,6 +304,7 @@ public class FieldViennaThreeTest {
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(37.5)), zero.add(FastMath.toRadians(277.5)), zero.add(350.0));
         ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                            new ConstantAzimuthalGradientProvider(null),
                                             new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
                                             TimeScalesFactory.getUTC());
         T lastDelay = zero.add(Double.MAX_VALUE);
@@ -305,6 +340,7 @@ public class FieldViennaThreeTest {
 
         // Tropospheric model
         final TroposphericModel model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(00.00127683, 0.00060955)),
+                                                        new ConstantAzimuthalGradientProvider(null),
                                                         new ConstantTroposphericModel(new TroposphericDelay(2.0966, 0.2140, 0, 0)),
                                                         TimeScalesFactory.getUTC());
 

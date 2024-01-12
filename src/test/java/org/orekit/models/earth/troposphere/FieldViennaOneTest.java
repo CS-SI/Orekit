@@ -115,6 +115,7 @@ public class FieldViennaOneTest {
 
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
         final ViennaOne model = new ViennaOne(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
+                                              new ConstantAzimuthalGradientProvider(null),
                                               new ConstantTroposphericModel(new TroposphericDelay(2.0966, 0.2140, 0, 0)),
                                               TimeScalesFactory.getUTC());
 
@@ -139,6 +140,7 @@ public class FieldViennaOneTest {
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(45.0)), zero.add(FastMath.toRadians(45.0)), zero.add(height));
         ViennaOne model = new ViennaOne(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
+                                        new ConstantAzimuthalGradientProvider(null),
                                         new ConstantTroposphericModel(new TroposphericDelay(2.0966, 0.2140, 0, 0)),
                                         TimeScalesFactory.getUTC());
         final T path = model.pathDelay(new FieldTrackingCoordinates<>(zero,
@@ -161,6 +163,7 @@ public class FieldViennaOneTest {
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field);
         final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(45.0)), zero.add(FastMath.toRadians(45.0)), zero.add(350.0));
         ViennaOne model = new ViennaOne(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
+                                        new ConstantAzimuthalGradientProvider(null),
                                         new ConstantTroposphericModel(new TroposphericDelay(2.0966, 0.2140, 0, 0)),
                                         TimeScalesFactory.getUTC());
         T lastDelay = zero.add(Double.MAX_VALUE);
@@ -198,6 +201,7 @@ public class FieldViennaOneTest {
 
         // Tropospheric model
         final TroposphericModel model = new ViennaOne(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
+                                                      new ConstantAzimuthalGradientProvider(null),
                                                       new ConstantTroposphericModel(new TroposphericDelay(2.0966, 0.2140, 0, 0)),
                                                       TimeScalesFactory.getUTC());
 

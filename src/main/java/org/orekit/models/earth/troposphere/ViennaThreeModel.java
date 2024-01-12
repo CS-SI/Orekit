@@ -80,6 +80,7 @@ public class ViennaThreeModel extends ViennaThree implements DiscreteTropospheri
                             final double[] zenithDelay,
                             final TimeScale utc) {
         super(new ConstantViennaAProvider(new ViennaACoefficients(coefficientA[0], coefficientA[1])),
+              new ConstantAzimuthalGradientProvider(null),
               new ConstantTroposphericModel(new TroposphericDelay(zenithDelay[0], zenithDelay[1],
                                                                   zenithDelay[0], zenithDelay[1])),
               utc);

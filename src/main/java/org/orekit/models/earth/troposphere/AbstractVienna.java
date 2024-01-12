@@ -20,6 +20,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
+import org.hipparchus.util.SinCos;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
@@ -38,8 +41,16 @@ import org.orekit.utils.TrackingCoordinates;
  */
 public abstract class AbstractVienna implements TroposphericModel, TroposphereMappingFunction {
 
+    /** C coefficient from Chen and Herring gradient mapping function.
+     * @see Modeling tropospheric delays for space geodetic techniques, Daniel Landskron, 2017, section 2.2
+     */
+    private static final double C = 0.0032;
+
     /** Provider for a<sub>h</sub> and a<sub>w</sub> coefficients. */
     private final ViennaAProvider aProvider;
+
+    /** Provider for {@link AzimuthalGradientCoefficients} and {@link FieldAzimuthalGradientCoefficients}. */
+    private final AzimuthalGradientProvider gProvider;
 
     /** Provider for zenith delays. */
     private final TroposphericModel zenithDelayProvider;
@@ -49,13 +60,16 @@ public abstract class AbstractVienna implements TroposphericModel, TroposphereMa
 
     /** Build a new instance.
      * @param aProvider provider for a<sub>h</sub> and a<sub>w</sub> coefficients
+     * @param gProvider provider for {@link AzimuthalGradientCoefficients} and {@link FieldAzimuthalGradientCoefficients}
      * @param zenithDelayProvider provider for zenith delays
      * @param utc                 UTC time scale
      */
     protected AbstractVienna(final ViennaAProvider aProvider,
+                             final AzimuthalGradientProvider gProvider,
                              final TroposphericModel zenithDelayProvider,
                              final TimeScale utc) {
         this.aProvider           = aProvider;
+        this.gProvider           = gProvider;
         this.zenithDelayProvider = zenithDelayProvider;
         this.utc                 = utc;
     }
@@ -74,11 +88,31 @@ public abstract class AbstractVienna implements TroposphericModel, TroposphereMa
         final double[] mappingFunction =
                         mappingFactors(trackingCoordinates, point, weather, date);
 
+        // horizontal gradient
+        final AzimuthalGradientCoefficients agc = gProvider.getGradientCoefficients(point, date);
+        final double gh;
+        final double gw;
+        if (agc != null) {
+
+            // Chen and Herring gradient mapping function
+            final double sinE = FastMath.sin(trackingCoordinates.getElevation());
+            final double tanE = FastMath.tan(trackingCoordinates.getElevation());
+            final double mfh  = 1.0 / (sinE * tanE + C);
+
+            final SinCos sc = FastMath.sinCos(trackingCoordinates.getAzimuth());
+            gh = mfh * (agc.getGnh() * sc.cos() + agc.getGeh() * sc.sin());
+            gw = mfh * (agc.getGnw() * sc.cos() + agc.getGew() * sc.sin());
+
+        } else {
+            gh = 0;
+            gw = 0;
+        }
+
         // Tropospheric path delay
         return new TroposphericDelay(delays.getZh(),
                                      delays.getZw(),
-                                     delays.getZh() * mappingFunction[0],
-                                     delays.getZw() * mappingFunction[1]);
+                                     delays.getZh() * mappingFunction[0] + gh,
+                                     delays.getZw() * mappingFunction[1] + gw);
 
     }
 
@@ -96,11 +130,31 @@ public abstract class AbstractVienna implements TroposphericModel, TroposphereMa
         final T[] mappingFunction =
                         mappingFactors(trackingCoordinates, point, weather, date);
 
+        // horizontal gradient
+        final FieldAzimuthalGradientCoefficients<T> agc = gProvider.getGradientCoefficients(point, date);
+        final T gh;
+        final T gw;
+        if (agc != null) {
+
+            // Chen and Herring gradient mapping function
+            final T sinE = FastMath.sin(trackingCoordinates.getElevation());
+            final T tanE = FastMath.tan(trackingCoordinates.getElevation());
+            final T mfh  = sinE.multiply(tanE).add(C).reciprocal();
+
+            final FieldSinCos<T> sc = FastMath.sinCos(trackingCoordinates.getAzimuth());
+            gh = mfh.multiply(agc.getGnh().multiply(sc.cos()).add(agc.getGeh().multiply(sc.sin())));
+            gw = mfh.multiply(agc.getGnw().multiply(sc.cos()).add(agc.getGew().multiply(sc.sin())));
+
+        } else {
+            gh = date.getField().getZero();
+            gw = date.getField().getZero();
+        }
+
         // Tropospheric path delay
         return new FieldTroposphericDelay<>(delays.getZh(),
                                             delays.getZw(),
-                                            delays.getZh().multiply(mappingFunction[0]),
-                                            delays.getZw().multiply(mappingFunction[1]));
+                                            delays.getZh().multiply(mappingFunction[0]).add(gh),
+                                            delays.getZw().multiply(mappingFunction[1]).add(gw));
 
     }
 

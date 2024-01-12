@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="update">
+          Take azimuthal asymmetry into account in Vienna tropospheric models.
+      </action>
       <action dev="luc" type="add">
           Added GlobalPressureTemperature3 model.
       </action>

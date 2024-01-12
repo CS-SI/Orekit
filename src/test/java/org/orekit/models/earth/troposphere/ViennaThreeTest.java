@@ -78,6 +78,7 @@ public class ViennaThreeTest {
         final double expectedWet   = 1.623023;
 
         final ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                                  new ConstantAzimuthalGradientProvider(null),
                                                   new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
                                                   TimeScalesFactory.getUTC());
 
@@ -124,6 +125,7 @@ public class ViennaThreeTest {
         final double expectedWet   = 10.879154;
 
         final ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                                  new ConstantAzimuthalGradientProvider(null),
                                                   new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
                                                   TimeScalesFactory.getUTC());
 
@@ -170,6 +172,7 @@ public class ViennaThreeTest {
         final double expectedWet   = 1.003816;
 
         final ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                                  new ConstantAzimuthalGradientProvider(null),
                                                   new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
                                                   TimeScalesFactory.getUTC());
 
@@ -183,14 +186,16 @@ public class ViennaThreeTest {
 
     @Test
     public void testDelay() {
-        final double elevation = 10d;
-        final double height = 100d;
-        final AbsoluteDate date = new AbsoluteDate();
-        final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(37.5), FastMath.toRadians(277.5), height);
-        ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
-                                            new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
-                                            TimeScalesFactory.getUTC());
-        final TroposphericDelay delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
+        final double        azimuth   = 30.0;
+        final double        elevation = 10.0;
+        final double        height    = 100.0;
+        final AbsoluteDate  date      = new AbsoluteDate();
+        final GeodeticPoint point     = new GeodeticPoint(FastMath.toRadians(37.5), FastMath.toRadians(277.5), height);
+        final ViennaThree   model     = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                                        new ConstantAzimuthalGradientProvider(null),
+                                                        new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
+                                                        TimeScalesFactory.getUTC());
+        final TroposphericDelay delay = model.pathDelay(new TrackingCoordinates(FastMath.toRadians(azimuth), FastMath.toRadians(elevation), 0.0),
                                                         point,
                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                         model.getParameters(date), date);
@@ -202,10 +207,34 @@ public class ViennaThreeTest {
     }
 
     @Test
+    public void testDelayWithAzimuthalAsymmetry() {
+        final double        azimuth   = 30.0;
+        final double        elevation = 10.0;
+        final double        height    = 100.0;
+        final AbsoluteDate  date      = new AbsoluteDate();
+        final GeodeticPoint point     = new GeodeticPoint(FastMath.toRadians(37.5), FastMath.toRadians(277.5), height);
+        final ViennaThree   model     = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                                        new ConstantAzimuthalGradientProvider(new AzimuthalGradientCoefficients(12.0, 4.5,
+                                                                                                                                0.8, 1.25)),
+                                                        new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
+                                                        TimeScalesFactory.getUTC());
+        final TroposphericDelay delay = model.pathDelay(new TrackingCoordinates(FastMath.toRadians(azimuth), FastMath.toRadians(elevation), 0.0),
+                                                        point,
+                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                        model.getParameters(date), date);
+        Assertions.assertEquals( 2.1993,                      delay.getZh(),    1.0e-4);
+        Assertions.assertEquals( 0.069,                       delay.getZw(),    1.0e-4);
+        Assertions.assertEquals(12.2124 + 373.8241,           delay.getSh(),    1.0e-4); // second term is due to azimuthal gradient
+        Assertions.assertEquals( 0.3916 +  38.9670,           delay.getSw(),    1.0e-4); // second term is due to azimuthal gradient
+        Assertions.assertEquals(12.6041 + 373.8241 + 38.9670, delay.getDelay(), 1.0e-4);
+    }
+
+    @Test
     public void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(37.5), FastMath.toRadians(277.5), 350.0);
         ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
+                                            new ConstantAzimuthalGradientProvider(null),
                                             new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
                                             TimeScalesFactory.getUTC());
         double lastDelay = Double.MAX_VALUE;
