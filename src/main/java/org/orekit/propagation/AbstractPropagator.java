@@ -33,7 +33,6 @@ import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.TimeSpanMap;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Common handling of {@link Propagator} methods for analytical propagators.
  * <p>
@@ -274,11 +273,6 @@ public abstract class AbstractPropagator implements Propagator {
             startDate = getInitialState().getDate();
         }
         return propagate(startDate, target);
-    }
-
-    /** {@inheritDoc} */
-    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-        return propagate(date).getPVCoordinates(frame);
     }
 
     /** Initialize propagation.

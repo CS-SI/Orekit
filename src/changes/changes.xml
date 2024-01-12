@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="update" issue="1249">
+          Reduce code duplication in (Field)Propagator inheritors.
+      </action>
       <action dev="bryan" type="add" issue="1299">
           Added support for Intelsat's 11 elements propagation.
       </action>
