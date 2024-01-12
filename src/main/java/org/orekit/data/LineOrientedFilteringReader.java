@@ -37,7 +37,7 @@ public abstract class LineOrientedFilteringReader extends Reader {
     /** Line number. */
     private int lastLineNumber;
 
-    /** Pending uncompressed output lines. */
+    /** Pending filtered output lines. */
     private CharSequence pending;
 
     /** Number of characters already output in pending lines. */
@@ -45,7 +45,7 @@ public abstract class LineOrientedFilteringReader extends Reader {
 
     /** Simple constructor.
      * @param name file name
-     * @param input underlying compressed stream
+     * @param input underlying raw stream
      * @exception IOException if first lines cannot be read
      */
     public LineOrientedFilteringReader(final String name, final Reader input) throws IOException {

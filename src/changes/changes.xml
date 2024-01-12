@@ -93,6 +93,9 @@
       <action dev="luc" type="update" issue="1287">
           Replaced DiscreteTroposphericModel by TroposphericModel.
       </action>
+      <action dev="bryan" type="add" issue="1299">
+          Added support for Intelsat's 11 elements propagation.
+      </action>
       <action dev="luc" type="add" issue="1294">
           Added NsgfV00Filter to allow parsing some wrong SP3 files.
       </action>
@@ -116,6 +119,9 @@
       </action>
       <action dev="luc" type="add" due-to="Elisabet Cid Borobia">
           Added translation of error messages in Catalan language.
+      </action>
+      <action dev="greyskyy" type="add" issue="1295">
+          Added EventDetector implementations for detecting beta angle crossing events.
       </action>
   </release>
   <release version="12.0.1" date="31/12/2023"
