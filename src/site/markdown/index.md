@@ -89,6 +89,7 @@
           and the perturbative acceleration due to atmospheric drag
         * SDP4/SGP4 with 2006 corrections
         * GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, IRNSS and SBAS
+        * Intelsat's 11 elements
     * numerical propagators
         * central attraction
         * gravity models including time-dependent like trends and pulsations
