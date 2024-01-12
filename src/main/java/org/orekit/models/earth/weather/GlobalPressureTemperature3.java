@@ -31,7 +31,7 @@ import org.orekit.time.TimeScale;
 public class GlobalPressureTemperature3 extends AbstractGlobalPressureTemperature {
 
     /**
-     * Constructor with supported names and source of GPT3 auxiliary data given by user.
+     * Constructor with source of GPT3 auxiliary data given by user.
      *
      * @param source grid data source
      * @param utc UTC time scale.

@@ -29,7 +29,7 @@ import org.orekit.time.TimeScale;
 public class GlobalPressureTemperature2 extends AbstractGlobalPressureTemperature {
 
     /**
-     * Constructor with supported names and source of GPT2 auxiliary data given by user.
+     * Constructor with source of GPT2 auxiliary data given by user.
      *
      * @param source grid data source (files with extra columns like GPT2w or GPT3 can be used here)
      * @param utc UTC time scale.

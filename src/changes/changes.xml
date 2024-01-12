@@ -31,6 +31,9 @@
           Allow to use any GPT grid file (GPT2, GPT2w, GPT3) in GlobalPressureTemperature2 model.
       </action>
       <action dev="luc" type="add">
+          Added providers for horizontal gradient.
+      </action>
+      <action dev="luc" type="add">
           Added Askne-Nordius tropospheric model.
       </action>
       <action dev="luc" type="add">

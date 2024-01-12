@@ -37,7 +37,7 @@ public class GlobalPressureTemperature2ModelTest {
     private static double epsilon = 1.0e-12;
 
     @Test
-    public void testWeatherParameters() {
+    public void testProvidedParameters() {
 
         Utils.setDataRoot("regular-data:potential:gpt-grid");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));

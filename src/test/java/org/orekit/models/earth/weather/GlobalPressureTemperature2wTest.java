@@ -20,17 +20,25 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.models.earth.troposphere.AzimuthalGradientCoefficients;
+import org.orekit.models.earth.troposphere.FieldAzimuthalGradientCoefficients;
+import org.orekit.models.earth.troposphere.FieldViennaACoefficients;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.models.earth.troposphere.ViennaACoefficients;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
 public class GlobalPressureTemperature2wTest {
@@ -38,7 +46,7 @@ public class GlobalPressureTemperature2wTest {
     private static double epsilon = 1.0e-12;
 
     @Test
-    public void testWeatherParameters() throws IOException, URISyntaxException {
+    public void testProvidedParameters() throws IOException, URISyntaxException {
 
         Utils.setDataRoot("regular-data");
 
@@ -57,9 +65,10 @@ public class GlobalPressureTemperature2wTest {
                         new GlobalPressureTemperature2w(new DataSource(url.toURI()),
                                                         TimeScalesFactory.getUTC());
 
-        final GeodeticPoint               location = new GeodeticPoint(latitude, longitude, height);
-        final ViennaACoefficients         a        = model.getA(location, date);
-        final PressureTemperatureHumidity pth      = model.getWeatherParamerers(location, date);
+        final GeodeticPoint                 location = new GeodeticPoint(latitude, longitude, height);
+        final ViennaACoefficients           a        = model.getA(location, date);
+        final PressureTemperatureHumidity   pth      = model.getWeatherParamerers(location, date);
+        final AzimuthalGradientCoefficients gradient = model.getGradientCoefficients(location, date);
 
         Assertions.assertEquals(0.0012658,      a.getAh(),                   1.0e-7);
         Assertions.assertEquals(0.0005684,      a.getAw(),                   1.0e-7);
@@ -68,6 +77,48 @@ public class GlobalPressureTemperature2wTest {
         Assertions.assertEquals(16.38,          TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()), 1.0e-2);
         Assertions.assertEquals(273.15 +  9.41, pth.getTm(),                 1.0e-2);
         Assertions.assertEquals(3.105482,       pth.getLambda(),             1.0e-6);
+        Assertions.assertNull(gradient);
+
+    }
+
+    @Test
+    public void testFieldProvidedParameters() throws IOException, URISyntaxException {
+        doTestFieldProvidedParameters(Binary64Field.getInstance());
+    }
+
+    protected <T extends CalculusFieldElement<T>> void doTestFieldProvidedParameters(final Field<T> field)
+        throws IOException, URISyntaxException {
+
+        Utils.setDataRoot("regular-data");
+
+        // Site Vienna: latitude:  48.20°N
+        //              longitude: 16.37°E
+        //              height:    156 m
+        //
+        // Date: 2 August 2012
+
+        final T latitude  = FastMath.toRadians(field.getZero().newInstance(48.20));
+        final T longitude = FastMath.toRadians(field.getZero().newInstance(16.37));
+        final T height    = field.getZero().newInstance(156.0);
+        final FieldAbsoluteDate<T> date = FieldAbsoluteDate.createMJDDate(56141, field.getZero().newInstance(0.0), TimeScalesFactory.getUTC());
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/gpt2_15w.grd");
+        final GlobalPressureTemperature2w model =
+                        new GlobalPressureTemperature2w(new DataSource(url.toURI()),
+                                                        TimeScalesFactory.getUTC());
+
+        final FieldGeodeticPoint<T>                 location = new FieldGeodeticPoint<>(latitude, longitude, height);
+        final FieldViennaACoefficients<T>           a        = model.getA(location, date);
+        final FieldPressureTemperatureHumidity<T>   pth      = model.getWeatherParamerers(location, date);
+        final FieldAzimuthalGradientCoefficients<T> gradient = model.getGradientCoefficients(location, date);
+
+        Assertions.assertEquals(0.0012658,      a.getAh().getReal(),                   1.1e-7);
+        Assertions.assertEquals(0.0005684,      a.getAw().getReal(),                   8.6e-8);
+        Assertions.assertEquals(273.15 + 21.50, pth.getTemperature().getReal(),        2.3e-1);
+        Assertions.assertEquals(1000.72,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()).getReal(),           7.4e-1);
+        Assertions.assertEquals(16.38,          TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()).getReal(), 5.0e-2);
+        Assertions.assertEquals(273.15 +  9.41, pth.getTm().getReal(),                 1.0e-2);
+        Assertions.assertEquals(3.105482,       pth.getLambda().getReal(),             1.0e-6);
+        Assertions.assertNull(gradient);
 
     }
 
