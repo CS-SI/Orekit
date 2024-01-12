@@ -33,7 +33,7 @@ public class GlobalPressureTemperature2w extends AbstractGlobalPressureTemperatu
     /**
      * Constructor with supported names and source of GPT2w auxiliary data given by user.
      *
-     * @param source grid data source
+     * @param source grid data source (files with extra columns like GPT3 can be used here)
      * @param utc UTC time scale.
      * @exception IOException if grid data cannot be read
      */

@@ -41,10 +41,10 @@ enum SeasonalModelType {
     DT("dT"),
 
     /** ah coefficient model. */
-    AH("h"),
+    AH("h", "a_h"),
 
     /** aw coefficient model. */
-    AW("w"),
+    AW("w", "a_w"),
 
     /** Water vapor decrease factor model. */
     LAMBDA("lambda"),
@@ -71,18 +71,20 @@ enum SeasonalModelType {
     private static final Map<String, SeasonalModelType> LABELS_MAP = new HashMap<>();
     static {
         for (final SeasonalModelType type : values()) {
-            LABELS_MAP.put(type.label + SUFFIX, type);
+            for (final String label : type.labels) {
+                LABELS_MAP.put(label + SUFFIX, type);
+            }
         }
     }
 
-    /** Label in grid files headers. */
-    private final String label;
+    /** Labels in grid files headers. */
+    private final String[] labels;
 
     /** Simple constructor.
-     * @param label label in grid files headers
+     * @param labels labels in grid files headers
      */
-    SeasonalModelType(final String label) {
-        this.label = label;
+    SeasonalModelType(final String... labels) {
+        this.labels = labels.clone();
     }
 
     /** Parse a field to get the type.

@@ -88,7 +88,7 @@ public class AbstractGlobalPressureTemperature
     private final TimeScale utc;
 
     /**
-     * Constructor with supported names and source of GPT2 auxiliary data given by user.
+     * Constructor with supported names and source of GPTn auxiliary data given by user.
      *
      * @param source grid data source
      * @param utc UTC time scale.
@@ -111,7 +111,7 @@ public class AbstractGlobalPressureTemperature
     }
 
     /**
-     * Constructor with supported names and source of GPT2 auxiliary data given by user.
+     * Constructor with supported names and source of GPTn auxiliary data given by user.
      *
      * @param grid loaded grid
      * @param utc UTC time scale.

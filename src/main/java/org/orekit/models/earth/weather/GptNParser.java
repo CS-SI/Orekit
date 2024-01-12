@@ -82,16 +82,16 @@ class GptNParser implements DataLoader {
     private static final String HEIGHT_CORRECTION_LABEL = "Hs";
 
     /** Label for annual cosine amplitude field. */
-    private static final String A1 = "a1";
+    private static final String A1 = "A1";
 
     /** Label for annual sine amplitude field. */
-    private static final String B1 = "b1";
+    private static final String B1 = "B1";
 
     /** Label for semi-annual cosine amplitude field. */
-    private static final String A2 = "a2";
+    private static final String A2 = "A2";
 
     /** Label for semi-annual sine amplitude field. */
-    private static final String B2 = "b2";
+    private static final String B2 = "B2";
 
     /** Expected seasonal models types. */
     private final SeasonalModelType expected[];
@@ -138,49 +138,38 @@ class GptNParser implements DataLoader {
         final List<GridEntry>    entries   = new ArrayList<>();
 
         // Open stream and parse data
-        boolean headerComplete = false;
         int     lineNumber     = 0;
         String  line           = null;
         try (InputStreamReader isr = new InputStreamReader(input, StandardCharsets.UTF_8);
              BufferedReader    br = new BufferedReader(isr)) {
-
             for (line = br.readLine(); line != null; line = br.readLine()) {
                 ++lineNumber;
                 line = line.trim();
-                if (line.startsWith(COMMENT) && !headerComplete) {
-                    headerComplete = parseHeader(line, lineNumber, name);
-                } else if (headerComplete) {
-                    // read grid data
-                    if (line.length() > 0 && !line.startsWith("%")) {
-                        final GridEntry entry = parseEntry(line, lineNumber, name);
-                        latSample.add(entry.getLatKey());
-                        lonSample.add(entry.getLonKey());
-                        entries.add(entry);
-                    }
+                if (lineNumber == 1) {
+                    // read header and store columns numbers
+                    parseHeader(line, lineNumber, name);
                 } else {
-                    // header has not been completed
-                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              lineNumber, name, line);
+                    // read grid data
+                    final GridEntry entry = parseEntry(line, lineNumber, name);
+                    latSample.add(entry.getLatKey());
+                    lonSample.add(entry.getLonKey());
+                    entries.add(entry);
                 }
 
             }
-        } catch (NumberFormatException nfe) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                      lineNumber, name, line);
         }
 
-        // organize entries in a grid that wraps arouns Earth in longitude
+        // organize entries in a grid that wraps around Earth in longitude
         grid = new Grid(latSample, lonSample, entries, name);
 
     }
 
-    /** Parse one header line in the grid file.
+    /** Parse header line in the grid file.
      * @param line grid line
      * @param lineNumber line number
      * @param name file name
-     * @return true if line contained ccomplete header entries
      */
-    private boolean parseHeader(final String line, final int lineNumber, final String name) {
+    private void parseHeader(final String line, final int lineNumber, final String name) {
 
         // reset indices
         latitudeIndex         = -1;
@@ -191,29 +180,46 @@ class GptNParser implements DataLoader {
         Arrays.fill(expectedIndices, -1);
 
         final String[] fields = SEPARATOR.split(line.substring(COMMENT.length()).trim());
+        String lookingFor = LATITUDE_LABEL;
         for (int i = 0; i < fields.length; ++i) {
             maxIndex = FastMath.max(maxIndex, i);
+            checkLabel(fields[i], lookingFor, line, lineNumber, name);
             switch (fields[i]) {
                 case LATITUDE_LABEL :
                     latitudeIndex = i;
+                    lookingFor = LONGITUDE_LABEL;
                     break;
                 case LONGITUDE_LABEL :
+                    lookingFor = null;
                     longitudeIndex = i;
                     break;
                 case UNDULATION_LABEL :
+                    lookingFor = HEIGHT_CORRECTION_LABEL;
                     undulationIndex = i;
                     break;
                 case HEIGHT_CORRECTION_LABEL :
+                    lookingFor = null;
                     heightCorrectionIndex = i;
                     break;
-                case A1 : case B1 : case A2 : case B2 :
-                    // ignored
+                case A1 :
+                    lookingFor = B1;
+                    break;
+                case B1 :
+                    lookingFor = A2;
+                    break;
+                case A2 :
+                    lookingFor = B2;
+                    break;
+                case B2 :
+                    lookingFor = null;
                     break;
                 default : {
                     final SeasonalModelType type = SeasonalModelType.parseType(fields[i], lineNumber, name);
                     for (int j = 0; j < expected.length; ++j) {
                         if (type == expected[j]) {
                             expectedIndices[j] = i;
+                            lookingFor = A1;
+                            break;
                         }
                     }
                 }
@@ -221,16 +227,34 @@ class GptNParser implements DataLoader {
         }
 
         // check all indices have been set
-        int minIndex = Integer.MAX_VALUE;
-        minIndex = FastMath.min(minIndex, latitudeIndex);
-        minIndex = FastMath.min(minIndex, longitudeIndex);
-        minIndex = FastMath.min(minIndex, undulationIndex);
-        minIndex = FastMath.min(minIndex, heightCorrectionIndex);
+        int minIndex = FastMath.min(latitudeIndex,
+                                    FastMath.min(longitudeIndex,
+                                                 FastMath.min(undulationIndex,
+                                                              heightCorrectionIndex)));
         for (int index : expectedIndices) {
             minIndex = FastMath.min(minIndex, index);
         }
-        return minIndex >= 0;
+        if (minIndex < 0) {
+            // some indices in the header are missing
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      lineNumber, name, line);
+        }
 
+    }
+
+    /** Check if header label is what we are looking for.
+     * @param label label to check
+     * @param lookingFor label we are looking for, or null if we don't known what to expect
+     * @param line grid line
+     * @param lineNumber line number
+     * @param name file name
+     */
+    private void checkLabel(final String label, final String lookingFor,
+                            final String line, final int lineNumber, final String name) {
+        if (lookingFor != null && !lookingFor.equals(label)) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      lineNumber, name, line);
+        }
     }
 
     /** Parse one entry in the grid file.

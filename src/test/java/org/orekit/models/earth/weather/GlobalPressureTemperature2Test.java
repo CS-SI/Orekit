@@ -81,6 +81,20 @@ public class GlobalPressureTemperature2Test {
 
     @Test
     public void testEquality() throws IOException, URISyntaxException {
+        doTestEquality("gpt-grid/gpt2_15.grd");
+    }
+
+    @Test
+    public void testEqualityLoadingGpt2w() throws IOException, URISyntaxException {
+        doTestEquality("gpt-grid/gpt2_15w.grd");
+    }
+
+    @Test
+    public void testEqualityLoadingGpt3() throws IOException, URISyntaxException {
+        doTestEquality("gpt-grid/gpt3_15.grd");
+    }
+
+    private void doTestEquality(final String resourceName) throws IOException, URISyntaxException {
 
         Utils.setDataRoot("regular-data");
 
@@ -89,7 +103,7 @@ public class GlobalPressureTemperature2Test {
         final double latitude   = FastMath.toRadians(45.0);
         final double height     = 0.0;
 
-        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/gpt2_15.grd");
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource(resourceName);
         GlobalPressureTemperature2 model = new GlobalPressureTemperature2(new DataSource(url.toURI()),
                                                                           TimeScalesFactory.getUTC());
 
@@ -173,7 +187,7 @@ public class GlobalPressureTemperature2Test {
     }
 
     @Test
-    public void testCorruptedIncompleteHEader() throws IOException, URISyntaxException {
+    public void testCorruptedIncompleteHeader() throws IOException, URISyntaxException {
 
         Utils.setDataRoot("regular-data");
 
@@ -184,7 +198,25 @@ public class GlobalPressureTemperature2Test {
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assertions.assertEquals(3, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
+        }
+
+    }
+
+    @Test
+    public void testCorruptedMissingSeasonalColumns() throws IOException, URISyntaxException {
+
+        Utils.setDataRoot("regular-data");
+
+        final String fileName = "corrupted-missing-seasonal-columns.grd";
+        final URL url = GlobalPressureTemperature2Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
+        try {
+            new GlobalPressureTemperature2(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
+            Assertions.fail("An exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assertions.assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
             Assertions.assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
         }
 
@@ -202,7 +234,7 @@ public class GlobalPressureTemperature2Test {
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assertions.assertEquals(5, ((Integer) oe.getParts()[0]).intValue());
+            Assertions.assertEquals(4, ((Integer) oe.getParts()[0]).intValue());
             Assertions.assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
         }
 

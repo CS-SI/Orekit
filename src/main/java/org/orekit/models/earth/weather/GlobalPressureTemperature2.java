@@ -31,7 +31,7 @@ public class GlobalPressureTemperature2 extends AbstractGlobalPressureTemperatur
     /**
      * Constructor with supported names and source of GPT2 auxiliary data given by user.
      *
-     * @param source grid data source
+     * @param source grid data source (files with extra columns like GPT2w or GPT3 can be used here)
      * @param utc UTC time scale.
      * @exception IOException if grid data cannot be read
      */
@@ -49,7 +49,7 @@ public class GlobalPressureTemperature2 extends AbstractGlobalPressureTemperatur
     /**
      * Constructor with supported names and source of GPT2 auxiliary data given by user.
      *
-     * @param supportedNames supported names
+     * @param supportedNames supported names (files with extra columns like GPT2w or GPT3 can be used here)
      * @param dataProvidersManager provides access to auxiliary data.
      * @param utc UTC time scale.
      * @deprecated as of 12.1 used only by {@link GlobalPressureTemperature2Model}
@@ -63,7 +63,7 @@ public class GlobalPressureTemperature2 extends AbstractGlobalPressureTemperatur
 
     /** Builder for grid provided as supported names and source of GPT2 auxiliary data given by user.
      *
-     * @param supportedNames supported names
+     * @param supportedNames supported names (files with extra columns like GPT2w or GPT3 can be used here)
      * @param dataProvidersManager provides access to auxiliary data.
      * @return built grid
      * @deprecated as of 12.1 used only by {@link GlobalPressureTemperature2Model}

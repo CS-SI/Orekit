@@ -89,7 +89,7 @@ public class GlobalPressureTemperature2Model extends GlobalPressureTemperature2 
      * Constructor with supported names given by user. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
      *
-     * @param supportedNames supported names
+     * @param supportedNames supported names (files with extra columns like GPT2w or GPT3 can be used here)
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude longitude geodetic longitude of the station, in radians
      * @param geoid level surface of the gravity potential of a body (ignored since 12.1)
@@ -107,7 +107,7 @@ public class GlobalPressureTemperature2Model extends GlobalPressureTemperature2 
     /**
      * Constructor with supported names and source of GPT2 auxiliary data given by user.
      *
-     * @param supportedNames supported names
+     * @param supportedNames supported names (files with extra columns like GPT2w or GPT3 can be used here)
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude longitude geodetic longitude of the station, in radians
      * @param geoid level surface of the gravity potential of a body (ignored since 12.1)
