@@ -382,11 +382,6 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
     }
 
     /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-        return propagate(date).getPVCoordinates(frame);
-    }
-
-    /** {@inheritDoc} */
     protected FieldStateMapper<T> createMapper(final FieldAbsoluteDate<T> referenceDate, final T mu,
                                        final OrbitType orbitType, final PositionAngleType positionAngleType,
                                        final AttitudeProvider attitudeProvider, final Frame frame) {
