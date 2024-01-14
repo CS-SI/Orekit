@@ -50,8 +50,8 @@ class FieldPropagatorTest {
         final FieldPVCoordinates<Complex> actualState = testPropagator.getPVCoordinates(fieldDate, frame);
         // THEN
         final FieldPVCoordinates<Complex> expectedState = testPropagator.propagate(fieldDate).getPVCoordinates(frame);
-        Assertions.assertEquals(expectedState.getPosition(), actualState.getPosition());
-        Assertions.assertEquals(expectedState.getVelocity(), actualState.getVelocity());
+        Assertions.assertEquals(expectedState.getPosition().toVector3D(), actualState.getPosition().toVector3D());
+        Assertions.assertEquals(expectedState.getVelocity().toVector3D(), actualState.getVelocity().toVector3D());
     }
 
     @SuppressWarnings("unchecked")

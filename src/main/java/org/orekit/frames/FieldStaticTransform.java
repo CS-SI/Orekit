@@ -142,6 +142,22 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>> extends
     FieldStaticTransform<T> getInverse();
 
     /**
+     * Get the inverse transform of the instance in static form (without rates).
+     * This enables to create a purely static inverse, as inheritors such as {@link FieldTransform} may
+     * have a relatively computationally-heavy #getInverse() method.
+     *
+     * @return inverse static transform of the instance
+     * @since 12.1
+     */
+    default FieldStaticTransform<T> getStaticInverse() {
+        final FieldVector3D<T> negatedTranslation = getTranslation().negate();
+        final Field<T> field = negatedTranslation.getX().getField();
+        final FieldAbsoluteDate<T> fieldDate = new FieldAbsoluteDate<T>(field, getDate());
+        final FieldRotation<T> rotation = getRotation();
+        return FieldStaticTransform.of(fieldDate, rotation.applyTo(negatedTranslation), rotation.revert());
+    }
+
+    /**
      * Build a transform by combining two existing ones.
      * <p>
      * Note that the dates of the two existing transformed are <em>ignored</em>,

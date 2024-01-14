@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="update" issue="1302">
+          Added getStaticInverse to (Field)StaticTransform.
+      </action>
       <action dev="luc" type="update" issue="1304">
           Make access to raw albedo and infrared radiation pressure in KnockeRediffusedForceModel public.
       </action>

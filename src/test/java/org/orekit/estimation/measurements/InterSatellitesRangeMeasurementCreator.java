@@ -76,7 +76,7 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
     public void handleStep(final SpacecraftState currentState) {
         try {
             final AbsoluteDate     date      = currentState.getDate();
-            final Vector3D         position  = currentState.toTransform().toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
+            final Vector3D         position  = currentState.toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
             final double           remoteClk = remote.getClockOffsetDriver().getValue(date);
             final double           localClk  = local.getClockOffsetDriver().getValue(date);
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);
@@ -106,13 +106,13 @@ public class InterSatellitesRangeMeasurementCreator extends MeasurementCreator {
                 // generate a two-way measurement
                 final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
                     public double value(final double x) {
-                        final Vector3D self = currentState.shiftedBy(-downLinkDelay - x).toTransform().toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
+                        final Vector3D self = currentState.shiftedBy(-downLinkDelay - x).toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
                         final double d = Vector3D.distance(otherAtTransit, self);
                         return d - x * Constants.SPEED_OF_LIGHT;
                     }
                 }, -1.0, 1.0);
                 final Vector3D selfAtEmission  =
-                                currentState.shiftedBy(-downLinkDelay - upLinkDelay).toTransform().toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
+                                currentState.shiftedBy(-downLinkDelay - upLinkDelay).toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
                 final double upLinkDistance = Vector3D.distance(otherAtTransit, selfAtEmission);
                 addMeasurement(new InterSatellitesRange(local, remote, true, date,
                                                         0.5 * (downLinkDistance + upLinkDistance), 1.0, 10));
