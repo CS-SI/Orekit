@@ -401,7 +401,8 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
     protected SpacecraftState interpolate(final InterpolationData interpolationData) {
 
         // Get first state definition
-        final SpacecraftState earliestState   = interpolationData.getNeighborList().get(0);
+        final List<SpacecraftState> samples   = interpolationData.getNeighborList();
+        final SpacecraftState earliestState   = samples.get(0);
         final boolean         areOrbitDefined = earliestState.isOrbitDefined();
 
         // Prepare samples
@@ -419,7 +420,6 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
                 createAdditionalStateSample(additionalDotEntries);
 
         // Fill interpolators with samples
-        final List<SpacecraftState>       samples      = interpolationData.getCachedSamples().getAll();
         final List<Orbit>                 orbitSample  = new ArrayList<>();
         final List<AbsolutePVCoordinates> absPVASample = new ArrayList<>();
         for (SpacecraftState state : samples) {
