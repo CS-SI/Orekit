@@ -168,6 +168,40 @@ public class ImmutableTimeStampedCacheTest {
         }
     }
 
+    /** Check findIndex(...) returns results on a half closed interval. */
+    @Test
+    public void testGetNeighborsSingle() {
+        // setup
+        cache = new ImmutableTimeStampedCache<>(1, data);
+        int size = data.size();
+
+        // actions + verify
+        // on fist date
+        Assertions.assertArrayEquals(
+                cache.getNeighbors(data.get(0)).toArray(),
+                data.subList(0, 1).toArray());
+        // between fist and second date
+        Assertions.assertArrayEquals(
+                cache.getNeighbors(data.get(0).shiftedBy(0.5)).toArray(),
+                data.subList(0, 1).toArray());
+        // in the middle on a date
+        Assertions.assertArrayEquals(
+                cache.getNeighbors(data.get(2)).toArray(),
+                data.subList(2, 3).toArray());
+        // in the middle between dates
+        Assertions.assertArrayEquals(
+                cache.getNeighbors(data.get(2).shiftedBy(0.1)).toArray(),
+                data.subList(2, 3).toArray());
+        // just before last date
+        Assertions.assertArrayEquals(
+                cache.getNeighbors(data.get(size - 1).shiftedBy(-0.1)).toArray(),
+                data.subList(size - 2, size - 1).toArray());
+        // on last date
+        Assertions.assertArrayEquals(
+                cache.getNeighbors(data.get(size - 1)).toArray(),
+                data.subList(size - 1, size).toArray());
+    }
+
     /**
      * check {@link ImmutableTimeStampedCache#getMaxNeighborsSize()}
      */

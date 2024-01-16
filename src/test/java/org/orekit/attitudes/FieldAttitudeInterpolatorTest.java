@@ -199,8 +199,9 @@ public class FieldAttitudeInterpolatorTest {
         OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
                                                                         () -> attitudeInterpolator.interpolate(interpolationDate, attitudes));
 
-        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS, thrown.getSpecifier());
         Assertions.assertEquals(1, ((Integer) thrown.getParts()[0]).intValue());
+        Assertions.assertEquals(2, ((Integer) thrown.getParts()[1]).intValue());
 
     }
 
