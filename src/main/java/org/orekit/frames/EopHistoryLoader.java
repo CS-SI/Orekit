@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  * @since 6.1
  */
-public interface EOPHistoryLoader {
+public interface EopHistoryLoader {
 
     /** Load celestial body.
      * @param converter converter to use for nutation corrections
@@ -73,7 +73,7 @@ public interface EOPHistoryLoader {
                 final IERSConventions conventions,
                 final ItrfVersionProvider itrfVersionProvider,
                 final TimeScales timeScales) {
-            return new RapidDataAndPredictionXMLLoader.Parser(
+            return new EopXmlLoader.Parser(
                     conventions.getNutationCorrectionConverter(timeScales),
                     itrfVersionProvider,
                     timeScales.getUTC());
@@ -129,7 +129,7 @@ public interface EOPHistoryLoader {
                 final IERSConventions conventions,
                 final ItrfVersionProvider itrfVersionProvider,
                 final TimeScales timeScales) {
-            return new EOPC04FilesLoader.Parser(conventions.getNutationCorrectionConverter(timeScales),
+            return new EopC04FilesLoader.Parser(conventions.getNutationCorrectionConverter(timeScales),
                                                 timeScales.getUTC());
         }
 

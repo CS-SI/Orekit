@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -81,7 +81,7 @@ public class OneWayGNSSPhaseCreator extends MeasurementCreator {
             final double           localClk  = local.getClockOffsetDriver().getValue(currentState.getDate());
             final double           deltaD    = Constants.SPEED_OF_LIGHT * (localClk - remoteClk);
             final AbsoluteDate     date      = currentState.getDate();
-            final Vector3D         position  = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter1);
+            final Vector3D         position  = currentState.toTransform().toStaticTransform().getInverse().transformPosition(antennaPhaseCenter1);
 
             final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 

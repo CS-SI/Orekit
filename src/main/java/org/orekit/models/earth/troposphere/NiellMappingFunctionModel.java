@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -236,8 +236,8 @@ public class NiellMappingFunctionModel implements MappingFunction {
         function[0] = TroposphericModelUtils.mappingFunction(ah, bh, ch, elevation);
 
         // Wet mapping factor
-        function[1] = TroposphericModelUtils.mappingFunction(zero.add(awFunction.value(absLatidude)), zero.add(bwFunction.value(absLatidude)),
-                                                             zero.add(cwFunction.value(absLatidude)), elevation);
+        function[1] = TroposphericModelUtils.mappingFunction(zero.newInstance(awFunction.value(absLatidude)), zero.newInstance(bwFunction.value(absLatidude)),
+                                                             zero.newInstance(cwFunction.value(absLatidude)), elevation);
 
         // Apply height correction
         final T correction = TroposphericModelUtils.computeHeightCorrection(elevation, point.getAltitude(), field);

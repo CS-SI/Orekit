@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 Romain Serra
+/* Copyright 2002-2024 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,7 +51,7 @@ public class FieldLegendrePolynomials<T extends CalculusFieldElement<T>> {
         // Initialize array
         this.pCoef = MathArrays.buildArray(field, degree + 1, order + 1);
 
-        final T t2 = t.multiply(t);
+        final T t2 = t.square();
 
         for (int n = 0; n <= degree; n++) {
 

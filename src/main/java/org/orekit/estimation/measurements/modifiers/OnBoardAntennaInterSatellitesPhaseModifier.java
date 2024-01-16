@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.gnss.InterSatellitesPhase;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -71,10 +71,10 @@ public class OnBoardAntennaInterSatellitesPhaseModifier implements EstimationMod
         // transforms from spacecraft to inertial frame at emission/reception dates
         final SpacecraftState localState                 = estimated.getStates()[0];
         final SpacecraftState receptionState             = localState.shiftedBy(receptionDate.durationFrom(localState.getDate()));
-        final Transform       receptionSpacecraftToInert = receptionState.toTransform().getInverse();
+        final StaticTransform receptionSpacecraftToInert = receptionState.toStaticTransform().getInverse();
         final SpacecraftState remoteState                = estimated.getStates()[1];
         final SpacecraftState emissionState              = remoteState.shiftedBy(emissionDate.durationFrom(remoteState.getDate()));
-        final Transform       emissionSpacecraftToInert  = emissionState.toTransform().getInverse();
+        final StaticTransform emissionSpacecraftToInert  = emissionState.toStaticTransform().getInverse();
 
         // Compute the geometrical value of the inter-satellites range directly from participants positions.
         final Vector3D pSpacecraftReception = receptionSpacecraftToInert.transformPosition(Vector3D.ZERO);

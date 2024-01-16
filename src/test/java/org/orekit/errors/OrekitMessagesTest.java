@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,11 +26,11 @@ import java.util.ResourceBundle;
 
 public class OrekitMessagesTest {
 
-    private final String[] LANGUAGES_LIST = { "da", "de", "el", "en", "es", "fr", "gl", "it", "no", "ro" };
+    private final String[] LANGUAGES_LIST = { "ca", "da", "de", "el", "en", "es", "fr", "gl", "it", "no", "ro" };
 
     @Test
     public void testMessageNumber() {
-        Assertions.assertEquals(288, OrekitMessages.values().length);
+        Assertions.assertEquals(291, OrekitMessages.values().length);
     }
 
     @Test

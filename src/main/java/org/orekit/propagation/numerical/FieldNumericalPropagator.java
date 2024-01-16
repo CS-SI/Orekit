@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -268,13 +268,13 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                     @Override
                     public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
                         // mu PDriver should have only 1 span
-                        superSetMu(field.getZero().add(driver.getValue(date)));
+                        superSetMu(field.getZero().newInstance(driver.getValue(date)));
                     }
                     /** {@inheritDoc} */
                     @Override
                     public void valueSpanMapChanged(final TimeSpanMap<Double> previousValue, final ParameterDriver driver) {
                         // mu PDriver should have only 1 span
-                        superSetMu(field.getZero().add(driver.getValue()));
+                        superSetMu(field.getZero().newInstance(driver.getValue()));
                     }
                 });
             } catch (OrekitException oe) {
@@ -379,11 +379,6 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
             setMu(state.getMu());
         }
         setStartDate(state.getDate());
-    }
-
-    /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-        return propagate(date).getPVCoordinates(frame);
     }
 
     /** {@inheritDoc} */

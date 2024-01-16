@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TrackingCoordinates;
 
 /** Class modifying theoretical angular measurement with ionospheric delay.
  * The effect of ionospheric correction on the angular measurement is computed
@@ -105,14 +106,13 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
         final Frame        inertial = transitState.getFrame();
 
         // Elevation and azimuth in radians
-        final double elevation = station.getBaseFrame().getElevation(position, inertial, date);
-        final double baseAzimuth = station.getBaseFrame().getAzimuth(position, inertial, date);
-        final double twoPiWrap   = MathUtils.normalizeAngle(baseAzimuth, measure.getObservedValue()[0]) - baseAzimuth;
-        final double azimuth     = baseAzimuth + twoPiWrap;
+        final TrackingCoordinates tc = station.getBaseFrame().getTrackingCoordinates(position, inertial, date);
+        final double twoPiWrap   = MathUtils.normalizeAngle(tc.getAzimuth(), measure.getObservedValue()[0]) - tc.getAzimuth();
+        final double azimuth     = tc.getAzimuth() + twoPiWrap;
 
         // Update estimated value taking into account the ionospheric delay.
         // Azimuth - elevation values
-        estimated.setEstimatedValue(azimuth, elevation);
+        estimated.setEstimatedValue(azimuth, tc.getElevation());
     }
 
 }

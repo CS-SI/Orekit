@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,6 +38,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public abstract class AbstractIodTest {
@@ -92,16 +93,7 @@ public abstract class AbstractIodTest {
         final AngularRaDec raDec = new AngularRaDec(observer, gcrf, date, new double[] { 0.0, 0.0 },
                                                     new double[] { 1.0, 1.0 },
                                                     new double[] { 1.0, 1.0 }, new ObservableSatellite(0));
-        final Frame                    frame        = prop.getFrame();
-        final TimeStampedPVCoordinates satPV        = prop.getPVCoordinates(date, frame);
-        final AbsolutePVCoordinates    satPVInFrame = new AbsolutePVCoordinates(frame, satPV);
-        final SpacecraftState[]        satState     = new SpacecraftState[] { new SpacecraftState(satPVInFrame) };
-        final double[]                 angular      = raDec.estimateWithoutDerivatives(0, 0, satState).getEstimatedValue();
-
-        final double ra = angular[0];
-        final double dec = angular[1];
-
-        return new Vector3D(ra, dec);
+        return (getEstimatedLineOfSight(raDec, prop, date, gcrf));
     }
 
     protected AngularAzEl getAzEl(final Propagator prop, final AbsoluteDate date) {
@@ -127,5 +119,23 @@ public abstract class AbstractIodTest {
         return FastMath.abs(estimatedGauss.getPVCoordinates().getVelocity().getNorm() -
                                     orbitRef.getPVCoordinates().getVelocity().getNorm()) /
                 FastMath.abs(orbitRef.getPVCoordinates().getVelocity().getNorm());
+    }
+    
+    /** Calculate the estimated Line Of Sight of a RADEC measurement at a given date.
+     *
+     * @param pvProvider provider for satellite coordinates
+     * @param date the date for which the line of sight must be computed
+     * @param outputFrame output frame for the line of sight
+     * @return the estimate line of Sight of the measurement at the given date.
+     */
+    private Vector3D getEstimatedLineOfSight(final AngularRaDec raDec, final PVCoordinatesProvider pvProvider, final AbsoluteDate date, final Frame outputFrame) {
+        final TimeStampedPVCoordinates satPV       = pvProvider.getPVCoordinates(date, outputFrame);
+        final AbsolutePVCoordinates    satPVInGCRF = new AbsolutePVCoordinates(outputFrame, satPV);
+        final SpacecraftState[]        satState    = new SpacecraftState[] { new SpacecraftState(satPVInGCRF) };
+        final double[]                 angular     = raDec.estimateWithoutDerivatives(0, 0, satState).getEstimatedValue();
+
+        // Rotate LOS from RADEC reference frame to output frame
+        return raDec.getReferenceFrame().getStaticTransformTo(outputFrame, date)
+                        .transformVector(new Vector3D(angular[0], angular[1]));
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +30,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
@@ -112,7 +113,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit) {
         this(orbit, SpacecraftState.getDefaultAttitudeProvider(orbit.getFrame())
                         .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-             orbit.getA().getField().getZero().add(DEFAULT_MASS), (FieldArrayDictionary<T>) null);
+             orbit.getA().getField().getZero().newInstance(DEFAULT_MASS), (FieldArrayDictionary<T>) null);
     }
 
     /** Build a spacecraft state from orbit and attitude.
@@ -124,7 +125,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude)
         throws IllegalArgumentException {
-        this(orbit, attitude, orbit.getA().getField().getZero().add(DEFAULT_MASS), (FieldArrayDictionary<T>) null);
+        this(orbit, attitude, orbit.getA().getField().getZero().newInstance(DEFAULT_MASS), (FieldArrayDictionary<T>) null);
     }
 
     /** Create a new instance from orbit and mass.
@@ -159,7 +160,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldArrayDictionary<T> additional) {
         this(orbit, SpacecraftState.getDefaultAttitudeProvider(orbit.getFrame())
                         .getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
-             orbit.getA().getField().getZero().add(DEFAULT_MASS), additional);
+             orbit.getA().getField().getZero().newInstance(DEFAULT_MASS), additional);
     }
 
     /** Build a spacecraft state from orbit attitude and additional states.
@@ -173,7 +174,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldOrbit<T> orbit, final FieldAttitude<T> attitude, final FieldArrayDictionary<T> additional)
         throws IllegalArgumentException {
-        this(orbit, attitude, orbit.getA().getField().getZero().add(DEFAULT_MASS), additional);
+        this(orbit, attitude, orbit.getA().getField().getZero().newInstance(DEFAULT_MASS), additional);
     }
 
     /** Create a new instance from orbit, mass and additional states.
@@ -249,7 +250,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
             state.getOrbit().getType().mapOrbitToArray(state.getOrbit(), positionAngleType, stateD, stateDotD);
             final T[] stateF    = MathArrays.buildArray(field, 6);
             for (int i = 0; i < stateD.length; ++i) {
-                stateF[i]    = field.getZero().add(stateD[i]);
+                stateF[i]    = field.getZero().newInstance(stateD[i]);
             }
             final T[] stateDotF;
             if (stateDotD == null) {
@@ -257,14 +258,14 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
             } else {
                 stateDotF = MathArrays.buildArray(field, 6);
                 for (int i = 0; i < stateDotD.length; ++i) {
-                    stateDotF[i] = field.getZero().add(stateDotD[i]);
+                    stateDotF[i] = field.getZero().newInstance(stateDotD[i]);
                 }
             }
 
             final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, state.getDate());
 
             this.orbit    = state.getOrbit().getType().mapArrayToOrbit(stateF, stateDotF, positionAngleType, dateF,
-                                                                       field.getZero().add(state.getMu()), state.getFrame());
+                                                                       field.getZero().newInstance(state.getMu()), state.getFrame());
             this.absPva   = null;
 
         } else {
@@ -279,7 +280,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         }
 
         this.attitude = new FieldAttitude<>(field, state.getAttitude());
-        this.mass     = field.getZero().add(state.getMass());
+        this.mass     = field.getZero().newInstance(state.getMass());
 
         final DoubleArrayDictionary additionalD = state.getAdditionalStatesValues();
         if (additionalD.size() == 0) {
@@ -310,7 +311,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
         this(absPva,
              SpacecraftState.getDefaultAttitudeProvider(absPva.getFrame()).
                      getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
-             absPva.getDate().getField().getZero().add(DEFAULT_MASS), (FieldArrayDictionary<T>) null);
+             absPva.getDate().getField().getZero().newInstance(DEFAULT_MASS), (FieldArrayDictionary<T>) null);
     }
 
     /** Build a spacecraft state from orbit and attitude.
@@ -322,7 +323,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude)
         throws IllegalArgumentException {
-        this(absPva, attitude, absPva.getDate().getField().getZero().add(DEFAULT_MASS), (FieldArrayDictionary<T>) null);
+        this(absPva, attitude, absPva.getDate().getField().getZero().newInstance(DEFAULT_MASS), (FieldArrayDictionary<T>) null);
     }
 
     /** Create a new instance from orbit and mass.
@@ -357,7 +358,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldArrayDictionary<T> additional) {
         this(absPva, SpacecraftState.getDefaultAttitudeProvider(absPva.getFrame())
                         .getAttitude(absPva, absPva.getDate(), absPva.getFrame()),
-             absPva.getDate().getField().getZero().add(DEFAULT_MASS), additional);
+             absPva.getDate().getField().getZero().newInstance(DEFAULT_MASS), additional);
     }
 
     /** Build a spacecraft state from orbit and attitude.
@@ -372,7 +373,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public FieldSpacecraftState(final FieldAbsolutePVCoordinates<T> absPva, final FieldAttitude<T> attitude,
                                 final FieldArrayDictionary<T> additional)
         throws IllegalArgumentException {
-        this(absPva, attitude, absPva.getDate().getField().getZero().add(DEFAULT_MASS), additional);
+        this(absPva, attitude, absPva.getDate().getField().getZero().newInstance(DEFAULT_MASS), additional);
     }
 
     /** Create a new instance from orbit and mass.
@@ -452,7 +453,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public final FieldSpacecraftState<T> addAdditionalState(final String name, final T... value) {
         final FieldArrayDictionary<T> newDict = new FieldArrayDictionary<>(additional);
         newDict.put(name, value.clone());
-        if (absPva == null) {
+        if (isOrbitDefined()) {
             return new FieldSpacecraftState<>(orbit, attitude, mass, newDict, additionalDot);
         } else {
             return new FieldSpacecraftState<>(absPva, attitude, mass, newDict, additionalDot);
@@ -479,7 +480,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public final FieldSpacecraftState<T> addAdditionalStateDerivative(final String name, final T... value) {
         final FieldArrayDictionary<T> newDict = new FieldArrayDictionary<>(additionalDot);
         newDict.put(name, value.clone());
-        if (absPva == null) {
+        if (isOrbitDefined()) {
             return new FieldSpacecraftState<>(orbit, attitude, mass, additional, newDict);
         } else {
             return new FieldSpacecraftState<>(absPva, attitude, mass, additional, newDict);
@@ -576,7 +577,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     @Override
     public FieldSpacecraftState<T> shiftedBy(final double dt) {
-        if (absPva == null) {
+        if (isOrbitDefined()) {
             return new FieldSpacecraftState<>(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
                                               mass, shiftAdditional(dt), additionalDot);
         } else {
@@ -618,7 +619,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      */
     @Override
     public FieldSpacecraftState<T> shiftedBy(final T dt) {
-        if (absPva == null) {
+        if (isOrbitDefined()) {
             return new FieldSpacecraftState<>(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
                                               mass, shiftAdditional(dt), additionalDot);
         } else {
@@ -690,7 +691,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getOrbit()
      */
     public FieldAbsolutePVCoordinates<T> getAbsPVA() throws OrekitIllegalStateException {
-        if (absPva == null) {
+        if (isOrbitDefined()) {
             throw new OrekitIllegalStateException(OrekitMessages.UNDEFINED_ABSOLUTE_PVCOORDINATES);
         }
         return absPva;
@@ -719,14 +720,14 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     @Override
     public FieldAbsoluteDate<T> getDate() {
-        return (absPva == null) ? orbit.getDate() : absPva.getDate();
+        return isOrbitDefined() ? orbit.getDate() : absPva.getDate();
     }
 
     /** Get the defining frame.
      * @return the frame in which state is defined
      */
     public Frame getFrame() {
-        return (absPva == null) ? orbit.getFrame() : absPva.getFrame();
+        return isOrbitDefined() ? orbit.getFrame() : absPva.getFrame();
     }
 
 
@@ -877,12 +878,21 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
                                     new FieldTransform<>(pv.getDate(), attitude.getOrientation()));
     }
 
+    /** Compute the static transform from state defining frame to spacecraft frame.
+     * @return static transform from specified frame to current spacecraft frame
+     * @see #toTransform()
+     * @since 12.0
+     */
+    public FieldStaticTransform<T> toStaticTransform() {
+        return FieldStaticTransform.of(getDate(), getPosition().negate(), attitude.getRotation());
+    }
+
     /** Get the central attraction coefficient.
      * @return mu central attraction coefficient (m^3/s^2), or {code Double.NaN} if the
      * state contains an absolute position-velocity-acceleration rather than an orbit
      */
     public T getMu() {
-        return (absPva == null) ? orbit.getMu() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getMu() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the Keplerian period.
@@ -893,7 +903,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * than an orbit
      */
     public T getKeplerianPeriod() {
-        return (absPva == null) ? orbit.getKeplerianPeriod() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getKeplerianPeriod() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the Keplerian mean motion.
@@ -904,7 +914,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * than an orbit
      */
     public T getKeplerianMeanMotion() {
-        return (absPva == null) ? orbit.getKeplerianMeanMotion() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getKeplerianMeanMotion() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the semi-major axis.
@@ -913,7 +923,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * than an orbit
      */
     public T getA() {
-        return (absPva == null) ? orbit.getA() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getA() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the first component of the eccentricity vector (as per equinoctial parameters).
@@ -923,7 +933,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getE()
      */
     public T getEquinoctialEx() {
-        return (absPva == null) ? orbit.getEquinoctialEx() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getEquinoctialEx() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the second component of the eccentricity vector (as per equinoctial parameters).
@@ -933,7 +943,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getE()
      */
     public T getEquinoctialEy() {
-        return (absPva == null) ? orbit.getEquinoctialEy() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getEquinoctialEy() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the first component of the inclination vector (as per equinoctial parameters).
@@ -943,7 +953,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getI()
      */
     public T getHx() {
-        return (absPva == null) ? orbit.getHx() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getHx() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the second component of the inclination vector (as per equinoctial parameters).
@@ -953,7 +963,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getI()
      */
     public T getHy() {
-        return (absPva == null) ? orbit.getHy() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getHy() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the true latitude argument (as per equinoctial parameters).
@@ -964,7 +974,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getLM()
      */
     public T getLv() {
-        return (absPva == null) ? orbit.getLv() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getLv() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the eccentric latitude argument (as per equinoctial parameters).
@@ -975,7 +985,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getLM()
      */
     public T getLE() {
-        return (absPva == null) ? orbit.getLE() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getLE() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the mean longitude argument (as per equinoctial parameters).
@@ -986,7 +996,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getLE()
      */
     public T getLM() {
-        return (absPva == null) ? orbit.getLM() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getLM() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     // Additional orbital elements
@@ -999,7 +1009,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getEquinoctialEy()
      */
     public T getE() {
-        return (absPva == null) ? orbit.getE() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getE() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the inclination.
@@ -1008,7 +1018,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getHy()
      */
     public T getI() {
-        return (absPva == null) ? orbit.getI() : absPva.getDate().getField().getZero().add(Double.NaN);
+        return isOrbitDefined() ? orbit.getI() : absPva.getDate().getField().getZero().add(Double.NaN);
     }
 
     /** Get the position in orbit definition frame.
@@ -1016,7 +1026,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @since 12.0
      */
     public FieldVector3D<T> getPosition() {
-        return (absPva == null) ? orbit.getPosition() : absPva.getPosition();
+        return isOrbitDefined() ? orbit.getPosition() : absPva.getPosition();
     }
 
     /** Get the {@link TimeStampedFieldPVCoordinates} in orbit definition frame.
@@ -1030,7 +1040,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @return pvCoordinates in orbit definition frame
      */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates() {
-        return (absPva == null) ? orbit.getPVCoordinates() : absPva.getPVCoordinates();
+        return isOrbitDefined() ? orbit.getPVCoordinates() : absPva.getPVCoordinates();
     }
 
     /** Get the position in given output frame.
@@ -1040,7 +1050,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @see #getPVCoordinates(Frame)
      */
     public FieldVector3D<T> getPosition(final Frame outputFrame) {
-        return (absPva == null) ? orbit.getPosition(outputFrame) : absPva.getPosition(outputFrame);
+        return isOrbitDefined() ? orbit.getPosition(outputFrame) : absPva.getPosition(outputFrame);
     }
 
     /** Get the {@link TimeStampedFieldPVCoordinates} in given output frame.
@@ -1055,7 +1065,7 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
      * @return pvCoordinates in orbit definition frame
      */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame) {
-        return (absPva == null) ? orbit.getPVCoordinates(outputFrame) : absPva.getPVCoordinates(outputFrame);
+        return isOrbitDefined() ? orbit.getPVCoordinates(outputFrame) : absPva.getPVCoordinates(outputFrame);
     }
 
     /** Get the attitude.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -713,9 +713,10 @@ public class EcksteinHechlerPropagatorTest {
         propagator.addEventDetector(detector);
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        final double elevation = topo.getElevation(propagated.getPosition(),
-                                                   propagated.getFrame(),
-                                                   propagated.getDate());
+        final double elevation = topo.getTrackingCoordinates(propagated.getPosition(),
+                                                             propagated.getFrame(),
+                                                             propagated.getDate()).
+                                 getElevation();
         final double zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ();
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) > 7800.0);
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) < 7900.0,"Incorrect value " + farTarget.durationFrom(propagated.getDate()) + " !< 7900");

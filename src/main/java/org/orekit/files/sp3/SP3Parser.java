@@ -705,7 +705,10 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
                     if (pi.latestPosition.getNorm() > 0) {
 
-                        if (line.length() < 69 || line.substring(61, 69).trim().length() == 0) {
+                        if (line.length() < 69 ||
+                            line.substring(61, 63).trim().length() == 0 ||
+                            line.substring(64, 66).trim().length() == 0 ||
+                            line.substring(67, 69).trim().length() == 0) {
                             pi.latestPositionAccuracy = null;
                         } else {
                             pi.latestPositionAccuracy = new Vector3D(SP3Utils.siAccuracy(SP3Utils.POSITION_ACCURACY_UNIT,
@@ -795,7 +798,10 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                                                                                  Double.parseDouble(line.substring(46, 60).trim()));
 
                     final Vector3D velocityAccuracy;
-                    if (line.length() < 69 || line.substring(61, 69).trim().length() == 0) {
+                    if (line.length() < 69 ||
+                        line.substring(61, 63).trim().length() == 0 ||
+                        line.substring(64, 66).trim().length() == 0 ||
+                        line.substring(67, 69).trim().length() == 0) {
                         velocityAccuracy  = null;
                     } else {
                         velocityAccuracy = new Vector3D(SP3Utils.siAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT,

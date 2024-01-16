@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 Mark Rutten
+/* Copyright 2002-2024 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -84,8 +84,8 @@ public class FDOAMeasurementCreator extends MeasurementCreator {
         final Vector3D      velocity = currentState.getPVCoordinates().getVelocity();
 
         // Create a BRR measurement only if elevation for both stations is higher than 30°
-        if ((secondary.getBaseFrame().getElevation(position, inertial, date)  > FastMath.toRadians(30.0)) &&
-            (primary.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0))) {
+        if ((secondary.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation()  > FastMath.toRadians(30.0)) &&
+            (primary.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0))) {
 
             // The solver used
             final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);

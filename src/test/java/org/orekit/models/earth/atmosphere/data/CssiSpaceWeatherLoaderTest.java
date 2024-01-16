@@ -20,6 +20,7 @@ package org.orekit.models.earth.atmosphere.data;
 
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Timeout.ThreadMode.SEPARATE_THREAD;
 import static org.orekit.OrekitMatchers.closeTo;
 import static org.orekit.OrekitMatchers.pvCloseTo;
 
@@ -32,6 +33,7 @@ import java.util.SortedSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -43,6 +45,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -411,11 +414,34 @@ public class CssiSpaceWeatherLoaderTest {
                 final AbsoluteDate currentDate = dates.get(i);
                 Assertions.assertEquals(weatherData.get24HoursKp(currentDate), sortedComputedResults.get(i));
             }
+
+            try {
+                // wait for proper ending
+                service.shutdown();
+                service.awaitTermination(5, TimeUnit.SECONDS);
+            } catch (InterruptedException ie) {
+                // Restore interrupted state...
+                Thread.currentThread().interrupt();
+            }
         }
         catch (Exception e) {
             // Should not fail
             Assertions.fail();
         }
+    }
+
+    @Test
+    @Timeout(value = 5, threadMode = SEPARATE_THREAD)
+    public void testIssue1269() {
+        // GIVEN
+        final NRLMSISE00InputParameters solarActivity =
+                new CssiSpaceWeatherData(CssiSpaceWeatherData.DEFAULT_SUPPORTED_NAMES);
+
+        // WHEN & THEN
+        solarActivity.getAverageFlux(new AbsoluteDate("2025-02-01T00:00:00.000", TimeScalesFactory.getUTC()));
+        solarActivity.getDailyFlux(new AbsoluteDate("2025-02-01T00:00:00.000", TimeScalesFactory.getUTC()));
+        solarActivity.getAp(new AbsoluteDate("2025-02-01T00:00:00.000", TimeScalesFactory.getUTC()));
+
     }
 
     @Test

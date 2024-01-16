@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,8 +22,6 @@ import java.util.List;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
@@ -66,13 +64,11 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
      * @return the measurement error due to Troposphere
      */
     private double phaseErrorTroposphericModel(final GroundStation station, final SpacecraftState state, final double wavelength) {
-        // satellite position
-        final Vector3D position = state.getPosition();
 
         // elevation
-        final double elevation = station.getBaseFrame().getElevation(position,
-                                                                     state.getFrame(),
-                                                                     state.getDate());
+        final double elevation =
+                        station.getBaseFrame().getTrackingCoordinates(state.getPosition(), state.getFrame(), state.getDate()).
+                        getElevation();
 
         // only consider measures above the horizon
         if (elevation > 0) {
@@ -102,10 +98,9 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         final T zero         = field.getZero();
 
         // satellite elevation
-        final FieldVector3D<T> position     = state.getPosition();
-        final T elevation                   = station.getBaseFrame().getElevation(position,
-                                                                                  state.getFrame(),
-                                                                                  state.getDate());
+        final T elevation =
+                        station.getBaseFrame().getTrackingCoordinates(state.getPosition(), state.getFrame(), state.getDate()).
+                        getElevation();
 
 
         // only consider measures above the horizon

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -247,8 +247,8 @@ class Alfriend1999Test {
                         armellinDataRowList);
 
         // THEN
-        Assertions.assertTrue(statistics.getMean() <= 8.844620688058309E-10);
-        Assertions.assertTrue(statistics.getStandardDeviation() <= 3.606826996118531E-9);
+        Assertions.assertTrue(statistics.getMean() <= 8.8446207E-10);
+        Assertions.assertTrue(statistics.getStandardDeviation() <= 3.6068271E-9);
     }
 
     /**

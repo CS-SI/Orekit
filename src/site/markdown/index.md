@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2023 CS GROUP
+<!--- Copyright 2002-2024 CS GROUP
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -14,8 +14,7 @@
 
 # Overview
 
-  OREKIT (ORbits Extrapolation KIT) is a free low-level space dynamics library
-  written in Java.
+  OREKIT is a free low-level space dynamics library written in Java.
 
   It provides basic elements (orbits, dates, attitude, frames ...) and
   various algorithms to handle them (conversions, analytical and numerical
@@ -36,7 +35,7 @@
       (or telemetry-dependent) frames
     * predefined frames (EME2000/J2000, ICRF, GCRF, all ITRF from 1988 to 2020
       and intermediate frames, TOD, MOD, GTOD and TOD frames, Veis, topocentric, TEME and PZ-90.11 frames,
-      tnw and qsw local orbital frames, Moon, Sun, planets, solar system barycenter,
+      tnw and qsw local orbital frames, relative encounter frames, Moon, Sun, planets, solar system barycenter,
       Earth-Moon barycenter, ecliptic)
     * user extensible (used operationally in real time with a set of about 60 frames on
       several spacecraft)
@@ -55,6 +54,7 @@
     * Cartesian, Keplerian (elliptic, parabolic, hyperbolic), circular and equinoctial parameters, with non-Keplerian
       derivatives if available
     * Two-Line Elements (TLE)
+    * Two-Line Elements generation using Fixed-Point algorithm or Least Squares Fitting
     * transparent conversion between all parameters
     * automatic binding with frames
     * attitude state and derivative
@@ -69,6 +69,7 @@
 	* covariance extrapolation using a Keplerian model
     * covariance frame transformation (inertial, Earth fixed, and local orbital frames)
     * covariance type transformation (cartesian, keplerian, circular, and equinoctial)
+    * covariance interpolation based on the blending model
 
   * Maneuvers
 
@@ -88,6 +89,7 @@
           and the perturbative acceleration due to atmospheric drag
         * SDP4/SGP4 with 2006 corrections
         * GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, IRNSS and SBAS
+        * Intelsat's 11 elements
     * numerical propagators
         * central attraction
         * gravity models including time-dependent like trends and pulsations
@@ -110,7 +112,7 @@
     * semi-analytical propagation model (DSST)
         * central attraction
         * gravity models
-        * J2-squared effect
+        * J2-squared effect (Zeis model)
         * atmospheric drag
         * third body attraction
         * radiation pressure with eclipses
@@ -147,6 +149,7 @@
           step handler alongside the operational ones
     * handling of discrete events during integration
       (models changes, G-stop, simple notifications ...)
+    * adaptable max checking interval for discrete events detection
     * predefined discrete events
         * eclipse (both umbra and penumbra)
         * ascending and descending node crossing
@@ -167,7 +170,7 @@
         * spacecraft detection in ground based Field Of View (any shape)
         * sensor Field Of View (any shape) overlapping complex geographic zone
         * complex geographic zones traversal
-        * inter-satellites direct view
+        * inter-satellites direct view (with customizable skimming altitude)
         * ground at night
         * impulse maneuvers occurrence
         * geomagnetic intensity
@@ -223,7 +226,7 @@
     * orbit determination can be performed with numerical, DSST, SDP4/SGP4, Eckstein-Hechler, Brouwer-Lyddane, or Keplerian propagators
     * ephemeris-based orbit determination to estimate measurement parameters like station biases or clock offsets
     * multi-satellites orbit determination
-    * initial orbit determination methods (Gibbs, Gooding, Lambert and Laplace)
+    * initial orbit determination methods (Gibbs, Gooding, Lambert, Gauss, and Laplace)
     * ground stations displacements due to solid tides
     * ground stations displacements due to ocean loading (based on Onsala Space Observatory files in BLQ format)
     * ground stations displacements due to plate tectonics
@@ -255,6 +258,7 @@
         * delays
         * Antenna Phase Center
         * Shapiro relativistic effect
+        * aberration of light in telescope measurements
     * possibility to add custom measurement modifiers (even for predefined events)
     * combination of GNSS measurements
         * dual frequency combination of measurements
@@ -274,13 +278,14 @@
 
     * computation of Dilution Of Precision
     * loading of ANTEX antenna models file
-    * loading of RINEX observation files (version 2, 3, and 4)
+    * loading and writing of RINEX observation files (version 2, 3, and 4)
     * loading of RINEX navigation files (version 2, 3, and 4)
     * support for Hatanaka compact RINEX format
     * loading of SINEX file (can load station positions, eccentricities, EOPs, and Differential Code Biases)
     * loading of RINEX clock files (version 2 and version 3)
     * parsing of IGS SSR messages for all constellations (version 1)
     * parsing of RTCM messages (both ephemeris and correction messages)
+    * parsing of GPS RF link binary message
     * Hatch filters for GNSS measurements smoothing
     * implementation of Ntrip protocol
     * decoding of GPS navigation messages
@@ -288,10 +293,12 @@
   * Orbit file handling
   
     * loading and writing of SP3 orbit files (from version a to d)
+    * splicing and interpolation of SP3 files
     * loading and writing of CCSDS Orbit Data Messages (OPM, OEM, OMM and OCM types are supported, in both KVN and XML formats, standalone or in combined NDM)
     * loading of SEM and YUMA files for GPS constellation
     * exporting of ephemeris in CCSDS OEM and OCM file formats
     * loading of ILRS CPF orbit files
+    * exporting of ephemeris in STK format
 
   * Earth models
   
@@ -317,7 +324,15 @@
   * Collisions
 
     * loading and writing of CCSDS Conjunction Data Messages (CDM in both KVN and XML formats)
-    
+    * 2D probability of collision computing methods assuming short term encounter and spherical bodies:
+      
+      * Chan 1997
+      * Alfriend 1999
+      * Alfriend 1999 (maximum version)
+      * Alfano 2005
+      * Patera 2005 (custom Orekit implementation) (recommended)
+      * Laas 2015 (recommended)
+
   * Customizable data loading
 
     * loading by exploring folders hierarchy on local disk
@@ -334,6 +349,7 @@
 
   * Localized in several languages
 
+    * Catalan
     * Danish
     * English
     * French

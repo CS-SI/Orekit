@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -62,9 +62,6 @@ public class NeQuickModel implements IonosphericModel {
 
     /** NeQuick resources base directory. */
     private static final String NEQUICK_BASE = "/assets/org/orekit/nequick/";
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 201928051L;
 
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile("\\s+");
@@ -501,7 +498,7 @@ public class NeQuickModel implements IonosphericModel {
 
         // Compute the exponential argument for each layer (Eq. 111 to 113)
         // If h < 100km we use h = 100km as recommended in the reference document
-        final T   hTemp = FastMath.max(zero.add(100.0), h);
+        final T   hTemp = FastMath.max(zero.newInstance(100.0), h);
         final T   exp   = clipExp(field, FastMath.abs(hTemp.subtract(parameters.getHmF2())).add(1.0).divide(10.0).reciprocal());
         final T[] arguments = MathArrays.buildArray(field, 3);
         arguments[0] = hTemp.subtract(parameters.getHmF2()).divide(bf2);
@@ -658,9 +655,9 @@ public class NeQuickModel implements IonosphericModel {
     private <T extends CalculusFieldElement<T>> T clipExp(final Field<T> field, final T power) {
         final T zero = field.getZero();
         if (power.getReal() > 80.0) {
-            return zero.add(5.5406E34);
+            return zero.newInstance(5.5406E34);
         } else if (power.getReal() < -80) {
-            return zero.add(1.8049E-35);
+            return zero.newInstance(1.8049E-35);
         } else {
             return FastMath.exp(power);
         }

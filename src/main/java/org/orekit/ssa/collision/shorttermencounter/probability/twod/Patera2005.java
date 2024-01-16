@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,9 +56,15 @@ public class Patera2005 extends AbstractShortTermEncounter1DNumerical2DPOCMethod
     /** Default threshold defining if miss-distance and combined radius are considered equal (+- 10 cm). */
     private static final double DEFAULT_EQUALITY_THRESHOLD = 1e-1;
 
-    /** Default constructor built with a trapezoid integrator and a maximum number of evaluation of 5000. */
+    /**
+     * Default constructor built with the following trapezoid integrator:
+     * <ul>
+     *     <li>Minimal iteration count of 5</li>
+     *     <li>Maximum iteration count of 50000</li>
+     * </ul>.
+     */
     public Patera2005() {
-        this(new TrapezoidIntegrator(), 5000);
+        this(new TrapezoidIntegrator(5, TrapezoidIntegrator.TRAPEZOID_MAX_ITERATIONS_COUNT), 50000);
     }
 
     /**
@@ -116,10 +122,10 @@ public class Patera2005 extends AbstractShortTermEncounter1DNumerical2DPOCMethod
         final Field<T> field      = xm.getField();
         final T        zero       = field.getZero();
         final T        one        = field.getOne();
-        final T        twoPiField = one.multiply(MathUtils.TWO_PI);
+        final T        twoPiField = one.newInstance(MathUtils.TWO_PI);
 
         final T      value;
-        final double missDistance = xm.multiply(xm).add(ym.multiply(ym)).sqrt().getReal();
+        final double missDistance = xm.square().add(ym.square()).sqrt().getReal();
         final double radiusReal   = radius.getReal();
 
         // Reference outside the hardbody area, first part of eq(11) is equal to 0
@@ -393,10 +399,10 @@ public class Patera2005 extends AbstractShortTermEncounter1DNumerical2DPOCMethod
             final T yPrime   = getYPrime(sinTheta);
             final T rSquared = getRSquared(xPrime, yPrime);
 
-            return rSquared.divide(sigma).divide(sigma).multiply(-0.5).exp()
+            return rSquared.divide(sigma.square()).multiply(-0.5).exp()
                            .multiply(radius.multiply(scaleFactor).multiply(xm.multiply(cosTheta)
                                                                              .add(ym.multiply(sinTheta)))
-                                           .add(scaleFactor.multiply(radius).multiply(radius))).divide(rSquared);
+                                           .add(scaleFactor.multiply(radius.square()))).divide(rSquared);
         }
 
     }
@@ -437,7 +443,7 @@ public class Patera2005 extends AbstractShortTermEncounter1DNumerical2DPOCMethod
 
             final T xPrime            = scaleFactor.multiply(xm).add(scaleFactor.multiply(radius).multiply(cosTheta));
             final T yPrime            = ym.add(radius.multiply(sinTheta));
-            final T rSquared          = xPrime.multiply(xPrime).add(yPrime.multiply(yPrime));
+            final T rSquared          = xPrime.square().add(yPrime.square());
             final T sigmaSquared      = sigma.multiply(sigma);
             final T oneOverTwoSigmaSq = sigmaSquared.multiply(2.).reciprocal();
             final T rSqOverTwoSigmaSq = rSquared.multiply(oneOverTwoSigmaSq);

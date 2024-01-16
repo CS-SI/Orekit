@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,16 +30,33 @@ import org.orekit.time.FieldAbsoluteDate;
  *
  * <p>Events detectors are a useful solution to meet the requirements
  * of propagators concerning discrete conditions. The state of each
- * event detector is queried by the integrator at each step. When the
- * sign of the underlying g switching function changes, the step is rejected
- * and reduced, in order to make sure the sign changes occur only at steps
- * boundaries.</p>
+ * event detector is queried by the propagator from time to time, at least
+ * once every {@link #getMaxCheckInterval() max check interval} but it may
+ * be more frequent. When the sign of the underlying g switching function
+ * changes, a root-finding algorithm is run to precisely locate the event,
+ * down to a configured {@link #getThreshold() convergence threshold}. The
+ * {@link #getMaxCheckInterval() max check interval} is therefore devoted to
+ * separate roots and is often much larger than the  {@link #getThreshold()
+ * convergence threshold}.</p>
  *
- * <p>When step ends exactly at a switching function sign change, the corresponding
- * event is triggered, by calling thethe {@link FieldEventHandler#eventOccurred(FieldSpacecraftState,
- * FieldEventDetector, boolean) eventOccurred} method from the associated
- * {@link #getHandler() handler}. The method can do whatever it needs with the event (logging it,
- * performing some processing, ignore it ...). The return value of the method will be used by
+ * <p>The physical meaning of the g switching function is not really used
+ * by the event detection algorithms. Its varies from event detector to
+ * event detector. One example would be a visibility detector that could use the
+ * angular elevation of the satellite above horizon as a g switching function.
+ * In this case, the function would switch from negative to positive when the
+ * satellite raises above horizon and it would switch from positive to negative
+ * when it sets backs below horizon. Another example would be an apside detector
+ * that could use the dot product of position and velocity. In this case, the
+ * function would switch from negative to positive when the satellite crosses
+ * periapsis and it would switch from positive to negative when the satellite
+ * crosses apoapsis.</p>
+ *
+ * <p>When the precise state at which the g switching function changes has been
+ * located, the corresponding event is triggered, by calling the {@link
+ * FieldEventHandler#eventOccurred(FieldSpacecraftState, FieldEventDetector, boolean)
+ * eventOccurred} method from the associated {@link #getHandler() handler}.
+ * The method can do whatever it needs with the event (logging it, performing
+ * some processing, ignore it ...). The return value of the method will be used by
  * the propagator to stop or resume propagation, possibly changing the state vector.</p>
  *
  * @param <T> type of the field element

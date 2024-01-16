@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 Luc Maisonobe
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -115,7 +115,7 @@ public abstract class Panel {
     /** Get radiation pressure specular reflection coefficient.
      * @return radiation pressure specular reflection coefficient
      */
-    public double geReflection() {
+    public double getReflection() {
         return reflection;
     }
 

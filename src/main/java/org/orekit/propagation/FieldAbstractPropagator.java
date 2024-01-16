@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,6 @@ import org.orekit.propagation.sampling.FieldStepHandlerMultiplexer;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.FieldTimeSpanMap;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Common handling of {@link Propagator} methods for analytical propagators.
  * <p>
@@ -244,11 +243,6 @@ public abstract class FieldAbstractPropagator<T extends CalculusFieldElement<T>>
             startDate = getInitialState().getDate();
         }
         return propagate(startDate, target);
-    }
-
-    /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-        return propagate(date).getPVCoordinates(frame);
     }
 
     /** Initialize propagation.

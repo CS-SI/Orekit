@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,9 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.ssa.collision.shorttermencounter.probability.twod;
-
-import java.io.IOException;
-import java.util.List;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -54,6 +51,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
+
+import java.io.IOException;
+import java.util.List;
 
 class Patera2005Test {
 
@@ -413,7 +413,7 @@ class Patera2005Test {
         final double halfCombinedRadius = rows.get(rowIndex).getMissDistance() * 500;
 
         final Orbit primary = new CartesianOrbit(rows.get(rowIndex).getPrimaryPVCoordinates(),
-                                                 frame, date, mu);
+                frame, date, mu);
         final RealMatrix primaryCovarianceMatrix = rows.get(rowIndex).getPrimaryCovarianceMatrixInPrimaryRTN();
         final StateCovariance primaryCovariance =
                 new StateCovariance(primaryCovarianceMatrix, date, LOFType.QSW_INERTIAL);
@@ -421,14 +421,14 @@ class Patera2005Test {
         final Orbit secondary = new CartesianOrbit(
                 rows.get(rowIndex).getSecondaryPVCoordinates(), frame, date, mu);
         final RealMatrix secondaryCovarianceMatrix = rows.get(rowIndex)
-                                                         .getSecondaryCovarianceMatrixInSecondaryRTN();
+                .getSecondaryCovarianceMatrixInSecondaryRTN();
         final StateCovariance secondaryCovariance = new StateCovariance(secondaryCovarianceMatrix, date,
-                                                                        LOFType.QSW_INERTIAL);
+                LOFType.QSW_INERTIAL);
 
         // WHEN
         final ProbabilityOfCollision pateraResult =
                 patera.compute(primary, primaryCovariance, halfCombinedRadius, secondary, secondaryCovariance,
-                               halfCombinedRadius);
+                        halfCombinedRadius);
 
         // THEN
         Assertions.assertEquals(0.0012768565223002992, pateraResult.getValue(), 1e-19);
@@ -445,9 +445,9 @@ class Patera2005Test {
     void testComputeProbabilityFromACdm() {
 
         // GIVEN
-        final String cdmPath   = "/collision-resources/ION_SCV8_vs_STARLINK_1233.txt";
-        final DataSource  data = new DataSource(cdmPath, () -> Thread.currentThread().getClass().getResourceAsStream(cdmPath));
-        final Cdm         cdm  = new ParserBuilder().buildCdmParser().parseMessage(data);
+        final String     cdmPath = "/ccsds/cdm/ION_SCV8_vs_STARLINK_1233.txt";
+        final DataSource data    = new DataSource(cdmPath, () -> getClass().getResourceAsStream(cdmPath));
+        final Cdm        cdm     = new ParserBuilder().buildCdmParser().parseMessage(data);
 
         // Radii taken from comments in the conjunction data message
         final double primaryRadius   = 5;
@@ -457,7 +457,7 @@ class Patera2005Test {
 
         // WHEN
         final ProbabilityOfCollision result = customMethod.compute(cdm, primaryRadius, secondaryRadius,
-                                                                   new TrapezoidIntegrator(), 50, 1e-15);
+                new TrapezoidIntegrator(), 50, 1e-15);
 
         // THEN
         Assertions.assertEquals(0.003496517644384083, result.getValue(), 1e-18);
@@ -847,7 +847,7 @@ class Patera2005Test {
         // Primary
         final FieldOrbit<Binary64> primary =
                 new FieldCartesianOrbit<>(new FieldPVCoordinates<>(field, rows.get(rowIndex).getPrimaryPVCoordinates()),
-                                          frame, date, mu);
+                        frame, date, mu);
         final FieldMatrix<Binary64> primaryCovarianceMatrix =
                 rows.get(rowIndex).getPrimaryFieldCovarianceMatrixInPrimaryRTN();
         final FieldStateCovariance<Binary64> primaryCovariance =
@@ -864,7 +864,7 @@ class Patera2005Test {
         // WHEN
         final FieldProbabilityOfCollision<Binary64> pateraResult =
                 patera.compute(primary, primaryCovariance, halfCombinedRadius, secondary, secondaryCovariance,
-                               halfCombinedRadius);
+                        halfCombinedRadius);
 
         // THEN
         Assertions.assertEquals(0.0012768565222964375, pateraResult.getValue().getReal(), 1e-19);
@@ -880,9 +880,9 @@ class Patera2005Test {
     void testComputeProbabilityFromACdmField() {
 
         // GIVEN
-        final String cdmPath   = "/collision-resources/ION_SCV8_vs_STARLINK_1233.txt";
-        final DataSource  data = new DataSource(cdmPath, () -> Thread.currentThread().getClass().getResourceAsStream(cdmPath));
-        final Cdm         cdm  = new ParserBuilder().buildCdmParser().parseMessage(data);
+        final String     cdmPath = "/ccsds/cdm/ION_SCV8_vs_STARLINK_1233.txt";
+        final DataSource data    = new DataSource(cdmPath, () -> getClass().getResourceAsStream(cdmPath));
+        final Cdm        cdm     = new ParserBuilder().buildCdmParser().parseMessage(data);
 
         final Field<Binary64> field = Binary64Field.getInstance();
 
@@ -894,11 +894,172 @@ class Patera2005Test {
 
         // WHEN
         final FieldProbabilityOfCollision<Binary64> result = customMethod.compute(cdm, primaryRadius, secondaryRadius,
-                                                                                  new FieldTrapezoidIntegrator<>(field),
-                                                                                  55,
-                                                                                  1e-15);
+                new FieldTrapezoidIntegrator<>(field),
+                55,
+                1e-15);
 
         // THEN
-        Assertions.assertEquals(0.0034965176443840836, result.getValue().getReal(), 1e-19);
+        Assertions.assertEquals(0.0034965176443840836, result.getValue().getReal(), 2e-18);
+    }
+
+
+    @Test
+    @DisplayName("Alfano test case 1 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase01() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase01.cdm";
+        final double combinedHbr = 15.;
+
+        // Excepted outcome
+        final double expectedPc = 0.146749549;
+        final double tolerance = 1e-6;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 2 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase02() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase02.cdm";
+        final double combinedHbr = 4.;
+
+        // Excepted outcome
+        final double expectedPc = 0.006222267;
+        final double tolerance = 1e-6;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 3 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase03() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase03.cdm";
+        final double combinedHbr = 15.;
+
+        // Excepted outcome
+        final double expectedPc = 0.100351176;
+        final double tolerance = 1e-6;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 4 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase04() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase04.cdm";
+        final double combinedHbr = 15.;
+
+        // Excepted outcome
+        final double expectedPc = 0.049323406;
+        final double tolerance = 1e-5;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 5 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase05() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase05.cdm";
+        final double combinedHbr = 10.;
+
+        // Excepted outcome
+        final double expectedPc = 0.044487386;
+        final double tolerance = 1e-5;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 6 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase06() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase06.cdm";
+        final double combinedHbr = 10.;
+
+        // Excepted outcome
+        final double expectedPc = 0.004335455;
+        final double tolerance = 1e-8;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 7 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase07() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase07.cdm";
+        final double combinedHbr = 10.;
+
+        // Excepted outcome
+        final double expectedPc = 0.000158147;
+        final double tolerance = 1e-9;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 8 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase08() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase08.cdm";
+        final double combinedHbr = 4.;
+
+        // Excepted outcome
+        final double expectedPc = 0.036948008;
+        final double tolerance = 1e-5;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    @Test
+    @DisplayName("Alfano test case 9 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase09() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase09.cdm";
+        final double combinedHbr = 6.;
+
+        // Excepted outcome
+        final double expectedPc = 0.290146291;
+        final double tolerance = 2e-5;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    // Alfano test case 10 is a duplicate of test 9 in the NASA CARA unit tests.
+
+    @Test
+    @DisplayName("Alfano test case 11 (CDM) from NASA CARA")
+    void AlfanoCDMTestCase11() {
+        // Inputs from NASA CARA
+        String cdmName = "AlfanoTestCase11.cdm";
+        final double combinedHbr = 4.;
+
+        // Excepted outcome
+        final double expectedPc = 0.002672026;
+        final double tolerance = 1e-7;
+
+        computeAndCheckCollisionProbability(cdmName, combinedHbr, expectedPc, tolerance);
+    }
+
+    private void computeAndCheckCollisionProbability(
+            final String cdmName,
+            final double combinedHbr,
+            final double expected,
+            final double tolerance) {
+
+        // Given
+        final String     cdmPath = "/ccsds/cdm/" + cdmName;
+        final DataSource data    = new DataSource(cdmPath, () -> getClass().getResourceAsStream(cdmPath));
+        final Cdm        cdm     = new ParserBuilder().buildCdmParser().parseMessage(data);
+
+        // When
+        final ProbabilityOfCollision result = method.compute(cdm, combinedHbr);
+
+        // Then
+        Assertions.assertEquals(expected, result.getValue(), tolerance);
     }
 }

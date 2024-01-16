@@ -147,7 +147,7 @@ public class FixedTroposphericDelay implements DiscreteTroposphericModel {
         final T zero = date.getField().getZero();
         final T pi   = zero.getPi();
         // limit the height to 5000 m
-        final T h = FastMath.min(FastMath.max(zero, point.getAltitude()), zero.add(5000));
+        final T h = FastMath.min(FastMath.max(zero, point.getAltitude()), zero.newInstance(5000));
         // limit the elevation to 0 - π
         final T ele = FastMath.min(pi, FastMath.max(zero, elevation));
         // mirror elevation at the right angle of π/2

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.hipparchus.fraction.Fraction;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -41,11 +42,15 @@ public class UnitTest {
         Assertions.assertEquals(    3600.0, Unit.HOUR.toSI(1.0),   1.0e-10);
         Assertions.assertEquals(   86400.0, Unit.DAY.toSI(1.0),    1.0e-10);
         Assertions.assertEquals(31557600.0, Unit.YEAR.toSI(1.0),   1.0e-10);
+        Assertions.assertEquals(31557600.0, Unit.YEAR.toSI(Double.valueOf(1.0)),   1.0e-10);
+        Assertions.assertEquals(31557600.0, Unit.YEAR.toSI(new Binary64(1.0)).getReal(),   1.0e-10);
         Assertions.assertEquals(1.0,        Unit.SECOND.fromSI(     1.0), 1.0e-10);
         Assertions.assertEquals(1.0,        Unit.MINUTE.fromSI(    60.0), 1.0e-10);
         Assertions.assertEquals(1.0,        Unit.HOUR.fromSI(    3600.0), 1.0e-10);
         Assertions.assertEquals(1.0,        Unit.DAY.fromSI(    86400.0), 1.0e-10);
         Assertions.assertEquals(1.0,        Unit.YEAR.fromSI(31557600.0), 1.0e-10);
+        Assertions.assertEquals(1.0,        Unit.YEAR.fromSI(Double.valueOf(31557600.0)), 1.0e-10);
+        Assertions.assertEquals(1.0,        Unit.YEAR.fromSI(new Binary64(31557600.0)).getReal(), 1.0e-10);
         Assertions.assertEquals(365.25,     Unit.DAY.fromSI(Unit.YEAR.toSI(1.0)), 1.0e-10);
     }
 

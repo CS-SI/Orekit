@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -164,7 +164,7 @@ public class OrekitAttitudeEphemerisFile
             }
 
             if (interpolationSamples < minimumSampleSize) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION,
+                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA,
                         interpolationSamples);
             }
 

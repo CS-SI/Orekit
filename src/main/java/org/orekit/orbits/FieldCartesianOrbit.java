@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -147,7 +147,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      */
     public FieldCartesianOrbit(final Field<T> field, final CartesianOrbit op) {
         super(new TimeStampedFieldPVCoordinates<>(field, op.getPVCoordinates()), op.getFrame(),
-                field.getZero().add(op.getMu()));
+                field.getZero().newInstance(op.getMu()));
         hasNonKeplerianAcceleration = op.hasDerivatives();
         if (op.isElliptical()) {
             equinoctial = new FieldEquinoctialOrbit<>(field, new EquinoctialOrbit(op));
@@ -428,7 +428,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     public FieldCartesianOrbit<T> shiftedBy(final double dt) {
-        return shiftedBy(getZero().add(dt));
+        return shiftedBy(getZero().newInstance(dt));
     }
 
     /** {@inheritDoc} */
@@ -495,7 +495,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
             // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
             final FieldVector3D<T> fixedP   = new FieldVector3D<>(getOne(), shiftedP,
-                                                                  dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
+                                                                  dt.square().multiply(0.5), nonKeplerianAcceleration);
             final T                fixedR2 = fixedP.getNormSq();
             final T                fixedR  = fixedR2.sqrt();
             final FieldVector3D<T> fixedV  = new FieldVector3D<>(getOne(), shiftedV,
@@ -568,7 +568,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
             // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
             final FieldVector3D<T> fixedP   = new FieldVector3D<>(getOne(), shiftedP,
-                                                                  dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
+                                                                  dt.square().multiply(0.5), nonKeplerianAcceleration);
             final T                fixedR2 = fixedP.getNormSq();
             final T                fixedR  = fixedR2.sqrt();
             final FieldVector3D<T> fixedV  = new FieldVector3D<>(getOne(), shiftedV,

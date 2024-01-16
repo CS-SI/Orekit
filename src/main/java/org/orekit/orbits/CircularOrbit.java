@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -72,8 +72,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class CircularOrbit
-    extends Orbit {
+public class CircularOrbit extends Orbit implements PositionAngleBased {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20170414L;
@@ -196,10 +195,10 @@ public class CircularOrbit
             final UnivariateDerivative1 alphavUD;
             switch (type) {
                 case MEAN :
-                    alphavUD = FieldCircularOrbit.eccentricToTrue(FieldCircularOrbit.meanToEccentric(alphaUD, exUD, eyUD), exUD, eyUD);
+                    alphavUD = FieldCircularLatitudeArgumentUtility.meanToTrue(exUD, eyUD, alphaUD);
                     break;
                 case ECCENTRIC :
-                    alphavUD = FieldCircularOrbit.eccentricToTrue(alphaUD, exUD, eyUD);
+                    alphavUD = FieldCircularLatitudeArgumentUtility.eccentricToTrue(exUD, eyUD, alphaUD);
                     break;
                 case TRUE :
                     alphavUD = alphaUD;
@@ -212,10 +211,10 @@ public class CircularOrbit
         } else {
             switch (type) {
                 case MEAN :
-                    this.alphaV = eccentricToTrue(meanToEccentric(alpha, ex, ey), ex, ey);
+                    this.alphaV = CircularLatitudeArgumentUtility.meanToTrue(ex, ey, alpha);
                     break;
                 case ECCENTRIC :
-                    this.alphaV = eccentricToTrue(alpha, ex, ey);
+                    this.alphaV = CircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, alpha);
                     break;
                 case TRUE :
                     this.alphaV = alpha;
@@ -338,7 +337,7 @@ public class CircularOrbit
 
         // compute latitude argument
         final double beta = 1 / (1 + FastMath.sqrt(1 - ex * ex - ey * ey));
-        alphaV = eccentricToTrue(FastMath.atan2(y2 + ey + eSE * beta * ex, x2 + ex - eSE * beta * ey), ex, ey);
+        alphaV = CircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, FastMath.atan2(y2 + ey + eSE * beta * ex, x2 + ex - eSE * beta * ey));
 
         partialPV   = pvCoordinates;
 
@@ -366,7 +365,7 @@ public class CircularOrbit
             final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex, exDot);
             final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey, eyDot);
             final UnivariateDerivative1 alphaMUD = new UnivariateDerivative1(getAlphaM(), alphaMDot);
-            final UnivariateDerivative1 alphavUD = FieldCircularOrbit.eccentricToTrue(FieldCircularOrbit.meanToEccentric(alphaMUD, exUD, eyUD), exUD, eyUD);
+            final UnivariateDerivative1 alphavUD = FieldCircularLatitudeArgumentUtility.meanToTrue(exUD, eyUD, alphaMUD);
             alphaVDot = alphavUD.getDerivative(1);
 
         } else {
@@ -586,7 +585,7 @@ public class CircularOrbit
      * @return E + ω eccentric latitude argument (rad)
      */
     public double getAlphaE() {
-        return trueToEccentric(alphaV, ex, ey);
+        return CircularLatitudeArgumentUtility.trueToEccentric(ex, ey, alphaV);
     }
 
     /** Get the eccentric latitude argument derivative.
@@ -600,7 +599,7 @@ public class CircularOrbit
         final UnivariateDerivative1 alphaVUD = new UnivariateDerivative1(alphaV, alphaVDot);
         final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex,     exDot);
         final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey,     eyDot);
-        final UnivariateDerivative1 alphaEUD = FieldCircularOrbit.trueToEccentric(alphaVUD, exUD, eyUD);
+        final UnivariateDerivative1 alphaEUD = FieldCircularLatitudeArgumentUtility.trueToEccentric(exUD, eyUD, alphaVUD);
         return alphaEUD.getDerivative(1);
     }
 
@@ -608,7 +607,7 @@ public class CircularOrbit
      * @return M + ω mean latitude argument (rad)
      */
     public double getAlphaM() {
-        return eccentricToMean(trueToEccentric(alphaV, ex, ey), ex, ey);
+        return CircularLatitudeArgumentUtility.trueToMean(ex, ey, alphaV);
     }
 
     /** Get the mean latitude argument derivative.
@@ -622,7 +621,7 @@ public class CircularOrbit
         final UnivariateDerivative1 alphaVUD = new UnivariateDerivative1(alphaV, alphaVDot);
         final UnivariateDerivative1 exUD     = new UnivariateDerivative1(ex,     exDot);
         final UnivariateDerivative1 eyUD     = new UnivariateDerivative1(ey,     eyDot);
-        final UnivariateDerivative1 alphaMUD = FieldCircularOrbit.eccentricToMean(FieldCircularOrbit.trueToEccentric(alphaVUD, exUD, eyUD), exUD, eyUD);
+        final UnivariateDerivative1 alphaMUD = FieldCircularLatitudeArgumentUtility.trueToMean(exUD, eyUD, alphaVUD);
         return alphaMUD.getDerivative(1);
     }
 
@@ -656,11 +655,9 @@ public class CircularOrbit
      * @param ey e sin(ω), second component of circular eccentricity vector
      * @return the true latitude argument.
      */
+    @Deprecated
     public static double eccentricToTrue(final double alphaE, final double ex, final double ey) {
-        final double epsilon   = FastMath.sqrt(1 - ex * ex - ey * ey);
-        final SinCos scAlphaE  = FastMath.sinCos(alphaE);
-        return alphaE + 2 * FastMath.atan((ex * scAlphaE.sin() - ey * scAlphaE.cos()) /
-                                      (epsilon + 1 - ex * scAlphaE.cos() - ey * scAlphaE.sin()));
+        return CircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, alphaE);
     }
 
     /** Computes the eccentric latitude argument from the true latitude argument.
@@ -669,11 +666,9 @@ public class CircularOrbit
      * @param ey e sin(ω), second component of circular eccentricity vector
      * @return the eccentric latitude argument.
      */
+    @Deprecated
     public static double trueToEccentric(final double alphaV, final double ex, final double ey) {
-        final double epsilon   = FastMath.sqrt(1 - ex * ex - ey * ey);
-        final SinCos scAlphaV  = FastMath.sinCos(alphaV);
-        return alphaV + 2 * FastMath.atan((ey * scAlphaV.cos() - ex * scAlphaV.sin()) /
-                                      (epsilon + 1 + ex * scAlphaV.cos() + ey * scAlphaV.sin()));
+        return CircularLatitudeArgumentUtility.trueToEccentric(ex, ey, alphaV);
     }
 
     /** Computes the eccentric latitude argument from the mean latitude argument.
@@ -682,31 +677,9 @@ public class CircularOrbit
      * @param ey e sin(ω), second component of circular eccentricity vector
      * @return the eccentric latitude argument.
      */
+    @Deprecated
     public static double meanToEccentric(final double alphaM, final double ex, final double ey) {
-        // Generalization of Kepler equation to circular parameters
-        // with alphaE = PA + E and
-        //      alphaM = PA + M = alphaE - ex.sin(alphaE) + ey.cos(alphaE)
-        double alphaE         = alphaM;
-        double shift          = 0.0;
-        double alphaEMalphaM  = 0.0;
-        SinCos scAlphaE       = FastMath.sinCos(alphaE);
-        int    iter           = 0;
-        do {
-            final double f2 = ex * scAlphaE.sin() - ey * scAlphaE.cos();
-            final double f1 = 1.0 - ex * scAlphaE.cos() - ey * scAlphaE.sin();
-            final double f0 = alphaEMalphaM - f2;
-
-            final double f12 = 2.0 * f1;
-            shift = f0 * f12 / (f1 * f12 - f0 * f2);
-
-            alphaEMalphaM -= shift;
-            alphaE         = alphaM + alphaEMalphaM;
-            scAlphaE       = FastMath.sinCos(alphaE);
-
-        } while (++iter < 50 && FastMath.abs(shift) > 1.0e-12);
-
-        return alphaE;
-
+        return CircularLatitudeArgumentUtility.meanToEccentric(ex, ey, alphaM);
     }
 
     /** Computes the mean latitude argument from the eccentric latitude argument.
@@ -715,9 +688,9 @@ public class CircularOrbit
      * @param ey e sin(ω), second component of circular eccentricity vector
      * @return the mean latitude argument.
      */
+    @Deprecated
     public static double eccentricToMean(final double alphaE, final double ex, final double ey) {
-        final SinCos scAlphaE = FastMath.sinCos(alphaE);
-        return alphaE + (ey * scAlphaE.cos() - ex * scAlphaE.sin());
+        return CircularLatitudeArgumentUtility.eccentricToMean(ex, ey, alphaE);
     }
 
     /** {@inheritDoc} */
@@ -1213,6 +1186,26 @@ public class CircularOrbit
                                   append(", raan: ").append(FastMath.toDegrees(raan)).
                                   append(", alphaV: ").append(FastMath.toDegrees(alphaV)).
                                   append(";}").toString();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PositionAngleType getCachedPositionAngleType() {
+        return PositionAngleType.TRUE;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasRates() {
+        return hasDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CircularOrbit removeRates() {
+        final PositionAngleType positionAngleType = getCachedPositionAngleType();
+        return new CircularOrbit(getA(), getCircularEx(), getCircularEy(), getI(), getRightAscensionOfAscendingNode(),
+                getAlpha(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
     }
 
     /** Replace the instance with a data transfer object for serialization.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -99,13 +99,13 @@ public class InterSatDirectViewDetector extends AbstractDetector<InterSatDirectV
      * @param handler   event handler to call at event occurrences
      * @since 12.0
      */
-    private InterSatDirectViewDetector(final OneAxisEllipsoid body,
-                                       final double skimmingAltitude,
-                                       final PVCoordinatesProvider secondary,
-                                       final AdaptableInterval maxCheck,
-                                       final double threshold,
-                                       final int maxIter,
-                                       final EventHandler handler) {
+    protected InterSatDirectViewDetector(final OneAxisEllipsoid body,
+                                         final double skimmingAltitude,
+                                         final PVCoordinatesProvider secondary,
+                                         final AdaptableInterval maxCheck,
+                                         final double threshold,
+                                         final int maxIter,
+                                         final EventHandler handler) {
         super(maxCheck, threshold, maxIter, handler);
         this.body             = body;
         this.skimmingAltitude = skimmingAltitude;

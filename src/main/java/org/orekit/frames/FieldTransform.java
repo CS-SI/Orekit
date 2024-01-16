@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -413,6 +413,18 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
         return FieldStaticTransform.of(date.shiftedBy(dt),
                                        cartesian.positionShiftedBy(dt),
                                        angular.rotationShiftedBy(dt));
+    }
+
+    /**
+     * Create a so-called static transform from the instance.
+     *
+     * @return static part of the transform. It is static in the
+     * sense that it can only be used to transform directions and positions, but
+     * not velocities or accelerations.
+     * @see FieldStaticTransform
+     */
+    public FieldStaticTransform<T> toStaticTransform() {
+        return FieldStaticTransform.of(date, cartesian.getPosition(), angular.getRotation());
     }
 
     /** Interpolate a transform from a sample set of existing transforms.

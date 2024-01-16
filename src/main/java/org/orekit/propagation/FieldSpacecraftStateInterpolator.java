@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.FieldAttitudeInterpolator;
 import org.orekit.attitudes.FrameAlignedProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -319,17 +318,6 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
     }
 
     /**
-     * @return fail to return number of interpolation points used by this interpolator.
-     *
-     * @throws OrekitException because multiple interpolator are defined so the number of interpolation points used may
-     * differ.
-     */
-    @Override
-    public int getNbInterpolationPoints() {
-        throw new OrekitException(OrekitMessages.MULTIPLE_INTERPOLATOR_USED);
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
@@ -405,7 +393,7 @@ public class FieldSpacecraftStateInterpolator<KK extends CalculusFieldElement<KK
             interpolatedMass = massInterpolator.interpolate(interpolationDate, masses).getValue();
         }
         else {
-            interpolatedMass = one.multiply(SpacecraftState.DEFAULT_MASS);
+            interpolatedMass = one.newInstance(SpacecraftState.DEFAULT_MASS);
         }
 
         // Interpolate additional states and derivatives

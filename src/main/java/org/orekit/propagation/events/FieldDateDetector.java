@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -93,9 +93,9 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
              DEFAULT_MAX_ITER, new FieldStopOnEvent<>(), DEFAULT_MIN_GAP, dates);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
@@ -158,7 +158,7 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
     public T g(final FieldSpacecraftState<T> s) {
         gDate = s.getDate();
         if (currentIndex < 0) {
-            return s.getA().getField().getZero().add(-1);
+            return s.getA().getField().getZero().newInstance(-1);
         } else {
             final FieldEventDate<T> event = getClosest(gDate);
             return event.isgIncrease() ? gDate.durationFrom(event.getDate()) : event.getDate().durationFrom(gDate);

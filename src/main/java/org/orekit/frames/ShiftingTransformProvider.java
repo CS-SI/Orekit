@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -146,12 +146,12 @@ public class ShiftingTransformProvider implements TransformProvider {
             (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
         if (fieldCache == null) {
             fieldCache =
-                new GenericTimeStampedCache<FieldTransform<T>>(cache.getNeighborsSize(),
+                new GenericTimeStampedCache<FieldTransform<T>>(cache.getMaxNeighborsSize(),
                                                                cache.getMaxSlots(),
                                                                cache.getMaxSpan(),
                                                                cache.getNewSlotQuantumGap(),
                                                                new FieldTransformGenerator<>(date.getField(),
-                                                                                             cache.getNeighborsSize(),
+                                                                                             cache.getMaxNeighborsSize(),
                                                                                              interpolatingProvider,
                                                                                              interpolatingProvider.getStep()));
             fieldCaches.put(date.getField(), fieldCache);
@@ -173,12 +173,12 @@ public class ShiftingTransformProvider implements TransformProvider {
             (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
         if (fieldCache == null) {
             fieldCache =
-                new GenericTimeStampedCache<FieldTransform<T>>(cache.getNeighborsSize(),
+                new GenericTimeStampedCache<FieldTransform<T>>(cache.getMaxNeighborsSize(),
                                                                cache.getMaxSlots(),
                                                                cache.getMaxSpan(),
                                                                cache.getNewSlotQuantumGap(),
                                                                new FieldTransformGenerator<>(date.getField(),
-                                                                                             cache.getNeighborsSize(),
+                                                                                             cache.getMaxNeighborsSize(),
                                                                                              interpolatingProvider,
                                                                                              interpolatingProvider.getStep()));
             fieldCaches.put(date.getField(), fieldCache);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,8 +53,8 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
      * @param bodyShape body shape with respect to which altitude should be evaluated
      */
     public FieldAltitudeDetector(final T altitude, final BodyShape bodyShape) {
-        this(altitude.getField().getZero().add(DEFAULT_MAXCHECK),
-             altitude.getField().getZero().add(DEFAULT_THRESHOLD),
+        this(altitude.getField().getZero().newInstance(DEFAULT_MAXCHECK),
+             altitude.getField().getZero().newInstance(DEFAULT_THRESHOLD),
              altitude, bodyShape);
     }
 
@@ -71,7 +71,7 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
     public FieldAltitudeDetector(final T maxCheck,
                                  final T altitude,
                                  final BodyShape bodyShape) {
-        this(maxCheck, altitude.getField().getZero().add(DEFAULT_THRESHOLD), altitude, bodyShape);
+        this(maxCheck, altitude.getField().getZero().newInstance(DEFAULT_THRESHOLD), altitude, bodyShape);
     }
 
     /** Build a new altitude detector.
@@ -94,9 +94,9 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
              altitude, bodyShape);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>

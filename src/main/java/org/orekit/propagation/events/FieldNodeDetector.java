@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -74,14 +74,14 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      */
     public FieldNodeDetector(final T threshold, final FieldOrbit<T> orbit, final Frame frame) {
-        this(s -> orbit.getA().getField().getZero().add(2 * estimateNodesTimeSeparation(orbit.toOrbit()) / 3).getReal(), threshold,
+        this(s -> orbit.getA().getField().getZero().newInstance(2 * estimateNodesTimeSeparation(orbit.toOrbit()) / 3).getReal(), threshold,
              DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
              frame);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>

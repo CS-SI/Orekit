@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,7 +55,7 @@ public interface TransformProvider extends Serializable {
      * @return the static transform.
      */
     default StaticTransform getStaticTransform(AbsoluteDate date) {
-        return getTransform(date);
+        return getTransform(date).toStaticTransform();
     }
 
     /**
@@ -70,7 +70,7 @@ public interface TransformProvider extends Serializable {
      * @since 12.0
      */
     default <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(FieldAbsoluteDate<T> date) {
-        return getTransform(date);
+        return getTransform(date).toStaticTransform();
     }
 
 }

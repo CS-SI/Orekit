@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1017,7 +1017,7 @@ public class DSSTTesseral implements DSSTForceModel {
             if ((n - s) % 2 == 0) {
 
                 // Vmns coefficient
-                final T vMNS   = zero.add(CoefficientsFactory.getVmns(m, n, s));
+                final T vMNS   = zero.newInstance(CoefficientsFactory.getVmns(m, n, s));
 
                 // Inclination function Gamma and derivative
                 final T gaMNS  = gammaMNS.getValue(m, n, s);
@@ -1046,8 +1046,8 @@ public class DSSTTesseral implements DSSTForceModel {
                         JacobiPolynomials.getValue(l, v, w, FieldGradient.variable(1, 0, auxiliaryElements.getGamma()));
 
                 // Geopotential coefficients
-                final T cnm = zero.add(harmonics.getUnnormalizedCnm(n, m));
-                final T snm = zero.add(harmonics.getUnnormalizedSnm(n, m));
+                final T cnm = zero.newInstance(harmonics.getUnnormalizedCnm(n, m));
+                final T snm = zero.newInstance(harmonics.getUnnormalizedSnm(n, m));
 
                 // Common factors from expansion of equations 3.3-4
                 final T cf_0      = roaPow[n].multiply(Im).multiply(vMNS);
@@ -1439,7 +1439,7 @@ public class DSSTTesseral implements DSSTForceModel {
             this.cCoef        = MathArrays.buildArray(field, rows, columns, 6);
             this.sCoef        = MathArrays.buildArray(field, rows, columns, 6);
             this.roaPow       = MathArrays.buildArray(field, maxDegree + 1);
-            roaPow[0] = zero.add(1.);
+            roaPow[0] = zero.newInstance(1.);
         }
 
         /**
@@ -2562,7 +2562,7 @@ public class DSSTTesseral implements DSSTForceModel {
 
                 // R / a up to power degree
                 final T[] roaPow = MathArrays.buildArray(field, maxDegree + 1);
-                roaPow[0] = zero.add(1.);
+                roaPow[0] = zero.newInstance(1.);
                 for (int i = 1; i <= maxDegree; i++) {
                     roaPow[i] = roaPow[i - 1].multiply(context.getRoa());
                 }

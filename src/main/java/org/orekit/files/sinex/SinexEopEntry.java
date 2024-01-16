@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -219,7 +219,7 @@ public class SinexEopEntry implements TimeStamped {
 
         // Create a new EOPEntry object storing the extracted data, then add it to the list of EOPEntries.
         return new EOPEntry(mjd, ut1MinusUtc, lod,
-                            xPo, yPo,
+                            xPo, yPo, Double.NaN, Double.NaN,
                             equinox[0], equinox[1],
                             nro[0], nro[1],
                             version, epoch);

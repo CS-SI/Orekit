@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.TurnAroundRange;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -67,9 +67,9 @@ public class OnBoardAntennaTurnAroundRangeModifier implements EstimationModifier
         // transforms from spacecraft to inertial frame at transit dates
         final SpacecraftState refState              = estimated.getStates()[0];
         final SpacecraftState transitStateLeg1      = refState.shiftedBy(transitDateLeg1.durationFrom(refState.getDate()));
-        final Transform       spacecraftToInertLeg1 = transitStateLeg1.toTransform().getInverse();
+        final StaticTransform spacecraftToInertLeg1 = transitStateLeg1.toStaticTransform().getInverse();
         final SpacecraftState transitStateLeg2      = refState.shiftedBy(transitDateLeg2.durationFrom(refState.getDate()));
-        final Transform       spacecraftToInertLeg2 = transitStateLeg2.toTransform().getInverse();
+        final StaticTransform spacecraftToInertLeg2 = transitStateLeg2.toStaticTransform().getInverse();
 
         // compute the geometrical value of the turn-around range directly from participants positions.
         // Note that this may be different from the value returned by estimated.getEstimatedValue(),

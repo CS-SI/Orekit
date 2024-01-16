@@ -1,4 +1,4 @@
-/* Copyright 2023 Luc Maisonobe
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.

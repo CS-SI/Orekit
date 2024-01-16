@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -293,8 +293,8 @@ public class KnockeRediffusedForceModel implements ForceModel {
 
                 // Compute current elementary crown sector area, it results of the integration of an elementary crown sector
                 // over the angular resolution
-                final T sectorArea = zero.add(equatorialRadius * equatorialRadius *
-                                              2.0 * angularResolution * FastMath.sin(0.5 * angularResolution) * FastMath.sin(eastAxisOffset));
+                final T sectorArea = zero.newInstance(equatorialRadius * equatorialRadius *
+                        2.0 * angularResolution * FastMath.sin(0.5 * angularResolution) * FastMath.sin(eastAxisOffset));
 
                 // Add current sector contribution to total rediffused flux
                 rediffusedFlux = rediffusedFlux.add(computeElementaryFlux(s, currentCenter, sunPosition, earth, sectorArea));
@@ -604,7 +604,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
 
             // Compute attenuated projected elemetary area vector
             final FieldVector3D<T> projectedAreaVector = r.scalarMultiply(elementArea.multiply(FastMath.cos(alpha)).divide(
-                                                                          rNorm.multiply(rNorm).multiply(rNorm).multiply(zero.getPi())));
+                                                                          rNorm.square().multiply(rNorm).multiply(zero.getPi())));
 
             // Compute elementary radiation flux from current elementary area
             return projectedAreaVector.scalarMultiply(albedoAndIR.divide(Constants.SPEED_OF_LIGHT));

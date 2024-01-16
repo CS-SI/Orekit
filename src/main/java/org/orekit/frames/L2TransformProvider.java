@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -195,13 +195,13 @@ class L2TransformProvider implements TransformProvider {
         final T zero             = primaryToSecondary.getX().getField().getZero();
         final T[] searchInterval = UnivariateSolverUtils.bracket(l2Equation,
                                                                  baseR, zero, bigR.multiply(2),
-                                                                 bigR.multiply(0.01), zero.add(1),
+                                                                 bigR.multiply(0.01), zero,
                                                                  MAX_EVALUATIONS);
 
 
-        final T relativeAccuracy = zero.add(RELATIVE_ACCURACY);
-        final T absoluteAccuracy = zero.add(ABSOLUTE_ACCURACY);
-        final T functionAccuracy = zero.add(FUNCTION_ACCURACY);
+        final T relativeAccuracy = zero.newInstance(RELATIVE_ACCURACY);
+        final T absoluteAccuracy = zero.newInstance(ABSOLUTE_ACCURACY);
+        final T functionAccuracy = zero.newInstance(FUNCTION_ACCURACY);
 
         final FieldBracketingNthOrderBrentSolver<T> solver =
                         new FieldBracketingNthOrderBrentSolver<>(relativeAccuracy,

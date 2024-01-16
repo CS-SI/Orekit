@@ -1,4 +1,4 @@
-/* Copyright 2023 Thales Alenia Space
+/* Copyright 2002-2024 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,7 +45,7 @@ public class InterSatellitesWindUp extends AbstractWindUp<InterSatellitesPhase> 
         // we don't use the basic yaw steering attitude model from ESA navipedia page
         // but rely on the attitude that was computed by the propagator, which takes
         // into account the proper noon and midnight turns for each satellite model
-        return estimated.getStates()[1].toTransform().getRotation().revert();
+        return estimated.getStates()[1].toStaticTransform().getRotation().revert();
     }
 
     /** {@inheritDoc} */
@@ -54,7 +54,7 @@ public class InterSatellitesWindUp extends AbstractWindUp<InterSatellitesPhase> 
         // we don't use the basic yaw steering attitude model from ESA navipedia page
         // but rely on the attitude that was computed by the propagator, which takes
         // into account the proper noon and midnight turns for each satellite model
-        return estimated.getStates()[0].toTransform().getRotation().revert();
+        return estimated.getStates()[0].toStaticTransform().getRotation().revert();
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,9 +64,9 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
         final Vector3D position = state.getPosition();
 
         // elevation in radians
-        final double elevation = station.getBaseFrame().getElevation(position,
-                                                                     state.getFrame(),
-                                                                     state.getDate());
+        final double elevation =
+                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate()).
+                        getElevation();
 
         // angle correction (rad)
         return atmosModel.getRefraction(elevation);

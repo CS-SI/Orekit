@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -397,7 +397,11 @@ public class FieldAbsoluteDateTest {
         Assertions.assertFalse(gdConstantDate.shiftedBy(gdDt0).hasZeroField());
         Assertions.assertFalse(gdConstantDate.shiftedBy(gdDt1).hasZeroField());
         Assertions.assertFalse(gdConstantDate.shiftedBy(gdDt0).shiftedBy(gdDt1).hasZeroField());
-        
+
+        // SparseGradient
+        final FieldAbsoluteDate<SparseGradient> sgdDate = new FieldAbsoluteDate<>(SparseGradient.createConstant(10.).getField());
+        Assertions.assertTrue(sgdDate.hasZeroField());
+
         // Complex
         // -------
         
@@ -431,11 +435,7 @@ public class FieldAbsoluteDateTest {
         // FieldTuple
         final FieldAbsoluteDate<FieldTuple<DerivativeStructure>> ftpDate = new FieldAbsoluteDate<>(new FieldTuple<>(dsDt0, dsDt1).getField());
         Assertions.assertFalse(ftpDate.hasZeroField());
-        
-        // SparseGradient
-        final FieldAbsoluteDate<SparseGradient> sgdDate = new FieldAbsoluteDate<>(SparseGradient.createConstant(10.).getField());
-        Assertions.assertFalse(sgdDate.hasZeroField());
-        
+
         // Tuple
         final FieldAbsoluteDate<Tuple> tpDate = new FieldAbsoluteDate<>(new Tuple(0., 1., 2.).getField());
         Assertions.assertFalse(tpDate.hasZeroField());

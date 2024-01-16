@@ -169,11 +169,11 @@ public class ImmutableTimeStampedCacheTest {
     }
 
     /**
-     * check {@link ImmutableTimeStampedCache#getNeighborsSize()}
+     * check {@link ImmutableTimeStampedCache#getMaxNeighborsSize()}
      */
     @Test
     public void testGetNeighborsSize() {
-        Assertions.assertEquals(cache.getNeighborsSize(), 3);
+        Assertions.assertEquals(cache.getMaxNeighborsSize(), 3);
     }
 
     /**
@@ -262,7 +262,7 @@ public class ImmutableTimeStampedCacheTest {
             // expected
         }
         Assertions.assertEquals(cache.getAll().size(), 0);
-        Assertions.assertEquals(cache.getNeighborsSize(), 0);
+        Assertions.assertEquals(cache.getMaxNeighborsSize(), 0);
     }
 
     @Test

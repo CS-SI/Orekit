@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,7 +58,7 @@ public class FieldLnsCoefficients <T extends CalculusFieldElement<T>> {
         this.dlns         = MathArrays.buildArray(field, rows, columns);
 
         final T[] roaPow = MathArrays.buildArray(field, rows);
-        roaPow[0] = zero.add(1.);
+        roaPow[0] = zero.newInstance(1.);
         for (int i = 1; i <= nMax; i++) {
             roaPow[i] = roa.multiply(roaPow[i - 1]);
         }

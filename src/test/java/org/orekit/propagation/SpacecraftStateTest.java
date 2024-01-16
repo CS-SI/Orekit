@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,6 +46,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -722,6 +723,21 @@ public class SpacecraftStateTest {
         Assertions.assertEquals( 1.0, s1.getAdditionalStateDerivative(derivativeOnly)[0],     1.0e-15);
         Assertions.assertEquals(-1.0, s1.getAdditionalStateDerivative(derivativeOnly)[1],     1.0e-15);
 
+    }
+
+    @Test
+    void testToStaticTransform() {
+        // GIVEN
+        final SpacecraftState state = new SpacecraftState(orbit,
+                attitudeLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
+        // WHEN
+        final StaticTransform actualStaticTransform = state.toStaticTransform();
+        // THEN
+        final StaticTransform expectedStaticTransform = state.toTransform().toStaticTransform();
+        Assertions.assertEquals(expectedStaticTransform.getDate(), actualStaticTransform.getDate());
+        Assertions.assertEquals(expectedStaticTransform.getTranslation(), actualStaticTransform.getTranslation());
+        Assertions.assertEquals(0., Rotation.distance(expectedStaticTransform.getRotation(),
+                actualStaticTransform.getRotation()));
     }
 
     @BeforeEach

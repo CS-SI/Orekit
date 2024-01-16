@@ -1,4 +1,4 @@
-/* Copyright 2022-2023 Romain Serra
+/* Copyright 2002-2024 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,6 +36,46 @@ class OrbitTypeTest {
     @BeforeAll
     public static void setUp() {
         Utils.setDataRoot("regular-data");
+    }
+
+    @Test
+    void testCartesianIsPositionAngleBased() {
+        // GIVEN
+        final OrbitType orbitType = OrbitType.CARTESIAN;
+        // WHEN
+        final boolean actualIsPositionAngleBased = orbitType.isPositionAngleBased();
+        // THEN
+        Assertions.assertFalse(actualIsPositionAngleBased);
+    }
+
+    @Test
+    void testEquinoctialIsPositionAngleBased() {
+        // GIVEN
+        final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+        // WHEN
+        final boolean actualIsPositionAngleBased = orbitType.isPositionAngleBased();
+        // THEN
+        Assertions.assertTrue(actualIsPositionAngleBased);
+    }
+
+    @Test
+    void testKeplerianIsPositionAngleBased() {
+        // GIVEN
+        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        // WHEN
+        final boolean actualIsPositionAngleBased = orbitType.isPositionAngleBased();
+        // THEN
+        Assertions.assertTrue(actualIsPositionAngleBased);
+    }
+
+    @Test
+    void testCircularIsPositionAngleBased() {
+        // GIVEN
+        final OrbitType orbitType = OrbitType.CIRCULAR;
+        // WHEN
+        final boolean actualIsPositionAngleBased = orbitType.isPositionAngleBased();
+        // THEN
+        Assertions.assertTrue(actualIsPositionAngleBased);
     }
 
     @Test

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -253,7 +253,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         return selectExtrapolator(
                 tle,
                 FrameAlignedProvider.of(teme),
-                tle.getE().getField().getZero().add(DEFAULT_MASS),
+                tle.getE().getField().getZero().newInstance(DEFAULT_MASS),
                 teme,
                 parameters);
     }
@@ -347,7 +347,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         cosi0 = FastMath.cos(tle.getI());
         theta2 = cosi0.multiply(cosi0);
         final T x3thm1 = theta2.multiply(3.0).subtract(1.0);
-        e0sq = tle.getE().multiply(tle.getE());
+        e0sq = tle.getE().square();
         beta02 = e0sq.negate().add(1.0);
         beta0 = FastMath.sqrt(beta02);
         final T tval = x3thm1.multiply(1.5 * TLEConstants.CK2).divide(beta0.multiply(beta02));
@@ -361,8 +361,8 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         a0dp = a0.divide(delta0.negate().add(1.0));
 
         // Values of s and qms2t :
-        s4 = zero.add(TLEConstants.S);  // unmodified value for s
-        T q0ms24 = zero.add(TLEConstants.QOMS2T); // unmodified value for q0ms2T
+        s4 = zero.newInstance(TLEConstants.S);  // unmodified value for s
+        T q0ms24 = zero.newInstance(TLEConstants.QOMS2T); // unmodified value for q0ms2T
 
         perige = a0dp.multiply(tle.getE().negate().add(1.0)).subtract(TLEConstants.NORMALIZED_EQUATORIAL_RADIUS).multiply(
                                                                                                 TLEConstants.EARTH_RADIUS); // perige
@@ -370,26 +370,26 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         //  For perigee below 156 km, the values of s and qoms2t are changed :
         if (perige.getReal() < 156.0) {
             if (perige.getReal() <= 98.0) {
-                s4 = zero.add(20.0);
+                s4 = zero.newInstance(20.0);
             } else {
                 s4 = perige.subtract(78.0);
             }
             final T temp_val = s4.negate().add(120.0).multiply(TLEConstants.NORMALIZED_EQUATORIAL_RADIUS / TLEConstants.EARTH_RADIUS);
             final T temp_val_squared = temp_val.multiply(temp_val);
-            q0ms24 = temp_val_squared.multiply(temp_val_squared);
+            q0ms24 = temp_val_squared.square();
             s4 = s4.divide(TLEConstants.EARTH_RADIUS).add(TLEConstants.NORMALIZED_EQUATORIAL_RADIUS); // new value for q0ms2T and s
         }
 
         final T pinv = a0dp.multiply(beta02).reciprocal();
-        final T pinvsq = pinv.multiply(pinv);
+        final T pinvsq = pinv.square();
         tsi = a0dp.subtract(s4).reciprocal();
         eta = a0dp.multiply(tle.getE()).multiply(tsi);
-        etasq = eta.multiply(eta);
+        etasq = eta.square();
         eeta = tle.getE().multiply(eta);
 
         final T psisq = etasq.negate().add(1.0).abs(); // abs because pow 3.5 needs positive value
         final T tsi_squared = tsi.multiply(tsi);
-        coef = q0ms24.multiply(tsi_squared.multiply(tsi_squared));
+        coef = q0ms24.multiply(tsi_squared.square());
         coef1 = coef.divide(psisq.pow(3.5));
 
         // C2 and C1 coefficients computation :
@@ -452,7 +452,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         final T aynl  = temp.multiply(aycof);
         final T xlt   = xl.add(xll);
         final T ayn   = e.multiply(FastMath.sin(omega)).add(aynl);
-        final T elsq  = axn.multiply(axn).add(ayn.multiply(ayn));
+        final T elsq  = axn.square().add(ayn.square());
         final T capu  = MathUtils.normalizeAngle(xlt.subtract(xnode), zero.getPi());
         T epw    = capu;
         T ecosE  = zero;
@@ -461,7 +461,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         T cosEPW = zero;
 
         // Dundee changes:  items dependent on cosio get recomputed:
-        final T cosi0Sq = cosi0.multiply(cosi0);
+        final T cosi0Sq = cosi0.square();
         final T x3thm1  = cosi0Sq.multiply(3.0).subtract(1.0);
         final T x1mth2  = cosi0Sq.negate().add(1.0);
         final T x7thm1  = cosi0Sq.multiply(7.0).subtract(1.0);
@@ -606,7 +606,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
 
     /** {@inheritDoc} */
     public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
-        return new FieldCartesianOrbit<>(getPVCoordinates(date, parameters), teme, date, date.getField().getZero().add(TLEConstants.MU));
+        return new FieldCartesianOrbit<>(getPVCoordinates(date, parameters), teme, date, date.getField().getZero().newInstance(TLEConstants.MU));
     }
 
     /** Get the underlying TLE.

@@ -430,8 +430,8 @@ UNSUPPORTED_TIME_TRANSFORM = o modelo xeomagnético {0} na época {1} non ten en
 # time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
 OUT_OF_RANGE_TIME_TRANSFORM = a transformación temporal do modelo xeomagnético {0} na época {1} está fora do dominio de validez: {2} != [{3}, {4}]
 
-# not enough data for interpolation (sample size = {0})
-NOT_ENOUGH_DATA_FOR_INTERPOLATION = <MISSING TRANSLATION>
+# not enough data (sample size = {0})
+NOT_ENOUGH_DATA = <MISSING TRANSLATION>
 
 # too small number of cached neighbors: {0} (must be at least {1})
 NOT_ENOUGH_CACHED_NEIGHBORS = número de vecinos almacenados demasiado pequeno: {0} (debe ser polo menos {1})
@@ -453,6 +453,12 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION>
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = imposible de calcular la anomalía excéntrica hiperbólica a partir de la anomalía media después de {0} iteraciones
+
+# unable to compute eccentric longitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT = unable to compute eccentric longitude argument from the mean one after {0} iterations
+
+# unable to compute eccentric latitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT = unable to compute eccentric latitude argument from the mean one after {0} iterations
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
 UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = <MISSING TRANSLATION>
@@ -637,8 +643,8 @@ IRREGULAR_OR_INCOMPLETE_GRID = <MISSING TRANSLATION>
 # invalid satellite system {0}
 INVALID_SATELLITE_SYSTEM = <MISSING TRANSLATION>
 
-# IONEX file {0} does not contain TEC data for date {1}
-NO_TEC_DATA_IN_FILE_FOR_DATE = <MISSING TRANSLATION>
+# IONEX files {0} does not contain TEC data for date {1}
+NO_TEC_DATA_IN_FILES_FOR_DATE = <MISSING TRANSLATION>
 
 # number of maps {0} is inconsistent with header specification: {1}
 INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = <MISSING TRANSLATION>
@@ -863,3 +869,6 @@ CANNOT_START_PROPAGATION_FROM_INFINITY = <MISSING TRANSLATION>
 
 # invalid satellite id {0}
 INVALID_SATELLITE_ID = <MISSING TRANSLATION>
+
+# EOP interpolation degree must be of the form 4k-1, got {0}
+WRONG_EOP_INTERPOLATION_DEGREE = <MISSING TRANSLATION>

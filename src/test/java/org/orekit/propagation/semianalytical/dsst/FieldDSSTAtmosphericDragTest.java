@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,12 @@
  * limitations under the License.
  */
 package org.orekit.propagation.semianalytical.dsst;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -75,12 +81,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
-
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class FieldDSSTAtmosphericDragTest {
 
@@ -227,12 +227,13 @@ public class FieldDSSTAtmosphericDragTest {
             }
         }
 
-        Assertions.assertEquals(0.03966657233280967,    y[0].getReal(), 1.0e-15);
-        Assertions.assertEquals(-1.5294381443173415E-8, y[1].getReal(), 1.0e-23);
-        Assertions.assertEquals(-2.3614929828516364E-8, y[2].getReal(), 1.4e-23);
-        Assertions.assertEquals(-5.9015803365587E-11,   y[3].getReal(), 1.0e-24);
-        Assertions.assertEquals(1.0287639743124977E-11, y[4].getReal(), 2.0e-24);
-        Assertions.assertEquals(2.538427523777691E-8,   y[5].getReal(), 1.0e-22);
+        Assertions.assertEquals( 0.03966657233267546,     y[0].getReal(), 1.0e-15);
+        Assertions.assertEquals(-1.52943814431705860e-8,  y[1].getReal(), 1.0e-22);
+        Assertions.assertEquals(-2.36149298285122150e-8,  y[2].getReal(), 1.4e-23);
+        Assertions.assertEquals(-5.90158033654432200e-11, y[3].getReal(), 1.0e-24);
+        Assertions.assertEquals( 1.02876397430619780e-11, y[4].getReal(), 2.0e-24);
+        Assertions.assertEquals( 2.53842752377756140e-8,  y[5].getReal(), 1.0e-22);
+
     }
 
     @Test

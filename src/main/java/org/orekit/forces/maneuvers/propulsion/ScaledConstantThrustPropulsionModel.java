@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -154,6 +154,6 @@ public class ScaledConstantThrustPropulsionModel extends AbstractConstantThrustP
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T getFlowRate(final T[] parameters) {
-        return parameters[0].getField().getZero().add(getInitialFlowRate());
+        return parameters[0].getField().getZero().newInstance(getInitialFlowRate());
     }
 }

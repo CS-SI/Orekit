@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 Mark Rutten
+/* Copyright 2002-2024 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -290,7 +290,7 @@ public class LeastSquaresTleGenerationAlgorithm implements TleGenerationAlgorith
             final FieldVector3D<Gradient> position = new FieldVector3D<>(state.getSubVector(0, 3).toArray());
             final FieldVector3D<Gradient> velocity = new FieldVector3D<>(state.getSubVector(3, 3).toArray());
             final FieldPVCoordinates<Gradient> pvCoordinates = new FieldPVCoordinates<>(position, velocity);
-            final FieldKeplerianOrbit<Gradient> orbit = new FieldKeplerianOrbit<>(pvCoordinates, teme, epoch, field.getZero().add(TLEPropagator.getMU()));
+            final FieldKeplerianOrbit<Gradient> orbit = new FieldKeplerianOrbit<>(pvCoordinates, teme, epoch, field.getZero().newInstance(TLEPropagator.getMU()));
 
             // Convert to TLE
             final FieldTLE<Gradient> tle = TleGenerationUtil.newTLE(orbit, templateTLE, bStar[0], utc);

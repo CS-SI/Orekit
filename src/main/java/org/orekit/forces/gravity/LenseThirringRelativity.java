@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -133,7 +133,7 @@ public class LenseThirringRelativity implements ForceModel {
 
         // Radius
         final T r  = p.getNorm();
-        final T r2 = r.multiply(r);
+        final T r2 = r.square();
 
         // Earth’s angular momentum per unit mass
         final FieldStaticTransform<T> t = bodyFrame.getStaticTransformTo(s.getFrame(), s.getDate());

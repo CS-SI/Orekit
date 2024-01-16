@@ -16,7 +16,7 @@
  */
 package org.orekit.frames;
 
-import org.orekit.frames.EOPHistoryLoader.Parser;
+import org.orekit.frames.EopHistoryLoader.Parser;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.IERSConventions.NutationCorrectionConverter;

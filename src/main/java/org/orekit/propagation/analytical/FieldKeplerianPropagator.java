@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,7 +56,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
      */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit) {
         this(initialFieldOrbit, FrameAlignedProvider.of(initialFieldOrbit.getFrame()),
-             initialFieldOrbit.getMu(), initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
+             initialFieldOrbit.getMu(), initialFieldOrbit.getA().getField().getZero().newInstance(DEFAULT_MASS));
     }
 
     /** Build a propagator from orbit and central attraction coefficient μ.
@@ -68,7 +68,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
      */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit, final T mu) {
         this(initialFieldOrbit, FrameAlignedProvider.of(initialFieldOrbit.getFrame()),
-             mu, initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
+             mu, initialFieldOrbit.getA().getField().getZero().newInstance(DEFAULT_MASS));
     }
 
     /** Build a propagator from orbit and attitude provider.
@@ -80,7 +80,8 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
      */
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit,
                                     final AttitudeProvider attitudeProv) {
-        this(initialFieldOrbit, attitudeProv, initialFieldOrbit.getMu(), initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
+        this(initialFieldOrbit, attitudeProv, initialFieldOrbit.getMu(),
+                initialFieldOrbit.getA().getField().getZero().newInstance(DEFAULT_MASS));
     }
 
     /** Build a propagator from orbit, attitude provider and central attraction
@@ -93,7 +94,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
     public FieldKeplerianPropagator(final FieldOrbit<T> initialFieldOrbit,
                                     final AttitudeProvider attitudeProv,
                                     final T mu) {
-        this(initialFieldOrbit, attitudeProv, mu, initialFieldOrbit.getA().getField().getZero().add(DEFAULT_MASS));
+        this(initialFieldOrbit, attitudeProv, mu, initialFieldOrbit.getA().getField().getZero().newInstance(DEFAULT_MASS));
     }
 
     /** Build propagator from orbit, attitude provider, central attraction

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.models.earth.ionosphere;
-
-import java.io.Serializable;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.frames.TopocentricFrame;
@@ -35,7 +33,7 @@ import org.orekit.utils.ParameterDriversProvider;
  * @author Bryan Cazabonne
  * @since 7.1
  */
-public interface IonosphericModel extends ParameterDriversProvider, Serializable {
+public interface IonosphericModel extends ParameterDriversProvider {
 
     /**
      * Calculates the ionospheric path delay for the signal path from a ground

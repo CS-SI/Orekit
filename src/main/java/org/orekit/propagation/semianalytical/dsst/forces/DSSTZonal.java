@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -432,14 +432,14 @@ public class DSSTZonal implements DSSTForceModel {
             final T ax2or = auxiliaryElements.getSma().multiply(2.).divide(provider.getAe());
             T xmuran = parameters[0].divide(auxiliaryElements.getSma());
             // Set a lower bound for eccentricity
-            final T eo2  = FastMath.max(zero.add(0.0025), auxiliaryElements.getEcc().divide(2.));
+            final T eo2  = FastMath.max(zero.newInstance(0.0025), auxiliaryElements.getEcc().divide(2.));
             final T x2o2 = context.getXX().divide(2.);
             final T[] eccPwr = MathArrays.buildArray(field, maxDegree + 1);
             final T[] chiPwr = MathArrays.buildArray(field, maxDegree + 1);
             final T[] hafPwr = MathArrays.buildArray(field, maxDegree + 1);
-            eccPwr[0] = zero.add(1.);
+            eccPwr[0] = zero.newInstance(1.);
             chiPwr[0] = context.getX();
-            hafPwr[0] = zero.add(1.);
+            hafPwr[0] = zero.newInstance(1.);
             for (int i = 1; i <= maxDegree; i++) {
                 eccPwr[i] = eccPwr[i - 1].multiply(eo2);
                 chiPwr[i] = chiPwr[i - 1].multiply(x2o2);
@@ -457,8 +457,8 @@ public class DSSTZonal implements DSSTForceModel {
                 // Loop over m
                 do {
                     // Compute magnitude of current spherical harmonic coefficient.
-                    final T cnm = zero.add(harmonics.getUnnormalizedCnm(maxDeg, m));
-                    final T snm = zero.add(harmonics.getUnnormalizedSnm(maxDeg, m));
+                    final T cnm = zero.newInstance(harmonics.getUnnormalizedCnm(maxDeg, m));
+                    final T snm = zero.newInstance(harmonics.getUnnormalizedSnm(maxDeg, m));
                     final T csnm = FastMath.hypot(cnm, snm);
                     if (csnm.getReal() == 0.) {
                         break;
@@ -1393,7 +1393,7 @@ public class DSSTZonal implements DSSTForceModel {
         final T b = auxiliaryElements.getB().add(1.).reciprocal();
 
         // (-b)<sup>j</sup>
-        T mbtj = zero.add(1.);
+        T mbtj = zero.newInstance(1.);
 
         final T[][] rhoSigma = MathArrays.buildArray(field, slot.cij.length, 2);
         for (int j = 1; j < rhoSigma.length; j++) {
@@ -3711,7 +3711,7 @@ public class DSSTZonal implements DSSTForceModel {
             final T[][] Qns  = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), maxDegree, maxEccPowMeanElements);
 
             final T[] roaPow = MathArrays.buildArray(field, maxDegree + 1);
-            roaPow[0] = zero.add(1.);
+            roaPow[0] = zero.newInstance(1.);
             for (int i = 1; i <= maxDegree; i++) {
                 roaPow[i] = roaPow[i - 1].multiply(context.getRoa());
             }
@@ -3748,7 +3748,7 @@ public class DSSTZonal implements DSSTForceModel {
                 }
 
                 // Kronecker symbol (2 - delta(0,s))
-                final T d0s = zero.add((s == 0) ? 1 : 2);
+                final T d0s = zero.newInstance((s == 0) ? 1 : 2);
 
                 for (int n = s + 2; n <= maxDegree; n++) {
                     // (n - s) must be even

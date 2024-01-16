@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,12 +20,14 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.ImmutableFieldTimeStampedCache;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -79,7 +81,7 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
                 interpolator.getSubInterpolators();
         for (final FieldTimeInterpolator<? extends FieldTimeStamped<T>, T> subInterpolator : subInterpolators) {
             if (sampleSize < subInterpolator.getNbInterpolationPoints()) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, sampleSize);
+                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA, sampleSize);
             }
         }
     }
@@ -97,6 +99,39 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
         return interpolate(interpolationData);
     }
 
+    /**
+     * Get the central date to use to find neighbors while taking into account extrapolation threshold.
+     *
+     * @param date interpolation date
+     * @param cachedSamples cached samples
+     * @param threshold extrapolation threshold
+     * @param <T> type of time stamped element
+     * @param <KK> type of calculus field element
+     *
+     * @return central date to use to find neighbors
+     * @since 12.0.1
+     */
+    public static <T extends FieldTimeStamped<KK>, KK extends CalculusFieldElement<KK>> FieldAbsoluteDate<KK> getCentralDate(
+            final FieldAbsoluteDate<KK> date,
+            final ImmutableFieldTimeStampedCache<T, KK> cachedSamples,
+            final double threshold) {
+        final FieldAbsoluteDate<KK> central;
+        final FieldAbsoluteDate<KK> minDate = cachedSamples.getEarliest().getDate();
+        final FieldAbsoluteDate<KK> maxDate = cachedSamples.getLatest().getDate();
+
+        if (date.compareTo(minDate) < 0 && FastMath.abs(date.durationFrom(minDate)).getReal() <= threshold) {
+            // avoid TimeStampedCacheException as we are still within the tolerance before minDate
+            central = minDate;
+        } else if (date.compareTo(maxDate) > 0 && FastMath.abs(date.durationFrom(maxDate)).getReal() <= threshold) {
+            // avoid TimeStampedCacheException as we are still within the tolerance after maxDate
+            central = maxDate;
+        } else {
+            central = date;
+        }
+
+        return central;
+    }
+
     /** {@inheritDoc} */
     public List<FieldTimeInterpolator<? extends FieldTimeStamped<KK>, KK>> getSubInterpolators() {
         return Collections.singletonList(this);
@@ -104,7 +139,22 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
 
     /** {@inheritDoc} */
     public int getNbInterpolationPoints() {
-        return interpolationPoints;
+        final List<FieldTimeInterpolator<? extends FieldTimeStamped<KK>, KK>> subInterpolators = getSubInterpolators();
+        // In case the interpolator does not have sub interpolators
+        if (subInterpolators.size() == 1) {
+            return interpolationPoints;
+        }
+        // Otherwise find maximum number of interpolation points among sub interpolators
+        else {
+            final Optional<Integer> optionalMaxNbInterpolationPoints =
+                    subInterpolators.stream().map(FieldTimeInterpolator::getNbInterpolationPoints).max(Integer::compareTo);
+            if (optionalMaxNbInterpolationPoints.isPresent()) {
+                return optionalMaxNbInterpolationPoints.get();
+            } else {
+                // This should never happen
+                throw new OrekitInternalError(null);
+            }
+        }
     }
 
     /** {@inheritDoc} */
@@ -189,7 +239,7 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
             try {
                 // Handle specific case that is not handled by the immutable time stamped cache constructor
                 if (sample.size() < 2) {
-                    throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION,
+                    throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA,
                                                              sample.size());
                 }
 
@@ -212,7 +262,7 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
                 this.interpolationDate = interpolationDate;
             }
             catch (OrekitIllegalArgumentException exception) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, sample.size());
+                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA, sample.size());
             }
         }
 
@@ -224,23 +274,7 @@ public abstract class AbstractFieldTimeInterpolator<T extends FieldTimeStamped<K
          * @return central date to use to find neighbors
          */
         protected FieldAbsoluteDate<KK> getCentralDate(final FieldAbsoluteDate<KK> date) {
-            final FieldAbsoluteDate<KK> central;
-            final FieldAbsoluteDate<KK> minDate = cachedSamples.getEarliest().getDate();
-            final FieldAbsoluteDate<KK> maxDate = cachedSamples.getLatest().getDate();
-
-            if (date.compareTo(minDate) < 0 &&
-                    FastMath.abs(date.durationFrom(minDate)).getReal() <= extrapolationThreshold) {
-                // avoid TimeStampedCacheException as we are still within the tolerance before minDate
-                central = minDate;
-            } else if (date.compareTo(maxDate) > 0 &&
-                    FastMath.abs(date.durationFrom(maxDate)).getReal() <= extrapolationThreshold) {
-                // avoid TimeStampedCacheException as we are still within the tolerance after maxDate
-                central = maxDate;
-            } else {
-                central = date;
-            }
-
-            return central;
+            return AbstractFieldTimeInterpolator.getCentralDate(date, cachedSamples, extrapolationThreshold);
         }
 
         /** Get interpolation date.

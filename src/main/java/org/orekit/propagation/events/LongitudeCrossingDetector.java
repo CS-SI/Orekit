@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,9 +66,9 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
              body, longitude);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
@@ -146,9 +146,9 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
 
     private class RawLongitudeCrossingDetector extends AbstractDetector<RawLongitudeCrossingDetector> {
 
-        /** Private constructor with full parameters.
+        /** Protected constructor with full parameters.
          * <p>
-         * This constructor is private as users are expected to use the builder
+         * This constructor is not public as users are expected to use the builder
          * API with the various {@code withXxx()} methods to set up the instance
          * in a readable manner without using a huge amount of parameters.
          * </p>

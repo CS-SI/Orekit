@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -133,7 +133,7 @@ public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends
 
         // Keplerian period
         final T a = auxiliaryElements.getSma();
-        period = (a.getReal() < 0) ? zero.add(Double.POSITIVE_INFINITY) : a.multiply(a.getPi().multiply(2.0)).multiply(a.divide(mu).sqrt());
+        period = (a.getReal() < 0) ? zero.newInstance(Double.POSITIVE_INFINITY) : a.multiply(a.getPi().multiply(2.0)).multiply(a.divide(mu).sqrt());
 
         A = FastMath.sqrt(mu.multiply(auxiliaryElements.getSma()));
 

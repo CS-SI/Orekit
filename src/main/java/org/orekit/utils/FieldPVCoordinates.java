@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -668,7 +668,7 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
      */
     public FieldVector3D<T> positionShiftedBy(final T dt) {
         final T one = dt.getField().getOne();
-        return new FieldVector3D<>(one, position, dt, velocity, dt.multiply(dt).multiply(0.5), acceleration);
+        return new FieldVector3D<>(one, position, dt, velocity, dt.square().multiply(0.5), acceleration);
     }
 
     /** Gets the position.

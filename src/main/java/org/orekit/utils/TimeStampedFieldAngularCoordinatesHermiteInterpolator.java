@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -246,7 +246,7 @@ public class TimeStampedFieldAngularCoordinatesHermiteInterpolator<KK extends Ca
                 // we need to offset all rotations to avoid the singularity
                 offset = offset.addOffset(
                         new FieldAngularCoordinates<>(new FieldRotation<>(FieldVector3D.getPlusI(field),
-                                                                          one.multiply(epsilon),
+                                                                          one.newInstance(epsilon),
                                                                           RotationConvention.VECTOR_OPERATOR),
                                                       FieldVector3D.getZero(field), FieldVector3D.getZero(field)));
             } else {

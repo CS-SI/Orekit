@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.ElevationMask;
+import org.orekit.utils.TrackingCoordinates;
 
 
 /**
@@ -83,9 +84,9 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
              0.0, null, null, topo);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
@@ -164,19 +165,17 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
     @Override
     public double g(final SpacecraftState s) {
 
-        final double trueElevation = topo.getElevation(s.getPosition(),
-                                                       s.getFrame(), s.getDate());
+        final TrackingCoordinates tc = topo.getTrackingCoordinates(s.getPosition(), s.getFrame(), s.getDate());
 
         final double calculatedElevation;
         if (refractionModel != null) {
-            calculatedElevation = trueElevation + refractionModel.getRefraction(trueElevation);
+            calculatedElevation = tc.getElevation() + refractionModel.getRefraction(tc.getElevation());
         } else {
-            calculatedElevation = trueElevation;
+            calculatedElevation = tc.getElevation();
         }
 
         if (elevationMask != null) {
-            final double azimuth = topo.getAzimuth(s.getPosition(), s.getFrame(), s.getDate());
-            return calculatedElevation - elevationMask.getElevation(azimuth);
+            return calculatedElevation - elevationMask.getElevation(tc.getAzimuth());
         } else {
             return calculatedElevation - minElevation;
         }

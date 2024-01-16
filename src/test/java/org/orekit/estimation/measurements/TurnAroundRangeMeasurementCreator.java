@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -108,11 +108,11 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                 final GroundStation    secondaryStation  = entry.getValue();
                 final AbsoluteDate     date          = currentState.getDate();
                 final Frame            inertial      = currentState.getFrame();
-                final Vector3D         position      = currentState.toTransform().getInverse().transformPosition(antennaPhaseCenter);
+                final Vector3D         position      = currentState.toTransform().toStaticTransform().getInverse().transformPosition(antennaPhaseCenter);
 
                 // Create a TAR measurement only if elevation for both stations is higher than elevationMin°
-                if ((primaryStation.getBaseFrame().getElevation(position, inertial, date) > FastMath.toRadians(30.0))&&
-                    (secondaryStation.getBaseFrame().getElevation(position, inertial, date)  > FastMath.toRadians(30.0))) {
+                if ((primaryStation.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation() > FastMath.toRadians(30.0))&&
+                    (secondaryStation.getBaseFrame().getTrackingCoordinates(position, inertial, date).getElevation()  > FastMath.toRadians(30.0))) {
 
                     // The solver used
                     final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
@@ -130,7 +130,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     final double secondaryTauD  = solver.solve(1000, new UnivariateFunction() {
                         public double value(final double x) {
                             final SpacecraftState transitState = currentState.shiftedBy(-x);
-                            final double d = Vector3D.distance(transitState.toTransform().getInverse().transformPosition(antennaPhaseCenter),
+                            final double d = Vector3D.distance(transitState.toTransform().toStaticTransform().getInverse().transformPosition(antennaPhaseCenter),
                                                                secondaryStationPosition);
                             return d - x * Constants.SPEED_OF_LIGHT;
                         }
@@ -142,7 +142,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     final double secondaryTauU  = solver.solve(1000, new UnivariateFunction() {
                         public double value(final double x) {
                             final SpacecraftState transitState = currentState.shiftedBy(+x);
-                            final double d = Vector3D.distance(transitState.toTransform().getInverse().transformPosition(antennaPhaseCenter),
+                            final double d = Vector3D.distance(transitState.toTransform().toStaticTransform().getInverse().transformPosition(antennaPhaseCenter),
                                                                secondaryStationPosition);
                             return d - x * Constants.SPEED_OF_LIGHT;
                         }
@@ -154,11 +154,11 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
 
                     // Transit state position & date for the 1st leg of the signal path
                     final SpacecraftState S1 = currentState.shiftedBy(-secondaryTauD);
-                    final Vector3D        P1 = S1.toTransform().getInverse().transformPosition(antennaPhaseCenter);
+                    final Vector3D        P1 = S1.toTransform().toStaticTransform().getInverse().transformPosition(antennaPhaseCenter);
                     final AbsoluteDate    T1 = date.shiftedBy(-secondaryTauD);
 
                     // Transit state position & date for the 2nd leg of the signal path
-                    final Vector3D     P2  = currentState.shiftedBy(+secondaryTauU).toTransform().getInverse().transformPosition(antennaPhaseCenter);
+                    final Vector3D     P2  = currentState.shiftedBy(+secondaryTauU).toTransform().toStaticTransform().getInverse().transformPosition(antennaPhaseCenter);
                     final AbsoluteDate T2  = date.shiftedBy(+secondaryTauU);
 
 

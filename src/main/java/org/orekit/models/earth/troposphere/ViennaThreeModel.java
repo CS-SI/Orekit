@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -262,8 +262,8 @@ public class ViennaThreeModel implements DiscreteTroposphericModel, MappingFunct
 
         // Compute Mapping Function Eq. 4
         final T[] function = MathArrays.buildArray(field, 2);
-        function[0] = TroposphericModelUtils.mappingFunction(zero.add(coefficientsA[0]), bh, ch, elevation);
-        function[1] = TroposphericModelUtils.mappingFunction(zero.add(coefficientsA[1]), bw, cw, elevation);
+        function[0] = TroposphericModelUtils.mappingFunction(zero.newInstance(coefficientsA[0]), bh, ch, elevation);
+        function[1] = TroposphericModelUtils.mappingFunction(zero.newInstance(coefficientsA[1]), bw, cw, elevation);
 
         return function;
     }
@@ -324,8 +324,8 @@ public class ViennaThreeModel implements DiscreteTroposphericModel, MappingFunct
         final Field<T> field = date.getField();
         final T zero = field.getZero();
         final T[] delays = MathArrays.buildArray(field, 2);
-        delays[0] = zero.add(zenithDelay[0]);
-        delays[1] = zero.add(zenithDelay[1]);
+        delays[0] = zero.newInstance(zenithDelay[0]);
+        delays[1] = zero.newInstance(zenithDelay[1]);
         return delays;
     }
 

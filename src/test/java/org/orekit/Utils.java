@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,7 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.data.LazyLoadedDataContext;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.EOPEntry;
-import org.orekit.frames.EOPHistoryLoader;
+import org.orekit.frames.EopHistoryLoader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.models.earth.weather.GlobalPressureTemperature2Model;
@@ -199,6 +199,7 @@ public class Utils {
             list.add(new EOPEntry((int) row[0], row[1], row[2],
                                   Constants.ARC_SECONDS_TO_RADIANS * row[3],
                                   Constants.ARC_SECONDS_TO_RADIANS * row[4],
+                                  Double.NaN, Double.NaN,
                                   equinox[0], equinox[1],
                                   nro[0], nro[1], version,
                                   AbsoluteDate.createMJDDate((int) row[0], 0.0, utc)));
@@ -210,7 +211,7 @@ public class Utils {
 
         clearFactories();
 
-        FramesFactory.addEOPHistoryLoader(conventions, new EOPHistoryLoader() {
+        FramesFactory.addEOPHistoryLoader(conventions, new EopHistoryLoader() {
             public void fillHistory(IERSConventions.NutationCorrectionConverter converter,
                                     SortedSet<EOPEntry> history) {
                 history.addAll(eop);

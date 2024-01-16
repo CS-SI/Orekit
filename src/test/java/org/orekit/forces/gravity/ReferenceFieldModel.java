@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -106,9 +106,9 @@ class ReferenceFieldModel {
         Dfp y      = dfpField.newDfp(position.getY());
         Dfp z      = dfpField.newDfp(position.getZ());
 
-        Dfp rho2     = x.multiply(x).add(y.multiply(y));
+        Dfp rho2     = x.square().add(y.square());
         Dfp rho      = rho2.sqrt();
-        Dfp r2       = rho2.add(z.multiply(z));
+        Dfp r2       = rho2.add(z.square());
         Dfp r        = r2.sqrt();
         Dfp aOr      = dfpField.newDfp(provider.getAe()).divide(r);
         Dfp lambda   = position.getX() > 0 ?

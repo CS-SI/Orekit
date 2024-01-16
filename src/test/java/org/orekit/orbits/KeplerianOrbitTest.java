@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1446,6 +1446,30 @@ public class KeplerianOrbitTest {
         KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
         Assertions.assertEquals("Keplerian parameters: {a: 4.225517000282565E7; e: 0.002146216321416967; i: 0.20189257051515358; pa: 13.949966363606599; raan: -87.91788415673473; v: -151.79096272977213;}",
                             orbit.toString());
+    }
+
+    @Test
+    void testRemoveRates() {
+        // GIVEN
+        final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        final PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
+        final KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, FramesFactory.getGCRF(), date, mu);
+        // WHEN
+        final KeplerianOrbit orbitWithoutRates = orbit.removeRates();
+        // THEN
+        Assertions.assertFalse(orbitWithoutRates.hasRates());
+        Assertions.assertTrue(Double.isNaN(orbitWithoutRates.getADot()));
+        Assertions.assertEquals(orbit.getMu(), orbitWithoutRates.getMu());
+        Assertions.assertEquals(orbit.getDate(), orbitWithoutRates.getDate());
+        Assertions.assertEquals(orbit.getFrame(), orbitWithoutRates.getFrame());
+        Assertions.assertEquals(orbit.getA(), orbitWithoutRates.getA());
+        Assertions.assertEquals(orbit.getE(), orbitWithoutRates.getE());
+        Assertions.assertEquals(orbit.getI(), orbitWithoutRates.getI());
+        Assertions.assertEquals(orbit.getRightAscensionOfAscendingNode(),
+                orbitWithoutRates.getRightAscensionOfAscendingNode());
+        Assertions.assertEquals(orbit.getPerigeeArgument(), orbitWithoutRates.getPerigeeArgument());
+        Assertions.assertEquals(orbit.getTrueAnomaly(), orbitWithoutRates.getTrueAnomaly());
     }
 
     @Test

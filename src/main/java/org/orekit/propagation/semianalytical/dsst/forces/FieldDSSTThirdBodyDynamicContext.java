@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -136,7 +136,7 @@ public class FieldDSSTThirdBodyDynamicContext<T extends CalculusFieldElement<T>>
 
         // &Chi;
         X = aux.getB().reciprocal();
-        XX = X.multiply(X);
+        XX = X.square();
         XXX = X.multiply(XX);
         // -2 * a / A
         m2aoA = aux.getSma().multiply(-2.).divide(A);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -29,10 +28,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
-import org.orekit.data.DirectoryCrawler;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.GeoMagneticField;
@@ -71,10 +70,9 @@ public class MagneticFieldDetectorTest {
     double saaValidationWidth = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(200);
 
     @BeforeEach
-    public void setup()
-    {
+    public void setup() {
         // Initialize context
-        DataContext.getDefault().getDataProvidersManager().addProvider(new DirectoryCrawler(new File("src/test/resources")));
+        Utils.setDataRoot("regular-data:earth");
 
         // Initialize constants
         eme2000 = FramesFactory.getEME2000();
@@ -90,8 +88,7 @@ public class MagneticFieldDetectorTest {
     }
 
     @AfterEach
-    public void tearDown()
-    {
+    public void tearDown() {
         // Clear the context
         DataContext.getDefault().getDataProvidersManager().clearProviders();
         DataContext.getDefault().getDataProvidersManager().clearLoadedDataNames();

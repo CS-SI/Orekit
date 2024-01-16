@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -72,9 +72,9 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         final Vector3D position = state.getPosition();
 
         // elevation
-        final double elevation = station.getBaseFrame().getElevation(position,
-                                                                     state.getFrame(),
-                                                                     state.getDate());
+        final double elevation =
+                        station.getBaseFrame().getTrackingCoordinates(position, state.getFrame(), state.getDate()).
+                        getElevation();
 
         // only consider measures above the horizon
         if (elevation > 0) {
@@ -103,9 +103,9 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
 
         //
         final FieldVector3D<T> position = state.getPosition();
-        final T dsElevation             = station.getBaseFrame().getElevation(position,
-                                                                              state.getFrame(),
-                                                                              state.getDate());
+        final T dsElevation             =
+                        station.getBaseFrame().getTrackingCoordinates(position,  state.getFrame(), state.getDate()).
+                        getElevation();
 
         // only consider measures above the horizon
         if (dsElevation.getReal() > 0) {

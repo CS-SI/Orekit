@@ -46,7 +46,7 @@ discrete events. Here is a short list of the features offered by the library:</p
         telemetry-dependent) frames</li>
       <li>predefined frames (EME2000/J2000, ICRF, GCRF, all ITRF from 1988 to 2020
         and intermediate frames, TOD, MOD, GTOD and TEME frames, Veis,
-        topocentric, tnw and qsw local orbital frames, Moon, Sun, planets, solar
+        topocentric, tnw and qsw local orbital frames, relative encounter frames, Moon, Sun, planets, solar
         system barycenter, Earth-Moon barycenter, ecliptic)</li>
       <li>user extensible (used operationally in real time with a set of about 60
         frames on several spacecraft)</li>
@@ -70,6 +70,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>cartesian, elliptical Keplerian, circular and equinoctial parameters,
         with non-Keplerian derivatives if available</li>
       <li>Two-Line Elements (TLE)</li>
+      <li>Two-Line Elements generation using Fixed-Point algorithm or Least Squares Fitting</li>
       <li>transparent conversion between all parameters</li>
       <li>automatic binding with frames</li>
       <li>attitude state and derivative</li>
@@ -85,6 +86,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>covariance extrapolation using a Keplerian model</li>
       <li>covariance frame transformation (inertial, Earth fixed, and local orbital frames)</li>
       <li>covariance type transformation (cartesian, keplerian, circular, and equinoctial)</li>
+      <li>covariance interpolation based on the blending model</li>
     </ul>
   </li>
   <li>Maneuvers
@@ -108,6 +110,7 @@ discrete events. Here is a short list of the features offered by the library:</p
             acceleration due to atmospheric drag</li>
           <li>SDP4/SGP4 with 2006 corrections</li>
           <li>GNSS: GPS, QZSS, Galileo, GLONASS, Beidou, IRNSS and SBAS</li>
+          <li>Intelsat's 11 elements</li>
         </ul>
       </li>
       <li>numerical propagators
@@ -139,7 +142,7 @@ discrete events. Here is a short list of the features offered by the library:</p
         <ul>
           <li>central attraction</li>
           <li>gravity models</li>
-          <li>J2-squared effect</li>
+          <li>J2-squared effect (Zeis model)</li>
           <li>atmospheric drag</li>
           <li>third body attraction</li>
           <li>radiation pressure with eclipse</li>
@@ -183,6 +186,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       </li>
       <li>handling of discrete events during integration (models changes, G-stop,
         simple notifications ...)</li>
+      <li>adaptable max checking interval for discrete events detection</li>
       <li>predefined discrete events
         <ul>
           <li>eclipse (both umbra and penumbra)</li>
@@ -208,7 +212,7 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>spacecraft detection in ground based Field Of View (any shape)</li>
           <li>sensor Field Of View (any shape) overlapping complex geographic zone</li>
           <li>complex geographic zones traversal</li>
-          <li>inter-satellites direct view</li>
+          <li>inter-satellites direct view (with customizable skimming altitude)</li>
           <li>ground at night</li>
           <li>impulse maneuvers occurrence</li>
           <li>geomagnetic intensity</li>
@@ -245,7 +249,7 @@ discrete events. Here is a short list of the features offered by the library:</p
         </ul>
       </li>
       <li>loading and writing of CCSDS Attitude Data Messages (both AEM, APM and ACM types are supported, in both KVN and XML formats, standalone or in combined NDM)</li>
-      <li>>exporting of attitude ephemeris in CCSDS AEM and ACM file format</li>
+      <li>exporting of attitude ephemeris in CCSDS AEM and ACM file format</li>
     </ul>
   </li>
   <li>Orbit determination
@@ -287,7 +291,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>orbit determination can be performed with numerical, DSST, SDP4/SGP4, Eckstein-Hechler, Brouwer-Lyddane, or Keplerian propagators</li>
       <li>ephemeris-based orbit determination to estimate measurement parameters like station biases or clock offsets</li>
       <li>multi-satellites orbit determination</li>
-      <li>initial orbit determination methods (Gibbs, Gooding, Lambert and Laplace)</li>
+      <li>initial orbit determination methods (Gibbs, Gooding, Lambert, Gauss, and Laplace)</li>
       <li>ground stations displacements due to solid tides</li>
       <li>ground stations displacements due to ocean loading (based on Onsala Space Observatory files in BLQ format)</li>
       <li>ground stations displacements due to plate tectonics</li>
@@ -323,6 +327,7 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>delays</li>
           <li>Antenna Phase Center</li>
           <li>Shapiro relativistic effect</li>
+          <li>aberration of light in telescope measurements</li>
         </ul>
       </li>
       <li>possibility to add custom measurement modifiers (even for predefined events)</li>
@@ -348,13 +353,14 @@ discrete events. Here is a short list of the features offered by the library:</p
     <ul>
       <li>computation of Dilution Of Precision</li>
       <li>loading of ANTEX antenna models file</li>
-      <li>loading of RINEX observation files (version 2, 3, and 4)</li>
+      <li>loading and writing of RINEX observation files (version 2, 3, and 4)</li>
       <li>loading of RINEX navigation files (version 2, 3, and 4)</li>
       <li>support for Hatanaka compact RINEX format</li>
       <li>loading of SINEX file (can load station positions, eccentricities, EOPs, and Differential Code Biases)</li>
       <li>loading of RINEX clock files (version 2 and version 3)</li>
       <li>parsing of IGS SSR messages for all constellations (version 1)</li>
       <li>parsing of RTCM messages (both ephemeris and correction messages)</li>
+      <li>parsing of GPS RF link binary message</li>
       <li>Hatch filters for GNSS measurements smoothing</li>
       <li>implementation of Ntrip protocol</li>
       <li>decoding of GPS navigation messages</li>
@@ -363,10 +369,12 @@ discrete events. Here is a short list of the features offered by the library:</p
   <li>Orbit file handling
     <ul>
       <li>loading and writing of SP3 orbit files (from versions a to d)</li>
+      <li>splicing and interpolation of SP3 files</li>
       <li>loading and writing of CCSDS Orbit Data Messages (both OPM, OEM, OMM, OCM types are supported, in both KVN and XML formats, standalone or in combined NDM)</li>
       <li>loading of SEM and YUMA files for GPS constellation</li>
       <li>exporting of ephemeris in CCSDS OEM and OCM file formats</li>
       <li>loading of ILRS CPF orbit files</li>
+      <li>exporting of ephemeris in STK format</li>
     </ul>
   </li>
   <li>Earth models
@@ -395,6 +403,15 @@ discrete events. Here is a short list of the features offered by the library:</p
   <li>Collisions
     <ul>
       <li>loading and writing of CCSDS Conjunction Data Messages (CDM in both KVN and XML formats)</li>
+      <li>2D probability of collision computing methods assuming short term encounter and spherical bodies:
+        <ul>
+          <li>Chan 1997</li>
+          <li>Alfriend 1999</li>
+          <li>Alfriend 1999 (maximum version)</li>
+          <li>Alfano 2005</li>
+          <li>Patera 2005 (custom Orekit implementation) (recommended)</li>
+          <li>Laas 2015 (recommended)</li>
+        </ul></li>
     </ul>
   </li>
   <li>Customizable data loading

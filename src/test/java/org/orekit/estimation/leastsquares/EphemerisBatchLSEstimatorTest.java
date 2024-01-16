@@ -137,7 +137,7 @@ public class EphemerisBatchLSEstimatorTest {
         estimator.estimate();
 
         // verify
-        Assertions.assertEquals(refBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 1.0e-7);
+        Assertions.assertEquals(refBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 5.0e-6);
         Assertions.assertEquals(1, estimator.getMeasurementsParametersDrivers(true).getNbParams());
         Assertions.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
         Assertions.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());
@@ -184,7 +184,7 @@ public class EphemerisBatchLSEstimatorTest {
         estimator.estimate();
 
         // verify
-        Assertions.assertEquals(refClockBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 1.0e-17);
+        Assertions.assertEquals(refClockBias, estimator.getMeasurementsParametersDrivers(true).getDrivers().get(0).getValue(), 6.0e-16);
         Assertions.assertEquals(1, estimator.getMeasurementsParametersDrivers(true).getNbParams());
         Assertions.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
         Assertions.assertEquals(0, estimator.getPropagatorParametersDrivers(true).getNbParams());

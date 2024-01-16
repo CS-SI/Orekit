@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -615,7 +615,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         final T b = auxiliaryElements.getB().add(1.).reciprocal();
 
         // (-b)<sup>j</sup>
-        T mbtj = zero.add(1.);
+        T mbtj = zero.newInstance(1.);
 
         for (int j = 1; j <= 3 * JMAX; j++) {
 
@@ -1417,8 +1417,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final T[] adaptedWeights = MathArrays.buildArray(field, numberOfPoints);
 
             for (int i = 0; i < numberOfPoints; i++) {
-                adaptedPoints[i] = zero.add(nodePoints[i]);
-                adaptedWeights[i] = zero.add(nodeWeights[i]);
+                adaptedPoints[i] = zero.newInstance(nodePoints[i]);
+                adaptedWeights[i] = zero.newInstance(nodeWeights[i]);
             }
 
             transform(adaptedPoints, adaptedWeights, lowerBound, upperBound);
@@ -2254,7 +2254,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // Compute the center (l - λ)
             final T center = L.subtract(meanOrbit.getLM());
             // Compute (l - λ)²
-            final T center2 = center.multiply(center);
+            final T center2 = center.square();
 
             // Initialize short periodic variations
             final T[] shortPeriodicVariation = slot.cij[0].value(meanOrbit.getDate());

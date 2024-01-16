@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -71,14 +71,14 @@ import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
  * </p>
  * @author Luc Maisonobe
  */
-class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
+class EopC04FilesLoader extends AbstractEopLoader implements EopHistoryLoader {
 
     /** Build a loader for IERS EOP C04 files.
      * @param supportedNames regular expression for supported files names
      * @param manager provides access to the EOP C04 files.
      * @param utcSupplier UTC time scale.
      */
-    EOPC04FilesLoader(final String supportedNames,
+    EopC04FilesLoader(final String supportedNames,
                       final DataProvidersManager manager,
                       final Supplier<TimeScale> utcSupplier) {
         super(supportedNames, manager, utcSupplier);
@@ -111,7 +111,7 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
 
             final List<EOPEntry> history = new ArrayList<>();
 
-            // set up a reader for line-oriented bulletin B files
+            // set up a reader for line-oriented EOP C04 files
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
                 // reset parse info to start new file (do not clear history!)
                 int lineNumber   = 0;
@@ -426,13 +426,14 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
                     nro = getConverter().toNonRotating(date, equinox[0], equinox[1]);
                 }
 
-                return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, Double.NaN, Double.NaN,
+                                    equinox[0], equinox[1], nro[0], nro[1],
                                     getItrfVersion(), date);
 
             }
         }
 
-        /** Parser for data lines without pole rates.
+        /** Parser for data lines with pole rates.
          * <p>
          * ITRF markers have either the following form:
          * </p>
@@ -488,6 +489,16 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
             /** Correction for nutation second field. */
             private static final int NUT_DY_GROUP = 10;
 
+            /** X rate component of pole motion group.
+             * @since 12.0
+             */
+            private static final int POLE_X_RATE_GROUP = 11;
+
+            /** Y rate component of pole motion group.
+             * @since 12.0
+             */
+            private static final int POLE_Y_RATE_GROUP = 12;
+
             /** LoD group. */
             private static final int LOD_GROUP = 13;
 
@@ -517,6 +528,10 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
 
                 final double x     = Double.parseDouble(matcher.group(POLE_X_GROUP)) * Constants.ARC_SECONDS_TO_RADIANS;
                 final double y     = Double.parseDouble(matcher.group(POLE_Y_GROUP)) * Constants.ARC_SECONDS_TO_RADIANS;
+                final double xRate = Double.parseDouble(matcher.group(POLE_X_RATE_GROUP)) *
+                                     Constants.ARC_SECONDS_TO_RADIANS / Constants.JULIAN_DAY;
+                final double yRate = Double.parseDouble(matcher.group(POLE_Y_RATE_GROUP)) *
+                                     Constants.ARC_SECONDS_TO_RADIANS / Constants.JULIAN_DAY;
                 final double dtu1  = Double.parseDouble(matcher.group(UT1_UTC_GROUP));
                 final double lod   = Double.parseDouble(matcher.group(LOD_GROUP));
                 final double[] nro = new double[] {
@@ -525,7 +540,8 @@ class EOPC04FilesLoader extends AbstractEopLoader implements EOPHistoryLoader {
                 };
                 final double[] equinox = getConverter().toEquinox(date, nro[0], nro[1]);
 
-                return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1],
+                return new EOPEntry(dc.getMJD(), dtu1, lod, x, y, xRate, yRate,
+                                    equinox[0], equinox[1], nro[0], nro[1],
                                     getItrfVersion(), date);
 
             }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,9 +55,6 @@ import org.orekit.utils.ParameterDriver;
  * @see "IGS State Space Representation (SSR) Format, Version 1.00, October 2020."
  */
 public class SsrVtecIonosphericModel implements IonosphericModel {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20210322L;
 
     /** Earth radius in meters (see reference). */
     private static final double EARTH_RADIUS = 6370000.0;

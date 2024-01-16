@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -513,8 +513,8 @@ public enum OrekitMessages implements Localizable {
     /** OUT_OF_RANGE_TIME_TRANSFORM. */
     OUT_OF_RANGE_TIME_TRANSFORM("time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]"),
 
-    /** NOT_ENOUGH_DATA_FOR_INTERPOLATION. */
-    NOT_ENOUGH_DATA_FOR_INTERPOLATION("not enough data for interpolation (sample size = {0})"),
+    /** NOT_ENOUGH_DATA. */
+    NOT_ENOUGH_DATA("not enough data (sample size = {0})"),
 
     /** NOT_ENOUGH_CACHED_NEIGHBORS. */
     NOT_ENOUGH_CACHED_NEIGHBORS("too small number of cached neighbors: {0} (must be at least {1})"),
@@ -536,6 +536,12 @@ public enum OrekitMessages implements Localizable {
 
     /** UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY. */
     UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY("unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations"),
+
+    /** UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT. */
+    UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT("unable to compute eccentric longitude argument from the mean one after {0} iterations"),
+
+    /** UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT. */
+    UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT("unable to compute eccentric latitude argument from the mean one after {0} iterations"),
 
     /** UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS. */
     UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS("unable to compute mean orbit from osculating orbit after {0} iterations"),
@@ -681,8 +687,8 @@ public enum OrekitMessages implements Localizable {
     /** INVALID_SATELLITE_SYSTEM. */
     INVALID_SATELLITE_SYSTEM("invalid satellite system {0}"),
 
-    /** NO_TEC_DATA_IN_FILE_FOR_DATE. */
-    NO_TEC_DATA_IN_FILE_FOR_DATE("IONEX file {0} does not contain TEC data for date {1}"),
+    /** NO_TEC_DATA_IN_FILES_FOR_DATE. */
+    NO_TEC_DATA_IN_FILES_FOR_DATE("IONEX files {0} does not contain TEC data for date {1}"),
 
     /** INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE. */
     INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE("number of maps {0} is inconsistent with header specification: {1}"),
@@ -907,7 +913,10 @@ public enum OrekitMessages implements Localizable {
     CANNOT_START_PROPAGATION_FROM_INFINITY("Cannot start the propagation from an infinitely far date"),
 
     /** INVALID_SATELLITE_ID. */
-    INVALID_SATELLITE_ID("invalid satellite id {0}");
+    INVALID_SATELLITE_ID("invalid satellite id {0}"),
+
+    /** WRONG_EOP_INTERPOLATION_DEGREE. */
+    WRONG_EOP_INTERPOLATION_DEGREE("EOP interpolation degree must be of the form 4k-1, got {0}");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";

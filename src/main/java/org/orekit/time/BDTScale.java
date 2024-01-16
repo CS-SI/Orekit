@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,7 +47,7 @@ public class BDTScale implements TimeScale {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return date.getField().getZero().add(OFFSET);
+        return date.getField().getZero().newInstance(OFFSET);
     }
 
     /** {@inheritDoc} */

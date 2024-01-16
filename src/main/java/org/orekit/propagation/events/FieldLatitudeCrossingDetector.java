@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,7 +53,7 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
                                          final OneAxisEllipsoid body,
                                          final double latitude) {
         this(s -> DEFAULT_MAXCHECK,
-                field.getZero().add(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
+                field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
                 body,
                 latitude);
     }
@@ -72,9 +72,9 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
              body, latitude);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>

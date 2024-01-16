@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -77,7 +77,8 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @since 9.0
  * @param <T> type of the field elements
  */
-public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> {
+public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T>
+        implements PositionAngleBased {
 
     /** Name of the eccentricity parameter. */
     private static final String ECCENTRICITY = "eccentricity";
@@ -427,16 +428,16 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @since 12.0
      */
     public FieldKeplerianOrbit(final Field<T> field, final KeplerianOrbit op) {
-        this(field.getZero().add(op.getA()), field.getZero().add(op.getE()), field.getZero().add(op.getI()),
-                field.getZero().add(op.getPerigeeArgument()), field.getZero().add(op.getRightAscensionOfAscendingNode()),
-                field.getZero().add(op.getTrueAnomaly()),
-                (op.hasDerivatives()) ? field.getZero().add(op.getADot()) : null,
-                (op.hasDerivatives()) ? field.getZero().add(op.getEDot()) : null,
-                (op.hasDerivatives()) ? field.getZero().add(op.getIDot()) : null,
-                (op.hasDerivatives()) ? field.getZero().add(op.getPerigeeArgumentDot()) : null,
-                (op.hasDerivatives()) ? field.getZero().add(op.getRightAscensionOfAscendingNodeDot()) : null,
-                (op.hasDerivatives()) ? field.getZero().add(op.getTrueAnomalyDot()) : null, PositionAngleType.TRUE,
-                op.getFrame(), new FieldAbsoluteDate<>(field, op.getDate()), field.getZero().add(op.getMu()));
+        this(field.getZero().newInstance(op.getA()), field.getZero().newInstance(op.getE()), field.getZero().newInstance(op.getI()),
+                field.getZero().newInstance(op.getPerigeeArgument()), field.getZero().newInstance(op.getRightAscensionOfAscendingNode()),
+                field.getZero().newInstance(op.getTrueAnomaly()),
+                (op.hasDerivatives()) ? field.getZero().newInstance(op.getADot()) : null,
+                (op.hasDerivatives()) ? field.getZero().newInstance(op.getEDot()) : null,
+                (op.hasDerivatives()) ? field.getZero().newInstance(op.getIDot()) : null,
+                (op.hasDerivatives()) ? field.getZero().newInstance(op.getPerigeeArgumentDot()) : null,
+                (op.hasDerivatives()) ? field.getZero().newInstance(op.getRightAscensionOfAscendingNodeDot()) : null,
+                (op.hasDerivatives()) ? field.getZero().newInstance(op.getTrueAnomalyDot()) : null, PositionAngleType.TRUE,
+                op.getFrame(), new FieldAbsoluteDate<>(field, op.getDate()), field.getZero().newInstance(op.getMu()));
     }
 
     /** Constructor from Field and Orbit.
@@ -925,7 +926,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     public FieldKeplerianOrbit<T> shiftedBy(final double dt) {
-        return shiftedBy(getZero().add(dt));
+        return shiftedBy(getZero().newInstance(dt));
     }
 
     /** {@inheritDoc} */
@@ -944,7 +945,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
             keplerianShifted.computePVWithoutA();
             final FieldVector3D<T> fixedP   = new FieldVector3D<>(getOne(), keplerianShifted.partialPV.getPosition(),
-                                                                  dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
+                                                                  dt.square().multiply(0.5), nonKeplerianAcceleration);
             final T   fixedR2 = fixedP.getNormSq();
             final T   fixedR  = fixedR2.sqrt();
             final FieldVector3D<T> fixedV  = new FieldVector3D<>(getOne(), keplerianShifted.partialPV.getVelocity(),
@@ -1009,7 +1010,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final T mu         = getMu();
         final T sqrtMuA    = FastMath.sqrt(a.multiply(mu));
         final T sqrtAoMu   = FastMath.sqrt(a.divide(mu));
-        final T a2         = a.multiply(a);
+        final T a2         = a.square();
         final T twoA       = a.multiply(2);
         final T rOnA       = r.divide(a);
 
@@ -1148,7 +1149,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final T mu         = getMu();
         final T absA       = a.negate();
         final T sqrtMuA    = absA.multiply(mu).sqrt();
-        final T a2         = a.multiply(a);
+        final T a2         = a.square();
         final T rOa        = r.divide(absA);
 
         final FieldSinCos<T> scI = FastMath.sinCos(i);
@@ -1226,7 +1227,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         // dM
         final T s2a    = pv.divide(absA.multiply(2));
-        final T oObux  = m.multiply(m).add(absA.multiply(mu)).sqrt().reciprocal();
+        final T oObux  = m.square().add(absA.multiply(mu)).sqrt().reciprocal();
         final T scasbu = pv.multiply(oObux);
         final FieldVector3D<T> dauP = new FieldVector3D<>(sqrtMuA.reciprocal(), velocity, s2a.negate().divide(sqrtMuA), vectorAR);
         final FieldVector3D<T> dauV = new FieldVector3D<>(sqrtMuA.reciprocal(), position, s2a.negate().divide(sqrtMuA), vectorARDot);
@@ -1410,12 +1411,12 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                 pDot[5] = pDot[5].add(n);
                 break;
             case ECCENTRIC :
-                oMe2 = e.multiply(e).negate().add(1).abs();
+                oMe2 = e.square().negate().add(1).abs();
                 ksi  = e.multiply(v.cos()).add(1);
                 pDot[5] = pDot[5].add( n.multiply(ksi).divide(oMe2));
                 break;
             case TRUE :
-                oMe2 = e.multiply(e).negate().add(1).abs();
+                oMe2 = e.square().negate().add(1).abs();
                 ksi  = e.multiply(v.cos()).add(1);
                 pDot[5] = pDot[5].add(n.multiply(ksi).multiply(ksi).divide(oMe2.multiply(oMe2.sqrt())));
                 break;
@@ -1437,6 +1438,27 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                                   append("; v: ").append(FastMath.toDegrees(v.getReal())).
                                   append(";}").toString();
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public PositionAngleType getCachedPositionAngleType() {
+        return PositionAngleType.TRUE;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasRates() {
+        return hasDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldKeplerianOrbit<T> removeRates() {
+        final PositionAngleType positionAngleType = getCachedPositionAngleType();
+        return new FieldKeplerianOrbit<>(getA(), getE(), getI(), getPerigeeArgument(), getRightAscensionOfAscendingNode(),
+                getAnomaly(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
+    }
+
 
     /** Check if the given parameter is within an acceptable range.
      * The bounds are inclusive: an exception is raised when either of those conditions are met:

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -102,7 +102,7 @@ public class GTODProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public GTODProvider getNonInterpolatingProvider() {
-        return new GTODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory(),
+        return new GTODProvider(conventions, eopHistory.getEOPHistoryWithoutCachedTidalCorrection(),
                 gastFunction);
     }
 

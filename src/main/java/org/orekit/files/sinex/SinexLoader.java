@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,7 +46,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.sinex.Station.ReferenceSystem;
 import org.orekit.frames.EOPEntry;
-import org.orekit.frames.EOPHistoryLoader;
+import org.orekit.frames.EopHistoryLoader;
 import org.orekit.frames.ITRFVersion;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
@@ -78,7 +78,7 @@ import org.orekit.utils.units.Unit;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class SinexLoader implements EOPHistoryLoader {
+public class SinexLoader implements EopHistoryLoader {
 
     /** Length of day. */
     private static final String LOD = "LOD";
@@ -896,6 +896,13 @@ public class SinexLoader implements EOPHistoryLoader {
 
         // Add the last entry to the end time of the data
         eopEntries.add(copyEopEntry(endDate, set.last()).toEopEntry(converter, itrfVersionEop, scale));
+
+        if (set.size() < 2) {
+            // there is only one entry in the Sinex file
+            // in order for interpolation to work, we need to add more dummy entries
+            eopEntries.add(copyEopEntry(startDate.shiftedBy(+1.0), set.first()).toEopEntry(converter, itrfVersionEop, scale));
+            eopEntries.add(copyEopEntry(endDate.shiftedBy(-1.0),   set.last()).toEopEntry(converter, itrfVersionEop, scale));
+        }
 
         // Return
         eopEntries.sort(new ChronologicalComparator());

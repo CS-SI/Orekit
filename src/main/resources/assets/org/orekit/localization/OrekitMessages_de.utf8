@@ -430,8 +430,8 @@ UNSUPPORTED_TIME_TRANSFORM = geo-magnetisches Feldmodell {0} mit Epoche {1} unte
 # time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
 OUT_OF_RANGE_TIME_TRANSFORM = Zeittransformation des geo-magnetischen Feldmodells {0} mit Epoche {1} liegt ausserhalb des gültigen Bereichs: {2} != [{3}, {4}]
 
-# not enough data for interpolation (sample size = {0})
-NOT_ENOUGH_DATA_FOR_INTERPOLATION = nicht genügend Daten verfügbar zum Interpolieren (Datenmenge = {0})
+# not enough data (sample size = {0})
+NOT_ENOUGH_DATA = nicht genügend Daten verfügbar (Datenmenge = {0})
 
 # too small number of cached neighbors: {0} (must be at least {1})
 NOT_ENOUGH_CACHED_NEIGHBORS = nicht genug Nachbareinträge im Cache verfügbar: {0} (minimum {1})
@@ -453,6 +453,12 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION>
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = die hyperbolisch-exzentrische Anomalie kann nicht aus der mittleren Anomalie berechnet werden nach {0} Iterationen
+
+# unable to compute eccentric longitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT = <MISSING TRANSLATION>
+
+# unable to compute eccentric latitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT = <MISSING TRANSLATION>
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
 UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = die Durschnittsumlaufbahn kann auch nach {0} Iterationen nicht von der oskulierenden Umlaufbahn berechnet werden
@@ -637,8 +643,8 @@ IRREGULAR_OR_INCOMPLETE_GRID = Unregelmäßige oder unvollständige "grid" in Da
 # invalid satellite system {0}
 INVALID_SATELLITE_SYSTEM = Ungültiges Satellitensystem {0}
 
-# IONEX file {0} does not contain TEC data for date {1}
-NO_TEC_DATA_IN_FILE_FOR_DATE = IONEX Datei {0} beinhaltet keine TEC Daten für Datum {1}
+# IONEX files {0} does not contain TEC data for date {1}
+NO_TEC_DATA_IN_FILES_FOR_DATE = IONEX Datei {0} beinhaltet keine TEC Daten für Datum {1}
 
 # number of maps {0} is inconsistent with header specification: {1}
 INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = Anzahl an Karten {0} ist nicht konsistent mit der Kopfzeilen-Spezifikation: {1}
@@ -863,3 +869,6 @@ CANNOT_START_PROPAGATION_FROM_INFINITY = <MISSING TRANSLATION>
 
 # invalid satellite id {0}
 INVALID_SATELLITE_ID = <MISSING TRANSLATION>
+
+# EOP interpolation degree must be of the form 4k-1, got {0}
+WRONG_EOP_INTERPOLATION_DEGREE = <MISSING TRANSLATION>

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -187,6 +187,12 @@ public enum OrbitType {
         public <T extends CalculusFieldElement<T>> FieldCartesianOrbit<T> normalize(final FieldOrbit<T> orbit, final FieldOrbit<T> reference) {
             // no angular parameters need normalization
             return convertType(orbit);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean isPositionAngleBased() {
+            return false;
         }
 
     },
@@ -412,6 +418,12 @@ public enum OrbitType {
                                                 cO.getMu());
             }
 
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean isPositionAngleBased() {
+            return true;
         }
 
     },
@@ -642,6 +654,12 @@ public enum OrbitType {
 
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public boolean isPositionAngleBased() {
+            return true;
+        }
+
     },
 
     /** Type for orbital representation in {@link KeplerianOrbit} and {@link FieldKeplerianOrbit} parameters. */
@@ -867,6 +885,12 @@ public enum OrbitType {
                                                  kO.getMu());
             }
 
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean isPositionAngleBased() {
+            return true;
         }
 
     };
@@ -1098,6 +1122,12 @@ public enum OrbitType {
      * @since 11.1
      */
     public abstract Orbit normalize(Orbit orbit, Orbit reference);
+
+    /** Tells if the orbit type is based on position angles or not.
+     * @return true if based on {@link PositionAngleType}
+     * @since 12.0
+     */
+    public abstract boolean isPositionAngleBased();
 
     /** Compute scaling factor for parameters drivers.
      * <p>

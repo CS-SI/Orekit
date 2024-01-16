@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.orekit.frames.StaticTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -70,7 +70,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      */
     public FieldElevationDetector(final Field<T> field, final TopocentricFrame topo) {
         this(s -> DEFAULT_MAXCHECK,
-             field.getZero().add(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+             field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
              new FieldStopOnDecreasing<>(),
              0.0, null, null, topo);
     }
@@ -91,9 +91,9 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
              0.0, null, null, topo);
     }
 
-    /** Private constructor with full parameters.
+    /** Protected constructor with full parameters.
      * <p>
-     * This constructor is private as users are expected to use the builder
+     * This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
@@ -172,8 +172,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
     @Override
     public T g(final FieldSpacecraftState<T> s) {
 
-        final StaticTransform t = s.getFrame()
-                .getStaticTransformTo(topo, s.getDate().toAbsoluteDate());
+        final FieldStaticTransform<T> t = s.getFrame().getStaticTransformTo(topo, s.getDate());
         final FieldVector3D<T> extPointTopo = t.transformPosition(s.getPosition());
         final T trueElevation = extPointTopo.getDelta();
 

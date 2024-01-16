@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -211,7 +211,7 @@ public class FrameAlignedProviderTest {
                 new FieldPVCoordinates<>(one, this.orbit0.getPVCoordinates()),
                 eci,
                 date,
-                one.multiply(orbit0.getMu()));
+                one.newInstance(orbit0.getMu()));
 
         // action + verify
         FieldAttitude<Binary64> actual = law.getAttitude(orbit, date, eci);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -464,12 +464,6 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         @Override
         public T getMass(final FieldAbsoluteDate<T> date) {
             return FieldAbstractAnalyticalPropagator.this.getMass(date);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-            return propagate(date).getPVCoordinates(frame);
         }
 
         /** {@inheritDoc} */

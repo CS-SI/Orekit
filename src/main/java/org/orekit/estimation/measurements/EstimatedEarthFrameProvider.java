@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -279,7 +279,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
         // prime meridian shift parameters
         final T theta    = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver);
-        final T thetaDot = zero.add(primeMeridianDriftDriver.getValue());
+        final T thetaDot = zero.newInstance(primeMeridianDriftDriver.getValue());
 
         // pole shift parameters
         final T xpNeg    = linearModel(date, polarOffsetXDriver, polarDriftXDriver).negate();

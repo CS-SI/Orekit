@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -109,7 +109,7 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
 
         // &Chi; = 1 / B
         X = auxiliaryElements.getB().reciprocal();
-        XX = X.multiply(X);
+        XX = X.square();
         XXX = X.multiply(XX);
 
         // 1 / AB

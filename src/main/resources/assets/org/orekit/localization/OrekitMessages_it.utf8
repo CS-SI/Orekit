@@ -430,8 +430,8 @@ UNSUPPORTED_TIME_TRANSFORM = il modello geomagnetico {0} all''epoca {1} non supp
 # time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
 OUT_OF_RANGE_TIME_TRANSFORM = la trasformazione temporale del modello geomagnetico {0} all''epoca {1} è al di fuori del suo intervallo di validità: {2} != [{3}, {4}]
 
-# not enough data for interpolation (sample size = {0})
-NOT_ENOUGH_DATA_FOR_INTERPOLATION = dati insufficienti per realizzare un''interpolazione (passo di campionamento = {0})
+# not enough data (sample size = {0})
+NOT_ENOUGH_DATA = dati insufficienti (passo di campionamento = {0})
 
 # too small number of cached neighbors: {0} (must be at least {1})
 NOT_ENOUGH_CACHED_NEIGHBORS = numero di vicini in cache troppo piccolo: {0} (devono essere almeno {1})
@@ -453,6 +453,12 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER =impossibile generare dati dopo il {0}, dati r
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = impossibile calcolare l''anomalia eccentrica iperbolica a partire dall''anomalia media dopo {0} iterazioni
+
+# unable to compute eccentric longitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT = unable to compute eccentric longitude argument from the mean one after {0} iterations
+
+# unable to compute eccentric latitude argument from the mean one after {0} iterations
+UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT = unable to compute eccentric latitude argument from the mean one after {0} iterations
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
 UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = impossibile calcolare l''orbita media a partire dall''orbita osculatrice dopo {0} iterazioni
@@ -637,8 +643,8 @@ IRREGULAR_OR_INCOMPLETE_GRID = griglia irregolare o incompleta nel file {0}
 # invalid satellite system {0}
 INVALID_SATELLITE_SYSTEM = sistema satellitare invalido {0}
 
-# IONEX file {0} does not contain TEC data for date {1}
-NO_TEC_DATA_IN_FILE_FOR_DATE = il file IONEX {0} non contiene dati TEC per la data {1}
+# IONEX files {0} does not contain TEC data for date {1}
+NO_TEC_DATA_IN_FILES_FOR_DATE = il file IONEX {0} non contiene dati TEC per la data {1}
 
 # number of maps {0} is inconsistent with header specification: {1}
 INCONSISTENT_NUMBER_OF_TEC_MAPS_IN_FILE = il numero di mappe {0} è incoerente con le specifiche dell''intestazione: {1} 
@@ -863,3 +869,6 @@ CANNOT_START_PROPAGATION_FROM_INFINITY = <MISSING TRANSLATION>
 
 # invalid satellite id {0}
 INVALID_SATELLITE_ID = <MISSING TRANSLATION>
+
+# EOP interpolation degree must be of the form 4k-1, got {0}
+WRONG_EOP_INTERPOLATION_DEGREE = <MISSING TRANSLATION>

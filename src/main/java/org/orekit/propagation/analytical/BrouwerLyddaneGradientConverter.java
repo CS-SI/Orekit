@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -60,7 +60,7 @@ class BrouwerLyddaneGradientConverter extends AbstractAnalyticalGradientConverte
         final AttitudeProvider provider = propagator.getAttitudeProvider();
 
         // Central attraction coefficient
-        final Gradient mu = zero.add(propagator.getMu());
+        final Gradient mu = zero.newInstance(propagator.getMu());
 
         // Return the "Field" propagator
         return new FieldBrouwerLyddanePropagator<>(state.getOrbit(), provider, radius, mu,

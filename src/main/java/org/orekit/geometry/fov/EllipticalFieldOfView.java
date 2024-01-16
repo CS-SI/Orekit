@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -400,7 +400,7 @@ public class EllipticalFieldOfView extends SmoothFieldOfView {
         final T cos2 = FastMath.cos(d2);
         final T a1   = cos1.subtract(cos2.multiply(dotF1F2)).multiply(d);
         final T a2   = cos2.subtract(cos1.multiply(dotF1F2)).multiply(d);
-        final T ac   = FastMath.sqrt(a1.multiply(a1.add(a2.multiply(2 * dotF1F2))).add(a2.multiply(a2)).negate().add(1).multiply(d));
+        final T ac   = FastMath.sqrt(a1.multiply(a1.add(a2.multiply(2 * dotF1F2))).add(a2.square()).negate().add(1).multiply(d));
         return new FieldVector3D<>(a1, focus1, a2, focus2, FastMath.copySign(ac, sign), crossF1F2);
     }
 

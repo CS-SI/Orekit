@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -1642,7 +1642,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
             //initialise fields
             c = auxiliaryElements.getEcc().multiply(context.getb());
-            final T c2 = c.multiply(c);
+            final T c2 = c.square();
 
             //b² * χ
             final T b2Chi = context.getb().multiply(context.getb()).multiply(context.getX());
@@ -1667,8 +1667,8 @@ public class DSSTThirdBody implements DSSTForceModel {
             opc2tn = MathArrays.buildArray(field, staticContext.getMaxAR3Pow() + staticContext.getMaxFreqF() + 2);
             final T omc2 = c2.negate().add(1.);
             final T opc2 = c2.add(1.);
-            omc2tn[0] = zero.add(1.);
-            opc2tn[0] = zero.add(1.);
+            omc2tn[0] = zero.newInstance(1.);
+            opc2tn[0] = zero.newInstance(1.);
             for (int i = 1; i <= staticContext.getMaxAR3Pow() + staticContext.getMaxFreqF() + 1; i++) {
                 omc2tn[i] = omc2tn[i - 1].multiply(omc2);
                 opc2tn[i] = opc2tn[i - 1].multiply(opc2);
@@ -1676,7 +1676,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
             //Compute the powers of b
             btjms = MathArrays.buildArray(field, staticContext.getMaxAR3Pow() + staticContext.getMaxFreqF() + 1);
-            btjms[0] = zero.add(1.);
+            btjms[0] = zero.newInstance(1.);
             for (int i = 1; i <= staticContext.getMaxAR3Pow() + staticContext.getMaxFreqF(); i++) {
                 btjms[i] = btjms[i - 1].multiply(context.getb());
             }
@@ -1715,15 +1715,15 @@ public class DSSTThirdBody implements DSSTForceModel {
             final T factCoef;
             if (absS > absJ) {
                 //factCoef = (fact[n + s] / fact[n + j]) * (fact[n - s] / fact[n - j]);
-                factCoef = zero.add((CombinatoricsUtils.factorialDouble(n + s) / CombinatoricsUtils.factorialDouble(n + j)) * (CombinatoricsUtils.factorialDouble(n - s) / CombinatoricsUtils.factorialDouble(n - j)));
+                factCoef = zero.newInstance((CombinatoricsUtils.factorialDouble(n + s) / CombinatoricsUtils.factorialDouble(n + j)) * (CombinatoricsUtils.factorialDouble(n - s) / CombinatoricsUtils.factorialDouble(n - j)));
                 l = n - absS;
             } else {
-                factCoef = zero.add(1.);
+                factCoef = zero.newInstance(1.);
                 l = n - absJ;
             }
 
             // (-1)<sup>|j-s|</sup>
-            final T sign = absJmS % 2 != 0 ? zero.add(-1.) : zero.add(1.);
+            final T sign = absJmS % 2 != 0 ? zero.newInstance(-1.) : zero.newInstance(1.);
             //(1 - c²)<sup>n-|s|</sup> / (1 + c²)<sup>n</sup>
             final T coef1 = omc2tn[l].divide(opc2tn[n]);
             //-b<sup>|j-s|</sup>
@@ -1960,7 +1960,7 @@ public class DSSTThirdBody implements DSSTForceModel {
                     // compute the coefficients only if (n - s) % 2 == 0
                     if ( (n - s) % 2 == 0 ) {
                         // Kronecker symbol (2 - delta(0,s))
-                        final T delta0s = (s == 0) ? zero.add(1.) : zero.add(2.);
+                        final T delta0s = (s == 0) ? zero.newInstance(1.) : zero.newInstance(2.);
                         final double vns = Vns.get(new NSKey(n, s));
                         final T coef0 = aoR3Pow[n].multiply(vns).multiply(context.getMuoR3()).multiply(delta0s);
                         final T coef1 = coef0.multiply(qns[n][s]);
@@ -3782,7 +3782,7 @@ public class DSSTThirdBody implements DSSTForceModel {
                 }
 
                 // Kronecker symbol (2 - delta(0,s))
-                final T delta0s = zero.add((s == 0) ? 1. : 2.);
+                final T delta0s = zero.newInstance((s == 0) ? 1. : 2.);
 
                 for (int n = FastMath.max(2, s); n <= staticContext.getMaxAR3Pow(); n++) {
                     // (n - s) must be even

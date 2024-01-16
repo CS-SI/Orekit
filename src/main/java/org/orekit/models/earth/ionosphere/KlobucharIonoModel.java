@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,9 +66,6 @@ import org.orekit.utils.ParameterDriver;
  *
  */
 public class KlobucharIonoModel implements IonosphericModel {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 7277525837842061107L;
 
     /** The 4 coefficients of a cubic equation representing the amplitude of the vertical delay. Units are sec/semi-circle^(i-1) for the i-th coefficient, i=1, 2, 3, 4. */
     private final double[] alpha;
@@ -253,7 +250,7 @@ public class KlobucharIonoModel implements IonosphericModel {
         // in [-0.416, 0.416], semicircle
         final T latIono = FastMath.min(
                                       FastMath.max(geo.getLatitude().multiply(rad2semi).add(psi.multiply(sc.cos())), zero.subtract(0.416)),
-                                      zero.add(0.416));
+                                      zero.newInstance(0.416));
 
         // Subionospheric longitude: the longitude of the IPP
         // in semicircle
@@ -276,7 +273,7 @@ public class KlobucharIonoModel implements IonosphericModel {
         final T slantFactor = FastMath.pow(elevation.divide(pi).negate().add(0.53), 3).multiply(16.0).add(one);
 
         // Period of model, seconds
-        final T period = FastMath.max(zero.add(72000.), latGeom.multiply(latGeom.multiply(latGeom.multiply(beta[3]).add(beta[2])).add(beta[1])).add(beta[0]));
+        final T period = FastMath.max(zero.newInstance(72000.), latGeom.multiply(latGeom.multiply(latGeom.multiply(beta[3]).add(beta[2])).add(beta[1])).add(beta[0]));
 
         // Phase of the model, radians
         // (Max at 14.00 = 50400 sec local time)

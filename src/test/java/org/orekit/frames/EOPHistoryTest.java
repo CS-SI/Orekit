@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -133,8 +133,8 @@ public class EOPHistoryTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(history);
 
-        Assertions.assertTrue(bos.size() > 150000);
-        Assertions.assertTrue(bos.size() < 155000);
+        Assertions.assertTrue(bos.size() > 135000);
+        Assertions.assertTrue(bos.size() < 140000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -163,7 +163,7 @@ public class EOPHistoryTest {
     public void testTidalInterpolationEffects() throws IOException, OrekitException {
 
         final EOPHistory h1 = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
-        final EOPHistory h2 = h1.getNonInterpolatingEOPHistory();
+        final EOPHistory h2 = h1.getEOPHistoryWithoutCachedTidalCorrection();
         final AbsoluteDate date0 = new AbsoluteDate(2004, 8, 16, 20, 0, 0, TimeScalesFactory.getUTC());
 
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 10) {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -80,7 +80,8 @@ public class FramesFactoryTest {
                                                       "wrong-rapidDataXML-1980",
                                                       "wrong-eopC04-1980",
                                                       "wrong-bulletinB-1980",
-                                                      "wrong-bulletinA-1980");
+                                                      "wrong-bulletinA-1980",
+                                                      "wrong-csv");
         try {
             FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true).getStartDate();
             Assertions.fail("an exception should have been thrown");
@@ -95,7 +96,8 @@ public class FramesFactoryTest {
                                                       "wrong-rapidDataXML-2000",
                                                       "wrong-eopC04-2000",
                                                       "wrong-bulletinB-2000",
-                                                      "wrong-bulletinA-2000");
+                                                      "wrong-bulletinA-2000",
+                                                      "wrong-csv");
         try {
             FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true).getStartDate();
             Assertions.fail("an exception should have been thrown");
@@ -107,7 +109,7 @@ public class FramesFactoryTest {
     @Test
     public void testWrongConventions() {
         // set up only 1980 conventions
-        FramesFactory.addDefaultEOP1980HistoryLoaders(null, null, null, null, null);
+        FramesFactory.addDefaultEOP1980HistoryLoaders(null, null, null, null, null, null);
         try {
             // attempt to retrieve 2000 conventions
             FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true).getStartDate();
@@ -121,14 +123,14 @@ public class FramesFactoryTest {
     public void testEOPLoaderException() {
         final boolean[] flags = new boolean[2];
         try {
-            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EOPHistoryLoader() {
+            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EopHistoryLoader() {
                 @Override
                 public void fillHistory(NutationCorrectionConverter converter, SortedSet<EOPEntry> history) {
                     // don't really fill history here
                     flags[0] = true;
                 }
             });
-            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EOPHistoryLoader() {
+            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EopHistoryLoader() {
                 @Override
                 public void fillHistory(NutationCorrectionConverter converter, SortedSet<EOPEntry> history)
                     {
@@ -602,19 +604,20 @@ public class FramesFactoryTest {
         final Frame      baseITRF    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
         final EOPHistory baseEOP     = FramesFactory.findEOP(baseITRF);
         final EOPHistory modifiedEOP = new EOPHistory(baseEOP.getConventions(),
+                                                      EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                                       baseEOP.
                                                       getEntries().
                                                       stream().
                                                       map(e -> new EOPEntry(e.getMjd(),
                                                                             e.getUT1MinusUTC() + deltaUT1, e.getLOD(),
-                                                                            e.getX(), e.getY(),
+                                                                            e.getX(), e.getY(), e.getXRate(), e.getYRate(),
                                                                             e.getDdPsi(), e.getDdEps(),
                                                                             e.getDx(), e.getDy(),
                                                                             e.getITRFType(), e.getDate())).
                                                       collect(Collectors.toList()),
                                                       baseEOP.isSimpleEop());
         final Frame modifiedITRF = FramesFactory.buildUncachedITRF(modifiedEOP, TimeScalesFactory.getUTC());
-        final AbsoluteDate t0 = new AbsoluteDate(2002, 2, 14, 13, 59, 43.0, TimeScalesFactory.getUTC());
+        final AbsoluteDate t0 = new AbsoluteDate(2003, 2, 14, 13, 59, 43.0, TimeScalesFactory.getUTC());
         for (double dt = 0; dt < 7 * Constants.JULIAN_DAY; dt += 3600) {
             final Transform t = baseITRF.getTransformTo(modifiedITRF, t0.shiftedBy(dt));
             Assertions.assertEquals(Constants.WGS84_EARTH_ANGULAR_VELOCITY * deltaUT1,
@@ -626,8 +629,7 @@ public class FramesFactoryTest {
     private void doTestDerivatives(AbsoluteDate ref,
                                    double duration, double step, boolean forbidInterpolation,
                                    double cartesianTolerance, double cartesianDotTolerance, double cartesianDotDotTolerance,
-                                   double rodriguesTolerance, double rodriguesDotTolerance, double rodriguesDotDotTolerance)
-        {
+                                   double rodriguesTolerance, double rodriguesDotTolerance, double rodriguesDotDotTolerance) {
 
         final DSFactory factory = new DSFactory(1, 2);
         final FieldAbsoluteDate<DerivativeStructure> refDS = new FieldAbsoluteDate<>(factory.getDerivativeField(), ref);

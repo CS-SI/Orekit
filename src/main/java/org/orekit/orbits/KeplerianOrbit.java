@@ -1,4 +1,4 @@
-/* Copyright 2002-2023 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,7 +73,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public class KeplerianOrbit extends Orbit {
+public class KeplerianOrbit extends Orbit implements PositionAngleBased {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20170414L;
@@ -1323,6 +1323,26 @@ public class KeplerianOrbit extends Orbit {
                                   append("; raan: ").append(FastMath.toDegrees(raan)).
                                   append("; v: ").append(FastMath.toDegrees(v)).
                                   append(";}").toString();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PositionAngleType getCachedPositionAngleType() {
+        return PositionAngleType.TRUE;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasRates() {
+        return hasDerivatives();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public KeplerianOrbit removeRates() {
+        final PositionAngleType positionAngleType = getCachedPositionAngleType();
+        return new KeplerianOrbit(getA(), getE(), getI(), getPerigeeArgument(), getRightAscensionOfAscendingNode(),
+                getAnomaly(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
     }
 
     /** Check if the given parameter is within an acceptable range.
