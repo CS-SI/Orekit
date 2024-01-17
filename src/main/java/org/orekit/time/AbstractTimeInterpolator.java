@@ -238,13 +238,13 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
                 throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA, 0);
             }
 
+            // TODO performance: create neighborsList without copying sample.
             if (sample.size() == interpolationPoints) {
                 // shortcut for simple case
                 // copy list to make neighborList immutable
                 this.neighborList = Collections.unmodifiableList(new ArrayList<>(sample));
             } else {
                 // else, select sample.
-                // TODO performance: create neigborsList without copying sample.
 
                 // Create immutable time stamped cache
                 final ImmutableTimeStampedCache<T> cachedSamples =
@@ -288,6 +288,17 @@ public abstract class AbstractTimeInterpolator<T extends TimeStamped> implements
          */
         public AbsoluteDate getInterpolationDate() {
             return interpolationDate;
+        }
+
+        /** Get cached samples.
+         * @return cached samples
+         *
+         * @deprecated This method appears to be unused and may be removed in Orekit 13.0.
+         * Please Comment on forum.orekit.org if you have a use case for this method.
+         */
+        @Deprecated
+        public ImmutableTimeStampedCache<T> getCachedSamples() {
+            return new ImmutableTimeStampedCache<>(interpolationPoints, neighborList);
         }
 
         /** Get neighbor list.
