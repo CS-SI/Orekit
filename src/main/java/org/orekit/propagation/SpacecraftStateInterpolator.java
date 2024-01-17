@@ -248,7 +248,14 @@ public class SpacecraftStateInterpolator extends AbstractTimeInterpolator<Spacec
      * @param additionalStateInterpolator additional state interpolator (can be null)
      *
      * @see AbstractTimeInterpolator
+     *
+     * @deprecated using this constructor may throw an exception if any given interpolator
+     * does not use {@link #DEFAULT_INTERPOLATION_POINTS} and {@link
+     * #DEFAULT_EXTRAPOLATION_THRESHOLD_SEC}. Use {@link #SpacecraftStateInterpolator(int,
+     * double, Frame, TimeInterpolator, TimeInterpolator, TimeInterpolator,
+     * TimeInterpolator, TimeInterpolator)} instead.
      */
+    @Deprecated
     public SpacecraftStateInterpolator(final Frame outputFrame, final TimeInterpolator<Orbit> orbitInterpolator,
                                        final TimeInterpolator<AbsolutePVCoordinates> absPVAInterpolator,
                                        final TimeInterpolator<TimeStampedDouble> massInterpolator,
