@@ -23,14 +23,14 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.models.earth.Geoid;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.models.earth.troposphere.ViennaACoefficients;
-import org.orekit.models.earth.troposphere.ViennaOneModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 
 /** The Global Pressure and Temperature 2 (GPT2) model.
  * This model is an empirical model that provides the temperature, the pressure and the water vapor pressure
  * of a site depending its latitude and  longitude. This model also provides the a<sub>h</sub>
- * and a<sub>w</sub> coefficients used for the {@link ViennaOneModel Vienna 1} model.
+ * and a<sub>w</sub> coefficients used for the {@link
+ * org.orekit.models.earth.troposphere.ViennaOneModel Vienna 1} model.
  * <p>
  * The requisite coefficients for the computation of the weather parameters are provided by the
  * Department of Geodesy and Geoinformation of the Vienna University. They are based on an
@@ -71,10 +71,10 @@ public class GlobalPressureTemperature2Model extends GlobalPressureTemperature2 
     private double[] coefficientsA;
 
     /** Geodetic site latitude, radians.*/
-    private double latitude;
+    private final double latitude;
 
     /** Geodetic site longitude, radians.*/
-    private double longitude;
+    private final double longitude;
 
     /** Temperature site, in kelvins. */
     private double temperature;
@@ -110,7 +110,7 @@ public class GlobalPressureTemperature2Model extends GlobalPressureTemperature2 
      * @param supportedNames supported names (files with extra columns like GPT2w or GPT3 can be used here)
      * @param latitude geodetic latitude of the station, in radians
      * @param longitude longitude geodetic longitude of the station, in radians
-     * @param geoid level surface of the gravity potential of a body (ignored since 12.1)
+     * @param ignoredGeoid level surface of the gravity potential of a body (ignored since 12.1)
      * @param dataProvidersManager provides access to auxiliary data.
      * @param utc UTC time scale.
      * @since 10.1
@@ -118,7 +118,7 @@ public class GlobalPressureTemperature2Model extends GlobalPressureTemperature2 
     public GlobalPressureTemperature2Model(final String supportedNames,
                                            final double latitude,
                                            final double longitude,
-                                           final Geoid geoid,
+                                           final Geoid ignoredGeoid,
                                            final DataProvidersManager dataProvidersManager,
                                            final TimeScale utc) {
         super(supportedNames, dataProvidersManager, utc);
