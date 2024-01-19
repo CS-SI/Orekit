@@ -35,7 +35,6 @@ import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldArrayDictionary;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This class stores sequentially generated orbital parameters for
  * later retrieval.
@@ -201,12 +200,6 @@ public class FieldIntegratedEphemeris <T extends CalculusFieldElement<T>>
     @Override
     protected T getMass(final FieldAbsoluteDate<T> date) {
         return basicPropagate(date).getMass();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-        return propagate(date).getPVCoordinates(frame);
     }
 
     /** Get the first date of the range.

@@ -28,6 +28,7 @@ import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldStepHandlerMultiplexer;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** This interface provides a way to propagate an orbit at any time.
  *
@@ -248,5 +249,11 @@ public interface FieldPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @return propagated state
      */
     FieldSpacecraftState<T> propagate(FieldAbsoluteDate<T> start, FieldAbsoluteDate<T> target);
+
+    /** {@inheritDoc} */
+    @Override
+    default TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
+        return propagate(date).getPVCoordinates(frame);
+    }
 
 }

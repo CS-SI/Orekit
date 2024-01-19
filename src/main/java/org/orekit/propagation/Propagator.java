@@ -33,6 +33,7 @@ import org.orekit.propagation.sampling.StepHandlerMultiplexer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This interface provides a way to propagate an orbit at any time.
  *
@@ -291,5 +292,11 @@ public interface Propagator extends PVCoordinatesProvider {
      * @return propagated state
      */
     SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target);
+
+    /** {@inheritDoc} */
+    @Override
+    default TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
+        return propagate(date).getPVCoordinates(frame);
+    }
 
 }
