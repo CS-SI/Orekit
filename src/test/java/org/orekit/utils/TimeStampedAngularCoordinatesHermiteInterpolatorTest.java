@@ -1,5 +1,6 @@
 package org.orekit.utils;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -15,8 +16,7 @@ import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitMessages;
+import org.orekit.OrekitMatchers;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
@@ -162,8 +162,13 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
 
     }
 
+    /**
+     * Originally designed to check an exception is thrown with one point. Now checks the
+     * result is valid with one point. Had to change USE_R to USE_RR to avoid a division
+     * by zero in the interpolation code.
+     */
     @Test
-    public void testInterpolationTooSmallSample() {
+    public void testInterpolationSmallSample() {
         AbsoluteDate date   = AbsoluteDate.GALILEO_EPOCH;
         double       alpha0 = 0.5 * FastMath.PI;
         double       omega  = 0.5 * FastMath.PI;
@@ -180,17 +185,21 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
 
         // Create interpolator
         final TimeInterpolator<TimeStampedAngularCoordinates> interpolator =
-                new TimeStampedAngularCoordinatesHermiteInterpolator(sample.size(), 0.3, AngularDerivativesFilter.USE_R);
+                new TimeStampedAngularCoordinatesHermiteInterpolator(sample.size(), 0.3, AngularDerivativesFilter.USE_RR);
 
-        try {
-            interpolator.interpolate(date.shiftedBy(0.3), sample);
-            Assertions.fail("an exception should have been thrown");
-        }
-        catch (OrekitIllegalArgumentException oe) {
-            Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, oe.getSpecifier());
-            Assertions.assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
-        }
+        // action
+        final AbsoluteDate t = date.shiftedBy(0.3);
+        final TimeStampedAngularCoordinates actual = interpolator.interpolate(t, sample);
 
+        // verify
+        MatcherAssert.assertThat(actual.getDate(),
+                OrekitMatchers.durationFrom(t, OrekitMatchers.closeTo(0, 0)));
+        MatcherAssert.assertThat(actual.getRotation(),
+                OrekitMatchers.distanceIs(r, OrekitMatchers.closeTo(0, FastMath.ulp(1.0))));
+        MatcherAssert.assertThat(actual.getRotationRate(),
+                OrekitMatchers.vectorCloseTo(Vector3D.ZERO, 0));
+        MatcherAssert.assertThat(actual.getRotationAcceleration(),
+                OrekitMatchers.vectorCloseTo(Vector3D.ZERO, 0));
     }
 
     @Test
