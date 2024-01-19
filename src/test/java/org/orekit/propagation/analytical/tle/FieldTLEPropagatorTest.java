@@ -19,6 +19,8 @@ package org.orekit.propagation.analytical.tle;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -288,11 +290,71 @@ public class FieldTLEPropagatorTest {
 
     }
 
+    @Test
+    void testResetInitialState() {
+        // GIVEN
+        final FieldTLE<Gradient> tle = getGradientTLE();
+        final Field<Gradient> field = tle.getDate().getField();
+        final Gradient[] parameters = tle.getParameters(field);
+        final FieldTLEPropagator<Gradient> tlePropagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
+        final FieldSpacecraftState<Gradient> initialState = tlePropagator.getInitialState();
+        final Gradient unexpectedMass = initialState.getMass();
+        final Gradient expectedMass = unexpectedMass.multiply(2);
+        final FieldSpacecraftState<Gradient> newState = new FieldSpacecraftState<>(initialState.getOrbit(),
+                initialState.getAttitude(), expectedMass);
+
+        // WHEN
+        tlePropagator.resetInitialState(newState);
+
+        // THEN
+        final FieldSpacecraftState<Gradient> actualState = tlePropagator.getInitialState();
+        Assertions.assertEquals(expectedMass.getReal(), tlePropagator.getMass(actualState.getDate()).getReal());
+        Assertions.assertEquals(expectedMass.getReal(), actualState.getMass().getReal());
+        Assertions.assertNotEquals(unexpectedMass.getReal(), actualState.getMass().getReal());
+    }
+
+    private FieldTLE<Gradient> getGradientTLE() {
+        final String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
+        final String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
+        final GradientField field = GradientField.getField(1);
+        return new FieldTLE<>(field, line1, line2);
+    }
+
+    @Test
+    void testResetIntermediateStateForward() {
+        testResetIntermediateStateTemplate(true);
+    }
+
+    @Test
+    void testResetIntermediateStateBackward() {
+        testResetIntermediateStateTemplate(false);
+    }
+
+    void testResetIntermediateStateTemplate(final boolean isForward) {
+        // GIVEN
+        final FieldTLE<Gradient> tle = getGradientTLE();
+        final Field<Gradient> field = tle.getDate().getField();
+        final Gradient[] parameters = tle.getParameters(field);
+        final FieldTLEPropagator<Gradient> tlePropagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
+        final double expectedMass = 2000.;
+        final FieldSpacecraftState<Gradient> propagatedState = tlePropagator.propagate(tle.getDate().shiftedBy(1));
+        final FieldSpacecraftState<Gradient> modifiedState = new FieldSpacecraftState<>(propagatedState.getOrbit(),
+                field.getZero().newInstance(expectedMass));
+
+        // WHEN
+        tlePropagator.resetIntermediateState(modifiedState, isForward);
+
+        // THEN
+        final double tinyTimeShift = (isForward) ? 1e-3 : -1e-3;
+        final double actualMass = tlePropagator.getMass(modifiedState.getDate().shiftedBy(tinyTimeShift)).getReal();
+        Assertions.assertEquals(expectedMass, actualMass);
+    }
+
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
 
-     // the period of the GPS satellite
+        // the period of the GPS satellite
         period = 717.97 * 60.0;
     }
 
