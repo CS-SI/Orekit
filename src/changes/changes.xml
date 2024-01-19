@@ -24,6 +24,9 @@
       <action dev="serrof" type="update" issue="1249">
           Reduce code duplication in (Field)Propagator inheritors.
       </action>
+      <action dev="evan" type="fix" issue="1300" due-to="Sander Cochran">
+        Fix regression in Ephemeris with interpolationPoints=1.
+      </action>
       <action dev="bryan" type="add" issue="1299">
           Added support for Intelsat's 11 elements propagation.
       </action>
