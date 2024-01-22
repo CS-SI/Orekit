@@ -62,7 +62,7 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
                           final TimeScale tt) {
         this.version     = version;
         this.rawProvider = rawProvider;
-        this.converter   = new AtomicReference<ITRFVersion.Converter>();
+        this.converter   = new AtomicReference<>();
         this.tt = tt;
     }
 
@@ -104,6 +104,23 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
 
     /** {@inheritDoc} */
     @Override
+    public KinematicTransform getKinematicTransform(final AbsoluteDate date) {
+
+        // get the transform from the current EOP
+        final KinematicTransform rawTransform = rawProvider.getKinematicTransform(date);
+
+        // add the conversion layer
+        final ITRFVersion.Converter converterForDate = getConverter(date);
+        if (converterForDate == null) {
+            return rawTransform;
+        } else {
+            return KinematicTransform.compose(date, rawTransform, converterForDate.getKinematicTransform(date));
+        }
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public StaticTransform getStaticTransform(final AbsoluteDate date) {
 
         // get the transform from the current EOP
@@ -135,6 +152,23 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
             return rawTransform;
         } else {
             return new FieldTransform<>(date, rawTransform, converterForDate.getTransform(date));
+        }
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransform(final FieldAbsoluteDate<T> date) {
+
+        // get the transform from the current EOP
+        final FieldKinematicTransform<T> rawTransform = rawProvider.getKinematicTransform(date);
+
+        // add the conversion layer
+        final ITRFVersion.Converter converterForDate = getConverter(date.toAbsoluteDate());
+        if (converterForDate == null) {
+            return rawTransform;
+        } else {
+            return FieldKinematicTransform.compose(date, rawTransform, converterForDate.getKinematicTransform(date));
         }
 
     }

@@ -17,6 +17,9 @@
 package org.orekit.frames;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
@@ -26,11 +29,132 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 public class TransformProviderUtilTest {
+
+    @Test
+    void testGetCombinedProviderGetKinematicTransform() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final TransformProvider mockedProvider1 = Mockito.mock(TransformProvider.class);
+        final TransformProvider mockedProvider2 = Mockito.mock(TransformProvider.class);
+        final KinematicTransform kinematicTransform = KinematicTransform.of(date, new PVCoordinates(Vector3D.MINUS_I,
+                Vector3D.PLUS_J));
+        Mockito.when(mockedProvider1.getKinematicTransform(date)).thenReturn(kinematicTransform);
+        Mockito.when(mockedProvider2.getKinematicTransform(date)).thenReturn(kinematicTransform.getInverse());
+        final TransformProvider combinedProvider = TransformProviderUtils.getCombinedProvider(mockedProvider1,
+                mockedProvider2);
+        // WHEN
+        final KinematicTransform actualTransform = combinedProvider.getKinematicTransform(date);
+        // THEN
+        final KinematicTransform expectedTransform = KinematicTransform.getIdentity();
+        Assertions.assertEquals(expectedTransform.getDate(), actualTransform.getDate());
+        Assertions.assertEquals(expectedTransform.getTranslation(), actualTransform.getTranslation());
+        Assertions.assertEquals(expectedTransform.getVelocity(), actualTransform.getVelocity());
+    }
+
+    @Test
+    void testGetCombinedProviderFieldGetKinematicTransform() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final FieldAbsoluteDate<Complex> date = new FieldAbsoluteDate<>(field, AbsoluteDate.ARBITRARY_EPOCH);
+        final TransformProvider mockedProvider1 = Mockito.mock(TransformProvider.class);
+        final TransformProvider mockedProvider2 = Mockito.mock(TransformProvider.class);
+        final FieldKinematicTransform<Complex> kinematicTransform = FieldKinematicTransform.of(date,
+                new FieldPVCoordinates<>(field, new PVCoordinates(Vector3D.MINUS_I, Vector3D.PLUS_J)));
+        Mockito.when(mockedProvider1.getKinematicTransform(date)).thenReturn(kinematicTransform);
+        Mockito.when(mockedProvider2.getKinematicTransform(date)).thenReturn(kinematicTransform.getInverse());
+        final TransformProvider combinedProvider = TransformProviderUtils.getCombinedProvider(mockedProvider1,
+                mockedProvider2);
+        // WHEN
+        final FieldKinematicTransform<Complex> actualTransform = combinedProvider.getKinematicTransform(date);
+        // THEN
+        final FieldKinematicTransform<Complex> expectedTransform = FieldKinematicTransform.getIdentity(field);
+        Assertions.assertEquals(expectedTransform.getDate(), actualTransform.getDate());
+        Assertions.assertEquals(expectedTransform.getTranslation().toVector3D(),
+                actualTransform.getTranslation().toVector3D());
+        Assertions.assertEquals(expectedTransform.getVelocity().toVector3D(),
+                actualTransform.getVelocity().toVector3D());
+    }
+
+    @Test
+    void testGetCombinedProviderFieldGetStaticTransform() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final FieldAbsoluteDate<Complex> date = new FieldAbsoluteDate<>(field, AbsoluteDate.ARBITRARY_EPOCH);
+        final TransformProvider mockedProvider1 = Mockito.mock(TransformProvider.class);
+        final TransformProvider mockedProvider2 = Mockito.mock(TransformProvider.class);
+        final FieldStaticTransform<Complex> staticTransform = FieldStaticTransform.of(date,
+                new FieldVector3D<>(field, Vector3D.PLUS_J));
+        Mockito.when(mockedProvider1.getStaticTransform(date)).thenReturn(staticTransform);
+        Mockito.when(mockedProvider2.getStaticTransform(date)).thenReturn(staticTransform.getInverse());
+        final TransformProvider combinedProvider = TransformProviderUtils.getCombinedProvider(mockedProvider1,
+                mockedProvider2);
+        // WHEN
+        final FieldStaticTransform<Complex> actualTransform = combinedProvider.getStaticTransform(date);
+        // THEN
+        final FieldStaticTransform<Complex> expectedTransform = FieldStaticTransform.getIdentity(field);
+        Assertions.assertEquals(expectedTransform.getDate(), actualTransform.getDate());
+        Assertions.assertEquals(expectedTransform.getTranslation().toVector3D(),
+                actualTransform.getTranslation().toVector3D());
+    }
+
+    @Test
+    void testGetReversedProviderGetKinematicTransform() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final TransformProvider mockedProvider = Mockito.mock(TransformProvider.class);
+        final TransformProvider reversedProvider = TransformProviderUtils.getReversedProvider(mockedProvider);
+        final KinematicTransform expectedTransform = Mockito.mock(KinematicTransform.class);
+        final KinematicTransform mockedTransform = Mockito.mock(KinematicTransform.class);
+        Mockito.when(mockedTransform.getInverse()).thenReturn(expectedTransform);
+        Mockito.when(mockedProvider.getKinematicTransform(date)).thenReturn(mockedTransform);
+        // WHEN
+        final KinematicTransform actualTransform = reversedProvider.getKinematicTransform(date);
+        // THEN
+        Assertions.assertEquals(expectedTransform, actualTransform);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testGetReversedProviderFieldGetKinematicTransform() {
+        // GIVEN
+        final FieldAbsoluteDate<Complex> date = new FieldAbsoluteDate<>(ComplexField.getInstance(),
+                AbsoluteDate.ARBITRARY_EPOCH);
+        final TransformProvider mockedProvider = Mockito.mock(TransformProvider.class);
+        final TransformProvider reversedProvider = TransformProviderUtils.getReversedProvider(mockedProvider);
+        final FieldKinematicTransform<Complex> expectedTransform = Mockito.mock(FieldKinematicTransform.class);
+        final FieldKinematicTransform<Complex> mockedTransform = Mockito.mock(FieldKinematicTransform.class);
+        Mockito.when(mockedTransform.getInverse()).thenReturn(expectedTransform);
+        Mockito.when(mockedProvider.getKinematicTransform(date)).thenReturn(mockedTransform);
+        // WHEN
+        final FieldKinematicTransform<Complex> actualTransform = reversedProvider.getKinematicTransform(date);
+        // THEN
+        Assertions.assertEquals(expectedTransform, actualTransform);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testGetReversedProviderFieldGetStaticTransform() {
+        // GIVEN
+        final FieldAbsoluteDate<Complex> date = new FieldAbsoluteDate<>(ComplexField.getInstance(),
+                AbsoluteDate.ARBITRARY_EPOCH);
+        final TransformProvider mockedProvider = Mockito.mock(TransformProvider.class);
+        final TransformProvider reversedProvider = TransformProviderUtils.getReversedProvider(mockedProvider);
+        final FieldStaticTransform<Complex> expectedTransform = Mockito.mock(FieldStaticTransform.class);
+        final FieldStaticTransform<Complex> mockedTransform = Mockito.mock(FieldStaticTransform.class);
+        Mockito.when(mockedTransform.getInverse()).thenReturn(expectedTransform);
+        Mockito.when(mockedProvider.getStaticTransform(date)).thenReturn(mockedTransform);
+        // WHEN
+        final FieldStaticTransform<Complex> actualTransform = reversedProvider.getStaticTransform(date);
+        // THEN
+        Assertions.assertEquals(expectedTransform, actualTransform);
+    }
 
     @Test
     public void testIdentity() {

@@ -17,12 +17,15 @@
 package org.orekit.frames;
 
 import org.hamcrest.MatcherAssert;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -35,7 +38,7 @@ import org.orekit.utils.IERSConventions;
 public class ITRFVersionTest {
 
     @Test
-    public void testYears() {
+    void testYears() {
         Assertions.assertEquals(2014, ITRFVersion.ITRF_2014.getYear());
         Assertions.assertEquals(2008, ITRFVersion.ITRF_2008.getYear());
         Assertions.assertEquals(2005, ITRFVersion.ITRF_2005.getYear());
@@ -52,7 +55,7 @@ public class ITRFVersionTest {
     }
 
     @Test
-    public void testNames() {
+    void testNames() {
         Assertions.assertEquals("ITRF-2014", ITRFVersion.ITRF_2014.getName());
         Assertions.assertEquals("ITRF-2008", ITRFVersion.ITRF_2008.getName());
         Assertions.assertEquals("ITRF-2005", ITRFVersion.ITRF_2005.getName());
@@ -69,7 +72,7 @@ public class ITRFVersionTest {
     }
 
     @Test
-    public void testBuildFromYear() {
+    void testBuildFromYear() {
         Assertions.assertEquals(ITRFVersion.ITRF_2014, ITRFVersion.getITRFVersion(2014));
         Assertions.assertEquals(ITRFVersion.ITRF_2008, ITRFVersion.getITRFVersion(2008));
         Assertions.assertEquals(ITRFVersion.ITRF_2005, ITRFVersion.getITRFVersion(2005));
@@ -95,7 +98,7 @@ public class ITRFVersionTest {
     }
 
     @Test
-    public void testInexistantYear() {
+    void testInexistantYear() {
         try {
             ITRFVersion.getITRFVersion(1999);
             Assertions.fail("an exception should have been thrown");
@@ -106,7 +109,7 @@ public class ITRFVersionTest {
     }
 
     @Test
-    public void testBuildFromName() {
+    void testBuildFromName() {
         Assertions.assertEquals(ITRFVersion.ITRF_2014, ITRFVersion.getITRFVersion("ITRF-2014"));
         Assertions.assertEquals(ITRFVersion.ITRF_2008, ITRFVersion.getITRFVersion("ItRf-2008"));
         Assertions.assertEquals(ITRFVersion.ITRF_2005, ITRFVersion.getITRFVersion("iTrF-2005"));
@@ -132,7 +135,7 @@ public class ITRFVersionTest {
     }
 
     @Test
-    public void testInexistantName() {
+    void testInexistantName() {
         try {
             ITRFVersion.getITRFVersion("itrf-99");
             Assertions.fail("an exception should have been thrown");
@@ -143,7 +146,7 @@ public class ITRFVersionTest {
     }
 
     @Test
-    public void testMalformedName() {
+    void testMalformedName() {
         try {
             ITRFVersion.getITRFVersion("YTRF-2014");
             Assertions.fail("an exception should have been thrown");
@@ -154,7 +157,7 @@ public class ITRFVersionTest {
     }
 
     @Test
-    public void testAllConverters() {
+    void testAllConverters() {
 
         // select the last supported ITRF version
         ITRFVersion last = ITRFVersion.getLast();
@@ -245,6 +248,52 @@ public class ITRFVersionTest {
                 }
             }
         }
+    }
+
+    @Test
+    void testConverterGetKinematicTransform() {
+        // GIVEN
+        final TransformProvider mockedProvider = Mockito.mock(TransformProvider.class);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final KinematicTransform expectedTransform = Mockito.mock(KinematicTransform.class);
+        Mockito.when(mockedProvider.getKinematicTransform(date)).thenReturn(expectedTransform);
+        final ITRFVersion.Converter converter = new ITRFVersion.Converter(null, null, mockedProvider);
+        // WHEN
+        final KinematicTransform actualTransform = converter.getKinematicTransform(date);
+        // THEN
+        Assertions.assertEquals(expectedTransform, actualTransform);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testConverterFieldGetKinematicTransform() {
+        // GIVEN
+        final TransformProvider mockedProvider = Mockito.mock(TransformProvider.class);
+        final FieldAbsoluteDate<Complex> date = new FieldAbsoluteDate<>(ComplexField.getInstance(),
+                AbsoluteDate.ARBITRARY_EPOCH);
+        final FieldKinematicTransform<Complex> expectedTransform = Mockito.mock(FieldKinematicTransform.class);
+        Mockito.when(mockedProvider.getKinematicTransform(date)).thenReturn(expectedTransform);
+        final ITRFVersion.Converter converter = new ITRFVersion.Converter(null, null, mockedProvider);
+        // WHEN
+        final FieldKinematicTransform<Complex> actualTransform = converter.getKinematicTransform(date);
+        // THEN
+        Assertions.assertEquals(expectedTransform, actualTransform);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testConverterFieldGetStaticTransform() {
+        // GIVEN
+        final TransformProvider mockedProvider = Mockito.mock(TransformProvider.class);
+        final FieldAbsoluteDate<Complex> date = new FieldAbsoluteDate<>(ComplexField.getInstance(),
+                AbsoluteDate.ARBITRARY_EPOCH);
+        final FieldStaticTransform<Complex> expectedTransform = Mockito.mock(FieldStaticTransform.class);
+        Mockito.when(mockedProvider.getStaticTransform(date)).thenReturn(expectedTransform);
+        final ITRFVersion.Converter converter = new ITRFVersion.Converter(null, null, mockedProvider);
+        // WHEN
+        final FieldStaticTransform<Complex> actualTransform = converter.getStaticTransform(date);
+        // THEN
+        Assertions.assertEquals(expectedTransform, actualTransform);
     }
 
     @BeforeEach

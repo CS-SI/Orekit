@@ -109,68 +109,91 @@ public class GTODProvider implements EOPBasedTransformProvider {
     /** {@inheritDoc} */
     @Override
     public Transform getTransform(final AbsoluteDate date) {
+        return new Transform(date, getRotation(date), getRotationRate(date));
+    }
 
-        // compute Greenwich apparent sidereal time, in radians
-        final double gast = gastFunction.value(date);
-
-        // compute true angular rotation of Earth, in rad/s
-        final double lod = (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
-        final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
-        final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
-
-        // set up the transform from parent TOD
-        return new Transform(date, new Rotation(Vector3D.PLUS_K, gast, RotationConvention.FRAME_TRANSFORM), rotationRate);
-
+    /** {@inheritDoc} */
+    @Override
+    public KinematicTransform getKinematicTransform(final AbsoluteDate date) {
+        return KinematicTransform.of(date, getRotation(date), getRotationRate(date));
     }
 
     /** {@inheritDoc} */
     @Override
     public StaticTransform getStaticTransform(final AbsoluteDate date) {
+        return StaticTransform.of(date, getRotation(date));
+    }
 
+    /** Form rotation to parent TOD.
+     * @param date transform date
+     * @return rotation to parent at date
+     * @since 12.1
+     */
+    private Rotation getRotation(final AbsoluteDate date) {
         // compute Greenwich apparent sidereal time, in radians
         final double gast = gastFunction.value(date);
 
         // set up the transform from parent TOD
-        return StaticTransform.of(
-                date,
-                new Rotation(Vector3D.PLUS_K, gast, RotationConvention.FRAME_TRANSFORM));
+        return new Rotation(Vector3D.PLUS_K, gast, RotationConvention.FRAME_TRANSFORM);
+    }
 
+    /** Form rotation rate w.r.t. parent TOD.
+     * @param date transform date
+     * @return rotation rate at date
+     * @since 12.1
+     */
+    private Vector3D getRotationRate(final AbsoluteDate date) {
+        // compute true angular rotation of Earth, in rad/s
+        final double lod = (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
+        final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
+        return new Vector3D(omp, Vector3D.PLUS_K);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+        return new FieldTransform<>(date, getRotation(date), getRotationRate(date));
+    }
 
-        // compute Greenwich apparent sidereal time, in radians
-        final T gast = gastFunction.value(date);
-
-        // compute true angular rotation of Earth, in rad/s
-        final T lod = (eopHistory == null) ? date.getField().getZero() : eopHistory.getLOD(date);
-        final T omp = lod.multiply(-1.0 / Constants.JULIAN_DAY).add(1).multiply(AVE);
-        final FieldVector3D<T> rotationRate = new FieldVector3D<>(date.getField().getZero(),
-                                                                  date.getField().getZero(),
-                                                                  date.getField().getZero().add(omp));
-
-        // set up the transform from parent TOD
-        return new FieldTransform<>(date,
-                                    new FieldRotation<>(FieldVector3D.getPlusK(date.getField()),
-                                                        gast, RotationConvention.FRAME_TRANSFORM),
-                                    rotationRate);
-
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransform(final FieldAbsoluteDate<T> date) {
+        return FieldKinematicTransform.of(date, getRotation(date), getRotationRate(date));
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+        return FieldStaticTransform.of(date, getRotation(date));
+    }
 
+    /** Form rotation to parent TOD.
+     * @param <T> type of the elements
+     * @param date transform date
+     * @return rotation to parent at date
+     * @since 12.1
+     */
+    private <T extends CalculusFieldElement<T>> FieldRotation<T> getRotation(final FieldAbsoluteDate<T> date) {
         // compute Greenwich apparent sidereal time, in radians
         final T gast = gastFunction.value(date);
 
         // set up the transform from parent TOD
-        return FieldStaticTransform.of(
-                date,
-                new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), gast, RotationConvention.FRAME_TRANSFORM));
+        return new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), gast, RotationConvention.FRAME_TRANSFORM);
+    }
 
+    /** Form rotation rate w.r.t. parent TOD.
+     * @param <T> type of the elements
+     * @param date transform date
+     * @return rotation rate at date
+     * @since 12.1
+     */
+    private <T extends CalculusFieldElement<T>> FieldVector3D<T> getRotationRate(final FieldAbsoluteDate<T> date) {
+        // compute true angular rotation of Earth, in rad/s
+        final T lod = (eopHistory == null) ? date.getField().getZero() : eopHistory.getLOD(date);
+        final T omp = lod.multiply(-1.0 / Constants.JULIAN_DAY).add(1).multiply(AVE);
+        return new FieldVector3D<>(date.getField().getZero(),
+                date.getField().getZero(),
+                date.getField().getZero().add(omp));
     }
 
     /** Replace the instance with a data transfer object for serialization.
