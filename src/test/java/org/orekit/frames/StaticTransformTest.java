@@ -7,6 +7,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.time.AbsoluteDate;
@@ -72,6 +73,24 @@ public class StaticTransformTest {
         MatcherAssert.assertThat(
                 actualLine.getTolerance(),
                 CoreMatchers.is(line.getTolerance()));
+    }
+
+    @Test
+    void testGetStaticInverse() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Vector3D translation = new Vector3D(1., 2., 3.);
+        final Rotation rotation = new Rotation(Vector3D.MINUS_J, Vector3D.PLUS_I);
+        final StaticTransform staticTransform = StaticTransform.of(date, translation, rotation);
+        // WHEN
+        final StaticTransform actualInverseStaticTransform = staticTransform.getStaticInverse();
+        // THEN
+        final StaticTransform expectedInverseStaticTransform = staticTransform.getInverse();
+        Assertions.assertEquals(expectedInverseStaticTransform.getDate(), actualInverseStaticTransform.getDate());
+        Assertions.assertEquals(expectedInverseStaticTransform.getTranslation(),
+                actualInverseStaticTransform.getTranslation());
+        Assertions.assertEquals(0., Rotation.distance(expectedInverseStaticTransform.getRotation(),
+                actualInverseStaticTransform.getRotation()));
     }
 
 }
