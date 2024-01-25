@@ -180,7 +180,7 @@ public class FieldSpacecraftStateTest {
         // WHEN
         final FieldStaticTransform<Complex> actualStaticTransform = state.toStaticTransform();
         // THEN
-        final FieldStaticTransform<Complex> expectedStaticTransform = state.toTransform().toStaticTransform();
+        final FieldStaticTransform<Complex> expectedStaticTransform = state.toStaticTransform();
         Assertions.assertEquals(expectedStaticTransform.getDate(), actualStaticTransform.getDate());
         final double tolerance = 1e-10;
         Assertions.assertEquals(expectedStaticTransform.getTranslation().getX().getReal(),
