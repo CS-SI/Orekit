@@ -248,7 +248,7 @@ public class PolygonalFieldOfViewTest {
                                      getTrackingCoordinates(state.getPosition(), state.getFrame(), state.getDate()).
                                      getElevation();
             if (elevation > 0.001) {
-                Vector3D los = fovToBody.toStaticTransform().getInverse().transformPosition(earth.transform(loop.get(i)));
+                Vector3D los = fovToBody.getStaticInverse().transformPosition(earth.transform(loop.get(i)));
                 Assertions.assertEquals(-fov.getMargin(),
                                     fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
                                     4.0e-15);

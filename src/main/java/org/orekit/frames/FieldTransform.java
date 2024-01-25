@@ -379,6 +379,7 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
     /** Get the date.
      * @return date attached to the object
      */
+    @Override
     public FieldAbsoluteDate<T> getFieldDate() {
         return date;
     }

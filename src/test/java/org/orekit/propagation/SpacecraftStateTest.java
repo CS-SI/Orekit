@@ -733,7 +733,7 @@ public class SpacecraftStateTest {
         // WHEN
         final StaticTransform actualStaticTransform = state.toStaticTransform();
         // THEN
-        final StaticTransform expectedStaticTransform = state.toTransform().toStaticTransform();
+        final StaticTransform expectedStaticTransform = state.toStaticTransform();
         Assertions.assertEquals(expectedStaticTransform.getDate(), actualStaticTransform.getDate());
         Assertions.assertEquals(expectedStaticTransform.getTranslation(), actualStaticTransform.getTranslation());
         Assertions.assertEquals(0., Rotation.distance(expectedStaticTransform.getRotation(),
