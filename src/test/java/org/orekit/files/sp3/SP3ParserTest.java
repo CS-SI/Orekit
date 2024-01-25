@@ -660,6 +660,20 @@ public class SP3ParserTest {
     }
 
     @Test
+    public void testIssue1314() {
+
+        // Test issue 828 (see https://gitlab.orekit.org/orekit/orekit/-/issues/1314)
+        final String    ex     = "/sp3/example-d-5.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3   file   = new SP3Parser().parse(source);
+
+        // Verify
+        Assertions.assertEquals(TimeSystem.GALILEO, file.getHeader().getTimeSystem());
+        Assertions.assertEquals(SP3FileType.SBAS, file.getHeader().getType());
+
+    }
+
+    @Test
     public void testIssue895HeaderComment() {
 
         // Test issue 895
