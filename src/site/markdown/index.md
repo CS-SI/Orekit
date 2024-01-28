@@ -53,6 +53,7 @@
 
     * Cartesian, Keplerian (elliptic, parabolic, hyperbolic), circular and equinoctial parameters, with non-Keplerian
       derivatives if available
+    * Walker constellations (including in-orbit spares with shifted position)
     * Two-Line Elements (TLE)
     * Two-Line Elements generation using Fixed-Point algorithm or Least Squares Fitting
     * transparent conversion between all parameters
