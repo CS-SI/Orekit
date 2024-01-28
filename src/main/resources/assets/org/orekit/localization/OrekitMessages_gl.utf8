@@ -872,3 +872,6 @@ INVALID_SATELLITE_ID = <MISSING TRANSLATION>
 
 # EOP interpolation degree must be of the form 4k-1, got {0}
 WRONG_EOP_INTERPOLATION_DEGREE = <MISSING TRANSLATION>
+
+# number of planes {0} is inconsistent with number of satellites {1} in Walker constellation
+WALKER_INCONSISTENT_PLANES = <MISSING TRANSLATION>

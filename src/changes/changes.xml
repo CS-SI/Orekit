@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="1315">
+          Added support for Walker constellations, including in-orbit spares with shifted position.
+      </action>
       <action dev="luc" type="update" issue="1314">
           Fixed wrong parsing of some time systems in SP3 files.
       </action>
