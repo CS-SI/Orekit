@@ -74,11 +74,7 @@ public class FieldBetaAngleDetectorTest {
     @Test
     void evaluate() {
         final FieldPVCoordinatesProvider<Binary64> sun = CelestialBodyFactory.getSun().toFieldPVCoordinatesProvider(Binary64Field.getInstance());
-        final FieldBetaAngleDetector<Binary64> detector = new FieldBetaAngleDetector<>(
-                Binary64Field.getInstance(),
-                Binary64.ZERO,
-                CelestialBodyFactory.getSun().toFieldPVCoordinatesProvider(Binary64Field.getInstance()),
-                FramesFactory.getGCRF());
+        final FieldBetaAngleDetector<Binary64> detector = new FieldBetaAngleDetector<>(Binary64.ZERO);
         
         FieldAbsoluteDate<Binary64> d = date;
         for (int i = 0; i < 50; i++) {
