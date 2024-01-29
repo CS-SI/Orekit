@@ -67,6 +67,7 @@ public class WalkerConstellationTest {
             Assertions.assertEquals(8, l.size());
             for (int j = 0; j < 8; ++j) {
                 final WalkerConstellationSlot<CircularOrbit> s = l.get(j);
+                Assertions.assertSame(w, s.getConstellation());
                 Assertions.assertEquals(i, s.getPlane());
                 Assertions.assertEquals(j, s.getSatellite(), 1.0e-15);
                 final CircularOrbit c = s.getOrbit();
