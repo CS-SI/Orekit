@@ -27,6 +27,7 @@ package org.orekit.orbits;
  * and 4.5.
  * </p>
  * @param <O> type of the orbit
+ * @author Luc Maisonobe
  * @since 12.1
  */
 public class WalkerConstellationSlot<O extends Orbit> {

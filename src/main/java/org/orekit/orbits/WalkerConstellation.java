@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Builder for orbits of satellites forming a Walker constellation.
+ * @author Luc Maisonobe
  * @since 12.1
  */
 public class WalkerConstellation {
@@ -94,13 +95,14 @@ public class WalkerConstellation {
      * @param referenceOrbit orbit of the reference satellite, in
      * {@link WalkerConstellationSlot#getPlane() plane} 0 and
      * at {@link WalkerConstellationSlot#getSatellite()} satellite index} 0
-     * @return build orbits as a list of list, organized by planes
+     * @return built orbits as a list of list, organized by planes
+     * @see #buildReferenceSlot(Orbit)
+     * @see #buildSlot(WalkerConstellationSlot, int, double)
      */
     public <O extends Orbit> List<List<WalkerConstellationSlot<O>>> buildRegularSlots(final O referenceOrbit) {
 
         // build the reference slot
-        final WalkerConstellationSlot<O> referenceSLot =
-            new WalkerConstellationSlot<>(this, 0, 0, referenceOrbit);
+        final WalkerConstellationSlot<O> referenceSlot = buildReferenceSlot(referenceOrbit);
 
         final List<List<WalkerConstellationSlot<O>>> all = new ArrayList<>(p);
         for (int plane = 0; plane < p; ++plane) {
@@ -111,8 +113,8 @@ public class WalkerConstellation {
             // build all slots belonging to this plane
             for (int satellite = 0; satellite < t / p; ++satellite) {
                 planeSlots.add(plane == 0 && satellite == 0 ?
-                               referenceSLot :
-                               buildSlot(referenceSLot, plane, satellite));
+                               referenceSlot :
+                               buildSlot(referenceSlot, plane, satellite));
             }
 
             // finished plane
@@ -125,20 +127,35 @@ public class WalkerConstellation {
 
     }
 
-    /** Create one offset slot.
+    /** Create the reference slot, which is satellite 0 in plane 0.
      * @param <O> type of the orbits
-     * @param referenceSlot reference slot
-     * @param plane plane index (may be non-integer for in-orbit spare satellites)
-     * @param satellite satellite index in plane
-     * @return built slot
+     * @param referenceOrbit orbit of the reference satellite, in
+     * {@link WalkerConstellationSlot#getPlane() plane} 0 and
+     * at {@link WalkerConstellationSlot#getSatellite()} satellite index} 0
+     * @return build reference slot
+     * @see #buildRegularSlots(Orbit)
+     * @see #buildSlot(WalkerConstellationSlot, int, double)
      */
-    public <O extends Orbit> WalkerConstellationSlot<O> buildSlot(final WalkerConstellationSlot<O> referenceSlot,
+    public <O extends Orbit> WalkerConstellationSlot<O>buildReferenceSlot(final O referenceOrbit) {
+        return new WalkerConstellationSlot<>(this, 0, 0, referenceOrbit);
+    }
+
+    /** Create one offset slot from an already existing slot.
+     * @param <O> type of the orbits
+     * @param existingSlot existing slot (may be the {@link #buildReferenceSlot(Orbit) reference slot} or not)
+     * @param plane plane index of the new slot (may be non-integer for in-orbit spare satellites)
+     * @param satellite new slot satellite index in plane (may be non-integer if needed)
+     * @return built slot
+     * @see #buildRegularSlots(Orbit)
+     * @see #buildReferenceSlot(Orbit)
+     */
+    public <O extends Orbit> WalkerConstellationSlot<O> buildSlot(final WalkerConstellationSlot<O> existingSlot,
                                                                   final int plane, final double satellite) {
 
-        // offsets from reference
-        final O      refOrbit = referenceSlot.getOrbit();
-        final int    dp       = plane - referenceSlot.getPlane();
-        final double ds       = satellite - referenceSlot.getSatellite();
+        // offsets from existing slot
+        final O      refOrbit = existingSlot.getOrbit();
+        final int    dp       = plane - existingSlot.getPlane();
+        final double ds       = satellite - existingSlot.getSatellite();
 
         // in plane shift
         final double deltaT = (dp * f + ds * p) * refOrbit.getKeplerianPeriod() / t;
