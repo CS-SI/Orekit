@@ -21,8 +21,26 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" issue="1315">
+          Added support for Walker constellations, including in-orbit spares with shifted position.
+      </action>
+      <action dev="luc" type="update" issue="1314">
+          Fixed wrong parsing of some time systems in SP3 files.
+      </action>
+      <action dev="serrof" type="update">
+          Moved getFieldDate up from FieldTransform to FieldStaticTransform.
+      </action>
+      <action dev="serrof" type="update" issue="1302">
+          Added getStaticInverse to (Field)StaticTransform.
+      </action>
+      <action dev="luc" type="update" issue="1304">
+          Make access to raw albedo and infrared radiation pressure in KnockeRediffusedForceModel public.
+      </action>
       <action dev="serrof" type="update" issue="1249">
           Reduce code duplication in (Field)Propagator inheritors.
+      </action>
+      <action dev="evan" type="fix" issue="1300" due-to="Sander Cochran">
+        Fix regression in Ephemeris with interpolationPoints=1.
       </action>
       <action dev="bryan" type="add" issue="1299">
           Added support for Intelsat's 11 elements propagation.

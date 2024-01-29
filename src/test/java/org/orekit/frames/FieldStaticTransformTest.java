@@ -4,15 +4,20 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
 /**
@@ -106,6 +111,96 @@ public class FieldStaticTransformTest {
         MatcherAssert.assertThat(
                 actualLine.getTolerance(),
                 CoreMatchers.is(line.getTolerance()));
+    }
+
+    @Test
+    void testOf() {
+        // GIVEN
+        final AbsoluteDate expectedDate = AbsoluteDate.ARBITRARY_EPOCH;
+        final Vector3D expectedTranslation = new Vector3D(1., 2., 3.);
+        final Rotation rotation = new Rotation(Vector3D.MINUS_J, Vector3D.PLUS_I);
+        final ComplexField field = ComplexField.getInstance();
+        final Complex imaginaryComplex = Complex.I;
+        final FieldAbsoluteDate<Complex> expectedFieldDate = new FieldAbsoluteDate<>(field, expectedDate)
+                .shiftedBy(imaginaryComplex);
+        final FieldVector3D<Complex> fieldTranslation = new FieldVector3D<>(field, expectedTranslation);
+        final FieldRotation<Complex> fieldRotation = new FieldRotation<>(field, rotation);
+        // WHEN
+        final FieldStaticTransform<Complex> staticTransform = FieldStaticTransform.of(expectedFieldDate,
+                fieldTranslation, fieldRotation);
+        // WHEN
+        Assertions.assertEquals(expectedDate, staticTransform.getDate());
+        final FieldAbsoluteDate<Complex> actualFieldDate = staticTransform.getFieldDate();
+        Assertions.assertEquals(staticTransform.getDate(), actualFieldDate.toAbsoluteDate());
+        Assertions.assertEquals(Complex.ZERO, actualFieldDate.durationFrom(expectedFieldDate));
+        Assertions.assertEquals(expectedTranslation, staticTransform.getTranslation().toVector3D());
+        Assertions.assertEquals(0., Rotation.distance(fieldRotation.toRotation(),
+                staticTransform.getRotation().toRotation()));
+    }
+
+    @Test
+    void testGetStaticInverse() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Vector3D translation = new Vector3D(1., 2., 3.);
+        final Rotation rotation = new Rotation(Vector3D.MINUS_J, Vector3D.PLUS_I);
+        final ComplexField field = ComplexField.getInstance();
+        final FieldAbsoluteDate<Complex> fieldDate = new FieldAbsoluteDate<>(field, date);
+        final FieldVector3D<Complex> fieldTranslation = new FieldVector3D<>(field, translation);
+        final FieldRotation<Complex> fieldRotation = new FieldRotation<>(field, rotation);
+        final FieldStaticTransform<Complex> staticTransform = FieldStaticTransform.of(fieldDate, fieldTranslation,
+                fieldRotation);
+        // WHEN
+        final FieldStaticTransform<Complex> actualInverseStaticTransform = staticTransform.getStaticInverse();
+        // THEN
+        final FieldStaticTransform<Complex> expectedInverseStaticTransform = staticTransform.getInverse();
+        Assertions.assertEquals(expectedInverseStaticTransform.getDate(), actualInverseStaticTransform.getDate());
+        Assertions.assertEquals(expectedInverseStaticTransform.getFieldDate(),
+                actualInverseStaticTransform.getFieldDate());
+        Assertions.assertEquals(expectedInverseStaticTransform.getTranslation().toVector3D(),
+                actualInverseStaticTransform.getTranslation().toVector3D());
+        Assertions.assertEquals(0., Rotation.distance(expectedInverseStaticTransform.getRotation().toRotation(),
+                actualInverseStaticTransform.getRotation().toRotation()));
+    }
+
+    @Test
+    void testGetFieldDate() {
+        // GIVEN
+        final AbsoluteDate arbitraryEpoch = AbsoluteDate.ARBITRARY_EPOCH;
+        final TestFieldStaticTransform testFieldStaticTransform = new TestFieldStaticTransform(arbitraryEpoch);
+        // WHEN
+        final FieldAbsoluteDate<Complex> actualFieldDate = testFieldStaticTransform.getFieldDate();
+        // THEN
+        Assertions.assertEquals(testFieldStaticTransform.getDate(), actualFieldDate.toAbsoluteDate());
+    }
+
+    private static class TestFieldStaticTransform implements FieldStaticTransform<Complex> {
+
+        private final AbsoluteDate date;
+
+        TestFieldStaticTransform(final AbsoluteDate date) {
+            this.date = date;
+        }
+
+        @Override
+        public FieldVector3D<Complex> getTranslation() {
+            return FieldVector3D.getPlusI(ComplexField.getInstance());
+        }
+
+        @Override
+        public FieldRotation<Complex> getRotation() {
+            return null;
+        }
+
+        @Override
+        public FieldStaticTransform<Complex> getInverse() {
+            return null;
+        }
+
+        @Override
+        public AbsoluteDate getDate() {
+            return date;
+        }
     }
 
 }

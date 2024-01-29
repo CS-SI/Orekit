@@ -67,9 +67,7 @@ public class BetaAngleDetectorTest {
 
     @Test
     void evaluate() {
-        final BetaAngleDetector detector = new BetaAngleDetector(0,
-                CelestialBodyFactory.getSun(),
-                FramesFactory.getGCRF());
+        final BetaAngleDetector detector = new BetaAngleDetector(0);
         
         AbsoluteDate d = date;
         for (int i = 0; i < 50; i++) {

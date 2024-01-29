@@ -195,6 +195,12 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
             }
         }
 
+        // at this point data[iInf] <= t <= data[iSup], but the javadoc for this method
+        // says the upper bound is exclusive, so check for equality to make a half open
+        // interval.
+        if (dtSup == 0.0) {
+            return iSup;
+        }
         return iInf;
     }
 

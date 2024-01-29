@@ -1,17 +1,18 @@
 package org.orekit.utils;
 
+import org.hamcrest.MatcherAssert;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitMessages;
+import org.orekit.OrekitMatchers;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.FieldTimeInterpolator;
@@ -154,8 +155,12 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
 
     }
 
+    /**
+     * Check interpolation with a small sample. This method used to check an exception was
+     * thrown. Now after changing USE_R to USE_RR it produces a valid result.
+     */
     @Test
-    public void testInterpolationTooSmallSample() {
+    public void testInterpolationSmallSample() {
         DSFactory    factory = new DSFactory(4, 1);
         AbsoluteDate date    = AbsoluteDate.GALILEO_EPOCH;
         double       alpha0  = 0.5 * FastMath.PI;
@@ -181,17 +186,21 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
         // Create interpolator
         final FieldTimeInterpolator<TimeStampedFieldAngularCoordinates<DerivativeStructure>, DerivativeStructure>
                 interpolator =
-                new TimeStampedFieldAngularCoordinatesHermiteInterpolator<>(sample.size(), AngularDerivativesFilter.USE_R);
+                new TimeStampedFieldAngularCoordinatesHermiteInterpolator<>(sample.size(), AngularDerivativesFilter.USE_RR);
 
-        try {
-            interpolator.interpolate(date.shiftedBy(0.3), sample);
-            Assertions.fail("an exception should have been thrown");
-        }
-        catch (OrekitIllegalArgumentException oe) {
-            Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, oe.getSpecifier());
-            Assertions.assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
-        }
+        // action
+        final TimeStampedFieldAngularCoordinates<DerivativeStructure> actual =
+                interpolator.interpolate(date.shiftedBy(0.3), sample);
 
+        // verify
+        MatcherAssert.assertThat(actual.getRotation().toRotation(),
+                OrekitMatchers.distanceIs(
+                        r.toRotation(),
+                        OrekitMatchers.closeTo(0, FastMath.ulp(1.0))));
+        MatcherAssert.assertThat(actual.getRotationRate().toVector3D(),
+                OrekitMatchers.vectorCloseTo(Vector3D.ZERO, 0));
+        MatcherAssert.assertThat(actual.getRotationAcceleration().toVector3D(),
+                OrekitMatchers.vectorCloseTo(Vector3D.ZERO, 0));
     }
 
     @Test

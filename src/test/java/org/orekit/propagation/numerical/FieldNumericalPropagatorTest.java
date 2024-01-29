@@ -17,7 +17,11 @@
 package org.orekit.propagation.numerical;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
@@ -25,7 +29,9 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -34,9 +40,7 @@ import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
@@ -65,16 +69,8 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.FieldAdditionalStateProvider;
-import org.orekit.propagation.FieldBoundedPropagator;
-import org.orekit.propagation.FieldEphemerisGenerator;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.PropagationType;
-import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldAdaptableInterval;
-import org.orekit.propagation.events.FieldApsideDetector;
-import org.orekit.propagation.events.FieldDateDetector;
-import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.*;
+import org.orekit.propagation.events.*;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
@@ -83,16 +79,8 @@ import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.integration.FieldCombinedDerivatives;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
-import org.orekit.time.DateComponents;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldTimeStamped;
-import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.time.*;
+import org.orekit.utils.*;
 
 
 public class FieldNumericalPropagatorTest {
@@ -100,7 +88,7 @@ public class FieldNumericalPropagatorTest {
     private double               mu;
 
     @Test
-    public void testIssue1032() {
+    void testIssue1032() {
         doTestIssue1032(Binary64Field.getInstance());
     }
 
@@ -110,7 +98,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testNotInitialised1() {
+    void testNotInitialised1() {
         Assertions.assertThrows(OrekitException.class, () -> {
             doTestNotInitialised1(Binary64Field.getInstance());
         });
@@ -126,7 +114,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testNotInitialised2() {
+    void testNotInitialised2() {
         Assertions.assertThrows(OrekitException.class, () -> {
             doTestNotInitialised2(Binary64Field.getInstance());
         });
@@ -141,7 +129,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testEventAtEndOfEphemeris() {
+    void testEventAtEndOfEphemeris() {
         doTestEventAtEndOfEphemeris(Binary64Field.getInstance());
     }
 
@@ -175,7 +163,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testEventAtBeginningOfEphemeris() {
+    void testEventAtBeginningOfEphemeris() {
         doTestEventAtBeginningOfEphemeris(Binary64Field.getInstance());
     }
 
@@ -211,7 +199,7 @@ public class FieldNumericalPropagatorTest {
         Assertions.assertEquals(2, handler.eventCount);
     }
 
-    public class CountingHandler <D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>>
+    static class CountingHandler <D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>>
             implements FieldEventHandler<T> {
 
         /**
@@ -238,7 +226,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testCloseEventDates() {
+    void testCloseEventDates() {
         doTestCloseEventDates(Binary64Field.getInstance());
     }
 
@@ -269,7 +257,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testEphemerisDates() {
+    void testEphemerisDates() {
         doTestEphemerisDates(Binary64Field.getInstance());
     }
 
@@ -319,7 +307,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testEphemerisDatesBackward() {
+    void testEphemerisDatesBackward() {
         doTestEphemerisDatesBackward(Binary64Field.getInstance());
     }
 
@@ -364,7 +352,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testNoExtrapolation() {
+    void testNoExtrapolation() {
         doTestNoExtrapolation(Binary64Field.getInstance());
     }
 
@@ -415,7 +403,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testKepler() {
+    void testKepler() {
         doTestKepler(Binary64Field.getInstance());
     }
 
@@ -457,7 +445,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testCartesian() {
+    void testCartesian() {
         doTestCartesian(Binary64Field.getInstance());
     }
 
@@ -500,7 +488,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testPropagationTypesElliptical() {
+    void testPropagationTypesElliptical() {
         doTestPropagationTypesElliptical(Binary64Field.getInstance());
     }
 
@@ -579,7 +567,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testPropagationTypesHyperbolic() {
+    void testPropagationTypesHyperbolic() {
         doTestPropagationTypesHyperbolic(Binary64Field.getInstance());
     }
 
@@ -665,7 +653,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testException() {
+    void testException() {
         Assertions.assertThrows(OrekitException.class, () -> {
             doTestException(Binary64Field.getInstance());
         });
@@ -695,8 +683,6 @@ public class FieldNumericalPropagatorTest {
         propagator.setStepHandler(new FieldOrekitStepHandler<T>() {
             private int countDown = 3;
             private FieldAbsoluteDate<T> previousCall = null;
-            public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
-            }
             public void handleStep(FieldOrekitStepInterpolator<T> interpolator) {
                 if (previousCall != null) {
                     System.out.println(interpolator.getCurrentState().getDate().compareTo(previousCall) < 0);
@@ -711,7 +697,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testStopEvent() {
+    void testStopEvent() {
         doTestStopEvent(Binary64Field.getInstance());
     }
 
@@ -752,7 +738,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testResetStateEvent() {
+    void testResetStateEvent() {
         doTestResetStateEvent(Binary64Field.getInstance());
     }
 
@@ -792,7 +778,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testResetDerivativesEvent() {
+    void testResetDerivativesEvent() {
         doTestResetDerivativesEvent(Binary64Field.getInstance());
     }
 
@@ -839,7 +825,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testContinueEvent() {
+    void testContinueEvent() {
         doTestContinueEvent(Binary64Field.getInstance());
     }
 
@@ -890,7 +876,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testAdditionalStateEvent() {
+    void testAdditionalStateEvent() {
         doTestAdditionalStateEvent(Binary64Field.getInstance());
     }
 
@@ -1022,7 +1008,7 @@ public class FieldNumericalPropagatorTest {
 
 
     @Test
-    public void testResetAdditionalStateEvent() {
+    void testResetAdditionalStateEvent() {
         doTestResetAdditionalStateEvent(Binary64Field.getInstance());
     }
 
@@ -1070,7 +1056,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testEventDetectionBug() {
+    void testEventDetectionBug() {
         doTestEventDetectionBug(Binary64Field.getInstance());
     }
 
@@ -1137,7 +1123,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testEphemerisGenerationIssue14() {
+    void testEphemerisGenerationIssue14() {
         doTestEphemerisGenerationIssue14(Binary64Field.getInstance());
     }
 
@@ -1174,7 +1160,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testEphemerisAdditionalState() {
+    void testEphemerisAdditionalState() {
         doTestEphemerisAdditionalState(Binary64Field.getInstance());
     }
 
@@ -1248,7 +1234,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testIssue157() {
+    void testIssue157() {
         doTestIssue157(Binary64Field.getInstance());
     }
 
@@ -1272,7 +1258,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testIssue704() {
+    void testIssue704() {
         doTestIssue704(Binary64Field.getInstance());
     }
 
@@ -1313,7 +1299,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftKeplerianEllipticTrueWithoutDerivatives() {
+    void testShiftKeplerianEllipticTrueWithoutDerivatives() {
         doTestShiftKeplerianEllipticTrueWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1323,7 +1309,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftKeplerianEllipticTrueWithDerivatives() {
+    void testShiftKeplerianEllipticTrueWithDerivatives() {
         doTestShiftKeplerianEllipticTrueWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1333,7 +1319,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftKeplerianEllipticEccentricWithoutDerivatives() {
+    void testShiftKeplerianEllipticEccentricWithoutDerivatives() {
         doTestShiftKeplerianEllipticEccentricWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1343,7 +1329,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftKeplerianEllipticEcentricWithDerivatives() {
+    void testShiftKeplerianEllipticEcentricWithDerivatives() {
         doTestShiftKeplerianEllipticEcentricWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1353,7 +1339,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftKeplerianEllipticMeanWithoutDerivatives() {
+    void testShiftKeplerianEllipticMeanWithoutDerivatives() {
         doTestShiftKeplerianEllipticMeanWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1363,7 +1349,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftKeplerianEllipticMeanWithDerivatives() {
+    void testShiftKeplerianEllipticMeanWithDerivatives() {
         doTestShiftKeplerianEllipticMeanWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1373,7 +1359,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftKeplerianHyperbolicTrueWithoutDerivatives() {
+    void testShiftKeplerianHyperbolicTrueWithoutDerivatives() {
         doTestShiftKeplerianHyperbolicTrueWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1383,7 +1369,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftKeplerianHyperbolicTrueWithDerivatives() {
+    void testShiftKeplerianHyperbolicTrueWithDerivatives() {
         doTestShiftKeplerianHyperbolicTrueWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1393,7 +1379,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftKeplerianHyperbolicEccentricWithoutDerivatives() {
+    void testShiftKeplerianHyperbolicEccentricWithoutDerivatives() {
         doTestShiftKeplerianHyperbolicEccentricWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1403,7 +1389,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftKeplerianHyperbolicEcentricWithDerivatives() {
+    void testShiftKeplerianHyperbolicEcentricWithDerivatives() {
         doTestShiftKeplerianHyperbolicEcentricWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1413,7 +1399,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftKeplerianHyperbolicMeanWithoutDerivatives() {
+    void testShiftKeplerianHyperbolicMeanWithoutDerivatives() {
         doTestShiftKeplerianHyperbolicMeanWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1423,7 +1409,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftKeplerianHyperbolicMeanWithDerivatives() {
+    void testShiftKeplerianHyperbolicMeanWithDerivatives() {
         doTestShiftKeplerianHyperbolicMeanWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1433,7 +1419,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCartesianEllipticTrueWithoutDerivatives() {
+    void testShiftCartesianEllipticTrueWithoutDerivatives() {
         doTestShiftCartesianEllipticTrueWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1443,7 +1429,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCartesianEllipticTrueWithDerivatives() {
+    void testShiftCartesianEllipticTrueWithDerivatives() {
         doTestShiftCartesianEllipticTrueWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1453,7 +1439,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCartesianEllipticEccentricWithoutDerivatives() {
+    void testShiftCartesianEllipticEccentricWithoutDerivatives() {
         doTestShiftCartesianEllipticEccentricWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1463,7 +1449,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCartesianEllipticEcentricWithDerivatives() {
+    void testShiftCartesianEllipticEcentricWithDerivatives() {
         doTestShiftCartesianEllipticEcentricWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1473,7 +1459,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCartesianEllipticMeanWithoutDerivatives() {
+    void testShiftCartesianEllipticMeanWithoutDerivatives() {
         doTestShiftCartesianEllipticMeanWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1483,7 +1469,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCartesianEllipticMeanWithDerivatives() {
+    void testShiftCartesianEllipticMeanWithDerivatives() {
         doTestShiftCartesianEllipticMeanWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1493,7 +1479,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCartesianHyperbolicTrueWithoutDerivatives() {
+    void testShiftCartesianHyperbolicTrueWithoutDerivatives() {
         doTestShiftCartesianHyperbolicTrueWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1503,7 +1489,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCartesianHyperbolicTrueWithDerivatives() {
+    void testShiftCartesianHyperbolicTrueWithDerivatives() {
         doTestShiftCartesianHyperbolicTrueWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1513,7 +1499,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCartesianHyperbolicEccentricWithoutDerivatives() {
+    void testShiftCartesianHyperbolicEccentricWithoutDerivatives() {
         doTestShiftCartesianHyperbolicEccentricWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1523,7 +1509,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCartesianHyperbolicEcentricWithDerivatives() {
+    void testShiftCartesianHyperbolicEcentricWithDerivatives() {
         doTestShiftCartesianHyperbolicEcentricWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1533,7 +1519,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCartesianHyperbolicMeanWithoutDerivatives() {
+    void testShiftCartesianHyperbolicMeanWithoutDerivatives() {
         doTestShiftCartesianHyperbolicMeanWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1543,7 +1529,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCartesianHyperbolicMeanWithDerivatives() {
+    void testShiftCartesianHyperbolicMeanWithDerivatives() {
         doTestShiftCartesianHyperbolicMeanWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1553,7 +1539,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCircularTrueWithoutDerivatives() {
+    void testShiftCircularTrueWithoutDerivatives() {
         doTestShiftCircularTrueWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1563,7 +1549,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCircularTrueWithDerivatives() {
+    void testShiftCircularTrueWithDerivatives() {
         doTestShiftCircularTrueWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1573,7 +1559,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCircularEccentricWithoutDerivatives() {
+    void testShiftCircularEccentricWithoutDerivatives() {
         doTestShiftCircularEccentricWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1583,7 +1569,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCircularEcentricWithDerivatives() {
+    void testShiftCircularEcentricWithDerivatives() {
         doTestShiftCircularEcentricWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1593,7 +1579,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCircularMeanWithoutDerivatives() {
+    void testShiftCircularMeanWithoutDerivatives() {
         doTestShiftCircularMeanWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1603,7 +1589,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftCircularMeanWithDerivatives() {
+    void testShiftCircularMeanWithDerivatives() {
         doTestShiftCircularMeanWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1613,7 +1599,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftEquinoctialTrueWithoutDerivatives() {
+    void testShiftEquinoctialTrueWithoutDerivatives() {
         doTestShiftEquinoctialTrueWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1623,7 +1609,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftEquinoctialTrueWithDerivatives() {
+    void testShiftEquinoctialTrueWithDerivatives() {
         doTestShiftEquinoctialTrueWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1633,7 +1619,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftEquinoctialEccentricWithoutDerivatives() {
+    void testShiftEquinoctialEccentricWithoutDerivatives() {
         doTestShiftEquinoctialEccentricWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1643,7 +1629,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftEquinoctialEcentricWithDerivatives() {
+    void testShiftEquinoctialEcentricWithDerivatives() {
         doTtestShiftEquinoctialEcentricWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1653,7 +1639,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftEquinoctialMeanWithoutDerivatives() {
+    void testShiftEquinoctialMeanWithoutDerivatives() {
         doTestShiftEquinoctialMeanWithoutDerivatives(Binary64Field.getInstance());
     }
 
@@ -1663,7 +1649,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testShiftEquinoctialMeanWithDerivatives() {
+    void testShiftEquinoctialMeanWithDerivatives() {
         doTestShiftEquinoctialMeanWithDerivatives(Binary64Field.getInstance());
     }
 
@@ -1673,7 +1659,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testAdditionalDerivatives() {
+    void testAdditionalDerivatives() {
         doTestAdditionalDerivatives(Binary64Field.getInstance());
     }
 
@@ -1758,7 +1744,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     @Test
-    public void testInfinitePropagation() {
+    void testInfinitePropagation() {
         doTestInfinitePropagation(Binary64Field.getInstance());
     }
 
@@ -1991,7 +1977,7 @@ public class FieldNumericalPropagatorTest {
         return new FieldCartesianOrbit<>(pv, frame, zero.add(mu));
     }
 
-    private class CheckingHandler<T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
+    private static class CheckingHandler<T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
         private final Action actionOnEvent;
         private boolean gotHere;
@@ -2044,6 +2030,82 @@ public class FieldNumericalPropagatorTest {
         array[0] = date;
         return array;
     }
+
+    @Test
+    @DisplayName("Test for regression in Hipparchus (issue #1281 in Orekit and #290 in Hipparchus)")
+    void testIssue1281() {
+        final GradientField field = GradientField.getField(1);
+        final FieldAbsoluteDate<Gradient> fieldEpoch = FieldAbsoluteDate.getArbitraryEpoch(field);
+        final FieldPVCoordinates<Gradient> fieldPVCoordinates = new FieldPVCoordinates<>(
+                new FieldVector3D<>(field, new Vector3D(10000.e3, 0, 0)),
+                new FieldVector3D<>(field, new Vector3D(0, 7.5e3, 0)));
+        final FieldCartesianOrbit<Gradient> fieldOrbit = new FieldCartesianOrbit<>(fieldPVCoordinates,
+                FramesFactory.getGCRF(), fieldEpoch, field.getZero().add(Constants.EGM96_EARTH_MU));
+        final ClassicalRungeKuttaFieldIntegrator<Gradient> fieldIntegrator = new ClassicalRungeKuttaFieldIntegrator<>(field,
+                field.getZero().add(5.));
+        final FieldNumericalPropagator<Gradient> fieldNumericalPropagator = new FieldNumericalPropagator<>(
+                field, fieldIntegrator);
+        fieldNumericalPropagator.resetInitialState(new FieldSpacecraftState<>(fieldOrbit));
+        fieldNumericalPropagator.setResetAtEnd(true);
+
+        final AbsoluteDate epoch = fieldEpoch.toAbsoluteDate();
+        final TestForceIssue1281 testForce = new TestForceIssue1281(epoch.shiftedBy(10.),
+                epoch.shiftedBy(100.), epoch.shiftedBy(1000.));
+        fieldNumericalPropagator.addForceModel(testForce);
+
+        final Gradient variable = Gradient.variable(1, 0, 0.);
+        try {
+            for (AbsoluteDate date : testForce.dates) {
+                final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, date).shiftedBy(variable);
+                fieldNumericalPropagator.propagate(fieldDate);
+            }
+        } catch (final MathRuntimeException exception) {
+            Assertions.fail("Regression w.r.t. Orekit 11.3");
+        }
+
+    }
+
+    private static class TestForceIssue1281 implements ForceModel {
+
+        private final AbsoluteDate[] dates;
+
+        TestForceIssue1281(AbsoluteDate ...dates) {
+            this.dates = dates;
+        }
+
+        @Override
+        public boolean dependsOnPositionOnly() {
+            return true;
+        }
+
+        @Override
+        public Stream<EventDetector> getEventDetectors() {
+            return Arrays.stream(dates).map(DateDetector::new)
+                    .map(d -> d.withHandler((a, b, c) -> Action.RESET_DERIVATIVES));
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
+            return Arrays.stream(dates).map(date -> new FieldDateDetector<>(field, new FieldAbsoluteDate<>(field, date)))
+                    .map(d -> d.withHandler((a, b, c) -> Action.RESET_DERIVATIVES));
+        }
+
+        @Override
+        public Vector3D acceleration(SpacecraftState s, double[] parameters) {
+            return Vector3D.ZERO;
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters) {
+            return FieldVector3D.getZero(s.getDate().getField());
+        }
+
+        @Override
+        public List<ParameterDriver> getParametersDrivers() {
+            return new ArrayList<>();
+        }
+    }
+
 
     @BeforeEach
     public void setUp() {
