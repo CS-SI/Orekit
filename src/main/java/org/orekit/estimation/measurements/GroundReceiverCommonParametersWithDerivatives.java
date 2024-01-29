@@ -135,6 +135,34 @@ public class GroundReceiverCommonParametersWithDerivatives {
         this.participants    = participants.clone();
     }
 
+    /** Former constructor, before 12.1.
+     * @param state spacecraft state
+     * @param indices derivatives indices map
+     * @param offsetToInertialDownlink transform between station and inertial frame
+     * @param stationDownlink station position in inertial frame at end of the downlink leg
+     * @param tauD downlink delay
+     * @param transitState transit state
+     * @param transitPV transit position/velocity as a gradient
+     * @deprecated Since 12.1. Kept for APIs preservation, should be removed in v13.0
+     */
+    public GroundReceiverCommonParametersWithDerivatives(final SpacecraftState state,
+                                                         final Map<String, Integer> indices,
+                                                         final FieldTransform<Gradient> offsetToInertialDownlink,
+                                                         final TimeStampedFieldPVCoordinates<Gradient> stationDownlink,
+                                                         final Gradient tauD,
+                                                         final SpacecraftState transitState,
+                                                         final TimeStampedFieldPVCoordinates<Gradient> transitPV) {
+        this(state, indices,
+             offsetToInertialDownlink,
+             stationDownlink, stationDownlink,
+             tauD, transitState, transitPV,
+             new TimeStampedPVCoordinates[] {
+                 transitPV.toTimeStampedPVCoordinates(),
+                 stationDownlink.toTimeStampedPVCoordinates()
+             });
+    }
+
+
     /** Get spacecraft state.
      * @return spacecraft state
      */
@@ -210,5 +238,14 @@ public class GroundReceiverCommonParametersWithDerivatives {
      */
     public TimeStampedPVCoordinates[] getParticipants() {
         return participants.clone();
+    }
+
+    /** Get transform between station and inertial frame.
+     * @return transform between station and inertial frame
+     * @deprecated Since 12.1, replaced by the more generic {@link #getOffsetToInertialApparentDate()}.
+     *             Kept for APIs preservation, should be removed in v13.0
+     */
+    public FieldTransform<Gradient> getOffsetToInertialDownlink() {
+        return getOffsetToInertialApparentDate();
     }
 }
