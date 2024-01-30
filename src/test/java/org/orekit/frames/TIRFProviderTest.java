@@ -17,6 +17,8 @@
 package org.orekit.frames;
 
 import org.hamcrest.MatcherAssert;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -27,11 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.*;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
@@ -308,6 +306,63 @@ public class TIRFProviderTest {
         Assertions.assertEquals(expectedAngular.getRotationRate(), actualAngular.getRotationRate());
         Assertions.assertEquals(expectedPV.getPosition(), actualPV.getPosition());
         Assertions.assertEquals(expectedPV.getVelocity(), actualPV.getVelocity());
+    }
+
+    @Test
+    void testGetKinematicTransform() {
+        // GIVEN
+        final EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
+        final TimeScale ut1 = DataContext.getDefault().getTimeScales().getUT1(eopHistory);
+        final TIRFProvider provider = new TIRFProvider(eopHistory, ut1);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        // WHEN
+        final KinematicTransform kinematicTransform = provider.getKinematicTransform(date);
+        // THEN
+        final Transform transform = provider.getTransform(date);
+        Assertions.assertEquals(date, kinematicTransform.getDate());
+        Assertions.assertEquals(transform.getCartesian().getPosition(), kinematicTransform.getTranslation());
+        Assertions.assertEquals(transform.getCartesian().getVelocity(), kinematicTransform.getVelocity());
+        Assertions.assertEquals(0., Rotation.distance(transform.getRotation(), kinematicTransform.getRotation()));
+        Assertions.assertEquals(transform.getRotationRate(), kinematicTransform.getRotationRate());
+    }
+
+    @Test
+    void testFieldGetKinematicTransform() {
+        // GIVEN
+        final EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
+        final TimeScale ut1 = DataContext.getDefault().getTimeScales().getUT1(eopHistory);
+        final TIRFProvider provider = new TIRFProvider(eopHistory, ut1);
+        final ComplexField field = ComplexField.getInstance();
+        final FieldAbsoluteDate<Complex> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        // WHEN
+        final FieldKinematicTransform<Complex> fieldKinematicTransform = provider.getKinematicTransform(date);
+        // THEN
+        final KinematicTransform kinematicTransform = provider.getKinematicTransform(date.toAbsoluteDate());
+        Assertions.assertEquals(kinematicTransform.getDate(), fieldKinematicTransform.getDate());
+        Assertions.assertEquals(kinematicTransform.getTranslation(), fieldKinematicTransform.getTranslation().toVector3D());
+        Assertions.assertEquals(kinematicTransform.getVelocity(), fieldKinematicTransform.getVelocity().toVector3D());
+        Assertions.assertEquals(0., Rotation.distance(kinematicTransform.getRotation(),
+                fieldKinematicTransform.getRotation().toRotation()), 1e-15);
+        Assertions.assertEquals(kinematicTransform.getRotationRate(), fieldKinematicTransform.getRotationRate().toVector3D());
+    }
+
+    @Test
+    void testFieldGetStaticTransform() {
+        // GIVEN
+        final EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
+        final TimeScale ut1 = DataContext.getDefault().getTimeScales().getUT1(eopHistory);
+        final TIRFProvider provider = new TIRFProvider(eopHistory, ut1);
+        final ComplexField field = ComplexField.getInstance();
+        final FieldAbsoluteDate<Complex> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        // WHEN
+        final FieldStaticTransform<Complex> fieldStaticTransform = provider.getStaticTransform(date);
+        // THEN
+        final StaticTransform staticTransform = provider.getStaticTransform(date.toAbsoluteDate());
+        Assertions.assertEquals(staticTransform.getDate(), fieldStaticTransform.getDate());
+        Assertions.assertEquals(staticTransform.getTranslation(), fieldStaticTransform.getTranslation().toVector3D());
+        Assertions.assertEquals(0., Rotation.distance(staticTransform.getRotation(),
+                fieldStaticTransform.getRotation().toRotation()), 1e-15);
+
     }
 
     @BeforeEach

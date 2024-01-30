@@ -101,7 +101,7 @@ import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 public class Transform implements
         TimeShiftable<Transform>,
         Serializable,
-        StaticTransform {
+        KinematicTransform {
 
     /** Identity transform. */
     public static final Transform IDENTITY = new IdentityTransform();
@@ -251,30 +251,11 @@ public class Transform implements
     public Transform(final AbsoluteDate date, final Transform first, final Transform second) {
         this(date,
              new PVCoordinates(StaticTransform.compositeTranslation(first, second),
-                               compositeVelocity(first, second),
+                               KinematicTransform.compositeVelocity(first, second),
                                compositeAcceleration(first, second)),
              new AngularCoordinates(StaticTransform.compositeRotation(first, second),
-                                    compositeRotationRate(first, second),
+                                    KinematicTransform.compositeRotationRate(first, second),
                                     compositeRotationAcceleration(first, second)));
-    }
-
-    /** Compute a composite velocity.
-     * @param first first applied transform
-     * @param second second applied transform
-     * @return velocity part of the composite transform
-     */
-    private static Vector3D compositeVelocity(final Transform first, final Transform second) {
-
-        final Vector3D v1 = first.cartesian.getVelocity();
-        final Rotation r1 = first.angular.getRotation();
-        final Vector3D o1 = first.angular.getRotationRate();
-        final Vector3D p2 = second.cartesian.getPosition();
-        final Vector3D v2 = second.cartesian.getVelocity();
-
-        final Vector3D crossP = Vector3D.crossProduct(o1, p2);
-
-        return v1.add(r1.applyInverseTo(v2.add(crossP)));
-
     }
 
     /** Compute a composite acceleration.
@@ -297,21 +278,6 @@ public class Transform implements
         final Vector3D crossDotP   = Vector3D.crossProduct(oDot1, p2);
 
         return a1.add(r1.applyInverseTo(new Vector3D(1, a2, 2, crossV, 1, crossCrossP, 1, crossDotP)));
-
-    }
-
-    /** Compute a composite rotation rate.
-     * @param first first applied transform
-     * @param second second applied transform
-     * @return rotation rate part of the composite transform
-     */
-    private static Vector3D compositeRotationRate(final Transform first, final Transform second) {
-
-        final Vector3D o1 = first.angular.getRotationRate();
-        final Rotation r2 = second.angular.getRotation();
-        final Vector3D o2 = second.angular.getRotationRate();
-
-        return o2.add(r2.applyTo(o1));
 
     }
 

@@ -256,7 +256,7 @@ class JPLCelestialBody implements CelestialBody {
                 @Override
                 public StaticTransform getStaticTransform(final AbsoluteDate date) {
                     // compute translation from parent frame to self
-                    final PVCoordinates pv = getPVCoordinates(date, definingFrame);
+                    final Vector3D position = getPosition(date, definingFrame);
 
                     // compute rotation from ICRF frame to self,
                     // as per the "Report of the IAU/IAG Working Group on Cartographic
@@ -273,7 +273,7 @@ class JPLCelestialBody implements CelestialBody {
                                     new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I);
 
                     // update transform from parent to self
-                    return StaticTransform.of(date, pv.getPosition().negate(), rotation);
+                    return StaticTransform.of(date, position.negate(), rotation);
                 }
 
                 /** {@inheritDoc} */
@@ -314,7 +314,7 @@ class JPLCelestialBody implements CelestialBody {
                     // field
                     final Field<T> field = date.getField();
                     // compute translation from parent frame to self
-                    final FieldPVCoordinates<T> pv = getPVCoordinates(date, definingFrame);
+                    final FieldVector3D<T> position = getPosition(date, definingFrame);
 
                     // compute rotation from ICRF frame to self,
                     // as per the "Report of the IAU/IAG Working Group on Cartographic
@@ -331,7 +331,7 @@ class JPLCelestialBody implements CelestialBody {
                                     new FieldRotation<>(pole, qNode, FieldVector3D.getPlusK(field), FieldVector3D.getPlusI(field));
 
                     // update transform from parent to self
-                    return FieldStaticTransform.of(date, pv.getPosition().negate(), rotation);
+                    return FieldStaticTransform.of(date, position.negate(), rotation);
                 }
 
             }, frameName == null ? name + INERTIAL_FRAME_SUFFIX : frameName, true);

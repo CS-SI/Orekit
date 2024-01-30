@@ -85,6 +85,11 @@ public class TransformProviderUtils {
             }
 
             @Override
+            public KinematicTransform getKinematicTransform(final AbsoluteDate date) {
+                return provider.getKinematicTransform(date).getInverse();
+            }
+
+            @Override
             public StaticTransform getStaticTransform(final AbsoluteDate date) {
                 return provider.getStaticTransform(date).getInverse();
             }
@@ -93,6 +98,12 @@ public class TransformProviderUtils {
             @Override
             public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
                 return provider.getTransform(date).getInverse();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransform(final FieldAbsoluteDate<T> date) {
+                return provider.getKinematicTransform(date).getInverse();
             }
 
             /** {@inheritDoc} */
@@ -123,6 +134,7 @@ public class TransformProviderUtils {
                 return new Transform(date, first.getTransform(date), second.getTransform(date));
             }
 
+            /** {@inheritDoc} */
             @Override
             public StaticTransform getStaticTransform(final AbsoluteDate date) {
                 return StaticTransform.compose(
@@ -134,8 +146,28 @@ public class TransformProviderUtils {
 
             /** {@inheritDoc} */
             @Override
+            public KinematicTransform getKinematicTransform(final AbsoluteDate date) {
+                return KinematicTransform.compose(
+                        date,
+                        first.getKinematicTransform(date),
+                        second.getKinematicTransform(date)
+                );
+            }
+
+            /** {@inheritDoc} */
+            @Override
             public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
                 return new FieldTransform<>(date, first.getTransform(date), second.getTransform(date));
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldKinematicTransform<T> getKinematicTransform(final FieldAbsoluteDate<T> date) {
+                return FieldKinematicTransform.compose(
+                        date,
+                        first.getKinematicTransform(date),
+                        second.getKinematicTransform(date)
+                );
             }
 
             /** {@inheritDoc} */
