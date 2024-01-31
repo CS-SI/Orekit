@@ -16,26 +16,26 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.*;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -318,6 +318,54 @@ public class AggregateBoundedPropagatorTest {
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(start, end);
         return generator.getGeneratedEphemeris();
+    }
+
+    @Test
+    void testPropagateOrbit() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        final Orbit expectedOrbit = Mockito.mock(Orbit.class);
+        Mockito.when(mockedState.getOrbit()).thenReturn(expectedOrbit);
+        final BoundedPropagator mockedBoundedPropagator = mockBoundedPropagator(date, mockedState);
+        final List<BoundedPropagator> boundedPropagatorList = new ArrayList<>();
+        boundedPropagatorList.add(mockedBoundedPropagator);
+        final AggregateBoundedPropagator propagator = new AggregateBoundedPropagator(boundedPropagatorList);
+
+        // WHEN
+        final Orbit actualOrbit = propagator.propagateOrbit(date);
+
+        // THEN
+        Assertions.assertEquals(expectedOrbit, actualOrbit);
+    }
+
+    @Test
+    void testGetPosition() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame mockedFrame = Mockito.mock(Frame.class);
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        final Vector3D expectedPosition = new Vector3D(1, 2, 3);
+        Mockito.when(mockedState.getPosition(mockedFrame)).thenReturn(expectedPosition);
+        final BoundedPropagator mockedBoundedPropagator = mockBoundedPropagator(date, mockedState);
+        final List<BoundedPropagator> boundedPropagatorList = new ArrayList<>();
+        boundedPropagatorList.add(mockedBoundedPropagator);
+        final AggregateBoundedPropagator propagator = new AggregateBoundedPropagator(boundedPropagatorList);
+
+        // WHEN
+        final Vector3D actualPosition = propagator.getPosition(date, mockedFrame);
+
+        // THEN
+        Assertions.assertEquals(expectedPosition, actualPosition);
+    }
+
+    private BoundedPropagator mockBoundedPropagator(final AbsoluteDate date, final SpacecraftState state) {
+        final BoundedPropagator mockedBoundedPropagator = Mockito.mock(BoundedPropagator.class);
+        Mockito.when(mockedBoundedPropagator.getMinDate()).thenReturn(AbsoluteDate.PAST_INFINITY);
+        Mockito.when(mockedBoundedPropagator.getMinDate()).thenReturn(AbsoluteDate.FUTURE_INFINITY);
+        Mockito.when(mockedBoundedPropagator.propagate(date)).thenReturn(state);
+        Mockito.when(mockedBoundedPropagator.getInitialState()).thenReturn(state);
+        return mockedBoundedPropagator;
     }
 
 }

@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1318">
+          Add default implementation of getPosition in (Field)Propagator.
+      </action>
       <action dev="serrof" type="add" issue="1259">
           Add (Field)KinematicTransform.
       </action>

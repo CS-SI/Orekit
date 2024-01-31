@@ -18,6 +18,7 @@ package org.orekit.propagation;
 
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -40,7 +41,21 @@ import java.util.List;
 class FieldPropagatorTest {
 
     @Test
-    void getPVCoordinatesTest() {
+    void testGetPosition() {
+        // GIVEN
+        final TestFieldPropagator testPropagator = new TestFieldPropagator();
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final FieldAbsoluteDate<Complex> fieldDate = new FieldAbsoluteDate<>(ComplexField.getInstance(), date);
+        final Frame frame = FramesFactory.getGCRF();
+        // WHEN
+        final FieldVector3D<Complex> actualPosition = testPropagator.getPosition(fieldDate, frame);
+        // THEN
+        final FieldPVCoordinates<Complex> expectedState = testPropagator.propagate(fieldDate).getPVCoordinates(frame);
+        Assertions.assertEquals(expectedState.getPosition().toVector3D(), actualPosition.toVector3D());
+    }
+
+    @Test
+    void testGetPVCoordinates() {
         // GIVEN
         final TestFieldPropagator testPropagator = new TestFieldPropagator();
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
@@ -66,6 +81,8 @@ class FieldPropagatorTest {
         Mockito.when(mockedFieldSpacecraftState.getPVCoordinates()).thenReturn(fieldPVCoordinates);
         Mockito.when(mockedFieldSpacecraftState.getPVCoordinates(Mockito.any(Frame.class)))
                 .thenReturn(fieldPVCoordinates);
+        Mockito.when(mockedFieldSpacecraftState.getPosition(Mockito.any(Frame.class)))
+                .thenReturn(fieldPVCoordinates.getPosition());
         return mockedFieldSpacecraftState;
     }
 
