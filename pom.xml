@@ -38,7 +38,7 @@
     <orekit.maven-resources-plugin.version>3.3.1</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.12.1</orekit.maven-site-plugin.version>
     <orekit.maven-project-info-reports-plugin.version>3.4.5</orekit.maven-project-info-reports-plugin.version>
-    <orekit.maven-wagon-ssh-plugin.version>3.5.2</orekit.maven-wagon-ssh-plugin.version>
+    <orekit.maven-wagon-ssh-external-plugin.version>3.5.3</orekit.maven-wagon-ssh-external-plugin.version>
     <orekit.maven-source-plugin.version>3.3.0</orekit.maven-source-plugin.version>
     <!-- Surefire 2.22.2 is the last to support CentOS/RedHat 7 due to
          https://issues.apache.org/jira/browse/SUREFIRE-1628 -->
@@ -641,8 +641,8 @@
           <dependencies>
             <dependency><!-- add support for ssh/scp -->
               <groupId>org.apache.maven.wagon</groupId>
-              <artifactId>wagon-ssh</artifactId>
-              <version>${orekit.maven-wagon-ssh-plugin.version}</version>
+              <artifactId>wagon-ssh-external</artifactId>
+              <version>${orekit.maven-wagon-ssh-external-plugin.version}</version>
             </dependency>
           </dependencies>
       </plugin>
