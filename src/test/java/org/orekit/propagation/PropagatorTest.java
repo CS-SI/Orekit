@@ -35,7 +35,20 @@ import java.util.List;
 class PropagatorTest {
 
     @Test
-    void getPVCoordinatesTest() {
+    void testGetPosition() {
+        // GIVEN
+        final TestPropagator testPropagator = new TestPropagator();
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame frame = FramesFactory.getGCRF();
+        // WHEN
+        final Vector3D actualPosition = testPropagator.getPosition(date, frame);
+        // THEN
+        final PVCoordinates expectedState = testPropagator.propagate(date).getPVCoordinates(frame);
+        Assertions.assertEquals(expectedState.getPosition(), actualPosition);
+    }
+
+    @Test
+    void testGetPVCoordinates() {
         // GIVEN
         final TestPropagator testPropagator = new TestPropagator();
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
@@ -55,6 +68,8 @@ class PropagatorTest {
         final TimeStampedPVCoordinates tspvc = new TimeStampedPVCoordinates(date, pvCoordinates);
         Mockito.when(mockedSpacecraftState.getPVCoordinates()).thenReturn(tspvc);
         Mockito.when(mockedSpacecraftState.getPVCoordinates(Mockito.any(Frame.class))).thenReturn(tspvc);
+        Mockito.when(mockedSpacecraftState.getPosition(Mockito.any(Frame.class)))
+                .thenReturn(pvCoordinates.getPosition());
         return mockedSpacecraftState;
     }
 

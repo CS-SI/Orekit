@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.FieldEventDetector;
@@ -254,6 +255,12 @@ public interface FieldPropagator<T extends CalculusFieldElement<T>> extends Fiel
     @Override
     default TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
         return propagate(date).getPVCoordinates(frame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> date, final Frame frame) {
+        return propagate(date).getPosition(frame);
     }
 
 }
