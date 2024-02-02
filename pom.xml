@@ -70,7 +70,7 @@
   <distributionManagement>
     <site>
       <id>website</id>
-      <url>scpexe://cochise@ganymede.orekit.org/var/www/mvn-sites/site-orekit-${project.version}</url>
+      <url>scp://cochise@ganymede.orekit.org/var/www/mvn-sites/site-orekit-${project.version}</url>
     </site>
   </distributionManagement>
 
