@@ -121,7 +121,7 @@ deploy:site:
       PROJECT_VERSION=$(mvn $MAVEN_CLI_OPTS help:evaluate \
                             -Dexpression=project.version -q -DforceStdout)
     - |
-      rsync -rz --links --checksum --no-perms --chmod=u=rwX,go=rX --delete-after \
+      rsync -rze ssh --links --checksum --no-perms --chmod=u=rwX,go=rX --delete-after \
             target/site/ ${TARGET_URL_PREFIX}-${PROJECT_VERSION}
   only:
     - master@orekit/orekit
