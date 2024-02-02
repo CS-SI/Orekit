@@ -67,13 +67,6 @@
     <tools.jar.path>${tools.jar.dir}/tools.jar</tools.jar.path>
   </properties>
 
-  <distributionManagement>
-    <site>
-      <id>website</id>
-      <url>scp://cochise@ganymede.orekit.org/var/www/mvn-sites/site-orekit-${project.version}</url>
-    </site>
-  </distributionManagement>
-
   <developers>
     <developer>
       <name>Luc Maisonobe</name>
