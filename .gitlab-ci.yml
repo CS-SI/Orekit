@@ -117,11 +117,8 @@ deploy:site:
     - chmod 700 ~/.ssh
     - cp $SSH_KNOWN_HOSTS ~/.ssh/known_hosts
   script:
-    - |
-      PROJECT_VERSION=$(mvn $MAVEN_CLI_OPTS help:evaluate \
-                            -Dexpression=project.version -q -DforceStdout)
-    - |
-      rsync -rze ssh --links --checksum --no-perms --chmod=u=rwX,go=rX --delete-after \
+    - PROJECT_VERSION=$(mvn $MAVEN_CLI_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout)
+    - rsync -rze ssh --links --checksum --no-perms --chmod=u=rwX,go=rX --delete-after
             target/site/ ${TARGET_URL_PREFIX}-${PROJECT_VERSION}
   only:
     - master@orekit/orekit
