@@ -33,6 +33,14 @@ variables:
 verify:
   stage: verify
   script:
+    # >>> SDT 2024-02-02: code for debugging purpose
+    - pwd
+    - ZOINX=$(pwd)
+    - echo ${ZOINX}
+    - echo $ZOINX
+    - PROJECT_VERSION=$(mvn $MAVEN_CLI_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout)
+    - echo ${PROJECT_VERSION}
+    # <<< SDT 2024-02-02: code for debugging purpose
     - mvn $MAVEN_CLI_OPTS checkstyle:check verify site
     - test -z "$SONAR_TOKEN" || mvn $MAVEN_CLI_OPTS sonar:sonar
           -Dsonar.login=${SONAR_TOKEN}
