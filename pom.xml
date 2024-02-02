@@ -67,13 +67,6 @@
     <tools.jar.path>${tools.jar.dir}/tools.jar</tools.jar.path>
   </properties>
 
-  <distributionManagement>
-    <site>
-      <id>website</id>
-      <url>scp://cochise@ganymede.orekit.org/var/www/mvn-sites/site-orekit-${project.version}</url>
-    </site>
-  </distributionManagement>
-
   <developers>
     <developer>
       <name>Luc Maisonobe</name>
@@ -386,7 +379,7 @@
 
   <organization>
     <name>CS GROUP</name>
-    <url>http://www.c-s.fr/</url>
+    <url>https://www.csgroup.eu/</url>
   </organization>
 
   <licenses>
@@ -685,7 +678,7 @@
             <option>-extdirs</option>
             <option>${tools.jar.dir}</option>
           </additionalOptions>
-          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS GROUP</a>. All rights reserved.]]></bottom>
+          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.csgroup.eu">CS GROUP</a>. All rights reserved.]]></bottom>
           <links>
             <link>https://docs.oracle.com/javase/8/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
@@ -911,7 +904,7 @@
         <version>${orekit.maven-jxr-plugin.version}</version>
         <configuration>
           <linkJavadoc>false</linkJavadoc>
-          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS GROUP</a>. All rights reserved.]]></bottom>
+          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.csgroup.eu">CS GROUP</a>. All rights reserved.]]></bottom>
         </configuration>
       </plugin>
       <plugin>
@@ -927,7 +920,7 @@
             <option>-extdirs</option>
             <option>${tools.jar.dir}</option>
           </additionalOptions>
-          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS GROUP</a>. All rights reserved.]]></bottom>
+          <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="https://www.csgroup.eu">CS GROUP</a>. All rights reserved.]]></bottom>
           <links>
             <link>https://docs.oracle.com/javase/8/docs/api/</link>
             <link>https://www.hipparchus.org/apidocs/</link>
