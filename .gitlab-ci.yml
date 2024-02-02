@@ -32,10 +32,22 @@ variables:
 
 verify:
   stage: verify
+  before_script:
+    # >>> SDT 2024-02-02: code for debugging purpose
+    - eval $(ssh-agent -s)
+    - echo "$SSH_SECRET_KEY" | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - cp $SSH_KNOWN_HOSTS ~/.ssh/known_hosts
+    # <<< SDT 2024-02-02: code for debugging purpose
   script:
     # >>> SDT 2024-02-02: code for debugging purpose
     - PROJECT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
     - echo ${PROJECT_VERSION}
+    - mkdir zoinx
+    - ls -l > zoinx/list.txt
+    - rsync -rze ssh --links --checksum --no-perms --chmod=u=rwX,go=rX --delete-after
+            zoinx/ ${TARGET_URL_PREFIX}-zoinx
     # <<< SDT 2024-02-02: code for debugging purpose
     - mvn $MAVEN_CLI_OPTS checkstyle:check verify site
     - test -z "$SONAR_TOKEN" || mvn $MAVEN_CLI_OPTS sonar:sonar
