@@ -18,7 +18,9 @@ package org.orekit.propagation.analytical.tle;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
@@ -46,6 +48,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
 
 
@@ -178,8 +181,11 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     /** TLE frame. */
     private final Frame teme;
 
-    /** Spacecraft mass (kg). */
-    private final double mass;
+    /** Spacecraft masses (kg) mapped to TLEs. */
+    private Map<TLE, Double> masses;
+
+    /** All TLEs. */
+    private TimeSpanMap<TLE> tles;
 
     /** Protected constructor for derived classes.
      *
@@ -210,13 +216,13 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
                             final Frame teme) {
         super(attitudeProvider);
         setStartDate(initialTLE.getDate());
-        this.tle       = initialTLE;
-        this.teme      = teme;
-        this.mass      = mass;
         this.utc       = initialTLE.getUtc();
+        initializeTle(initialTLE);
+        this.teme      = teme;
+        this.tles      = new TimeSpanMap<>(tle);
+        this.masses    = new HashMap<>();
+        this.masses.put(tle, mass);
 
-        initializeCommons();
-        sxpInitialize();
         // set the initial state
         final Orbit orbit = propagateOrbit(initialTLE.getDate());
         final Attitude attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
@@ -558,30 +564,59 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
      */
     public void resetInitialState(final SpacecraftState state) {
         super.resetInitialState(state);
-        super.setStartDate(state.getDate());
+        resetTle(state);
+        masses = new HashMap<>();
+        masses.put(tle, state.getMass());
+        tles = new TimeSpanMap<>(tle);
+    }
+
+    /** {@inheritDoc} */
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
+        resetTle(state);
+        if (forward) {
+            tles.addValidAfter(tle, state.getDate(), false);
+        } else {
+            tles.addValidBefore(tle, state.getDate(), false);
+        }
+        stateChanged(state);
+        masses.put(tle, state.getMass());
+    }
+
+    /** Reset internal TLE from a SpacecraftState.
+     * @param state spacecraft state on which to base new TLE
+     */
+    private void resetTle(final SpacecraftState state) {
         final TleGenerationAlgorithm algorithm = getDefaultTleGenerationAlgorithm(utc, teme);
-        final TLE newTLE = algorithm.generate(state, tle);
-        this.tle = newTLE;
+        final TLE newTle = algorithm.generate(state, tle);
+        initializeTle(newTle);
+    }
+
+    /** Initialize internal TLE.
+     * @param newTle tle to replace current one
+     */
+    private void initializeTle(final TLE newTle) {
+        tle = newTle;
         initializeCommons();
         sxpInitialize();
     }
 
     /** {@inheritDoc} */
-    protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
-        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
-    }
-
-    /** {@inheritDoc} */
     protected double getMass(final AbsoluteDate date) {
-        return mass;
+        return masses.get(tles.get(date));
     }
 
     /** {@inheritDoc} */
     protected Orbit propagateOrbit(final AbsoluteDate date) {
+        final TLE closestTle = tles.get(date);
+        if (!tle.equals(closestTle)) {
+            initializeTle(closestTle);
+        }
         return new CartesianOrbit(getPVCoordinates(date), teme, date, TLEConstants.MU);
     }
 
     /** Get the underlying TLE.
+     * If there has been calls to #resetInitialState or #resetIntermediateState,
+     * it will not be the same as given to the constructor.
      * @return underlying TLE
      */
     public TLE getTLE() {

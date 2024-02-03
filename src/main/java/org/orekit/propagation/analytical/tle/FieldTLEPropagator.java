@@ -17,7 +17,9 @@
 package org.orekit.propagation.analytical.tle;
 
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -41,6 +43,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap;
 
 
 /** This class provides elements to propagate TLE's.
@@ -175,8 +178,11 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
     /** TLE frame. */
     private final Frame teme;
 
-    /** Spacecraft mass (kg). */
-    private final T mass;
+    /** Spacecraft masses (kg) mapped to TLEs. */
+    private Map<FieldTLE<T>, T> masses;
+
+    /** All TLEs. */
+    private TimeSpanMap<FieldTLE<T>> tles;
 
     /** Protected constructor for derived classes.
      *
@@ -189,12 +195,9 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      * @see #FieldTLEPropagator(FieldTLE, AttitudeProvider, CalculusFieldElement, Frame, CalculusFieldElement[])
      */
     @DefaultDataContext
-    protected FieldTLEPropagator(final FieldTLE<T> initialTLE,
-                            final AttitudeProvider attitudeProvider,
-                            final T mass,
-                            final T[] parameters) {
-        this(initialTLE, attitudeProvider, mass,
-                DataContext.getDefault().getFrames().getTEME(), parameters);
+    protected FieldTLEPropagator(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider, final T mass,
+                                 final T[] parameters) {
+        this(initialTLE, attitudeProvider, mass, DataContext.getDefault().getFrames().getTEME(), parameters);
     }
 
     /** Protected constructor for derived classes.
@@ -204,17 +207,16 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      * @param teme the TEME frame to use for propagation.
      * @param parameters SGP4 and SDP4 model parameters
      */
-    protected FieldTLEPropagator(final FieldTLE<T> initialTLE,
-                            final AttitudeProvider attitudeProvider,
-                            final T mass,
-                            final Frame teme,
-                            final T[] parameters) {
+    protected FieldTLEPropagator(final FieldTLE<T> initialTLE, final AttitudeProvider attitudeProvider, final T mass,
+                                 final Frame teme, final T[] parameters) {
         super(initialTLE.getE().getField(), attitudeProvider);
         setStartDate(initialTLE.getDate());
-        this.tle  = initialTLE;
-        this.teme = teme;
-        this.mass = mass;
-        this.utc = initialTLE.getUtc();
+        this.utc       = initialTLE.getUtc();
+        initializeTle(initialTLE);
+        this.teme      = teme;
+        this.tles      = new TimeSpanMap<>(tle);
+        this.masses    = new HashMap<>();
+        this.masses.put(tle, mass);
 
         initializeCommons(parameters);
         sxpInitialize(parameters);
@@ -341,7 +343,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      */
     private void initializeCommons(final T[] parameters) {
 
-        final T zero = mass.getField().getZero();
+        final T zero = tle.getDate().getField().getZero();
         final T bStar = parameters[0];
         final T a1 = tle.getMeanMotion().multiply(60.0).reciprocal().multiply(TLEConstants.XKE).pow(TLEConstants.TWO_THIRD);
         cosi0 = FastMath.cos(tle.getI());
@@ -441,7 +443,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      */
     private FieldPVCoordinates<T> computePVCoordinates() {
 
-        final T zero = mass.getField().getZero();
+        final T zero = tle.getDate().getField().getZero();
         // Long period periodics
         final T axn = e.multiply(FastMath.cos(omega));
         T temp = a.multiply(e.multiply(e).negate().add(1.0)).reciprocal();
@@ -542,9 +544,10 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         final T cr = rk.multiply(1000 * TLEConstants.EARTH_RADIUS);
         final FieldVector3D<T> pos = new FieldVector3D<>(cr.multiply(ux), cr.multiply(uy), cr.multiply(uz));
 
-        final T rdot   = FastMath.sqrt(a).multiply(esinE.divide(r)).multiply(TLEConstants.XKE);
+        final T sqrtA  = FastMath.sqrt(a);
+        final T rdot   = sqrtA.multiply(esinE.divide(r)).multiply(TLEConstants.XKE);
         final T rfdot  = FastMath.sqrt(pl).divide(r).multiply(TLEConstants.XKE);
-        final T xn     = a.multiply(FastMath.sqrt(a)).reciprocal().multiply(TLEConstants.XKE);
+        final T xn     = a.multiply(sqrtA).reciprocal().multiply(TLEConstants.XKE);
         final T rdotk  = rdot.subtract(xn.multiply(temp1).multiply(x1mth2).multiply(sin2u));
         final T rfdotk = rfdot.add(xn.multiply(temp1).multiply(x1mth2.multiply(cos2u).add(x3thm1.multiply(1.5))));
         final T vx     = xmx.multiply(cosuk).subtract(cosnok.multiply(sinuk));
@@ -555,7 +558,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         final FieldVector3D<T> vel = new FieldVector3D<>(rdotk.multiply(ux).add(rfdotk.multiply(vx)).multiply(cv),
                                                           rdotk.multiply(uy).add(rfdotk.multiply(vy)).multiply(cv),
                                                           rdotk.multiply(uz).add(rfdotk.multiply(vz)).multiply(cv));
-        return new FieldPVCoordinates<T>(pos, vel);
+        return new FieldPVCoordinates<>(pos, vel);
 
     }
 
@@ -586,30 +589,61 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
      */
     public void resetInitialState(final FieldSpacecraftState<T> state) {
         super.resetInitialState(state);
-        super.setStartDate(state.getDate());
-        final TleGenerationAlgorithm algorithm = TLEPropagator.getDefaultTleGenerationAlgorithm(utc, teme);
-        final FieldTLE<T> newTLE = algorithm.generate(state, tle);
-        this.tle = newTLE;
-        initializeCommons(tle.getParameters(state.getDate().getField()));
-        sxpInitialize(tle.getParameters(state.getDate().getField()));
+        resetTle(state);
+        masses = new HashMap<>();
+        masses.put(tle, state.getMass());
+        tles = new TimeSpanMap<>(tle);
     }
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
-        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+        resetTle(state);
+        if (forward) {
+            tles.addValidAfter(tle, state.getDate().toAbsoluteDate(), false);
+        } else {
+            tles.addValidBefore(tle, state.getDate().toAbsoluteDate(), false);
+        }
+        stateChanged(state);
+        masses.put(tle, state.getMass());
+    }
+
+    /** Reset internal TLE from a SpacecraftState.
+     * @param state spacecraft state on which to base new TLE
+     */
+    private void resetTle(final FieldSpacecraftState<T> state) {
+        final TleGenerationAlgorithm algorithm = TLEPropagator.getDefaultTleGenerationAlgorithm(utc, teme);
+        final FieldTLE<T> newTle = algorithm.generate(state, tle);
+        initializeTle(newTle);
+    }
+
+    /** Initialize internal TLE.
+     * @param newTle tle to replace current one
+     */
+    private void initializeTle(final FieldTLE<T> newTle) {
+        tle = newTle;
+        final T[] parameters = tle.getParameters(tle.getDate().getField());
+        initializeCommons(parameters);
+        sxpInitialize(parameters);
     }
 
     /** {@inheritDoc} */
     protected T getMass(final FieldAbsoluteDate<T> date) {
-        return mass;
+        return masses.get(tles.get(date.toAbsoluteDate()));
     }
 
     /** {@inheritDoc} */
     public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
-        return new FieldCartesianOrbit<>(getPVCoordinates(date, parameters), teme, date, date.getField().getZero().newInstance(TLEConstants.MU));
+        final FieldTLE<T> closestTle = tles.get(date.toAbsoluteDate());
+        if (!tle.equals(closestTle)) {
+            initializeTle(closestTle);
+        }
+        final T mu = date.getField().getZero().newInstance(TLEConstants.MU);
+        return new FieldCartesianOrbit<>(getPVCoordinates(date, parameters), teme, date, mu);
     }
 
     /** Get the underlying TLE.
+     * If there has been calls to #resetInitialState or #resetIntermediateState,
+     * it will not be the same as given to the constructor.
      * @return underlying TLE
      */
     public FieldTLE<T> getTLE() {
