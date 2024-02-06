@@ -35,41 +35,41 @@ import org.orekit.time.TimeScales;
 public enum TimeSystem {
 
     /** Global Positioning System. */
-    GPS("GPS", "GP", "G", ts -> ts.getGPS()),
+    GPS("GPS", "GP", "G", TimeScales::getGPS),
 
     /** GLONASS. */
-    GLONASS("GLO", "GL", "R", ts -> ts.getGLONASS()),
+    GLONASS("GLO", "GL", "R", TimeScales::getGLONASS),
 
     /** GALILEO. */
-    GALILEO("GAL", "GA", "E", ts -> ts.getGST()),
+    GALILEO("GAL", "GA", "E", TimeScales::getGST),
 
     /** International Atomic Time. */
-    TAI("TAI", null, null, ts -> ts.getTAI()),
+    TAI("TAI", null, null, TimeScales::getTAI),
 
     /** Coordinated Universal Time. */
-    UTC("UTC", "UT", null, ts -> ts.getUTC()),
+    UTC("UTC", "UT", null, TimeScales::getUTC),
 
     /** Quasi-Zenith System. */
-    QZSS("QZS", "QZ", "J", ts -> ts.getQZSS()),
+    QZSS("QZS", "QZ", "J", TimeScales::getQZSS),
 
     /** Beidou. */
-    BEIDOU("BDS", "BD", "C", ts -> ts.getBDT()),
+    BEIDOU("BDT", "BD", "C", TimeScales::getBDT),
 
     /** IRNSS. */
-    IRNSS("IRN", "IR", "I", ts -> ts.getIRNSS()),
+    IRNSS("IRN", "IR", "I", TimeScales::getIRNSS),
 
     /** SBAS.
      * @since 12.0
      */
-    SBAS("SBAS", "SB", "S", ts -> ts.getUTC()),
+    SBAS(null, "SB", "S", TimeScales::getUTC),
 
     /** GMT (should only by used in RUN BY / DATE entries).
      * @since 12.0
      */
-    GMT("GMT", null, null, ts -> ts.getUTC()),
+    GMT("GMT", null, null, TimeScales::getUTC),
 
     /** Unknown (should only by used in RUN BY / DATE entries). */
-    UNKNOWN("LCL", null, null, ts -> ts.getGPS());
+    UNKNOWN("LCL", null, null, TimeScales::getGPS);
 
     /** Parsing key map. */
     private static final Map<String, TimeSystem> KEYS_MAP = new HashMap<>();
@@ -86,7 +86,9 @@ public enum TimeSystem {
 
     static {
         for (final TimeSystem timeSystem : values()) {
-            KEYS_MAP.put(timeSystem.key, timeSystem);
+            if (timeSystem.key != null) {
+                KEYS_MAP.put(timeSystem.key, timeSystem);
+            }
             if (timeSystem.twoLettersCode != null) {
                 TLC_MAP.put(timeSystem.twoLettersCode, timeSystem);
             }
@@ -115,7 +117,7 @@ public enum TimeSystem {
     private final Function<TimeScales, TimeScale> timeScaleProvider;
 
     /** Simple constructor.
-     * @param key key letter
+     * @param key key letter (may be null)
      * @param twoLettersCode two letters code (may be null)
      * @param oneLetterCode one letter code (may be null)
      * @param timeScaleProvider time scale provider

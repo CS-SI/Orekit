@@ -21,6 +21,18 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1322">
+          Fixed forbidden SBAS System Time in SP3 files.
+      </action>
+      <action dev="luc" type="fix" issue="1321">
+          Fixed wrong key for Beidou System Time in SP3 files.
+      </action>
+      <action dev="serrof" type="add" issue="1306">
+          Implement resetIntermediateState in (Field)TLEPropagator.
+      </action>
+      <action dev="serrof" type="add" issue="1318">
+          Add default implementation of getPosition in (Field)Propagator.
+      </action>
       <action dev="serrof" type="add" issue="1259">
           Add (Field)KinematicTransform.
       </action>

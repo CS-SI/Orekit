@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -100,20 +101,16 @@ class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> extends Abs
 
     @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-        final Stream<C> neighbors = this.cache.getNeighbors(date);
+        final TimeStampedPVCoordinates interpolatedPVCoordinates = interpolate(date);
 
-        // cast stream to super type
-        final Stream<TimeStampedPVCoordinates> castedNeighbors = neighbors.map(neighbor -> (TimeStampedPVCoordinates) neighbor);
+        return ephemerisFrame.getTransformTo(frame, date).transformPVCoordinates(interpolatedPVCoordinates);
+    }
 
-        // convert to list
-        final List<TimeStampedPVCoordinates> castedNeighborsList = castedNeighbors.collect(Collectors.toList());
+    @Override
+    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+        final Vector3D interpolatedPosition = interpolate(date).getPosition();
 
-        // create interpolator
-        final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
-                new TimeStampedPVCoordinatesHermiteInterpolator(castedNeighborsList.size(), ephemeris.getAvailableDerivatives());
-
-        final TimeStampedPVCoordinates point = interpolator.interpolate(date, castedNeighborsList);
-        return ephemerisFrame.getTransformTo(frame, date).transformPVCoordinates(point);
+        return ephemerisFrame.getStaticTransformTo(frame, date).transformPosition(interpolatedPosition);
     }
 
     @Override
@@ -151,6 +148,27 @@ class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> extends Abs
     @Override
     public void resetInitialState(final SpacecraftState state) {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+    }
+
+    /** Interpolate ephemeris segment at date.
+     *
+     * @param date interpolation date
+     * @return interpolated position-velocity vector
+     */
+    private TimeStampedPVCoordinates interpolate(final AbsoluteDate date) {
+        final Stream<C> neighbors = this.cache.getNeighbors(date);
+
+        // cast stream to super type
+        final Stream<TimeStampedPVCoordinates> castedNeighbors = neighbors.map(neighbor -> (TimeStampedPVCoordinates) neighbor);
+
+        // convert to list
+        final List<TimeStampedPVCoordinates> castedNeighborsList = castedNeighbors.collect(Collectors.toList());
+
+        // create interpolator
+        final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
+                new TimeStampedPVCoordinatesHermiteInterpolator(castedNeighborsList.size(), ephemeris.getAvailableDerivatives());
+
+        return interpolator.interpolate(date, castedNeighborsList);
     }
 
 }

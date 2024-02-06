@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -78,8 +79,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
         this.propagators = map;
         this.min = map.firstEntry().getValue().getMinDate();
         this.max = map.lastEntry().getValue().getMaxDate();
-        super.resetInitialState(
-                this.propagators.firstEntry().getValue().getInitialState());
+        super.resetInitialState(getInitialState());
     }
 
     /**
@@ -101,8 +101,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
         this.propagators = propagators;
         this.min = min;
         this.max = max;
-        super.resetInitialState(
-                this.propagators.firstEntry().getValue().getInitialState());
+        super.resetInitialState(getInitialState());
     }
 
     /**
@@ -160,6 +159,11 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date,
                                                      final Frame frame) {
         return getPropagator(date).getPVCoordinates(date, frame);
+    }
+
+    @Override
+    public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
+        return getPropagator(date).propagate(date).getPosition(frame);
     }
 
     @Override

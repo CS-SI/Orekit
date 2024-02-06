@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -297,6 +298,12 @@ public interface Propagator extends PVCoordinatesProvider {
     @Override
     default TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
         return propagate(date).getPVCoordinates(frame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default Vector3D getPosition(AbsoluteDate date, Frame frame) {
+        return propagate(date).getPosition(frame);
     }
 
 }
