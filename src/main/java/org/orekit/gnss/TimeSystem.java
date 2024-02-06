@@ -61,7 +61,7 @@ public enum TimeSystem {
     /** SBAS.
      * @since 12.0
      */
-    SBAS("SBAS", "SB", "S", ts -> ts.getUTC()),
+    SBAS(null, "SB", "S", ts -> ts.getUTC()),
 
     /** GMT (should only by used in RUN BY / DATE entries).
      * @since 12.0
@@ -86,7 +86,9 @@ public enum TimeSystem {
 
     static {
         for (final TimeSystem timeSystem : values()) {
-            KEYS_MAP.put(timeSystem.key, timeSystem);
+            if (timeSystem.key != null) {
+                KEYS_MAP.put(timeSystem.key, timeSystem);
+            }
             if (timeSystem.twoLettersCode != null) {
                 TLC_MAP.put(timeSystem.twoLettersCode, timeSystem);
             }
