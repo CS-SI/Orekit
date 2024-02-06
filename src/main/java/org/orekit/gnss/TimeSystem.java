@@ -53,7 +53,7 @@ public enum TimeSystem {
     QZSS("QZS", "QZ", "J", ts -> ts.getQZSS()),
 
     /** Beidou. */
-    BEIDOU("BDS", "BD", "C", ts -> ts.getBDT()),
+    BEIDOU("BDT", "BD", "C", ts -> ts.getBDT()),
 
     /** IRNSS. */
     IRNSS("IRN", "IR", "I", ts -> ts.getIRNSS()),
@@ -115,7 +115,7 @@ public enum TimeSystem {
     private final Function<TimeScales, TimeScale> timeScaleProvider;
 
     /** Simple constructor.
-     * @param key key letter
+     * @param key key letter (may be null)
      * @param twoLettersCode two letters code (may be null)
      * @param oneLetterCode one letter code (may be null)
      * @param timeScaleProvider time scale provider
