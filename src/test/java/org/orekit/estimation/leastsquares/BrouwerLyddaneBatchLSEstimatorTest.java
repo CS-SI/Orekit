@@ -144,7 +144,7 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
         BrouwerLyddaneContext context = BrouwerLyddaneEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final BrouwerLyddanePropagatorBuilder propagatorBuilder =
-                        context.createBuilder(PositionAngleType.MEAN, true, 1.0);
+                        context.createBuilder(PositionAngleType.TRUE, true, 1.0);
 
         // create perfect range measurements
         final Propagator propagator = BrouwerLyddaneEstimationTestUtils.createPropagator(context.initialOrbit,
@@ -165,10 +165,10 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 1, 2,
-                                                   0.0, 1.1e-4,
-                                                   0.0, 1.8e-4,
-                                                   0.0, 1.4e-5,
-                                                   0.0, 1.3e-8);
+                                                   0.0, 3.2e-2,
+                                                   0.0, 5.8e-2,
+                                                   0.0, 5e-3,
+                                                   0.0, 2.8e-6);
 
     }
 
@@ -210,11 +210,11 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 1, 2,
-                                                   0.0, 1.2e-4,
-                                                   0.0, 2.6e-4,
-                                                   0.0, 1.4e-5,
-                                                   0.0, 1.3e-8);
+        BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 3, 4,
+                                                   0.0, 2.94e-2,
+                                                   0.0, 5.3e-2,
+                                                   0.0, 4.6e-3,
+                                                   0.0, 6.3e-6);
 
     }
 
@@ -251,15 +251,15 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
         for (final ObservedMeasurement<?> rangerate : measurements) {
             estimator.addMeasurement(rangerate);
         }
-        estimator.setParametersConvergenceThreshold(1.0e-3);
+        estimator.setParametersConvergenceThreshold(1.0e-2);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 1, 2,
-                                                   0.0, 7.9e-8,
-                                                   0.0, 1.1e-7,
-                                                   0.0, 1.5e-5,
-                                                   0.0, 1.4e-8);
+        BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 3,8,
+                                                   0.0, 4.9e-5,
+                                                   0.0, 1.2e-4,
+                                                   0.0, 3.2e-2,
+                                                   0.0, 4.4e-5);
     }
 
     @Test

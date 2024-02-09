@@ -1292,17 +1292,19 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     /** {@inheritDoc} */
     @Override
     public CircularOrbit toOrbit() {
+        final PositionAngleType cachedPositionAngleType = getCachedPositionAngleType();
+        final double cachedPositionAngle = getAlpha(cachedPositionAngleType).getReal();
         if (hasDerivatives()) {
             return new CircularOrbit(a.getReal(), ex.getReal(), ey.getReal(),
-                                     i.getReal(), raan.getReal(), alphaV.getReal(),
+                                     i.getReal(), raan.getReal(), cachedPositionAngle,
                                      aDot.getReal(), exDot.getReal(), eyDot.getReal(),
-                                     iDot.getReal(), raanDot.getReal(), alphaVDot.getReal(),
-                                     PositionAngleType.TRUE, getFrame(),
+                                     iDot.getReal(), raanDot.getReal(), getAlphaDot(cachedPositionAngleType).getReal(),
+                                     cachedPositionAngleType, cachedPositionAngleType, getFrame(),
                                      getDate().toAbsoluteDate(), getMu().getReal());
         } else {
             return new CircularOrbit(a.getReal(), ex.getReal(), ey.getReal(),
-                                     i.getReal(), raan.getReal(), alphaV.getReal(),
-                                     PositionAngleType.TRUE, getFrame(),
+                                     i.getReal(), raan.getReal(), cachedPositionAngle,
+                                     cachedPositionAngleType, cachedPositionAngleType, getFrame(),
                                      getDate().toAbsoluteDate(), getMu().getReal());
         }
     }

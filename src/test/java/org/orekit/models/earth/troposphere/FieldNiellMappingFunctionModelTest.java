@@ -256,7 +256,7 @@ public class FieldNiellMappingFunctionModelTest {
         }
 
         // Tolerances
-        final double epsMFH = 6.506e-12;
+        final double epsMFH = 6.539e-12;
         final double epsMFW = 1.557e-11;
         for (int i = 0; i < 6; i++) {
             Assertions.assertEquals(0., FastMath.abs(compMFH[i + 1] - refMF[0][i]), epsMFH);

@@ -1046,17 +1046,19 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     /** {@inheritDoc} */
     @Override
     public EquinoctialOrbit toOrbit() {
+        final PositionAngleType cachedPositionAngleType = getCachedPositionAngleType();
+        final double cachedPositionAngle = getL(cachedPositionAngleType).getReal();
         if (hasDerivatives()) {
             return new EquinoctialOrbit(a.getReal(), ex.getReal(), ey.getReal(),
-                                        hx.getReal(), hy.getReal(), lv.getReal(),
+                                        hx.getReal(), hy.getReal(), cachedPositionAngle,
                                         aDot.getReal(), exDot.getReal(), eyDot.getReal(),
-                                        hxDot.getReal(), hyDot.getReal(), lvDot.getReal(),
-                                        PositionAngleType.TRUE, getFrame(),
+                                        hxDot.getReal(), hyDot.getReal(), getLDot(cachedPositionAngleType).getReal(),
+                                        cachedPositionAngleType, cachedPositionAngleType, getFrame(),
                                         getDate().toAbsoluteDate(), getMu().getReal());
         } else {
             return new EquinoctialOrbit(a.getReal(), ex.getReal(), ey.getReal(),
-                                        hx.getReal(), hy.getReal(), lv.getReal(),
-                                        PositionAngleType.TRUE, getFrame(),
+                                        hx.getReal(), hy.getReal(), cachedPositionAngle,
+                                        cachedPositionAngleType, cachedPositionAngleType, getFrame(),
                                         getDate().toAbsoluteDate(), getMu().getReal());
         }
     }

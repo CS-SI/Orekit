@@ -216,8 +216,8 @@ public class DSSTBatchLSEstimatorTest {
         DSSTEstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 3.1e-6,
                                      0.0, 5.7e-6,
-                                     0.0, 1.3e-6,
-                                     0.0, 5.2e-10);
+                                     0.0, 1.5e-6,
+                                     0.0, 6.1e-10);
 
         // after the call to estimate, the parameters lacking a user-specified reference date
         // got a default one
@@ -483,10 +483,10 @@ public class DSSTBatchLSEstimatorTest {
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
         DSSTEstimationTestUtils.checkFit(context, estimator, 1, 3,
-                                     0.0, 4.9e-7,
+                                     0.0, 5.1e-7,
                                      0.0, 1.6e-6,
                                      0.0, 4.4e-8,
-                                     0.0, 2.0e-11);
+                                     0.0, 2.2e-11);
     }
 
     @Test

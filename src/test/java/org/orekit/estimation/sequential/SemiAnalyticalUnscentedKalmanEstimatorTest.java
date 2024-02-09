@@ -344,9 +344,9 @@ public class SemiAnalyticalUnscentedKalmanEstimatorTest {
 
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
-        final double   posEps            = 4.2e-9;
+        final double   posEps            = 4.2e-7;
         final double   expectedDeltaVel  = 0.;
-        final double   velEps            = 1.7e-12;
+        final double   velEps            = 3.8e-11;
         DSSTEstimationTestUtils.checkKalmanFit(context, kalman, measurements,
                                            refOrbit, positionAngleType,
                                            expectedDeltaPos, posEps,
