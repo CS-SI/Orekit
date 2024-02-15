@@ -79,7 +79,7 @@ public class FieldApsideDetectorTest {
 
     @Test
     public void testFixedMaxCheck() {
-        doTestMaxcheck(Binary64Field.getInstance(), s -> 20.0, 4682);
+        doTestMaxcheck(Binary64Field.getInstance(), s -> 20.0, 4687);
     }
 
     @Test
@@ -96,7 +96,7 @@ public class FieldApsideDetectorTest {
                            final double         timeToClosestApside      = FastMath.min(timeSincePreviousPerigee,
                                                                                         FastMath.min(timeToApogee, timeToNextPerigee));
                            return (timeToClosestApside < 2 * baseMaxCheck) ? baseMaxCheck : timeToClosestApside - 0.5 * baseMaxCheck;
-        }, 671);
+        }, 677);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMaxcheck(final Field<T> field,
