@@ -495,39 +495,46 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public OrbitType getType() {
         return OrbitType.CIRCULAR;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getA() {
         return a;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getADot() {
         return aDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialEx() {
         final SinCos sc = FastMath.sinCos(raan);
         return ex * sc.cos() - ey * sc.sin();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialExDot() {
         final SinCos sc = FastMath.sinCos(raan);
         return (exDot - ey * raanDot) * sc.cos() - (eyDot + ex * raanDot) * sc.sin();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialEy() {
         final SinCos sc = FastMath.sinCos(raan);
         return ey * sc.cos() + ex * sc.sin();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialEyDot() {
         final SinCos sc = FastMath.sinCos(raan);
         return (eyDot + ex * raanDot) * sc.cos() + (exDot - ey * raanDot) * sc.sin();
@@ -563,6 +570,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHx() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
@@ -572,6 +580,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHxDot() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
@@ -583,6 +592,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHy() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
@@ -592,6 +602,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHyDot() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
@@ -827,21 +838,25 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getE() {
         return FastMath.sqrt(ex * ex + ey * ey);
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEDot() {
         return (ex * exDot + ey * eyDot) / getE();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getI() {
         return i;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getIDot() {
         return iDot;
     }
@@ -865,31 +880,37 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLv() {
         return getAlphaV() + raan;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLvDot() {
         return getAlphaVDot() + raanDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLE() {
         return getAlphaE() + raan;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLEDot() {
         return getAlphaEDot() + raanDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLM() {
         return getAlphaM() + raan;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLMDot() {
         return getAlphaMDot() + raanDot;
     }
@@ -1068,6 +1089,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Vector3D initPosition() {
 
         // get equinoctial parameters
@@ -1113,6 +1135,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected TimeStampedPVCoordinates initPVCoordinates() {
 
         // position and velocity
@@ -1130,6 +1153,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public CircularOrbit shiftedBy(final double dt) {
 
         // use Keplerian-only motion
@@ -1167,6 +1191,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] computeJacobianMeanWrtCartesian() {
 
 
@@ -1296,6 +1321,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] computeJacobianEccentricWrtCartesian() {
 
         // start by computing the Jacobian with mean angle
@@ -1324,6 +1350,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] computeJacobianTrueWrtCartesian() {
 
         // start by computing the Jacobian with eccentric angle
@@ -1372,6 +1399,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void addKeplerContribution(final PositionAngleType type, final double gm,
                                       final double[] pDot) {
         final double oMe2;
