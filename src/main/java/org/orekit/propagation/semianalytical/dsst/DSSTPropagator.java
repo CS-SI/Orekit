@@ -866,7 +866,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             final double deltaEy = osculating.getEquinoctialEy() - rebuilt.getEquinoctialEy();
             final double deltaHx = osculating.getHx() - rebuilt.getHx();
             final double deltaHy = osculating.getHy() - rebuilt.getHy();
-            final double deltaLv = MathUtils.normalizeAngle(osculating.getLv() - rebuilt.getLv(), 0.0);
+            final double deltaLM = MathUtils.normalizeAngle(osculating.getLM() - rebuilt.getLM(), 0.0);
 
             // check convergence
             if (FastMath.abs(deltaA)  < thresholdA &&
@@ -874,7 +874,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 FastMath.abs(deltaEy) < thresholdE &&
                 FastMath.abs(deltaHx) < thresholdI &&
                 FastMath.abs(deltaHy) < thresholdI &&
-                FastMath.abs(deltaLv) < thresholdL) {
+                FastMath.abs(deltaLM) < thresholdL) {
                 return meanOrbit;
             }
 
@@ -884,8 +884,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                                              meanOrbit.getEquinoctialEy() + deltaEy,
                                              meanOrbit.getHx() + deltaHx,
                                              meanOrbit.getHy() + deltaHy,
-                                             meanOrbit.getLv() + deltaLv,
-                                             PositionAngleType.TRUE, meanOrbit.getFrame(),
+                                             meanOrbit.getLM() + deltaLM,
+                                             PositionAngleType.MEAN, meanOrbit.getFrame(),
                                              meanOrbit.getDate(), meanOrbit.getMu());
         }
 

@@ -21,6 +21,12 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="alfe" type="add" issue="1215">
+          Create two new EventDetector: LatitudeRangeCrossingDetector and LongitudeRangeCrossingDetector.
+      </action>
+      <action dev="serrof" type="add" issue="1214">
+          Added cache for position angle in Orbit when applicable.
+      </action>
       <action dev="luc" type="fix" issue="1322">
           Fixed forbidden SBAS System Time in SP3 files.
       </action>

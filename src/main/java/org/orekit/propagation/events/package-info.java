@@ -78,11 +78,17 @@
  *  <li>{@link org.orekit.propagation.events.LatitudeCrossingDetector LatitudeCrossingDetector}
  *  detects satellite crossing a parallel (and by default stop at northward crossing)
  *  </li>
+ *  <li>{@link org.orekit.propagation.events.LatitudeRangeCrossingDetector LatitudeRangeCrossingDetector}
+ *  detects satellite crossing a parallel range (and by default stop exiting range)
+ *  </li>
  *  <li>{@link org.orekit.propagation.events.LatitudeExtremumDetector LatitudeExtremumDetector}
  *  detects satellite maximum/minimum latitude (and by default stop at minimum)
  *  </li>
  *  <li>{@link org.orekit.propagation.events.LongitudeCrossingDetector LongitudeCrossingDetector}
  *  detects satellite crossing a meridian (the increasing/decreasing flag is irrelevant for this detector)
+ *  </li>
+ *  <li>{@link org.orekit.propagation.events.LongitudeRangeCrossingDetector LongitudeRangeCrossingDetector}
+ *  detects satellite crossing a meridian range (and by default stop exiting range)
  *  </li>
  *  <li>{@link org.orekit.propagation.events.LongitudeExtremumDetector LongitudeExtremumDetector}
  *  detects satellite maximum/minimum longitude (and by default stop at minimum)

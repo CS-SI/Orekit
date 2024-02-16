@@ -19,7 +19,7 @@ package org.orekit.models.earth.troposphere;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
 
-public class FieldNiellMappingFunctionModelTest extends AbstractFieldMappingFunctionTest {
+public class FieldNiellMappingFunctionModelTest {
 
     protected TroposphereMappingFunction buildMappingFunction() {
         return new NiellMappingFunctionModel();
@@ -33,6 +33,180 @@ public class FieldNiellMappingFunctionModelTest extends AbstractFieldMappingFunc
     @Test
     public void testMFStateDerivatives() {
         doTestMFStateDerivatives(6.506e-12, 1.557e-11);
+
+        // Geodetic point
+        final double latitude     = FastMath.toRadians(45.0);
+        final double longitude    = FastMath.toRadians(45.0);
+        final double height       = 0.0;
+        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
+        // Body: earth
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        // Topocentric frame
+        final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
+
+        // Station
+        final GroundStation station = new GroundStation(baseFrame);
+
+        // Mapping Function model
+        final MappingFunction model = new NiellMappingFunctionModel();
+
+        // Derivative Structure
+        final DSFactory factory = new DSFactory(6, 1);
+        final DerivativeStructure a0       = factory.variable(0, 24464560.0);
+        final DerivativeStructure e0       = factory.variable(1, 0.05);
+        final DerivativeStructure i0       = factory.variable(2, 0.122138);
+        final DerivativeStructure pa0      = factory.variable(3, 3.10686);
+        final DerivativeStructure raan0    = factory.variable(4, 1.00681);
+        final DerivativeStructure anomaly0 = factory.variable(5, 0.048363);
+        final Field<DerivativeStructure> field = a0.getField();
+        final DerivativeStructure zero = field.getZero();
+
+        // Field Date
+        final FieldAbsoluteDate<DerivativeStructure> dsDate = new FieldAbsoluteDate<>(field);
+        // Field Orbit
+        final Frame frame = FramesFactory.getEME2000();
+        final FieldOrbit<DerivativeStructure> dsOrbit = new FieldKeplerianOrbit<>(a0, e0, i0, pa0, raan0, anomaly0,
+                        PositionAngleType.MEAN, frame,
+                        dsDate, zero.add(3.9860047e14));
+        // Field State
+        final FieldSpacecraftState<DerivativeStructure> dsState = new FieldSpacecraftState<>(dsOrbit);
+
+        // Initial satellite elevation
+        final FieldVector3D<DerivativeStructure> position = dsState.getPosition();
+        final DerivativeStructure dsElevation = baseFrame.getTrackingCoordinates(position, frame, dsDate).getElevation();
+
+        // Compute mapping factors with state derivatives
+        final FieldGeodeticPoint<DerivativeStructure> dsPoint = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
+        final DerivativeStructure[] factors = model.mappingFactors(dsElevation, dsPoint, dsDate);
+
+        final double[] compMFH = factors[0].getAllDerivatives();
+        final double[] compMFW = factors[1].getAllDerivatives();
+
+        // Field -> non-field
+        final Orbit orbit = dsOrbit.toOrbit();
+        final SpacecraftState state = dsState.toSpacecraftState();
+
+        // Finite differences for reference values
+        final double[][] refMF = new double[2][6];
+        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        final PositionAngleType angleType = PositionAngleType.MEAN;
+        double dP = 0.001;
+        double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
+        for (int i = 0; i < 6; i++) {
+            SpacecraftState stateM4 = shiftState(state, orbitType, angleType, -4 * steps[i], i);
+            final Vector3D positionM4 = stateM4.getPosition();
+            final double elevationM4  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionM4, stateM4.getFrame(), stateM4.getDate()).
+                                        getElevation();
+            double[]  delayM4 = model.mappingFactors(elevationM4, point, stateM4.getDate());
+
+            SpacecraftState stateM3 = shiftState(state, orbitType, angleType, -3 * steps[i], i);
+            final Vector3D positionM3 = stateM3.getPosition();
+            final double elevationM3  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionM3, stateM3.getFrame(), stateM3.getDate()).
+                                        getElevation();
+            double[]  delayM3 = model.mappingFactors(elevationM3, point, stateM3.getDate());
+
+            SpacecraftState stateM2 = shiftState(state, orbitType, angleType, -2 * steps[i], i);
+            final Vector3D positionM2 = stateM2.getPosition();
+            final double elevationM2  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionM2, stateM2.getFrame(), stateM2.getDate()).
+                                        getElevation();
+            double[]  delayM2 = model.mappingFactors(elevationM2, point, stateM2.getDate());
+
+            SpacecraftState stateM1 = shiftState(state, orbitType, angleType, -1 * steps[i], i);
+            final Vector3D positionM1 = stateM1.getPosition();
+            final double elevationM1  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionM1, stateM1.getFrame(), stateM1.getDate()).
+                                        getElevation();
+            double[]  delayM1 = model.mappingFactors(elevationM1, point, stateM1.getDate());
+
+            SpacecraftState stateP1 = shiftState(state, orbitType, angleType, 1 * steps[i], i);
+            final Vector3D positionP1 = stateP1.getPosition();
+            final double elevationP1  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionP1, stateP1.getFrame(), stateP1.getDate()).
+                                        getElevation();
+            double[]  delayP1 = model.mappingFactors(elevationP1, point, stateP1.getDate());
+
+            SpacecraftState stateP2 = shiftState(state, orbitType, angleType, 2 * steps[i], i);
+            final Vector3D positionP2 = stateP2.getPosition();
+            final double elevationP2  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionP2, stateP2.getFrame(), stateP2.getDate()).
+                                        getElevation();
+            double[]  delayP2 = model.mappingFactors(elevationP2, point, stateP2.getDate());
+
+            SpacecraftState stateP3 = shiftState(state, orbitType, angleType, 3 * steps[i], i);
+            final Vector3D positionP3 = stateP3.getPosition();
+            final double elevationP3  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionP3, stateP3.getFrame(), stateP3.getDate()).
+                                        getElevation();
+            double[]  delayP3 = model.mappingFactors(elevationP3, point, stateP3.getDate());
+
+            SpacecraftState stateP4 = shiftState(state, orbitType, angleType, 4 * steps[i], i);
+            final Vector3D positionP4 = stateP4.getPosition();
+            final double elevationP4  = station.getBaseFrame().
+                                        getTrackingCoordinates(positionP4, stateP4.getFrame(), stateP4.getDate()).
+                                        getElevation();
+            double[]  delayP4 = model.mappingFactors(elevationP4, point, stateP4.getDate());
+
+            fillJacobianColumn(refMF, i, orbitType, angleType, steps[i],
+                               delayM4, delayM3, delayM2, delayM1,
+                               delayP1, delayP2, delayP3, delayP4);
+        }
+
+        // Tolerances
+        final double epsMFH = 6.539e-12;
+        final double epsMFW = 1.557e-11;
+        for (int i = 0; i < 6; i++) {
+            Assertions.assertEquals(0., FastMath.abs(compMFH[i + 1] - refMF[0][i]), epsMFH);
+            Assertions.assertEquals(0., FastMath.abs(compMFW[i + 1] - refMF[1][i]), epsMFW);
+        }
+    }
+
+    private void fillJacobianColumn(double[][] jacobian, int column,
+                                    OrbitType orbitType, PositionAngleType angleType, double h,
+                                    double[] sM4h, double[] sM3h,
+                                    double[] sM2h, double[] sM1h,
+                                    double[] sP1h, double[] sP2h,
+                                    double[] sP3h, double[] sP4h) {
+        for (int i = 0; i < jacobian.length; ++i) {
+            jacobian[i][column] = ( -3 * (sP4h[i] - sM4h[i]) +
+                            32 * (sP3h[i] - sM3h[i]) -
+                            168 * (sP2h[i] - sM2h[i]) +
+                            672 * (sP1h[i] - sM1h[i])) / (840 * h);
+        }
+    }
+
+    private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
+                                       double delta, int column) {
+
+        double[][] array = stateToArray(state, orbitType, angleType, true);
+        array[0][column] += delta;
+
+        return arrayToState(array, orbitType, angleType, state.getFrame(), state.getDate(),
+                            state.getMu(), state.getAttitude());
+
+    }
+
+    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
+                                    boolean withMass) {
+        double[][] array = new double[2][withMass ? 7 : 6];
+        orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
+        if (withMass) {
+            array[0][6] = state.getMass();
+        }
+        return array;
+    }
+
+    private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngleType angleType,
+                                         Frame frame, AbsoluteDate date, double mu,
+                                         Attitude attitude) {
+        Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
+        return (array.length > 6) ?
+                                   new SpacecraftState(orbit, attitude) :
+                                       new SpacecraftState(orbit, attitude, array[0][6]);
     }
 
 }

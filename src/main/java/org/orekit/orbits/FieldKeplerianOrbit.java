@@ -1485,17 +1485,20 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     @Override
     public KeplerianOrbit toOrbit() {
+        final PositionAngleType cachedPositionAngleType = getCachedPositionAngleType();
+        final double cachedPositionAngle = getAnomaly(cachedPositionAngleType).getReal();
         if (hasDerivatives()) {
             return new KeplerianOrbit(a.getReal(), e.getReal(), i.getReal(),
-                                      pa.getReal(), raan.getReal(), v.getReal(),
+                                      pa.getReal(), raan.getReal(), cachedPositionAngle,
                                       aDot.getReal(), eDot.getReal(), iDot.getReal(),
-                                      paDot.getReal(), raanDot.getReal(), vDot.getReal(),
-                                      PositionAngleType.TRUE,
+                                      paDot.getReal(), raanDot.getReal(),
+                                      getAnomalyDot(getCachedPositionAngleType()).getReal(),
+                                      cachedPositionAngleType, cachedPositionAngleType,
                                       getFrame(), getDate().toAbsoluteDate(), getMu().getReal());
         } else {
             return new KeplerianOrbit(a.getReal(), e.getReal(), i.getReal(),
-                                      pa.getReal(), raan.getReal(), v.getReal(),
-                                      PositionAngleType.TRUE,
+                                      pa.getReal(), raan.getReal(), cachedPositionAngle,
+                                      cachedPositionAngleType, cachedPositionAngleType,
                                       getFrame(), getDate().toAbsoluteDate(), getMu().getReal());
         }
     }

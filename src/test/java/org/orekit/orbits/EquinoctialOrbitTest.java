@@ -761,8 +761,7 @@ public class EquinoctialOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertTrue(bos.size() > 280);
-        Assertions.assertTrue(bos.size() < 330);
+        Assertions.assertEquals(bos.size(), 458);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -802,8 +801,7 @@ public class EquinoctialOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertTrue(bos.size() > 330);
-        Assertions.assertTrue(bos.size() < 380);
+        Assertions.assertEquals(bos.size(), 506);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -1124,6 +1122,129 @@ public class EquinoctialOrbitTest {
                 actualMeanToEccentric);
         Assertions.assertEquals(EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, originalPositionAngle),
                 actualTrueToEccentric);
+    }
+
+    @Test
+    void testCoverageCachedPositionAngleTypeWithRates() {
+        // GIVEN
+        final double semiMajorAxis = 1e4;
+        final double ex = 0.;
+        final double ey = 0.;
+        final double expectedL = 0.;
+        final double expectedLDot = 0.;
+        // WHEN & THEN
+        for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
+            for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+                final EquinoctialOrbit equinoctialOrbit = new EquinoctialOrbit(semiMajorAxis, ex, ey, 0., 0.,
+                        expectedL, 0., 0., 0., 0., 0., expectedLDot,
+                        inputPositionAngleType, cachedPositionAngleType, FramesFactory.getGCRF(), date, mu);
+                Assertions.assertEquals(expectedL, equinoctialOrbit.getLv());
+                Assertions.assertEquals(expectedL, equinoctialOrbit.getLM());
+                Assertions.assertEquals(expectedL, equinoctialOrbit.getLE());
+                Assertions.assertEquals(expectedLDot, equinoctialOrbit.getLvDot());
+                Assertions.assertEquals(expectedLDot, equinoctialOrbit.getLMDot());
+                Assertions.assertEquals(expectedLDot, equinoctialOrbit.getLEDot());
+            }
+        }
+    }
+
+    @Test
+    void testCachedPositionAngleTypeTrue() {
+        // GIVEN
+        final double semiMajorAxis = 1e4;
+        final double ex = 1e-2;
+        final double ey = -1e-3;
+        final double expectedLv = 2.;
+        final PositionAngleType inputPositionAngleType = PositionAngleType.TRUE;
+        // WHEN & THEN
+        for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+            final EquinoctialOrbit equinoctialOrbit = new EquinoctialOrbit(semiMajorAxis, ex, ey, 0., 0.,
+                    expectedLv, inputPositionAngleType, cachedPositionAngleType, FramesFactory.getGCRF(), date, mu);
+            Assertions.assertEquals(expectedLv, equinoctialOrbit.getLv(), 1e-15);
+            final double actualL = equinoctialOrbit.getL(cachedPositionAngleType);
+            switch (cachedPositionAngleType) {
+
+                case MEAN:
+                    Assertions.assertEquals(EquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, expectedLv),
+                            actualL);
+                    break;
+
+                case ECCENTRIC:
+                    Assertions.assertEquals(EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, expectedLv),
+                            actualL);
+                    break;
+
+                case TRUE:
+                    Assertions.assertEquals(expectedLv, actualL);
+                    break;
+            }
+        }
+    }
+
+    @Test
+    void testCachedPositionAngleTypeMean() {
+        // GIVEN
+        final double semiMajorAxis = 1e4;
+        final double ex = 1e-2;
+        final double ey = -1e-3;
+        final double expectedLM = 2.;
+        final PositionAngleType inputPositionAngleType = PositionAngleType.MEAN;
+        // WHEN & THEN
+        for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+            final EquinoctialOrbit equinoctialOrbit = new EquinoctialOrbit(semiMajorAxis, ex, ey, 0., 0.,
+                    expectedLM, inputPositionAngleType, cachedPositionAngleType, FramesFactory.getGCRF(), date, mu);
+            Assertions.assertEquals(expectedLM, equinoctialOrbit.getLM(), 1e-15);
+            final double actualL = equinoctialOrbit.getL(cachedPositionAngleType);
+            switch (cachedPositionAngleType) {
+
+                case TRUE:
+                    Assertions.assertEquals(EquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, expectedLM),
+                            actualL);
+                    break;
+
+                case ECCENTRIC:
+                    Assertions.assertEquals(EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, expectedLM),
+                            actualL);
+                    break;
+
+                case MEAN:
+                    Assertions.assertEquals(expectedLM, actualL);
+                    break;
+            }
+        }
+    }
+
+    @Test
+    void testCachedPositionAngleTypeEccentric() {
+        // GIVEN
+        final double semiMajorAxis = 1e4;
+        final double ex = 1e-2;
+        final double ey = -1e-3;
+        final double expectedLE = 2.;
+        final PositionAngleType inputPositionAngleType = PositionAngleType.ECCENTRIC;
+        // WHEN & THEN
+        for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+            final EquinoctialOrbit equinoctialOrbit = new EquinoctialOrbit(semiMajorAxis, ex, ey, 0., 0.,
+                    expectedLE, inputPositionAngleType, cachedPositionAngleType, FramesFactory.getGCRF(), date, mu);
+            Assertions.assertEquals(expectedLE, equinoctialOrbit.getLE(), 1e-15);
+            final double actualL = equinoctialOrbit.getL(cachedPositionAngleType);
+            switch (cachedPositionAngleType) {
+
+                case TRUE:
+                    Assertions.assertEquals(EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, expectedLE),
+                            actualL);
+                    break;
+
+                case MEAN:
+                    Assertions.assertEquals(EquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, expectedLE),
+                            actualL);
+                    break;
+
+                case ECCENTRIC:
+                    Assertions.assertEquals(expectedLE, actualL);
+                    break;
+            }
+        }
     }
 
     @BeforeEach

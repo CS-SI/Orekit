@@ -1292,8 +1292,7 @@ public class KeplerianOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertTrue(bos.size() > 280);
-        Assertions.assertTrue(bos.size() < 330);
+        Assertions.assertEquals(bos.size(), 461);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -1333,8 +1332,7 @@ public class KeplerianOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertTrue(bos.size() > 330);
-        Assertions.assertTrue(bos.size() < 380);
+        Assertions.assertEquals(bos.size(), 509);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -1592,6 +1590,56 @@ public class KeplerianOrbitTest {
 
     }
 
+    @Test
+    void testCoverageCachedPositionAngleTypeElliptic() {
+        testCoverageCachedPositionAngleType(1e4, 0.5);
+    }
+
+    @Test
+    void testCoverageCachedPositionAngleTypeHyperbolic() {
+        testCoverageCachedPositionAngleType(-1e4, 2);
+    }
+
+    private void testCoverageCachedPositionAngleType(final double a, final double e) {
+        // GIVEN
+        final double expectedAnomaly = 0.;
+        // WHEN & THEN
+        for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
+            for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+                final KeplerianOrbit keplerianOrbit = new KeplerianOrbit(a, e, 0., 0., 0.,
+                        expectedAnomaly, inputPositionAngleType, cachedPositionAngleType, FramesFactory.getGCRF(), date, mu);
+                Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getTrueAnomaly());
+                Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getEccentricAnomaly());
+                Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getMeanAnomaly());
+                Assertions.assertTrue(Double.isNaN(keplerianOrbit.getTrueAnomalyDot()));
+                Assertions.assertTrue(Double.isNaN(keplerianOrbit.getEccentricAnomalyDot()));
+                Assertions.assertTrue(Double.isNaN(keplerianOrbit.getMeanAnomalyDot()));
+            }
+        }
+    }
+
+    @Test
+    void testCoverageCachedPositionAngleTypeWithRates() {
+        // GIVEN
+        final double semiMajorAxis = 1e4;
+        final double eccentricity = 0.;
+        final double expectedAnomaly = 0.;
+        final double expectedAnomalyDot = 0.;
+        // WHEN & THEN
+        for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
+            for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+                final KeplerianOrbit keplerianOrbit = new KeplerianOrbit(semiMajorAxis, eccentricity, 0., 0., 0.,
+                        expectedAnomaly, 0., 0., 0., 0., 0., expectedAnomalyDot,
+                        inputPositionAngleType, cachedPositionAngleType, FramesFactory.getGCRF(), date, mu);
+                Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getTrueAnomaly());
+                Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getEccentricAnomaly());
+                Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getMeanAnomaly());
+                Assertions.assertEquals(expectedAnomalyDot, keplerianOrbit.getTrueAnomalyDot());
+                Assertions.assertEquals(expectedAnomalyDot, keplerianOrbit.getEccentricAnomalyDot());
+                Assertions.assertEquals(expectedAnomalyDot, keplerianOrbit.getMeanAnomalyDot());
+            }
+        }
+    }
 
     @BeforeEach
     public void setUp() {

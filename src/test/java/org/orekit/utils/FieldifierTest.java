@@ -69,7 +69,7 @@ class FieldifierTest {
         Assertions.assertEquals(initialOrbit.getCircularEyDot(), fieldOrbit.getCircularEyDot().getReal());
         Assertions.assertEquals(initialOrbit.getIDot(), fieldOrbit.getIDot().getReal());
         Assertions.assertEquals(initialOrbit.getRightAscensionOfAscendingNodeDot(), fieldOrbit.getRightAscensionOfAscendingNodeDot().getReal());
-        Assertions.assertEquals(initialOrbit.getAlphaMDot(), fieldOrbit.getAlphaMDot().getReal());
+        Assertions.assertEquals(initialOrbit.getAlphaMDot(), fieldOrbit.getAlphaMDot().getReal(), 1e-10);
     }
 
     @Test
@@ -145,7 +145,7 @@ class FieldifierTest {
         Assertions.assertEquals(initialOrbit.getIDot(), fieldOrbit.getIDot().getReal());
         Assertions.assertEquals(initialOrbit.getPerigeeArgumentDot(), fieldOrbit.getPerigeeArgumentDot().getReal());
         Assertions.assertEquals(initialOrbit.getRightAscensionOfAscendingNodeDot(), fieldOrbit.getRightAscensionOfAscendingNodeDot().getReal());
-        Assertions.assertEquals(initialOrbit.getMeanAnomalyDot(), fieldOrbit.getMeanAnomalyDot().getReal());
+        Assertions.assertEquals(initialOrbit.getMeanAnomalyDot(), fieldOrbit.getMeanAnomalyDot().getReal(), 1e-10);
     }
 
     @Test
