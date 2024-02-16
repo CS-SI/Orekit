@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1325">
+          Allow direction-dependent phase centers in inter-satellites measurements.
+      </action>
       <action dev="luc" type="fix" issue="1322">
           Fixed forbidden SBAS System Time in SP3 files.
       </action>
