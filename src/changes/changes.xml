@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1325">
+          Allow direction-dependent phase centers in inter-satellites measurements.
+      </action>
       <action dev="alfe" type="add" issue="1215">
           Create two new EventDetector: LatitudeRangeCrossingDetector and LongitudeRangeCrossingDetector.
       </action>
