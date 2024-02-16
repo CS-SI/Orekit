@@ -616,8 +616,9 @@ public enum OrbitType {
                                             eO.getEquinoctialEy(),
                                             eO.getHx(),
                                             eO.getHy(),
-                                            MathUtils.normalizeAngle(eO.getLv(), eR.getLv()),
-                                            PositionAngleType.TRUE,
+                                            MathUtils.normalizeAngle(eO.getL(cachedPositionAngleType),
+                                                    eR.getL(cachedPositionAngleType)),
+                                            cachedPositionAngleType,
                                             eO.getFrame(),
                                             eO.getDate(),
                                             eO.getMu());
@@ -835,7 +836,8 @@ public enum OrbitType {
                                           kO.getE(),
                                           kO.getI(),
                                           MathUtils.normalizeAngle(kO.getPerigeeArgument(), kR.getPerigeeArgument()),
-                                          MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(), kR.getRightAscensionOfAscendingNode()),
+                                          MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(),
+                                                  kR.getRightAscensionOfAscendingNode()),
                                           MathUtils.normalizeAngle(kO.getAnomaly(cachedPositionAngleType),
                                                   kR.getAnomaly(cachedPositionAngleType)),
                                           kO.getADot(),
@@ -871,6 +873,7 @@ public enum OrbitType {
             // convert input to proper type
             final FieldKeplerianOrbit<T> kO = convertType(orbit);
             final FieldKeplerianOrbit<T> kR = convertType(reference);
+            final PositionAngleType positionAngleType = kO.getCachedPositionAngleType();
 
             // perform normalization
             if (kO.hasDerivatives()) {
@@ -878,15 +881,17 @@ public enum OrbitType {
                                                  kO.getE(),
                                                  kO.getI(),
                                                  MathUtils.normalizeAngle(kO.getPerigeeArgument(), kR.getPerigeeArgument()),
-                                                 MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(), kR.getRightAscensionOfAscendingNode()),
-                                                 MathUtils.normalizeAngle(kO.getTrueAnomaly(), kR.getTrueAnomaly()),
+                                                 MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(),
+                                                         kR.getRightAscensionOfAscendingNode()),
+                                                 MathUtils.normalizeAngle(kO.getAnomaly(positionAngleType),
+                                                         kR.getAnomaly(positionAngleType)),
                                                  kO.getADot(),
                                                  kO.getEDot(),
                                                  kO.getIDot(),
                                                  kO.getPerigeeArgumentDot(),
                                                  kO.getRightAscensionOfAscendingNodeDot(),
-                                                 kO.getTrueAnomalyDot(),
-                                                 PositionAngleType.TRUE,
+                                                 kO.getAnomalyDot(positionAngleType),
+                                                 positionAngleType,
                                                  kO.getFrame(),
                                                  kO.getDate(),
                                                  kO.getMu());
@@ -895,9 +900,11 @@ public enum OrbitType {
                                                  kO.getE(),
                                                  kO.getI(),
                                                  MathUtils.normalizeAngle(kO.getPerigeeArgument(), kR.getPerigeeArgument()),
-                                                 MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(), kR.getRightAscensionOfAscendingNode()),
-                                                 MathUtils.normalizeAngle(kO.getTrueAnomaly(), kR.getTrueAnomaly()),
-                                                 PositionAngleType.TRUE,
+                                                 MathUtils.normalizeAngle(kO.getRightAscensionOfAscendingNode(),
+                                                         kR.getRightAscensionOfAscendingNode()),
+                                                 MathUtils.normalizeAngle(kO.getAnomaly(positionAngleType),
+                                                         kR.getAnomaly(positionAngleType)),
+                                                 positionAngleType,
                                                  kO.getFrame(),
                                                  kO.getDate(),
                                                  kO.getMu());

@@ -34,9 +34,9 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.forces.ForceModel;
-import org.orekit.frames.FieldTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -198,7 +198,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
              eastAxisOffset = eastAxisOffset + angularResolution) {
 
             // Build rotation transformations to get first crown elementary sector center
-            final Transform eastRotation = new Transform(date,
+            final StaticTransform eastRotation = StaticTransform.of(date,
                                                           new Rotation(east, eastAxisOffset, RotationConvention.VECTOR_OPERATOR));
 
             // Get first elementary crown sector center
@@ -210,7 +210,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
                  radialAxisOffset = radialAxisOffset + angularResolution) {
 
                 // Build rotation transformations to get elementary area center
-                final Transform radialRotation  = new Transform(date,
+                final StaticTransform radialRotation  = StaticTransform.of(date,
                                                                 new Rotation(projectedToGround, radialAxisOffset, RotationConvention.VECTOR_OPERATOR));
 
                 // Get current elementary crown sector center
@@ -269,7 +269,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
              eastAxisOffset = eastAxisOffset + angularResolution) {
 
             // Build rotation transformations to get first crown elementary sector center
-            final FieldTransform<T> eastRotation = new FieldTransform<>(date,
+            final FieldStaticTransform<T> eastRotation = FieldStaticTransform.of(date,
                                                                         new FieldRotation<>(east,
                                                                                             zero.add(eastAxisOffset),
                                                                                             RotationConvention.VECTOR_OPERATOR));
@@ -283,7 +283,7 @@ public class KnockeRediffusedForceModel implements ForceModel {
                  radialAxisOffset = radialAxisOffset + angularResolution) {
 
                 // Build rotation transformations to get elementary area center
-                final FieldTransform<T> radialRotation  = new FieldTransform<>(date,
+                final FieldStaticTransform<T> radialRotation  = FieldStaticTransform.of(date,
                                                                                new FieldRotation<>(projectedToGround,
                                                                                                    zero.add(radialAxisOffset),
                                                                                                    RotationConvention.VECTOR_OPERATOR));

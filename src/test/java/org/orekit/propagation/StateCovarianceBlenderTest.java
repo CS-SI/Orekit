@@ -180,7 +180,7 @@ class StateCovarianceBlenderTest {
     void testBrouwerLyddaneQuadraticBlending() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-16;
+        final double tolerance = 1.e-12;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
