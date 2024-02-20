@@ -136,7 +136,7 @@ public class TimeSpanEstimatedModel implements TroposphericModel {
                                            earliestValidityDate, false);
     }
 
-    /** Get the {@link EstimatedTroposphericModel} model valid at a date.
+    /** Get the {@link EstimatedModel} model valid at a date.
      * @param date the date of validity
      * @return the EstimatedTroposphericModel model valid at date
      */
@@ -153,7 +153,7 @@ public class TimeSpanEstimatedModel implements TroposphericModel {
     }
 
     /** Extract the proper parameter drivers' values from the array in input of the
-     * {@link #pathDelay(double, GeodeticPoint, double[], AbsoluteDate) pathDelay} method.
+     * {@link #pathDelay(TrackingCoordinates, GeodeticPoint, PressureTemperatureHumidity, double[], AbsoluteDate) pathDelay}  method.
      *  Parameters are filtered given an input date.
      * @param parameters the input parameters array
      * @param date the date
@@ -180,7 +180,7 @@ public class TimeSpanEstimatedModel implements TroposphericModel {
     }
 
     /** Extract the proper parameter drivers' values from the array in input of the
-     * {@link #pathDelay(double, GeodeticPoint, double[], AbsoluteDate) pathDelay} method.
+     * {@link #pathDelay(TrackingCoordinates, GeodeticPoint, PressureTemperatureHumidity, double[], AbsoluteDate) pathDelay}  method.
      *  Parameters are filtered given an input date.
      * @param parameters the input parameters array
      * @param date the date
@@ -248,7 +248,7 @@ public class TimeSpanEstimatedModel implements TroposphericModel {
         return false;
     }
 
-    /** Change the parameter drivers names of a {@link EstimatedTroposphericModel} model, if needed.
+    /** Change the parameter drivers names of a {@link EstimatedModel} model, if needed.
      * <p>
      * This is done to avoid that several parameter drivers have the same name.<br>
      * It is done only if the user hasn't modify the EstimatedTroposphericModel parameter drivers default names.

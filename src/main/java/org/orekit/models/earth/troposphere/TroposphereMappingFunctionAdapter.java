@@ -30,7 +30,7 @@ import org.orekit.utils.TrackingCoordinates;
  * <p>
  * This class is a temporary adapter, it will be removed when
  * {@link MappingFunction} is removed.
- * <p>
+ * </p>
  * @author Luc Maisonobe
  * @since 12.1
  * @deprecated temporary adapter to be removed when {@link MappingFunction} is removed

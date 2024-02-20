@@ -74,13 +74,13 @@ public class MendesPavlisModel
     private static final double C02 = 0.99995995;
 
     /** Dispersion equation for the hydrostatic component. */
-    private double fLambdaH;
+    private final double fLambdaH;
 
     /** Dispersion equation for the non-hydrostatic component. */
-    private double fLambdaNH;
+    private final double fLambdaNH;
 
     /** Provider for pressure, temperature and humidity. */
-    private PressureTemperatureHumidityProvider pthProvider;
+    private final PressureTemperatureHumidityProvider pthProvider;
 
     /** Create a new Mendes-Pavlis model for the troposphere.
      * This initialization will compute the water vapor pressure
@@ -89,7 +89,7 @@ public class MendesPavlisModel
      * @param p0 the atmospheric pressure at the station, hPa
      * @param rh the humidity at the station, as a ratio (50% → 0.5)
      * @param lambda laser wavelength, µm
-     * @deprecated as of 12.1, replaced by {@link #MendesPavlisModel(PressureTemperatureHumidity, double, Unit)}
+     * @deprecated as of 12.1, replaced by {@link #MendesPavlisModel(PressureTemperatureHumidityProvider, double, Unit)}
      */
     @Deprecated
     public MendesPavlisModel(final double t0, final double p0,
@@ -109,7 +109,8 @@ public class MendesPavlisModel
      * @param pthProvider provider for atmospheric pressure, temperature and humidity at the station
      * @param lambda laser wavelength
      * @param lambdaUnits units in which {@code lambda} is given
-     * @see TropoUnit
+     * @see TroposphericModelUtils#MICRO_M
+     * @see TroposphericModelUtils#NANO_M
      * @since 12.1
      * */
     public MendesPavlisModel(final PressureTemperatureHumidityProvider pthProvider,
@@ -169,7 +170,8 @@ public class MendesPavlisModel
      * @param lambda laser wavelength, µm
      * @param lambdaUnits units in which {@code lambda} is given
      * @return a Mendes-Pavlis model with standard environmental values
-     * @see TropoUnit
+     * @see TroposphericModelUtils#MICRO_M
+     * @see TroposphericModelUtils#NANO_M
      * @since 12.1
      */
     public static MendesPavlisModel getStandardModel(final double lambda, final Unit lambdaUnits) {

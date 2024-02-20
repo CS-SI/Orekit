@@ -198,8 +198,8 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
 
     /** Get the low elevation threshold value for path delay computation.
      * @return low elevation threshold, in rad.
-     * @see #pathDelay(double, GeodeticPoint, double[], AbsoluteDate)
-     * @see #pathDelay(CalculusFieldElement, FieldGeodeticPoint, CalculusFieldElement[], FieldAbsoluteDate)
+     * @see #pathDelay(TrackingCoordinates, GeodeticPoint, PressureTemperatureHumidity, double[], AbsoluteDate)
+     * @see #pathDelay(FieldTrackingCoordinates, FieldGeodeticPoint, FieldPressureTemperatureHumidity, CalculusFieldElement[], FieldAbsoluteDate)
      */
     public double getLowElevationThreshold() {
         return lowElevationThreshold;
@@ -207,8 +207,8 @@ public class CanonicalSaastamoinenModel implements TroposphericModel {
 
     /** Set the low elevation threshold value for path delay computation.
      * @param lowElevationThreshold The new value for the threshold [rad]
-     * @see #pathDelay(double, GeodeticPoint, double[], AbsoluteDate)
-     * @see #pathDelay(CalculusFieldElement, FieldGeodeticPoint, CalculusFieldElement[], FieldAbsoluteDate)
+     * @see #pathDelay(TrackingCoordinates, GeodeticPoint, PressureTemperatureHumidity, double[], AbsoluteDate)
+     * @see #pathDelay(FieldTrackingCoordinates, FieldGeodeticPoint, FieldPressureTemperatureHumidity, CalculusFieldElement[], FieldAbsoluteDate)
      */
     public void setLowElevationThreshold(final double lowElevationThreshold) {
         this.lowElevationThreshold = lowElevationThreshold;

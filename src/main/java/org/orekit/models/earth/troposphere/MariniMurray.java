@@ -45,12 +45,13 @@ import org.orekit.utils.units.UnitsConverter;
 public class MariniMurray implements TroposphericModel {
 
     /** Laser frequency parameter. */
-    private double fLambda;
+    private final double fLambda;
 
     /** Create a new Marini-Murray model for the troposphere.
      * @param lambda laser wavelength
      * @param lambdaUnits units in which {@code lambda} is given
-     * @see TropoUnit
+     * @see TroposphericModelUtils#MICRO_M
+     * @see TroposphericModelUtils#NANO_M
      * @since 12.1
      * */
     public MariniMurray(final double lambda, final Unit lambdaUnits) {

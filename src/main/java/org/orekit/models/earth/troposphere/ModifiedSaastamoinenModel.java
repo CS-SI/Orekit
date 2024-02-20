@@ -118,7 +118,7 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
     private final PressureTemperatureHumidityProvider pth0Provider;
 
     /** Height dependent converter for pressure, temperature and humidity. */
-    private HeightDependentPressureTemperatureHumidityConverter converter;
+    private final HeightDependentPressureTemperatureHumidityConverter converter;
 
     /** Lowest acceptable elevation angle [rad]. */
     private double lowElevationThreshold;
@@ -434,8 +434,8 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
 
     /** Get the low elevation threshold value for path delay computation.
      * @return low elevation threshold, in rad.
-     * @see #pathDelay(double, GeodeticPoint, double[], AbsoluteDate)
-     * @see #pathDelay(CalculusFieldElement, FieldGeodeticPoint, CalculusFieldElement[], FieldAbsoluteDate)
+     * @see #pathDelay(TrackingCoordinates, GeodeticPoint, PressureTemperatureHumidity, double[], AbsoluteDate)
+     * @see #pathDelay(FieldTrackingCoordinates, FieldGeodeticPoint, FieldPressureTemperatureHumidity, CalculusFieldElement[], FieldAbsoluteDate)
      * @since 10.2
      */
     public double getLowElevationThreshold() {
@@ -444,8 +444,8 @@ public class ModifiedSaastamoinenModel implements TroposphericModel {
 
     /** Set the low elevation threshold value for path delay computation.
      * @param lowElevationThreshold The new value for the threshold [rad]
-     * @see #pathDelay(double, GeodeticPoint, double[], AbsoluteDate)
-     * @see #pathDelay(CalculusFieldElement, FieldGeodeticPoint, CalculusFieldElement[], FieldAbsoluteDate)
+     * @see #pathDelay(TrackingCoordinates, GeodeticPoint, PressureTemperatureHumidity, double[], AbsoluteDate)
+     * @see #pathDelay(FieldTrackingCoordinates, FieldGeodeticPoint, FieldPressureTemperatureHumidity, CalculusFieldElement[], FieldAbsoluteDate)
      * @since 10.2
      */
     public void setLowElevationThreshold(final double lowElevationThreshold) {

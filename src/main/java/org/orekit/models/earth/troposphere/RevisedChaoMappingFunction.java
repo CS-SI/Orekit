@@ -17,9 +17,11 @@
 package org.orekit.models.earth.troposphere;
 
 /** Chao mapping function for radio wavelengths.
- *
- * @see "J. A. Estefan, O. J. Sovers, A Comparative Survey of Current and Proposed Tropospheric
- * Refraction-Delay Models for DSN Radio Metric Data Calibration", 1994
+ * <p>
+ * The mapping function is described in A. Estefan, O. J. Sovers 1994 paper
+ * "A Comparative Survey of Current and Proposed Tropospheric Refraction-Delay
+ * Models for DSN Radio Metric Data Calibration"
+ * </p>
  * @author Luc Maisonobe
  * @since 12.1
  */

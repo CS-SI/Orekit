@@ -112,8 +112,6 @@ public class ModifiedHopfieldModel implements TroposphericModel {
      * elevations lower than a threshold will use the value obtained
      * for the threshold itself.
      * </p>
-     * @see #getLowElevationThreshold()
-     * @see #setLowElevationThreshold(double)
      */
     @Override
     public <T extends CalculusFieldElement<T>> FieldTroposphericDelay<T> pathDelay(final FieldTrackingCoordinates<T> trackingCoordinates,

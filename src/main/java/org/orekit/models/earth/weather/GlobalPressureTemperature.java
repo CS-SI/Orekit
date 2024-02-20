@@ -68,7 +68,7 @@ public class GlobalPressureTemperature {
      * <p>This method uses the {@link DataContext#getDefault() default data context}.
      *
      * @param geoid level surface of the gravity potential of a body
-     * @see #GlobalPressureTemperatureModel(Geoid, DataContext)
+     * @see #GlobalPressureTemperature(Geoid, TimeScale)
      */
     @DefaultDataContext
     public GlobalPressureTemperature(final Geoid geoid) {

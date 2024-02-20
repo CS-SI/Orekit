@@ -26,7 +26,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.TrackingCoordinates;
-import org.orekit.utils.units.Unit;
 
 /** The Marini-Murray tropospheric delay model for laser ranging.
  *
@@ -39,12 +38,8 @@ import org.orekit.utils.units.Unit;
 @Deprecated
 public class MariniMurrayModel extends MariniMurray implements DiscreteTroposphericModel {
 
-    /** Constant pressure, temperature and humidity.
-     * @deprecated as of 12.1 provided when calling {@link #pathDelay(TrackingCoordinates,
-     * GeodeticPoint, PressureTemperatureHumidity, double[], AbsoluteDate)}
-     */
-    @Deprecated
-    private PressureTemperatureHumidity pth;
+    /** Constant pressure, temperature and humidity. */
+    private final PressureTemperatureHumidity pth;
 
     /** Create a new Marini-Murray model for the troposphere using the given
      * environmental conditions.
@@ -77,9 +72,7 @@ public class MariniMurrayModel extends MariniMurray implements DiscreteTroposphe
      * @param lambda laser wavelength (c/f), nm
      *
      * @return a Marini-Murray model with standard environmental values
-     * @deprecated since 12.1, replaced by {@link #getStandardModel(double, Unit)}
      */
-    @Deprecated
     public static MariniMurrayModel getStandardModel(final double lambda) {
         final double p  = TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25);
         final double t  = 273.15 + 20;
@@ -89,7 +82,6 @@ public class MariniMurrayModel extends MariniMurray implements DiscreteTroposphe
 
     /** {@inheritDoc} */
     @Override
-    @Deprecated
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
         return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0), point,
@@ -99,7 +91,6 @@ public class MariniMurrayModel extends MariniMurray implements DiscreteTroposphe
 
     /** {@inheritDoc} */
     @Override
-    @Deprecated
     public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation,
                                                            final FieldGeodeticPoint<T> point,
                                                            final T[] parameters,
