@@ -136,6 +136,11 @@ public class SP3WriterTest {
         doTestRoundtrip("/sp3/truncated-nsgf.orb.lageos2.160305.v35.sp3");
     }
 
+    @Test
+    public void testRoundtripIssue1327FullLine() {
+        doTestRoundtrip("/sp3/issue1327-136-sats.sp3");
+    }
+
     private  void doTestRoundtrip(final String name) {
         try {
             DataSource source1 = new DataSource(name, () -> getClass().getResourceAsStream(name));
