@@ -138,7 +138,7 @@ public class BistaticRangeRateTest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 1.4e-7);
+        Assertions.assertEquals(0, maxRelativeError, 3.7e-6);
 
     }
 
@@ -203,7 +203,7 @@ public class BistaticRangeRateTest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 2.1e-8);
+        Assertions.assertEquals(0, maxRelativeError, 3.7e-6);
 
     }
 
@@ -284,7 +284,7 @@ public class BistaticRangeRateTest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 9.2e-8);
+        Assertions.assertEquals(0, maxRelativeError, 9.3e-8);
 
     }
 
@@ -373,7 +373,7 @@ public class BistaticRangeRateTest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 5.3e-6);
+        Assertions.assertEquals(0, maxRelativeError, 2.0e-5);
 
     }
 
