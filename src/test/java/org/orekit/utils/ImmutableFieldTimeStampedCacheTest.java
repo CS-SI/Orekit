@@ -177,11 +177,11 @@ public class ImmutableFieldTimeStampedCacheTest {
     }
 
     /**
-     * check {@link ImmutableFieldTimeStampedCache#getNeighborsSize()}
+     * check {@link ImmutableFieldTimeStampedCache#getMaxNeighborsSize()}
      */
     @Test
     public void testGetNeighborsSize() {
-        Assertions.assertEquals(cache.getNeighborsSize(), 3);
+        Assertions.assertEquals(cache.getMaxNeighborsSize(), 3);
     }
 
     /**
@@ -239,7 +239,7 @@ public class ImmutableFieldTimeStampedCacheTest {
     }
 
     /**
-     * check {@link ImmutableFieldTimeStampedCache#emptyCache()}.
+     * check {@link ImmutableFieldTimeStampedCache#emptyCache(Field)}.
      */
     @Test
     public void testEmptyCache() {
@@ -269,7 +269,7 @@ public class ImmutableFieldTimeStampedCacheTest {
             // expected
         }
         Assertions.assertEquals(cache.getAll().size(), 0);
-        Assertions.assertEquals(cache.getNeighborsSize(), 0);
+        Assertions.assertEquals(cache.getMaxNeighborsSize(), 0);
     }
 
     @Test
