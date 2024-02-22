@@ -30,6 +30,7 @@ import org.orekit.propagation.analytical.AggregateBoundedPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 /**
  * An interface for accessing the data stored in an ephemeris file and using the data to
@@ -301,7 +302,8 @@ public interface EphemerisFile<C extends TimeStampedPVCoordinates,
          * @return a propagator for this ephemeris segment.
          */
         default BoundedPropagator getPropagator() {
-            return new EphemerisSegmentPropagator<>(this, new FrameAlignedProvider(getInertialFrame()));
+            return new EphemerisSegmentPropagator<>(this,
+                                                    new FrameAlignedProvider(getInertialFrame()));
         }
 
         /**
