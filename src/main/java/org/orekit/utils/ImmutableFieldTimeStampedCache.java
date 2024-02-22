@@ -81,15 +81,15 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
 
         // Sort and copy data first
         this.data = new ArrayList<>(data);
-        Collections.sort(this.data, new FieldChronologicalComparator<>());
+        this.data.sort(new FieldChronologicalComparator<>());
 
     }
 
     /**
      * private constructor for {@link #emptyCache(Field)}.
-     * @param field field to which the elements belong
+     * @param ignored field to which the elements belong (ignored since 12.1)
      */
-    private ImmutableFieldTimeStampedCache(final Field<KK> field) {
+    private ImmutableFieldTimeStampedCache(final Field<KK> ignored) {
         this.data             = null;
         this.maxNeighborsSize = 0;
     }
@@ -151,7 +151,6 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
             extends ImmutableFieldTimeStampedCache<T, KK> {
 
         /** Simple constructor.
-         * @param field field to which elements belong
          */
         EmptyFieldTimeStampedCache(final Field<KK> field) {
             super(field);
