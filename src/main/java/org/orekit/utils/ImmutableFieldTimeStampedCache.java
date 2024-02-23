@@ -114,7 +114,7 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
      */
     @Deprecated
     public static <TS extends FieldTimeStamped<CFE>, CFE extends CalculusFieldElement<CFE>>
-    ImmutableFieldTimeStampedCache<TS, CFE> emptyCache(final Field<CFE> ignored) {
+        ImmutableFieldTimeStampedCache<TS, CFE> emptyCache(final Field<CFE> ignored) {
         return emptyCache();
     }
 
@@ -128,7 +128,7 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
      */
     @SuppressWarnings("unchecked")
     public static <TS extends FieldTimeStamped<CFE>, CFE extends CalculusFieldElement<CFE>>
-    ImmutableFieldTimeStampedCache<TS, CFE> emptyCache() {
+        ImmutableFieldTimeStampedCache<TS, CFE> emptyCache() {
         return (ImmutableFieldTimeStampedCache<TS, CFE>) EMPTY_CACHE;
     }
 

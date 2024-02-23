@@ -141,6 +141,7 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
         private final SortedListTrimmer trimmer;
 
         /** Simple constructor.
+         * @param attitudeProvider attitude porovider
          */
         PropagatorWithClock(final AttitudeProvider attitudeProvider) {
             super(SP3Segment.this, attitudeProvider);
