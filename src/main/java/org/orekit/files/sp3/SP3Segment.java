@@ -19,13 +19,19 @@ package org.orekit.files.sp3;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.*;
+import org.orekit.time.AbstractTimeInterpolator.InterpolationData;
 import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.utils.SortedListTrimmer;
 
 /** One segment of an {@link SP3Ephemeris}.
  * @author Thomas Neidhart
@@ -118,13 +124,110 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
     /** {@inheritDoc} */
     @Override
     public BoundedPropagator getPropagator() {
-        return EphemerisFile.EphemerisSegment.super.getPropagator();
+        return addClockManagement(EphemerisFile.EphemerisSegment.super.getPropagator());
     }
 
     /** {@inheritDoc} */
     @Override
     public BoundedPropagator getPropagator(final AttitudeProvider attitudeProvider) {
-        return EphemerisFile.EphemerisSegment.super.getPropagator(attitudeProvider);
+        return addClockManagement(EphemerisFile.EphemerisSegment.super.getPropagator(attitudeProvider));
+    }
+
+    /** Add clock management to a propagator.
+     * @return propagator raw propagator
+     * @return propagator with managed clock
+     * @since 12.1
+     */
+    private BoundedPropagator addClockManagement(final BoundedPropagator propagator) {
+        final AdditionalStateProvider provider = null;
+        propagator.addAdditionalStateProvider(filter.getMaxOrder() > 0 ?
+                                              new ClockProviderOrder1() :
+                                              new ClockProviderOrder0());
+        return propagator;
+    }
+
+    /** Additional provider for clock without derivatives.
+     * @since 12.1
+     */
+    private class ClockProviderOrder0 implements AdditionalStateProvider {
+
+        /** Interpolator for clock. */
+        private final TimeStampedDoubleHermiteInterpolator interpolator;
+
+        /** Trimmer for coordinates list. */
+        private final SortedListTrimmer trimmer;
+
+        /** Simple constructor.
+         */
+        ClockProviderOrder0() {
+            // we don't use SP3CoordinateHermiteInterpolator
+            // because the underlying propagator already has interpolated position
+            // we only interpolate the additional state here
+            interpolator = new TimeStampedDoubleHermiteInterpolator(getInterpolationSamples());
+            trimmer      = new SortedListTrimmer(getInterpolationSamples());
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String getName() {
+            return SP3Utils.CLOCK_ADDITIONAL_STATE;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] getAdditionalState(final SpacecraftState state) {
+            final Stream<TimeStampedDouble> sample =
+                trimmer.
+                    getNeighborsSubList(state.getDate(), coordinates).
+                    stream().
+                    map(c -> new TimeStampedDouble(c.getClockCorrection(), c.getDate()));
+            final TimeStampedDouble interpolated =
+                interpolator.interpolate(state.getDate(), sample);
+            return new double[] { interpolated.getValue() };
+        }
+    }
+
+    /** Additional provider for clock with derivatives.
+     * @since 12.1
+     */
+    private class ClockProviderOrder1 implements AdditionalStateProvider {
+
+        /** Interpolator for clock. */
+        private final TimeStampedDoubleAndDerivativeHermiteInterpolator interpolator;
+
+        /** Trimmer for coordinates list. */
+        private final SortedListTrimmer trimmer;
+
+        /** Simple constructor.
+         */
+        ClockProviderOrder1() {
+            // we don't use SP3CoordinateHermiteInterpolator
+            // because the underlying propagator already has interpolated position
+            // we only interpolate the additional state here
+            interpolator = new TimeStampedDoubleAndDerivativeHermiteInterpolator(getInterpolationSamples());
+            trimmer      = new SortedListTrimmer(getInterpolationSamples());
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String getName() {
+            return SP3Utils.CLOCK_ADDITIONAL_STATE;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] getAdditionalState(final SpacecraftState state) {
+            final Stream<TimeStampedDoubleAndDerivative> sample =
+                trimmer.
+                    getNeighborsSubList(state.getDate(), coordinates).
+                    stream().
+                    map(c -> new TimeStampedDoubleAndDerivative(c.getClockCorrection(),
+                                                                c.getClockRateChange(),
+                                                                c.getDate()));
+            final TimeStampedDoubleAndDerivative interpolated =
+                interpolator.interpolate(state.getDate(), sample);
+            return new double[] { interpolated.getValue() };
+        }
     }
 
 }

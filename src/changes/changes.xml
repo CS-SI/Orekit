@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1329">
+          Manage clock offset as an additional state in propagators built from SP3 files.
+      </action>
       <action dev="luc" type="fix">
           Added TimeStampedDoubleAndDerivative and associated interpolator.
       </action>

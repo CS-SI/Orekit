@@ -38,6 +38,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -227,9 +228,10 @@ public class SP3ParserTest {
     @Test
     public void testParseSP3d2() throws IOException {
         // simple test for version sp3-c, contains p/v entries and correlations
-        final String    ex     = "/sp3/example-d-2.sp3";
+        final String      ex    = "/sp3/example-d-2.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
-        final SP3   file   = new SP3Parser().parse(source);
+        final SP3        file   = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 1, SP3Parser::guessFrame).
+                                  parse(source);
 
         Assertions.assertEquals('d', file.getHeader().getVersion());
         Assertions.assertEquals(SP3OrbitType.HLM, file.getHeader().getOrbitType());
@@ -272,6 +274,19 @@ public class SP3ParserTest {
         Assertions.assertTrue(coords2.get(0).hasClockPrediction());
         Assertions.assertFalse(coords2.get(0).hasOrbitManeuverEvent());
         Assertions.assertTrue(coords2.get(0).hasOrbitPrediction());
+
+        final BoundedPropagator propagator = file.getEphemeris("G01").getPropagator();
+        final SpacecraftState s = propagator.propagate(coord.getDate());
+        final Frame frame = file.getSatellites().get("G01").getFrame();
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(coord.getPosition(), s.getPVCoordinates(frame).getPosition()),
+                                2.4e-8);
+        Assertions.assertEquals(0.0,
+                                Vector3D.distance(coord.getVelocity(), s.getPVCoordinates(frame).getVelocity()),
+                                2.1e-12);
+        Assertions.assertEquals(coord.getClockCorrection(),
+                                s.getAdditionalState(SP3Utils.CLOCK_ADDITIONAL_STATE)[0],
+                                1.0e-18);
 
     }
 
@@ -323,20 +338,32 @@ public class SP3ParserTest {
         Assertions.assertEquals(propagator.getMinDate(), new AbsoluteDate(2015, 5, 5, gps));
         Assertions.assertEquals(propagator.getMaxDate(), new AbsoluteDate(2015, 5, 5, 23, 55, 0, gps));
         SP3Coordinate expected = ephemeris.getSegments().get(0).getCoordinates().get(0);
+        SpacecraftState s = propagator.propagate(propagator.getMinDate());
         Assertions.assertEquals(0.0,
-                                Vector3D.distance(propagator.getPVCoordinates(propagator.getMinDate(), frame).getPosition(),
+                                Vector3D.distance(s.getPVCoordinates(frame).getPosition(),
                                                   expected.getPosition()),
                                 3.0e-8);
+        Assertions.assertEquals(expected.getClockCorrection(),
+                                s.getAdditionalState(SP3Utils.CLOCK_ADDITIONAL_STATE)[0],
+                                1.0e-15);
         expected = ephemeris.getSegments().get(0).getCoordinates().get(1);
+        s = propagator.propagate(expected.getDate());
         Assertions.assertEquals(0.0,
-                                Vector3D.distance(propagator.getPVCoordinates(expected.getDate(), frame).getPosition(),
+                                Vector3D.distance(s.getPVCoordinates(frame).getPosition(),
                                                   expected.getPosition()),
                                 3.0e-8);
+        Assertions.assertEquals(expected.getClockCorrection(),
+                                s.getAdditionalState(SP3Utils.CLOCK_ADDITIONAL_STATE)[0],
+                                1.0e-15);
         expected = ephemeris.getSegments().get(0).getCoordinates().get(ephemeris.getSegments().get(0).getCoordinates().size() - 1);
+        s = propagator.propagate(propagator.getMaxDate());
         Assertions.assertEquals(0.0,
-                                Vector3D.distance(propagator.getPVCoordinates(propagator.getMaxDate(), frame).getPosition(),
+                                Vector3D.distance(s.getPVCoordinates(frame).getPosition(),
                                                   expected.getPosition()),
                                 3.0e-8);
+        Assertions.assertEquals(expected.getClockCorrection(),
+                                s.getAdditionalState(SP3Utils.CLOCK_ADDITIONAL_STATE)[0],
+                                1.0e-15);
 
         ephemeris = file.getSatellites().get("E19");
         propagator = ephemeris.getPropagator(new FrameAlignedProvider(ephemeris.getFrame()));
