@@ -50,7 +50,7 @@ import org.orekit.utils.PVCoordinates;
 public class SP3ParserTest {
 
     @Test
-    public void testParseSP3a1() throws IOException, URISyntaxException {
+    public void testParseSP3a1() {
         // simple test for version sp3-a, only contains position entries
         final String    ex     = "/sp3/example-a-1.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -95,7 +95,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testParseSP3a2() throws IOException {
+    public void testParseSP3a2() {
         // simple test for version sp3-a, contains p/v entries
         final String    ex     = "/sp3/example-a-2.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -127,7 +127,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testParseSP3c1() throws IOException {
+    public void testParseSP3c1() {
         // simple test for version sp3-c, contains p entries
         final String    ex     = "/sp3/example-c-1.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -157,7 +157,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testParseSP3c2() throws IOException {
+    public void testParseSP3c2() {
         // simple test for version sp3-c, contains p/v entries and correlations
         final String    ex     = "/sp3/example-c-2.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -189,7 +189,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testParseSP3d1() throws IOException {
+    public void testParseSP3d1() {
         // simple test for version sp3-d, contains p entries
         final String    ex     = "/sp3/example-d-1.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -226,7 +226,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testParseSP3d2() throws IOException {
+    public void testParseSP3d2() {
         // simple test for version sp3-c, contains p/v entries and correlations
         final String      ex    = "/sp3/example-d-2.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -291,7 +291,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testSP3GFZ() throws IOException {
+    public void testSP3GFZ() {
         // simple test for version sp3-c, contains more than 85 satellites
         final String    ex     = "/sp3/gbm19500_truncated.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -319,7 +319,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testSP3Propagator() throws Exception {
+    public void testSP3Propagator() {
         // setup
         final String     ex         = "/sp3/gbm18432.sp3.Z";
         final DataSource compressed = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -387,7 +387,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testSP3Compressed() throws IOException {
+    public void testSP3Compressed() {
         final String ex = "/sp3/gbm18432.sp3.Z";
 
         final SP3Parser parser = new SP3Parser();
@@ -438,7 +438,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testTruncatedLine() throws IOException {
+    public void testTruncatedLine() {
         try {
             final String    ex     = "/sp3/truncated-line.sp3";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -455,7 +455,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testMissingEOF() throws IOException {
+    public void testMissingEOF() {
         final String    ex     = "/sp3/missing-eof.sp3";
         try {
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -473,7 +473,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testMissingStandardDeviation() throws IOException {
+    public void testMissingStandardDeviation() {
         final String    ex     = "/sp3/missing-standard-deviation.sp3";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final Frame     frame  = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
@@ -496,7 +496,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testWrongLineIdentifier() throws IOException {
+    public void testWrongLineIdentifier() {
         try {
             final String    ex     = "/sp3/wrong-line-identifier.sp3";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -513,7 +513,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testBHN() throws IOException {
+    public void testBHN() {
         final Frame       frame        = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
         final SP3Parser   parser       = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
         final String      ex           = "/sp3/esaBHN.sp3.Z";
@@ -525,7 +525,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testPRO() throws IOException {
+    public void testPRO() {
         final Frame       frame        = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
         final SP3Parser   parser       = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
         final String      ex           = "/sp3/esaPRO.sp3.Z";
@@ -537,7 +537,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testUnknownType() throws IOException {
+    public void testUnknownType() {
         final Frame       frame        = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
         final SP3Parser   parser       = new SP3Parser(Constants.EIGEN5C_EARTH_MU, 3, s -> frame);
         final String      ex           = "/sp3/unknownType.sp3.Z";
@@ -549,7 +549,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testUnsupportedVersion() throws IOException {
+    public void testUnsupportedVersion() {
         try {
             final String    ex     = "/sp3/unsupported-version.sp3";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -566,7 +566,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testWrongNumberOfEpochs() throws IOException {
+    public void testWrongNumberOfEpochs() {
         try {
             final String    ex     = "/sp3/wrong-number-of-epochs.sp3";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -584,7 +584,7 @@ public class SP3ParserTest {
     }
 
     @Test
-    public void testInconsistentSamplingDates() throws IOException {
+    public void testInconsistentSamplingDates() {
         try {
             final String    ex     = "/sp3/inconsistent-sampling-dates.sp3";
             final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));

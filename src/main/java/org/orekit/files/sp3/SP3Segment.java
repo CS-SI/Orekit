@@ -19,7 +19,6 @@ package org.orekit.files.sp3;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.orekit.attitudes.AttitudeProvider;
@@ -28,8 +27,11 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.*;
-import org.orekit.time.AbstractTimeInterpolator.InterpolationData;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStampedDouble;
+import org.orekit.time.TimeStampedDoubleAndDerivative;
+import org.orekit.time.TimeStampedDoubleAndDerivativeHermiteInterpolator;
+import org.orekit.time.TimeStampedDoubleHermiteInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.SortedListTrimmer;
 
@@ -134,12 +136,10 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
     }
 
     /** Add clock management to a propagator.
-     * @return propagator raw propagator
      * @return propagator with managed clock
      * @since 12.1
      */
     private BoundedPropagator addClockManagement(final BoundedPropagator propagator) {
-        final AdditionalStateProvider provider = null;
         propagator.addAdditionalStateProvider(filter.getMaxOrder() > 0 ?
                                               new ClockProviderOrder1() :
                                               new ClockProviderOrder0());
@@ -193,7 +193,8 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
     private class ClockProviderOrder1 implements AdditionalStateProvider {
 
         /** Interpolator for clock. */
-        private final TimeStampedDoubleAndDerivativeHermiteInterpolator interpolator;
+        private final TimeStampedDoubleAndDerivativeHermiteInterpolator
+            interpolator;
 
         /** Trimmer for coordinates list. */
         private final SortedListTrimmer trimmer;

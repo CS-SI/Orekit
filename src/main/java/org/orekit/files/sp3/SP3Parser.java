@@ -71,7 +71,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
     public static final String SP3_FRAME_CENTER_STRING = "EARTH";
 
     /** Pattern for frame names with year. */
-    private static final Pattern FRAME_WITH_YEAR = Pattern.compile("(?:(?:ITR)|(?:IGS)|(?:SLR))([0-9]{2})");
+    private static final Pattern FRAME_WITH_YEAR = Pattern.compile("(?:ITR|IGS|SLR)([0-9]{2})");
 
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
@@ -245,7 +245,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
         private final TimeScales timeScales;
 
         /** The corresponding SP3File object. */
-        private SP3 file;
+        private final SP3 file;
 
         /** The latest epoch as read from the SP3 file. */
         private AbsoluteDate latestEpoch;
@@ -429,7 +429,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                 int startIdx = 9;
                 while (count++ < pi.maxSatellites && (startIdx + 3) <= lineLength) {
                     final String satId = line.substring(startIdx, startIdx + 3).trim();
-                    if (satId.length() > 0) {
+                    if (!satId.isEmpty()) {
                         pi.file.addSatellite(satId);
                     }
                     startIdx += 3;
@@ -454,7 +454,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                 int startIdx = 9;
                 while (pi.nbAccuracies < pi.maxSatellites && (startIdx + 3) <= lineLength) {
                     final String sub = line.substring(startIdx, startIdx + 3).trim();
-                    if (sub.length() > 0) {
+                    if (!sub.isEmpty()) {
                         final int exponent = Integer.parseInt(sub);
                         // the accuracy is calculated as 2**exp (in mm)
                         pi.file.getHeader().setAccuracy(pi.nbAccuracies++,
@@ -730,9 +730,9 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     if (pi.latestPosition.getNorm() > 0) {
 
                         if (line.length() < 69 ||
-                            line.substring(61, 63).trim().length() == 0 ||
-                            line.substring(64, 66).trim().length() == 0 ||
-                            line.substring(67, 69).trim().length() == 0) {
+                            line.substring(61, 63).trim().isEmpty() ||
+                            line.substring(64, 66).trim().isEmpty() ||
+                            line.substring(67, 69).trim().isEmpty()) {
                             pi.latestPositionAccuracy = null;
                         } else {
                             pi.latestPositionAccuracy = new Vector3D(SP3Utils.siAccuracy(SP3Utils.POSITION_ACCURACY_UNIT,
@@ -746,7 +746,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                                                                                          Integer.parseInt(line.substring(67, 69).trim())));
                         }
 
-                        if (line.length() < 73 || line.substring(70, 73).trim().length() == 0) {
+                        if (line.length() < 73 || line.substring(70, 73).trim().isEmpty()) {
                             pi.latestClockAccuracy    = Double.NaN;
                         } else {
                             pi.latestClockAccuracy    = SP3Utils.siAccuracy(SP3Utils.CLOCK_ACCURACY_UNIT,
@@ -754,10 +754,10 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                                                                             Integer.parseInt(line.substring(70, 73).trim()));
                         }
 
-                        pi.latestClockEvent         = line.length() < 75 ? false : line.substring(74, 75).equals("E");
-                        pi.latestClockPrediction    = line.length() < 76 ? false : line.substring(75, 76).equals("P");
-                        pi.latestOrbitManeuverEvent = line.length() < 79 ? false : line.substring(78, 79).equals("M");
-                        pi.latestOrbitPrediction    = line.length() < 80 ? false : line.substring(79, 80).equals("P");
+                        pi.latestClockEvent         = line.length() >= 75 && line.charAt(74) == 'E';
+                        pi.latestClockPrediction    = line.length() >= 76 && line.charAt(75) == 'P';
+                        pi.latestOrbitManeuverEvent = line.length() >= 79 && line.charAt(78) == 'M';
+                        pi.latestOrbitPrediction    = line.length() >= 80 && line.charAt(79) == 'P';
 
                         if (!pi.hasVelocityEntries) {
                             final SP3Coordinate coord =
@@ -823,9 +823,9 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
 
                     final Vector3D velocityAccuracy;
                     if (line.length() < 69 ||
-                        line.substring(61, 63).trim().length() == 0 ||
-                        line.substring(64, 66).trim().length() == 0 ||
-                        line.substring(67, 69).trim().length() == 0) {
+                        line.substring(61, 63).trim().isEmpty() ||
+                        line.substring(64, 66).trim().isEmpty() ||
+                        line.substring(67, 69).trim().isEmpty()) {
                         velocityAccuracy  = null;
                     } else {
                         velocityAccuracy = new Vector3D(SP3Utils.siAccuracy(SP3Utils.VELOCITY_ACCURACY_UNIT,
@@ -840,7 +840,7 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                     }
 
                     final double clockRateAccuracy;
-                    if (line.length() < 73 || line.substring(70, 73).trim().length() == 0) {
+                    if (line.length() < 73 || line.substring(70, 73).trim().isEmpty()) {
                         clockRateAccuracy = Double.NaN;
                     } else {
                         clockRateAccuracy = SP3Utils.siAccuracy(SP3Utils.CLOCK_RATE_ACCURACY_UNIT,
