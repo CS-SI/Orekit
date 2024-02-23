@@ -52,7 +52,7 @@ import java.util.function.Function;
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
 
-public class CircularOrbitTest {
+class CircularOrbitTest {
 
     // Computation date
     private AbsoluteDate date;
@@ -1215,6 +1215,28 @@ public class CircularOrbitTest {
                 Assertions.assertEquals(expectedAlphaDot, circularOrbit.getAlphaVDot());
                 Assertions.assertEquals(expectedAlphaDot, circularOrbit.getAlphaMDot());
                 Assertions.assertEquals(expectedAlphaDot, circularOrbit.getAlphaEDot());
+            }
+        }
+    }
+
+    @Test
+    void testCoverageCachedPositionAngleTypeWithoutRates() {
+        // GIVEN
+        final double semiMajorAxis = 1e5;
+        final double eccentricity = 0.;
+        final double expectedAlpha = 0.;
+        // WHEN & THEN
+        for (final PositionAngleType inputPositionAngleType: PositionAngleType.values()) {
+            for (final PositionAngleType cachedPositionAngleType: PositionAngleType.values()) {
+                final CircularOrbit circularOrbit = new CircularOrbit(semiMajorAxis, eccentricity, 0., 0., 0.,
+                        expectedAlpha, inputPositionAngleType, cachedPositionAngleType,
+                        FramesFactory.getGCRF(), date, mu);
+                Assertions.assertEquals(expectedAlpha, circularOrbit.getAlphaV());
+                Assertions.assertEquals(expectedAlpha, circularOrbit.getAlphaM());
+                Assertions.assertEquals(expectedAlpha, circularOrbit.getAlphaE());
+                Assertions.assertEquals(Double.NaN, circularOrbit.getAlphaVDot());
+                Assertions.assertEquals(Double.NaN, circularOrbit.getAlphaMDot());
+                Assertions.assertEquals(Double.NaN, circularOrbit.getAlphaEDot());
             }
         }
     }
