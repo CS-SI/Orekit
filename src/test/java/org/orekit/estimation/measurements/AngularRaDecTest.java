@@ -31,7 +31,11 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.generation.AngularRaDecBuilder;
-import org.orekit.frames.*;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.ITRFVersion;
+import org.orekit.frames.StaticTransform;
+import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
@@ -43,7 +47,13 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.*;
+import org.orekit.utils.Constants;
+import org.orekit.utils.Differentiation;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterFunction;
+import org.orekit.utils.StateFunction;
 
 public class AngularRaDecTest {
 
@@ -160,7 +170,7 @@ public class AngularRaDecTest {
                                getEstimatedValue();
                     }
                 }, measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
-                   PositionAngleType.TRUE, 250.0, 4).value(state);
+                                              PositionAngleType.TRUE, 250.0, 4).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -291,14 +301,13 @@ public class AngularRaDecTest {
         //Context context = EstimationTestUtils.eccentricContext("regular-data/de431-ephemerides");
         Utils.setDataRoot("regular-data");
 
-        final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
+        final double[] pos = { Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
         final double[] vel = {0., 10., 0.};
         final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(pos[0], pos[1], pos[2]),
-                new Vector3D(vel[0], vel[1], vel[2]));
+                                                              new Vector3D(vel[0], vel[1], vel[2]));
         final AbsoluteDate epoch = new AbsoluteDate(new DateComponents(2000, 1, 1), TimeScalesFactory.getUTC());
         final Frame gcrf = FramesFactory.getGCRF();
-        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf,
-                epoch, Constants.EGM96_EARTH_MU);
+        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf, epoch, Constants.EGM96_EARTH_MU);
         final SpacecraftState spacecraftState = new SpacecraftState(orbit);
         final OrekitStepInterpolator fakeInterpolator = new OrekitStepInterpolator() {
             public OrekitStepInterpolator restrictStep(SpacecraftState newPreviousState, SpacecraftState newCurrentState) { return null; }

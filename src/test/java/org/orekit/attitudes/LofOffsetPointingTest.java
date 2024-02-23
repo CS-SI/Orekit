@@ -18,7 +18,11 @@ package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.*;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
@@ -81,7 +85,8 @@ public class LofOffsetPointingTest {
         //************************
         final LofOffset lofLaw = new LofOffset(circ.getFrame(), LOFType.LVLH_CCSDS);
         final LofOffsetPointing lofPointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, lofLaw, Vector3D.PLUS_K);
-        final Rotation lofRot = lofPointing.getAttitude(circ, date, circ.getFrame()).getRotation();
+        final Rotation
+            lofRot = lofPointing.getAttitude(circ, date, circ.getFrame()).getRotation();
 
         // Compare to body center pointing law
         //*************************************

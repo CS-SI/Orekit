@@ -40,7 +40,10 @@ import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
@@ -69,19 +72,39 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.*;
-import org.orekit.propagation.events.*;
+import org.orekit.propagation.FieldAdditionalStateProvider;
+import org.orekit.propagation.FieldBoundedPropagator;
+import org.orekit.propagation.FieldEphemerisGenerator;
+import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldAbstractDetector;
+import org.orekit.propagation.events.FieldAdaptableInterval;
+import org.orekit.propagation.events.FieldApsideDetector;
+import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.integration.FieldCombinedDerivatives;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
-import org.orekit.time.*;
-import org.orekit.utils.*;
-
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 public class FieldNumericalPropagatorTest {
 
@@ -106,7 +129,7 @@ public class FieldNumericalPropagatorTest {
 
     private <T extends CalculusFieldElement<T>>  void doTestNotInitialised1(Field<T> field) {
         // setup
-        final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
+        final FieldAbsoluteDate<T> initDate = FieldAbsoluteDate.getJ2000Epoch(field);
 
         final FieldAbstractIntegratedPropagator<T> notInitialised =
             new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, field.getZero().add(10.0)));
@@ -203,8 +226,7 @@ public class FieldNumericalPropagatorTest {
             implements FieldEventHandler<T> {
 
         /**
-         * number of calls to {@link #eventOccurred(FieldSpacecraftState<T>,
-         * FieldEventDetector<T>, boolean)}.
+         * number of calls to eventOccurred.
          */
         private int eventCount = 0;
 

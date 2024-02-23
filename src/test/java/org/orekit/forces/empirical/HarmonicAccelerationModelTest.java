@@ -32,7 +32,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
-import org.orekit.attitudes.*;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.CelestialBodyPointed;
+import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
@@ -144,8 +148,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
                                           final ConstantThrustManeuver maneuver,
                                           final AttitudeProvider accelerationLaw,
                                           final ParametricAcceleration parametricAcceleration,
-                                          final double positionTolerance)
-        {
+                                          final double positionTolerance) {
 
         SpacecraftState initialState = new SpacecraftState(initialOrbit,
                                                            maneuverLaw.getAttitude(initialOrbit,

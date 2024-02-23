@@ -18,8 +18,12 @@ package org.orekit.utils;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.*;
-import org.orekit.time.*;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.errors.TimeStampedCacheException;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 
 import java.util.List;
 

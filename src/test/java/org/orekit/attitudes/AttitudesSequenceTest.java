@@ -23,7 +23,11 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
-import org.hipparchus.geometry.euclidean.threed.*;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
@@ -69,7 +73,15 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.*;
+import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.Constants;
+import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 public class AttitudesSequenceTest {
 
