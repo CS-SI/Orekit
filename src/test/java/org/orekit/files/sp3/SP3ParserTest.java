@@ -362,6 +362,12 @@ public class SP3ParserTest {
         Assertions.assertEquals(expected.getClockCorrection(),
                                 s.getAdditionalState(SP3Utils.CLOCK_ADDITIONAL_STATE)[0],
                                 1.0e-15);
+        SP3Coordinate previous = ephemeris.getSegments().get(0).getCoordinates().get(ephemeris.getSegments().get(0).getCoordinates().size() - 2);
+        final double deltaClock = expected.getClockCorrection() - previous.getClockCorrection();
+        final double deltaT     = expected.getDate().durationFrom(previous.getDate());
+        Assertions.assertEquals(deltaClock / deltaT,
+                                s.getAdditionalStateDerivative(SP3Utils.CLOCK_ADDITIONAL_STATE)[0],
+                                1.0e-26);
 
         ephemeris = file.getSatellites().get("E19");
         propagator = ephemeris.getPropagator(new FrameAlignedProvider(ephemeris.getFrame()));

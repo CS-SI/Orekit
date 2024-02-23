@@ -29,7 +29,11 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.FieldMatrixPreservingVisitor;
 import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.util.*;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -449,7 +453,9 @@ class FieldCircularOrbitTest {
         Assertions.assertEquals(param.getHy().getReal(), circ.getHy().getReal(), Utils.epsilonAngle * FastMath.abs(circ.getI().getReal()));
 
 
-        Assertions.assertEquals(MathUtils.normalizeAngle(param.getLv().getReal(), circ.getLv().getReal()), circ.getLv().getReal(), Utils.epsilonAngle * FastMath.abs(circ.getLv().getReal()));
+        Assertions.assertEquals(MathUtils.normalizeAngle(param.getLv().getReal(), circ.getLv().getReal()),
+                                circ.getLv().getReal(),
+                                Utils.epsilonAngle * FastMath.abs(circ.getLv().getReal()));
 
         Assertions.assertFalse(circ.hasDerivatives());
         Assertions.assertNull(circ.getADot());
