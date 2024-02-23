@@ -28,15 +28,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.DoubleAccumulator;
 
-class TimeStampedDoubleHermiteInterpolatorTest {
+class TimeStampedDoubleAndDerivativeAndDerivativeHermiteInterpolatorTest {
 
     @Test
     @DisplayName("Test default constructor")
     void testDefaultConstructor() {
         // When
-        final TimeStampedDoubleHermiteInterpolator interpolator = new TimeStampedDoubleHermiteInterpolator();
+        final TimeStampedDoubleAndDerivativeHermiteInterpolator interpolator = new TimeStampedDoubleAndDerivativeHermiteInterpolator();
 
         // Then
         Assertions.assertEquals(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
@@ -50,25 +50,27 @@ class TimeStampedDoubleHermiteInterpolatorTest {
     void testIssue1164() throws InterruptedException {
         // GIVEN
         // Create interpolator
-        final TimeInterpolator<TimeStampedDouble> interpolator = new TimeStampedDoubleHermiteInterpolator();
+        final TimeInterpolator<TimeStampedDoubleAndDerivative> interpolator = new TimeStampedDoubleAndDerivativeHermiteInterpolator();
 
         // Create sample and interpolation dates
-        final int                     sampleSize  = 100;
-        final AbsoluteDate            initialDate = new AbsoluteDate();
-        final List<TimeStampedDouble> sample      = new ArrayList<>();
-        final List<AbsoluteDate>      dates       = new ArrayList<>();
-        for (int i = 0; i < sampleSize + 1; i++) {
-            sample.add(new TimeStampedDouble(i * i, initialDate.shiftedBy(i * 60)));
+        final int                                  sampleSize  = 100;
+        final AbsoluteDate                         initialDate = new AbsoluteDate();
+        final List<TimeStampedDoubleAndDerivative> sample      = new ArrayList<>();
+        final List<AbsoluteDate>                   dates       = new ArrayList<>();
+        for (int i = 1; i < sampleSize + 1; i++) {
+            sample.add(new TimeStampedDoubleAndDerivative(i * i, i / 30.0,
+                                                          initialDate.shiftedBy(i * 60)));
             dates.add(initialDate.shiftedBy(i * 60));
         }
 
         // Create multithreading environment
         ExecutorService service = Executors.newFixedThreadPool(sampleSize);
 
-        final AtomicInteger           sum   = new AtomicInteger(0);
+        final DoubleAccumulator sum0  = new DoubleAccumulator(Double::sum, 0.0);
+        final DoubleAccumulator sum1  = new DoubleAccumulator(Double::sum, 0.0);
         final List<Callable<Integer>> tasks = new ArrayList<>();
         for (final AbsoluteDate date : dates) {
-            tasks.add(new ParallelTask(interpolator, sum, sample, date));
+            tasks.add(new ParallelTask(interpolator, sum0, sum1, sample, date));
         }
 
         // WHEN
@@ -76,43 +78,52 @@ class TimeStampedDoubleHermiteInterpolatorTest {
 
         // THEN
         // Sum of 1*1 + 2*2 + 3*3 + ...
-        final int expectedSum = sampleSize * (sampleSize + 1) * (2 * sampleSize + 1) / 6;
-        Assertions.assertEquals(expectedSum, sum.get());
+        // Sum of 1 / 30 + 2 / 30 + ...
+        final double expectedSum0 = sampleSize * (sampleSize + 1) * (2 * sampleSize + 1) / 6.0;
+        final double expectedSum1 = sampleSize * (sampleSize + 1)  / 60.0;
         try {
             // wait for proper ending
             service.shutdown();
-            service.awaitTermination(5, TimeUnit.SECONDS);
+            Assertions.assertTrue(service.awaitTermination(5, TimeUnit.SECONDS));
         } catch (InterruptedException ie) {
             // Restore interrupted state...
             Thread.currentThread().interrupt();
         }
+        Assertions.assertEquals(expectedSum0, sum0.get(), 1.0e-12);
+        Assertions.assertEquals(expectedSum1, sum1.get(), 1.0e-12);
     }
 
     /** Custom class for multi threading testing purpose */
     private static class ParallelTask implements Callable<Integer> {
 
-        private final TimeInterpolator<TimeStampedDouble> interpolator;
+        private final TimeInterpolator<TimeStampedDoubleAndDerivative> interpolator;
 
-        private final List<TimeStampedDouble> sample;
+        private final List<TimeStampedDoubleAndDerivative> sample;
 
-        private final AtomicInteger sum;
+        private final DoubleAccumulator sum0;
+
+        private final DoubleAccumulator sum1;
 
         private final AbsoluteDate interpolationDate;
 
-        private ParallelTask(final TimeInterpolator<TimeStampedDouble> interpolator, final AtomicInteger sum,
-                             final List<TimeStampedDouble> sample, final AbsoluteDate interpolationDate) {
+        private ParallelTask(final TimeInterpolator<TimeStampedDoubleAndDerivative> interpolator,
+                             final DoubleAccumulator sum0, final DoubleAccumulator sum1,
+                             final List<TimeStampedDoubleAndDerivative> sample,
+                             final AbsoluteDate interpolationDate) {
             // Store interpolator
             this.interpolator      = interpolator;
-            this.sum               = sum;
+            this.sum0              = sum0;
+            this.sum1              = sum1;
             this.interpolationDate = interpolationDate;
             this.sample            = sample;
         }
 
         @Override
         public Integer call() {
-            // Add result to sum
-            final int valueToAdd = (int) interpolator.interpolate(interpolationDate, sample).getValue();
-            sum.getAndAdd(valueToAdd);
+            // Add result to sums
+            final TimeStampedDoubleAndDerivative interpolated = interpolator.interpolate(interpolationDate, sample);
+            sum0.accumulate(interpolated.getValue());
+            sum1.accumulate(interpolated.getDerivative());
             return 1;
         }
     }

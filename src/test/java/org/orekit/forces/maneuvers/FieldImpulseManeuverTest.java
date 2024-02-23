@@ -18,7 +18,13 @@ package org.orekit.forces.maneuvers;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.*;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -43,10 +49,31 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
-import org.orekit.orbits.*;
-import org.orekit.propagation.*;
-import org.orekit.propagation.events.*;
-import org.orekit.propagation.events.handlers.*;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.AbstractPropagator;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.MatricesHarvester;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AbstractDetector;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.EclipseDetector;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldAbstractDetector;
+import org.orekit.propagation.events.FieldAdaptableInterval;
+import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.FieldEclipseDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.FieldLatitudeCrossingDetector;
+import org.orekit.propagation.events.LatitudeCrossingDetector;
+import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.handlers.FieldStopOnEvent;
+import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.integration.FieldCombinedDerivatives;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -209,7 +236,8 @@ public class FieldImpulseManeuverTest {
         final FieldVector3D<T> fieldDeltaVSat = new FieldVector3D<>(field, impulseManeuver.getDeltaVSat());
         final EventDetector detector = impulseManeuver.getTrigger();
         final int maxIter = detector.getMaxIterationCount();
-        final FieldAdaptableInterval<T> fieldMaxCheck = s -> detector.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
+        final FieldAdaptableInterval<T>
+            fieldMaxCheck = s -> detector.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
         final T fieldThreshold = field.getZero().add(detector.getThreshold());
         FieldAbstractDetector<?, T> fieldDetector;
         if (detector instanceof DateDetector) {
@@ -219,11 +247,11 @@ public class FieldImpulseManeuverTest {
             fieldDetector = dateDetector;
         } else if (detector instanceof LatitudeCrossingDetector) {
             fieldDetector = new FieldLatitudeCrossingDetector<>(field,
-                    ((LatitudeCrossingDetector) detector).getBody(),
-                    ((LatitudeCrossingDetector) detector).getLatitude());
+                                                                ((LatitudeCrossingDetector) detector).getBody(),
+                                                                ((LatitudeCrossingDetector) detector).getLatitude());
         } else if (detector instanceof EclipseDetector) {
             fieldDetector = new FieldEclipseDetector<>(field,
-                    ((EclipseDetector) detector).getOccultationEngine());
+                                                       ((EclipseDetector) detector).getOccultationEngine());
         } else {
             throw new OrekitInternalError(null);
         }
@@ -251,7 +279,8 @@ public class FieldImpulseManeuverTest {
         propagator.addEventDetector(impulseManeuver);
         fieldPropagator.addEventDetector(convertManeuver(field, impulseManeuver, new FieldStopOnEvent<>()));
         // When
-        final SpacecraftState terminalState = propagator.propagate(endOfPropagationDate);
+        final SpacecraftState
+            terminalState = propagator.propagate(endOfPropagationDate);
         final FieldSpacecraftState<T> fieldTerminalState = fieldPropagator.propagate(new FieldAbsoluteDate<>(field, endOfPropagationDate));
         // Then
         compareStateToConstantOfFieldState(terminalState, fieldTerminalState);
@@ -342,7 +371,7 @@ public class FieldImpulseManeuverTest {
         final FieldPVCoordinates<T> fieldPVCoordinates = new FieldPVCoordinates<>(fieldPosition,
                 fieldVelocity);
         return new FieldCartesianOrbit<>(fieldPVCoordinates, inertialFrame,
-                new FieldAbsoluteDate<>(field, orbit.getDate()), field.getZero().add(mu));
+                                         new FieldAbsoluteDate<>(field, orbit.getDate()), field.getZero().add(mu));
     }
 
     @Test
@@ -353,15 +382,14 @@ public class FieldImpulseManeuverTest {
                 univariateDerivative1Field);
         FieldSpacecraftState<UnivariateDerivative1> initialState = fieldPropagator.getInitialState();
         final String name = "dummy";
-        final UnivariateDerivative1 expectedValue = zero;
-        initialState = initialState.addAdditionalState(name, expectedValue);
+        initialState = initialState.addAdditionalState(name, zero);
         fieldPropagator.resetInitialState(initialState);
         // When
         final FieldAbsoluteDate<UnivariateDerivative1> targetDate = initialState.getDate().shiftedBy(zero.add(10000.));
         final FieldSpacecraftState<UnivariateDerivative1> terminalState = fieldPropagator.propagate(targetDate);
         // Then
         final UnivariateDerivative1 actualValue = terminalState.getAdditionalState(name)[0];
-        Assertions.assertEquals(expectedValue, actualValue);
+        Assertions.assertEquals(zero, actualValue);
     }
 
     @Test

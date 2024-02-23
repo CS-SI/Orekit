@@ -18,7 +18,11 @@ package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.Field;
 import org.hipparchus.analysis.UnivariateFunction;
-import org.hipparchus.analysis.differentiation.*;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;

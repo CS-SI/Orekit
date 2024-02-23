@@ -20,7 +20,11 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
-import org.hipparchus.geometry.euclidean.threed.*;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
@@ -109,7 +113,7 @@ class TransformProviderTest {
             final Field<T> field = date.getField();
             final FieldRotation<T> fieldRotation = new FieldRotation<>(field, transform.getRotation());
             final FieldVector3D<T> fieldRotationRate = new FieldVector3D<>(field, transform.getRotationRate());
-            return new FieldTransform<T>(date, fieldRotation, fieldRotationRate);
+            return new FieldTransform<>(date, fieldRotation, fieldRotationRate);
         }
     }
 

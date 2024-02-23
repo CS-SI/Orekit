@@ -46,6 +46,11 @@ public class SP3Utils {
     /** Velocity accuracy unit. */
     public static final Unit VELOCITY_ACCURACY_UNIT = Unit.parse("mm/s").scale("10⁻⁴mm/s", 1.0e-4);
 
+    /** Additional state name for clock.
+     * @since 12.1
+     */
+    public static final String CLOCK_ADDITIONAL_STATE = "clock";
+
     /** Clock unit. */
     public static final Unit CLOCK_UNIT = Unit.parse("µs");
 
