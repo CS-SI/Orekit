@@ -28,7 +28,11 @@ import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.linear.FieldMatrixPreservingVisitor;
 import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.util.*;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -419,7 +423,7 @@ class FieldEquinoctialOrbitTest {
         Assertions.assertEquals(param.getHy().getReal(), equi.getHy().getReal(), Utils.epsilonAngle
                      * FastMath.abs(equi.getI().getReal()));
         Assertions.assertEquals(MathUtils.normalizeAngle(param.getLv().getReal(), equi.getLv().getReal()), equi.getLv().getReal(),
-                     Utils.epsilonAngle * FastMath.abs(equi.getLv().getReal()));
+            Utils.epsilonAngle * FastMath.abs(equi.getLv().getReal()));
 
     }
 
