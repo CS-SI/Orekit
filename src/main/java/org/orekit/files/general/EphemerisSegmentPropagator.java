@@ -47,7 +47,7 @@ import java.util.List;
  *
  * @author Evan Ward
  */
-class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> extends AbstractAnalyticalPropagator
+public class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> extends AbstractAnalyticalPropagator
         implements BoundedPropagator {
 
     /** Tabular data from which this propagator is built. */
@@ -67,8 +67,8 @@ class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> extends Abs
      * @param ephemeris segment containing the data for this propagator.
      * @param attitudeProvider provider for attitude computation
      */
-    EphemerisSegmentPropagator(final EphemerisSegment<C> ephemeris,
-                               final AttitudeProvider attitudeProvider) {
+    public EphemerisSegmentPropagator(final EphemerisSegment<C> ephemeris,
+                                      final AttitudeProvider attitudeProvider) {
         super(attitudeProvider);
         this.ephemeris      = ephemeris;
         this.interpolator   = new TimeStampedPVCoordinatesHermiteInterpolator(ephemeris.getInterpolationSamples(),
@@ -154,7 +154,7 @@ class EphemerisSegmentPropagator<C extends TimeStampedPVCoordinates> extends Abs
 
         // cast stream to super type
         final List<TimeStampedPVCoordinates> castedNeighbors = new ArrayList<>(neighbors.size());
-        neighbors.forEach(neighbor -> castedNeighbors.add(neighbor));
+        castedNeighbors.addAll(neighbors);
 
         // create interpolator
         return interpolator.interpolate(date, castedNeighbors);
