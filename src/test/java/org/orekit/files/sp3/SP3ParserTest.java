@@ -16,8 +16,6 @@
  */
 package org.orekit.files.sp3;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 
