@@ -19,7 +19,7 @@ package org.orekit.models.earth.troposphere;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
 
-public class FieldNiellMappingFunctionModelTest extends AbstractFieldMappingFunctionTest {
+class FieldNiellMappingFunctionModelTest extends AbstractFieldMappingFunctionTest {
 
     protected TroposphereMappingFunction buildMappingFunction() {
         return new NiellMappingFunctionModel();
@@ -32,7 +32,7 @@ public class FieldNiellMappingFunctionModelTest extends AbstractFieldMappingFunc
 
     @Test
     public void testMFStateDerivatives() {
-        doTestMFStateDerivatives(6.539e-12, 1.557e-11);
+        doTestMFStateDerivatives(6.542e-12, 1.557e-11);
     }
 
 }

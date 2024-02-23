@@ -755,7 +755,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                                      current.mean.getPerigeeArgument()              .add(deltaOmega),
                                                      current.mean.getRightAscensionOfAscendingNode().add(deltaRAAN),
                                                      current.mean.getMeanAnomaly()                  .add(deltaAnom),
-                                                     PositionAngleType.MEAN,
+                                                     PositionAngleType.MEAN, PositionAngleType.TRUE,
                                                      current.mean.getFrame(),
                                                      current.mean.getDate(), mu),
                                   mass, referenceRadius, mu, ck0);
