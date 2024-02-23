@@ -239,12 +239,47 @@ public class ImmutableFieldTimeStampedCacheTest {
     }
 
     /**
-     * check {@link ImmutableFieldTimeStampedCache#emptyCache(Field)}.
+     * check {@link ImmutableFieldTimeStampedCache#emptyCache()}.
+     */
+    @Deprecated
+    @Test
+    public void testEmptyCacheDeprecated() {
+        // setup
+        cache = ImmutableFieldTimeStampedCache.emptyCache(Binary64Field.getInstance());
+
+        // actions + verify
+        try {
+            cache.getNeighbors(date);
+            Assertions.fail("Expected Exception");
+        }
+        catch (TimeStampedCacheException e) {
+            // expected
+        }
+        try {
+            cache.getEarliest();
+            Assertions.fail("Expected Exception");
+        }
+        catch (IllegalStateException e) {
+            // expected
+        }
+        try {
+            cache.getLatest();
+            Assertions.fail("Expected Exception");
+        }
+        catch (IllegalStateException e) {
+            // expected
+        }
+        Assertions.assertEquals(cache.getAll().size(), 0);
+        Assertions.assertEquals(cache.getMaxNeighborsSize(), 0);
+    }
+
+    /**
+     * check {@link ImmutableFieldTimeStampedCache#emptyCache()}.
      */
     @Test
     public void testEmptyCache() {
         // setup
-        cache = ImmutableFieldTimeStampedCache.emptyCache(Binary64Field.getInstance());
+        cache = ImmutableFieldTimeStampedCache.emptyCache();
 
         // actions + verify
         try {

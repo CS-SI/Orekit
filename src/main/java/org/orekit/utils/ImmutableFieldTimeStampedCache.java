@@ -45,6 +45,13 @@ import org.orekit.time.TimeStamped;
 public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK extends CalculusFieldElement<KK>>
         implements FieldTimeStampedCache<T, KK> {
 
+    /** An empty immutable cache that always throws an exception on attempted access.
+     * @since 12.1
+     */
+    @SuppressWarnings("rawtypes")
+    private static final ImmutableFieldTimeStampedCache EMPTY_CACHE =
+        new EmptyFieldTimeStampedCache();
+
     /**
      * the cached data. Be careful not to modify it after the constructor, or return a reference that allows mutating this
      * list.
@@ -85,11 +92,9 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
 
     }
 
-    /**
-     * private constructor for {@link #emptyCache(Field)}.
-     * @param ignored field to which the elements belong (ignored since 12.1)
+    /** Private constructor for {@link #EMPTY_CACHE}.
      */
-    private ImmutableFieldTimeStampedCache(final Field<KK> ignored) {
+    private ImmutableFieldTimeStampedCache() {
         this.data             = null;
         this.maxNeighborsSize = 0;
     }
@@ -99,12 +104,28 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
      *
      * @param <TS> the type of data
      * @param <CFE> the type of the calculus field element
-     * @param field field to which the elements belong
+     * @param ignored field to which the elements belong
      * @return an empty {@link ImmutableTimeStampedCache}.
+     * @deprecated as of 12.1, replaced by {@link #emptyCache()}
      */
+    @Deprecated
     public static <TS extends FieldTimeStamped<CFE>, CFE extends CalculusFieldElement<CFE>>
-        ImmutableFieldTimeStampedCache<TS, CFE> emptyCache(final Field<CFE> field) {
-        return new EmptyFieldTimeStampedCache<>(field);
+    ImmutableFieldTimeStampedCache<TS, CFE> emptyCache(final Field<CFE> ignored) {
+        return emptyCache();
+    }
+
+    /**
+     * Get an empty immutable cache.
+     *
+     * @param <TS> the type of data
+     * @param <CFE> the type of the calculus field element
+     * @return an empty {@link ImmutableTimeStampedCache}.
+     * @since 12.1
+     */
+    @SuppressWarnings("unchecked")
+    public static <TS extends FieldTimeStamped<CFE>, CFE extends CalculusFieldElement<CFE>>
+    ImmutableFieldTimeStampedCache<TS, CFE> emptyCache() {
+        return (ImmutableFieldTimeStampedCache<TS, CFE>) EMPTY_CACHE;
     }
 
     /** {@inheritDoc} */
@@ -149,12 +170,6 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
     /** An empty immutable cache that always throws an exception on attempted access. */
     private static class EmptyFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK extends CalculusFieldElement<KK>>
             extends ImmutableFieldTimeStampedCache<T, KK> {
-
-        /** Simple constructor.
-         */
-        EmptyFieldTimeStampedCache(final Field<KK> field) {
-            super(field);
-        }
 
         /** {@inheritDoc} */
         @Override
