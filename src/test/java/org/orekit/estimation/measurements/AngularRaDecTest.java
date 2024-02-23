@@ -53,7 +53,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
 
 public class AngularRaDecTest {
 
@@ -163,13 +162,11 @@ public class AngularRaDecTest {
 
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
-                Differentiation.differentiate(new StateFunction() {
-                    public double[] value(final SpacecraftState state) {
-                        return measurement.
-                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
-                               getEstimatedValue();
-                    }
-                }, measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
+                Differentiation.differentiate(state1 -> measurement.
+                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] {
+                                                  state1
+                                              }).
+                       getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
                                               PositionAngleType.TRUE, 250.0, 4).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);

@@ -113,7 +113,7 @@ class TransformProviderTest {
             final Field<T> field = date.getField();
             final FieldRotation<T> fieldRotation = new FieldRotation<>(field, transform.getRotation());
             final FieldVector3D<T> fieldRotationRate = new FieldVector3D<>(field, transform.getRotationRate());
-            return new FieldTransform<T>(date, fieldRotation, fieldRotationRate);
+            return new FieldTransform<>(date, fieldRotation, fieldRotationRate);
         }
     }
 

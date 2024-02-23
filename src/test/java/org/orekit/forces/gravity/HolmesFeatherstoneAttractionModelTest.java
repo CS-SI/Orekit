@@ -259,8 +259,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         for (int m = degree; m >= 0; --m) {
 
             // compute tesseral terms
-            index = ((Integer) computeTesseralMethod.invoke(hfModel, m, degree, index, t, u, tOu,
-                                                            pnm0Plus2, pnm0Plus1, pnm1Plus1, pnm0, pnm1, pnm2)).intValue();
+            index = (Integer) computeTesseralMethod.invoke(hfModel, m, degree, index, t, u, tOu,
+                                                           pnm0Plus2, pnm0Plus1, pnm1Plus1, pnm0, pnm1, pnm2);
 
             if (m <= order) {
                 // compute contribution of current order to field (equation 5 of the paper)
@@ -803,7 +803,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         {
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 7, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         Transform itrfToEME2000 = itrf.getTransformTo(FramesFactory.getEME2000(), date);
@@ -827,7 +827,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                                                                                                                  c, s)));
 
         // let the step handler perform the test
-        propagator.setStepHandler(Constants.JULIAN_DAY, new SpotStepHandler(date, mu));
+        propagator.setStepHandler(Constants.JULIAN_DAY, new SpotStepHandler());
         propagator.setInitialState(new SpacecraftState(orbit));
         propagator.propagate(date.shiftedBy(7 * Constants.JULIAN_DAY));
         Assertions.assertTrue(propagator.getCalls() < 9200);
@@ -836,13 +836,14 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     private static class SpotStepHandler implements OrekitFixedStepHandler {
 
-        public SpotStepHandler(AbsoluteDate date, double mu) {
+        private final PVCoordinatesProvider sun;
+        private double previous;
+
+        public SpotStepHandler() {
             sun       = CelestialBodyFactory.getSun();
             previous  = Double.NaN;
         }
 
-        private PVCoordinatesProvider sun;
-        private double previous;
         public void handleStep(SpacecraftState currentState) {
 
 
@@ -903,15 +904,15 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         /** Body mu */
         private static final double mu =  3.986004415e+14;
 
+        private final EcksteinHechlerPropagator referencePropagator;
+
         private EckStepHandler(Orbit initialOrbit, double ae,
-                               double c20, double c30, double c40, double c50, double c60)
-        {
+                               double c20, double c30, double c40, double c50, double c60) {
             referencePropagator =
                 new EcksteinHechlerPropagator(initialOrbit,
                                               ae, mu, c20, c30, c40, c50, c60);
         }
 
-        private EcksteinHechlerPropagator referencePropagator;
         public void handleStep(SpacecraftState currentState) {
 
             SpacecraftState EHPOrbit   = referencePropagator.propagate(currentState.getDate());
@@ -1053,7 +1054,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 7, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -1086,7 +1087,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 7, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -1114,7 +1115,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 7, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -1142,7 +1143,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 7, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -1169,7 +1170,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 7, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);
@@ -1195,7 +1196,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 7, 1),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
         double i     = FastMath.toRadians(98.7);

@@ -382,15 +382,14 @@ public class FieldImpulseManeuverTest {
                 univariateDerivative1Field);
         FieldSpacecraftState<UnivariateDerivative1> initialState = fieldPropagator.getInitialState();
         final String name = "dummy";
-        final UnivariateDerivative1 expectedValue = zero;
-        initialState = initialState.addAdditionalState(name, expectedValue);
+        initialState = initialState.addAdditionalState(name, zero);
         fieldPropagator.resetInitialState(initialState);
         // When
         final FieldAbsoluteDate<UnivariateDerivative1> targetDate = initialState.getDate().shiftedBy(zero.add(10000.));
         final FieldSpacecraftState<UnivariateDerivative1> terminalState = fieldPropagator.propagate(targetDate);
         // Then
         final UnivariateDerivative1 actualValue = terminalState.getAdditionalState(name)[0];
-        Assertions.assertEquals(expectedValue, actualValue);
+        Assertions.assertEquals(zero, actualValue);
     }
 
     @Test

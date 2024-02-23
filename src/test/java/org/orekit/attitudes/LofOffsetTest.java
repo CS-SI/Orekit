@@ -176,7 +176,7 @@ public class LofOffsetTest {
 
         final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYX, 0.1, 0.2, 0.3);
 
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
         KeplerianOrbit orbit =
@@ -215,7 +215,7 @@ public class LofOffsetTest {
     @Test
     public void testAnglesSign() {
 
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
         KeplerianOrbit orbit =
@@ -250,7 +250,7 @@ public class LofOffsetTest {
 
     @Test
     public void testRetrieveAngles() {
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
         KeplerianOrbit orbit =
@@ -279,7 +279,7 @@ public class LofOffsetTest {
 
     @Test
     public void testTypesField() {
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
         KeplerianOrbit orbit =
@@ -306,9 +306,9 @@ public class LofOffsetTest {
         Vector3D xLof = Vector3D.crossProduct(yLof, zLof);
         Assertions.assertTrue(Vector3D.dotProduct(xLof, o.getPVCoordinates().getVelocity()) > 0);
         Vector3D v = a.getRotation().applyInverseTo(satVector);
-        Assertions.assertEquals(expectedX, Vector3D.dotProduct(v, xLof), 1.0e-8);
-        Assertions.assertEquals(expectedY, Vector3D.dotProduct(v, yLof), 1.0e-8);
-        Assertions.assertEquals(expectedZ, Vector3D.dotProduct(v, zLof), 1.0e-8);
+        Assertions.assertEquals(expectedX, Vector3D.dotProduct(v, xLof), threshold);
+        Assertions.assertEquals(expectedY, Vector3D.dotProduct(v, yLof), threshold);
+        Assertions.assertEquals(expectedZ, Vector3D.dotProduct(v, zLof), threshold);
     }
 
     private <T extends CalculusFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
@@ -367,7 +367,7 @@ public class LofOffsetTest {
             Utils.setDataRoot("regular-data");
 
             // Computation date
-            date = new AbsoluteDate(new DateComponents(2008, 04, 07),
+            date = new AbsoluteDate(new DateComponents(2008, 4, 7),
                                     TimeComponents.H00,
                                     TimeScalesFactory.getUTC());
 

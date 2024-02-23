@@ -483,7 +483,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
             final double OMEGA = FastMath.toRadians(261);
             final double lv = 0;
 
-            final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
+            final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 1, 1),
                                                            new TimeComponents(23, 30, 00.000),
                                                            TimeScalesFactory.getUTC());
             initialOrbit =

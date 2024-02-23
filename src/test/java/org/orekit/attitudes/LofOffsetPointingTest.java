@@ -123,7 +123,7 @@ public class LofOffsetPointingTest {
     @Test
     public void testSpin() {
 
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
         KeplerianOrbit orbit =
@@ -167,7 +167,7 @@ public class LofOffsetPointingTest {
 
     @Test
     public void testTypesField() {
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
         KeplerianOrbit orbit =
@@ -260,7 +260,7 @@ public class LofOffsetPointingTest {
             Utils.setDataRoot("regular-data");
 
             // Computation date
-            date = new AbsoluteDate(new DateComponents(2008, 04, 07),
+            date = new AbsoluteDate(new DateComponents(2008, 4, 7),
                                     TimeComponents.H00,
                                     TimeScalesFactory.getUTC());
 

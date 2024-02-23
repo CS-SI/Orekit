@@ -80,7 +80,7 @@ class GroundPointingTest {
         @Override
         public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T>
             getTargetPV(FieldPVCoordinatesProvider<T> pvProv, FieldAbsoluteDate<T> date, Frame frame) {
-            return new TimeStampedFieldPVCoordinates<T>(date, FieldPVCoordinates.getZero(date.getField()));
+            return new TimeStampedFieldPVCoordinates<>(date, FieldPVCoordinates.getZero(date.getField()));
         }
         
     }
@@ -202,7 +202,7 @@ class GroundPointingTest {
                                                                                         final EquinoctialOrbit orbit) {
         final T zero = field.getZero();
         final T fieldSemiMajorAxis = zero.add(orbit.getA());
-        final FieldAbsoluteDate<T> fieldDate = new FieldAbsoluteDate<T>(field, orbit.getDate());
+        final FieldAbsoluteDate<T> fieldDate = new FieldAbsoluteDate<>(field, orbit.getDate());
         final PositionAngleType positionAngleType = PositionAngleType.MEAN;
         final T fieldAngle = zero.add(orbit.getL(positionAngleType));
         return new FieldEquinoctialOrbit<>(fieldSemiMajorAxis, zero, zero, zero, zero, fieldAngle,

@@ -77,8 +77,8 @@ public class TIRFProviderTest {
                              { 53104, -0.4399619, 0.0015563, -0.140682, 0.333309, Double.NaN, Double.NaN, -0.000199, -0.000252 },
                              { 53105, -0.4399619, 0.0015563, -0.140682, 0.333309, Double.NaN, Double.NaN, -0.000199, -0.000252 }
                          }));
-        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 04, 06),
-                                           new TimeComponents(07, 51, 28.386009),
+        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 4, 6),
+                                           new TimeComponents(7, 51, 28.386009),
                                            TimeScalesFactory.getUTC());
 
         // Positions LEO
@@ -131,7 +131,7 @@ public class TIRFProviderTest {
                              { 53160, -0.4709050,  0.0000000, -0.083853,  0.467217, Double.NaN, Double.NaN, -0.000199, -0.000252 }
                          }));
 
-        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 06, 01),
+        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 6, 1),
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
@@ -244,7 +244,7 @@ public class TIRFProviderTest {
         // tolerance of comparisons
         final double absTol = Precision.EPSILON;
         // the expected result
-        final List<Transform> expecteds = new ArrayList<Transform>();
+        final List<Transform> expecteds = new ArrayList<>();
         for (int j = 0; j < nPerJob; j++) {
             final AbsoluteDate date = start.shiftedBy(timeStep * j);
             // action
@@ -254,19 +254,17 @@ public class TIRFProviderTest {
         }
 
         // build jobs for concurrent execution
-        final List<Callable<Boolean>> jobs = new ArrayList<Callable<Boolean>>();
+        final List<Callable<Boolean>> jobs = new ArrayList<>();
         for (int i = 0; i < nJobs; i++) {
-            jobs.add(new Callable<Boolean>() {
-                public Boolean call() throws Exception {
-                    for (int j = 0; j < nPerJob; j++) {
-                        final AbsoluteDate date = start.shiftedBy(timeStep * j);
-                        // action
-                        final Transform actual = tirf.getTransform(date);
-                        // verify
-                        assertTransformEquals(expecteds.get(j), actual, absTol);
-                    }
-                    return true;
+            jobs.add(() -> {
+                for (int j = 0; j < nPerJob; j++) {
+                    final AbsoluteDate date = start.shiftedBy(timeStep * j);
+                    // action
+                    final Transform actual = tirf.getTransform(date);
+                    // verify
+                    assertTransformEquals(expecteds.get(j), actual, absTol);
                 }
+                return true;
             });
         }
 

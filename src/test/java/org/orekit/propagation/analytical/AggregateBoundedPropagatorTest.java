@@ -63,11 +63,9 @@ public class AggregateBoundedPropagatorTest {
     /**
      * Check {@link AggregateBoundedPropagator#propagateOrbit(AbsoluteDate)} when the
      * constituent propagators are exactly adjacent.
-     *
-     * @throws Exception on error.
      */
     @Test
-    public void testAdjacent() throws Exception {
+    public void testAdjacent() {
         // setup
         AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
         BoundedPropagator p1 = createPropagator(date, date.shiftedBy(10), 0);
@@ -107,11 +105,9 @@ public class AggregateBoundedPropagatorTest {
     /**
      * Check {@link AggregateBoundedPropagator#propagateOrbit(AbsoluteDate)} when the
      * constituent propagators overlap.
-     *
-     * @throws Exception on error.
      */
     @Test
-    public void testOverlap() throws Exception {
+    public void testOverlap() {
         // setup
         AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
         BoundedPropagator p1 = createPropagator(date, date.shiftedBy(25), 0);
@@ -145,11 +141,9 @@ public class AggregateBoundedPropagatorTest {
     /**
      * Check {@link AggregateBoundedPropagator#propagateOrbit(AbsoluteDate)} with a gap
      * between the constituent propagators.
-     *
-     * @throws Exception on error.
      */
     @Test
-    public void testGap() throws Exception {
+    public void testGap() {
         // setup
         AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
         BoundedPropagator p1 = createPropagator(date, date.shiftedBy(1), 0);
@@ -186,7 +180,7 @@ public class AggregateBoundedPropagatorTest {
     }
 
     @Test
-    public void testOutsideBounds() throws Exception {
+    public void testOutsideBounds() {
         // setup
         AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
         BoundedPropagator p1 = createPropagator(date, date.shiftedBy(10), 0);
