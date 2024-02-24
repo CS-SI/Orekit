@@ -1381,9 +1381,11 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         FieldNumericalPropagator<Gradient> FNP = new FieldNumericalPropagator<>(field, integrator);
         FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
+        FNP.setPositionAngleType(PositionAngleType.TRUE);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitType(FNP.getOrbitType());
+        NP.setPositionAngleType(FNP.getPositionAngleType());
         NP.setInitialState(iSR);
 
 

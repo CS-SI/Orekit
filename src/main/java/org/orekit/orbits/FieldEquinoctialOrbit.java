@@ -1241,17 +1241,18 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         final T oMe2;
         final T ksi;
         final T n               = gm.divide(a).sqrt().divide(a);
-        final FieldSinCos<T> sc = FastMath.sinCos(getLv());
+        final FieldSinCos<T> sc;
         switch (type) {
             case MEAN :
                 pDot[5] = pDot[5].add(n);
                 break;
             case ECCENTRIC :
-                oMe2 = getOne().subtract(ex.square()).subtract(ey.square());
-                ksi  = ex.multiply(sc.cos()).add(1).add(ey.multiply(sc.sin()));
-                pDot[5] = pDot[5].add(n.multiply(ksi).divide(oMe2));
+                sc = FastMath.sinCos(getLE());
+                ksi  = ((ex.multiply(sc.cos())).add(ey.multiply(sc.sin()))).negate().add(1).reciprocal();
+                pDot[5] = pDot[5].add(n.multiply(ksi));
                 break;
             case TRUE :
+                sc = FastMath.sinCos(getLv());
                 oMe2 = getOne().subtract(ex.square()).subtract(ey.square());
                 ksi  =  ex.multiply(sc.cos()).add(1).add(ey.multiply(sc.sin()));
                 pDot[5] = pDot[5].add(n.multiply(ksi).multiply(ksi).divide(oMe2.multiply(oMe2.sqrt())));

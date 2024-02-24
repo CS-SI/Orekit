@@ -53,7 +53,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.List;
 
-public class EclipseDetectorTest {
+class EclipseDetectorTest {
 
     private double               mu;
     private AbsoluteDate         iniDate;
@@ -65,7 +65,7 @@ public class EclipseDetectorTest {
     private double               sunRadius;
 
     @Test
-    public void testPolar() {
+    void testPolar() {
         final KeplerianOrbit original = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(initialState.getOrbit());
         final KeplerianOrbit polar    = new KeplerianOrbit(original.getA(), original.getE(),
                                                            0.5 * FastMath.PI, original.getPerigeeArgument(),
@@ -108,7 +108,7 @@ public class EclipseDetectorTest {
         Assertions.assertEquals( 2280.427, events.get(1).getState().getDate().durationFrom(iniDate), 1.0e-3);
         Assertions.assertTrue(events.get(2).getEventDetector() == withFlattening);
         Assertions.assertTrue(events.get(2).isIncreasing());
-        Assertions.assertEquals( 4310.742, events.get(2).getState().getDate().durationFrom(iniDate), 1.0e-3);
+        Assertions.assertEquals( 4310.741, events.get(2).getState().getDate().durationFrom(iniDate), 1.0e-3);
         Assertions.assertTrue(events.get(3).getEventDetector() == withoutFlattening);
         Assertions.assertTrue(events.get(3).isIncreasing());
         Assertions.assertEquals( 4317.155, events.get(3).getState().getDate().durationFrom(iniDate), 1.6e-3);
@@ -134,7 +134,7 @@ public class EclipseDetectorTest {
     }
 
     @Test
-    public void testEclipse() {
+    void testEclipse() {
         EclipseDetector e = new EclipseDetector(sun, sunRadius, earth).
                             withMaxCheck(60.0).
                             withThreshold(1.0e-3).
@@ -151,7 +151,7 @@ public class EclipseDetectorTest {
     }
 
     @Test
-    public void testPenumbra() {
+    void testPenumbra() {
         EclipseDetector e = new EclipseDetector(sun, sunRadius, earth).
                             withMaxCheck(60.0).
                             withThreshold(1.0e-3).
@@ -163,7 +163,7 @@ public class EclipseDetectorTest {
     }
 
     @Test
-    public void testWithMethods() {
+    void testWithMethods() {
         EclipseDetector e = new EclipseDetector(sun, sunRadius, earth).
                              withHandler(new StopOnDecreasing()).
                              withMaxCheck(120.0).
@@ -180,7 +180,7 @@ public class EclipseDetectorTest {
     }
 
     @Test
-    public void testInsideOcculting() {
+    void testInsideOcculting() {
         EclipseDetector e = new EclipseDetector(sun, sunRadius, earth);
         SpacecraftState s = new SpacecraftState(new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH,
                                                                                                 new Vector3D(1e6, 2e6, 3e6),
@@ -196,7 +196,7 @@ public class EclipseDetectorTest {
     }
 
     @Test
-    public void testInsideOcculted() {
+    void testInsideOcculted() {
         EclipseDetector e = new EclipseDetector(sun, sunRadius, earth);
         Vector3D p = sun.getPosition(AbsoluteDate.J2000_EPOCH, FramesFactory.getGCRF());
         SpacecraftState s = new SpacecraftState(new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH,
@@ -208,7 +208,7 @@ public class EclipseDetectorTest {
     }
 
     @Test
-    public void testTooSmallMaxIterationCount() {
+    void testTooSmallMaxIterationCount() {
         int n = 5;
         EclipseDetector e = new EclipseDetector(sun, sunRadius, earth).
                              withHandler(new StopOnDecreasing()).

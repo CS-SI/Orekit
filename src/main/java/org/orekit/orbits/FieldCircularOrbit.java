@@ -1483,17 +1483,18 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         final T oMe2;
         final T ksi;
         final T n = a.reciprocal().multiply(gm).sqrt().divide(a);
-        final FieldSinCos<T> sc = FastMath.sinCos(getAlphaV());
+        final FieldSinCos<T> sc;
         switch (type) {
             case MEAN :
                 pDot[5] = pDot[5].add(n);
                 break;
             case ECCENTRIC :
-                oMe2  = getOne().subtract(ex.multiply(ex)).subtract(ey.multiply(ey));
-                ksi   = getOne().add(ex.multiply(sc.cos())).add(ey.multiply(sc.sin()));
-                pDot[5] = pDot[5].add(n.multiply(ksi).divide(oMe2));
+                sc = FastMath.sinCos(getAlphaE());
+                ksi  = ((ex.multiply(sc.cos())).add(ey.multiply(sc.sin()))).negate().add(1).reciprocal();
+                pDot[5] = pDot[5].add(n.multiply(ksi));
                 break;
             case TRUE :
+                sc = FastMath.sinCos(getAlphaV());
                 oMe2  = getOne().subtract(ex.multiply(ex)).subtract(ey.multiply(ey));
                 ksi   = getOne().add(ex.multiply(sc.cos())).add(ey.multiply(sc.sin()));
                 pDot[5] = pDot[5].add(n.multiply(ksi).multiply(ksi).divide(oMe2.multiply(oMe2.sqrt())));

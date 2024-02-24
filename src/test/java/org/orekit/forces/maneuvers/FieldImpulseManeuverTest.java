@@ -84,7 +84,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
-public class FieldImpulseManeuverTest {
+class FieldImpulseManeuverTest {
 
     private final double mu = Constants.WGS84_EARTH_MU;
     private final Frame inertialFrame = FramesFactory.getGCRF();
@@ -97,6 +97,7 @@ public class FieldImpulseManeuverTest {
     private final Vector3D deltaV = new Vector3D(0.1, -0.5, 0.2);
     private final double timeOfFlight = 10000.;
     private final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+    private final PositionAngleType positionAngleType = PositionAngleType.ECCENTRIC;
     private final LofOffset attitudeOverride = new LofOffset(inertialFrame, LOFType.QSW);
     private final GradientField gradientField = GradientField.getField(2);
     private final UnivariateDerivative1Field univariateDerivative1Field = new UnivariateDerivative1(0., 0.).getField();
@@ -140,7 +141,7 @@ public class FieldImpulseManeuverTest {
     }
 
     @Test
-    public void testComplexConstructors() {
+    void testComplexConstructors() {
         // Given
         final Complex zero = complexField.getZero();
         final Complex isp = zero.add(200.);
@@ -165,7 +166,7 @@ public class FieldImpulseManeuverTest {
     }
 
     @Test
-    public void testDeltaVNorm() {
+    void testDeltaVNorm() {
         // Given
         final Complex isp = complexField.getOne().add(200.);
         final FieldVector3D<Complex> deltaV = new FieldVector3D<>(complexField, Vector3D.PLUS_I);
@@ -189,43 +190,43 @@ public class FieldImpulseManeuverTest {
     }
 
     @Test
-    public void testEclipseDetectorDerivativeStructure() {
+    void testEclipseDetectorDerivativeStructure() {
         templateDetector(new DSFactory(1, 1).getDerivativeField(),
                 DetectorType.ECLIPSE_DETECTOR, Control3DVectorCostType.TWO_NORM);
     }
 
     @Test
-    public void testEclipseDetectorGradient() {
+    void testEclipseDetectorGradient() {
         templateDetector(gradientField, DetectorType.ECLIPSE_DETECTOR, Control3DVectorCostType.TWO_NORM);
     }
 
     @Test
-    public void testEclipseDetectorGradientNormInf() {
+    void testEclipseDetectorGradientNormInf() {
         templateDetector(gradientField, DetectorType.ECLIPSE_DETECTOR, Control3DVectorCostType.INF_NORM);
     }
 
     @Test
-    public void testDateDetectorComplex() {
+    void testDateDetectorComplex() {
         templateDetector(complexField, DetectorType.DATE_DETECTOR, Control3DVectorCostType.TWO_NORM);
     }
 
     @Test
-    public void testDateDetectorUnivariateDerivative2() {
+    void testDateDetectorUnivariateDerivative2() {
         templateDetector(univariateDerivative2Field, DetectorType.DATE_DETECTOR, Control3DVectorCostType.TWO_NORM);
     }
 
     @Test
-    public void testDateDetectorGradientNorm1() {
+    void testDateDetectorGradientNorm1() {
         templateDetector(gradientField, DetectorType.DATE_DETECTOR, Control3DVectorCostType.ONE_NORM);
     }
 
     @Test
-    public void testLatitudeCrossingDetectorUnivariateDerivative1() {
+    void testLatitudeCrossingDetectorUnivariateDerivative1() {
         templateDetector(univariateDerivative1Field, DetectorType.LATITUDE_CROSSING_DETECTOR, Control3DVectorCostType.TWO_NORM);
     }
 
     @Test
-    public void testLatitudeCrossingDetectorDerivativeStructure() {
+    void testLatitudeCrossingDetectorDerivativeStructure() {
         templateDetector(new DSFactory(1, 1).getDerivativeField(),
                 DetectorType.LATITUDE_CROSSING_DETECTOR, Control3DVectorCostType.TWO_NORM);
     }
@@ -321,6 +322,7 @@ public class FieldImpulseManeuverTest {
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(new SpacecraftState(initialOrbit, initialMass));
         propagator.setOrbitType(orbitType);
+        propagator.setPositionAngleType(positionAngleType);
         return propagator;
     }
 
@@ -335,6 +337,7 @@ public class FieldImpulseManeuverTest {
         final T fieldInitialMass = field.getZero().add(initialMass);
         fieldPropagator.setInitialState(new FieldSpacecraftState<>(fieldInitialOrbit, fieldInitialMass));
         fieldPropagator.setOrbitType(orbitType);
+        fieldPropagator.setPositionAngleType(positionAngleType);
         return fieldPropagator;
     }
 
@@ -375,7 +378,7 @@ public class FieldImpulseManeuverTest {
     }
 
     @Test
-    public void testAdditionalStatePropagation() {
+    void testAdditionalStatePropagation() {
         // Given
         final UnivariateDerivative1 zero = univariateDerivative1Field.getZero();
         final FieldNumericalPropagator<UnivariateDerivative1> fieldPropagator = createFieldPropagatorForAdditionalStatesAndDerivatives(
@@ -393,7 +396,7 @@ public class FieldImpulseManeuverTest {
     }
 
     @Test
-    public void testAdditionalStateDerivativesPropagation() {
+    void testAdditionalStateDerivativesPropagation() {
         // Given
        final Gradient zero = gradientField.getZero();
         final FieldNumericalPropagator<Gradient> fieldPropagator = createFieldPropagatorForAdditionalStatesAndDerivatives(
@@ -426,7 +429,7 @@ public class FieldImpulseManeuverTest {
     }
 
     @Test
-    public void testBackAndForthPropagation() {
+    void testBackAndForthPropagation() {
         // Given
         final Orbit initialOrbit = createOrbit();
         final NumericalPropagator propagator = createUnperturbedPropagator(initialOrbit, initialMass);
@@ -435,7 +438,6 @@ public class FieldImpulseManeuverTest {
         final UnivariateDerivative1 zero = univariateDerivative1Field.getZero();
         final FieldNumericalPropagator<UnivariateDerivative1> fieldPropagator = createUnperturbedFieldPropagator(univariateDerivative1Field,
                 initialOrbit, initialMass);
-        fieldPropagator.setOrbitType(propagator.getOrbitType());
         fieldPropagator.setAttitudeProvider(propagator.getAttitudeProvider());
         fieldPropagator.setResetAtEnd(true);
         fieldPropagator.addEventDetector(convertManeuver(univariateDerivative1Field, impulseManeuver, new FieldContinueOnEvent<>()));
@@ -450,7 +452,7 @@ public class FieldImpulseManeuverTest {
     }
 
     @Test
-    public void testVersusCartesianStateTransitionMatrix() {
+    void testVersusCartesianStateTransitionMatrix() {
         // Given
         final int freeParameters = 3;
         final GradientField field = GradientField.getField(freeParameters);
