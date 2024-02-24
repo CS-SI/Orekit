@@ -30,6 +30,7 @@ import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOF;
@@ -300,8 +301,8 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
     public FieldMatrix<T> computeReferenceInertialToCollisionPlaneProjectionMatrix() {
 
         // Create transform from reference inertial frame to encounter local orbital frame
-        final FieldTransform<T> referenceInertialToEncounterFrameTransform =
-                new FieldTransform<>(tca,
+        final FieldStaticTransform<T> referenceInertialToEncounterFrameTransform =
+                FieldStaticTransform.compose(tca,
                                      computeReferenceInertialToReferenceTNWTransform(),
                                      computeReferenceTNWToEncounterFrameTransform());
 
@@ -381,18 +382,17 @@ public class FieldShortTermEncounter2DDefinition<T extends CalculusFieldElement<
     public FieldVector2D<T> computeOtherPositionInCollisionPlane() {
 
         // Express other in reference inertial
-        final FieldPVCoordinates<T> otherInReferenceInertial = otherAtTCA.getPVCoordinates(referenceAtTCA.getFrame());
+        final FieldVector3D<T> otherInReferenceInertial = otherAtTCA.getPosition(referenceAtTCA.getFrame());
 
         // Express other in reference TNW local orbital frame
-        final FieldPVCoordinates<T> otherPVInReferenceTNW =
-                computeReferenceInertialToReferenceTNWTransform().transformPVCoordinates(otherInReferenceInertial);
+        final FieldVector3D<T> otherPositionInReferenceTNW =
+                computeReferenceInertialToReferenceTNWTransform().transformPosition(otherInReferenceInertial);
 
         // Express other in encounter local orbital frame
-        final FieldPVCoordinates<T> otherPVInEncounterFrame =
-                computeReferenceTNWToEncounterFrameTransform().transformPVCoordinates(
-                        otherPVInReferenceTNW);
+        final FieldVector3D<T> otherPositionInEncounterFrame =
+                computeReferenceTNWToEncounterFrameTransform().transformPosition(otherPositionInReferenceTNW);
 
-        return encounterFrame.projectOntoCollisionPlane(otherPVInEncounterFrame.getPosition());
+        return encounterFrame.projectOntoCollisionPlane(otherPositionInEncounterFrame);
 
     }
 
