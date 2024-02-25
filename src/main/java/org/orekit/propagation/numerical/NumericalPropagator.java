@@ -146,7 +146,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * </pre>
  * <p>By default, at the end of the propagation, the propagator resets the initial state to the final state,
  * thus allowing a new propagation to be started from there without recomputing the part already performed.
- * This behaviour can be chenged by calling {@link #setResetAtEnd(boolean)}.
+ * This behaviour can be changed by calling {@link #setResetAtEnd(boolean)}.
  * </p>
  * <p>Beware the same instance cannot be used simultaneously by different threads, the class is <em>not</em>
  * thread-safe.</p>
@@ -218,13 +218,13 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     public NumericalPropagator(final ODEIntegrator integrator,
                                final AttitudeProvider attitudeProvider) {
         super(integrator, PropagationType.OSCULATING);
-        forceModels             = new ArrayList<ForceModel>();
+        forceModels             = new ArrayList<>();
         ignoreCentralAttraction = false;
         initMapper();
         setAttitudeProvider(attitudeProvider);
         clearStepHandlers();
         setOrbitType(OrbitType.EQUINOCTIAL);
-        setPositionAngleType(PositionAngleType.TRUE);
+        setPositionAngleType(PositionAngleType.ECCENTRIC);
     }
 
     /** Set the flag to ignore or not the creation of a {@link NewtonianAttraction}.
@@ -240,11 +240,12 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
       * Setting the central attraction coefficient is
       * equivalent to {@link #addForceModel(ForceModel) add}
       * a {@link NewtonianAttraction} force model.
-      * </p>
-     * @param mu central attraction coefficient (m³/s²)
-     * @see #addForceModel(ForceModel)
-     * @see #getAllForceModels()
-     */
+      * * </p>
+      * @param mu central attraction coefficient (m³/s²)
+      * @see #addForceModel(ForceModel)
+      * @see #getAllForceModels()
+      */
+    @Override
     public void setMu(final double mu) {
         if (ignoreCentralAttraction) {
             superSetMu(mu);
@@ -357,6 +358,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @param orbitType orbit type to use for propagation, null for
      * propagating using {@link org.orekit.utils.AbsolutePVCoordinates} rather than {@link Orbit}
      */
+    @Override
     public void setOrbitType(final OrbitType orbitType) {
         super.setOrbitType(orbitType);
     }
@@ -365,6 +367,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @return orbit type used for propagation, null for
      * propagating using {@link org.orekit.utils.AbsolutePVCoordinates} rather than {@link Orbit}
      */
+    @Override
     public OrbitType getOrbitType() {
         return super.getOrbitType();
     }
@@ -378,6 +381,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
+    @Override
     public void setPositionAngleType(final PositionAngleType positionAngleType) {
         super.setPositionAngleType(positionAngleType);
     }
@@ -385,6 +389,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
+    @Override
     public PositionAngleType getPositionAngleType() {
         return super.getPositionAngleType();
     }
@@ -397,6 +402,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void resetInitialState(final SpacecraftState state) {
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
@@ -896,6 +902,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         /** Jacobian of the orbital parameters with respect to the Cartesian parameters. */
         private double[][] jacobian;
 
+        /** Flag keeping track whether Jacobian matrix needs to be recomputed or not. */
+        private boolean recomputingJacobian;
+
         /** Simple constructor.
          * @param integrator numerical integrator to use for propagation.
          */
@@ -908,8 +917,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 forceModel.getEventDetectors().forEach(detector -> setUpEventDetector(integrator, detector));
             }
 
-            if (getOrbitType() == null) {
-                // propagation uses absolute position-velocity-acceleration
+            if (!recomputingJacobian) {
                 // we can set Jacobian once and for all
                 for (int i = 0; i < jacobian.length; ++i) {
                     Arrays.fill(jacobian[i], 0.0);
@@ -923,6 +931,18 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         @Override
         public void init(final SpacecraftState initialState, final AbsoluteDate target) {
             forceModels.forEach(fm -> fm.init(initialState, target));
+
+            final int numberOfForces = forceModels.size();
+            final OrbitType orbitType = getOrbitType();
+            if (orbitType != null && orbitType != OrbitType.CARTESIAN && numberOfForces > 0) {
+                if (numberOfForces > 1) {
+                    recomputingJacobian = true;
+                } else {
+                    recomputingJacobian = !(forceModels.get(0) instanceof NewtonianAttraction);
+                }
+            } else {
+                recomputingJacobian = false;
+            }
         }
 
         /** {@inheritDoc} */
@@ -931,8 +951,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
             currentState = state;
             Arrays.fill(yDot, 0.0);
-            if (getOrbitType() != null) {
-                // propagation uses regular orbits
+            if (recomputingJacobian) {
+                // propagation uses Jacobian matrix of orbital parameters w.r.t. Cartesian ones
                 currentState.getOrbit().getJacobianWrtCartesian(getPositionAngleType(), jacobian);
             }
 

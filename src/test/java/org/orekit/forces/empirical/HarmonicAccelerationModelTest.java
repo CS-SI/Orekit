@@ -48,11 +48,7 @@ import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
-import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.CircularOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.*;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -164,6 +160,8 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
             new DormandPrince853Integrator(0.001, 100, tolerance[0], tolerance[1]);
         integrator0.setInitialStepSize(60);
         final NumericalPropagator propagator0 = new NumericalPropagator(integrator0);
+        propagator0.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator0.setPositionAngleType(PositionAngleType.TRUE);
         propagator0.setInitialState(initialState);
         propagator0.setAttitudeProvider(maneuverLaw);
         propagator0.addForceModel(maneuver);
@@ -173,6 +171,8 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
                         new DormandPrince853Integrator(0.001, 100, tolerance[0], tolerance[1]);
         integrator1.setInitialStepSize(60);
         final NumericalPropagator propagator1 = new NumericalPropagator(integrator1);
+        propagator1.setOrbitType(propagator0.getOrbitType());
+        propagator1.setPositionAngleType(propagator0.getPositionAngleType());
         propagator1.setInitialState(initialState);
         propagator1.setAttitudeProvider(accelerationLaw);
         propagator1.addForceModel(parametricAcceleration);
@@ -279,6 +279,8 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
             new DormandPrince853FieldIntegrator<>(field, 0.001, 100, tolerance[0], tolerance[1]);
         integrator0.setInitialStepSize(60);
         final FieldNumericalPropagator<T> propagator0 = new FieldNumericalPropagator<>(field, integrator0);
+        propagator0.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator0.setPositionAngleType(PositionAngleType.TRUE);
         propagator0.setInitialState(initialState);
         propagator0.setAttitudeProvider(maneuverLaw);
         propagator0.addForceModel(maneuver);
@@ -291,6 +293,8 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 100, tolerance[0], tolerance[1]);
         integrator1.setInitialStepSize(60);
         final FieldNumericalPropagator<T> propagator1 = new FieldNumericalPropagator<>(field, integrator1);
+        propagator1.setOrbitType(propagator0.getOrbitType());
+        propagator1.setPositionAngleType(propagator0.getPositionAngleType());
         propagator1.setInitialState(initialState);
         propagator1.setAttitudeProvider(accelerationLaw);
         propagator1.addForceModel(parametricAcceleration);
@@ -377,6 +381,8 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
             new DormandPrince853Integrator(minStep, maxStep, tolerance[0], tolerance[1]);
         integrator0.setInitialStepSize(60);
         final NumericalPropagator propagator0 = new NumericalPropagator(integrator0);
+        propagator0.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator0.setPositionAngleType(PositionAngleType.TRUE);
         propagator0.setInitialState(initialState);
         propagator0.setAttitudeProvider(maneuverLaw);
         final ParametricAcceleration hpaRefX1 = new ParametricAcceleration(Vector3D.PLUS_I, true,

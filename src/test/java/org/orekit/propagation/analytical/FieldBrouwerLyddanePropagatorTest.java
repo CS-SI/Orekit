@@ -897,6 +897,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         num.addForceModel(new HolmesFeatherstoneAttractionModel(itrf, provider));
         num.setInitialState(new FieldSpacecraftState<>(initialOsculating));
         num.setOrbitType(OrbitType.KEPLERIAN);
+        num.setPositionAngleType(initialOsculating.getCachedPositionAngleType());
         final StorelessUnivariateStatistic oscMin  = new Min();
         final StorelessUnivariateStatistic oscMax  = new Max();
         final StorelessUnivariateStatistic meanMin = new Min();

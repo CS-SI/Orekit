@@ -1134,17 +1134,18 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
         final double oMe2;
         final double ksi;
         final double n  = FastMath.sqrt(gm / a) / a;
-        final SinCos sc = FastMath.sinCos(getLv());
+        final SinCos sc;
         switch (type) {
             case MEAN :
                 pDot[5] += n;
                 break;
             case ECCENTRIC :
-                oMe2 = 1 - ex * ex - ey * ey;
-                ksi  = 1 + ex * sc.cos() + ey * sc.sin();
-                pDot[5] += n * ksi / oMe2;
+                sc = FastMath.sinCos(getLE());
+                ksi  = 1. / (1 - ex * sc.cos() - ey * sc.sin());
+                pDot[5] += n * ksi;
                 break;
             case TRUE :
+                sc = FastMath.sinCos(getLv());
                 oMe2 = 1 - ex * ex - ey * ey;
                 ksi  = 1 + ex * sc.cos() + ey * sc.sin();
                 pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));

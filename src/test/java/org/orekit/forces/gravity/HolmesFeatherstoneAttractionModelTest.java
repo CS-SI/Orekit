@@ -507,10 +507,12 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
         FNP.setOrbitType(type);
+        FNP.setPositionAngleType(PositionAngleType.TRUE);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
-        NP.setOrbitType(type);
+        NP.setOrbitType(FNP.getOrbitType());
+        NP.setPositionAngleType(FNP.getPositionAngleType());
         NP.setInitialState(iSR);
 
         double[][] c = new double[3][1];
@@ -891,6 +893,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         // let the step handler perform the test
         propagator.setInitialState(new SpacecraftState(initialOrbit));
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
+        propagator.setPositionAngleType(PositionAngleType.TRUE);
         propagator.setStepHandler(20, new EckStepHandler(initialOrbit, ae,
                                                          unnormalizedC20, unnormalizedC30, unnormalizedC40,
                                                          unnormalizedC50, unnormalizedC60));

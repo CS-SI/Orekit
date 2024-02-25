@@ -54,17 +54,17 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeSpanMap;
 
-public class ProfileThrustPropulsionModelTest {
+class ProfileThrustPropulsionModelTest {
 
     @Test
-    public void testRoughBehaviour() {
+    void testRoughBehaviour() {
         doRoughBehaviour(  1.0, 2008.017, 28968115.974);
         doRoughBehaviour( 10.0, 2009.229, 28950587.132);
         doRoughBehaviour(100.0, 2021.350, 28777772.266);
     }
 
     @Test
-    public void testRoughBehaviourField() {
+    void testRoughBehaviourField() {
         doRoughBehaviourField(Binary64Field.getInstance(),   1.0, 2008.017, 28968115.974);
         doRoughBehaviourField(Binary64Field.getInstance(),  10.0, 2009.229, 28950587.132);
         doRoughBehaviourField(Binary64Field.getInstance(), 100.0, 2021.350, 28777772.266);
@@ -90,8 +90,9 @@ public class ProfileThrustPropulsionModelTest {
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                        new TimeComponents(23, 30, 00.000),
                                                        TimeScalesFactory.getUTC());
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final Orbit initOrbit =
-            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
+            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, positionAngleType,
                                FramesFactory.getEME2000(), initDate, Constants.EIGEN5C_EARTH_MU);
         final SpacecraftState initialState =
             new SpacecraftState(initOrbit, law.getAttitude(initOrbit, initOrbit.getDate(), initOrbit.getFrame()), mass);
@@ -178,8 +179,9 @@ public class ProfileThrustPropulsionModelTest {
                                                                       new DateComponents(2004, 01, 01),
                                                                       new TimeComponents(23, 30, 00.000),
                                                                       TimeScalesFactory.getUTC());
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
         final FieldOrbit<T> initOrbit =
-            new FieldKeplerianOrbit<>(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
+            new FieldKeplerianOrbit<>(a, e, i, omega, OMEGA, lv, positionAngleType,
                                       FramesFactory.getEME2000(), initDate,
                                       zero.newInstance(Constants.EIGEN5C_EARTH_MU));
         final FieldSpacecraftState<T> initialState =
@@ -236,6 +238,7 @@ public class ProfileThrustPropulsionModelTest {
         integrator.setInitialStepSize(0.1);
         final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(initOrbit.getType());
+        propagator.setPositionAngleType(positionAngleType);
         propagator.setInitialState(initialState);
         propagator.setAttitudeProvider(law);
         propagator.addForceModel(maneuver);
