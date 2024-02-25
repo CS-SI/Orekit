@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="serrof" type="update" issue="1198">
+          Removed redundant code to create FieldOrbit from Orbit.
+      </action>
       <action dev="serrof" type="update" issue="1201">
           Changed default PositionAngleType in (Field)NumericalPropagator to ECCENTRIC.
       </action>

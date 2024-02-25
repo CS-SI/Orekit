@@ -490,7 +490,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @since 12.0
      */
     public FieldKeplerianOrbit(final Field<T> field, final Orbit op) {
-        this(field, new KeplerianOrbit(op));
+        this(field, (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(op));
     }
 
     /** {@inheritDoc} */

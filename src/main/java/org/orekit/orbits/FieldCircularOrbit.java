@@ -482,7 +482,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * @since 12.0
      */
     public FieldCircularOrbit(final Field<T> field, final Orbit op) {
-        this(field, new CircularOrbit(op));
+        this(field, (CircularOrbit) OrbitType.CIRCULAR.convertType(op));
     }
 
     /** {@inheritDoc} */
