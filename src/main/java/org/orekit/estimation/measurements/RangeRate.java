@@ -222,7 +222,6 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
      * @param transitPV spacecraft coordinates at onboard signal transit
      * @param transitState orbital state at onboard signal transit
      * @return theoretical value
-     * @see #evaluate(SpacecraftStatet)
      * @since 12.0
      */
     private EstimatedMeasurementBase<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int evaluation, final boolean downlink,
@@ -283,7 +282,6 @@ public class RangeRate extends GroundReceiverMeasurement<RangeRate> {
      * @param indices indices of the estimated parameters in derivatives computations
      * @param nbParams the number of estimated parameters in derivative computations
      * @return theoretical value
-     * @see #evaluate(SpacecraftStatet)
      */
     private EstimatedMeasurement<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int evaluation, final boolean downlink,
                                                                         final TimeStampedFieldPVCoordinates<Gradient> stationPV,
