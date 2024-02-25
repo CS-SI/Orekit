@@ -18,22 +18,17 @@ package org.orekit.estimation.measurements.gnss;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** One-way GNSS phase measurement.
@@ -55,7 +50,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
+public class OneWayGNSSPhase extends OnBoardMeasurement<OneWayGNSSPhase> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "OneWayGNSSPhase";
@@ -127,33 +122,24 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
                                                                                                 final int evaluation,
                                                                                                 final SpacecraftState[] states) {
 
-        // Coordinates of both satellites
-        final SpacecraftState          localState = states[0];
-        final TimeStampedPVCoordinates pvaLocal   = localState.getPVCoordinates();
-        final TimeStampedPVCoordinates pvaRemote  = remote.getPVCoordinates(getDate(), localState.getFrame());
-
-        // Downlink delay
-        final double dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(localState.getDate());
-        final AbsoluteDate arrivalDate = getDate().shiftedBy(-dtLocal);
-
-        final SpacecraftState sDownlink = localState.shiftedBy(arrivalDate.durationFrom(localState.getDate()));
-        final TimeStampedPVCoordinates pvaDownlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
-        final double tauD = signalTimeOfFlight(pvaRemote, pvaDownlink.getPosition(), arrivalDate, localState.getFrame());
+        final OnBoardCommonParametersWithoutDerivatives common =
+            computeCommonParametersWithout(states[0], remote, dtRemote, false);
 
         // prepare the evaluation
         final EstimatedMeasurementBase<OneWayGNSSPhase> estimatedPhase =
                         new EstimatedMeasurementBase<>(this, iteration, evaluation,
                                                        new SpacecraftState[] {
-                                                           sDownlink
+                                                           common.getState()
                                                        }, new TimeStampedPVCoordinates[] {
-                                                           pvaRemote.shiftedBy(-(dtLocal + tauD)),
-                                                           sDownlink.getPVCoordinates()
+                                                           common.getRemotePV(),
+                                                           common.getTransitPV()
                                                        });
 
         // Phase value
-        final double   cOverLambda      = Constants.SPEED_OF_LIGHT / wavelength;
-        final double   ambiguity        = ambiguityDriver.getValue(localState.getDate());
-        final double   phase            = (tauD + dtLocal - dtRemote) * cOverLambda + ambiguity;
+        final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
+        final double   ambiguity   = ambiguityDriver.getValue(common.getState().getDate());
+        final double   phase       = (common.getTauD() + common.getDtLocal() - common.getDtRemote()) * cOverLambda +
+                                     ambiguity;
 
         // Set value of the estimated measurement
         estimatedPhase.setEstimatedValue(phase);
@@ -169,49 +155,26 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
                                                                           final int evaluation,
                                                                           final SpacecraftState[] states) {
 
-        // Phase derivatives are computed with respect to spacecrafts states in inertial frame
-        // Parameters:
-        //  - 0..2  - Position of the receiver satellite in inertial frame
-        //  - 3..5  - Velocity of the receiver satellite in inertial frame
-        //  - 6..n  - Measurement parameters: ambiguity and clock offset
-        int nbEstimatedParamsPhase = 6;
-        final Map<String, Integer> parameterIndicesPhase = new HashMap<>();
-        for (ParameterDriver phaseMeasurementDriver : getParametersDrivers()) {
-            if (phaseMeasurementDriver.isSelected()) {
-                for (Span<String> span = phaseMeasurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                    parameterIndicesPhase.put(span.getData(), nbEstimatedParamsPhase++);
-                }
-            }
-        }
+        final OnBoardCommonParametersWithDerivatives common =
+            computeCommonParametersWith(1, states[0], remote, dtRemote, false);
 
-        // Coordinates of both satellites
-        final SpacecraftState localState  = states[0];
-        final TimeStampedFieldPVCoordinates<Gradient> pvaLocal  = getCoordinates(localState, 0, nbEstimatedParamsPhase);
-        final TimeStampedPVCoordinates                pvaRemote = remote.getPVCoordinates(getDate(), localState.getFrame());
-
-        // Downlink delay
-        final Gradient dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(nbEstimatedParamsPhase, parameterIndicesPhase, localState.getDate());
-        final FieldAbsoluteDate<Gradient> arrivalDate = new FieldAbsoluteDate<>(getDate(), dtLocal.negate());
-
-        final SpacecraftState sDownlink = localState.shiftedBy(arrivalDate.toAbsoluteDate().durationFrom(localState.getDate()));
-        final TimeStampedFieldPVCoordinates<Gradient> pvaDownlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
-        final Gradient tauD = signalTimeOfFlight(new TimeStampedFieldPVCoordinates<>(pvaRemote.getDate(), dtLocal.getField().getOne(), pvaRemote),
-                                                 pvaDownlink.getPosition(), arrivalDate, localState.getFrame());
-
-        // prepare the evaluation
+       // prepare the evaluation
         final EstimatedMeasurement<OneWayGNSSPhase> estimatedPhase =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
-                                                       sDownlink
+                                                       common.getState()
                                                    }, new TimeStampedPVCoordinates[] {
-                                                       pvaRemote.shiftedBy(-(dtLocal.getValue() + tauD.getValue())),
-                                                       sDownlink.getPVCoordinates()
+                                                     common.getRemotePV().toTimeStampedPVCoordinates(),
+                                                     common.getTransitPV().toTimeStampedPVCoordinates()
                                                    });
 
         // Phase value
         final double   cOverLambda      = Constants.SPEED_OF_LIGHT / wavelength;
-        final Gradient ambiguity        = ambiguityDriver.getValue(nbEstimatedParamsPhase, parameterIndicesPhase, localState.getDate());
-        final Gradient phase            = tauD.add(dtLocal).subtract(dtRemote).multiply(cOverLambda).add(ambiguity);
+        final Gradient ambiguity        = ambiguityDriver.getValue(common.getTauD().getFreeParameters(), common.getIndices(),
+                                                                   common.getState().getDate());
+        final Gradient phase            = common.getTauD().add(common.getDtLocal()).subtract(common.getDtRemote()).
+                                          multiply(cOverLambda).
+                                          add(ambiguity);
         final double[] phaseDerivatives = phase.getGradient();
 
         // Set value and state derivatives of the estimated measurement
@@ -222,7 +185,7 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
         for (final ParameterDriver phaseMeasurementDriver : getParametersDrivers()) {
             for (Span<String> span = phaseMeasurementDriver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
-                final Integer index = parameterIndicesPhase.get(span.getData());
+                final Integer index = common.getIndices().get(span.getData());
                 if (index != null) {
                     estimatedPhase.setParameterDerivatives(phaseMeasurementDriver, span.getStart(), phaseDerivatives[index]);
                 }
