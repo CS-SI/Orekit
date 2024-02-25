@@ -57,9 +57,9 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
      * in inertial frame
      */
     public EstimatedMeasurementBase(final T observedMeasurement,
-                                final int iteration, final int count,
-                                final SpacecraftState[] states,
-                                final TimeStampedPVCoordinates[] participants) {
+                                    final int iteration, final int count,
+                                    final SpacecraftState[] states,
+                                    final TimeStampedPVCoordinates[] participants) {
         this.observedMeasurement = observedMeasurement;
         this.iteration           = iteration;
         this.count               = count;
