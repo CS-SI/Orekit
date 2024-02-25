@@ -105,9 +105,9 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
         final double dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(localState.getDate());
         final AbsoluteDate arrivalDate = getDate().shiftedBy(-dtLocal);
 
-        final SpacecraftState sDownlink = localState.shiftedBy(arrivalDate.durationFrom(localState.getDate()));
-        final TimeStampedPVCoordinates pvaDownlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
-        final double tauD = signalTimeOfFlight(pvaRemote, pvaDownlink.getPosition(), arrivalDate);
+        final SpacecraftState sDownlink = localState.shiftedBy(arrivalDate.durationFrom(localState));
+        final TimeStampedPVCoordinates pvaDownlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal));
+        final double tauD = signalTimeOfFlight(pvaRemote, pvaDownlink.getPosition(), arrivalDate, localState.getFrame());
 
         // Estimated measurement
         final EstimatedMeasurementBase<OneWayGNSSRange> estimatedRange =
@@ -160,10 +160,10 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
         final Gradient dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(nbEstimatedParams, parameterIndices, localState.getDate());
         final FieldAbsoluteDate<Gradient> arrivalDate = new FieldAbsoluteDate<>(getDate(), dtLocal.negate());
 
-        final SpacecraftState sDownlink = localState.shiftedBy(arrivalDate.toAbsoluteDate().durationFrom(localState.getDate()));
-        final TimeStampedFieldPVCoordinates<Gradient> pvaDownlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
+        final SpacecraftState sDownlink = localState.shiftedBy(arrivalDate.toAbsoluteDate().durationFrom(localState));
+        final TimeStampedFieldPVCoordinates<Gradient> pvaDownlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal));
         final Gradient tauD = signalTimeOfFlight(new TimeStampedFieldPVCoordinates<>(pvaRemote.getDate(), dtLocal.getField().getOne(), pvaRemote),
-                                                 pvaDownlink.getPosition(), arrivalDate);
+                                                 pvaDownlink.getPosition(), arrivalDate, localState.getFrame());
 
         // Estimated measurement
         final EstimatedMeasurement<OneWayGNSSRange> estimatedRange =

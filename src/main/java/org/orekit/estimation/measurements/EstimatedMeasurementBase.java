@@ -171,7 +171,7 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
         PROCESSED,
 
         /** Status for rejected measurements. */
-        REJECTED;
+        REJECTED
 
     }
 

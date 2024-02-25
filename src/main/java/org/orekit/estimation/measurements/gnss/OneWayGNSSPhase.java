@@ -138,7 +138,7 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
 
         final SpacecraftState sDownlink = localState.shiftedBy(arrivalDate.durationFrom(localState.getDate()));
         final TimeStampedPVCoordinates pvaDownlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
-        final double tauD = signalTimeOfFlight(pvaRemote, pvaDownlink.getPosition(), arrivalDate);
+        final double tauD = signalTimeOfFlight(pvaRemote, pvaDownlink.getPosition(), arrivalDate, localState.getFrame());
 
         // prepare the evaluation
         final EstimatedMeasurementBase<OneWayGNSSPhase> estimatedPhase =
@@ -196,7 +196,7 @@ public class OneWayGNSSPhase extends AbstractMeasurement<OneWayGNSSPhase> {
         final SpacecraftState sDownlink = localState.shiftedBy(arrivalDate.toAbsoluteDate().durationFrom(localState.getDate()));
         final TimeStampedFieldPVCoordinates<Gradient> pvaDownlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
         final Gradient tauD = signalTimeOfFlight(new TimeStampedFieldPVCoordinates<>(pvaRemote.getDate(), dtLocal.getField().getOne(), pvaRemote),
-                                                 pvaDownlink.getPosition(), arrivalDate);
+                                                 pvaDownlink.getPosition(), arrivalDate, localState.getFrame());
 
         // prepare the evaluation
         final EstimatedMeasurement<OneWayGNSSPhase> estimatedPhase =

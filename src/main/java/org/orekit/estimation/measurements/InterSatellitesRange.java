@@ -130,7 +130,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
 
         final TimeStampedPVCoordinates s1Downlink =
                         pvaL.shiftedBy(arrivalDate.durationFrom(pvaL.getDate()));
-        final double tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate);
+        final double tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate, local.getFrame());
 
         // Transit state
         final double delta      = getDate().durationFrom(remote.getDate());
@@ -147,7 +147,8 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
             // uplink delay
             final double tauU = signalTimeOfFlight(pvaL,
                                                    transitState.getPosition(),
-                                                   transitState.getDate());
+                                                   transitState.getDate(),
+                                                   local.getFrame());
             estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
                                                        new SpacecraftState[] {
                                                            local.shiftedBy(deltaMTauD),
@@ -230,7 +231,8 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
 
         final TimeStampedFieldPVCoordinates<Gradient> s1Downlink =
                         pvaL.shiftedBy(arrivalDate.durationFrom(pvaL.getDate()));
-        final Gradient tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate);
+        final Gradient tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(),
+                                                 arrivalDate, local.getFrame());
 
         // Transit state
         final double              delta      = getDate().durationFrom(remote.getDate());
@@ -247,7 +249,8 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
             // uplink delay
             final Gradient tauU = signalTimeOfFlight(pvaL,
                                                      transitStateDS.getPosition(),
-                                                     transitStateDS.getDate());
+                                                     transitStateDS.getDate(),
+                                                     local.getFrame());
             estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
                                                        local.shiftedBy(deltaMTauD.getValue()),

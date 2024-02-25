@@ -122,7 +122,7 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
         final AbsoluteDate arrivalDate = getDate().shiftedBy(-dtl);
 
         final TimeStampedPVCoordinates s1Downlink = pvaL.shiftedBy(arrivalDate.durationFrom(pvaL.getDate()));
-        final double tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate);
+        final double tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate, local.getFrame());
 
         // Transit state
         final double delta      = getDate().durationFrom(remote.getDate());
@@ -193,7 +193,8 @@ public class InterSatellitesPhase extends AbstractMeasurement<InterSatellitesPha
 
         final TimeStampedFieldPVCoordinates<Gradient> s1Downlink =
                         pvaL.shiftedBy(arrivalDate.durationFrom(pvaL.getDate()));
-        final Gradient tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate);
+        final Gradient tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(),
+                                                 arrivalDate, local.getFrame());
 
         // Transit state
         final double   delta      = getDate().durationFrom(remote.getDate());

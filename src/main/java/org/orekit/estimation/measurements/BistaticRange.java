@@ -126,7 +126,8 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
                                                                                       Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO));
 
         // Uplink time of flight from emitter station to transit state
-        final double tauU = signalTimeOfFlight(emitterApprox, transitPV.getPosition(), transitDate);
+        final double tauU = signalTimeOfFlight(emitterApprox, transitPV.getPosition(), transitDate,
+                                               common.getState().getFrame());
 
         // Secondary station PV in inertial frame at rebound date on secondary station
         final TimeStampedPVCoordinates emitterPV = emitterApprox.shiftedBy(-tauU);
@@ -184,7 +185,8 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
                                                                                              zero, zero, zero));
 
         // Uplink time of flight from emiiter to transit state
-        final Gradient tauU = signalTimeOfFlight(emitterApprox, transitPV.getPosition(), transitPV.getDate());
+        final Gradient tauU = signalTimeOfFlight(emitterApprox, transitPV.getPosition(),
+                                                 transitPV.getDate(), state.getFrame());
 
         // Emitter coordinates at transmit time
         final TimeStampedFieldPVCoordinates<Gradient> emitterPV = emitterApprox.shiftedBy(tauU.negate());

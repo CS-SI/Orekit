@@ -104,7 +104,8 @@ public class RangeAnalytic extends Range {
         // Downlink time of flight
         final double          tauD         = signalTimeOfFlight(state.getPVCoordinates(),
                                                                 stationDownlink.getPosition(),
-                                                                downlinkDate);
+                                                                downlinkDate,
+                                                                state.getFrame());
         final double          delta        = downlinkDate.durationFrom(state.getDate());
         final double          dt           = delta - tauD;
 
@@ -120,7 +121,7 @@ public class RangeAnalytic extends Range {
                       transformPVCoordinates(new TimeStampedPVCoordinates(transitDate, PVCoordinates.ZERO));
 
         // Uplink time of flight
-        final double          tauU         = signalTimeOfFlight(stationAtTransitDate, transitP, transitDate);
+        final double          tauU         = signalTimeOfFlight(stationAtTransitDate, transitP, transitDate, state.getFrame());
         final double          tau          = tauD + tauU;
 
         // Real date and position of station at signal departure
@@ -309,7 +310,8 @@ public class RangeAnalytic extends Range {
         //  the same as state)
 
         // Downlink delay
-        final Gradient tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDateDS);
+        final Gradient tauD = signalTimeOfFlight(pvaDS, stationDownlink.getPosition(),
+                                                 downlinkDateDS, state.getFrame());
 
         // Transit state
         final double                delta        = downlinkDate.durationFrom(state.getDate());
@@ -324,7 +326,8 @@ public class RangeAnalytic extends Range {
                         stationDownlink.shiftedBy(tauD.negate());
         // Uplink delay
         final Gradient tauU =
-                        signalTimeOfFlight(stationAtTransitDate, transitStateDS.getPosition(), transitStateDS.getDate());
+                        signalTimeOfFlight(stationAtTransitDate, transitStateDS.getPosition(),
+                                           transitStateDS.getDate(), state.getFrame());
 
         // Prepare the evaluation
         final EstimatedMeasurement<Range> estimated =
@@ -371,7 +374,8 @@ public class RangeAnalytic extends Range {
                         transformPVCoordinates(PVCoordinates.ZERO);
 
         // Downlink time of flight from spacecraft to station
-        final double td = signalTimeOfFlight(state.getPVCoordinates(), QDownlink.getPosition(), downlinkDate);
+        final double td = signalTimeOfFlight(state.getPVCoordinates(), QDownlink.getPosition(), downlinkDate,
+                                             state.getFrame());
         final double dt = delta - td;
 
         // Transit state position
@@ -394,7 +398,7 @@ public class RangeAnalytic extends Range {
                       transformPVCoordinates(new TimeStampedPVCoordinates(transitT, PVCoordinates.ZERO));
 
         // Uplink time of flight
-        final double tu = signalTimeOfFlight(QAtTransitDate, transitP, transitT);
+        final double tu = signalTimeOfFlight(QAtTransitDate, transitP, transitT, state.getFrame());
 
         // Total time of flight
         final double t = td + tu;
