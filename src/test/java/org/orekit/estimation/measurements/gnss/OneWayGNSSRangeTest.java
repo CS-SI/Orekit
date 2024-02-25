@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.CartesianOrbit;
@@ -236,7 +237,7 @@ public class OneWayGNSSRangeTest {
         }
 
         Assertions.assertEquals(0.0, absErrorsMedian, 1.3e-7);
-        Assertions.assertEquals(0.0, absErrorsMin,    6.5e-6);
+        Assertions.assertEquals(0.0, absErrorsMin,    6.5e-7);
         Assertions.assertEquals(0.0, absErrorsMax,    1.7e-7);
         Assertions.assertEquals(0.0, relErrorsMedian, 5.3e-12);
         Assertions.assertEquals(0.0, relErrorsMax,    7.6e-11);

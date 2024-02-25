@@ -105,21 +105,18 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
         final double dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(localState.getDate());
         final AbsoluteDate arrivalDate = getDate().shiftedBy(-dtLocal);
 
-        final TimeStampedPVCoordinates s1Downlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
-        final double tauD = signalTimeOfFlight(pvaRemote, s1Downlink.getPosition(), arrivalDate);
-
-        // Transit state
-        final double delta      = getDate().durationFrom(pvaRemote.getDate());
-        final double deltaMTauD = delta - tauD;
+        final SpacecraftState sDownlink = localState.shiftedBy(arrivalDate.durationFrom(localState.getDate()));
+        final TimeStampedPVCoordinates pvaDownlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
+        final double tauD = signalTimeOfFlight(pvaRemote, pvaDownlink.getPosition(), arrivalDate);
 
         // Estimated measurement
         final EstimatedMeasurementBase<OneWayGNSSRange> estimatedRange =
                         new EstimatedMeasurementBase<>(this, iteration, evaluation,
                                                        new SpacecraftState[] {
-                                                           localState.shiftedBy(deltaMTauD)
+                                                           sDownlink
                                                        }, new TimeStampedPVCoordinates[] {
-                                                           pvaRemote.shiftedBy(delta - tauD),
-                                                           localState.shiftedBy(delta).getPVCoordinates()
+                                                           pvaRemote.shiftedBy(-(dtLocal + tauD)),
+                                                           sDownlink.getPVCoordinates()
                                                        });
 
         // Range value
@@ -163,22 +160,19 @@ public class OneWayGNSSRange extends AbstractMeasurement<OneWayGNSSRange> {
         final Gradient dtLocal = getSatellites().get(0).getClockOffsetDriver().getValue(nbEstimatedParams, parameterIndices, localState.getDate());
         final FieldAbsoluteDate<Gradient> arrivalDate = new FieldAbsoluteDate<>(getDate(), dtLocal.negate());
 
-        final TimeStampedFieldPVCoordinates<Gradient> s1Downlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
+        final SpacecraftState sDownlink = localState.shiftedBy(arrivalDate.toAbsoluteDate().durationFrom(localState.getDate()));
+        final TimeStampedFieldPVCoordinates<Gradient> pvaDownlink = pvaLocal.shiftedBy(arrivalDate.durationFrom(pvaLocal.getDate()));
         final Gradient tauD = signalTimeOfFlight(new TimeStampedFieldPVCoordinates<>(pvaRemote.getDate(), dtLocal.getField().getOne(), pvaRemote),
-                                                 s1Downlink.getPosition(), arrivalDate);
-
-        // Transit state
-        final double   delta      = getDate().durationFrom(pvaRemote.getDate());
-        final Gradient deltaMTauD = tauD.negate().add(delta);
+                                                 pvaDownlink.getPosition(), arrivalDate);
 
         // Estimated measurement
         final EstimatedMeasurement<OneWayGNSSRange> estimatedRange =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
-                                                       localState.shiftedBy(deltaMTauD.getValue())
+                                                       sDownlink
                                                    }, new TimeStampedPVCoordinates[] {
-                                                       pvaRemote.shiftedBy(delta - tauD.getValue()),
-                                                       localState.shiftedBy(delta).getPVCoordinates()
+                                                       pvaRemote.shiftedBy(-(dtLocal.getValue() + tauD.getValue())),
+                                                       sDownlink.getPVCoordinates()
                                                    });
 
         // Range value
