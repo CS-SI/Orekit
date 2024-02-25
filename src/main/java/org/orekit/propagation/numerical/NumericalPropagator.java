@@ -902,6 +902,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         /** Jacobian of the orbital parameters with respect to the Cartesian parameters. */
         private double[][] jacobian;
 
+        /** Flag keeping track whether Jacobian matrix needs to be recomputed or not. */
+        private boolean recomputingJacobian;
+
         /** Simple constructor.
          * @param integrator numerical integrator to use for propagation.
          */
@@ -914,8 +917,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 forceModel.getEventDetectors().forEach(detector -> setUpEventDetector(integrator, detector));
             }
 
-            if (getOrbitType() == null) {
-                // propagation uses absolute position-velocity-acceleration
+            if (!recomputingJacobian) {
                 // we can set Jacobian once and for all
                 for (int i = 0; i < jacobian.length; ++i) {
                     Arrays.fill(jacobian[i], 0.0);
@@ -929,6 +931,18 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         @Override
         public void init(final SpacecraftState initialState, final AbsoluteDate target) {
             forceModels.forEach(fm -> fm.init(initialState, target));
+
+            final int numberOfForces = forceModels.size();
+            final OrbitType orbitType = getOrbitType();
+            if (orbitType != null && orbitType != OrbitType.CARTESIAN && numberOfForces > 0) {
+                if (numberOfForces > 1) {
+                    recomputingJacobian = true;
+                } else {
+                    recomputingJacobian = !(forceModels.get(0) instanceof NewtonianAttraction);
+                }
+            } else {
+                recomputingJacobian = false;
+            }
         }
 
         /** {@inheritDoc} */
@@ -937,8 +951,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
             currentState = state;
             Arrays.fill(yDot, 0.0);
-            if (getOrbitType() != null) {
-                // propagation uses regular orbits
+            if (recomputingJacobian) {
+                // propagation uses Jacobian matrix of orbital parameters w.r.t. Cartesian ones
                 currentState.getOrbit().getJacobianWrtCartesian(getPositionAngleType(), jacobian);
             }
 

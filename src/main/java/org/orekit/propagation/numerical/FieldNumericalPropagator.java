@@ -489,6 +489,9 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         /** Jacobian of the orbital parameters with respect to the Cartesian parameters. */
         private T[][] jacobian;
 
+        /** Flag keeping track whether Jacobian matrix needs to be recomputed or not. */
+        private boolean recomputingJacobian;
+
         /** Simple constructor.
          * @param integrator numerical integrator to use for propagation.
          */
@@ -500,8 +503,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
                 forceModel.getFieldEventDetectors(getField()).forEach(detector -> setUpEventDetector(integrator, detector));
             }
 
-            if (superGetOrbitType() == null) {
-                // propagation uses absolute position-velocity-acceleration
+            if (!recomputingJacobian) {
                 // we can set Jacobian once and for all
                 for (int i = 0; i < jacobian.length; ++i) {
                     Arrays.fill(jacobian[i], getField().getZero());
@@ -515,6 +517,18 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         @Override
         public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
             forceModels.forEach(fm -> fm.init(initialState, target));
+
+            final int numberOfForces = forceModels.size();
+            final OrbitType orbitType = superGetOrbitType();
+            if (orbitType != null && orbitType != OrbitType.CARTESIAN && numberOfForces > 0) {
+                if (numberOfForces > 1) {
+                    recomputingJacobian = true;
+                } else {
+                    recomputingJacobian = !(forceModels.get(0) instanceof NewtonianAttraction);
+                }
+            } else {
+                recomputingJacobian = false;
+            }
         }
 
         /** {@inheritDoc} */
@@ -523,8 +537,8 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
             final T zero = state.getA().getField().getZero();
             currentState = state;
             Arrays.fill(yDot, zero);
-            if (superGetOrbitType() != null) {
-                // propagation uses regular orbits
+            if (recomputingJacobian) {
+                // propagation uses Jacobian matrix of orbital parameters w.r.t. Cartesian ones
                 currentState.getOrbit().getJacobianWrtCartesian(getPositionAngleType(), jacobian);
             }
 
