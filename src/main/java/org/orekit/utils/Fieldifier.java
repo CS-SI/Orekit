@@ -21,19 +21,8 @@ import org.hipparchus.Field;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.orekit.errors.OrekitInternalError;
-import org.orekit.frames.Frame;
-import org.orekit.orbits.CircularOrbit;
-import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.FieldCartesianOrbit;
-import org.orekit.orbits.FieldCircularOrbit;
-import org.orekit.orbits.FieldEquinoctialOrbit;
-import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldStateCovariance;
 import org.orekit.propagation.StateCovariance;
 import org.orekit.time.FieldAbsoluteDate;
@@ -60,93 +49,12 @@ public class Fieldifier {
      * @param <T> type of the elements
      *
      * @return fielded orbit
+     * @deprecated
      */
+    @Deprecated
     public static <T extends CalculusFieldElement<T>> FieldOrbit<T> fieldify(final Field<T> field, final Orbit orbit) {
 
-        final T                    one       = field.getOne();
-        final FieldAbsoluteDate<T> fieldDate = new FieldAbsoluteDate<>(field, orbit.getDate());
-        final T                    fieldMu   = one.newInstance(orbit.getMu());
-        final Frame                frame     = orbit.getFrame();
-
-        switch (orbit.getType()) {
-            case CIRCULAR: {
-                final CircularOrbit circOrbit = (CircularOrbit) OrbitType.CIRCULAR.convertType(orbit);
-
-                // Get orbital elements
-                final T a      = one.newInstance(circOrbit.getA());
-                final T ex     = one.newInstance(circOrbit.getCircularEx());
-                final T ey     = one.newInstance(circOrbit.getCircularEy());
-                final T i      = one.newInstance(circOrbit.getI());
-                final T raan   = one.newInstance(circOrbit.getRightAscensionOfAscendingNode());
-                final T alphaM = one.newInstance(circOrbit.getAlphaM());
-
-                // Get derivatives
-                final T aDot      = one.newInstance(circOrbit.getADot());
-                final T exDot     = one.newInstance(circOrbit.getCircularExDot());
-                final T eyDot     = one.newInstance(circOrbit.getCircularEyDot());
-                final T iDot      = one.newInstance(circOrbit.getIDot());
-                final T raanDot   = one.newInstance(circOrbit.getRightAscensionOfAscendingNodeDot());
-                final T alphaMDot = one.newInstance(circOrbit.getAlphaMDot());
-
-                return new FieldCircularOrbit<>(a, ex, ey, i, raan, alphaM, aDot, exDot, eyDot, iDot, raanDot, alphaMDot,
-                                                PositionAngleType.MEAN, frame, fieldDate, fieldMu);
-            }
-
-            case CARTESIAN: {
-                final FieldPVCoordinates<T> orbitPV = new FieldPVCoordinates<>(field, orbit.getPVCoordinates());
-
-                return new FieldCartesianOrbit<>(orbitPV, orbit.getFrame(), fieldDate, fieldMu);
-            }
-
-            case KEPLERIAN: {
-                final KeplerianOrbit kepOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
-
-                // Get orbital elements
-                final T a           = one.newInstance(kepOrbit.getA());
-                final T e           = one.newInstance(kepOrbit.getE());
-                final T i           = one.newInstance(kepOrbit.getI());
-                final T raan        = one.newInstance(kepOrbit.getRightAscensionOfAscendingNode());
-                final T pa          = one.newInstance(kepOrbit.getPerigeeArgument());
-                final T meanAnomaly = one.newInstance(kepOrbit.getMeanAnomaly());
-
-                // Get derivatives
-                final T aDot           = one.newInstance(kepOrbit.getADot());
-                final T eDot           = one.newInstance(kepOrbit.getEDot());
-                final T iDot           = one.newInstance(kepOrbit.getIDot());
-                final T raanDot        = one.newInstance(kepOrbit.getRightAscensionOfAscendingNodeDot());
-                final T paDot          = one.newInstance(kepOrbit.getPerigeeArgumentDot());
-                final T meanAnomalyDot = one.newInstance(kepOrbit.getMeanAnomalyDot());
-
-                return new FieldKeplerianOrbit<>(a, e, i, pa, raan, meanAnomaly, aDot, eDot, iDot, paDot, raanDot,
-                                                 meanAnomalyDot, PositionAngleType.MEAN, frame, fieldDate, fieldMu);
-            }
-            case EQUINOCTIAL: {
-                final EquinoctialOrbit equiOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
-
-                // Get orbital elements
-                final T a  = one.newInstance(equiOrbit.getA());
-                final T ex = one.newInstance(equiOrbit.getEquinoctialEx());
-                final T ey = one.newInstance(equiOrbit.getEquinoctialEy());
-                final T hx = one.newInstance(equiOrbit.getHx());
-                final T hy = one.newInstance(equiOrbit.getHy());
-                final T lm = one.newInstance(equiOrbit.getLM());
-
-                // Get derivatives
-                final T aDot  = one.newInstance(equiOrbit.getADot());
-                final T exDot = one.newInstance(equiOrbit.getEquinoctialExDot());
-                final T eyDot = one.newInstance(equiOrbit.getEquinoctialEyDot());
-                final T hxDot = one.newInstance(equiOrbit.getHxDot());
-                final T hyDot = one.newInstance(equiOrbit.getHyDot());
-                final T lmDot = one.newInstance(equiOrbit.getLMDot());
-
-                return new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy, lm, aDot, exDot, eyDot, hxDot, hyDot,
-                                                   lmDot, PositionAngleType.MEAN, frame, fieldDate, fieldMu);
-            }
-            default:
-                // Should never happen
-                throw new OrekitInternalError(null);
-        }
-
+        return orbit.getType().convertToFieldOrbit(field, orbit);
     }
 
     /**

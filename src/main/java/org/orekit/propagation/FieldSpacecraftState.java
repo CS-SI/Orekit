@@ -24,7 +24,6 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -34,7 +33,7 @@ import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.Orbit;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeShiftable;
 import org.orekit.time.FieldTimeStamped;
@@ -244,28 +243,9 @@ public class FieldSpacecraftState <T extends CalculusFieldElement<T>>
     public FieldSpacecraftState(final Field<T> field, final SpacecraftState state) {
 
         if (state.isOrbitDefined()) {
-            final double[] stateD    = new double[6];
-            final double[] stateDotD = state.getOrbit().hasDerivatives() ? new double[6] : null;
-            final PositionAngleType positionAngleType = PositionAngleType.TRUE;
-            state.getOrbit().getType().mapOrbitToArray(state.getOrbit(), positionAngleType, stateD, stateDotD);
-            final T[] stateF    = MathArrays.buildArray(field, 6);
-            for (int i = 0; i < stateD.length; ++i) {
-                stateF[i]    = field.getZero().newInstance(stateD[i]);
-            }
-            final T[] stateDotF;
-            if (stateDotD == null) {
-                stateDotF = null;
-            } else {
-                stateDotF = MathArrays.buildArray(field, 6);
-                for (int i = 0; i < stateDotD.length; ++i) {
-                    stateDotF[i] = field.getZero().newInstance(stateDotD[i]);
-                }
-            }
 
-            final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, state.getDate());
-
-            this.orbit    = state.getOrbit().getType().mapArrayToOrbit(stateF, stateDotF, positionAngleType, dateF,
-                                                                       field.getZero().newInstance(state.getMu()), state.getFrame());
+            final Orbit nonFieldOrbit = state.getOrbit();
+            this.orbit    = nonFieldOrbit.getType().convertToFieldOrbit(field, nonFieldOrbit);
             this.absPva   = null;
 
         } else {

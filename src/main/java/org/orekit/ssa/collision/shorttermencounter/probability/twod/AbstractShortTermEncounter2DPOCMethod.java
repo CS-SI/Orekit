@@ -119,16 +119,18 @@ public abstract class AbstractShortTermEncounter2DPOCMethod implements ShortTerm
         final DataContext         cdmDataContext      = cdm.getDataContext();
 
         // Extract primary data
-        final FieldOrbit<T> primaryOrbit =
-                Fieldifier.fieldify(field, getObjectOrbitFromCdm(cdmRelativeMetadata, primaryData,
-                                                                 primaryMetadata, cdmDataContext));
+        final Orbit primaryOrbitFromCdm = getObjectOrbitFromCdm(cdmRelativeMetadata, primaryData,
+                primaryMetadata, cdmDataContext);
+        final FieldOrbit<T> primaryOrbit = primaryOrbitFromCdm.getType().convertToFieldOrbit(field,
+                primaryOrbitFromCdm);
         final FieldStateCovariance<T> primaryCovariance =
                 Fieldifier.fieldify(field, getObjectStateCovarianceFromCdm(cdmRelativeMetadata, primaryData));
 
         // Extract secondary data
-        final FieldOrbit<T> secondaryOrbit =
-                Fieldifier.fieldify(field, getObjectOrbitFromCdm(cdmRelativeMetadata, secondaryData,
-                                                                 secondaryMetadata, cdmDataContext));
+        final Orbit secondaryOrbitFromCdm = getObjectOrbitFromCdm(cdmRelativeMetadata, secondaryData,
+                secondaryMetadata, cdmDataContext);
+        final FieldOrbit<T> secondaryOrbit = secondaryOrbitFromCdm.getType().convertToFieldOrbit(field,
+                secondaryOrbitFromCdm);
         final FieldStateCovariance<T> secondaryCovariance =
                 Fieldifier.fieldify(field, getObjectStateCovarianceFromCdm(cdmRelativeMetadata, secondaryData));
 
@@ -197,14 +199,6 @@ public abstract class AbstractShortTermEncounter2DPOCMethod implements ShortTerm
                        projectedDiagonalizedCombinedPositionalCovarianceMatrix.getEntry(1, 1).sqrt(),
                        encounter.getCombinedRadius());
     }
-
-    /** {@inheritDoc} */
-    public abstract ProbabilityOfCollision compute(double xm, double ym, double sigmaX, double sigmaY, double radius);
-
-    /** {@inheritDoc} */
-    public abstract <T extends CalculusFieldElement<T>> FieldProbabilityOfCollision<T> compute(T xm, T ym,
-                                                                                               T sigmaX, T sigmaY,
-                                                                                               T radius);
 
     /** {@inheritDoc} */
     @Override

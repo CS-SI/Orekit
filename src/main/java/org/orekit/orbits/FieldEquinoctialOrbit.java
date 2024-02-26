@@ -447,7 +447,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @since 12.0
      */
     public FieldEquinoctialOrbit(final Field<T> field, final Orbit op) {
-        this(field, new EquinoctialOrbit(op));
+        this(field, (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(op));
     }
 
     /** {@inheritDoc} */

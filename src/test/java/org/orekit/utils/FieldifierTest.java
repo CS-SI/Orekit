@@ -51,6 +51,7 @@ class FieldifierTest {
     }
 
     @Test
+    @Deprecated
     void testCircularOrbitFieldification() {
         // GIVEN
         // Create fake orbit with derivatives
@@ -90,6 +91,7 @@ class FieldifierTest {
     }
 
     @Test
+    @Deprecated
     void testCartesianOrbitFieldification() {
         // GIVEN
         // Create fake orbit with derivatives
@@ -127,6 +129,7 @@ class FieldifierTest {
     }
 
     @Test
+    @Deprecated
     void testKeplerianOrbitFieldification() {
         // GIVEN
         // Create fake orbit with derivatives
@@ -166,6 +169,7 @@ class FieldifierTest {
     }
 
     @Test
+    @Deprecated
     void testEquinoctialOrbitFieldification() {
         // GIVEN
         // Create fake orbit with derivatives
