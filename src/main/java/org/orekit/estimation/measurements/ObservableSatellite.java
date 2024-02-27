@@ -16,7 +16,16 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Map;
+
+import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.QuadraticClockModel;
+import org.orekit.gnss.QuadraticFieldClockModel;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Class modeling a satellite that can be observed.
@@ -31,6 +40,11 @@ public class ObservableSatellite {
 
     /** Prefix for clock drift parameter driver, the propagator index will be appended to it. */
     public static final String CLOCK_DRIFT_PREFIX = "clock-drift-satellite-";
+
+    /** Prefix for clock acceleration parameter driver, the propagator index will be appended to it.
+     * @since 12.1
+     */
+    public static final String CLOCK_ACCELERATION_PREFIX = "clock-acceleration-satellite-";
 
     /** Clock offset scaling factor.
      * <p>
@@ -49,6 +63,11 @@ public class ObservableSatellite {
     /** Parameter driver for satellite clock drift. */
     private final ParameterDriver clockDriftDriver;
 
+    /** Parameter driver for satellite clock acceleration.
+     * @since 12.1
+     */
+    private final ParameterDriver clockAccelerationDriver;
+
     /** Simple constructor.
      * @param propagatorIndex index of the propagator related to this satellite
      */
@@ -60,6 +79,9 @@ public class ObservableSatellite {
         this.clockDriftDriver = new ParameterDriver(CLOCK_DRIFT_PREFIX + propagatorIndex,
                                                     0.0, CLOCK_OFFSET_SCALE,
                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        this.clockAccelerationDriver = new ParameterDriver(CLOCK_ACCELERATION_PREFIX + propagatorIndex,
+                                                           0.0, CLOCK_OFFSET_SCALE,
+                                                           Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
 
     /** Get the index of the propagator related to this satellite.
@@ -85,11 +107,67 @@ public class ObservableSatellite {
      * <p>
      * The drift is negative if the satellite clock is slowing down and positive if it is speeding up.
      * </p>
-     * @return clock offset parameter driver
+     * @return clock drift parameter driver
      * @since 10.3
      */
     public ParameterDriver getClockDriftDriver() {
         return clockDriftDriver;
+    }
+
+    /** Get the clock acceleration parameter driver.
+     * @return clock acceleration parameter driver
+     * @since 12.1
+     */
+    public ParameterDriver getClockAccelerationDriver() {
+        return clockAccelerationDriver;
+    }
+
+    /** Get a quadratic clock model valid at some date.
+     * @param date date at which the quadratic model should be valid
+     * @return quadratic clock model
+     * @since 12.1
+     */
+    public QuadraticClockModel getQuadraticClockModel(final AbsoluteDate date) {
+        final double a0            = clockOffsetDriver.getValue(date);
+        final double a1            = clockDriftDriver.getValue(date);
+        final double a2            = clockAccelerationDriver.getValue(date);
+        AbsoluteDate referenceDate = clockOffsetDriver.getReferenceDate();
+        if (referenceDate == null) {
+            if (a1 == 0 && a2 == 0) {
+                // it is OK to not have a reference date is clock offset is constant
+                referenceDate = date;
+            } else {
+                throw new OrekitException(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER,
+                                          clockOffsetDriver.getName());
+            }
+        }
+        return new QuadraticClockModel(referenceDate, a0, a1, a2);
+    }
+
+    /** Get a quadratic clock model valid at some date.
+     * @param freeParameters total number of free parameters in the gradient
+     * @param indices indices of the differentiation parameters in derivatives computations,
+     * must be span name and not driver name
+     * @param date date at which the quadratic model should be valid
+     * @return quadratic clock model
+     * @since 12.1
+      */
+    public QuadraticFieldClockModel<Gradient> getQuadraticClockModel(final int freeParameters, final Map<String, Integer> indices,
+                                                                     final AbsoluteDate date) {
+        final Gradient a0            = clockOffsetDriver.getValue(freeParameters, indices, date);
+        final Gradient a1            = clockDriftDriver.getValue(freeParameters, indices, date);
+        final Gradient a2            = clockAccelerationDriver.getValue(freeParameters, indices, date);
+        AbsoluteDate   referenceDate = clockOffsetDriver.getReferenceDate();
+        if (referenceDate == null) {
+            if (a1.getReal() == 0 && a2.getReal() == 0) {
+                // it is OK to not have a reference date is clock offset is constant
+                referenceDate = date;
+            } else {
+                throw new OrekitException(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER,
+                                          clockOffsetDriver.getName());
+            }
+        }
+        return new QuadraticFieldClockModel<>(new FieldAbsoluteDate<>(a0.getField(), referenceDate), a0, a1, a2);
     }
 
     /** {@inheritDoc}

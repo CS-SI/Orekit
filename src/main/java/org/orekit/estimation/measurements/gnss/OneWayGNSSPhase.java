@@ -17,12 +17,12 @@
 package org.orekit.estimation.measurements.gnss;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.gnss.QuadraticClockModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -50,7 +50,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class OneWayGNSSPhase extends OnBoardMeasurement<OneWayGNSSPhase> {
+public class OneWayGNSSPhase extends AbstractOneWayGNSSMeasurement<OneWayGNSSPhase> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "OneWayGNSSPhase";
@@ -60,12 +60,6 @@ public class OneWayGNSSPhase extends OnBoardMeasurement<OneWayGNSSPhase> {
 
     /** Driver for ambiguity. */
     private final ParameterDriver ambiguityDriver;
-
-    /** Emitting satellite. */
-    private final PVCoordinatesProvider remote;
-
-    /** Clock offset of the emitting satellite. */
-    private final double dtRemote;
 
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
@@ -85,8 +79,27 @@ public class OneWayGNSSPhase extends OnBoardMeasurement<OneWayGNSSPhase> {
                            final AbsoluteDate date,
                            final double phase, final double wavelength, final double sigma,
                            final double baseWeight, final ObservableSatellite local) {
+        this(remote, new QuadraticClockModel(date, dtRemote, 0.0, 0.0), date, phase, wavelength, sigma, baseWeight, local);
+    }
+
+    /** Simple constructor.
+     * @param remote provider for GNSS satellite which simply emits the signal
+     * @param remoteClock clock offset of the GNSS satellite
+     * @param date date of the measurement
+     * @param phase observed value, in cycles
+     * @param wavelength phase observed value wavelength, in meters
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param local satellite which receives the signal and perform the measurement
+     * @since 12.1
+     */
+    public OneWayGNSSPhase(final PVCoordinatesProvider remote,
+                           final QuadraticClockModel remoteClock,
+                           final AbsoluteDate date,
+                           final double phase, final double wavelength, final double sigma,
+                           final double baseWeight, final ObservableSatellite local) {
         // Call super constructor
-        super(date, phase, sigma, baseWeight, Collections.singletonList(local));
+        super(remote, remoteClock, date, phase, sigma, baseWeight, local);
 
         // Initialize phase ambiguity driver
         ambiguityDriver = new ParameterDriver(AMBIGUITY_NAME, 0.0, 1.0,
@@ -97,8 +110,6 @@ public class OneWayGNSSPhase extends OnBoardMeasurement<OneWayGNSSPhase> {
         addParameterDriver(local.getClockOffsetDriver());
 
         // Initialise fields
-        this.dtRemote   = dtRemote;
-        this.remote     = remote;
         this.wavelength = wavelength;
     }
 
@@ -122,8 +133,7 @@ public class OneWayGNSSPhase extends OnBoardMeasurement<OneWayGNSSPhase> {
                                                                                                 final int evaluation,
                                                                                                 final SpacecraftState[] states) {
 
-        final OnBoardCommonParametersWithoutDerivatives common =
-            computeCommonParametersWithout(states[0], remote, dtRemote, false);
+        final OnBoardCommonParametersWithoutDerivatives common = computeCommonParametersWithout(states, false);
 
         // prepare the evaluation
         final EstimatedMeasurementBase<OneWayGNSSPhase> estimatedPhase =
@@ -155,10 +165,9 @@ public class OneWayGNSSPhase extends OnBoardMeasurement<OneWayGNSSPhase> {
                                                                           final int evaluation,
                                                                           final SpacecraftState[] states) {
 
-        final OnBoardCommonParametersWithDerivatives common =
-            computeCommonParametersWith(1, states[0], remote, dtRemote, false);
+        final OnBoardCommonParametersWithDerivatives common = computeCommonParametersWith(states, false);
 
-       // prepare the evaluation
+        // prepare the evaluation
         final EstimatedMeasurement<OneWayGNSSPhase> estimatedPhase =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {

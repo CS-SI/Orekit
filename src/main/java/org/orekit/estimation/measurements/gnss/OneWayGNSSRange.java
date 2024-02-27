@@ -17,13 +17,13 @@
 package org.orekit.estimation.measurements.gnss;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.InterSatellitesRange;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.gnss.QuadraticClockModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -51,16 +51,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class OneWayGNSSRange extends OnBoardMeasurement<OneWayGNSSRange> {
+public class OneWayGNSSRange extends AbstractOneWayGNSSMeasurement<OneWayGNSSRange> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "OneWayGNSSRange";
-
-    /** Emitting satellite. */
-    private final PVCoordinatesProvider remote;
-
-    /** Clock offset of the emitting satellite. */
-    private final double dtRemote;
 
     /** Simple constructor.
      * @param remote provider for GNSS satellite which simply emits the signal
@@ -76,13 +70,29 @@ public class OneWayGNSSRange extends OnBoardMeasurement<OneWayGNSSRange> {
                            final AbsoluteDate date,
                            final double range, final double sigma,
                            final double baseWeight, final ObservableSatellite local) {
+        this(remote, new QuadraticClockModel(date, dtRemote, 0.0, 0.0), date, range, sigma, baseWeight, local);
+    }
+
+    /** Simple constructor.
+     * @param remote provider for GNSS satellite which simply emits the signal
+     * @param remoteClock clock offset of the GNSS satellite
+     * @param date date of the measurement
+     * @param range observed value
+     * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
+     * @param local satellite which receives the signal and perform the measurement
+     * @since 12.1
+     */
+    public OneWayGNSSRange(final PVCoordinatesProvider remote,
+                           final QuadraticClockModel remoteClock,
+                           final AbsoluteDate date,
+                           final double range, final double sigma,
+                           final double baseWeight, final ObservableSatellite local) {
         // Call super constructor
-        super(date, range, sigma, baseWeight, Collections.singletonList(local));
+        super(remote, remoteClock, date, range, sigma, baseWeight, local);
         // The local satellite clock offset affects the measurement
         addParameterDriver(local.getClockOffsetDriver());
-        // Initialise fields
-        this.dtRemote = dtRemote;
-        this.remote   = remote;
+
     }
 
     /** {@inheritDoc} */
@@ -92,8 +102,7 @@ public class OneWayGNSSRange extends OnBoardMeasurement<OneWayGNSSRange> {
                                                                                                 final SpacecraftState[] states) {
 
 
-        final OnBoardCommonParametersWithoutDerivatives common =
-            computeCommonParametersWithout(states[0], remote, dtRemote, false);
+        final OnBoardCommonParametersWithoutDerivatives common = computeCommonParametersWithout(states, false);
 
         // Estimated measurement
         final EstimatedMeasurementBase<OneWayGNSSRange> estimatedRange =
@@ -123,8 +132,7 @@ public class OneWayGNSSRange extends OnBoardMeasurement<OneWayGNSSRange> {
                                                                           final int evaluation,
                                                                           final SpacecraftState[] states) {
 
-        final OnBoardCommonParametersWithDerivatives common =
-            computeCommonParametersWith(1, states[0], remote, dtRemote, false);
+        final OnBoardCommonParametersWithDerivatives common = computeCommonParametersWith(states, false);
 
         // Estimated measurement
         final EstimatedMeasurement<OneWayGNSSRange> estimatedRange =
