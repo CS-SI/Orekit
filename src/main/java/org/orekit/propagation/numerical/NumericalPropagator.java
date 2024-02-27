@@ -912,17 +912,16 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
             this.yDot     = new double[7];
             this.jacobian = new double[6][6];
+            this.recomputingJacobian = true;
 
             for (final ForceModel forceModel : forceModels) {
                 forceModel.getEventDetectors().forEach(detector -> setUpEventDetector(integrator, detector));
             }
 
-            if (!recomputingJacobian) {
-                // we can set Jacobian once and for all
-                for (int i = 0; i < jacobian.length; ++i) {
-                    Arrays.fill(jacobian[i], 0.0);
-                    jacobian[i][i] = 1.0;
-                }
+            // default value for Jacobian is identity
+            for (int i = 0; i < jacobian.length; ++i) {
+                Arrays.fill(jacobian[i], 0.0);
+                jacobian[i][i] = 1.0;
             }
 
         }

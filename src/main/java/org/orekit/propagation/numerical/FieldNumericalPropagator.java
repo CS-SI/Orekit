@@ -499,16 +499,16 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
             this.yDot     = MathArrays.buildArray(getField(),  7);
             this.jacobian = MathArrays.buildArray(getField(),  6, 6);
+            this.recomputingJacobian = true;
+
             for (final ForceModel forceModel : forceModels) {
                 forceModel.getFieldEventDetectors(getField()).forEach(detector -> setUpEventDetector(integrator, detector));
             }
 
-            if (!recomputingJacobian) {
-                // we can set Jacobian once and for all
-                for (int i = 0; i < jacobian.length; ++i) {
-                    Arrays.fill(jacobian[i], getField().getZero());
-                    jacobian[i][i] = getField().getOne();
-                }
+            // default value for Jacobian is identity
+            for (int i = 0; i < jacobian.length; ++i) {
+                Arrays.fill(jacobian[i], getField().getZero());
+                jacobian[i][i] = getField().getOne();
             }
 
         }
