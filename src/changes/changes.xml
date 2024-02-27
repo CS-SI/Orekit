@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" >
+          Added constant and quadratic clock models for GNSS measurements.
+      </action>
       <action dev="serrof" type="add" issue="1288">
           Added cache for position angle in FieldOrbit when applicable.
       </action>
