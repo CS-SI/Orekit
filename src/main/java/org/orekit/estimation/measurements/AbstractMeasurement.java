@@ -361,6 +361,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
      * FieldAbsoluteDate, FieldVector3D, FieldAbsoluteDate, Frame)}
      */
     @Deprecated
+    @DefaultDataContext
     public static <T extends CalculusFieldElement<T>> T signalTimeOfFlight(final TimeStampedFieldPVCoordinates<T> adjustableEmitterPV,
                                                                            final FieldVector3D<T> receiverPosition,
                                                                            final FieldAbsoluteDate<T> signalArrivalDate) {
