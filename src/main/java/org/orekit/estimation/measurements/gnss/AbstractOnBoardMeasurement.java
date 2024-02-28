@@ -90,7 +90,8 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
      * must be span name and not driver name
      * @return emitting satellite clock provider
      */
-    protected abstract Function<FieldAbsoluteDate<Gradient>, Gradient> getGradientRemoteClock(int freeParameters, Map<String, Integer> indices);
+    protected abstract Function<FieldAbsoluteDate<Gradient>, Gradient> getGradientRemoteClock(int freeParameters,
+                                                                                              Map<String, Integer> indices);
 
     /** Compute common estimation parameters.
      * @param states states of all spacecraft involved in the measurement
@@ -106,7 +107,7 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
         final TimeStampedPVCoordinates       pvaLocal    = states[0].getPVCoordinates();
         final double                         dtLocal     = getSatellites().
                                                            get(0).
-                                                           getQuadraticClockModel(getDate()).
+                                                           getQuadraticClockModel().
                                                            getOffset(getDate());
         final PVCoordinatesProvider          remotePV    = getDoubleRemotePV(states);
         final ToDoubleFunction<AbsoluteDate> remoteClock = getDoubleRemoteClock();

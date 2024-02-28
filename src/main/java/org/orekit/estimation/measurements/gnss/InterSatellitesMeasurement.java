@@ -80,7 +80,7 @@ public abstract class InterSatellitesMeasurement<T extends ObservedMeasurement<T
     /** {@inheritDoc} */
     @Override
     protected ToDoubleFunction<AbsoluteDate> getDoubleRemoteClock() {
-        return getSatellites().get(1).getQuadraticClockModel(getDate())::getOffset;
+        return getSatellites().get(1).getQuadraticClockModel()::getOffset;
     }
 
     /** {@inheritDoc} */
@@ -108,7 +108,10 @@ public abstract class InterSatellitesMeasurement<T extends ObservedMeasurement<T
     @Override
     protected Function<FieldAbsoluteDate<Gradient>, Gradient> getGradientRemoteClock(final int freeParameters,
                                                                                      final Map<String, Integer> indices) {
-        return getSatellites().get(1).getQuadraticClockModel(freeParameters, indices, getDate())::getOffset;
+        return getSatellites().
+               get(1).
+               getQuadraticClockModel().
+               toGradientModel(freeParameters, indices, getDate())::getOffset;
    }
 
 }

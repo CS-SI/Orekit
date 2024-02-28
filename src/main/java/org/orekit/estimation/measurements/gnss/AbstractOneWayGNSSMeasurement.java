@@ -24,8 +24,7 @@ import java.util.function.ToDoubleFunction;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.gnss.QuadraticClockModel;
-import org.orekit.gnss.QuadraticFieldClockModel;
+import org.orekit.estimation.measurements.QuadraticClockModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -124,12 +123,9 @@ public abstract class AbstractOneWayGNSSMeasurement<T extends ObservedMeasuremen
 
     /** {@inheritDoc} */
     @Override
-    protected Function<FieldAbsoluteDate<Gradient>, Gradient> getGradientRemoteClock(final int freeParameters, final Map<String, Integer> indices) {
-        final Gradient                    a0            = Gradient.constant(freeParameters, remoteClock.getA0());
-        final Gradient                    a1            = Gradient.constant(freeParameters, remoteClock.getA1());
-        final Gradient                    a2            = Gradient.constant(freeParameters, remoteClock.getA2());
-        final FieldAbsoluteDate<Gradient> referenceDate = new FieldAbsoluteDate<>(a0.getField(), remoteClock.getReferenceDate());
-        return new QuadraticFieldClockModel<>(referenceDate, a0, a1, a2)::getOffset;
+    protected Function<FieldAbsoluteDate<Gradient>, Gradient> getGradientRemoteClock(final int freeParameters,
+                                                                                     final Map<String, Integer> indices) {
+        return remoteClock.toGradientModel(freeParameters, indices, getDate())::getOffset;
     }
 
 }

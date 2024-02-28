@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.estimation.measurements;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -36,11 +36,6 @@ public class QuadraticFieldClockModelTest {
     @Test
     public void testRateField() {
         doTestRateField(Binary64Field.getInstance());
-    }
-
-    @Test
-    public void testGetters() {
-        doTestGetters(Binary64Field.getInstance());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestValueField(final Field<T> field) {
@@ -65,19 +60,6 @@ public class QuadraticFieldClockModelTest {
         Assertions.assertEquals(1.00 / 512, clock.getRate(t0).getReal(),                1.0e-15);
         Assertions.assertEquals(2.00 / 512, clock.getRate(t0.shiftedBy(1.0)).getReal(), 1.0e-15);
         Assertions.assertEquals(3.00 / 512, clock.getRate(t0.shiftedBy(2.0)).getReal(), 1.0e-15);
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestGetters(final Field<T> field) {
-        final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field, AbsoluteDate.GALILEO_EPOCH);
-        final QuadraticFieldClockModel<T> clock =
-                        new QuadraticFieldClockModel<>(t0,
-                                                       field.getZero().newInstance(FastMath.scalb(1.0,  -8)),
-                                                       field.getZero().newInstance(FastMath.scalb(1.0,  -9)),
-                                                       field.getZero().newInstance(FastMath.scalb(1.0, -10)));
-        Assertions.assertEquals(0.0, clock.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH).getReal(), 1.0e-15);
-        Assertions.assertEquals(1.00 /  256, clock.getA0().getReal(), 1.0e-15);
-        Assertions.assertEquals(1.00 /  512, clock.getA1().getReal(), 1.0e-15);
-        Assertions.assertEquals(1.00 / 1024, clock.getA2().getReal(), 1.0e-15);
     }
 
 }

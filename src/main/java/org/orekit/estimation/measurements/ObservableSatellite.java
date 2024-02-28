@@ -16,16 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Map;
-
-import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.gnss.QuadraticClockModel;
-import org.orekit.gnss.QuadraticFieldClockModel;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Class modeling a satellite that can be observed.
@@ -123,51 +114,13 @@ public class ObservableSatellite {
     }
 
     /** Get a quadratic clock model valid at some date.
-     * @param date date at which the quadratic model should be valid
      * @return quadratic clock model
      * @since 12.1
      */
-    public QuadraticClockModel getQuadraticClockModel(final AbsoluteDate date) {
-        final double a0            = clockOffsetDriver.getValue(date);
-        final double a1            = clockDriftDriver.getValue(date);
-        final double a2            = clockAccelerationDriver.getValue(date);
-        AbsoluteDate referenceDate = clockOffsetDriver.getReferenceDate();
-        if (referenceDate == null) {
-            if (a1 == 0 && a2 == 0) {
-                // it is OK to not have a reference date is clock offset is constant
-                referenceDate = date;
-            } else {
-                throw new OrekitException(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER,
-                                          clockOffsetDriver.getName());
-            }
-        }
-        return new QuadraticClockModel(referenceDate, a0, a1, a2);
-    }
-
-    /** Get a quadratic clock model valid at some date.
-     * @param freeParameters total number of free parameters in the gradient
-     * @param indices indices of the differentiation parameters in derivatives computations,
-     * must be span name and not driver name
-     * @param date date at which the quadratic model should be valid
-     * @return quadratic clock model
-     * @since 12.1
-      */
-    public QuadraticFieldClockModel<Gradient> getQuadraticClockModel(final int freeParameters, final Map<String, Integer> indices,
-                                                                     final AbsoluteDate date) {
-        final Gradient a0            = clockOffsetDriver.getValue(freeParameters, indices, date);
-        final Gradient a1            = clockDriftDriver.getValue(freeParameters, indices, date);
-        final Gradient a2            = clockAccelerationDriver.getValue(freeParameters, indices, date);
-        AbsoluteDate   referenceDate = clockOffsetDriver.getReferenceDate();
-        if (referenceDate == null) {
-            if (a1.getReal() == 0 && a2.getReal() == 0) {
-                // it is OK to not have a reference date is clock offset is constant
-                referenceDate = date;
-            } else {
-                throw new OrekitException(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER,
-                                          clockOffsetDriver.getName());
-            }
-        }
-        return new QuadraticFieldClockModel<>(new FieldAbsoluteDate<>(a0.getField(), referenceDate), a0, a1, a2);
+    public QuadraticClockModel getQuadraticClockModel() {
+        return new QuadraticClockModel(clockOffsetDriver,
+                                       clockDriftDriver,
+                                       clockAccelerationDriver);
     }
 
     /** {@inheritDoc}

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.gnss;
+package org.orekit.estimation.measurements;
 
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.FieldAbsoluteDate;
@@ -26,7 +26,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @since 12.1
  *
  */
-public class QuadraticFieldClockModel<T extends CalculusFieldElement<T>> implements FieldClockModel<T> {
+public class QuadraticFieldClockModel<T extends CalculusFieldElement<T>> {
 
     /** Clock model reference date. */
     private final FieldAbsoluteDate<T> referenceDate;
@@ -54,43 +54,19 @@ public class QuadraticFieldClockModel<T extends CalculusFieldElement<T>> impleme
         this.a2            = a2;
     }
 
-    /** Get reference date.
-     * @return reference date
+    /** Get the clock offset at date
+     * @param date date at which offset is requested
+     * @return clock offset at specified date
      */
-    public FieldAbsoluteDate<T> getReferenceDate() {
-        return referenceDate;
-    }
-
-    /** Get constant term.
-     * @return constant term
-     */
-    public T getA0() {
-        return a0;
-    }
-
-    /** Get linear term.
-     * @return linear term
-     */
-    public T getA1() {
-        return a1;
-    }
-
-    /** Get quadratic term.
-     * @return quadratic term
-     */
-    public T getA2() {
-        return a2;
-    }
-
-    /**  {@inheritDoc} */
-    @Override
     public  T getOffset(final FieldAbsoluteDate<T> date) {
         final T dt = date.durationFrom(referenceDate);
         return a2.multiply(dt).add(a1).multiply(dt).add(a0);
     }
 
-    /**  {@inheritDoc} */
-    @Override
+    /** Get the clock rate at date
+     * @param date date at which offset is requested
+     * @return clock rate at specified date
+     */
     public T getRate(final FieldAbsoluteDate<T> date) {
         final T dt = date.durationFrom(referenceDate);
         return a2.multiply(dt).multiply(2).add(a1);
