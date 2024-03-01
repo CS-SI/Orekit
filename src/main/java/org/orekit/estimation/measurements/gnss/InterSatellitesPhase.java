@@ -41,7 +41,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Bryan Cazabonne
  * @since 10.3
  */
-public class InterSatellitesPhase extends InterSatellitesMeasurement<InterSatellitesPhase> {
+public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<InterSatellitesPhase> {
 
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "InterSatellitesPhase";
@@ -78,12 +78,6 @@ public class InterSatellitesPhase extends InterSatellitesMeasurement<InterSatell
 
         // Add parameter drivers
         addParameterDriver(ambiguityDriver);
-        addParameterDriver(local.getClockOffsetDriver());
-        addParameterDriver(local.getClockDriftDriver());
-        addParameterDriver(local.getClockAccelerationDriver());
-        addParameterDriver(remote.getClockOffsetDriver());
-        addParameterDriver(remote.getClockDriftDriver());
-        addParameterDriver(remote.getClockAccelerationDriver());
 
         // Initialize fields
         this.wavelength = wavelength;

@@ -90,9 +90,6 @@ public class OneWayGNSSRange extends AbstractOneWayGNSSMeasurement<OneWayGNSSRan
                            final double baseWeight, final ObservableSatellite local) {
         // Call super constructor
         super(remote, remoteClock, date, range, sigma, baseWeight, local);
-        // The local satellite clock offset affects the measurement
-        addParameterDriver(local.getClockOffsetDriver());
-
     }
 
     /** {@inheritDoc} */
