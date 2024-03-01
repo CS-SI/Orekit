@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2024 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,97 +16,59 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import java.util.Arrays;
-
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** Phase measurement between two satellites.
- * <p>
- * The measurement is considered to be a signal emitted from
- * a remote satellite and received by a local satellite.
- * Its value is the number of cycles between emission and reception.
- * The motion of both spacecraft during the signal flight time
- * are taken into account. The date of the measurement corresponds to the
- * reception on ground of the emitted signal.
- * </p>
- * @author Bryan Cazabonne
- * @since 10.3
+import java.util.Arrays;
+
+/** One way range-rate measurement between two satellites.
+ * @author Luc Maisonobe
+ * @since 12.1
  */
-public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<InterSatellitesPhase> {
+public class InterSatellitesOneWayRangeRate
+    extends AbstractInterSatellitesMeasurement<InterSatellitesOneWayRangeRate> {
 
     /** Type of the measurement. */
-    public static final String MEASUREMENT_TYPE = "InterSatellitesPhase";
-
-    /** Name for ambiguity driver. */
-    public static final String AMBIGUITY_NAME = "ambiguity";
-
-    /** Driver for ambiguity. */
-    private final ParameterDriver ambiguityDriver;
-
-    /** Wavelength of the phase observed value [m]. */
-    private final double wavelength;
+    public static final String MEASUREMENT_TYPE = "InterSatellitesOneWayRangeRate";
 
     /** Constructor.
      * @param local satellite which receives the signal and performs the measurement
      * @param remote remote satellite which simply emits the signal
      * @param date date of the measurement
-     * @param phase observed value (cycles)
-     * @param wavelength phase observed value wavelength (m)
+     * @param rangeRate observed value (m/s)
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      */
-    public InterSatellitesPhase(final ObservableSatellite local,
-                                final ObservableSatellite remote,
-                                final AbsoluteDate date, final double phase,
-                                final double wavelength, final double sigma,
-                                final double baseWeight) {
+    public InterSatellitesOneWayRangeRate(final ObservableSatellite local,
+                                          final ObservableSatellite remote,
+                                          final AbsoluteDate date, final double rangeRate,
+                                          final double sigma, final double baseWeight) {
         // Call to super constructor
-        super(date, phase, sigma, baseWeight, local, remote);
-
-        // Initialize phase ambiguity driver
-        ambiguityDriver = new ParameterDriver(AMBIGUITY_NAME, 0.0, 1.0,
-                                              Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-
-        // Add parameter drivers
-        addParameterDriver(ambiguityDriver);
-
-        // Initialize fields
-        this.wavelength = wavelength;
-    }
-
-    /** Get the wavelength.
-     * @return wavelength (m)
-     */
-    public double getWavelength() {
-        return wavelength;
-    }
-
-    /** Get the driver for phase ambiguity.
-     * @return the driver for phase ambiguity
-     */
-    public ParameterDriver getAmbiguityDriver() {
-        return ambiguityDriver;
+        super(date, rangeRate, sigma, baseWeight, local, remote);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected EstimatedMeasurementBase<InterSatellitesPhase> theoreticalEvaluationWithoutDerivatives(final int iteration,
-                                                                                                     final int evaluation,
-                                                                                                     final SpacecraftState[] states) {
+    protected EstimatedMeasurementBase<InterSatellitesOneWayRangeRate> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                                               final int evaluation,
+                                                                                                               final SpacecraftState[] states) {
 
         final OnBoardCommonParametersWithoutDerivatives common = computeCommonParametersWithout(states, false);
 
         // prepare the evaluation
-        final EstimatedMeasurementBase<InterSatellitesPhase> estimatedPhase =
+        final EstimatedMeasurementBase<InterSatellitesOneWayRangeRate> estimatedPhase =
                         new EstimatedMeasurementBase<>(this, iteration, evaluation,
                                                        new SpacecraftState[] {
                                                            common.getState(),
@@ -116,13 +78,12 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
                                                            common.getTransitPV()
                                                        });
 
-        // Phase value
-        final double cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
-        final double ambiguity   = ambiguityDriver.getValue(common.getState().getDate());
-        final double phase       = (common.getTauD() + common.getLocalOffset() - common.getRemoteOffset()) * cOverLambda +
-                                   ambiguity;
+        // Range rate value
+        final PVCoordinates delta = new PVCoordinates(common.getRemotePV(), common.getTransitPV());
+        final double rangeRate = Vector3D.dotProduct(delta.getVelocity(), delta.getPosition().normalize()) +
+                                 Constants.SPEED_OF_LIGHT * (common.getLocalRate() - common.getRemoteRate());
 
-        estimatedPhase.setEstimatedValue(phase);
+        estimatedPhase.setEstimatedValue(rangeRate);
 
         // Return the estimated measurement
         return estimatedPhase;
@@ -131,14 +92,14 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
 
     /** {@inheritDoc} */
     @Override
-    protected EstimatedMeasurement<InterSatellitesPhase> theoreticalEvaluation(final int iteration,
-                                                                               final int evaluation,
-                                                                               final SpacecraftState[] states) {
+    protected EstimatedMeasurement<InterSatellitesOneWayRangeRate> theoreticalEvaluation(final int iteration,
+                                                                                         final int evaluation,
+                                                                                         final SpacecraftState[] states) {
 
         final OnBoardCommonParametersWithDerivatives common = computeCommonParametersWith(states, false);
 
-       // prepare the evaluation
-        final EstimatedMeasurement<InterSatellitesPhase> estimatedPhase =
+        // prepare the evaluation
+        final EstimatedMeasurement<InterSatellitesOneWayRangeRate> estimatedPhase =
                         new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
                                                        common.getState(),
@@ -148,25 +109,21 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
                                                        common.getTransitPV().toTimeStampedPVCoordinates()
                                                    });
 
-        // Phase value
-        final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
-        final Gradient ambiguity   = ambiguityDriver.getValue(common.getTauD().getFreeParameters(), common.getIndices(),
-                                                              common.getState().getDate());
-        final Gradient phase       = common.getTauD().add(common.getLocalOffset()).subtract(common.getRemoteOffset()).
-                                     multiply(cOverLambda).
-                                     add(ambiguity);
+        // Range rate value
+        final FieldPVCoordinates<Gradient> delta = new FieldPVCoordinates<>(common.getRemotePV(), common.getTransitPV());
+        final Gradient rangeRate = FieldVector3D.dotProduct(delta.getVelocity(), delta.getPosition().normalize()).
+                                   add(common.getLocalRate().subtract(common.getRemoteRate()).multiply(Constants.SPEED_OF_LIGHT));
 
-        estimatedPhase.setEstimatedValue(phase.getValue());
+        estimatedPhase.setEstimatedValue(rangeRate.getValue());
 
         // Range partial derivatives with respect to states
-        final double[] derivatives = phase.getGradient();
+        final double[] derivatives = rangeRate.getGradient();
         estimatedPhase.setStateDerivatives(0, Arrays.copyOfRange(derivatives, 0,  6));
         estimatedPhase.setStateDerivatives(1, Arrays.copyOfRange(derivatives, 6, 12));
 
         // Set partial derivatives with respect to parameters
         for (final ParameterDriver driver : getParametersDrivers()) {
             for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
                 final Integer index = common.getIndices().get(span.getData());
                 if (index != null) {
                     estimatedPhase.setParameterDerivatives(driver, span.getStart(), derivatives[index]);

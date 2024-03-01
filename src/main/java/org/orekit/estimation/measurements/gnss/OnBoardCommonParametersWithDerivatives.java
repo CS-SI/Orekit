@@ -31,10 +31,16 @@ public class OnBoardCommonParametersWithDerivatives
     extends CommonParametersWithDerivatives {
 
     /** Local clock offset. */
-    final Gradient dtLocal;
+    final Gradient localOffset;
+
+    /** Local clock rate. */
+    final Gradient localRate;
 
     /** Remote clock offset. */
-    final Gradient dtRemote;
+    final Gradient remoteOffset;
+
+    /** Remote clock rate. */
+    final Gradient remoteRate;
 
     /** Remote satellite position/velocity. */
     private final TimeStampedFieldPVCoordinates<Gradient> remotePV;
@@ -42,36 +48,55 @@ public class OnBoardCommonParametersWithDerivatives
     /** Simple constructor.
      * @param localState local spacecraft state
      * @param indices derivatives indices map
-     * @param dtLocal local clock offset
-     * @param dtRemote remote clock offset
+     * @param localOffset local clock offset
+     * @param localRate local clock rate
+     * @param remoteOffset remote clock offset
+     * @param remoteRate remote clock rate
      * @param tauD downlink delay
      * @param localPV local satellite position/velocity
      * @param remotePV remote satellite position/velocity
      */
     public OnBoardCommonParametersWithDerivatives(final SpacecraftState localState,
                                                   final Map<String, Integer> indices,
-                                                  final Gradient dtLocal, final Gradient dtRemote,
+                                                  final Gradient localOffset, final Gradient localRate,
+                                                  final Gradient remoteOffset, final Gradient remoteRate,
                                                   final Gradient tauD,
                                                   final TimeStampedFieldPVCoordinates<Gradient> localPV,
                                                   final TimeStampedFieldPVCoordinates<Gradient> remotePV) {
         super(localState, indices, tauD, localState, localPV);
-        this.dtLocal  = dtLocal;
-        this.dtRemote = dtRemote;
-        this.remotePV = remotePV;
+        this.localOffset  = localOffset;
+        this.localRate    = localRate;
+        this.remoteOffset = remoteOffset;
+        this.remoteRate   = remoteRate;
+        this.remotePV     = remotePV;
     }
 
     /** Get local clock offset.
      * @return local clock offset
      */
-    public Gradient getDtLocal() {
-        return dtLocal;
+    public Gradient getLocalOffset() {
+        return localOffset;
+    }
+
+    /** Get local clock rate.
+     * @return local clock rate
+     */
+    public Gradient getLocalRate() {
+        return localRate;
     }
 
     /** Get remote clock offset.
-     * @return remotr clock offset
+     * @return remote clock offset
      */
-    public Gradient getDtRemote() {
-        return dtRemote;
+    public Gradient getRemoteOffset() {
+        return remoteOffset;
+    }
+
+    /** Get remote clock rate.
+     * @return remote clock rate
+     */
+    public Gradient getRemoteRate() {
+        return remoteRate;
     }
 
     /** Get remote satellite position/velocity.

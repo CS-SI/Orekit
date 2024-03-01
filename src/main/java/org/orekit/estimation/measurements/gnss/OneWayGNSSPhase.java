@@ -148,7 +148,7 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSSMeasurement<OneWayGNSSPha
         // Phase value
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
         final double   ambiguity   = ambiguityDriver.getValue(common.getState().getDate());
-        final double   phase       = (common.getTauD() + common.getDtLocal() - common.getDtRemote()) * cOverLambda +
+        final double   phase       = (common.getTauD() + common.getLocalOffset() - common.getRemoteOffset()) * cOverLambda +
                                      ambiguity;
 
         // Set value of the estimated measurement
@@ -181,7 +181,7 @@ public class OneWayGNSSPhase extends AbstractOneWayGNSSMeasurement<OneWayGNSSPha
         final double   cOverLambda      = Constants.SPEED_OF_LIGHT / wavelength;
         final Gradient ambiguity        = ambiguityDriver.getValue(common.getTauD().getFreeParameters(), common.getIndices(),
                                                                    common.getState().getDate());
-        final Gradient phase            = common.getTauD().add(common.getDtLocal()).subtract(common.getDtRemote()).
+        final Gradient phase            = common.getTauD().add(common.getLocalOffset()).subtract(common.getRemoteOffset()).
                                           multiply(cOverLambda).
                                           add(ambiguity);
         final double[] phaseDerivatives = phase.getGradient();

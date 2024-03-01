@@ -28,45 +28,70 @@ public class OnBoardCommonParametersWithoutDerivatives
     extends CommonParametersWithoutDerivatives {
 
     /** Local clock offset. */
-    final double dtLocal;
+    final double localOffset;
+
+    /** Local clock rate. */
+    final double localRate;
 
     /** Remote clock offset. */
-    final double dtRemote;
+    final double remoteOffset;
+
+    /** Remote clock rate. */
+    final double remoteRate;
 
     /** Remote satellite position/velocity. */
     private final TimeStampedPVCoordinates remotePV;
 
     /** Simple constructor.
      * @param localState local spacecraft state
-     * @param dtLocal local clock offset
-     * @param dtRemote remote clock offset
+     * @param localOffset local clock offset
+     * @param localRate local clock rate
+     * @param remoteOffset remote clock offset
+     * @param remoteRate remote clock rate
      * @param tauD downlink delay
      * @param localPV local satellite position/velocity
      * @param remotePV remote satellite position/velocity
      */
     public OnBoardCommonParametersWithoutDerivatives(final SpacecraftState localState,
-                                                     final double dtLocal, final double dtRemote,
+                                                     final double localOffset, final double localRate,
+                                                     final double remoteOffset, final double remoteRate,
                                                      final double tauD,
                                                      final TimeStampedPVCoordinates localPV,
                                                      final TimeStampedPVCoordinates remotePV) {
         super(localState, tauD, localState, localPV);
-        this.dtLocal  = dtLocal;
-        this.dtRemote = dtRemote;
-        this.remotePV = remotePV;
+        this.localOffset  = localOffset;
+        this.localRate    = localRate;
+        this.remoteOffset = remoteOffset;
+        this.remoteRate   = remoteRate;
+        this.remotePV     = remotePV;
     }
 
     /** Get local clock offset.
      * @return local clock offset
      */
-    public double getDtLocal() {
-        return dtLocal;
+    public double getLocalOffset() {
+        return localOffset;
+    }
+
+    /** Get local clock rate.
+     * @return local clock rate
+     */
+    public double getLocalRate() {
+        return localRate;
     }
 
     /** Get remote clock offset.
-     * @return remotr clock offset
+     * @return remote clock offset
      */
-    public double getDtRemote() {
-        return dtRemote;
+    public double getRemoteOffset() {
+        return remoteOffset;
+    }
+
+    /** Get remote clock rate.
+     * @return remote clock rate
+     */
+    public double getRemoteRate() {
+        return remoteRate;
     }
 
     /** Get remote satellite position/velocity.

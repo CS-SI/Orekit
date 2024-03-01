@@ -17,16 +17,13 @@
 package org.orekit.estimation.measurements.gnss;
 
 import java.util.Arrays;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.QuadraticClockModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ShiftingPVCoordinatesProvider;
@@ -65,20 +62,20 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
 
     /** {@inheritDoc} */
     @Override
-    protected PVCoordinatesProvider getDoubleRemotePV(final SpacecraftState[] states) {
+    protected PVCoordinatesProvider getRemotePV(final SpacecraftState[] states) {
         return new ShiftingPVCoordinatesProvider(states[1].getPVCoordinates(), states[1].getFrame());
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ToDoubleFunction<AbsoluteDate> getDoubleRemoteClock() {
-        return getSatellites().get(1).getQuadraticClockModel()::getOffset;
+    protected QuadraticClockModel getRemoteClock() {
+        return getSatellites().get(1).getQuadraticClockModel();
     }
 
     /** {@inheritDoc} */
     @Override
-    protected FieldPVCoordinatesProvider<Gradient> getGradientRemotePV(final SpacecraftState[] states,
-                                                                       final int freeParameters) {
+    protected FieldPVCoordinatesProvider<Gradient> getRemotePV(final SpacecraftState[] states,
+                                                               final int freeParameters) {
         // convert the SpacecraftState to a FieldPVCoordinatesProvider<Gradient>
         return (date, frame) -> {
 
@@ -90,15 +87,5 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
 
         };
     }
-
-    /** {@inheritDoc} */
-    @Override
-    protected Function<FieldAbsoluteDate<Gradient>, Gradient> getGradientRemoteClock(final int freeParameters,
-                                                                                     final Map<String, Integer> indices) {
-        return getSatellites().
-               get(1).
-               getQuadraticClockModel().
-               toGradientModel(freeParameters, indices, getDate())::getOffset;
-   }
 
 }

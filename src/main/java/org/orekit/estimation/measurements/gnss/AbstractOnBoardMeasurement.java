@@ -17,9 +17,12 @@
 package org.orekit.estimation.measurements.gnss;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.estimation.measurements.AbstractMeasurement;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.estimation.measurements.QuadraticClockModel;
+import org.orekit.estimation.measurements.QuadraticFieldClockModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -33,8 +36,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
 
 /** Base class modeling a measurement where receiver is a satellite.
  * @param <T> type of the measurement
@@ -68,21 +69,21 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
     /** Get emitting satellite clock provider.
      * @return emitting satellite clock provider
      */
-    protected abstract ToDoubleFunction<AbsoluteDate> getDoubleRemoteClock();
+    protected abstract QuadraticClockModel getRemoteClock();
 
     /** Get emitting satellite position/velocity provider.
      * @param states states of all spacecraft involved in the measurement
      * @return emitting satellite position/velocity provider
      */
-    protected abstract PVCoordinatesProvider getDoubleRemotePV(SpacecraftState[] states);
+    protected abstract PVCoordinatesProvider getRemotePV(SpacecraftState[] states);
 
     /** Get emitting satellite position/velocity provider.
      * @param states states of all spacecraft involved in the measurement
      * @param freeParameters total number of free parameters in the gradient
      * @return emitting satellite position/velocity provider
      */
-    protected abstract FieldPVCoordinatesProvider<Gradient> getGradientRemotePV(SpacecraftState[] states,
-                                                                                int freeParameters);
+    protected abstract FieldPVCoordinatesProvider<Gradient> getRemotePV(SpacecraftState[] states,
+                                                                        int freeParameters);
 
     /** Get emitting satellite clock provider.
      * @param freeParameters total number of free parameters in the gradient
@@ -90,8 +91,10 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
      * must be span name and not driver name
      * @return emitting satellite clock provider
      */
-    protected abstract Function<FieldAbsoluteDate<Gradient>, Gradient> getGradientRemoteClock(int freeParameters,
-                                                                                              Map<String, Integer> indices);
+    protected QuadraticFieldClockModel<Gradient> getRemoteClock(final int freeParameters,
+                                                                final Map<String, Integer> indices) {
+        return getRemoteClock().toGradientModel(freeParameters, indices, getDate());
+    }
 
     /** Compute common estimation parameters.
      * @param states states of all spacecraft involved in the measurement
@@ -104,16 +107,14 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
                                                                                        final boolean clockOffsetAlreadyApplied) {
 
         // local and remote satellites
-        final TimeStampedPVCoordinates       pvaLocal    = states[0].getPVCoordinates();
-        final double                         dtLocal     = getSatellites().
-                                                           get(0).
-                                                           getQuadraticClockModel().
-                                                           getOffset(getDate());
-        final PVCoordinatesProvider          remotePV    = getDoubleRemotePV(states);
-        final ToDoubleFunction<AbsoluteDate> remoteClock = getDoubleRemoteClock();
+        final TimeStampedPVCoordinates pvaLocal         = states[0].getPVCoordinates();
+        final QuadraticClockModel      localClock       = getSatellites().get(0).getQuadraticClockModel();
+        final double                   localClockOffset = localClock.getOffset(getDate());
+        final double                   localClockRate   = localClock.getRate(getDate());
+        final PVCoordinatesProvider    remotePV         = getRemotePV(states);
 
         // take clock offset into account
-        final AbsoluteDate arrivalDate = clockOffsetAlreadyApplied ? getDate() : getDate().shiftedBy(-dtLocal);
+        final AbsoluteDate arrivalDate = clockOffsetAlreadyApplied ? getDate() : getDate().shiftedBy(-localClockOffset);
 
         // Downlink delay
         final double deltaT = arrivalDate.durationFrom(states[0]);
@@ -122,8 +123,13 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
                                                arrivalDate, states[0].getFrame());
 
         // Remote satellite at signal emission
-        final AbsoluteDate emissionDate = arrivalDate.shiftedBy(-tauD);
-        return new OnBoardCommonParametersWithoutDerivatives(states[0], dtLocal, remoteClock.applyAsDouble(emissionDate),
+        final AbsoluteDate        emissionDate      = arrivalDate.shiftedBy(-tauD);
+        final QuadraticClockModel remoteClock       = getRemoteClock();
+        final double              remoteClockOffset = remoteClock.getOffset(emissionDate);
+        final double              remoteClockRate   = remoteClock.getRate(emissionDate);
+        return new OnBoardCommonParametersWithoutDerivatives(states[0],
+                                                             localClockOffset, localClockRate,
+                                                             remoteClockOffset, remoteClockRate,
                                                              tauD, pvaDownlink,
                                                              remotePV.getPVCoordinates(emissionDate, states[0].getFrame()));
 
@@ -153,18 +159,20 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
                 }
             }
         }
+        final FieldAbsoluteDate<Gradient> gDate = new FieldAbsoluteDate<>(GradientField.getField(nbEstimatedParams),
+                                                                          getDate());
 
         // local and remote satellites
-        final TimeStampedFieldPVCoordinates<Gradient>         pvaLocal         = getCoordinates(states[0], 0, nbEstimatedParams);
-        final ParameterDriver                                 localClockDriver = getSatellites().get(0).getClockOffsetDriver();
-        final Gradient                                        dtLocal          = localClockDriver.getValue(nbEstimatedParams, parameterIndices, getDate());
-        final FieldPVCoordinatesProvider<Gradient>            remotePV         = getGradientRemotePV(states, nbEstimatedParams);
-        final Function<FieldAbsoluteDate<Gradient>, Gradient> remoteClock      = getGradientRemoteClock(nbEstimatedParams, parameterIndices);
+        final TimeStampedFieldPVCoordinates<Gradient> pvaLocal         = getCoordinates(states[0], 0, nbEstimatedParams);
+        final QuadraticFieldClockModel<Gradient>      localClock       = getSatellites().get(0).getQuadraticClockModel().
+                                                                         toGradientModel(nbEstimatedParams, parameterIndices, getDate());
+        final Gradient                                localClockOffset = localClock.getOffset(gDate);
+        final Gradient                                localClockRate   = localClock.getRate(gDate);
+        final FieldPVCoordinatesProvider<Gradient>    remotePV         = getRemotePV(states, nbEstimatedParams);
 
         // take clock offset into account
         final FieldAbsoluteDate<Gradient> arrivalDate = clockOffsetAlreadyApplied ?
-                                                        new FieldAbsoluteDate<>(dtLocal.getField(), getDate()) :
-                                                        new FieldAbsoluteDate<>(getDate(), dtLocal.negate());
+                                                        gDate : gDate.shiftedBy(localClockOffset.negate());
 
         // Downlink delay
         final Gradient deltaT = arrivalDate.durationFrom(states[0].getDate());
@@ -174,9 +182,13 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
                                                  states[0].getFrame());
 
         // Remote satellite at signal emission
-        final FieldAbsoluteDate<Gradient> emissionDate = arrivalDate.shiftedBy(tauD.negate());
+        final FieldAbsoluteDate<Gradient>        emissionDate      = arrivalDate.shiftedBy(tauD.negate());
+        final QuadraticFieldClockModel<Gradient> remoteClock       = getRemoteClock(nbEstimatedParams, parameterIndices);
+        final Gradient                           remoteClockOffset = remoteClock.getOffset(emissionDate);
+        final Gradient                           remoteClockRate   = remoteClock.getRate(emissionDate);
         return new OnBoardCommonParametersWithDerivatives(states[0], parameterIndices,
-                                                          dtLocal, remoteClock.apply(emissionDate),
+                                                          localClockOffset, localClockRate,
+                                                          remoteClockOffset, remoteClockRate,
                                                           tauD, pvaDownlink,
                                                           remotePV.getPVCoordinates(emissionDate, states[0].getFrame()));
 

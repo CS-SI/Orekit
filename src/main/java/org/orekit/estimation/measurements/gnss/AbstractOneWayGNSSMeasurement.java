@@ -17,9 +17,6 @@
 package org.orekit.estimation.measurements.gnss;
 
 import java.util.Collections;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.ObservableSatellite;
@@ -27,7 +24,6 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.QuadraticClockModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -91,20 +87,20 @@ public abstract class AbstractOneWayGNSSMeasurement<T extends ObservedMeasuremen
 
     /** {@inheritDoc} */
     @Override
-    protected PVCoordinatesProvider getDoubleRemotePV(final SpacecraftState[] states) {
+    protected PVCoordinatesProvider getRemotePV(final SpacecraftState[] states) {
         return remotePV;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ToDoubleFunction<AbsoluteDate> getDoubleRemoteClock() {
-        return remoteClock::getOffset;
+    protected QuadraticClockModel getRemoteClock() {
+        return remoteClock;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected FieldPVCoordinatesProvider<Gradient> getGradientRemotePV(final SpacecraftState[] states,
-                                                                       final int freeParameters) {
+    protected FieldPVCoordinatesProvider<Gradient> getRemotePV(final SpacecraftState[] states,
+                                                               final int freeParameters) {
         // convert the PVCoordinatesProvider to a FieldPVCoordinatesProvider<Gradient>
         return (date, frame) -> {
 
@@ -119,13 +115,6 @@ public abstract class AbstractOneWayGNSSMeasurement<T extends ObservedMeasuremen
             return pvWithoutDerivatives.shiftedBy(zeroWithDerivatives);
 
         };
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected Function<FieldAbsoluteDate<Gradient>, Gradient> getGradientRemoteClock(final int freeParameters,
-                                                                                     final Map<String, Integer> indices) {
-        return remoteClock.toGradientModel(freeParameters, indices, getDate())::getOffset;
     }
 
 }
