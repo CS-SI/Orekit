@@ -50,7 +50,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
-import org.orekit.utils.StateFunction;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -503,12 +502,12 @@ public class InterSatellitesPhaseTest {
                         measurement.getSatellites().get(1).getClockOffsetDriver()
                     };
 
-                    for (int i = 0; i < drivers.length; ++i) {
-                        for (Span<String> span = drivers[i].getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                            final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i], span.getStart());
+                    for (final ParameterDriver driver : drivers) {
+                        for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                            final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(driver, span.getStart());
                             Assertions.assertEquals(1, measurement.getDimension());
                             Assertions.assertEquals(1, gradient.length);
-                            
+
                             // Compute a reference value using finite differences
                             final ParameterFunction dMkdP =
                                             Differentiation.differentiate(new ParameterFunction() {
@@ -519,13 +518,13 @@ public class InterSatellitesPhaseTest {
                                                            estimateWithoutDerivatives(0, 0, states).
                                                            getEstimatedValue()[0];
                                                 }
-                                            }, 3, 20.0 * drivers[i].getScale());
-                            final double ref = dMkdP.value(drivers[i], span.getStart());
-                            
+                                            }, 3, 20.0 * driver.getScale());
+                            final double ref = dMkdP.value(driver, span.getStart());
+
                             if (printResults) {
                                 System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
                             }
-                            
+
                             final double relError = FastMath.abs((ref-gradient[0])/ref);
                             relErrorList.add(relError);
 //                            Assert.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
