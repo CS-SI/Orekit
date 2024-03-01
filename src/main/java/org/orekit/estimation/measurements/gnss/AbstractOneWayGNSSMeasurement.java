@@ -46,7 +46,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * the satellite's orbit and clock.
  * </p>
  * <p>
- * This class is very similar to {@link InterSatellitesMeasurement} measurement
+ * This class is very similar to {@link AbstractInterSatellitesMeasurement} measurement
  * class. However, using the one-way GNSS range measurement, the orbit and clock
  * of the emitting GNSS satellite are <b>NOT</b> estimated simultaneously with
  * LEO satellite coordinates.
