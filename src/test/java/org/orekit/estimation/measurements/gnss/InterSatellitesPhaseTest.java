@@ -326,9 +326,8 @@ public class InterSatellitesPhaseTest {
             for (final ObservedMeasurement<?> measurement : measurements) {
 
                 //  Play test if the measurement date is between interpolator previous and current date
-                if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
-                    (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)
-                   ) {
+                if (measurement.getDate().isAfter(interpolator.getPreviousState()) &&
+                    measurement.getDate().isBeforeOrEqualTo(interpolator.getCurrentState())) {
 
                     // We intentionally propagate to a date which is close to the
                     // real spacecraft state but is *not* the accurate date, by
@@ -367,8 +366,11 @@ public class InterSatellitesPhaseTest {
                             dJacobian[i][j] = jacobian[i][j] - jacobianRef[i][j];
                             dJacobianRelative[i][j] = FastMath.abs(dJacobian[i][j]/jacobianRef[i][j]);
 
-                            if (j < 3) { errorsP.add(dJacobianRelative[i][j]);
-                            } else { errorsV.add(dJacobianRelative[i][j]); }
+                            if (j < 3) {
+                                errorsP.add(dJacobianRelative[i][j]);
+                            } else {
+                                errorsV.add(dJacobianRelative[i][j]);
+                            }
                         }
                     }
                     // Print values in console ?
