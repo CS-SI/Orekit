@@ -54,7 +54,7 @@ public class QuadraticFieldClockModel<T extends CalculusFieldElement<T>> {
         this.a2            = a2;
     }
 
-    /** Get the clock offset at date
+    /** Get the clock offset at date.
      * @param date date at which offset is requested
      * @return clock offset at specified date
      */
@@ -63,7 +63,7 @@ public class QuadraticFieldClockModel<T extends CalculusFieldElement<T>> {
         return a2.multiply(dt).add(a1).multiply(dt).add(a0);
     }
 
-    /** Get the clock rate at date
+    /** Get the clock rate at date.
      * @param date date at which offset is requested
      * @return clock rate at specified date
      */

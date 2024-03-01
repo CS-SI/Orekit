@@ -28,16 +28,16 @@ public class OnBoardCommonParametersWithoutDerivatives
     extends CommonParametersWithoutDerivatives {
 
     /** Local clock offset. */
-    final double localOffset;
+    private final double localOffset;
 
     /** Local clock rate. */
-    final double localRate;
+    private final double localRate;
 
     /** Remote clock offset. */
-    final double remoteOffset;
+    private final double remoteOffset;
 
     /** Remote clock rate. */
-    final double remoteRate;
+    private final double remoteRate;
 
     /** Remote satellite position/velocity. */
     private final TimeStampedPVCoordinates remotePV;

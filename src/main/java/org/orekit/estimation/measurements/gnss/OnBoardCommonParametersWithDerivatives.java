@@ -31,16 +31,16 @@ public class OnBoardCommonParametersWithDerivatives
     extends CommonParametersWithDerivatives {
 
     /** Local clock offset. */
-    final Gradient localOffset;
+    private final Gradient localOffset;
 
     /** Local clock rate. */
-    final Gradient localRate;
+    private final Gradient localRate;
 
     /** Remote clock offset. */
-    final Gradient remoteOffset;
+    private final Gradient remoteOffset;
 
     /** Remote clock rate. */
-    final Gradient remoteRate;
+    private final Gradient remoteRate;
 
     /** Remote satellite position/velocity. */
     private final TimeStampedFieldPVCoordinates<Gradient> remotePV;

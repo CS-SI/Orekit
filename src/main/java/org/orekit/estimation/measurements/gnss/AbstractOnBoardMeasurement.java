@@ -59,9 +59,9 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
 
         // Add parameter drivers
         satellites.forEach(s -> {
-            addParameterDriver(s.getClockOffsetDriver());   
-            addParameterDriver(s.getClockDriftDriver());   
-            addParameterDriver(s.getClockAccelerationDriver());   
+            addParameterDriver(s.getClockOffsetDriver());
+            addParameterDriver(s.getClockDriftDriver());
+            addParameterDriver(s.getClockAccelerationDriver());
         });
 
     }
