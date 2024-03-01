@@ -32,7 +32,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ShiftingPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-/** BAse class for measurement between two satellites that are both estimated.
+/** Base class for measurement between two satellites that are both estimated.
  * <p>
  * The measurement is considered to be a signal emitted from
  * a remote satellite and received by a local satellite.
@@ -45,7 +45,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Luc Maisonobe
  * @since 12.1
  */
-public abstract class InterSatellitesMeasurement<T extends ObservedMeasurement<T>> extends AbstractOnBoardMeasurement<T> {
+public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasurement<T>> extends AbstractOnBoardMeasurement<T> {
 
     /** Constructor.
      * @param date date of the measurement
@@ -55,20 +55,12 @@ public abstract class InterSatellitesMeasurement<T extends ObservedMeasurement<T
      * @param local satellite which receives the signal and performs the measurement
      * @param remote remote satellite which simply emits the signal
      */
-    public InterSatellitesMeasurement(final AbsoluteDate date, final double observed,
-                                      final double sigma, final double baseWeight,
-                                      final ObservableSatellite local,
-                                      final ObservableSatellite remote) {
+    public AbstractInterSatellitesMeasurement(final AbsoluteDate date, final double observed,
+                                              final double sigma, final double baseWeight,
+                                              final ObservableSatellite local,
+                                              final ObservableSatellite remote) {
         // Call to super constructor
         super(date, observed, sigma, baseWeight, Arrays.asList(local, remote));
-
-        addParameterDriver(local.getClockOffsetDriver());
-        addParameterDriver(local.getClockDriftDriver());
-        addParameterDriver(local.getClockAccelerationDriver());
-        addParameterDriver(remote.getClockOffsetDriver());
-        addParameterDriver(remote.getClockDriftDriver());
-        addParameterDriver(remote.getClockAccelerationDriver());
-
     }
 
     /** {@inheritDoc} */
@@ -90,16 +82,11 @@ public abstract class InterSatellitesMeasurement<T extends ObservedMeasurement<T
         // convert the SpacecraftState to a FieldPVCoordinatesProvider<Gradient>
         return (date, frame) -> {
 
-            // shift the raw (no derivatives) remote state
-            final AbsoluteDate    dateBase = date.toAbsoluteDate();
-            final SpacecraftState shifted  = states[1].shiftedBy(dateBase.durationFrom(states[1]));
+            // set up the derivatives with respect to remote state at its date
+            final TimeStampedFieldPVCoordinates<Gradient> pv0 = getCoordinates(states[1], 6, freeParameters);
 
-            // set up the derivatives with respect to remote state
-            final TimeStampedFieldPVCoordinates<Gradient> pv = getCoordinates(shifted, 6, freeParameters);
-
-            // add remaining derivatives, using a trick: we shift the date by 0, with derivatives
-            final Gradient zeroWithDerivatives = date.durationFrom(dateBase);
-            return pv.shiftedBy(zeroWithDerivatives);
+            // shift to desired date
+            return pv0.shiftedBy(date.durationFrom(states[1].getDate()));
 
         };
     }
