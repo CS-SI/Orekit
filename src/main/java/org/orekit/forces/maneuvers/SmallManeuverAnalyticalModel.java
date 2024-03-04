@@ -107,14 +107,14 @@ public class SmallManeuverAnalyticalModel implements AdapterPropagator.Different
     /** Build a maneuver defined in spacecraft frame.
      * @param state0 state at maneuver date, <em>before</em> the maneuver
      * is performed
-     * @param type orbit type to be used later on in Jacobian conversions
+     * @param orbitType orbit type to be used later on in Jacobian conversions
      * @param dV velocity increment in spacecraft frame
      * @param isp engine specific impulse (s)
      * @since 12.1 orbit type added as input
      */
-    public SmallManeuverAnalyticalModel(final SpacecraftState state0, final OrbitType type,
+    public SmallManeuverAnalyticalModel(final SpacecraftState state0, final OrbitType orbitType,
                                         final Vector3D dV, final double isp) {
-        this(state0, type, state0.getFrame(),
+        this(state0, orbitType, state0.getFrame(),
              state0.getAttitude().getRotation().applyInverseTo(dV),
              isp);
     }
@@ -135,23 +135,23 @@ public class SmallManeuverAnalyticalModel implements AdapterPropagator.Different
     /** Build a maneuver defined in user-specified frame.
      * @param state0 state at maneuver date, <em>before</em> the maneuver
      * is performed
-     * @param type orbit type to be used later on in Jacobian conversions
+     * @param orbitType orbit type to be used later on in Jacobian conversions
      * @param frame frame in which velocity increment is defined
      * @param dV velocity increment in specified frame
      * @param isp engine specific impulse (s)
      * @since 12.1 orbit type added as input
      */
-    public SmallManeuverAnalyticalModel(final SpacecraftState state0, final OrbitType type,
+    public SmallManeuverAnalyticalModel(final SpacecraftState state0, final OrbitType orbitType,
                                         final Frame frame, final Vector3D dV, final double isp) {
 
         this.state0    = state0;
         this.massRatio = FastMath.exp(-dV.getNorm() / (Constants.G0_STANDARD_GRAVITY * isp));
-        this.type = type;
+        this.type = orbitType;
 
         // compute initial Jacobian
         final double[][] fullJacobian = new double[6][6];
         j0 = new double[6][3];
-        final Orbit orbit0 = type.convertType(state0.getOrbit());
+        final Orbit orbit0 = orbitType.convertType(state0.getOrbit());
         orbit0.getJacobianWrtCartesian(PositionAngleType.MEAN, fullJacobian);
         for (int i = 0; i < j0.length; ++i) {
             System.arraycopy(fullJacobian[i], 3, j0[i], 0, 3);
