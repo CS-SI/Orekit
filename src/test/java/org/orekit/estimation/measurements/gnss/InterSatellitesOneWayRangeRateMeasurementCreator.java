@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
