@@ -736,7 +736,6 @@ public class FieldNumericalPropagatorTest {
 
         final FieldAbsoluteDate<T> stopDate = initDate.shiftedBy(1000);
         CheckingHandler<T> checking = new CheckingHandler<>(Action.STOP);
-        @SuppressWarnings("unchecked")
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, stopDate).withHandler(checking);
         propagator.addEventDetector(detector);
         Assertions.assertEquals(1, propagator.getEventsDetectors().size());
@@ -780,7 +779,6 @@ public class FieldNumericalPropagatorTest {
                 return new FieldSpacecraftState<>(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass().subtract(200.0));
             }
         };
-        @SuppressWarnings("unchecked")
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, resetDate).withHandler(checking);
         propagator.addEventDetector(detector);
         checking.assertEvent(false);
@@ -816,7 +814,6 @@ public class FieldNumericalPropagatorTest {
         propagator.setInitialState(initialState);
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
         CheckingHandler<T> checking = new CheckingHandler<>(Action.RESET_DERIVATIVES);
-        @SuppressWarnings("unchecked")
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, resetDate).withHandler(checking);
         propagator.addEventDetector(detector);
         final double dt = 3200;
@@ -867,7 +864,6 @@ public class FieldNumericalPropagatorTest {
 
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
         CheckingHandler<T> checking = new CheckingHandler<>(Action.CONTINUE);
-        @SuppressWarnings("unchecked")
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, resetDate).withHandler(checking);
         propagator.addEventDetector(detector);
         final double dt = 3200;

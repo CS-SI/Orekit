@@ -173,7 +173,6 @@ public class FieldEventEnablingPredicateFilterTest {
     @Test
     public void testResetState() {
         final List<FieldAbsoluteDate<Binary64>> reset = new ArrayList<>();
-        @SuppressWarnings("unchecked")
         FieldDateDetector<Binary64> raw = new FieldDateDetector<>(Binary64Field.getInstance(), orbit.getDate().shiftedBy(3600.0)).
                         withMaxCheck(1000.0).
                         withHandler(new FieldEventHandler<Binary64>() {
@@ -222,7 +221,6 @@ public class FieldEventEnablingPredicateFilterTest {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
-        @SuppressWarnings("unchecked")
         final FieldDateDetector<Binary64> raw = new FieldDateDetector<>(Binary64Field.getInstance(),
                                                                         orbit.getDate().shiftedBy(-0.5 * period)).
                                                 withMaxCheck(period / 3).
@@ -277,7 +275,6 @@ public class FieldEventEnablingPredicateFilterTest {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
-        @SuppressWarnings("unchecked")
         final FieldDateDetector<Binary64> raw = new FieldDateDetector<>(Binary64Field.getInstance(),
                                                                         orbit.getDate().shiftedBy(+0.5 * period)).
                                                 withMaxCheck(period / 3).
@@ -330,7 +327,6 @@ public class FieldEventEnablingPredicateFilterTest {
     @Test
     public void testGenerics() {
         // setup
-        @SuppressWarnings("unchecked")
         FieldDateDetector<Binary64> detector = new FieldDateDetector<>(orbit.getDate().getField(), orbit.getDate());
         FieldEnablingPredicate<Binary64> predicate = (state, eventDetector, g) -> true;
 

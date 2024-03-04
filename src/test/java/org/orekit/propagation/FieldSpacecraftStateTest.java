@@ -1004,7 +1004,6 @@ public class FieldSpacecraftStateTest {
 
         // Create date detector and handler
         FieldAbsoluteDate<T> changeDate = date0.shiftedBy(3);
-        @SuppressWarnings("unchecked")
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, changeDate).
                                     withHandler(new FieldEventHandler<T>() {
 
@@ -1056,7 +1055,6 @@ public class FieldSpacecraftStateTest {
 
         // Create date detector and handler
         FieldAbsoluteDate<T> changeDate = date0.shiftedBy(3);
-        @SuppressWarnings("unchecked")
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, changeDate).
                                     withHandler(new FieldEventHandler<T>() {
 

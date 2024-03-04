@@ -108,7 +108,6 @@ public class FieldEventDetectorTest {
 
         FieldPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         T stepSize = zero.add(60.0);
-        @SuppressWarnings("unchecked")
         final FieldDateDetector<T> detector = new FieldDateDetector<>(field, date.shiftedBy(stepSize.multiply(5.25))).withHandler(handler);
         propagator.addEventDetector(detector);
         propagator.propagate(date.shiftedBy(stepSize.multiply(10)));
@@ -138,7 +137,6 @@ public class FieldEventDetectorTest {
         FieldPropagator<T> propagator = new FieldKeplerianPropagator<>(orbit);
         T stepSize = zero.add(60.0);
         OutOfOrderChecker<T> checker = new OutOfOrderChecker<>(stepSize);
-        @SuppressWarnings("unchecked")
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, date.shiftedBy(stepSize.multiply(5.25))).withHandler(checker);
         propagator.addEventDetector(detector);
         propagator.setStepHandler(stepSize, checker);
@@ -349,7 +347,6 @@ public class FieldEventDetectorTest {
         doTestWrappedException(Binary64Field.getInstance());
     }
 
-    @SuppressWarnings("unchecked")
     private <T extends CalculusFieldElement<T>> void doTestWrappedException(Field<T> field) {
         final T zero = field.getZero();
         final Throwable dummyCause = new RuntimeException();
@@ -503,7 +500,6 @@ public class FieldEventDetectorTest {
         });
 
         for (int i = 0; i < 10; ++i) {
-            @SuppressWarnings("unchecked")
             FieldDateDetector<T> detector = new FieldDateDetector<>(field, initialDate.shiftedBy(0.0625 * (i + 1))).
                                             withHandler((state, d, increasing) -> {
                                                 checker.callDate(state.getDate());
