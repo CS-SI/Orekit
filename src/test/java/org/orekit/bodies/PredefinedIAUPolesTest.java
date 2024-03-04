@@ -82,50 +82,51 @@ public class PredefinedIAUPolesTest {
     public void testNaif() throws UnsupportedEncodingException, IOException {
         final TimeScale tdb = TimeScalesFactory.getTDB();
         final InputStream inEntry = getClass().getResourceAsStream("/naif/IAU-pole-NAIF.txt");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inEntry, StandardCharsets.UTF_8));
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            line = line.trim();
-            if (!line.isEmpty() && !line.startsWith("#")) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inEntry, StandardCharsets.UTF_8))) {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                line = line.trim();
+                if (!line.isEmpty() && !line.startsWith("#")) {
 
-                // extract reference data from Naif
-                String[] fields = line.split("\\s+");
-                final AbsoluteDate date1 = new AbsoluteDate(fields[0], tdb);
-                final AbsoluteDate date2 = new AbsoluteDate(AbsoluteDate.J2000_EPOCH,
-                                                            Double.parseDouble(fields[1]),
-                                                            tdb);
-                final EphemerisType type = EphemerisType.valueOf(fields[2]);
-                final double alphaRef    = Double.parseDouble(fields[3]);
-                final double deltaRef    = Double.parseDouble(fields[4]);
-                final double wRef        = Double.parseDouble(fields[5]);
-                final double[][] m       = new double[3][3];
-                int index = 6;
-                for (int i = 0; i < 3; ++i) {
-                    for (int j = 0; j < 3; ++j) {
-                        // we transpose the matrix to get the transform
-                        // from ICRF to body frame
-                        m[j][i] = Double.parseDouble(fields[index++]);
+                    // extract reference data from Naif
+                    String[] fields = line.split("\\s+");
+                    final AbsoluteDate date1 = new AbsoluteDate(fields[0], tdb);
+                    final AbsoluteDate date2 = new AbsoluteDate(AbsoluteDate.J2000_EPOCH,
+                                                                Double.parseDouble(fields[1]),
+                                                                tdb);
+                    final EphemerisType type = EphemerisType.valueOf(fields[2]);
+                    final double alphaRef    = Double.parseDouble(fields[3]);
+                    final double deltaRef    = Double.parseDouble(fields[4]);
+                    final double wRef        = Double.parseDouble(fields[5]);
+                    final double[][] m       = new double[3][3];
+                    int index = 6;
+                    for (int i = 0; i < 3; ++i) {
+                        for (int j = 0; j < 3; ++j) {
+                            // we transpose the matrix to get the transform
+                            // from ICRF to body frame
+                            m[j][i] = Double.parseDouble(fields[index++]);
+                        }
                     }
+                    Rotation rRef = new Rotation(m, 1.0e-10);
+
+                    // check pole
+                    IAUPole iauPole = PredefinedIAUPoles.getIAUPole(type, timeScales);
+                    Vector3D pole = iauPole.getPole(date2);
+                    double w = iauPole.getPrimeMeridianAngle(date2);
+                    Assertions.assertEquals(0.0, date2.durationFrom(date1), 8.0e-5);
+                    Assertions.assertEquals(alphaRef, MathUtils.normalizeAngle(pole.getAlpha(), alphaRef), 1.8e-15);
+                    Assertions.assertEquals(deltaRef, pole.getDelta(), 2.4e-13);
+                    Assertions.assertEquals(wRef, MathUtils.normalizeAngle(w, wRef), 2.5e-12);
+
+                    // check matrix
+                    Vector3D qNode = Vector3D.crossProduct(Vector3D.PLUS_K, pole);
+                    if (qNode.getNormSq() < Precision.SAFE_MIN) {
+                        qNode = Vector3D.PLUS_I;
+                    }
+                    final Rotation rotation = new Rotation(Vector3D.PLUS_K, wRef, RotationConvention.FRAME_TRANSFORM).
+                                    applyTo(new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I));
+                    Assertions.assertEquals(0.0, Rotation.distance(rRef, rotation), 1.9e-15);
+
                 }
-                Rotation rRef = new Rotation(m, 1.0e-10);
-
-                // check pole
-                IAUPole iauPole = PredefinedIAUPoles.getIAUPole(type, timeScales);
-                Vector3D pole = iauPole.getPole(date2);
-                double w = iauPole.getPrimeMeridianAngle(date2);
-                Assertions.assertEquals(0.0, date2.durationFrom(date1), 8.0e-5);
-                Assertions.assertEquals(alphaRef, MathUtils.normalizeAngle(pole.getAlpha(), alphaRef), 1.8e-15);
-                Assertions.assertEquals(deltaRef, pole.getDelta(), 2.4e-13);
-                Assertions.assertEquals(wRef, MathUtils.normalizeAngle(w, wRef), 2.5e-12);
-
-                // check matrix
-                Vector3D qNode = Vector3D.crossProduct(Vector3D.PLUS_K, pole);
-                if (qNode.getNormSq() < Precision.SAFE_MIN) {
-                    qNode = Vector3D.PLUS_I;
-                }
-                final Rotation rotation = new Rotation(Vector3D.PLUS_K, wRef, RotationConvention.FRAME_TRANSFORM).
-                                          applyTo(new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I));
-                Assertions.assertEquals(0.0, Rotation.distance(rRef, rotation), 1.9e-15);
-
             }
         }
     }
