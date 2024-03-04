@@ -40,7 +40,10 @@ import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
@@ -69,19 +72,39 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.*;
-import org.orekit.propagation.events.*;
+import org.orekit.propagation.FieldAdditionalStateProvider;
+import org.orekit.propagation.FieldBoundedPropagator;
+import org.orekit.propagation.FieldEphemerisGenerator;
+import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldAbstractDetector;
+import org.orekit.propagation.events.FieldAdaptableInterval;
+import org.orekit.propagation.events.FieldApsideDetector;
+import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.integration.FieldCombinedDerivatives;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
-import org.orekit.time.*;
-import org.orekit.utils.*;
-
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 public class FieldNumericalPropagatorTest {
 
@@ -99,14 +122,12 @@ public class FieldNumericalPropagatorTest {
 
     @Test
     void testNotInitialised1() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            doTestNotInitialised1(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(OrekitException.class, () -> doTestNotInitialised1(Binary64Field.getInstance()));
     }
 
     private <T extends CalculusFieldElement<T>>  void doTestNotInitialised1(Field<T> field) {
         // setup
-        final FieldAbsoluteDate<T>   initDate = FieldAbsoluteDate.getJ2000Epoch(field);
+        final FieldAbsoluteDate<T> initDate = FieldAbsoluteDate.getJ2000Epoch(field);
 
         final FieldAbstractIntegratedPropagator<T> notInitialised =
             new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, field.getZero().add(10.0)));
@@ -115,9 +136,7 @@ public class FieldNumericalPropagatorTest {
 
     @Test
     void testNotInitialised2() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            doTestNotInitialised2(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(OrekitException.class, () -> doTestNotInitialised2(Binary64Field.getInstance()));
     }
 
     private <T extends CalculusFieldElement<T>>  void doTestNotInitialised2(Field<T> field) {
@@ -133,7 +152,7 @@ public class FieldNumericalPropagatorTest {
         doTestEventAtEndOfEphemeris(Binary64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>, D extends FieldEventDetector<T>> void doTestEventAtEndOfEphemeris(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestEventAtEndOfEphemeris(Field<T> field) {
 
         T zero = field.getZero();
         FieldNumericalPropagator<T>  propagator = createPropagator(field);
@@ -145,7 +164,7 @@ public class FieldNumericalPropagatorTest {
         final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
         propagator.propagate(end);
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
-        CountingHandler<D, T> handler = new CountingHandler<D, T>();
+        CountingHandler<T> handler = new CountingHandler<>();
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, toArray(end)).
                                         withMaxCheck(10).
                                         withThreshold(zero.newInstance(1e-9)).
@@ -167,7 +186,7 @@ public class FieldNumericalPropagatorTest {
         doTestEventAtBeginningOfEphemeris(Binary64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>, D extends FieldEventDetector<T>> void doTestEventAtBeginningOfEphemeris(Field<T> field) {
+    private <T extends CalculusFieldElement<T>> void doTestEventAtBeginningOfEphemeris(Field<T> field) {
 
         T zero = field.getZero();
         FieldNumericalPropagator<T>  propagator = createPropagator(field);
@@ -180,7 +199,7 @@ public class FieldNumericalPropagatorTest {
         final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
         propagator.propagate(end);
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
-        CountingHandler<D, T> handler = new CountingHandler<D, T>();
+        CountingHandler<T> handler = new CountingHandler<>();
         // events directly on propagation start date are not triggered,
         // so move the event date slightly after
         FieldAbsoluteDate<T> eventDate = initDate.shiftedBy(FastMath.ulp(100.0) / 10.0);
@@ -199,12 +218,11 @@ public class FieldNumericalPropagatorTest {
         Assertions.assertEquals(2, handler.eventCount);
     }
 
-    static class CountingHandler <D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>>
+    static class CountingHandler <T extends CalculusFieldElement<T>>
             implements FieldEventHandler<T> {
 
         /**
-         * number of calls to {@link #eventOccurred(FieldSpacecraftState<T>,
-         * FieldEventDetector<T>, boolean)}.
+         * number of calls to eventOccurred.
          */
         private int eventCount = 0;
 
@@ -240,11 +258,11 @@ public class FieldNumericalPropagatorTest {
         FieldDateDetector<T> d1 = new FieldDateDetector<>(field, toArray(initDate.shiftedBy(15))).
                                   withMaxCheck(10).
                                   withThreshold(zero.newInstance(1)).
-                                  withHandler(new FieldContinueOnEvent<T>());
+                                  withHandler(new FieldContinueOnEvent<>());
         FieldDateDetector<T> d2 = new FieldDateDetector<>(field, toArray(initDate.shiftedBy(15.5))).
                                   withMaxCheck(10).
                                   withThreshold(zero.newInstance(1)).
-                                  withHandler(new FieldContinueOnEvent<T>());
+                                  withHandler(new FieldContinueOnEvent<>());
         propagator.addEventDetector(d1);
         propagator.addEventDetector(d2);
 
@@ -654,9 +672,7 @@ public class FieldNumericalPropagatorTest {
 
     @Test
     void testException() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            doTestException(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(OrekitException.class, () -> doTestException(Binary64Field.getInstance()));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestException(Field<T> field) {
@@ -682,11 +698,7 @@ public class FieldNumericalPropagatorTest {
 
         propagator.setStepHandler(new FieldOrekitStepHandler<T>() {
             private int countDown = 3;
-            private FieldAbsoluteDate<T> previousCall = null;
             public void handleStep(FieldOrekitStepInterpolator<T> interpolator) {
-                if (previousCall != null) {
-                    System.out.println(interpolator.getCurrentState().getDate().compareTo(previousCall) < 0);
-                }
                 if (--countDown == 0) {
                     throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE, "dummy error");
                 }
@@ -723,7 +735,7 @@ public class FieldNumericalPropagatorTest {
         propagator.setInitialState(initialState);
 
         final FieldAbsoluteDate<T> stopDate = initDate.shiftedBy(1000);
-        CheckingHandler<T> checking = new CheckingHandler<T>(Action.STOP);
+        CheckingHandler<T> checking = new CheckingHandler<>(Action.STOP);
         @SuppressWarnings("unchecked")
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, stopDate).withHandler(checking);
         propagator.addEventDetector(detector);
@@ -803,7 +815,7 @@ public class FieldNumericalPropagatorTest {
         propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
-        CheckingHandler<T> checking = new CheckingHandler<T>(Action.RESET_DERIVATIVES);
+        CheckingHandler<T> checking = new CheckingHandler<>(Action.RESET_DERIVATIVES);
         @SuppressWarnings("unchecked")
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, resetDate).withHandler(checking);
         propagator.addEventDetector(detector);
@@ -854,7 +866,7 @@ public class FieldNumericalPropagatorTest {
 
 
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
-        CheckingHandler<T> checking = new CheckingHandler<T>(Action.CONTINUE);
+        CheckingHandler<T> checking = new CheckingHandler<>(Action.CONTINUE);
         @SuppressWarnings("unchecked")
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, resetDate).withHandler(checking);
         propagator.addEventDetector(detector);
@@ -969,8 +981,8 @@ public class FieldNumericalPropagatorTest {
         Assertions.assertEquals(2, propagator.getManagedAdditionalStates().length);
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", zero.add(1.5)));
 
-        CheckingHandler<T> checking = new CheckingHandler<T>(Action.STOP);
-        propagator.addEventDetector(new AdditionalStateLinearDetector<T>(zero.add(10.0), zero.add(1.0e-8)).withHandler(checking));
+        CheckingHandler<T> checking = new CheckingHandler<>(Action.STOP);
+        propagator.addEventDetector(new AdditionalStateLinearDetector<>(zero.add(10.0), zero.add(1.0e-8)).withHandler(checking));
 
         final double dt = 3200;
         checking.assertEvent(false);
@@ -986,7 +998,7 @@ public class FieldNumericalPropagatorTest {
         extends FieldAbstractDetector<AdditionalStateLinearDetector<T>, T> {
 
         public AdditionalStateLinearDetector(T maxCheck, T threshold) {
-            this(s -> maxCheck.getReal(), threshold, DEFAULT_MAX_ITER, new FieldStopOnEvent<T>());
+            this(s -> maxCheck.getReal(), threshold, DEFAULT_MAX_ITER, new FieldStopOnEvent<>());
         }
 
         private AdditionalStateLinearDetector(FieldAdaptableInterval<T> maxCheck, T threshold, int maxIter,
@@ -997,7 +1009,7 @@ public class FieldNumericalPropagatorTest {
         protected AdditionalStateLinearDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
                                                           final int newMaxIter,
                                                           final FieldEventHandler<T> newHandler) {
-            return new AdditionalStateLinearDetector<T>(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            return new AdditionalStateLinearDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
         public T g(FieldSpacecraftState<T> s) {
@@ -1042,8 +1054,8 @@ public class FieldNumericalPropagatorTest {
             }
         };
 
-        propagator.addEventDetector(new AdditionalStateLinearDetector<T>(field.getZero().add(10.0),
-                                                                         field.getZero().add(1.0e-8)).withHandler(checking));
+        propagator.addEventDetector(new AdditionalStateLinearDetector<>(field.getZero().add(10.0),
+                                                                        field.getZero().add(1.0e-8)).withHandler(checking));
 
         final double dt = 3200;
         checking.assertEvent(false);
@@ -1065,8 +1077,6 @@ public class FieldNumericalPropagatorTest {
         T zero = field.getZero();
         TimeScale utc = TimeScalesFactory.getUTC();
         FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<>(field, 2005, 1, 1, 0, 0, 0.0, utc);
-        T duration = zero.add(100000.0);
-        FieldAbsoluteDate<T> endDate = new FieldAbsoluteDate<>(initialDate, duration);
 
         // Initialization of the frame EME2000
         Frame EME2000 = FramesFactory.getEME2000();
@@ -1082,8 +1092,8 @@ public class FieldNumericalPropagatorTest {
                                                        EME2000, initialDate, zero.add(mu));
 
 
-        duration = geo.getKeplerianPeriod();
-        endDate = new FieldAbsoluteDate<>(initialDate, duration);
+        T duration = geo.getKeplerianPeriod();
+        FieldAbsoluteDate<T> endDate = new FieldAbsoluteDate<>(initialDate, duration);
 
         // Numerical Integration
         final double minStep  = 0.001;
@@ -1758,7 +1768,7 @@ public class FieldNumericalPropagatorTest {
 
         // Stop condition
         T convergenceThreshold = field.getZero().add(1e-9);
-        propagator.addEventDetector(new FieldDateDetector<T>(field, propagator.getInitialState().getDate().shiftedBy(60)).
+        propagator.addEventDetector(new FieldDateDetector<>(field, propagator.getInitialState().getDate().shiftedBy(60)).
                                     withMaxCheck(1e10).withThreshold(convergenceThreshold));
 
         // Propagate until the stop condition is reached
@@ -1813,7 +1823,7 @@ public class FieldNumericalPropagatorTest {
         dates[3] = reference.shiftedBy(300.0);
         dates[4] = reference.shiftedBy(600.0);
         dates[5] = reference.shiftedBy(900.0);
-        np.addEventDetector(new FieldDateDetector<T>(field, (FieldTimeStamped<T>[]) dates).
+        np.addEventDetector(new FieldDateDetector<>(field, (FieldTimeStamped<T>[]) dates).
                             withMaxCheck(30).
                             withThreshold(zero.newInstance(1.0e-9)).
                             withHandler(checker));

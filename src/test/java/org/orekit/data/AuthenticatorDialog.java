@@ -16,9 +16,14 @@
  */
 package org.orekit.data;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.Spring;
+import javax.swing.SpringLayout;
+import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
@@ -44,7 +49,7 @@ public class AuthenticatorDialog extends Authenticator {
     /** Simple constructor.
      */
     public AuthenticatorDialog() {
-        userName = new String();
+        userName = "";
         password = new char[0];
     }
 
@@ -123,19 +128,17 @@ public class AuthenticatorDialog extends Authenticator {
                              SpringLayout.EAST,  passwordField);
         dialog.pack();
 
-        ActionListener al = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == cancelButton) {
-                    userName = new String();
-                    password = new char[0];
-                } else {
-                    userName = userNameField.getText();
-                    password = passwordField.getPassword();
-                }
-                userNameField.setText(null);
-                passwordField.setText(null);
-                dialog.setVisible(false);
+        ActionListener al = e -> {
+            if (e.getSource() == cancelButton) {
+                userName = "";
+                password = new char[0];
+            } else {
+                userName = userNameField.getText();
+                password = passwordField.getPassword();
             }
+            userNameField.setText(null);
+            passwordField.setText(null);
+            dialog.setVisible(false);
         };
         passwordField.addActionListener(al);
         okButton.addActionListener(al);
@@ -147,7 +150,7 @@ public class AuthenticatorDialog extends Authenticator {
         // to prevent credentials lying around in memory
         PasswordAuthentication authentication =
             new PasswordAuthentication(userName, password);
-        userName = new String();
+        userName = "";
         password = new char[0];
 
         return authentication;

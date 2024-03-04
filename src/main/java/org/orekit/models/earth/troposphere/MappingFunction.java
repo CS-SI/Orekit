@@ -24,7 +24,9 @@ import org.orekit.time.FieldAbsoluteDate;
 
 /** Interface for mapping functions used in the tropospheric delay computation.
  * @author Bryan Cazabonne
+ * @deprecated as of 12.1, replaced by {@link TroposphereMappingFunction}
  */
+@Deprecated
 public interface MappingFunction {
 
     /** This method allows the computation of the hydrostatic and

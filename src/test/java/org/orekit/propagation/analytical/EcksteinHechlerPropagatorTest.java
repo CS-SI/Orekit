@@ -881,6 +881,7 @@ public class EcksteinHechlerPropagatorTest {
         num.addForceModel(new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(provider)));
         num.setInitialState(new SpacecraftState(initialOsculating));
         num.setOrbitType(OrbitType.CIRCULAR);
+        num.setPositionAngleType(initialOsculating.getCachedPositionAngleType());
         final StorelessUnivariateStatistic oscMin  = new Min();
         final StorelessUnivariateStatistic oscMax  = new Max();
         final StorelessUnivariateStatistic meanMin = new Min();

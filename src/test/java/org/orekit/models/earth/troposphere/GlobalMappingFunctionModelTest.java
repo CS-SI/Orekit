@@ -27,6 +27,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.TrackingCoordinates;
 
 public class GlobalMappingFunctionModelTest {
 
@@ -62,13 +63,15 @@ public class GlobalMappingFunctionModelTest {
         final double height      = 844.715;
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
 
-        final double elevation     = 0.5 * FastMath.PI - 1.278564131;
+        final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(0.0, 0.5 * FastMath.PI - 1.278564131, 0.0);
         final double expectedHydro = 3.425246;
         final double expectedWet   = 3.449589;
 
-        final MappingFunction model = new GlobalMappingFunctionModel();
+        final TroposphereMappingFunction model = new GlobalMappingFunctionModel();
 
-        final double[] computedMapping = model.mappingFactors(elevation, point, date);
+        final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
+                                                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                              date);
 
         Assertions.assertEquals(expectedHydro, computedMapping[0], 1.0e-6);
         Assertions.assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
@@ -77,7 +80,7 @@ public class GlobalMappingFunctionModelTest {
     @Test
     public void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
-        MappingFunction model = new GlobalMappingFunctionModel();
+        TroposphereMappingFunction model = new GlobalMappingFunctionModel();
         double[] lastFactors = new double[] {
             Double.MAX_VALUE,
             Double.MAX_VALUE
@@ -85,7 +88,10 @@ public class GlobalMappingFunctionModelTest {
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
         // mapping functions shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double[] factors = model.mappingFactors(FastMath.toRadians(elev), point, date);
+            final double[] factors = model.mappingFactors(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
+                                                          point,
+                                                          TroposphericModelUtils.STANDARD_ATMOSPHERE,
+                                                          date);
             Assertions.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
             Assertions.assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
             lastFactors[0] = factors[0];

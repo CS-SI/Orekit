@@ -1435,7 +1435,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
                                       g.getValue(), h.getValue(), l.getValue(),
                                       a.getFirstDerivative(), e.getFirstDerivative(), i.getFirstDerivative(),
                                       g.getFirstDerivative(), h.getFirstDerivative(), l.getFirstDerivative(),
-                                      PositionAngleType.MEAN, PositionAngleType.TRUE, mean.getFrame(), date, mu);
+                                      PositionAngleType.MEAN, mean.getFrame(), date, mu);
 
         }
 

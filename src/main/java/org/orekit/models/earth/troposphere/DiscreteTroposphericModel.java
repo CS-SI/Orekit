@@ -37,7 +37,9 @@ import org.orekit.utils.ParameterDriversProvider;
  * <li> δ<sub>nh</sub> =  non-hydrostatic (or wet) delay </li>
  * </ul>
  * @author Bryan Cazabonne
+ * @deprecated as of 12.1, replaced by {@link TroposphericModel}
  */
+@Deprecated
 public interface DiscreteTroposphericModel extends ParameterDriversProvider {
 
     /** Calculates the tropospheric path delay for the signal path from a ground
@@ -63,4 +65,5 @@ public interface DiscreteTroposphericModel extends ParameterDriversProvider {
      */
     <T extends CalculusFieldElement<T>> T pathDelay(T elevation, FieldGeodeticPoint<T> point, T[] parameters,
                                                     FieldAbsoluteDate<T> date);
+
 }

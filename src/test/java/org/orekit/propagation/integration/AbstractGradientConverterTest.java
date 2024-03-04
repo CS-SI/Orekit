@@ -27,7 +27,11 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.*;
+import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,7 +105,7 @@ class AbstractGradientConverterTest {
         final SpacecraftState state = Mockito.mock(SpacecraftState.class);
         Mockito.when(state.getDate()).thenReturn(AbsoluteDate.ARBITRARY_EPOCH);
         final TimeStampedPVCoordinates pvCoordinates = new TimeStampedPVCoordinates(state.getDate(),
-                new PVCoordinates());
+                                                                                    new PVCoordinates());
         Mockito.when(state.getPVCoordinates()).thenReturn(pvCoordinates);
         Mockito.when(state.getPosition()).thenReturn(pvCoordinates.getPosition());
         Mockito.when(state.isOrbitDefined()).thenReturn(isOrbitDefined);

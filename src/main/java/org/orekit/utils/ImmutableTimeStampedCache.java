@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitIllegalStateException;
@@ -51,7 +50,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
      */
     @SuppressWarnings("rawtypes")
     private static final ImmutableTimeStampedCache EMPTY_CACHE =
-        new EmptyTimeStampedCache<TimeStamped>();
+        new EmptyTimeStampedCache<>();
 
     /**
      * the cached data. Be careful not to modify it after the constructor, or
@@ -64,16 +63,6 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
      * @since 12.0
      */
     private final int maxNeighborsSize;
-
-    /** Earliest date.
-     * @since 12.0
-     */
-    private final AbsoluteDate earliestDate;
-
-    /** Latest date.
-     * @since 12.0
-     */
-    private final AbsoluteDate latestDate;
 
     /**
      * Create a new cache with the given neighbors size and data.
@@ -97,17 +86,14 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
         }
         if (maxNeighborsSize < 1) {
             throw new OrekitIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_SMALL,
-                                                     maxNeighborsSize, 0);
+                                                     maxNeighborsSize, 1);
         }
 
         // assign instance variables
         this.maxNeighborsSize = maxNeighborsSize;
         // sort and copy data first
         this.data = new ArrayList<>(data);
-        Collections.sort(this.data, new ChronologicalComparator());
-
-        this.earliestDate = this.data.get(0).getDate();
-        this.latestDate   = this.data.get(this.data.size() - 1).getDate();
+        this.data.sort(new ChronologicalComparator());
 
     }
 
@@ -117,91 +103,14 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
     private ImmutableTimeStampedCache() {
         this.data             = null;
         this.maxNeighborsSize = 0;
-        this.earliestDate     = AbsoluteDate.ARBITRARY_EPOCH;
-        this.latestDate       = AbsoluteDate.ARBITRARY_EPOCH;
     }
 
     /** {@inheritDoc} */
     public Stream<T> getNeighbors(final AbsoluteDate central, final int n) {
-
         if (n > maxNeighborsSize) {
             throw new OrekitException(OrekitMessages.NOT_ENOUGH_DATA, maxNeighborsSize);
         }
-
-        // find central index
-        final int i = findIndex(central);
-
-        // check index in in the range of the data
-        if (i < 0) {
-            final AbsoluteDate earliest = this.getEarliest().getDate();
-            throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
-                    earliest, central, earliest.durationFrom(central));
-        } else if (i >= this.data.size()) {
-            final AbsoluteDate latest = this.getLatest().getDate();
-            throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
-                    latest, central, central.durationFrom(latest));
-        }
-
-        // force unbalanced range if necessary
-        int start = FastMath.max(0, i - (n - 1) / 2);
-        final int end = FastMath.min(this.data.size(), start + n);
-        start = end - n;
-
-        // return list without copying
-        return this.data.subList(start, end).stream();
-    }
-
-    /**
-     * Find the index, i, to {@link #data} such that {@code data[i] <= t} and
-     * {@code data[i+1] > t} if {@code data[i+1]} exists.
-     *
-     * @param t the time
-     * @return the index of the data at or just before {@code t}, {@code -1} if
-     *         {@code t} is before the first entry, or {@code data.size()} if
-     *         {@code t} is after the last entry.
-     */
-    private int findIndex(final AbsoluteDate t) {
-
-        // left bracket of search algorithm
-        int    iInf  = 0;
-        double dtInf = t.durationFrom(earliestDate);
-        if (dtInf < 0) {
-            // before first entry
-            return -1;
-        }
-
-        // right bracket of search algorithm
-        int    iSup  = data.size() - 1;
-        double dtSup = t.durationFrom(latestDate);
-        if (dtSup > 0) {
-            // after last entry
-            return data.size();
-        }
-
-        // search entries, using linear interpolation
-        // this should take only 2 iterations for near linear entries (most frequent use case)
-        // regardless of the number of entries
-        // this is much faster than binary search for large number of entries
-        while (iSup - iInf > 1) {
-            final int    iInterp = (int) FastMath.rint((iInf * dtSup - iSup * dtInf) / (dtSup - dtInf));
-            final int    iMed    = FastMath.max(iInf + 1, FastMath.min(iInterp, iSup - 1));
-            final double dtMed   = t.durationFrom(data.get(iMed).getDate());
-            if (dtMed < 0) {
-                iSup  = iMed;
-                dtSup = dtMed;
-            } else {
-                iInf  = iMed;
-                dtInf = dtMed;
-            }
-        }
-
-        // at this point data[iInf] <= t <= data[iSup], but the javadoc for this method
-        // says the upper bound is exclusive, so check for equality to make a half open
-        // interval.
-        if (dtSup == 0.0) {
-            return iSup;
-        }
-        return iInf;
+        return new SortedListTrimmer(n).getNeighborsSubList(central, data).stream();
     }
 
     /** {@inheritDoc} */
@@ -285,7 +194,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
      * @return an empty {@link ImmutableTimeStampedCache}.
      */
     @SuppressWarnings("unchecked")
-    public static final <TS extends TimeStamped> ImmutableTimeStampedCache<TS> emptyCache() {
+    public static <TS extends TimeStamped> ImmutableTimeStampedCache<TS> emptyCache() {
         return (ImmutableTimeStampedCache<TS>) EMPTY_CACHE;
     }
 

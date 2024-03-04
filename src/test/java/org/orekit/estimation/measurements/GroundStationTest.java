@@ -46,6 +46,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -94,6 +95,7 @@ public class GroundStationTest {
         final String changedSuffix   = "-changed";
         final GroundStation changed  = new GroundStation(new TopocentricFrame(parent, base.getPoint(),
                                                                               base.getName() + changedSuffix),
+                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                                                          context.ut1.getEOPHistory(),
                                                          context.stations.get(0).getDisplacements());
 
@@ -174,6 +176,7 @@ public class GroundStationTest {
                                                                                             parent.getBodyFrame(),
                                                                                             null),
                                                                            base.getName() + movedSuffix),
+                                                      TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                                                       context.ut1.getEOPHistory(),
                                                       context.stations.get(0).getDisplacements());
 
@@ -212,7 +215,7 @@ public class GroundStationTest {
         Assertions.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  6.2e-7);
         Assertions.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 2.6e-7);
 
-        GeodeticPoint result = moved.getOffsetGeodeticPoint(null);
+        GeodeticPoint result = moved.getOffsetGeodeticPoint((AbsoluteDate) null);
 
         GeodeticPoint reference = context.stations.get(0).getBaseFrame().getPoint();
         Assertions.assertEquals(reference.getLatitude(),  result.getLatitude(),  3.3e-14);
@@ -1277,7 +1280,8 @@ public class GroundStationTest {
                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final GroundStation station = new GroundStation(new TopocentricFrame(earth,
                                                                              new GeodeticPoint(0.1, 0.2, 100),
-                                                                             "dummy"));
+                                                                             "dummy"),
+                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
         try {
             station.getOffsetToInertial(eme2000, date, false);
             Assertions.fail("an exception should have been thrown");
@@ -1324,7 +1328,8 @@ public class GroundStationTest {
                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final GroundStation station = new GroundStation(new TopocentricFrame(earth,
                                                                              new GeodeticPoint(latitude, longitude, altitude),
-                                                                             "dummy"));
+                                                                             "dummy"),
+                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
         final GradientField gradientField = GradientField.getField(parameterPattern.length);
         ParameterDriver[] selectedDrivers = new ParameterDriver[parameterPattern.length];
         UnivariateDifferentiableVectorFunction[] dFCartesian = new UnivariateDifferentiableVectorFunction[parameterPattern.length];
@@ -1433,7 +1438,8 @@ public class GroundStationTest {
                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final GroundStation station = new GroundStation(new TopocentricFrame(earth,
                                                                              new GeodeticPoint(latitude, longitude, altitude),
-                                                                             "dummy"));
+                                                                             "dummy"),
+                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
         ParameterDriver[] selectedDrivers = new ParameterDriver[parameterPattern.length];
         UnivariateDifferentiableVectorFunction[] dFAngular   = new UnivariateDifferentiableVectorFunction[parameterPattern.length];
         final ParameterDriver[] allDrivers = selectAllDrivers(station);

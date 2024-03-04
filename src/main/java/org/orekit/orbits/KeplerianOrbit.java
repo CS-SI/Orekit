@@ -452,36 +452,43 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public OrbitType getType() {
         return OrbitType.KEPLERIAN;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getA() {
         return a;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getADot() {
         return aDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getE() {
         return e;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEDot() {
         return eDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getI() {
         return i;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getIDot() {
         return iDot;
     }
@@ -700,11 +707,13 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialEx() {
         return e * FastMath.cos(pa + raan);
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialExDot() {
         final double paPraan = pa + raan;
         final SinCos sc      = FastMath.sinCos(paPraan);
@@ -712,11 +721,13 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialEy() {
         return e * FastMath.sin(pa + raan);
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialEyDot() {
         final double paPraan = pa + raan;
         final SinCos sc      = FastMath.sinCos(paPraan);
@@ -724,6 +735,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHx() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
@@ -733,6 +745,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHxDot() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
@@ -744,15 +757,17 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHy() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
             return Double.NaN;
         }
-        return  FastMath.sin(raan) * FastMath.tan(0.5 * i);
+        return FastMath.sin(raan) * FastMath.tan(0.5 * i);
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHyDot() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
@@ -764,31 +779,37 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLv() {
         return pa + raan + getTrueAnomaly();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLvDot() {
         return paDot + raanDot + getTrueAnomalyDot();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLE() {
         return pa + raan + getEccentricAnomaly();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLEDot() {
         return paDot + raanDot + getEccentricAnomalyDot();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLM() {
         return pa + raan + getMeanAnomaly();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLMDot() {
         return paDot + raanDot + getMeanAnomalyDot();
     }
@@ -1049,6 +1070,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Vector3D initPosition() {
 
         final Vector3D[] axes = referenceAxes();
@@ -1084,6 +1106,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected TimeStampedPVCoordinates initPVCoordinates() {
 
         // position and velocity
@@ -1101,6 +1124,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public KeplerianOrbit shiftedBy(final double dt) {
 
         // use Keplerian-only motion
@@ -1137,6 +1161,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] computeJacobianMeanWrtCartesian() {
         if (isElliptical()) {
             return computeJacobianMeanWrtCartesianElliptical();
@@ -1412,6 +1437,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] computeJacobianEccentricWrtCartesian() {
         if (isElliptical()) {
             return computeJacobianEccentricWrtCartesianElliptical();
@@ -1485,6 +1511,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] computeJacobianTrueWrtCartesian() {
         if (isElliptical()) {
             return computeJacobianTrueWrtCartesianElliptical();
@@ -1570,6 +1597,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void addKeplerContribution(final PositionAngleType type, final double gm,
                                       final double[] pDot) {
         final double oMe2;

@@ -130,8 +130,8 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
     public <T extends CalculusFieldElement<T>> FieldGeodeticPoint<T> getPoint(final Field<T> field) {
         final T zero = field.getZero();
         return new FieldGeodeticPoint<>(zero.newInstance(point.getLatitude()),
-                zero.newInstance(point.getLongitude()),
-                zero.newInstance(point.getAltitude()));
+                                        zero.newInstance(point.getLongitude()),
+                                        zero.newInstance(point.getAltitude()));
     }
 
     /** Get the zenith direction of topocentric frame, expressed in parent shape frame.

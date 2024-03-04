@@ -16,16 +16,16 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.util.FastMath;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.FieldTrackingCoordinates;
+import org.orekit.utils.TrackingCoordinates;
 
 /** The Marini-Murray tropospheric delay model for laser ranging.
  *
@@ -33,33 +33,32 @@ import org.orekit.utils.ParameterDriver;
  *      Atmospheric Refraction at Elevations Above 10 degrees, X-591-73-351, NASA GSFC, 1973"
  *
  * @author Joris Olympio
+ * @deprecated as of 12.1, replaced by {@link MariniMurray}
  */
-public class MariniMurrayModel implements DiscreteTroposphericModel {
+@Deprecated
+public class MariniMurrayModel extends MariniMurray implements DiscreteTroposphericModel {
 
-    /** The temperature at the station, K. */
-    private double T0;
-
-    /** The atmospheric pressure, mbar. */
-    private double P0;
-
-    /** water vapor pressure at the laser site, mbar. */
-    private double e0;
-
-    /** Laser wavelength, micrometers. */
-    private double lambda;
+    /** Constant pressure, temperature and humidity. */
+    private final PressureTemperatureHumidity pth;
 
     /** Create a new Marini-Murray model for the troposphere using the given
      * environmental conditions.
      * @param t0 the temperature at the station, K
      * @param p0 the atmospheric pressure at the station, mbar
-     * @param rh the humidity at the station, percent (50% -&gt; 0.5)
+     * @param rh the humidity at the station, as a ratio (50% → 0.5)
      * @param lambda laser wavelength (c/f), nm
      */
     public MariniMurrayModel(final double t0, final double p0, final double rh, final double lambda) {
-        this.T0     = t0;
-        this.P0     = p0;
-        this.e0     = getWaterVapor(rh);
-        this.lambda = lambda * 1e-3;
+        super(lambda, TroposphericModelUtils.NANO_M);
+        this.pth = new PressureTemperatureHumidity(0,
+                                                   TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
+                                                   t0,
+                                                   new CIPM2007().
+                                                   waterVaporPressure(TroposphericModelUtils.HECTO_PASCAL.toSI(p0),
+                                                                      t0,
+                                                                      rh),
+                                                   Double.NaN,
+                                                   Double.NaN);
     }
 
     /** Create a new Marini-Murray model using a standard atmosphere model.
@@ -75,98 +74,32 @@ public class MariniMurrayModel implements DiscreteTroposphericModel {
      * @return a Marini-Murray model with standard environmental values
      */
     public static MariniMurrayModel getStandardModel(final double lambda) {
-        return new MariniMurrayModel(273.15 + 20, 1013.25, 0.5, lambda);
+        final double p  = TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25);
+        final double t  = 273.15 + 20;
+        final double rh = 0.5;
+        return new MariniMurrayModel(t, p, rh, lambda);
     }
 
     /** {@inheritDoc} */
     @Override
     public double pathDelay(final double elevation, final GeodeticPoint point,
                             final double[] parameters, final AbsoluteDate date) {
-        final double A = 0.002357 * P0 + 0.000141 * e0;
-        final double K = 1.163 - 0.00968 * FastMath.cos(2 * point.getLatitude()) - 0.00104 * T0 + 0.00001435 * P0;
-        final double B = (1.084 * 1e-8) * P0 * T0 * K + (4.734 * 1e-8) * P0 * (P0 / T0) * (2 * K) / (3 * K - 1);
-        final double flambda = getLaserFrequencyParameter();
-
-        final double fsite = getSiteFunctionValue(point);
-
-        final double sinE = FastMath.sin(elevation);
-        final double dR = (flambda / fsite) * (A + B) / (sinE + B / ((A + B) * (sinE + 0.01)) );
-        return dR;
+        return pathDelay(new TrackingCoordinates(0.0, elevation, 0.0), point,
+                         pth, parameters, date).
+               getDelay();
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation, final FieldGeodeticPoint<T> point,
-                                                       final T[] parameters, final FieldAbsoluteDate<T> date) {
-        final double A = 0.002357 * P0 + 0.000141 * e0;
-        final T K = FastMath.cos(point.getLatitude().multiply(2.)).multiply(0.00968).negate().add(1.163).subtract(0.00104 * T0).add(0.00001435 * P0);
-        final T B = K.multiply((1.084 * 1e-8) * P0 * T0).add(K.multiply(2.).multiply((4.734 * 1e-8) * P0 * (P0 / T0)).divide(K.multiply(3.).subtract(1.)));
-        final double flambda = getLaserFrequencyParameter();
-
-        final T fsite = getSiteFunctionValue(point);
-
-        final T sinE = FastMath.sin(elevation);
-        final T dR = fsite.divide(flambda).reciprocal().multiply(B.add(A)).divide(sinE.add(sinE.add(0.01).multiply(B.add(A)).divide(B).reciprocal()));
-        return dR;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
-    }
-
-    /** Get the laser frequency parameter f(lambda).
-     * It is one for Ruby laser (lambda = 0.6943 micron)
-     * For infrared lasers, f(lambda) = 0.97966.
-     *
-     * @return the laser frequency parameter f(lambda).
-     */
-    private double getLaserFrequencyParameter() {
-        return 0.9650 + 0.0164 * FastMath.pow(lambda, -2) + 0.000228 * FastMath.pow(lambda, -4);
-    }
-
-    /** Get the laser frequency parameter f(lambda).
-     *
-     * @param point station location
-     * @return the laser frequency parameter f(lambda).
-     */
-    private double getSiteFunctionValue(final GeodeticPoint point) {
-        return 1. - 0.0026 * FastMath.cos(2 * point.getLatitude()) - 0.00031 * 0.001 * point.getAltitude();
-    }
-
-    /** Get the laser frequency parameter f(lambda).
-    *
-    * @param <T> type of the elements
-    * @param point station location
-    * @return the laser frequency parameter f(lambda).
-    */
-    private <T extends CalculusFieldElement<T>> T getSiteFunctionValue(final FieldGeodeticPoint<T> point) {
-        return FastMath.cos(point.getLatitude().multiply(2)).multiply(0.0026).add(point.getAltitude().multiply(0.001).multiply(0.00031)).negate().add(1.);
-    }
-
-    /** Get the water vapor.
-     * The water vapor model is the one of Giacomo and Davis as indicated in IERS TN 32, chap. 9.
-     *
-     * See: Giacomo, P., Equation for the dertermination of the density of moist air, Metrologia, V. 18, 1982
-     *
-     * @param rh relative humidity, in percent (50% -&gt; 0.5).
-     * @return the water vapor, in mbar (1 mbar = 100 Pa).
-     */
-    private double getWaterVapor(final double rh) {
-
-        // saturation water vapor, equation (3) of reference paper, in mbar
-        // with amended 1991 values (see reference paper)
-        final double es = 0.01 * FastMath.exp((1.2378847 * 1e-5) * T0 * T0 -
-                                              (1.9121316 * 1e-2) * T0 +
-                                              33.93711047 -
-                                              (6.3431645 * 1e3) * 1. / T0);
-
-        // enhancement factor, equation (4) of reference paper
-        final double fw = 1.00062 + (3.14 * 1e-6) * P0 + (5.6 * 1e-7) * FastMath.pow(T0 - 273.15, 2);
-
-        final double e = rh * fw * es;
-        return e;
+    public <T extends CalculusFieldElement<T>> T pathDelay(final T elevation,
+                                                           final FieldGeodeticPoint<T> point,
+                                                           final T[] parameters,
+                                                           final FieldAbsoluteDate<T> date) {
+        return pathDelay(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
+                         point,
+                         new FieldPressureTemperatureHumidity<>(date.getField(), pth),
+                         parameters, date).
+               getDelay();
     }
 
 }

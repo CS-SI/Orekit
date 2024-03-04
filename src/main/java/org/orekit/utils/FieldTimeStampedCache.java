@@ -50,16 +50,38 @@ public interface FieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK extend
      * @param central central date
      *
      * @return list of cached entries surrounding the specified date. The size of the list is guaranteed to be
-     * {@link #getNeighborsSize()}.
+     * {@link #getMaxNeighborsSize()}.
      */
-    Stream<T> getNeighbors(FieldAbsoluteDate<KK> central);
+    default Stream<T> getNeighbors(FieldAbsoluteDate<KK> central) {
+        return getNeighbors(central, getMaxNeighborsSize());
+    }
+
+    /**
+     * Get the entries surrounding a central date.
+     * <p>
+     * If the central date is well within covered range, the returned array will be balanced with half the points before
+     * central date and half the points after it (depending on n parity, of course). If the central date is near the
+     * boundary, then the returned array will be unbalanced and will contain only the n earliest (or latest) entries. A
+     * typical example of the later case is leap seconds cache, since the number of leap seconds cannot be arbitrarily
+     * increased.
+     * <p>
+     * This method is safe for multiple threads to execute concurrently.
+     *
+     * @param central central date
+     * @param n number of neighbors (cannot exceed {@link #getMaxNeighborsSize()})
+     *
+     * @return list of cached entries surrounding the specified date. The size of the list is guaranteed to be
+     * {@link #getMaxNeighborsSize()}.
+     * @since 12.1
+     */
+    Stream<T> getNeighbors(FieldAbsoluteDate<KK> central, int n);
 
     /**
      * Get the fixed size of the lists returned by {@link #getNeighbors(FieldAbsoluteDate)}.
      *
      * @return size of the list
      */
-    int getNeighborsSize();
+    int getMaxNeighborsSize();
 
     /**
      * Get the earliest entry in this cache.

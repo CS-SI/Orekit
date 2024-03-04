@@ -45,10 +45,10 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
-public class SmallManeuverAnalyticalModelTest {
+class SmallManeuverAnalyticalModelTest {
 
     @Test
-    public void testLowEarthOrbit1() {
+    void testLowEarthOrbit1() {
 
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
                                       FastMath.toRadians(98.0),
@@ -95,7 +95,7 @@ public class SmallManeuverAnalyticalModelTest {
     }
 
     @Test
-    public void testLowEarthOrbit2() {
+    void testLowEarthOrbit2() {
 
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
                                       FastMath.toRadians(98.0),
@@ -144,7 +144,7 @@ public class SmallManeuverAnalyticalModelTest {
     }
 
     @Test
-    public void testEccentricOrbit() {
+    void testEccentricOrbit() {
 
         Orbit heo = new KeplerianOrbit(90000000.0, 0.92, FastMath.toRadians(98.0),
                                        FastMath.toRadians(12.3456),
@@ -195,7 +195,7 @@ public class SmallManeuverAnalyticalModelTest {
     }
 
     @Test
-    public void testJacobian() {
+    void testJacobian() {
 
         Frame eme2000 = FramesFactory.getEME2000();
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-2, 2.0e-3,
@@ -297,6 +297,7 @@ public class SmallManeuverAnalyticalModelTest {
         integrator.setInitialStepSize(orbit.getKeplerianPeriod() / 100.0);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(orbit.getType());
+        propagator.setPositionAngleType(PositionAngleType.TRUE);
         propagator.setInitialState(initialState);
         propagator.setAttitudeProvider(law);
 

@@ -177,11 +177,11 @@ public class ImmutableFieldTimeStampedCacheTest {
     }
 
     /**
-     * check {@link ImmutableFieldTimeStampedCache#getNeighborsSize()}
+     * check {@link ImmutableFieldTimeStampedCache#getMaxNeighborsSize()}
      */
     @Test
     public void testGetNeighborsSize() {
-        Assertions.assertEquals(cache.getNeighborsSize(), 3);
+        Assertions.assertEquals(cache.getMaxNeighborsSize(), 3);
     }
 
     /**
@@ -241,8 +241,9 @@ public class ImmutableFieldTimeStampedCacheTest {
     /**
      * check {@link ImmutableFieldTimeStampedCache#emptyCache()}.
      */
+    @Deprecated
     @Test
-    public void testEmptyCache() {
+    public void testEmptyCacheDeprecated() {
         // setup
         cache = ImmutableFieldTimeStampedCache.emptyCache(Binary64Field.getInstance());
 
@@ -269,7 +270,41 @@ public class ImmutableFieldTimeStampedCacheTest {
             // expected
         }
         Assertions.assertEquals(cache.getAll().size(), 0);
-        Assertions.assertEquals(cache.getNeighborsSize(), 0);
+        Assertions.assertEquals(cache.getMaxNeighborsSize(), 0);
+    }
+
+    /**
+     * check {@link ImmutableFieldTimeStampedCache#emptyCache()}.
+     */
+    @Test
+    public void testEmptyCache() {
+        // setup
+        cache = ImmutableFieldTimeStampedCache.emptyCache();
+
+        // actions + verify
+        try {
+            cache.getNeighbors(date);
+            Assertions.fail("Expected Exception");
+        }
+        catch (TimeStampedCacheException e) {
+            // expected
+        }
+        try {
+            cache.getEarliest();
+            Assertions.fail("Expected Exception");
+        }
+        catch (IllegalStateException e) {
+            // expected
+        }
+        try {
+            cache.getLatest();
+            Assertions.fail("Expected Exception");
+        }
+        catch (IllegalStateException e) {
+            // expected
+        }
+        Assertions.assertEquals(cache.getAll().size(), 0);
+        Assertions.assertEquals(cache.getMaxNeighborsSize(), 0);
     }
 
     @Test

@@ -55,6 +55,7 @@ import org.orekit.utils.ParameterDriversList;
 
 import java.util.List;
 
+@Deprecated
 public class EstimatedTroposphericModelTest {
 
     @BeforeAll
@@ -123,7 +124,8 @@ public class EstimatedTroposphericModelTest {
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
 
         // Station
-        final GroundStation station = new GroundStation(baseFrame);
+        final GroundStation station = new GroundStation(baseFrame,
+                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
 
         // Tropospheric model
         final DiscreteTroposphericModel model = new EstimatedTroposphericModel(func, 2.0);

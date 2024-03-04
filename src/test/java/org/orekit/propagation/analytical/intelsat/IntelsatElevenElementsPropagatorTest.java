@@ -21,6 +21,7 @@ import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
@@ -92,6 +93,7 @@ class IntelsatElevenElementsPropagatorTest {
 
     @BeforeAll
     public static void initialize() {
+        Utils.setDataRoot("regular-data");
         // Reference elements from Intelsat website (spacecraft 4521)
         ELEMENTS = new IntelsatElevenElements(new AbsoluteDate("2023-12-04T00:00:00.000", TimeScalesFactory.getUTC()), 302.0058, -0.0096, -0.000629, 0.0297, -0.0004, -0.0194,
                                               0.0007, 0.0378, -0.0018, -0.0011, 0.0015);

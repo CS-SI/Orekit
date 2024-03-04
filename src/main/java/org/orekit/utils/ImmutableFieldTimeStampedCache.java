@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
@@ -49,68 +49,58 @@ import org.orekit.time.TimeStamped;
 public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK extends CalculusFieldElement<KK>>
         implements FieldTimeStampedCache<T, KK> {
 
+    /** An empty immutable cache that always throws an exception on attempted access.
+     * @since 12.1
+     */
+    @SuppressWarnings("rawtypes")
+    private static final ImmutableFieldTimeStampedCache EMPTY_CACHE =
+        new EmptyFieldTimeStampedCache();
+
     /**
      * the cached data. Be careful not to modify it after the constructor, or return a reference that allows mutating this
      * list.
      */
     private final List<T> data;
 
-    /** the size list to return from {@link #getNeighbors(FieldAbsoluteDate)}. */
-    private final int neighborsSize;
-
-    /** Earliest date.
-     * @since 12.0
-     */
-    private final FieldAbsoluteDate<KK> earliestDate;
-
-    /** Latest date.
-     * @since 12.0
-     */
-    private final FieldAbsoluteDate<KK> latestDate;
+    /** the maximum size list to return from {@link #getNeighbors(FieldAbsoluteDate)}. */
+    private final int maxNeighborsSize;
 
     /**
      * Create a new cache with the given neighbors size and data.
      *
-     * @param neighborsSize the size of the list returned from {@link #getNeighbors(FieldAbsoluteDate)}. Must be less than or
+     * @param maxNeighborsSize the maximum size of the list returned from {@link #getNeighbors(FieldAbsoluteDate)}. Must be less than or
      * equal to {@code data.size()}.
      * @param data the backing data for this cache. The list will be copied to ensure immutability. To guarantee immutability
-     * the entries in {@code data} must be immutable themselves. There must be more data than {@code neighborsSize}.
+     * the entries in {@code data} must be immutable themselves. There must be more data than {@code maxNeighborsSize}.
      *
-     * @throws IllegalArgumentException if {@code neighborsSize > data.size()} or if {@code neighborsSize} is negative
+     * @throws IllegalArgumentException if {@code maxNeighborsSize > data.size()} or if {@code maxNeighborsSize} is negative
      */
-    public ImmutableFieldTimeStampedCache(final int neighborsSize,
+    public ImmutableFieldTimeStampedCache(final int maxNeighborsSize,
                                           final Collection<? extends T> data) {
         // Parameter check
-        if (neighborsSize > data.size()) {
+        if (maxNeighborsSize > data.size()) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS,
-                                                     data.size(), neighborsSize);
+                                                     data.size(), maxNeighborsSize);
         }
-        if (neighborsSize < 1) {
+        if (maxNeighborsSize < 1) {
             throw new OrekitIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_SMALL,
-                                                     neighborsSize, 0);
+                                                     maxNeighborsSize, 1);
         }
 
         // Assign instance variables
-        this.neighborsSize = neighborsSize;
+        this.maxNeighborsSize = maxNeighborsSize;
 
         // Sort and copy data first
         this.data = new ArrayList<>(data);
-        Collections.sort(this.data, new FieldChronologicalComparator<>());
-
-        this.earliestDate = this.data.get(0).getDate();
-        this.latestDate   = this.data.get(this.data.size() - 1).getDate();
+        this.data.sort(new FieldChronologicalComparator<>());
 
     }
 
-    /**
-     * private constructor for {@link #EMPTY_CACHE}.
-     * @param field field to which the elements belong
+    /** Private constructor for {@link #EMPTY_CACHE}.
      */
-    private ImmutableFieldTimeStampedCache(final Field<KK> field) {
-        this.data          = null;
-        this.neighborsSize = 0;
-        this.earliestDate  = FieldAbsoluteDate.getArbitraryEpoch(field);
-        this.latestDate    = FieldAbsoluteDate.getArbitraryEpoch(field);
+    private ImmutableFieldTimeStampedCache() {
+        this.data             = null;
+        this.maxNeighborsSize = 0;
     }
 
     /**
@@ -118,45 +108,41 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
      *
      * @param <TS> the type of data
      * @param <CFE> the type of the calculus field element
-     * @param field field to which the elements belong
+     * @param ignored field to which the elements belong
      * @return an empty {@link ImmutableTimeStampedCache}.
+     * @deprecated as of 12.1, replaced by {@link #emptyCache()}
      */
+    @Deprecated
     public static <TS extends FieldTimeStamped<CFE>, CFE extends CalculusFieldElement<CFE>>
-        ImmutableFieldTimeStampedCache<TS, CFE> emptyCache(final Field<CFE> field) {
-        return new EmptyFieldTimeStampedCache<>(field);
+        ImmutableFieldTimeStampedCache<TS, CFE> emptyCache(final Field<CFE> ignored) {
+        return emptyCache();
+    }
+
+    /**
+     * Get an empty immutable cache.
+     *
+     * @param <TS> the type of data
+     * @param <CFE> the type of the calculus field element
+     * @return an empty {@link ImmutableTimeStampedCache}.
+     * @since 12.1
+     */
+    @SuppressWarnings("unchecked")
+    public static <TS extends FieldTimeStamped<CFE>, CFE extends CalculusFieldElement<CFE>>
+        ImmutableFieldTimeStampedCache<TS, CFE> emptyCache() {
+        return (ImmutableFieldTimeStampedCache<TS, CFE>) EMPTY_CACHE;
     }
 
     /** {@inheritDoc} */
-    public Stream<T> getNeighbors(final FieldAbsoluteDate<KK> central) {
-
-        // Find central index
-        final int i = findIndex(central);
-
-        // Check index in the range of the data
-        if (i < 0) {
-            final FieldAbsoluteDate<KK> earliest = this.getEarliest().getDate();
-            throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
-                                                earliest, central, earliest.durationFrom(central).getReal());
+    public Stream<T> getNeighbors(final FieldAbsoluteDate<KK> central, final int n) {
+        if (n > maxNeighborsSize) {
+            throw new OrekitException(OrekitMessages.NOT_ENOUGH_DATA, maxNeighborsSize);
         }
-        else if (i >= this.data.size()) {
-            final FieldAbsoluteDate<KK> latest = this.getLatest().getDate();
-            throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
-                                                latest, central, central.durationFrom(latest).getReal());
-        }
-
-        // Force unbalanced range if necessary
-        int start = FastMath.max(0, i - (this.neighborsSize - 1) / 2);
-        final int end = FastMath.min(this.data.size(), start +
-                this.neighborsSize);
-        start = end - this.neighborsSize;
-
-        // Return list without copying
-        return this.data.subList(start, end).stream();
+        return new FieldSortedListTrimmer(n).getNeighborsSubList(central, data).stream();
     }
 
     /** {@inheritDoc} */
-    public int getNeighborsSize() {
-        return this.neighborsSize;
+    public int getMaxNeighborsSize() {
+        return this.maxNeighborsSize;
     }
 
     /** {@inheritDoc} */
@@ -185,62 +171,9 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
         return "Immutable cache with " + this.data.size() + " entries";
     }
 
-    /**
-     * Find the index, i, to {@link #data} such that {@code data[i] <= t} and {@code data[i+1] > t} if {@code data[i+1]}
-     * exists.
-     *
-     * @param t the time
-     *
-     * @return the index of the data at or just before {@code t}, {@code -1} if {@code t} is before the first entry, or
-     * {@code data.size()} if {@code t} is after the last entry.
-     */
-    private int findIndex(final FieldAbsoluteDate<KK> t) {
-        // left bracket of search algorithm
-        int iInf  = 0;
-        KK  dtInf = t.durationFrom(earliestDate);
-        if (dtInf.getReal() < 0) {
-            // before first entry
-            return -1;
-        }
-
-        // right bracket of search algorithm
-        int iSup  = data.size() - 1;
-        KK  dtSup = t.durationFrom(latestDate);
-        if (dtSup.getReal() > 0) {
-            // after last entry
-            return data.size();
-        }
-
-        // search entries, using linear interpolation
-        // this should take only 2 iterations for near linear entries (most frequent use case)
-        // regardless of the number of entries
-        // this is much faster than binary search for large number of entries
-        while (iSup - iInf > 1) {
-            final int iInterp = (int) FastMath.rint(dtSup.multiply(iInf).subtract(dtInf.multiply(iSup)).divide(dtSup.subtract(dtInf)).getReal());
-            final int iMed    = FastMath.max(iInf + 1, FastMath.min(iInterp, iSup - 1));
-            final KK  dtMed   = t.durationFrom(data.get(iMed).getDate());
-            if (dtMed.getReal() < 0) {
-                iSup  = iMed;
-                dtSup = dtMed;
-            } else {
-                iInf  = iMed;
-                dtInf = dtMed;
-            }
-        }
-
-        return iInf;
-    }
-
     /** An empty immutable cache that always throws an exception on attempted access. */
     private static class EmptyFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK extends CalculusFieldElement<KK>>
             extends ImmutableFieldTimeStampedCache<T, KK> {
-
-        /** Simple constructor.
-         * @param field field to which elements belong
-         */
-        EmptyFieldTimeStampedCache(final Field<KK> field) {
-            super(field);
-        }
 
         /** {@inheritDoc} */
         @Override
@@ -250,7 +183,7 @@ public class ImmutableFieldTimeStampedCache<T extends FieldTimeStamped<KK>, KK e
 
         /** {@inheritDoc} */
         @Override
-        public int getNeighborsSize() {
+        public int getMaxNeighborsSize() {
             return 0;
         }
 

@@ -332,15 +332,14 @@ public class SP3Writer {
             output.append(String.format(Locale.US, "%3s", satId));
             --remaining;
             column += 3;
-            if (column >= 60) {
+            if (column >= 60 && remaining > 0) {
                 // finish line
                 output.append(EOL);
                 ++lines;
-                if (remaining > 0) {
-                    // start new line
-                    output.append("+        ");
-                    column = 9;
-                }
+
+                // start new line
+                output.append("+        ");
+                column = 9;
             }
         }
         while (column < 60) {
@@ -368,15 +367,14 @@ public class SP3Writer {
             output.append(String.format(Locale.US, THREE_DIGITS_INTEGER, accuracyExp));
             --remaining;
             column += 3;
-            if (column >= 60) {
+            if (column >= 60 && remaining > 0) {
                 // finish line
                 output.append(EOL);
                 ++lines;
-                if (remaining > 0) {
-                    // start new line
-                    output.append(ACCURACY_LINE_PREFIX);
-                    column = 9;
-                }
+
+                // start new line
+                output.append(ACCURACY_LINE_PREFIX);
+                column = 9;
             }
         }
         while (column < 60) {

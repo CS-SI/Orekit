@@ -31,7 +31,12 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.generation.AngularRaDecBuilder;
-import org.orekit.frames.*;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.ITRFVersion;
+import org.orekit.frames.StaticTransform;
+import org.orekit.frames.TopocentricFrame;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -42,7 +47,12 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.*;
+import org.orekit.utils.Constants;
+import org.orekit.utils.Differentiation;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterFunction;
 
 public class AngularRaDecTest {
 
@@ -142,7 +152,8 @@ public class AngularRaDecTest {
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
             final Vector3D     stationP  = stationParameter.getOffsetToInertial(state.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
-            final double       meanDelay = AbstractMeasurement.signalTimeOfFlight(state.getPVCoordinates(), stationP, datemeas);
+            final double       meanDelay = AbstractMeasurement.signalTimeOfFlight(state.getPVCoordinates(), stationP,
+                                                                                  datemeas, state.getFrame());
 
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
@@ -152,14 +163,12 @@ public class AngularRaDecTest {
 
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
-                Differentiation.differentiate(new StateFunction() {
-                    public double[] value(final SpacecraftState state) {
-                        return measurement.
-                               estimateWithoutDerivatives(0, 0, new SpacecraftState[] { state }).
-                               getEstimatedValue();
-                    }
-                }, measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
-                   PositionAngleType.TRUE, 250.0, 4).value(state);
+                Differentiation.differentiate(state1 -> measurement.
+                       estimateWithoutDerivatives(0, 0, new SpacecraftState[] {
+                                                  state1
+                                              }).
+                       getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
+                                              PositionAngleType.TRUE, 250.0, 4).value(state);
 
             Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -246,7 +255,8 @@ public class AngularRaDecTest {
             final AbsoluteDate    datemeas  = measurement.getDate();
             final SpacecraftState stateini  = propagator.propagate(datemeas);
             final Vector3D        stationP  = stationParameter.getOffsetToInertial(stateini.getFrame(), datemeas, false).transformPosition(Vector3D.ZERO);
-            final double          meanDelay = AbstractMeasurement.signalTimeOfFlight(stateini.getPVCoordinates(), stationP, datemeas);
+            final double          meanDelay = AbstractMeasurement.signalTimeOfFlight(stateini.getPVCoordinates(), stationP,
+                                                                                     datemeas, stateini.getFrame());
 
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
@@ -290,14 +300,13 @@ public class AngularRaDecTest {
         //Context context = EstimationTestUtils.eccentricContext("regular-data/de431-ephemerides");
         Utils.setDataRoot("regular-data");
 
-        final double[] pos = {Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
+        final double[] pos = { Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 5e5, 1000., 0.};
         final double[] vel = {0., 10., 0.};
         final PVCoordinates pvCoordinates = new PVCoordinates(new Vector3D(pos[0], pos[1], pos[2]),
-                new Vector3D(vel[0], vel[1], vel[2]));
+                                                              new Vector3D(vel[0], vel[1], vel[2]));
         final AbsoluteDate epoch = new AbsoluteDate(new DateComponents(2000, 1, 1), TimeScalesFactory.getUTC());
         final Frame gcrf = FramesFactory.getGCRF();
-        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf,
-                epoch, Constants.EGM96_EARTH_MU);
+        final CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, gcrf, epoch, Constants.EGM96_EARTH_MU);
         final SpacecraftState spacecraftState = new SpacecraftState(orbit);
         final OrekitStepInterpolator fakeInterpolator = new OrekitStepInterpolator() {
             public OrekitStepInterpolator restrictStep(SpacecraftState newPreviousState, SpacecraftState newCurrentState) { return null; }
@@ -315,7 +324,8 @@ public class AngularRaDecTest {
 
         final GeodeticPoint point = new GeodeticPoint(0., 0., 100.);
         final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "name");
-        final GroundStation station = new GroundStation(baseFrame);
+        final GroundStation station = new GroundStation(baseFrame,
+                                                        TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
 
         final Frame[] frames = {FramesFactory.getEME2000(), FramesFactory.getGCRF(), FramesFactory.getICRF(), FramesFactory.getTOD(false)};
         final double[][] raDec = new double[frames.length][];

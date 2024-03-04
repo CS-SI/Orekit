@@ -48,8 +48,8 @@ public class UnitsConverterTest {
     @Test
     public void testPressure() {
         final double atm = 1013.25;
-        final Unit mbar = Unit.parse("mbar");
-        final Unit hPa  = Unit.parse("hPa");
+        final Unit mbar  = Unit.parse("mbar");
+        final Unit hPa   = Unit.parse("hPa");
         final UnitsConverter mbar2hPa = new UnitsConverter(mbar, hPa);
         Assertions.assertEquals(atm, mbar2hPa.convert(atm), 1.0e-12);
     }

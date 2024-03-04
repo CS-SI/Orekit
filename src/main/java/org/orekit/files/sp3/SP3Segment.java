@@ -20,12 +20,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.files.general.EphemerisFile;
+import org.orekit.files.general.EphemerisSegmentPropagator;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.utils.SortedListTrimmer;
 
 /** One segment of an {@link SP3Ephemeris}.
  * @author Thomas Neidhart
@@ -118,13 +123,64 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
     /** {@inheritDoc} */
     @Override
     public BoundedPropagator getPropagator() {
-        return EphemerisFile.EphemerisSegment.super.getPropagator();
+        return new PropagatorWithClock(new FrameAlignedProvider(getInertialFrame()));
     }
 
     /** {@inheritDoc} */
     @Override
     public BoundedPropagator getPropagator(final AttitudeProvider attitudeProvider) {
-        return EphemerisFile.EphemerisSegment.super.getPropagator(attitudeProvider);
+        return new PropagatorWithClock(attitudeProvider);
+    }
+
+    /** Propagator including clock.
+     * @since 12.1
+     */
+    private class PropagatorWithClock extends EphemerisSegmentPropagator<SP3Coordinate> {
+
+        /** Trimmer for coordinates list. */
+        private final SortedListTrimmer trimmer;
+
+        /** Simple constructor.
+         * @param attitudeProvider attitude porovider
+         */
+        PropagatorWithClock(final AttitudeProvider attitudeProvider) {
+            super(SP3Segment.this, attitudeProvider);
+            this.trimmer = new SortedListTrimmer(getInterpolationSamples());
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        protected SpacecraftState updateAdditionalStates(final SpacecraftState original) {
+
+            final HermiteInterpolator interpolator = new HermiteInterpolator();
+
+            // Fill interpolator with sample
+            trimmer.
+                getNeighborsSubList(original.getDate(), coordinates).
+                forEach(c -> {
+                    final double deltaT = c.getDate().durationFrom(original.getDate());
+                    if (filter.getMaxOrder() < 1) {
+                        // we use only clock offset
+                        interpolator.addSamplePoint(deltaT,
+                                                    new double[] { c.getClockCorrection() });
+                    } else {
+                        // we use both clock offset and clock rate
+                        interpolator.addSamplePoint(deltaT,
+                                                    new double[] { c.getClockCorrection() },
+                                                    new double[] { c.getClockRateChange() });
+                    }
+                });
+
+            // perform interpolation (we get derivatives even if we used only clock offset)
+            final double[][] derivatives = interpolator.derivatives(0.0, 1);
+
+            // add the clock offset and its first derivative
+            return super.updateAdditionalStates(original).
+                addAdditionalState(SP3Utils.CLOCK_ADDITIONAL_STATE, derivatives[0]).
+                addAdditionalStateDerivative(SP3Utils.CLOCK_ADDITIONAL_STATE, derivatives[1]);
+
+        }
+
     }
 
 }

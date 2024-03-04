@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.TurnAroundRangeTroposphericDelayModifier;
-import org.orekit.models.earth.troposphere.SaastamoinenModel;
+import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -154,12 +154,12 @@ public class TurnAroundRangeTest {
         }
         // Run test
         boolean isModifier = true;
-        double refErrorQMMedian = 2.6e-6;
-        double refErrorQMMean   = 2.5e-6;
-        double refErrorQMMax    = 5.6e-6;
-        double refErrorQSMedian = 3.7e-7;
-        double refErrorQSMean   = 3.6e-7;
-        double refErrorQSMax    = 7.7e-7;
+        double refErrorQMMedian = 1.3e-8;
+        double refErrorQMMean   = 8.9e-8;
+        double refErrorQMMax    = 5.1e-6;
+        double refErrorQSMedian = 3.4e-8;
+        double refErrorQSMean   = 1.9e-5;
+        double refErrorQSMax    = 2.2e-4;
         this.genericTestParameterDerivatives(isModifier, printResults,
                                              refErrorQMMedian, refErrorQMMean, refErrorQMMax,
                                              refErrorQSMedian, refErrorQSMean, refErrorQSMax);
@@ -309,7 +309,7 @@ public class TurnAroundRangeTest {
 
             // Add modifiers if test implies it
             final TurnAroundRangeTroposphericDelayModifier modifier =
-                            new TurnAroundRangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+                            new TurnAroundRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
             if (isModifier) {
                 ((TurnAroundRange) measurement).addModifier(modifier);
             }
@@ -456,7 +456,7 @@ public class TurnAroundRangeTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
           // Add modifiers if test implies it
-          final TurnAroundRangeTroposphericDelayModifier modifier = new TurnAroundRangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+          final TurnAroundRangeTroposphericDelayModifier modifier = new TurnAroundRangeTroposphericDelayModifier(ModifiedSaastamoinenModel.getStandardModel());
           if (isModifier) {
               ((TurnAroundRange) measurement).addModifier(modifier);
           }

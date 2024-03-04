@@ -57,7 +57,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * parameters are still unambiguously defined whereas some Keplerian elements
  * (more precisely ω and Ω) become ambiguous. For this reason, equinoctial
  * parameters are the recommended way to represent orbits. Note however than
- *  * the present implementation does not handle non-elliptical cases.
+ * the present implementation does not handle non-elliptical cases.
  * </p>
  * <p>
  * The instance <code>EquinoctialOrbit</code> is guaranteed to be immutable.
@@ -403,61 +403,73 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public OrbitType getType() {
         return OrbitType.EQUINOCTIAL;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getA() {
         return a;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getADot() {
         return aDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialEx() {
         return ex;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialExDot() {
         return exDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialEy() {
         return ey;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEquinoctialEyDot() {
         return eyDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHx() {
         return hx;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHxDot() {
         return hxDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHy() {
         return hy;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getHyDot() {
         return hyDot;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLv() {
         switch (cachedPositionAngleType) {
             case TRUE:
@@ -475,6 +487,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLvDot() {
         switch (cachedPositionAngleType) {
             case ECCENTRIC:
@@ -502,6 +515,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLE() {
         switch (cachedPositionAngleType) {
             case TRUE:
@@ -519,6 +533,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLEDot() {
         switch (cachedPositionAngleType) {
             case TRUE:
@@ -546,6 +561,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLM() {
         switch (cachedPositionAngleType) {
             case TRUE:
@@ -563,6 +579,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getLMDot() {
         switch (cachedPositionAngleType) {
             case TRUE:
@@ -653,21 +670,25 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getE() {
         return FastMath.sqrt(ex * ex + ey * ey);
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getEDot() {
         return (ex * exDot + ey * eyDot) / FastMath.sqrt(ex * ex + ey * ey);
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getI() {
         return 2 * FastMath.atan(FastMath.sqrt(hx * hx + hy * hy));
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getIDot() {
         final double h2 = hx * hx + hy * hy;
         final double h  = FastMath.sqrt(h2);
@@ -843,6 +864,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected Vector3D initPosition() {
 
         // get equinoctial parameters
@@ -884,6 +906,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected TimeStampedPVCoordinates initPVCoordinates() {
 
         // position and velocity
@@ -901,6 +924,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public EquinoctialOrbit shiftedBy(final double dt) {
 
         // use Keplerian-only motion
@@ -939,6 +963,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] computeJacobianMeanWrtCartesian() {
 
         final double[][] jacobian = new double[6][6];
@@ -1027,6 +1052,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] computeJacobianEccentricWrtCartesian() {
 
         // start by computing the Jacobian with mean angle
@@ -1054,6 +1080,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     protected double[][] computeJacobianTrueWrtCartesian() {
 
         // start by computing the Jacobian with eccentric angle
@@ -1101,22 +1128,24 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void addKeplerContribution(final PositionAngleType type, final double gm,
                                       final double[] pDot) {
         final double oMe2;
         final double ksi;
         final double n  = FastMath.sqrt(gm / a) / a;
-        final SinCos sc = FastMath.sinCos(getLv());
+        final SinCos sc;
         switch (type) {
             case MEAN :
                 pDot[5] += n;
                 break;
             case ECCENTRIC :
-                oMe2 = 1 - ex * ex - ey * ey;
-                ksi  = 1 + ex * sc.cos() + ey * sc.sin();
-                pDot[5] += n * ksi / oMe2;
+                sc = FastMath.sinCos(getLE());
+                ksi  = 1. / (1 - ex * sc.cos() - ey * sc.sin());
+                pDot[5] += n * ksi;
                 break;
             case TRUE :
+                sc = FastMath.sinCos(getLv());
                 oMe2 = 1 - ex * ex - ey * ey;
                 ksi  = 1 + ex * sc.cos() + ey * sc.sin();
                 pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));

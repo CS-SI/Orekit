@@ -66,6 +66,7 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
         super(date, observed, sigma, baseWeight, Collections.singletonList(satellite));
         addParameterDriver(station.getClockOffsetDriver());
         addParameterDriver(station.getClockDriftDriver());
+        addParameterDriver(station.getClockAccelerationDriver());
         addParameterDriver(station.getEastOffsetDriver());
         addParameterDriver(station.getNorthOffsetDriver());
         addParameterDriver(station.getZenithOffsetDriver());
@@ -79,6 +80,7 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
             // for one way measurements, the satellite clock offset affects the measurement
             addParameterDriver(satellite.getClockOffsetDriver());
             addParameterDriver(satellite.getClockDriftDriver());
+            addParameterDriver(satellite.getClockAccelerationDriver());
         }
         this.station = station;
         this.twoway  = twoWay;
@@ -99,6 +101,7 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
         super(date, observed, sigma, baseWeight, Collections.singletonList(satellite));
         addParameterDriver(station.getClockOffsetDriver());
         addParameterDriver(station.getClockDriftDriver());
+        addParameterDriver(station.getClockAccelerationDriver());
         addParameterDriver(station.getEastOffsetDriver());
         addParameterDriver(station.getNorthOffsetDriver());
         addParameterDriver(station.getZenithOffsetDriver());
@@ -112,6 +115,7 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
             // for one way measurements, the satellite clock offset affects the measurement
             addParameterDriver(satellite.getClockOffsetDriver());
             addParameterDriver(satellite.getClockDriftDriver());
+            addParameterDriver(satellite.getClockAccelerationDriver());
         }
         this.station = station;
         this.twoway  = twoWay;
@@ -155,7 +159,7 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
         //  we will have delta == tauD and transitState will be the same as state)
 
         // Downlink delay
-        final double tauD = signalTimeOfFlight(pva, stationDownlink.getPosition(), downlinkDate);
+        final double tauD = signalTimeOfFlight(pva, stationDownlink.getPosition(), downlinkDate, state.getFrame());
 
         // Transit state & Transit state (re)computed with gradients
         final double          delta        = downlinkDate.durationFrom(state.getDate());
@@ -206,7 +210,8 @@ public abstract class GroundReceiverMeasurement<T extends GroundReceiverMeasurem
         //  we will have delta == tauD and transitState will be the same as state)
 
         // Downlink delay
-        final Gradient tauD = signalTimeOfFlight(pva, stationDownlink.getPosition(), downlinkDate);
+        final Gradient tauD = signalTimeOfFlight(pva, stationDownlink.getPosition(),
+                                                 downlinkDate, state.getFrame());
 
         // Transit state & Transit state (re)computed with gradients
         final Gradient        delta        = downlinkDate.durationFrom(state.getDate());
