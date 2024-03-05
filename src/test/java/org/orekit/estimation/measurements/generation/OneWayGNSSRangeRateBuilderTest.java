@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,7 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Force;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.gnss.InterSatellitesOneWayRangeRate;
+import org.orekit.estimation.measurements.gnss.OneWayGNSSRangeRate;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -49,36 +49,37 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.SortedSet;
 
-public class InterSatellitesOneWayRangeRateBuilderTest {
+public class OneWayGNSSRangeRateBuilderTest {
 
     private static final double SIGMA =  0.5;
     private static final double BIAS  = -0.01;
 
-    private MeasurementBuilder<InterSatellitesOneWayRangeRate> getBuilder(final RandomGenerator random,
-                                                                          final ObservableSatellite receiver,
-                                                                          final ObservableSatellite remote) {
+    private MeasurementBuilder<OneWayGNSSRangeRate> getBuilder(final RandomGenerator random,
+                                                           final ObservableSatellite receiver,
+                                                           final ObservableSatellite remote) {
         final RealMatrix covariance = MatrixUtils.createRealDiagonalMatrix(new double[] { SIGMA * SIGMA });
-        MeasurementBuilder<InterSatellitesOneWayRangeRate> isrb =
-                        new InterSatellitesOneWayRangeRateBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
-                                                                                                                    1.0e-10,
-                                                                                                                    new GaussianRandomGenerator(random)),
-                                                        receiver, remote, SIGMA, 1.0);
-        isrb.addModifier(new Bias<>(new String[] { "bias" },
+        MeasurementBuilder<OneWayGNSSRangeRate> b =
+                        new OneWayGNSSRangeRateBuilder(random == null ? null : new CorrelatedRandomVectorGenerator(covariance,
+                                                                                                               1.0e-10,
+                                                                                                               new GaussianRandomGenerator(random)),
+                                                      receiver, remote,
+                                                      SIGMA, 1.0);
+        b.addModifier(new Bias<>(new String[] { "bias" },
                          new double[] { BIAS },
                          new double[] { 1.0 },
                          new double[] { Double.NEGATIVE_INFINITY },
                          new double[] { Double.POSITIVE_INFINITY }));
-        return isrb;
+        return b;
     }
 
     @Test
     public void testForward() {
-        doTest(0x5006ca3f1e03ea93L, 0.0, 1.2, 2.4 * SIGMA);
+        doTest(0x066acbc9bf1074a3L, 0.0, 1.2, 2.8 * SIGMA);
     }
 
     @Test
     public void testBackward() {
-        doTest(0xd7643ffbaff67906L, 0.0, -1.0, 3.0 * SIGMA);
+        doTest(0x58ffc7ad03c2310bL, 0.0, -1.0, 2.5 * SIGMA);
     }
 
     private Propagator buildPropagator() {
