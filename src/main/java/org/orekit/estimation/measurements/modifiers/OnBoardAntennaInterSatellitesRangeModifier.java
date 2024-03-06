@@ -66,7 +66,7 @@ public class OnBoardAntennaInterSatellitesRangeModifier
         final double delta = estimated.getParticipants().length < 3 ?
                              oneWayDistanceModification(estimated) :
                              twoWayDistanceModification(estimated);
-        estimated.setEstimatedValue(estimated.getEstimatedValue()[0] + delta);
+        estimated.modifyEstimatedValue(this, estimated.getEstimatedValue()[0] + delta);
     }
 
 }

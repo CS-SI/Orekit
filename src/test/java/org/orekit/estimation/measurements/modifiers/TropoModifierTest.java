@@ -21,9 +21,7 @@ import java.util.Map;
 
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -62,16 +60,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 public class TropoModifierTest {
-
-    @BeforeEach
-    public void setUp() throws Exception {
-
-    }
-
-    @AfterEach
-    public void tearDown() {
-
-    }
 
     @Test
     public void testRangeTropoModifier() {
@@ -120,6 +108,9 @@ public class TropoModifierTest {
             Assertions.assertEquals(evalNoMod.getEstimatedValue()[0],
                                     eval.getOriginalEstimatedValue()[0],
                                     3.0e-14 * evalNoMod.getEstimatedValue()[0]);
+            Assertions.assertEquals(eval.getEstimatedValue()[0] - eval.getOriginalEstimatedValue()[0],
+                                    eval.getAppliedEffects().get(modifier)[0],
+                                    1.0e-15);
         }
     }
 

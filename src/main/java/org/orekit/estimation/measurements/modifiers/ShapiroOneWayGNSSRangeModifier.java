@@ -50,7 +50,7 @@ public class ShapiroOneWayGNSSRangeModifier extends AbstractShapiroBaseModifier 
     /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<OneWayGNSSRange> estimated) {
-        doModify(estimated);
+        doModify(this, estimated);
     }
 
 }
