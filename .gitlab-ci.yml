@@ -6,7 +6,7 @@ stages:
 
 default:
   # Default image
-  image: registry.orekit.org/orekit/ci-utils/maven:3.6.2-jdk-8-slim
+  image: registry.orekit.org/orekit/ci-utils/maven:3.9.6-eclipse-temurin-11
   # Cache downloaded dependencies and plugins between builds.
   # To keep cache across branches add 'key: "$CI_JOB_REF_NAME"'
   cache:
@@ -35,10 +35,12 @@ verify:
   script:
     - mvn $MAVEN_CLI_OPTS checkstyle:check verify site
     - test -z "$SONAR_TOKEN" || mvn $MAVEN_CLI_OPTS sonar:sonar
+          -Dsonar.host.url=${SONAR_HOST_URL}
           -Dsonar.login=${SONAR_TOKEN}
           -Dsonar.branch.name=${CI_COMMIT_REF_NAME}
           -Dsonar.projectKey="$SONAR_PROJECT_KEY"
           -Dsonar.projectName="$SONAR_PROJECT_NAME"
+          -Dsonar.qualitygate.wait=true
   artifacts:
     paths:
       - target/*.jar
