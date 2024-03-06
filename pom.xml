@@ -60,9 +60,6 @@
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
-    <!-- sonar related properties -->
-    <sonar.host.url>https://sonar.orekit.org/</sonar.host.url>
-    <!-- for building javac plugin -->
     <tools.jar.dir>${java.home}/../lib/</tools.jar.dir>
     <tools.jar.path>${tools.jar.dir}/tools.jar</tools.jar.path>
   </properties>
