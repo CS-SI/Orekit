@@ -1,20 +1,24 @@
+<!DOCTYPE html>
 <html lang="en">
-OREKIT
+  <head>
+    <meta charset="utf-8"/>
+    <title>OREKIT</title>
+  </head>
 <body>
 <h1>1. Purpose</h1>
-<p> 
-  OREKIT library is a low-level library for space mechanics projects. It is 
-implemented in the JAVA language. 
+<p>
+  OREKIT library is a low-level library for space mechanics projects. It is
+implemented in the JAVA language.
 </p>
 <p>OREKIT project was initiated by CS with the following goals in mind:</p>
 <ul>
  <li>provide a common base layer for space projects</li>
  <li>support both quick developments with loose requirements and complex
      projects with rich physical modeling, fine customization, and high accuracy</li>
- <li>be user-extensible through clear and as simple as possible architecture</li> 
+ <li>be user-extensible through clear and as simple as possible architecture</li>
  <li>use unified interfaces to allow models and algorithms switching with almost no effort</li>
  <li>provide both basic and rich models that can be plugged interchangeably to ease
-     applications validation</li> 
+     applications validation</li>
  <li>separate models configuration from models usage to hide away complexity and keep
      caller code simple</li>
  <li>support both development of standalone and embedded applications (web services,
@@ -27,7 +31,7 @@ implemented in the JAVA language.
 
 <h1>2. Features</h1>
 <p>
-Orekit can be used for many purposes, from simple geometrical or orbital tools 
+Orekit can be used for many purposes, from simple geometrical or orbital tools
 up to complex orbits propagators with several perturbing forces, maneuvers and
 discrete events. Here is a short list of the features offered by the library:</p>
 
@@ -446,7 +450,7 @@ OREKIT is based on several Hipparchus packages:
 <ul>
  <li>geometry, which provides very useful objects as vectors
    and rotations (internally represented by quaternions)</li>
- <li>ode, which provides numerical solutions to solve 
+ <li>ode, which provides numerical solutions to solve
    Ordinary Differential Equations (ODE)</li>
  <li>optim, which provides multi-dimensional optimization</li>
  <li>solvers, which provides root-finding algorithms</li>
@@ -454,10 +458,10 @@ OREKIT is based on several Hipparchus packages:
  to arbitrary order and arbitrary number of free parameters</li>
 </ul>
 <p>
-The use of Hipparchus is hidden in OREKIT as much as possible so users don't 
+The use of Hipparchus is hidden in OREKIT as much as possible so users don't
 need to fully master this library. If they wish, they can limit themselves to understanding
 the simple classes Vector3D and Rotation from the geometry package, and the interface
-FirstOrderIntegrator from the ode package. 
+FirstOrderIntegrator from the ode package.
 </p>
 
 @author Luc Maisonobe
