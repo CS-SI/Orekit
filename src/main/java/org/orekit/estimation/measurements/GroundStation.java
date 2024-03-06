@@ -413,15 +413,14 @@ public class GroundStation {
         final double    y          = northOffsetDriver.getValue();
         final double    z          = zenithOffsetDriver.getValue();
         final BodyShape baseShape  = baseFrame.getParentShape();
-        final StaticTransform baseToBody =
-                baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), date);
+        final StaticTransform baseToBody = baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), date);
         Vector3D        origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
 
         if (date != null) {
             origin = origin.add(computeDisplacement(date, origin));
         }
 
-        return baseShape.transform(origin, baseShape.getBodyFrame(), null);
+        return baseShape.transform(origin, baseShape.getBodyFrame(), date);
 
     }
 
