@@ -40,6 +40,7 @@ verify:
           -Dsonar.branch.name=${CI_COMMIT_REF_NAME}
           -Dsonar.projectKey="$SONAR_PROJECT_KEY"
           -Dsonar.projectName="$SONAR_PROJECT_NAME"
+          -Dsonar.qualitygate.wait=true
   artifacts:
     paths:
       - target/*.jar
