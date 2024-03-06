@@ -117,6 +117,9 @@ public class TropoModifierTest {
             final double epsilon = 1e-6;
             Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
             Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+            Assertions.assertEquals(evalNoMod.getEstimatedValue()[0],
+                                    eval.getOriginalEstimatedValue()[0],
+                                    3.0e-14 * evalNoMod.getEstimatedValue()[0]);
         }
     }
 

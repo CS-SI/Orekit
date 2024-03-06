@@ -42,6 +42,11 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
     /** Coordinates of the participants in signal travel order. */
     private final TimeStampedPVCoordinates[] participants;
 
+    /** Original estimated value prior to any modification.
+     * @since 12.1
+     */
+    private double[] originalEstimatedValue;
+
     /** Estimated value. */
     private double[] estimatedValue;
 
@@ -130,6 +135,14 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
         return observedMeasurement.getObservedValue();
     }
 
+    /** Get the original estimated value prior to any modification.
+     * @return original estimated value prior to any modification
+     * @since 12.1
+     */
+    public double[] getOriginalEstimatedValue() {
+        return originalEstimatedValue.clone();
+    }
+
     /** Get the estimated value.
      * @return estimated value
      */
@@ -141,6 +154,9 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
      * @param estimatedValue estimated value
      */
     public void setEstimatedValue(final double... estimatedValue) {
+        if (originalEstimatedValue == null) {
+            this.originalEstimatedValue = estimatedValue.clone();
+        }
         this.estimatedValue = estimatedValue.clone();
     }
 
