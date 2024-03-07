@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="maxime" type="update" issue="1335">
+          Added constructors with orbit type in SmallManeuverAnalyticalModel.
+      </action>
       <action dev="serrof" type="add" issue="1258">
           Added get(Un)normalizedC20.
       </action>
