@@ -42,11 +42,14 @@ import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TrackingCoordinates;
 
 /** Class modifying theoretical turn-around TurnAroundRange measurement with tropospheric delay.
+ * <p>
  * The effect of tropospheric correction on the TurnAroundRange is directly computed
  * through the computation of the tropospheric delay.
- *
+ * </p>
+ * <p>
  * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
  * For SLR techniques however, the frequency dependence is sensitive.
+ * </p>
  *
  * @author Maxime Journot
  * @since 9.0
@@ -91,13 +94,11 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         // only consider measures above the horizon
         if (trackingCoordinates.getElevation() > 0) {
             // Delay in meters
-            final double delay = tropoModel.pathDelay(trackingCoordinates,
-                                                      station.getOffsetGeodeticPoint(state.getDate()),
-                                                      station.getPressureTemperatureHumidity(state.getDate()),
-                                                      tropoModel.getParameters(state.getDate()), state.getDate()).
+            return tropoModel.pathDelay(trackingCoordinates,
+                                        station.getOffsetGeodeticPoint(state.getDate()),
+                                        station.getPressureTemperatureHumidity(state.getDate()),
+                                        tropoModel.getParameters(state.getDate()), state.getDate()).
                                  getDelay();
-
-            return delay;
         }
 
         return 0;
@@ -125,13 +126,11 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         // only consider measures above the horizon
         if (trackingCoordinates.getElevation().getReal() > 0) {
             // Delay in meters
-            final T delay = tropoModel.pathDelay(trackingCoordinates,
-                                                 station.getOffsetGeodeticPoint(state.getDate()),
-                                                 station.getPressureTemperatureHumidity(state.getDate()),
-                                                 parameters, state.getDate()).
+            return tropoModel.pathDelay(trackingCoordinates,
+                                        station.getOffsetGeodeticPoint(state.getDate()),
+                                        station.getPressureTemperatureHumidity(state.getDate()),
+                                        parameters, state.getDate()).
                             getDelay();
-
-            return delay;
         }
 
         return zero;
@@ -186,14 +185,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
     private double[] rangeErrorParameterDerivative(final double[] derivatives, final int freeStateParameters) {
         // 0 ... freeStateParameters - 1 -> derivatives of the delay wrt state
         // freeStateParameters ... n     -> derivatives of the delay wrt tropospheric parameters
-        final int dim = derivatives.length - freeStateParameters;
-        final double[] rangeError = new double[dim];
-
-        for (int i = 0; i < dim; i++) {
-            rangeError[i] = derivatives[freeStateParameters + i];
-        }
-
-        return rangeError;
+        return Arrays.copyOfRange(derivatives, freeStateParameters, derivatives.length);
     }
 
     /** {@inheritDoc} */
@@ -217,7 +209,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         final double   primaryDelay   = rangeErrorTroposphericModel(primaryStation, state);
         final double   secondaryDelay = rangeErrorTroposphericModel(secondaryStation, state);
         newValue[0] = newValue[0] + primaryDelay + secondaryDelay;
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(this, newValue);
 
     }
     /** {@inheritDoc} */
@@ -313,7 +305,7 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         // The tropospheric delay is directly added to the TurnAroundRange.
         final double[] newValue = oldValue.clone();
         newValue[0] = newValue[0] + primaryGDelay.getReal() + secondaryGDelay.getReal();
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(this, newValue);
 
     }
 

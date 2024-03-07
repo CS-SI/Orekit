@@ -24,6 +24,16 @@
       <action dev="maxime" type="update" issue="1335">
           Added constructors with orbit type in SmallManeuverAnalyticalModel.
       </action>
+      <action dev="serrof" type="add" issue="1258">
+          Added get(Un)normalizedC20.
+      </action>
+      <action dev="luc" type="add" issue="1328">
+          Field versions of Frame.get{|Static|Kinematic}TransformTo don't allow
+          null dates (they never did, but the javadoc wrongly stated this was allowed)
+      </action>
+      <action dev="luc" type="add" issue="1338">
+          Added separate access to original estimation and modifications in estimated measurements.
+      </action>
       <action dev="luc" type="add" issue="1332">
           Added InterSatellitesOneWayRangeRate measurements.
       </action>

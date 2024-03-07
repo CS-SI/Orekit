@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2024 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,49 +16,39 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
-import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.Range;
-import org.orekit.utils.Constants;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.estimation.measurements.gnss.InterSatellitesOneWayRangeRate;
+import org.orekit.propagation.SpacecraftState;
 
-/** Class modifying theoretical range measurement with relativistic clock correction.
+/** Class modifying theoretical range-rate measurement with relativistic frequency deviation.
  * <p>
  * Relativistic clock correction is caused by the motion of the satellite as well as
  * the change in the gravitational potential
  * </p>
- * @author Bryan Cazabonne
- * @since 10.3
+ * @author Luc Maisonobe
+ * @since 12.1
  *
  * @see "Teunissen, Peter, and Oliver Montenbruck, eds. Springer handbook of global navigation
  * satellite systems. Chapter 19.2. Springer, 2017."
  */
-public class RelativisticClockRangeModifier extends AbstractRelativisticClockModifier implements EstimationModifier<Range> {
+public class RelativisticClockInterSatellitesOneWayRangeRateModifier
+    extends AbstractRelativisticClockOnBoardRangeRateModifier<InterSatellitesOneWayRangeRate> {
 
-    /** Simple constructor. */
-    public RelativisticClockRangeModifier() {
-        super();
+    /** Simple constructor.
+     * @param gm gravitational constant for main body in signal path vicinity.
+     */
+    public RelativisticClockInterSatellitesOneWayRangeRateModifier(final double gm) {
+        super(gm);
     }
 
     /** {@inheritDoc} */
     @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Range> estimated) {
-        // Relativistic effect
-        final double dtRel = relativisticCorrection(estimated);
-
-        // Update estimated value taking into account the relativistic effect.
-        final double[] newValue = estimated.getEstimatedValue().clone();
-        newValue[0] = newValue[0] - dtRel * Constants.SPEED_OF_LIGHT;
-        estimated.modifyEstimatedValue(this, newValue);
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<InterSatellitesOneWayRangeRate> estimated) {
+        final SpacecraftState local  = estimated.getStates()[0];
+        final SpacecraftState remote = estimated.getStates()[1];
+        modifyWithoutDerivatives(estimated,
+                                 local.getA(), local.getPosition().getNorm(),
+                                 remote.getA(), remote.getPosition().getNorm());
     }
 
 }

@@ -38,10 +38,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public abstract class AbstractWindUp<T extends ObservedMeasurement<T>> implements EstimationModifier<T> {
 
     /** Emitter dipole. */
-    private Dipole emitter;
+    private final Dipole emitter;
 
     /** Receiver dipole. */
-    private Dipole receiver;
+    private final Dipole receiver;
 
     /** Cached angular value of wind-up. */
     private double angularWindUp;
@@ -110,7 +110,7 @@ public abstract class AbstractWindUp<T extends ObservedMeasurement<T>> implement
         angularWindUp = MathUtils.normalizeAngle(correction, angularWindUp);
 
         // update estimate
-        estimated.setEstimatedValue(estimated.getEstimatedValue()[0] + angularWindUp / MathUtils.TWO_PI);
+        estimated.modifyEstimatedValue(this, estimated.getEstimatedValue()[0] + angularWindUp / MathUtils.TWO_PI);
 
     }
 

@@ -62,7 +62,7 @@ public class RelativisticClockPhaseModifier extends AbstractRelativisticClockMod
         final double   cOverLambda = Constants.SPEED_OF_LIGHT / wavelength;
         final double[] newValue = estimated.getEstimatedValue().clone();
         newValue[0] = newValue[0] - dtRel * cOverLambda;
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(this, newValue);
     }
 
 }

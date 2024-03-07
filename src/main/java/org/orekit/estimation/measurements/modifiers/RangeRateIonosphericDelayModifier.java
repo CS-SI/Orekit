@@ -28,12 +28,15 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 
 /** Class modifying theoretical range-rate measurement with ionospheric delay.
+ * <p>
  * The effect of ionospheric correction on the range-rate is directly computed
  * through the computation of the ionospheric delay difference with respect to
  * time.
- *
+ * </p>
+ * <p>
  * The ionospheric delay depends on the frequency of the signal (GNSS, VLBI, ...).
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
+ * </p>
  * <p>
  * Since 10.0, state derivatives and ionospheric parameters derivates are computed
  * using automatic differentiation.
@@ -84,7 +87,9 @@ public class RangeRateIonosphericDelayModifier extends BaseRangeRateIonosphericD
         final RangeRate       measurement = estimated.getObservedMeasurement();
         final GroundStation   station     = measurement.getStation();
 
-        RangeModifierUtil.modifyWithoutDerivatives(estimated,  station, this::rangeRateErrorIonosphericModel);
+        RangeModifierUtil.modifyWithoutDerivatives(estimated,  station,
+                                                   this::rangeRateErrorIonosphericModel,
+                                                   this);
 
     }
 
@@ -100,7 +105,8 @@ public class RangeRateIonosphericDelayModifier extends BaseRangeRateIonosphericD
                                  new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                  station,
                                  this::rangeRateErrorIonosphericModel,
-                                 this::rangeRateErrorIonosphericModel);
+                                 this::rangeRateErrorIonosphericModel,
+                                 this);
 
 
     }

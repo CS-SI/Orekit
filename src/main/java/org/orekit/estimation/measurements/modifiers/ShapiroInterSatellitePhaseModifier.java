@@ -57,7 +57,7 @@ public class ShapiroInterSatellitePhaseModifier extends AbstractShapiroBaseModif
         final double wavelength = estimated.getObservedMeasurement().getWavelength();
         final double[] newValue = estimated.getEstimatedValue().clone();
         newValue[0] = newValue[0] + (correction / wavelength);
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(this, newValue);
     }
 
 }

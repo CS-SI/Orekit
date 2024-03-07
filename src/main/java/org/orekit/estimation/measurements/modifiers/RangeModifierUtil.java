@@ -21,6 +21,7 @@ import java.util.Arrays;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
+import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -49,10 +50,28 @@ public class RangeModifierUtil {
      * @param station ground station
      * @param modelEffect model effect
      * @since 12.0
+     * @deprecated  as of 12.1, replaced by {@link #modifyWithoutDerivatives(EstimatedMeasurementBase,
+     * GroundStation, ParametricModelEffect, EstimationModifier)}
      */
+    @Deprecated
     public static <T extends ObservedMeasurement<T>> void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated,
                                                                                    final GroundStation station,
                                                                                    final ParametricModelEffect modelEffect) {
+        modifyWithoutDerivatives(estimated, station, modelEffect, null);
+    }
+
+    /** Apply a modifier to an estimated measurement.
+     * @param <T> type of the measurement
+     * @param estimated estimated measurement to modify
+     * @param station ground station
+     * @param modelEffect model effect
+     * @param modifier applied modifier
+     * @since 12.1
+     */
+    public static <T extends ObservedMeasurement<T>> void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated,
+                                                                                   final GroundStation station,
+                                                                                   final ParametricModelEffect modelEffect,
+                                                                                   final EstimationModifier<T> modifier) {
 
         final SpacecraftState state    = estimated.getStates()[0];
         final double[]        oldValue = estimated.getEstimatedValue();
@@ -62,7 +81,7 @@ public class RangeModifierUtil {
         final double[] newValue = oldValue.clone();
         final double delay = modelEffect.evaluate(station, state);
         newValue[0] = newValue[0] + delay;
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(modifier, newValue);
 
     }
 
@@ -74,13 +93,37 @@ public class RangeModifierUtil {
      * @param parametricModel parametric modifier model
      * @param modelEffect model effect
      * @param modelEffectGradient model effect gradient
+     * @deprecated as of 12.1, replaced by {@link #modify(EstimatedMeasurement,
+     * ParameterDriversProvider, AbstractGradientConverter, GroundStation,
+     * ParametricModelEffect, ParametricModelEffectGradient, EstimationModifier)}
      */
+    @Deprecated
     public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurement<T> estimated,
                                                                  final ParameterDriversProvider parametricModel,
                                                                  final AbstractGradientConverter converter,
                                                                  final GroundStation station,
                                                                  final ParametricModelEffect modelEffect,
                                                                  final ParametricModelEffectGradient modelEffectGradient) {
+        modify(estimated, parametricModel, converter, station, modelEffect, modelEffectGradient, null);
+    }
+
+    /** Apply a modifier to an estimated measurement.
+     * @param <T> type of the measurement
+     * @param estimated estimated measurement to modify
+     * @param station ground station
+     * @param converter gradient converter
+     * @param parametricModel parametric modifier model
+     * @param modelEffect model effect
+     * @param modelEffectGradient model effect gradient
+     * @param modifier applied modifier
+     */
+    public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurement<T> estimated,
+                                                                 final ParameterDriversProvider parametricModel,
+                                                                 final AbstractGradientConverter converter,
+                                                                 final GroundStation station,
+                                                                 final ParametricModelEffect modelEffect,
+                                                                 final ParametricModelEffectGradient modelEffectGradient,
+                                                                 final EstimationModifier<T> modifier) {
 
         final SpacecraftState state = estimated.getStates()[0];
 
@@ -126,7 +169,7 @@ public class RangeModifierUtil {
         }
 
         // update estimated value taking into account the ionospheric delay.
-        modifyWithoutDerivatives(estimated, station, modelEffect);
+        modifyWithoutDerivatives(estimated, station, modelEffect, modifier);
 
     }
 

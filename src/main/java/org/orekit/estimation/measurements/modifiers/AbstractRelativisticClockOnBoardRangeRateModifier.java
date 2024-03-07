@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2024 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,28 +16,29 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
-import org.orekit.estimation.measurements.RangeRate;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+
+import java.util.Collections;
+import java.util.List;
 
 /** Class modifying theoretical range-rate measurement with relativistic frequency deviation.
  * <p>
  * Relativistic clock correction is caused by the motion of the satellite as well as
  * the change in the gravitational potential
  * </p>
- * @author Bryan Cazabonne
- * @since 10.3
+ * @param <T> type of the measurement
+ * @author Luc Maisonobe
+ * @since 12.1
  *
  * @see "Teunissen, Peter, and Oliver Montenbruck, eds. Springer handbook of global navigation
  * satellite systems. Chapter 19.2. Springer, 2017."
  */
-public class RelativisticClockRangeRateModifier extends AbstractRelativisticClockModifier implements EstimationModifier<RangeRate> {
+public abstract class AbstractRelativisticClockOnBoardRangeRateModifier<T extends ObservedMeasurement<T>>
+    extends AbstractRelativisticClockModifier implements EstimationModifier<T> {
 
     /** Gravitational constant. */
     private final double gm;
@@ -45,9 +46,16 @@ public class RelativisticClockRangeRateModifier extends AbstractRelativisticCloc
     /** Simple constructor.
      * @param gm gravitational constant for main body in signal path vicinity.
      */
-    public RelativisticClockRangeRateModifier(final double gm) {
+    public AbstractRelativisticClockOnBoardRangeRateModifier(final double gm) {
         super();
         this.gm = gm;
+    }
+
+    /** Get gravitational constant for main body in signal path vicinity.
+     * @return gravitational constant for main body in signal path vicinity
+     */
+    protected double getGm() {
+        return gm;
     }
 
     /** {@inheritDoc} */
@@ -56,29 +64,27 @@ public class RelativisticClockRangeRateModifier extends AbstractRelativisticCloc
         return Collections.emptyList();
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<RangeRate> estimated) {
-        // Spacecraft state
-        final SpacecraftState state = estimated.getStates()[0];
+    /** Apply relativistic frequency deviation.
+     * @param estimated estimated measurement to modify
+     * @param aLocal semi major axis or local (receiver) satellite
+     * @param rLocal distance of local (receiver) satellite to central body center
+     * @param aRemote semi major axis or remote (transmitter) satellite
+     * @param rRemote distance of remote (transmitter) satellite to central body center
+     */
+    protected void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated,
+                                            final double aLocal,  final double rLocal,
+                                            final double aRemote, final double rRemote) {
 
-        // Relativistic frequency deviation
-        final double factor = -gm * getScaleFactor();
-        final double dfRel = factor *
-                        (reciprocal(state.getA()) - reciprocal(state.getPosition().getNorm()));
+        // compute relativistic frequency deviation
+        final double factor   = -gm * getScaleFactor();
+        final double dfLocal  = factor * (1.0 / aLocal  - 1.0 / rLocal);
+        final double dfRemote = factor * (1.0 / aRemote - 1.0 / rRemote);
 
         // Update estimated value taking into account the relativistic effect.
         final double[] newValue = estimated.getEstimatedValue().clone();
-        newValue[0] = newValue[0] + dfRel * Constants.SPEED_OF_LIGHT;
+        newValue[0] = newValue[0] + (dfLocal - dfRemote) * Constants.SPEED_OF_LIGHT;
         estimated.modifyEstimatedValue(this, newValue);
-    }
 
-    /** Returns the inverse of the given value.
-     * @param value value to inverse
-     * @return the inverse of the value
-     */
-    private static double reciprocal(final double value) {
-        return 1.0 / value;
     }
 
 }

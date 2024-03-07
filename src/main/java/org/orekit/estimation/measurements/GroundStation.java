@@ -524,21 +524,21 @@ public class GroundStation {
         final double    y          = northOffsetDriver.getValue();
         final double    z          = zenithOffsetDriver.getValue();
         final BodyShape baseShape  = baseFrame.getParentShape();
-        final StaticTransform baseToBody =
-                baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), date);
+        final StaticTransform baseToBody = baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), date);
         Vector3D        origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
 
         if (date != null) {
             origin = origin.add(computeDisplacement(date, origin));
         }
 
-        return baseShape.transform(origin, baseShape.getBodyFrame(), null);
+        return baseShape.transform(origin, baseShape.getBodyFrame(), date);
 
     }
 
     /** Get the geodetic point at the center of the offset frame.
      * @param <T> type of the field elements
-     * @param date current date (may be null if displacements are ignored)
+     * @param date current date(<em>must</em> be non-null, which is a more stringent condition
+     *      *                    than in {@link #getOffsetGeodeticPoint(AbsoluteDate)}
      * @return geodetic point at the center of the offset frame
      * @since 12.1
      */
@@ -549,15 +549,11 @@ public class GroundStation {
         final double    y          = northOffsetDriver.getValue();
         final double    z          = zenithOffsetDriver.getValue();
         final BodyShape baseShape  = baseFrame.getParentShape();
-        final FieldStaticTransform<T> baseToBody =
-                baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), date);
-        FieldVector3D<T>        origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
+        final FieldStaticTransform<T> baseToBody = baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), date);
+        FieldVector3D<T> origin    = baseToBody.transformPosition(new Vector3D(x, y, z));
+        origin = origin.add(computeDisplacement(date.toAbsoluteDate(), origin.toVector3D()));
 
-        if (date != null) {
-            origin = origin.add(computeDisplacement(date.toAbsoluteDate(), origin.toVector3D()));
-        }
-
-        return baseShape.transform(origin, baseShape.getBodyFrame(), null);
+        return baseShape.transform(origin, baseShape.getBodyFrame(), date);
 
     }
 

@@ -26,11 +26,14 @@ import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.SpacecraftState;
 
 /** Class modifying theoretical bistatic range measurement with tropospheric delay.
+ * <p>
  * The effect of tropospheric correction on the range is directly computed
  * through the computation of the tropospheric delay.
- *
+ * </p>
+ * <p>
  * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
  * For SLR techniques however, the frequency dependence is sensitive.
+ * </p>
  *
  * @author Maxime Journot
  * @author Joris Olympio
@@ -65,7 +68,8 @@ public class BistaticRangeTroposphericDelayModifier extends BaseRangeTropospheri
         final GroundStation emitter     = measurement.getEmitterStation();
         final GroundStation receiver    = measurement.getReceiverStation();
 
-        BistaticModifierUtil.modify(estimated, emitter, receiver, this::rangeErrorTroposphericModel);
+        BistaticModifierUtil.modify(estimated, emitter, receiver,
+                                    this::rangeErrorTroposphericModel, this);
 
     }
 
@@ -81,7 +85,8 @@ public class BistaticRangeTroposphericDelayModifier extends BaseRangeTropospheri
                                     new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                     emitter, receiver,
                                     this::rangeErrorTroposphericModel,
-                                    this::rangeErrorTroposphericModel);
+                                    this::rangeErrorTroposphericModel,
+                                    this);
 
     }
 

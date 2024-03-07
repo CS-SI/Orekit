@@ -33,13 +33,16 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TrackingCoordinates;
 
 /** Class modifying theoretical angular measurement with tropospheric delay.
+ * <p>
  * The effect of tropospheric correction on the angular is computed
  * through the computation of the tropospheric delay.The spacecraft state
  * is shifted by the computed delay time and elevation and azimuth are computed
  * again with the new spacecraft state.
- *
+ * </p>
+ * <p>
  * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
  * For SLR techniques however, the frequency dependence is sensitive.
+ * </p>
  *
  * @author Thierry Ceolin
  * @since 8.0
@@ -85,14 +88,12 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
         // only consider measures above the horizon
         if (trackingCoordinates.getElevation() > 0.0) {
             // delay in meters
-            final double delay = tropoModel.pathDelay(trackingCoordinates,
-                                                      station.getOffsetGeodeticPoint(state.getDate()),
-                                                      station.getPressureTemperatureHumidity(state.getDate()),
-                                                      tropoModel.getParameters(state.getDate()), state.getDate()).
+            return tropoModel.pathDelay(trackingCoordinates,
+                                        station.getOffsetGeodeticPoint(state.getDate()),
+                                        station.getPressureTemperatureHumidity(state.getDate()),
+                                        tropoModel.getParameters(state.getDate()), state.getDate()).
                                  getDelay();
 
-            // one-way measurement.
-            return delay;
         }
 
         return 0;
@@ -129,7 +130,7 @@ public class AngularTroposphericDelayModifier implements EstimationModifier<Angu
 
         // Update estimated value taking into account the tropospheric delay.
         // Azimuth - elevation values
-        estimated.setEstimatedValue(azimuth, tc.getElevation());
+        estimated.modifyEstimatedValue(this, azimuth, tc.getElevation());
     }
 
 }
