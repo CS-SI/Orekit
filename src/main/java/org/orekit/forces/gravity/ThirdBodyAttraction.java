@@ -16,43 +16,21 @@
  */
 package org.orekit.forces.gravity;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriver;
 
 /** Third body attraction force model.
  *
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public class ThirdBodyAttraction implements ForceModel {
-
-    /** Suffix for parameter name for attraction coefficient enabling Jacobian processing. */
-    public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";
-
-    /** Central attraction scaling factor.
-     * <p>
-     * We use a power of 2 to avoid numeric noise introduction
-     * in the multiplications/divisions sequences.
-     * </p>
-     */
-    private static final double MU_SCALE = FastMath.scalb(1.0, 32);
-
-    /** Drivers for third body attraction coefficient. */
-    private final ParameterDriver gmParameterDriver;
-
-    /** The body to consider. */
-    private final CelestialBody body;
+public class ThirdBodyAttraction extends AbstractBodyAttraction {
 
     /** Simple constructor.
      * @param body the third body to consider
@@ -60,17 +38,7 @@ public class ThirdBodyAttraction implements ForceModel {
      * {@link CelestialBodies#getMoon()})
      */
     public ThirdBodyAttraction(final CelestialBody body) {
-        gmParameterDriver = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
-                                                body.getGM(), MU_SCALE,
-                                                0.0, Double.POSITIVE_INFINITY);
-
-        this.body = body;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean dependsOnPositionOnly() {
-        return true;
+        super(body);
     }
 
     /** {@inheritDoc} */
@@ -80,7 +48,7 @@ public class ThirdBodyAttraction implements ForceModel {
         final double gm = parameters[0];
 
         // compute bodies separation vectors and squared norm
-        final Vector3D centralToBody = body.getPosition(s.getDate(), s.getFrame());
+        final Vector3D centralToBody = getBody().getPosition(s.getDate(), s.getFrame());
         final double r2Central       = centralToBody.getNormSq();
         final Vector3D satToBody     = centralToBody.subtract(s.getPosition());
         final double r2Sat           = satToBody.getNormSq();
@@ -94,12 +62,12 @@ public class ThirdBodyAttraction implements ForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters) {
+                                                                             final T[] parameters) {
 
         final T gm = parameters[0];
 
         // compute bodies separation vectors and squared norm
-        final FieldVector3D<T> centralToBody = body.getPosition(s.getDate(), s.getFrame());
+        final FieldVector3D<T> centralToBody = getBody().getPosition(s.getDate(), s.getFrame());
         final T                r2Central     = centralToBody.getNormSq();
         final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPosition());
         final T                r2Sat         = satToBody.getNormSq();
@@ -108,12 +76,6 @@ public class ThirdBodyAttraction implements ForceModel {
         return new FieldVector3D<>(r2Sat.multiply(r2Sat.sqrt()).reciprocal().multiply(gm), satToBody,
                                    r2Central.multiply(r2Central.sqrt()).reciprocal().multiply(gm).negate(), centralToBody);
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.singletonList(gmParameterDriver);
     }
 
 }
