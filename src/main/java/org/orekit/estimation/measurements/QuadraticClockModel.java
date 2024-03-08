@@ -16,11 +16,13 @@
  */
 package org.orekit.estimation.measurements;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ClockModel;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
@@ -32,7 +34,7 @@ import java.util.Map;
  * @since 12.1
  *
  */
-public class QuadraticClockModel {
+public class QuadraticClockModel implements ClockModel {
 
     /** Clock offset scaling factor.
      * <p>
@@ -87,13 +89,19 @@ public class QuadraticClockModel {
         this.a2 = a2;
     }
 
-    /** Get the clock offset at date.
-     * @param date date at which offset is requested
-     * @return clock offset at specified date
-     */
+    /** {@inheritDoc} */
+    @Override
     public double getOffset(final AbsoluteDate date) {
         final double dt = date.durationFrom(getSafeReference(date));
         return (a2.getValue(date) * dt + a1.getValue(date)) * dt + a0.getValue(date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T getOffset(final FieldAbsoluteDate<T> date) {
+        final AbsoluteDate aDate = date.toAbsoluteDate();
+        final T dt = date.durationFrom(getSafeReference(aDate));
+        return dt.multiply(dt.multiply(a2.getValue(aDate)).add(a1.getValue(aDate))).add(a0.getValue(aDate));
     }
 
     /** Get the clock rate at date.

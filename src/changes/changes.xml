@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="update" issue="1342">
+          Added ClockTimeScale.
+      </action>
       <action dev="luc" type="update" issue="1341">
           {get|set}ClkOffset → {get|set}ClockOffsetApplied.
       </action>
