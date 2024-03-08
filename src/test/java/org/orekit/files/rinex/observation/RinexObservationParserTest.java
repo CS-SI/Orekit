@@ -270,6 +270,17 @@ public class RinexObservationParserTest {
 
     }
 
+    @Deprecated
+    @Test
+    public void testDeprecatedMethods() {
+        final RinexObservation loaded = load("rinex/aaaa0000.00o");
+        final RinexObservationHeader header = loaded.getHeader();
+        Assertions.assertFalse(header.getClockOffsetApplied());
+        header.setClkOffset(2);
+        Assertions.assertTrue(header.getClockOffsetApplied());
+        Assertions.assertEquals(1, header.getClkOffset());
+    }
+
     @Test
     public void testGPSFile() {
 
