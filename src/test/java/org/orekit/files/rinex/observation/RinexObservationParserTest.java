@@ -279,6 +279,9 @@ public class RinexObservationParserTest {
         header.setClkOffset(2);
         Assertions.assertTrue(header.getClockOffsetApplied());
         Assertions.assertEquals(1, header.getClkOffset());
+        header.setClkOffset(0);
+        Assertions.assertFalse(header.getClockOffsetApplied());
+        Assertions.assertEquals(0, header.getClkOffset());
     }
 
     @Test
