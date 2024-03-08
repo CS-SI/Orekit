@@ -82,7 +82,7 @@ public class RinexObservationParserTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT_VERSION, oe.getSpecifier());
-            Assertions.assertEquals(9.99, ((Double) oe.getParts()[0]).doubleValue(), 0.001);
+            Assertions.assertEquals(9.99, (Double) oe.getParts()[0], 0.001);
         }
     }
 
@@ -839,7 +839,7 @@ public class RinexObservationParserTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNKNOWN_RINEX_FREQUENCY, oe.getSpecifier());
-            Assertions.assertEquals("AAA", (String) oe.getParts()[0]);
+            Assertions.assertEquals("AAA", oe.getParts()[0]);
             Assertions.assertEquals(14, ((Integer) oe.getParts()[2]).intValue());
         }
     }

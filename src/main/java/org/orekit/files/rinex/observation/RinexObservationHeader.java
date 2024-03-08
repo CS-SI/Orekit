@@ -123,16 +123,16 @@ public class RinexObservationHeader extends RinexBaseHeader {
     private boolean clockOffsetApplied;
 
     /** List of applied differential code bias corrections. */
-    private List<AppliedDCBS> listAppliedDCBS;
+    private final List<AppliedDCBS> listAppliedDCBS;
 
     /** List of antenna center variation corrections. */
-    private List<AppliedPCVS> listAppliedPCVS;
+    private final List<AppliedPCVS> listAppliedPCVS;
 
     /** List of phase shift correction used to generate phases consistent w/r to cycle shifts. */
-    private List<PhaseShiftCorrection> phaseShiftCorrections;
+    private final List<PhaseShiftCorrection> phaseShiftCorrections;
 
     /** List of scale factor corrections. */
-    private Map<SatelliteSystem, List<ScaleFactorCorrection>> scaleFactorCorrections;
+    private final Map<SatelliteSystem, List<ScaleFactorCorrection>> scaleFactorCorrections;
 
     /** List of GLONASS satellite-channel associations.
      * @since 12.0
@@ -706,11 +706,8 @@ public class RinexObservationHeader extends RinexBaseHeader {
      * @param scaleFactorCorrection scale factor correction
      */
     public void addScaleFactorCorrection(final SatelliteSystem satelliteSystem, final ScaleFactorCorrection scaleFactorCorrection) {
-        List<ScaleFactorCorrection> sfc = scaleFactorCorrections.get(satelliteSystem);
-        if (sfc == null) {
-            sfc = new ArrayList<>();
-            scaleFactorCorrections.put(satelliteSystem, sfc);
-        }
+        final List<ScaleFactorCorrection> sfc = scaleFactorCorrections.computeIfAbsent(satelliteSystem,
+                                                                                       k -> new ArrayList<>());
         sfc.add(scaleFactorCorrection);
     }
 
@@ -762,11 +759,7 @@ public class RinexObservationHeader extends RinexBaseHeader {
      * @since 12.0
      */
     public void setNbObsPerSatellite(final SatInSystem sat, final ObservationType type, final int nbObs) {
-        Map<ObservationType, Integer> satNbObs = nbObsPerSat.get(sat);
-        if (satNbObs == null) {
-            satNbObs = new HashMap<>();
-            nbObsPerSat.put(sat, satNbObs);
-        }
+        final Map<ObservationType, Integer> satNbObs = nbObsPerSat.computeIfAbsent(sat, k -> new HashMap<>());
         satNbObs.put(type, nbObs);
     }
 

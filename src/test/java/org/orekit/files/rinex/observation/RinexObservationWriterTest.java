@@ -243,10 +243,10 @@ public class RinexObservationWriterTest {
                 Assertions.assertEquals(firstT.get(i), secondT.get(i));
             }
         }
-        Precision.equalsIncludingNaN(first.getC1cCodePhaseBias(), second.getC1cCodePhaseBias(), 1.0e-12);
-        Precision.equalsIncludingNaN(first.getC1pCodePhaseBias(), second.getC1pCodePhaseBias(), 1.0e-12);
-        Precision.equalsIncludingNaN(first.getC2cCodePhaseBias(), second.getC2cCodePhaseBias(), 1.0e-12);
-        Precision.equalsIncludingNaN(first.getC2pCodePhaseBias(), second.getC2pCodePhaseBias(), 1.0e-12);
+        Assertions.assertTrue(Precision.equalsIncludingNaN(first.getC1cCodePhaseBias(), second.getC1cCodePhaseBias(), 1.0e-12));
+        Assertions.assertTrue(Precision.equalsIncludingNaN(first.getC1pCodePhaseBias(), second.getC1pCodePhaseBias(), 1.0e-12));
+        Assertions.assertTrue(Precision.equalsIncludingNaN(first.getC2cCodePhaseBias(), second.getC2cCodePhaseBias(), 1.0e-12));
+        Assertions.assertTrue(Precision.equalsIncludingNaN(first.getC2pCodePhaseBias(), second.getC2pCodePhaseBias(), 1.0e-12));
 
     }
 
