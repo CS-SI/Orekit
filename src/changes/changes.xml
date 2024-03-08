@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="evan" type="fix" issue="986">
+          Fix DSST Jacobian setup.
+      </action>
       <action dev="serrof" type="update" issue="1198">
           Removed redundant code to create FieldOrbit from Orbit.
       </action>

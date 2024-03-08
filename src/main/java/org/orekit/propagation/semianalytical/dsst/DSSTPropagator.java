@@ -163,6 +163,12 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     /** Generator for the interpolation grid. */
     private InterpolationGrid interpolationgrid;
 
+    /**
+     * Same as {@link org.orekit.propagation.AbstractPropagator#harvester} but with the
+     * more specific type. Saved to avoid a cast.
+     */
+    private DSSTHarvester harvester;
+
     /** Create a new instance of DSSTPropagator.
      *  <p>
      *  After creation, there are no perturbing forces at all.
@@ -340,16 +346,40 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
     /** {@inheritDoc} */
     @Override
-    protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
-                                                        final DoubleArrayDictionary initialJacobianColumns) {
-        return new DSSTHarvester(this, stmName, initialStm, initialJacobianColumns);
+    public DSSTHarvester setupMatricesComputation(
+            final String stmName,
+            final RealMatrix initialStm,
+            final DoubleArrayDictionary initialJacobianColumns) {
+
+        if (stmName == null) {
+            throw new OrekitException(OrekitMessages.NULL_ARGUMENT, "stmName");
+        }
+        final DSSTHarvester dsstHarvester =
+                createHarvester(stmName, initialStm, initialJacobianColumns);
+        return this.harvester = dsstHarvester;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected DSSTHarvester createHarvester(final String stmName, final RealMatrix initialStm,
+                                            final DoubleArrayDictionary initialJacobianColumns) {
+        final DSSTHarvester dsstHarvester =
+                new DSSTHarvester(this, stmName, initialStm, initialJacobianColumns);
+        this.harvester = dsstHarvester;
+        return dsstHarvester;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected DSSTHarvester getHarvester() {
+        return harvester;
     }
 
     /** {@inheritDoc} */
     @Override
     protected void setUpStmAndJacobianGenerators() {
 
-        final AbstractMatricesHarvester harvester = getHarvester();
+        final DSSTHarvester harvester = getHarvester();
         if (harvester != null) {
 
             // set up the additional equations and additional state providers
@@ -386,7 +416,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             // this is the first time we need the STM generate, create it
             stmGenerator = new DSSTStateTransitionMatrixGenerator(harvester.getStmName(),
                                                                   getAllForceModels(),
-                                                                  getAttitudeProvider());
+                                                                  getAttitudeProvider(),
+                                                                  getPropagationType());
             addAdditionalDerivativesProvider(stmGenerator);
         }
 
@@ -751,6 +782,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     @Override
     protected void beforeIntegration(final SpacecraftState initialState,
                                      final AbsoluteDate tEnd) {
+        // If this method is updated also update DSSTStateTransitionMatrixGenerator.init(...)
 
         // check if only mean elements must be used
         final PropagationType type = getPropagationType();
