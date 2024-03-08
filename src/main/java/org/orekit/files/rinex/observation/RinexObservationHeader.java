@@ -117,8 +117,10 @@ public class RinexObservationHeader extends RinexBaseHeader {
     /** Time of last observation record. */
     private AbsoluteDate tLastObs;
 
-    /** Real time-derived receiver clock offset. */
-    private int clkOffset;
+    /** Flag for application of real time-derived receiver clock offset.
+     * @since 12.1
+     */
+    private boolean clockOffsetApplied;
 
     /** List of applied differential code bias corrections. */
     private List<AppliedDCBS> listAppliedDCBS;
@@ -196,7 +198,7 @@ public class RinexObservationHeader extends RinexBaseHeader {
         antennaAzimuth         = Double.NaN;
         antennaHeight          = Double.NaN;
         eccentricities         = Vector2D.ZERO;
-        clkOffset              = -1;
+        clockOffsetApplied     = false;
         nbSat                  = -1;
         interval               = Double.NaN;
         leapSeconds            = 0;
@@ -385,16 +387,36 @@ public class RinexObservationHeader extends RinexBaseHeader {
 
     /** Set the realtime-derived receiver clock offset.
      * @param clkOffset realtime-derived receiver clock offset
+     * @deprecated as of 12.1, replaced by {@link #setClockOffsetApplied(boolean)}
      */
+    @Deprecated
     public void setClkOffset(final int clkOffset) {
-        this.clkOffset = clkOffset;
+        setClockOffsetApplied(clkOffset > 0);
     }
 
     /** Get the realtime-derived receiver clock offset.
      * @return realtime-derived receiver clock offset
+     * @deprecated as of 12.1, replaced by #@link {@link #getClockOffsetApplied()}
      */
+    @Deprecated
     public int getClkOffset() {
-        return clkOffset;
+        return getClockOffsetApplied() ? 1 : 0;
+    }
+
+    /** Set the application flag for realtime-derived receiver clock offset.
+     * @param clockOffsetApplied application flag for realtime-derived receiver clock offset
+     * @since 12.1
+     */
+    public void setClockOffsetApplied(final boolean clockOffsetApplied) {
+        this.clockOffsetApplied = clockOffsetApplied;
+    }
+
+    /** Get the application flag for realtime-derived receiver clock offset.
+     * @return application flag for realtime-derived receiver clock offset
+     * @since 12.1
+     */
+    public boolean getClockOffsetApplied() {
+        return clockOffsetApplied;
     }
 
     /** Set the observation interval in seconds.

@@ -536,7 +536,7 @@ public class RinexObservationParser {
 
         /** Parser for indicator of receiver clock offset application. */
         RCV_CLOCK_OFFS_APPL(line -> RinexLabels.RCV_CLOCK_OFFS_APPL.matches(RinexUtils.getLabel(line)),
-                            (line, parseInfo) -> parseInfo.file.getHeader().setClkOffset(RinexUtils.parseInt(line, 0, 6)),
+                            (line, parseInfo) -> parseInfo.file.getHeader().setClockOffsetApplied(RinexUtils.parseInt(line, 0, 6) > 0),
                             LineParser::headerNext),
 
         /** Parser for differential code bias corrections. */

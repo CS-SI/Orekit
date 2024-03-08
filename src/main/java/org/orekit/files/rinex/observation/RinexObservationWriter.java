@@ -401,10 +401,8 @@ public class RinexObservationWriter implements AutoCloseable {
         }
 
         // RCV CLOCK OFFS APPL
-        if (header.getClkOffset() >= 0) {
-            outputField(SIX_DIGITS_INTEGER, header.getClkOffset(), 6);
-            finishHeaderLine(RinexLabels.RCV_CLOCK_OFFS_APPL);
-        }
+        outputField(SIX_DIGITS_INTEGER, header.getClockOffsetApplied() ? 1 : 0, 6);
+        finishHeaderLine(RinexLabels.RCV_CLOCK_OFFS_APPL);
 
         // SYS / DCBS APPLIED
         for (final AppliedDCBS appliedDCBS : header.getListAppliedDCBS()) {

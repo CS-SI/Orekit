@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="update" issue="1341">
+          {get|set}ClkOffset → {get|set}ClockOffsetApplied.
+      </action>
       <action dev="serrof" type="add" issue="1336">
           Added getBodyName in body-based attraction models, as well as common abstract class.
       </action>

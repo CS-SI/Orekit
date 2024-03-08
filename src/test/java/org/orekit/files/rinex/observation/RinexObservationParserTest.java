@@ -207,7 +207,7 @@ public class RinexObservationParserTest {
         Assertions.assertEquals(0.0,                    header.getEccentricities().getX(), 1.0e-4);
         Assertions.assertEquals(0.0,                    header.getEccentricities().getY(), 1.0e-4);
         Assertions.assertEquals(30.0,                   header.getInterval(), 1.0e-15);
-        Assertions.assertEquals(-1,                     header.getClkOffset());
+        Assertions.assertFalse(header.getClockOffsetApplied());
         Assertions.assertEquals(18,                     header.getLeapSeconds());
         Assertions.assertEquals(0.0, new AbsoluteDate(2017, 1, 11, TimeScalesFactory.getGPS()).durationFrom(header.getTFirstObs()), 1.0e-15);
         Assertions.assertTrue(Double.isInfinite(header.getTLastObs().durationFrom(header.getTFirstObs())));
@@ -247,7 +247,7 @@ public class RinexObservationParserTest {
         Assertions.assertNull(header.getCenterMass());
         Assertions.assertEquals("DBHZ",                  header.getSignalStrengthUnit());
         Assertions.assertEquals(15.0,                    header.getInterval(), 1.0e-15);
-        Assertions.assertEquals(-1,                      header.getClkOffset());
+        Assertions.assertFalse(header.getClockOffsetApplied());
         Assertions.assertEquals(0,                       header.getListAppliedDCBS().size());
         Assertions.assertEquals(0,                       header.getListAppliedPCVS().size());
         Assertions.assertEquals(3,                       header.getPhaseShiftCorrections().size());

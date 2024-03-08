@@ -184,7 +184,7 @@ public class RinexObservationWriterTest {
         Assertions.assertEquals(first.getAntennaHeight(),          second.getAntennaHeight(),         1.0e-12);
         Assertions.assertEquals(first.getEccentricities().getX(),  second.getEccentricities().getX(), 1.0e-12);
         Assertions.assertEquals(first.getEccentricities().getY(),  second.getEccentricities().getY(), 1.0e-12);
-        Assertions.assertEquals(first.getClkOffset(),              second.getClkOffset(),             1.0e-12);
+        Assertions.assertEquals(first.getClockOffsetApplied(),     second.getClockOffsetApplied());
         Assertions.assertEquals(first.getInterval(),               second.getInterval(),              1.0e-12);
         checkDate(first.getTFirstObs(), second.getTFirstObs());
         checkDate(first.getTLastObs(),  second.getTLastObs());
