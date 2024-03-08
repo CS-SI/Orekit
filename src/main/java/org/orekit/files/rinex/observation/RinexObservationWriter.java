@@ -37,6 +37,8 @@ import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ClockModel;
+import org.orekit.time.ClockTimeScale;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -122,6 +124,9 @@ public class RinexObservationWriter implements AutoCloseable {
     /** Output name for error messages. */
     private final String outputName;
 
+    /** Receiver clock offset model. */
+    private ClockModel receiverClockModel;
+
     /** Time scale for writing dates. */
     private TimeScale timeScale;
 
@@ -158,6 +163,19 @@ public class RinexObservationWriter implements AutoCloseable {
     @Override
     public void close() throws IOException {
         processPending();
+    }
+
+    /** Set receiver clock model.
+     * <p>
+     * The clock model is used only when {@link
+     * RinexObservationHeader#getClockOffsetApplied() clock offset must be applied}
+     * as per Rinex header settings
+     * </p>
+     * @param receiverClockModel receiver clock model
+     * @since 12.1
+     */
+    public void setReceiverClockModel(final ClockModel receiverClockModel) {
+        this.receiverClockModel = receiverClockModel;
     }
 
     /** Write a complete observation file.
@@ -212,6 +230,10 @@ public class RinexObservationWriter implements AutoCloseable {
                                                           header.getSatelliteSystem().getObservationTimeScale() :
                                                           ObservationTimeScale.GPS;
         timeScale = observationTimeScale.getTimeScale(TimeScalesFactory.getTimeScales());
+        if (header.getClockOffsetApplied() && receiverClockModel != null) {
+            // set up a time scale corresponding to the receiver clock
+            timeScale = new ClockTimeScale(timeScale.getName(), timeScale, receiverClockModel);
+        }
 
         // RINEX VERSION / TYPE
         outputField("%9.2f", header.getFormatVersion(), 9);

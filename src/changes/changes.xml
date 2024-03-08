@@ -21,6 +21,9 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="update" issue="1343">
+          Allow generation of Rinex observation files in receiver clock time scale.
+      </action>
       <action dev="luc" type="update" issue="1342">
           Added ClockTimeScale.
       </action>
