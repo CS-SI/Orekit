@@ -17,6 +17,7 @@
 package org.orekit.propagation.integration;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -105,7 +106,7 @@ class AbstractGradientConverterTest {
         final SpacecraftState state = Mockito.mock(SpacecraftState.class);
         Mockito.when(state.getDate()).thenReturn(AbsoluteDate.ARBITRARY_EPOCH);
         final TimeStampedPVCoordinates pvCoordinates = new TimeStampedPVCoordinates(state.getDate(),
-                                                                                    new PVCoordinates());
+                                                                                    new PVCoordinates(Vector3D.PLUS_I));
         Mockito.when(state.getPVCoordinates()).thenReturn(pvCoordinates);
         Mockito.when(state.getPosition()).thenReturn(pvCoordinates.getPosition());
         Mockito.when(state.isOrbitDefined()).thenReturn(isOrbitDefined);

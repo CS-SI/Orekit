@@ -525,9 +525,10 @@ class FieldCircularOrbitTest {
         FieldVector3D<T> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
         T r2 = position.getNormSq();
         T r = r2.sqrt();
-        FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity,
-                                                                       new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(zero.add(mu).negate()),
-                                                                                           position));
+        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(zero.add(mu).negate()),
+                position);
+        final FieldVector3D<T> nonKeplerianAcceleration = keplerianAcceleration.scalarMultiply(1.1);
+        final FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity, nonKeplerianAcceleration);
         FieldCircularOrbit<T>  fieldOrbit = new FieldCircularOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, zero.add(mu));
         CircularOrbit orbit = fieldOrbit.toOrbit();
         Assertions.assertTrue(orbit.hasDerivatives());
