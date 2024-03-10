@@ -48,8 +48,8 @@ class CcsdsSegmentedTimeCode extends AbstractCcsdsTimeCode {
      * specifies the {@link DateComponents#CCSDS_EPOCH CCSDS reference epoch} is used
      * (and hence may be null in this case)
      */
-    public CcsdsSegmentedTimeCode(final byte preambleField, final byte[] timeField,
-                                  final DateComponents agencyDefinedEpoch) {
+    CcsdsSegmentedTimeCode(final byte preambleField, final byte[] timeField,
+                           final DateComponents agencyDefinedEpoch) {
 
         // time code identification
         if ((preambleField & 0xF0) != 0x40) {
@@ -118,7 +118,7 @@ class CcsdsSegmentedTimeCode extends AbstractCcsdsTimeCode {
      * data interfaces, as it is constant for a given data interface
      * @param timeField byte array containing the time code
      */
-    public CcsdsSegmentedTimeCode(final byte preambleField, final byte[] timeField) {
+    CcsdsSegmentedTimeCode(final byte preambleField, final byte[] timeField) {
 
         // time code identification
         if ((preambleField & 0xF0) != 0x50) {
