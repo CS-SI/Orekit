@@ -14,23 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.modifiers;
+package org.orekit.time;
 
-import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.propagation.SpacecraftState;
-
-/** Functional interface for parametric models.
+/** Abstract base class for CCSDS segmented and unsegmented time code.
  * @author Luc Maisonobe
- * @since 11.2
+ * @since 12.1
+ * @see AbsoluteDate
+ * @see FieldAbsoluteDate
  */
-@FunctionalInterface
-public interface ParametricModelEffect {
+class AbstractCcsdsTimeCode {
 
-    /** Evaluate the parametric model effect.
-     * @param station station
-     * @param state spacecraft state
-     * @return the measurement error due to parametric model
+    /** Decode a signed byte as an unsigned int value.
+     * @param b byte to decode
+     * @return an unsigned int value
      */
-    double evaluate(GroundStation station, SpacecraftState state);
+    protected static int toUnsigned(final byte b) {
+        final int i = (int) b;
+        return (i < 0) ? 256 + i : i;
+    }
+
+    /** Format a byte as an hex string for error messages.
+     * @param data byte to format
+     * @return a formatted string
+     */
+    protected static String formatByte(final byte data) {
+        return "0x" + Integer.toHexString(data).toUpperCase();
+    }
 
 }

@@ -41,7 +41,7 @@ import org.orekit.utils.Constants;
 public class MeasurementCombinationFactoryTest {
 
     /** Threshold for test acceptance. */
-    private static double eps = 1.0e-4;
+    private static final double eps = 1.0e-4;
 
     /** First observation data. */
     private ObservationData obs1;
@@ -124,8 +124,9 @@ public class MeasurementCombinationFactoryTest {
         final ObservationDataSet emptyDataSet = new ObservationDataSet(new SatInSystem(dataSetRinex2.getSatellite().getSystem(),
                                                                                        dataSetRinex2.getSatellite()
                                                                                         .getPRN()),
-                                                                       dataSetRinex2.getDate(), 0, dataSetRinex2.getRcvrClkOffset(),
-                                                                       new ArrayList<ObservationData>());
+                                                                       dataSetRinex2.getDate(), 0,
+                                                                       dataSetRinex2.getRcvrClkOffset(),
+                                                                       new ArrayList<>());
         // Test first method signature
         final CombinedObservationDataSet combinedData = combination.combine(emptyDataSet);
         Assertions.assertEquals(0, combinedData.getObservationData().size());

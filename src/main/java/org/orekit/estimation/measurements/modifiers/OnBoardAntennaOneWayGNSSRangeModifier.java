@@ -71,8 +71,9 @@ public class OnBoardAntennaOneWayGNSSRangeModifier
     /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<OneWayGNSSRange> estimated) {
-        estimated.setEstimatedValue(estimated.getEstimatedValue()[0] +
-                                    oneWayDistanceModification(estimated));
+        estimated.modifyEstimatedValue(this,
+                                       estimated.getEstimatedValue()[0] +
+                                       oneWayDistanceModification(estimated));
     }
 
 }

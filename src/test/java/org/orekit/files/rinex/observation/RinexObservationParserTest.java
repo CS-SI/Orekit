@@ -82,7 +82,7 @@ public class RinexObservationParserTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT_VERSION, oe.getSpecifier());
-            Assertions.assertEquals(9.99, ((Double) oe.getParts()[0]).doubleValue(), 0.001);
+            Assertions.assertEquals(9.99, (Double) oe.getParts()[0], 0.001);
         }
     }
 
@@ -207,7 +207,7 @@ public class RinexObservationParserTest {
         Assertions.assertEquals(0.0,                    header.getEccentricities().getX(), 1.0e-4);
         Assertions.assertEquals(0.0,                    header.getEccentricities().getY(), 1.0e-4);
         Assertions.assertEquals(30.0,                   header.getInterval(), 1.0e-15);
-        Assertions.assertEquals(-1,                     header.getClkOffset());
+        Assertions.assertFalse(header.getClockOffsetApplied());
         Assertions.assertEquals(18,                     header.getLeapSeconds());
         Assertions.assertEquals(0.0, new AbsoluteDate(2017, 1, 11, TimeScalesFactory.getGPS()).durationFrom(header.getTFirstObs()), 1.0e-15);
         Assertions.assertTrue(Double.isInfinite(header.getTLastObs().durationFrom(header.getTFirstObs())));
@@ -247,7 +247,7 @@ public class RinexObservationParserTest {
         Assertions.assertNull(header.getCenterMass());
         Assertions.assertEquals("DBHZ",                  header.getSignalStrengthUnit());
         Assertions.assertEquals(15.0,                    header.getInterval(), 1.0e-15);
-        Assertions.assertEquals(-1,                      header.getClkOffset());
+        Assertions.assertFalse(header.getClockOffsetApplied());
         Assertions.assertEquals(0,                       header.getListAppliedDCBS().size());
         Assertions.assertEquals(0,                       header.getListAppliedPCVS().size());
         Assertions.assertEquals(3,                       header.getPhaseShiftCorrections().size());
@@ -268,6 +268,20 @@ public class RinexObservationParserTest {
         Assertions.assertEquals(0.0, new AbsoluteDate(2016, 1, 11, TimeScalesFactory.getGPS()).durationFrom(header.getTFirstObs()), 1.0e-15);
         Assertions.assertTrue(Double.isInfinite(header.getTLastObs().durationFrom(header.getTFirstObs())));
 
+    }
+
+    @Deprecated
+    @Test
+    public void testDeprecatedMethods() {
+        final RinexObservation loaded = load("rinex/aaaa0000.00o");
+        final RinexObservationHeader header = loaded.getHeader();
+        Assertions.assertFalse(header.getClockOffsetApplied());
+        header.setClkOffset(2);
+        Assertions.assertTrue(header.getClockOffsetApplied());
+        Assertions.assertEquals(1, header.getClkOffset());
+        header.setClkOffset(0);
+        Assertions.assertFalse(header.getClockOffsetApplied());
+        Assertions.assertEquals(0, header.getClkOffset());
     }
 
     @Test
@@ -839,7 +853,7 @@ public class RinexObservationParserTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.UNKNOWN_RINEX_FREQUENCY, oe.getSpecifier());
-            Assertions.assertEquals("AAA", (String) oe.getParts()[0]);
+            Assertions.assertEquals("AAA", oe.getParts()[0]);
             Assertions.assertEquals(14, ((Integer) oe.getParts()[2]).intValue());
         }
     }

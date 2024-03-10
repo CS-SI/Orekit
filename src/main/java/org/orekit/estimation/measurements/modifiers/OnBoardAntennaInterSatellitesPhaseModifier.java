@@ -62,9 +62,10 @@ public class OnBoardAntennaInterSatellitesPhaseModifier
 
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<InterSatellitesPhase> estimated) {
-        estimated.setEstimatedValue(estimated.getEstimatedValue()[0] +
-                                    oneWayDistanceModification(estimated) /
-                                    estimated.getObservedMeasurement().getWavelength());
+        estimated.modifyEstimatedValue(this,
+                                       estimated.getEstimatedValue()[0] +
+                                       oneWayDistanceModification(estimated) /
+                                       estimated.getObservedMeasurement().getWavelength());
     }
 
 }

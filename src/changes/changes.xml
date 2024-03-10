@@ -24,6 +24,31 @@
       <action dev="luc" type="add" >
           Added AmbiguityDriver and AmbiguityCache.
       </action>
+      <action dev="luc" type="update" issue="1343">
+          Allow generation of Rinex observation files in receiver clock time scale.
+      </action>
+      <action dev="luc" type="update" issue="1342">
+          Added ClockTimeScale.
+      </action>
+      <action dev="luc" type="update" issue="1341">
+          {get|set}ClkOffset → {get|set}ClockOffsetApplied.
+      </action>
+      <action dev="serrof" type="add" issue="1336">
+          Added getBodyName in body-based attraction models, as well as common abstract class.
+      </action>
+      <action dev="maxime" type="update" issue="1335">
+          Added constructors with orbit type in SmallManeuverAnalyticalModel.
+      </action>
+      <action dev="serrof" type="add" issue="1258">
+          Added get(Un)normalizedC20.
+      </action>
+      <action dev="luc" type="add" issue="1328">
+          Field versions of Frame.get{|Static|Kinematic}TransformTo don't allow
+          null dates (they never did, but the javadoc wrongly stated this was allowed)
+      </action>
+      <action dev="luc" type="add" issue="1338">
+          Added separate access to original estimation and modifications in estimated measurements.
+      </action>
       <action dev="luc" type="add" issue="1332">
           Added InterSatellitesOneWayRangeRate measurements.
       </action>

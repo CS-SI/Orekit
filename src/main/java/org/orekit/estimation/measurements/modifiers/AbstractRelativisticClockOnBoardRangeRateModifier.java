@@ -83,7 +83,7 @@ public abstract class AbstractRelativisticClockOnBoardRangeRateModifier<T extend
         // Update estimated value taking into account the relativistic effect.
         final double[] newValue = estimated.getEstimatedValue().clone();
         newValue[0] = newValue[0] + (dfLocal - dfRemote) * Constants.SPEED_OF_LIGHT;
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(this, newValue);
 
     }
 

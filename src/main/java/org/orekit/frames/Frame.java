@@ -253,7 +253,8 @@ public class Frame implements Serializable {
 
     /** Get the transform from the instance to another frame.
      * @param destination destination frame to which we want to transform vectors
-     * @param date the date (can be null if it is sure than no date dependent frame is used)
+     * @param date the date (<em>must</em> be non-null, which is a more stringent condition
+     *      *                than in {@link #getTransformTo(Frame, FieldAbsoluteDate)})
      * @param <T> the type of the field elements
      * @return transform from the instance to the destination frame
      */
@@ -330,8 +331,8 @@ public class Frame implements Serializable {
      * @param <T>         type of the elements
      * @param destination destination frame to which we want to transform
      *                    vectors
-     * @param date        the date (can be null if it is sure than no date
-     *                    dependent frame is used)
+     * @param date        the date (<em>must</em> be non-null, which is a more stringent condition
+     *                    than in {@link #getStaticTransformTo(Frame, AbsoluteDate)})
      * @return static transform from the instance to the destination frame
      * @since 12.0
      */
@@ -361,8 +362,8 @@ public class Frame implements Serializable {
      * @param <T>          Type of transform returned.
      * @param destination destination frame to which we want to transform
      *                    vectors
-     * @param date        the date (can be null if it is sure than no date
-     *                    dependent frame is used)
+     * @param date        the date (<em>must</em> be non-null, which is a more stringent condition
+     *      *                    than in {@link #getKinematicTransformTo(Frame, AbsoluteDate)})
      * @return kinematic transform from the instance to the destination frame
      * @since 12.1
      */

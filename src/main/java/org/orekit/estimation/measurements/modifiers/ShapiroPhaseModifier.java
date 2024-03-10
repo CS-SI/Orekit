@@ -62,7 +62,7 @@ public class ShapiroPhaseModifier extends AbstractShapiroBaseModifier implements
         // update estimated value taking into account the Shapiro time delay.
         final double[] newValue = estimated.getEstimatedValue().clone();
         newValue[0] = newValue[0] + correction;
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(this, newValue);
     }
 
 }

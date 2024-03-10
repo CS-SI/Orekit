@@ -26,9 +26,7 @@ import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.MathUtils.SumAndResidual;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
 
 
@@ -320,15 +318,15 @@ public class AbsoluteDate
         if (regularOffset >= 0) {
             // regular case, the offset is between 0.0 and 1.0
             offset = regularOffset;
-            epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
-                            time.getMinute() - time.getMinutesFromUTC() - 720l) + dl;
+            epoch  = 60L * ((date.getJ2000Day() * 24L + time.getHour()) * 60L +
+                            time.getMinute() - time.getMinutesFromUTC() - 720L) + dl;
         } else {
             // very rare case, the offset is just before a whole second
             // we will loose some bits of accuracy when adding 1 second
             // but this will ensure the offset remains in the [0.0; 1.0] interval
             offset = 1.0 + regularOffset;
-            epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
-                            time.getMinute() - time.getMinutesFromUTC() - 720l) + dl - 1;
+            epoch  = 60L * ((date.getJ2000Day() * 24L + time.getHour()) * 60L +
+                            time.getMinute() - time.getMinutesFromUTC() - 720L) + dl - 1;
         }
 
     }
@@ -413,8 +411,8 @@ public class AbsoluteDate
      */
     public AbsoluteDate(final Date location, final TimeScale timeScale) {
         this(new DateComponents(DateComponents.JAVA_EPOCH,
-                                (int) (location.getTime() / 86400000l)),
-                                 millisToTimeComponents((int) (location.getTime() % 86400000l)),
+                                (int) (location.getTime() / 86400000L)),
+                                 millisToTimeComponents((int) (location.getTime() % 86400000L)),
              timeScale);
     }
 
@@ -425,7 +423,7 @@ public class AbsoluteDate
      */
     public AbsoluteDate(final Instant instant, final TimeScale timeScale) {
         this(new DateComponents(DateComponents.JAVA_EPOCH,
-                                (int) (instant.getEpochSecond() / 86400l)),
+                                (int) (instant.getEpochSecond() / 86400L)),
              instantToTimeComponents(instant),
              timeScale);
     }
@@ -519,7 +517,7 @@ public class AbsoluteDate
      * @return time components
      */
     private static TimeComponents instantToTimeComponents(final Instant instant) {
-        final int secInDay = (int) (instant.getEpochSecond() % 86400l);
+        final int secInDay = (int) (instant.getEpochSecond() % 86400L);
         return new TimeComponents(secInDay, 1.0e-9 * instant.getNano());
     }
 
@@ -622,51 +620,11 @@ public class AbsoluteDate
             final byte[] timeField,
             final AbsoluteDate agencyDefinedEpoch,
             final AbsoluteDate ccsdsEpoch) {
-
-        // time code identification and reference epoch
-        final AbsoluteDate epoch;
-        switch (preambleField1 & 0x70) {
-            case 0x10:
-                // the reference epoch is CCSDS epoch 1958-01-01T00:00:00 TAI
-                epoch = ccsdsEpoch;
-                break;
-            case 0x20:
-                // the reference epoch is agency defined
-                if (agencyDefinedEpoch == null) {
-                    throw new OrekitException(OrekitMessages.CCSDS_DATE_MISSING_AGENCY_EPOCH);
-                }
-                epoch = agencyDefinedEpoch;
-                break;
-            default :
-                throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD,
-                                          formatByte(preambleField1));
-        }
-
-        // time field lengths
-        int coarseTimeLength = 1 + ((preambleField1 & 0x0C) >>> 2);
-        int fineTimeLength   = preambleField1 & 0x03;
-
-        if ((preambleField1 & 0x80) != 0x0) {
-            // there is an additional octet in preamble field
-            coarseTimeLength += (preambleField2 & 0x60) >>> 5;
-            fineTimeLength   += (preambleField2 & 0x1C) >>> 2;
-        }
-
-        if (timeField.length != coarseTimeLength + fineTimeLength) {
-            throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_LENGTH_TIME_FIELD,
-                                      timeField.length, coarseTimeLength + fineTimeLength);
-        }
-
-        double seconds = 0;
-        for (int i = 0; i < coarseTimeLength; ++i) {
-            seconds = seconds * 256 + toUnsigned(timeField[i]);
-        }
-        double subseconds = 0;
-        for (int i = timeField.length - 1; i >= coarseTimeLength; --i) {
-            subseconds = (subseconds + toUnsigned(timeField[i])) / 256;
-        }
-
-        return new AbsoluteDate(epoch, seconds).shiftedBy(subseconds);
+        final CcsdsUnsegmentedTimeCode<AbsoluteDate> timeCode =
+            new CcsdsUnsegmentedTimeCode<>(preambleField1, preambleField2, timeField,
+                                           agencyDefinedEpoch, ccsdsEpoch);
+        return new AbsoluteDate(timeCode.getEpoch(), timeCode.getSeconds()).
+               shiftedBy(timeCode.getSubSecond());
 
     }
 
@@ -709,68 +667,15 @@ public class AbsoluteDate
      * @return an instance corresponding to the specified date
      * @since 10.1
      */
-    public static AbsoluteDate parseCCSDSDaySegmentedTimeCode(
-            final byte preambleField,
-            final byte[] timeField,
-            final DateComponents agencyDefinedEpoch,
-            final TimeScale utc) {
+    public static AbsoluteDate parseCCSDSDaySegmentedTimeCode(final byte preambleField,
+                                                              final byte[] timeField,
+                                                              final DateComponents agencyDefinedEpoch,
+                                                              final TimeScale utc) {
 
-        // time code identification
-        if ((preambleField & 0xF0) != 0x40) {
-            throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD,
-                                      formatByte(preambleField));
-        }
-
-        // reference epoch
-        final DateComponents epoch;
-        if ((preambleField & 0x08) == 0x00) {
-            // the reference epoch is CCSDS epoch 1958-01-01T00:00:00 TAI
-            epoch = DateComponents.CCSDS_EPOCH;
-        } else {
-            // the reference epoch is agency defined
-            if (agencyDefinedEpoch == null) {
-                throw new OrekitException(OrekitMessages.CCSDS_DATE_MISSING_AGENCY_EPOCH);
-            }
-            epoch = agencyDefinedEpoch;
-        }
-
-        // time field lengths
-        final int daySegmentLength = ((preambleField & 0x04) == 0x0) ? 2 : 3;
-        final int subMillisecondLength = (preambleField & 0x03) << 1;
-        if (subMillisecondLength == 6) {
-            throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD,
-                                      formatByte(preambleField));
-        }
-        if (timeField.length != daySegmentLength + 4 + subMillisecondLength) {
-            throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_LENGTH_TIME_FIELD,
-                                      timeField.length, daySegmentLength + 4 + subMillisecondLength);
-        }
-
-
-        int i   = 0;
-        int day = 0;
-        while (i < daySegmentLength) {
-            day = day * 256 + toUnsigned(timeField[i++]);
-        }
-
-        long milliInDay = 0l;
-        while (i < daySegmentLength + 4) {
-            milliInDay = milliInDay * 256 + toUnsigned(timeField[i++]);
-        }
-        final int milli   = (int) (milliInDay % 1000l);
-        final int seconds = (int) ((milliInDay - milli) / 1000l);
-
-        double subMilli = 0;
-        double divisor  = 1;
-        while (i < timeField.length) {
-            subMilli = subMilli * 256 + toUnsigned(timeField[i++]);
-            divisor *= 1000;
-        }
-
-        final DateComponents date = new DateComponents(epoch, day);
-        final TimeComponents time = new TimeComponents(seconds);
-        return new AbsoluteDate(date, time, utc).shiftedBy(milli * 1.0e-3 + subMilli / divisor);
-
+        final CcsdsSegmentedTimeCode timeCode = new CcsdsSegmentedTimeCode(preambleField, timeField,
+                                                                           agencyDefinedEpoch);
+        return new AbsoluteDate(timeCode.getDate(), timeCode.getTime(), utc).
+               shiftedBy(timeCode.getSubSecond());
     }
 
     /** Build an instance from a CCSDS Calendar Segmented Time Code (CCS).
@@ -805,71 +710,12 @@ public class AbsoluteDate
      * @return an instance corresponding to the specified date
      * @since 10.1
      */
-    public static AbsoluteDate parseCCSDSCalendarSegmentedTimeCode(
-            final byte preambleField,
-            final byte[] timeField,
-            final TimeScale utc) {
-
-        // time code identification
-        if ((preambleField & 0xF0) != 0x50) {
-            throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD,
-                                      formatByte(preambleField));
-        }
-
-        // time field length
-        final int length = 7 + (preambleField & 0x07);
-        if (length == 14) {
-            throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD,
-                                      formatByte(preambleField));
-        }
-        if (timeField.length != length) {
-            throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_LENGTH_TIME_FIELD,
-                                      timeField.length, length);
-        }
-
-        // date part in the first four bytes
-        final DateComponents date;
-        if ((preambleField & 0x08) == 0x00) {
-            // month of year and day of month variation
-            date = new DateComponents(toUnsigned(timeField[0]) * 256 + toUnsigned(timeField[1]),
-                                      toUnsigned(timeField[2]),
-                                      toUnsigned(timeField[3]));
-        } else {
-            // day of year variation
-            date = new DateComponents(toUnsigned(timeField[0]) * 256 + toUnsigned(timeField[1]),
-                                      toUnsigned(timeField[2]) * 256 + toUnsigned(timeField[3]));
-        }
-
-        // time part from bytes 5 to last (between 7 and 13 depending on precision)
-        final TimeComponents time = new TimeComponents(toUnsigned(timeField[4]),
-                                                       toUnsigned(timeField[5]),
-                                                       toUnsigned(timeField[6]));
-        double subSecond = 0;
-        double divisor   = 1;
-        for (int i = 7; i < length; ++i) {
-            subSecond = subSecond * 100 + toUnsigned(timeField[i]);
-            divisor *= 100;
-        }
-
-        return new AbsoluteDate(date, time, utc).shiftedBy(subSecond / divisor);
-
-    }
-
-    /** Decode a signed byte as an unsigned int value.
-     * @param b byte to decode
-     * @return an unsigned int value
-     */
-    private static int toUnsigned(final byte b) {
-        final int i = (int) b;
-        return (i < 0) ? 256 + i : i;
-    }
-
-    /** Format a byte as an hex string for error messages.
-     * @param data byte to format
-     * @return a formatted string
-     */
-    private static String formatByte(final byte data) {
-        return "0x" + Integer.toHexString(data).toUpperCase();
+    public static AbsoluteDate parseCCSDSCalendarSegmentedTimeCode(final byte preambleField,
+                                                                   final byte[] timeField,
+                                                                   final TimeScale utc) {
+        final CcsdsSegmentedTimeCode timeCode = new CcsdsSegmentedTimeCode(preambleField, timeField);
+        return new AbsoluteDate(timeCode.getDate(), timeCode.getTime(), utc).
+               shiftedBy(timeCode.getSubSecond());
     }
 
     /** Build an instance corresponding to a Julian Day date.
@@ -1089,16 +935,16 @@ public class AbsoluteDate
         // split date and time
         final long   carry = (long) FastMath.floor(sumAndResidual.getSum());
         double offset2000B = (sumAndResidual.getSum() - carry) + sumAndResidual.getResidual();
-        long   offset2000A = epoch + carry + 43200l;
+        long   offset2000A = epoch + carry + 43200L;
         if (offset2000B < 0) {
             offset2000A -= 1;
             offset2000B += 1;
         }
-        long time = offset2000A % 86400l;
-        if (time < 0l) {
-            time += 86400l;
+        long time = offset2000A % 86400L;
+        if (time < 0L) {
+            time += 86400L;
         }
-        final int date = (int) ((offset2000A - time) / 86400l);
+        final int date = (int) ((offset2000A - time) / 86400L);
 
         // extract calendar elements
         final DateComponents dateComponents = new DateComponents(DateComponents.J2000_EPOCH, date);

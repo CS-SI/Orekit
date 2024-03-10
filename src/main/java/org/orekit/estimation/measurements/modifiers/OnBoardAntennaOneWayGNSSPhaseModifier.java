@@ -71,9 +71,10 @@ public class OnBoardAntennaOneWayGNSSPhaseModifier
     /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<OneWayGNSSPhase> estimated) {
-        estimated.setEstimatedValue(estimated.getEstimatedValue()[0] +
-                                    oneWayDistanceModification(estimated) /
-                                    estimated.getObservedMeasurement().getWavelength());
+        estimated.modifyEstimatedValue(this,
+                                       estimated.getEstimatedValue()[0] +
+                                       oneWayDistanceModification(estimated) /
+                                       estimated.getObservedMeasurement().getWavelength());
     }
 
 }

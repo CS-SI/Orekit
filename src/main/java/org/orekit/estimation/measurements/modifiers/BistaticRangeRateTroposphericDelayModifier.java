@@ -65,7 +65,8 @@ public class BistaticRangeRateTroposphericDelayModifier
         final GroundStation     emitter     = measurement.getEmitterStation();
         final GroundStation     receiver    = measurement.getReceiverStation();
 
-        BistaticModifierUtil.modify(estimated, emitter, receiver, this::rangeRateErrorTroposphericModel);
+        BistaticModifierUtil.modify(estimated, emitter, receiver,
+                                    this::rangeRateErrorTroposphericModel, this);
 
     }
 
@@ -82,7 +83,8 @@ public class BistaticRangeRateTroposphericDelayModifier
                                     new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                     emitter, receiver,
                                     this::rangeRateErrorTroposphericModel,
-                                    this::rangeRateErrorTroposphericModel);
+                                    this::rangeRateErrorTroposphericModel,
+                                    this);
 
     }
 

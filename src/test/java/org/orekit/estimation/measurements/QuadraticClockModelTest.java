@@ -18,6 +18,8 @@ package org.orekit.estimation.measurements;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -43,6 +45,19 @@ public class QuadraticClockModelTest {
         Assertions.assertEquals(1.00 / 256.0, clock.getOffset(t0),                   1.0e-15);
         Assertions.assertEquals(1.75 / 256.0, clock.getOffset(t0.shiftedBy(1.0)), 1.0e-15);
         Assertions.assertEquals(3.00 / 256.0, clock.getOffset(t0.shiftedBy(2.0)), 1.0e-15);
+    }
+
+    @Test
+    public void testValueField() {
+        final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
+        final QuadraticClockModel clock = new QuadraticClockModel(t0,
+                                                                  FastMath.scalb(1.0, -8),
+                                                                  FastMath.scalb(1.0, -9),
+                                                                  FastMath.scalb(1.0, -10));
+        final FieldAbsoluteDate<Binary64> t064 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
+        Assertions.assertEquals(1.00 / 256.0, clock.getOffset(t064).getReal(),                   1.0e-15);
+        Assertions.assertEquals(1.75 / 256.0, clock.getOffset(t064.shiftedBy(1.0)).getReal(), 1.0e-15);
+        Assertions.assertEquals(3.00 / 256.0, clock.getOffset(t064.shiftedBy(2.0)).getReal(), 1.0e-15);
     }
 
     @Test

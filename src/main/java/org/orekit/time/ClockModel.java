@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2024 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,23 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements.modifiers;
+package org.orekit.time;
 
-import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.propagation.SpacecraftState;
+import org.hipparchus.CalculusFieldElement;
 
-/** Functional interface for parametric models.
+/** Offset clock model.
  * @author Luc Maisonobe
- * @since 11.2
+ * @since 12.1
  */
-@FunctionalInterface
-public interface ParametricModelEffect {
+public interface ClockModel {
 
-    /** Evaluate the parametric model effect.
-     * @param station station
-     * @param state spacecraft state
-     * @return the measurement error due to parametric model
+    /** Get the clock offset at date.
+     * @param date date at which offset is requested
+     * @return clock offset at specified date
      */
-    double evaluate(GroundStation station, SpacecraftState state);
+    double getOffset(AbsoluteDate date);
+
+    /** Get the clock offset at date.
+     * @param <T> type of the field elements
+     * @param date date at which offset is requested
+     * @return clock offset at specified date
+     */
+    <T extends CalculusFieldElement<T>> T getOffset(FieldAbsoluteDate<T> date);
 
 }

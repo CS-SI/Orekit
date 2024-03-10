@@ -240,6 +240,7 @@
         * position-velocity
         * position
         * inter-satellites range (one way and two way)
+        * inter-satellites GNSS one way range rate
         * inter-satellites GNSS phase
         * GNSS code
         * GNSS phase with integer ambiguity resolution and wind-up effect
@@ -258,6 +259,7 @@
         * biases
         * delays
         * Antenna Phase Center
+        * Phase ambiguity
         * Shapiro relativistic effect
         * aberration of light in telescope measurements
     * possibility to add custom measurement modifiers (even for predefined events)
