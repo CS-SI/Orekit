@@ -63,11 +63,11 @@ class CcsdsUnsegmentedTimeCode<T> extends AbstractCcsdsTimeCode {
      * @param ccsdsEpoch         reference epoch, ignored if the preamble field specifies
      *                           the agency epoch is used.
      */
-    public CcsdsUnsegmentedTimeCode(final byte preambleField1,
-                                    final byte preambleField2,
-                                    final byte[] timeField,
-                                    final T agencyDefinedEpoch,
-                                    final T ccsdsEpoch) {
+    CcsdsUnsegmentedTimeCode(final byte preambleField1,
+                             final byte preambleField2,
+                             final byte[] timeField,
+                             final T agencyDefinedEpoch,
+                             final T ccsdsEpoch) {
 
         // time code identification and reference epoch
         switch (preambleField1 & 0x70) {
