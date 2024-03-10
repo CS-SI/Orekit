@@ -22,13 +22,13 @@ package org.orekit.time;
  * @see AbsoluteDate
  * @see FieldAbsoluteDate
  */
-class AbstractCcsdsTimeCode {
+abstract class AbstractCcsdsTimeCode {
 
     /** Decode a signed byte as an unsigned int value.
      * @param b byte to decode
      * @return an unsigned int value
      */
-    protected static int toUnsigned(final byte b) {
+    protected int toUnsigned(final byte b) {
         final int i = (int) b;
         return (i < 0) ? 256 + i : i;
     }
@@ -37,7 +37,7 @@ class AbstractCcsdsTimeCode {
      * @param data byte to format
      * @return a formatted string
      */
-    protected static String formatByte(final byte data) {
+    protected String formatByte(final byte data) {
         return "0x" + Integer.toHexString(data).toUpperCase();
     }
 
