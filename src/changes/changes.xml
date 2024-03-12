@@ -21,6 +21,10 @@
   </properties>
   <body>
   <release version="12.1" date="TBD" description="TBD">
+      <action dev="luc" type="update" issue="1346">
+          Allow Rinex V4 observation files to have either "ANTENNA: DELTA X/Y/Z"
+          or "ANTENNA: DELTA H/E/N" header line.
+      </action>
       <action dev="luc" type="update" issue="1343">
           Allow generation of Rinex observation files in receiver clock time scale.
       </action>
