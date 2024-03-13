@@ -41,7 +41,7 @@ public class Inertia {
      * @param iA2 inertia along second axis
      * @param iA3 inertia along third axis
      */
-    Inertia(final InertiaAxis iA1, final InertiaAxis iA2, final InertiaAxis iA3) {
+    public Inertia(final InertiaAxis iA1, final InertiaAxis iA2, final InertiaAxis iA3) {
         this.iA1 = iA1;
         this.iA2 = iA2;
         this.iA3 = iA3;
