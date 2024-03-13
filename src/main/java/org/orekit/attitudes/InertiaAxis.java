@@ -37,7 +37,7 @@ public class InertiaAxis {
      * @param i moment of inertia
      * @param a inertia axis
      */
-    InertiaAxis(final double i, final Vector3D a) {
+    public InertiaAxis(final double i, final Vector3D a) {
         this.i = i;
         this.a = a;
     }

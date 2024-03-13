@@ -750,7 +750,8 @@ public class RinexObservationParser {
                         parseInfo.file.getHeader().getObserverName()         == null ||
                         parseInfo.file.getHeader().getReceiverNumber()       == null ||
                         parseInfo.file.getHeader().getAntennaNumber()        == null ||
-                        Double.isNaN(parseInfo.file.getHeader().getAntennaHeight())  ||
+                        Double.isNaN(parseInfo.file.getHeader().getAntennaHeight()) &&
+                        parseInfo.file.getHeader().getAntennaReferencePoint() == null  ||
                         parseInfo.file.getHeader().getTFirstObs()            == null ||
                         parseInfo.file.getHeader().getTypeObs().isEmpty()) {
                         throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, parseInfo.name);

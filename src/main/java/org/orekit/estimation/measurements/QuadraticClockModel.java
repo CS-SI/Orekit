@@ -104,13 +104,19 @@ public class QuadraticClockModel implements ClockModel {
         return dt.multiply(dt.multiply(a2.getValue(aDate)).add(a1.getValue(aDate))).add(a0.getValue(aDate));
     }
 
-    /** Get the clock rate at date.
-     * @param date date at which offset is requested
-     * @return clock rate at specified date
-     */
+    /** {@inheritDoc} */
+    @Override
     public double getRate(final AbsoluteDate date) {
         final double dt = date.durationFrom(getSafeReference(date));
         return 2 * a2.getValue(date) * dt + a1.getValue(date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T getRate(final FieldAbsoluteDate<T> date) {
+        final AbsoluteDate aDate = date.toAbsoluteDate();
+        final T dt = date.durationFrom(getSafeReference(aDate));
+        return dt.multiply(a2.getValue(aDate)).multiply(2).add(a1.getValue(aDate));
     }
 
     /** Get a safe reference date.
