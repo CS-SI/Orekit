@@ -1487,8 +1487,9 @@ public class DSSTPropagatorTest {
                                            SpacecraftState... meanStates) {
         }
 
+        @SafeVarargs
         @Override
-        public <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(
+        public final <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(
                 T[] parameters, FieldSpacecraftState<T>... meanStates) {
         }
 

@@ -40,7 +40,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
      * @param r0 the humidity at the station [fraction] (50% -&gt; 0.5)
-     * @see #ModifiedSaastamoinenModel(double, double, double, String, DataProvidersManager)
+     * @see ModifiedSaastamoinenModel#ModifiedSaastamoinenModel(double, double, double, String, DataProvidersManager)
      * @since 10.1
      */
     public SaastamoinenModel(final double t0, final double p0, final double r0) {
@@ -58,7 +58,7 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
      * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
      * default values from the reference book are used
      * @since 7.1
-     * @see #ModifiedSaastamoinenModel(double, double, double, String, DataProvidersManager)
+     * @see ModifiedSaastamoinenModel#ModifiedSaastamoinenModel(double, double, double, String, DataProvidersManager)
      */
     @DefaultDataContext
     public SaastamoinenModel(final double t0, final double p0, final double r0,
@@ -97,9 +97,9 @@ public class SaastamoinenModel extends ModifiedSaastamoinenModel {
     *
     * @return a Saastamoinen model with standard environmental values
     */
-   public static SaastamoinenModel getStandardModel() {
-       return new SaastamoinenModel(273.16 + 18, 1013.25, 0.5);
-   }
+    public static SaastamoinenModel getStandardModel() {
+        return new SaastamoinenModel(273.16 + 18, 1013.25, 0.5);
+    }
 
 }
 

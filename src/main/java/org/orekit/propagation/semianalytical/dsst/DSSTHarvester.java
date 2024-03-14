@@ -325,7 +325,7 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
             final Gradient[] shortPeriod = new Gradient[6];
             Arrays.fill(shortPeriod, zero);
             final List<FieldShortPeriodTerms<Gradient>> terms = fieldShortPeriodTerms
-                    .computeIfAbsent(forceModel, x -> new ArrayList(0));
+                    .computeIfAbsent(forceModel, x -> new ArrayList<>(0));
             for (final FieldShortPeriodTerms<Gradient> spt : terms) {
                 final Gradient[] spVariation = spt.value(dsState.getOrbit());
                 for (int i = 0; i < spVariation .length; i++) {

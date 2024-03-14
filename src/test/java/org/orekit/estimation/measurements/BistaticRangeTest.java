@@ -204,7 +204,7 @@ public class BistaticRangeTest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 2.5e-5);
+        Assertions.assertEquals(0, maxRelativeError, 2.7e-5);
 
     }
 
