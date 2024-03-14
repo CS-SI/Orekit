@@ -2070,7 +2070,7 @@ public class FieldNumericalPropagatorTest {
                 fieldNumericalPropagator.propagate(fieldDate);
             }
         } catch (final MathRuntimeException exception) {
-            Assertions.fail("Regression w.r.t. Orekit 11.3");
+            Assertions.fail("Regression w.r.t. Orekit 11.3", exception);
         }
 
     }

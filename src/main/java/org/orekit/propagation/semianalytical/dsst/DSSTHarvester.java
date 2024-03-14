@@ -240,9 +240,24 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
      * @param reference current mean spacecraft state
      */
     public void initializeFieldShortPeriodTerms(final SpacecraftState reference) {
+        initializeFieldShortPeriodTerms(reference, propagator.getPropagationType());
+    }
+
+    /**
+     * Initialize the short periodic terms for the "field" elements.
+     *
+     * @param reference current mean spacecraft state
+     * @param type      MEAN or OSCULATING
+     */
+    public void initializeFieldShortPeriodTerms(final SpacecraftState reference,
+                                                final PropagationType type) {
 
         // Converter
         final DSSTGradientConverter converter = new DSSTGradientConverter(reference, propagator.getAttitudeProvider());
+
+        // clear old values
+        // prevents duplicates or stale values when reusing a DSSTPropagator
+        fieldShortPeriodTerms.clear();
 
         // Loop on force models
         for (final DSSTForceModel forceModel : propagator.getAllForceModels()) {
@@ -252,11 +267,11 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
             final Gradient[] dsParameters = converter.getParametersAtStateDate(dsState, forceModel);
             final FieldAuxiliaryElements<Gradient> auxiliaryElements = new FieldAuxiliaryElements<>(dsState.getOrbit(), I);
 
-            // Initialize the "Field" short periodic terms in OSCULATING mode
+            // Initialize the "Field" short periodic terms, same mode as the propagator
             final List<FieldShortPeriodTerms<Gradient>> terms =
                     forceModel.initializeShortPeriodTerms(
                             auxiliaryElements,
-                            PropagationType.OSCULATING,
+                            type,
                             dsParameters);
             // create a copy of the list to protect against inadvertent modification
             fieldShortPeriodTerms.computeIfAbsent(forceModel, x -> new ArrayList<>())

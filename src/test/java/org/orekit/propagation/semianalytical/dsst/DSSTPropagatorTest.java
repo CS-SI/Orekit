@@ -1245,7 +1245,7 @@ public class DSSTPropagatorTest {
         // d (M = n * dt) /d (mu)
         final double dmdmu = dt / (2 * Math.sqrt(mu * a * a * a));
         final Matcher<double[]> stmMuMatcherClose = OrekitMatchers
-                .doubleArrayContaining(new double[]{0, 0, 0, 0, 0, dmdmu}, 1e-28, 15);
+                .doubleArrayContaining(new double[]{0, 0, 0, 0, 0, dmdmu}, 1e-27, 15);
         // Not sure why adding a paramter changes the STM, but it does
         double twoParameterAbsTol = 1e-12;
         // larger tolerance for osculating comparisons because I'm treating
