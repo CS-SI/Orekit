@@ -26,11 +26,14 @@ import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.propagation.SpacecraftState;
 
 /** Class modifying theoretical range measurement with tropospheric delay.
+ * <p>
  * The effect of tropospheric correction on the range is directly computed
  * through the computation of the tropospheric delay.
- *
+ * </p>
+ * <p>
  * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
  * For SLR techniques however, the frequency dependence is sensitive.
+ * </p>
  *
  * @author Maxime Journot
  * @author Joris Olympio
@@ -64,7 +67,9 @@ public class RangeTroposphericDelayModifier extends BaseRangeTroposphericDelayMo
         final Range         measurement = estimated.getObservedMeasurement();
         final GroundStation station     = measurement.getStation();
 
-        RangeModifierUtil.modifyWithoutDerivatives(estimated,  station, this::rangeErrorTroposphericModel);
+        RangeModifierUtil.modifyWithoutDerivatives(estimated,  station,
+                                                   this::rangeErrorTroposphericModel,
+                                                   this);
 
 
     }
@@ -81,7 +86,8 @@ public class RangeTroposphericDelayModifier extends BaseRangeTroposphericDelayMo
                                  new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                  station,
                                  this::rangeErrorTroposphericModel,
-                                 this::rangeErrorTroposphericModel);
+                                 this::rangeErrorTroposphericModel,
+                                 this);
 
 
     }

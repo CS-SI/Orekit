@@ -175,14 +175,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
     private double[] phaseErrorParameterDerivative(final double[] derivatives, final int freeStateParameters) {
         // 0 ... freeStateParameters - 1   -> derivatives of the delay wrt state
         // freeStateParameters ... n       -> derivatives of the delay wrt tropospheric parameters
-        final int dim = derivatives.length - freeStateParameters;
-        final double[] rangeError = new double[dim];
-
-        for (int i = 0; i < dim; i++) {
-            rangeError[i] = derivatives[freeStateParameters + i];
-        }
-
-        return rangeError;
+        return Arrays.copyOfRange(derivatives, freeStateParameters, derivatives.length);
     }
 
     /** {@inheritDoc} */
@@ -204,7 +197,7 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
         final double[] newValue = estimated.getEstimatedValue();
         final double delay = phaseErrorTroposphericModel(station, state, measurement.getWavelength());
         newValue[0] = newValue[0] + delay;
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(this, newValue);
 
     }
 

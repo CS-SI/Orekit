@@ -20,12 +20,12 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.propagation.FieldSpacecraftState;
 
-/** Functional interface for parameteric models.
+/** Functional interface for parametric models.
  * @author Luc Maisonobe
  * @since 11.2
  */
 @FunctionalInterface
-interface ParametricModelEffectGradient {
+public interface ParametricModelEffectGradient {
 
     /** Evaluate the parametric model effect.
      * @param station station

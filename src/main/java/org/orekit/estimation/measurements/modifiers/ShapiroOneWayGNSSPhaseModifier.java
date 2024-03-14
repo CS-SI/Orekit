@@ -57,7 +57,7 @@ public class ShapiroOneWayGNSSPhaseModifier extends AbstractShapiroBaseModifier 
         final double wavelength = estimated.getObservedMeasurement().getWavelength();
         final double[] newValue = estimated.getEstimatedValue().clone();
         newValue[0] = newValue[0] + (phaseCorrection / wavelength);
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(this, newValue);
     }
 
 }

@@ -34,13 +34,16 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TrackingCoordinates;
 
 /** Class modifying theoretical angular measurement with ionospheric delay.
+ * <p>
  * The effect of ionospheric correction on the angular measurement is computed
  * through the computation of the ionospheric delay. The spacecraft state
  * is shifted by the computed delay time and elevation and azimuth are computed
  * again with the new spacecraft state.
- *
+ * </p>
+ * <p>
  * The ionospheric delay depends on the frequency of the signal (GNSS, VLBI, ...).
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
+ * </p>
  * <p>
  * Since 10.0, state derivatives and ionospheric parameters derivates are computed
  * using automatic differentiation.
@@ -77,8 +80,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
         // Base frame associated with the station
         final TopocentricFrame baseFrame = station.getBaseFrame();
         // delay in meters
-        final double delay = ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
-        return delay;
+        return ionoModel.pathDelay(state, baseFrame, frequency, ionoModel.getParameters(state.getDate()));
     }
 
     /** {@inheritDoc} */
@@ -112,7 +114,7 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
 
         // Update estimated value taking into account the ionospheric delay.
         // Azimuth - elevation values
-        estimated.setEstimatedValue(azimuth, tc.getElevation());
+        estimated.modifyEstimatedValue(this, azimuth, tc.getElevation());
     }
 
 }

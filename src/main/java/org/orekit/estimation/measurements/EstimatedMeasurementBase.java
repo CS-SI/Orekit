@@ -20,6 +20,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.util.IdentityHashMap;
+
 /** Class holding an estimated theoretical value associated to an {@link ObservedMeasurement observed measurement}.
  * @param <T> the type of the measurement
  * @author Luc Maisonobe
@@ -42,8 +44,18 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
     /** Coordinates of the participants in signal travel order. */
     private final TimeStampedPVCoordinates[] participants;
 
+    /** Original estimated value prior to any modification.
+     * @since 12.1
+     */
+    private double[] originalEstimatedValue;
+
     /** Estimated value. */
     private double[] estimatedValue;
+
+    /** Applied modifiers effects.
+     * @since 12.1
+     */
+    private final IdentityHashMap<EstimationModifier<T>, double[]> appliedEffects;
 
     /** Measurement status. */
     private Status status;
@@ -57,15 +69,16 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
      * in inertial frame
      */
     public EstimatedMeasurementBase(final T observedMeasurement,
-                                final int iteration, final int count,
-                                final SpacecraftState[] states,
-                                final TimeStampedPVCoordinates[] participants) {
+                                    final int iteration, final int count,
+                                    final SpacecraftState[] states,
+                                    final TimeStampedPVCoordinates[] participants) {
         this.observedMeasurement = observedMeasurement;
         this.iteration           = iteration;
         this.count               = count;
         this.states              = states.clone();
         this.participants        = participants.clone();
         this.status              = Status.PROCESSED;
+        this.appliedEffects      = new IdentityHashMap<>();
     }
 
     /** Get the associated observed measurement.
@@ -130,6 +143,25 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
         return observedMeasurement.getObservedValue();
     }
 
+    /** Get the original estimated value prior to any modification.
+     * @return original estimated value prior to any modification
+     * @since 12.1
+     */
+    public double[] getOriginalEstimatedValue() {
+        return originalEstimatedValue.clone();
+    }
+
+    /** Get the applied effects of modifiers.
+     * <p>
+     * The effects have already accounted for in {@link #getEstimatedValue()}
+     * </p>
+     * @return applied modifier effects
+     * @since 12.1
+     */
+    public IdentityHashMap<EstimationModifier<T>, double[]> getAppliedEffects() {
+        return appliedEffects;
+    }
+
     /** Get the estimated value.
      * @return estimated value
      */
@@ -139,9 +171,37 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
 
     /** Set the estimated value.
      * @param estimatedValue estimated value
+     * @see #modifyEstimatedValue(EstimationModifier, double...)
      */
     public void setEstimatedValue(final double... estimatedValue) {
+        if (originalEstimatedValue == null) {
+            this.originalEstimatedValue = estimatedValue.clone();
+        }
         this.estimatedValue = estimatedValue.clone();
+    }
+
+    /** Modify the estimated value.
+     * @param modifier modifier that generates this estimated value
+     * @param newEstimatedValue new estimated value
+     * @since 12.1
+     */
+    public void modifyEstimatedValue(final EstimationModifier<T> modifier, final double... newEstimatedValue) {
+
+        if (modifier == null) {
+            setEstimatedValue(newEstimatedValue);
+        } else {
+            final double[] effect = new double[newEstimatedValue.length];
+            for (int i = 0; i < effect.length; ++i) {
+                // compute effect
+                effect[i] = newEstimatedValue[i] - estimatedValue[i];
+                // update value
+                estimatedValue[i] = newEstimatedValue[i];
+            }
+
+            // store effect
+            appliedEffects.put(modifier, effect);
+        }
+
     }
 
     /** Get the status.
@@ -171,7 +231,7 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
         PROCESSED,
 
         /** Status for rejected measurements. */
-        REJECTED;
+        REJECTED
 
     }
 

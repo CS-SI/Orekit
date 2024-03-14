@@ -54,13 +54,13 @@ public class InterSatellitesPhaseAmbiguityModifier extends AbstractAmbiguityModi
     /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<InterSatellitesPhase> estimated) {
-        doModifyWithoutDerivatives(estimated);
+        doModifyWithoutDerivatives(this, estimated);
     }
 
     /** {@inheritDoc} */
     @Override
     public void modify(final EstimatedMeasurement<InterSatellitesPhase> estimated) {
-        doModify(estimated);
+        doModify(this, estimated);
     }
 
 }

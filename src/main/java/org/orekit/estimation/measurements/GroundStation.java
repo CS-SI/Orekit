@@ -97,6 +97,11 @@ public class GroundStation {
     /** Suffix for ground clock drift parameters name. */
     public static final String DRIFT_SUFFIX = "-drift-clock";
 
+    /** Suffix for ground clock drift parameters name.
+     * @since 12.1
+     */
+    public static final String ACCELERATION_SUFFIX = "-acceleration-clock";
+
     /** Suffix for ground station intermediate frame name. */
     public static final String INTERMEDIATE_SUFFIX = "-intermediate";
 
@@ -141,6 +146,11 @@ public class GroundStation {
 
     /** Driver for clock drift. */
     private final ParameterDriver clockDriftDriver;
+
+    /** Driver for clock acceleration.
+     * @since 12.1
+     */
+    private final ParameterDriver clockAccelerationDriver;
 
     /** Driver for position offset along the East axis. */
     private final ParameterDriver eastOffsetDriver;
@@ -285,6 +295,10 @@ public class GroundStation {
                                                     0.0, CLOCK_OFFSET_SCALE,
                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 
+        this.clockAccelerationDriver = new ParameterDriver(baseFrame.getName() + ACCELERATION_SUFFIX,
+                                                    0.0, CLOCK_OFFSET_SCALE,
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+
         this.eastOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-East",
                                                     0.0, POSITION_OFFSET_SCALE,
                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
@@ -340,6 +354,14 @@ public class GroundStation {
      */
     public ParameterDriver getClockDriftDriver() {
         return clockDriftDriver;
+    }
+
+    /** Get a driver allowing to change station clock acceleration (which is related to measurement date).
+     * @return driver for station clock acceleration
+     * @since 12.1
+     */
+    public ParameterDriver getClockAccelerationDriver() {
+        return clockAccelerationDriver;
     }
 
     /** Get a driver allowing to change station position along East axis.
@@ -502,21 +524,21 @@ public class GroundStation {
         final double    y          = northOffsetDriver.getValue();
         final double    z          = zenithOffsetDriver.getValue();
         final BodyShape baseShape  = baseFrame.getParentShape();
-        final StaticTransform baseToBody =
-                baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), date);
+        final StaticTransform baseToBody = baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), date);
         Vector3D        origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
 
         if (date != null) {
             origin = origin.add(computeDisplacement(date, origin));
         }
 
-        return baseShape.transform(origin, baseShape.getBodyFrame(), null);
+        return baseShape.transform(origin, baseShape.getBodyFrame(), date);
 
     }
 
     /** Get the geodetic point at the center of the offset frame.
      * @param <T> type of the field elements
-     * @param date current date (may be null if displacements are ignored)
+     * @param date current date(<em>must</em> be non-null, which is a more stringent condition
+     *      *                    than in {@link #getOffsetGeodeticPoint(AbsoluteDate)}
      * @return geodetic point at the center of the offset frame
      * @since 12.1
      */
@@ -527,15 +549,11 @@ public class GroundStation {
         final double    y          = northOffsetDriver.getValue();
         final double    z          = zenithOffsetDriver.getValue();
         final BodyShape baseShape  = baseFrame.getParentShape();
-        final FieldStaticTransform<T> baseToBody =
-                baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), date);
-        FieldVector3D<T>        origin     = baseToBody.transformPosition(new Vector3D(x, y, z));
+        final FieldStaticTransform<T> baseToBody = baseFrame.getStaticTransformTo(baseShape.getBodyFrame(), date);
+        FieldVector3D<T> origin    = baseToBody.transformPosition(new Vector3D(x, y, z));
+        origin = origin.add(computeDisplacement(date.toAbsoluteDate(), origin.toVector3D()));
 
-        if (date != null) {
-            origin = origin.add(computeDisplacement(date.toAbsoluteDate(), origin.toVector3D()));
-        }
-
-        return baseShape.transform(origin, baseShape.getBodyFrame(), null);
+        return baseShape.transform(origin, baseShape.getBodyFrame(), date);
 
     }
 

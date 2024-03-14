@@ -51,9 +51,10 @@ public class PhaseCentersPhaseModifier
     /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Phase> estimated) {
-        estimated.setEstimatedValue(estimated.getEstimatedValue()[0] +
-                                    oneWayDistanceModification(estimated) /
-                                    estimated.getObservedMeasurement().getWavelength());
+        estimated.modifyEstimatedValue(this,
+                                       estimated.getEstimatedValue()[0] +
+                                       oneWayDistanceModification(estimated) /
+                                       estimated.getObservedMeasurement().getWavelength());
     }
 
 }

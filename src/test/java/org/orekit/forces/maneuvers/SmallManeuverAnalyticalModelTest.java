@@ -67,7 +67,7 @@ class SmallManeuverAnalyticalModelTest {
         BoundedPropagator withoutManeuver = getEphemeris(leo, mass, t0, Vector3D.ZERO, f, isp);
         BoundedPropagator withManeuver    = getEphemeris(leo, mass, t0, dV, f, isp);
         SmallManeuverAnalyticalModel model =
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0), dV, isp);
+                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0), OrbitType.CIRCULAR, dV, isp);
         Assertions.assertEquals(t0, model.getDate());
 
         for (AbsoluteDate t = withoutManeuver.getMinDate();
@@ -113,8 +113,10 @@ class SmallManeuverAnalyticalModelTest {
         double isp      = 315.0;
         BoundedPropagator withoutManeuver = getEphemeris(leo, mass, t0, Vector3D.ZERO, f, isp);
         BoundedPropagator withManeuver    = getEphemeris(leo, mass, t0, dV, f, isp);
+        SpacecraftState stateWithoutManeuver = withoutManeuver.propagate(t0);
+        Vector3D rotatedDV = stateWithoutManeuver.getAttitude().getRotation().applyInverseTo(dV);
         SmallManeuverAnalyticalModel model =
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0), dV, isp);
+                new SmallManeuverAnalyticalModel(stateWithoutManeuver, OrbitType.EQUINOCTIAL, leo.getFrame(), rotatedDV, isp);
         Assertions.assertEquals(t0, model.getDate());
 
         for (AbsoluteDate t = withoutManeuver.getMinDate();

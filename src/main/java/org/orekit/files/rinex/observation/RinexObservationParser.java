@@ -536,7 +536,7 @@ public class RinexObservationParser {
 
         /** Parser for indicator of receiver clock offset application. */
         RCV_CLOCK_OFFS_APPL(line -> RinexLabels.RCV_CLOCK_OFFS_APPL.matches(RinexUtils.getLabel(line)),
-                            (line, parseInfo) -> parseInfo.file.getHeader().setClkOffset(RinexUtils.parseInt(line, 0, 6)),
+                            (line, parseInfo) -> parseInfo.file.getHeader().setClockOffsetApplied(RinexUtils.parseInt(line, 0, 6) > 0),
                             LineParser::headerNext),
 
         /** Parser for differential code bias corrections. */
@@ -750,7 +750,8 @@ public class RinexObservationParser {
                         parseInfo.file.getHeader().getObserverName()         == null ||
                         parseInfo.file.getHeader().getReceiverNumber()       == null ||
                         parseInfo.file.getHeader().getAntennaNumber()        == null ||
-                        Double.isNaN(parseInfo.file.getHeader().getAntennaHeight())  ||
+                        Double.isNaN(parseInfo.file.getHeader().getAntennaHeight()) &&
+                        parseInfo.file.getHeader().getAntennaReferencePoint() == null  ||
                         parseInfo.file.getHeader().getTFirstObs()            == null ||
                         parseInfo.file.getHeader().getTypeObs().isEmpty()) {
                         throw new OrekitException(OrekitMessages.INCOMPLETE_HEADER, parseInfo.name);

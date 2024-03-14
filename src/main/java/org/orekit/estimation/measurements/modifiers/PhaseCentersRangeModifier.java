@@ -54,7 +54,8 @@ public class PhaseCentersRangeModifier
         final double delta = estimated.getObservedMeasurement().isTwoWay() ?
                              twoWayDistanceModification(estimated) :
                              oneWayDistanceModification(estimated);
-        estimated.setEstimatedValue(estimated.getEstimatedValue()[0] + delta);
+        estimated.modifyEstimatedValue(this,
+                                       estimated.getEstimatedValue()[0] + delta);
     }
 
 }

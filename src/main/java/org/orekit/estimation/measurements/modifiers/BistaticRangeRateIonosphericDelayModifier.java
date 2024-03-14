@@ -54,7 +54,9 @@ public class BistaticRangeRateIonosphericDelayModifier extends BaseRangeRateIono
         final GroundStation     emitter     = measurement.getEmitterStation();
         final GroundStation     receiver    = measurement.getReceiverStation();
 
-        BistaticModifierUtil.modify(estimated, emitter, receiver, this::rangeRateErrorIonosphericModel);
+        BistaticModifierUtil.modify(estimated, emitter, receiver,
+                                    this::rangeRateErrorIonosphericModel,
+                                    this);
 
     }
 
@@ -71,7 +73,8 @@ public class BistaticRangeRateIonosphericDelayModifier extends BaseRangeRateIono
                                     new ModifierGradientConverter(state, 6, new FrameAlignedProvider(state.getFrame())),
                                     emitter, receiver,
                                     this::rangeRateErrorIonosphericModel,
-                                    this::rangeRateErrorIonosphericModel);
+                                    this::rangeRateErrorIonosphericModel,
+                                    this);
 
     }
 

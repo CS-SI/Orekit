@@ -54,12 +54,12 @@ public class PhaseAmbiguityModifier extends AbstractAmbiguityModifier implements
 
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<Phase> estimated) {
-        doModifyWithoutDerivatives(estimated);
+        doModifyWithoutDerivatives(this, estimated);
     }
 
     @Override
     public void modify(final EstimatedMeasurement<Phase> estimated) {
-        doModify(estimated);
+        doModify(this, estimated);
     }
 
 }

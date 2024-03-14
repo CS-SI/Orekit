@@ -70,7 +70,7 @@ public class RelativisticClockRangeRateModifier extends AbstractRelativisticCloc
         // Update estimated value taking into account the relativistic effect.
         final double[] newValue = estimated.getEstimatedValue().clone();
         newValue[0] = newValue[0] + dfRel * Constants.SPEED_OF_LIGHT;
-        estimated.setEstimatedValue(newValue);
+        estimated.modifyEstimatedValue(this, newValue);
     }
 
     /** Returns the inverse of the given value.

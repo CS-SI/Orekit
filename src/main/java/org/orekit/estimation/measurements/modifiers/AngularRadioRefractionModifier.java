@@ -92,7 +92,7 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
 
         // consider only effect on elevation
         newValue[1] = newValue[1] + correction;
-        estimated.setEstimatedValue(newValue[0], newValue[1]);
+        estimated.modifyEstimatedValue(this, newValue[0], newValue[1]);
     }
 
 }

@@ -16,44 +16,21 @@
  */
 package org.orekit.forces.gravity;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
 
 /** Body attraction force model computed as relative acceleration towards frame center.
  * @author Luc Maisonabe
  * @author Julio Hernanz
  */
-public class SingleBodyRelativeAttraction implements ForceModel {
-
-    /** Suffix for parameter name for attraction coefficient enabling Jacobian processing. */
-    public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";
-
-    /** Central attraction scaling factor.
-     * <p>
-     * We use a power of 2 to avoid numeric noise introduction
-     * in the multiplications/divisions sequences.
-     * </p>
-     */
-    private static final double MU_SCALE = FastMath.scalb(1.0, 32);
-
-    /** Drivers for body attraction coefficient. */
-    private final ParameterDriver gmDriver;
-
-    /** The body to consider. */
-    private final CelestialBody body;
+public class SingleBodyRelativeAttraction extends AbstractBodyAttraction {
 
     /** Simple constructor.
      * @param body the body to consider
@@ -61,24 +38,14 @@ public class SingleBodyRelativeAttraction implements ForceModel {
      * {@link CelestialBodies#getMoon()})
      */
     public SingleBodyRelativeAttraction(final CelestialBody body) {
-        gmDriver = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
-                                       body.getGM(), MU_SCALE,
-                                       0.0, Double.POSITIVE_INFINITY);
-
-        this.body = body;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean dependsOnPositionOnly() {
-        return true;
+        super(body);
     }
 
     /** {@inheritDoc} */
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         // compute bodies separation vectors and squared norm
-        final PVCoordinates bodyPV   = body.getPVCoordinates(s.getDate(), s.getFrame());
+        final PVCoordinates bodyPV   = getBody().getPVCoordinates(s.getDate(), s.getFrame());
         final Vector3D satToBody     = bodyPV.getPosition().subtract(s.getPosition());
         final double r2Sat           = satToBody.getNormSq();
 
@@ -94,7 +61,7 @@ public class SingleBodyRelativeAttraction implements ForceModel {
                                                                          final T[] parameters) {
 
         // compute bodies separation vectors and squared norm
-        final FieldPVCoordinates<T> bodyPV = body.getPVCoordinates(s.getDate(), s.getFrame());
+        final FieldPVCoordinates<T> bodyPV = getBody().getPVCoordinates(s.getDate(), s.getFrame());
         final FieldVector3D<T> satToBody   = bodyPV.getPosition().subtract(s.getPosition());
         final T                r2Sat       = satToBody.getNormSq();
 
@@ -103,11 +70,6 @@ public class SingleBodyRelativeAttraction implements ForceModel {
         final T a  = gm.divide(r2Sat);
         return new FieldVector3D<>(a, satToBody.normalize()).add(bodyPV.getAcceleration());
 
-    }
-
-    /** {@inheritDoc} */
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.singletonList(gmDriver);
     }
 
 }

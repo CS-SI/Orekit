@@ -59,4 +59,15 @@ public interface NormalizedSphericalHarmonicsProvider extends SphericalHarmonics
      */
     NormalizedSphericalHarmonics onDate(AbsoluteDate date);
 
+    /**
+     * Get the normalized coefficient of degree 2 and order 0 at a specific instance in time.
+     *
+     * @param date of evaluation (may be null if model is not time-dependent)
+     * @return normalized C20 on {@code date}.
+     * @since 12.1
+     */
+    default double getNormalizedC20(final AbsoluteDate date) {
+        return onDate(date).getNormalizedCnm(2, 0);
+    }
+
 }

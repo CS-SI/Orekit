@@ -54,13 +54,13 @@ public class OneWayGNSSPhaseAmbiguityModifier extends AbstractAmbiguityModifier 
     /** {@inheritDoc} */
     @Override
     public void modifyWithoutDerivatives(final EstimatedMeasurementBase<OneWayGNSSPhase> estimated) {
-        doModifyWithoutDerivatives(estimated);
+        doModifyWithoutDerivatives(this, estimated);
     }
 
     /** {@inheritDoc} */
     @Override
     public void modify(final EstimatedMeasurement<OneWayGNSSPhase> estimated) {
-        doModify(estimated);
+        doModify(this, estimated);
     }
 
 }
