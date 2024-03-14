@@ -43,7 +43,6 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -379,8 +378,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     @Override
     protected void setUpStmAndJacobianGenerators() {
 
-        final DSSTHarvester harvester = getHarvester();
-        if (harvester != null) {
+        final DSSTHarvester dsstHarvester = getHarvester();
+        if (dsstHarvester != null) {
 
             // set up the additional equations and additional state providers
             final DSSTStateTransitionMatrixGenerator stmGenerator = setUpStmGenerator();
@@ -388,7 +387,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
             // as we are now starting the propagation, everything is configured
             // we can freeze the names in the harvester
-            harvester.freezeColumnsNames();
+            dsstHarvester.freezeColumnsNames();
 
         }
 
@@ -400,13 +399,13 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     private DSSTStateTransitionMatrixGenerator setUpStmGenerator() {
 
-        final AbstractMatricesHarvester harvester = getHarvester();
+        final DSSTHarvester dsstHarvester = getHarvester();
 
         // add the STM generator corresponding to the current settings, and setup state accordingly
         DSSTStateTransitionMatrixGenerator stmGenerator = null;
         for (final AdditionalDerivativesProvider equations : getAdditionalDerivativesProviders()) {
             if (equations instanceof DSSTStateTransitionMatrixGenerator &&
-                equations.getName().equals(harvester.getStmName())) {
+                equations.getName().equals(dsstHarvester.getStmName())) {
                 // the STM generator has already been set up in a previous propagation
                 stmGenerator = (DSSTStateTransitionMatrixGenerator) equations;
                 break;
@@ -414,18 +413,18 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         }
         if (stmGenerator == null) {
             // this is the first time we need the STM generate, create it
-            stmGenerator = new DSSTStateTransitionMatrixGenerator(harvester.getStmName(),
+            stmGenerator = new DSSTStateTransitionMatrixGenerator(dsstHarvester.getStmName(),
                                                                   getAllForceModels(),
                                                                   getAttitudeProvider(),
                                                                   getPropagationType());
             addAdditionalDerivativesProvider(stmGenerator);
         }
 
-        if (!getInitialIntegrationState().hasAdditionalState(harvester.getStmName())) {
+        if (!getInitialIntegrationState().hasAdditionalState(dsstHarvester.getStmName())) {
             // add the initial State Transition Matrix if it is not already there
             // (perhaps due to a previous propagation)
             setInitialState(stmGenerator.setInitialStateTransitionMatrix(getInitialState(),
-                                                                         harvester.getInitialStateTransitionMatrix()),
+                                                                         dsstHarvester.getInitialStateTransitionMatrix()),
                             getPropagationType());
         }
 

@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
