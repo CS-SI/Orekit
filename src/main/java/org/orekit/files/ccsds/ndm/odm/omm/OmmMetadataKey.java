@@ -30,7 +30,7 @@ public enum OmmMetadataKey {
     MEAN_ELEMENT_THEORY((token, context, container) -> token.processAsUppercaseString(container::setMeanElementTheory));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

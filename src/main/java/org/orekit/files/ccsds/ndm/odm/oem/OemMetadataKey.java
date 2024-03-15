@@ -45,7 +45,7 @@ public enum OemMetadataKey {
     INTERPOLATION_DEGREE((token, context, container) -> token.processAsInteger(container::setInterpolationDegree));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

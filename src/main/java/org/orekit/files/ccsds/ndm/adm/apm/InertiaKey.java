@@ -84,7 +84,7 @@ public enum InertiaKey {
                                                                           container::setInertiaMatrixEntry));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

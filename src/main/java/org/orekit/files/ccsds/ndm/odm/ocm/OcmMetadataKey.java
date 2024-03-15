@@ -185,7 +185,7 @@ public enum OcmMetadataKey {
     CELESTIAL_SOURCE((token, context, container) -> token.processAsFreeTextString(container::setCelestialSource));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

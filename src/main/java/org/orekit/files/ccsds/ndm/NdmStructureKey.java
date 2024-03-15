@@ -60,7 +60,7 @@ enum NdmStructureKey {
     cdm((token, parser) -> parser.manageCdmConstituent());
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

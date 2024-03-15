@@ -30,7 +30,7 @@ public enum OdmMetadataKey {
     OBJECT_NAME((token, context, container) -> token.processAsUppercaseString(container::setObjectName));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

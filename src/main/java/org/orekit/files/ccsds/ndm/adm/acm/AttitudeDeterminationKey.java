@@ -82,7 +82,7 @@ public enum AttitudeDeterminationKey {
     SENSOR((token, parser, context, container) -> parser.manageAttitudeDeterminationSensorSection(token.getType() == TokenType.START));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

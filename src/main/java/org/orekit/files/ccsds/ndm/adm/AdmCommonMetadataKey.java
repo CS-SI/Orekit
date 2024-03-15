@@ -30,7 +30,7 @@ public enum AdmCommonMetadataKey {
     OBJECT_ID((token, context, container) -> token.processAsUppercaseString(container::setObjectID));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

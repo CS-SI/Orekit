@@ -228,7 +228,7 @@ public enum TdmMetadataKey {
     CORRECTIONS_APPLIED((token, context, container) -> token.processAsEnum(CorrectionApplied.class, container::setCorrectionsApplied));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

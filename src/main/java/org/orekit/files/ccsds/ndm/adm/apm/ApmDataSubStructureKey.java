@@ -78,7 +78,7 @@ enum ApmDataSubStructureKey {
     maneuverParameters((token, context, parser) -> parser.manageManeuverParametersSection(token.getType() == TokenType.START));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

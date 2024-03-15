@@ -32,7 +32,7 @@ public enum CdmHeaderKey {
     CLASSIFICATION((token, context, header) -> token.processAsNormalizedString(header::setClassification));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

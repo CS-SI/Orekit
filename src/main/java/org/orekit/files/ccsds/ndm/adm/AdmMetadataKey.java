@@ -34,7 +34,7 @@ public enum AdmMetadataKey {
                                                                     context.getDataContext().getCelestialBodies()));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

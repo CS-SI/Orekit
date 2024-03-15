@@ -35,7 +35,7 @@ public enum MetadataKey {
     TIME_SYSTEM((token, context, metadata) -> token.processAsTimeSystem(metadata::setTimeSystem));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method

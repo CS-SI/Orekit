@@ -92,7 +92,7 @@ public enum TrajectoryStateHistoryMetadataKey {
     TRAJ_UNITS((token, context, container) -> token.processAsUnitList(container::setTrajUnits));
 
     /** Processing method. */
-    private final TokenProcessor processor;
+    private final transient TokenProcessor processor;
 
     /** Simple constructor.
      * @param processor processing method
